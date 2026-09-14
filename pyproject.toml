@@ -14,6 +14,7 @@ dependencies = [
     "jinja2==3.1.6",
     "langchain-core==1.4.0",
     "langchain-experimental==0.4.2",
+    "langchain-huggingface>=1.2.2",
     "langchain-openai==1.2.2",
     "langchain-text-splitters==1.1.2",
     "openai==2.41.0",
@@ -22,6 +23,7 @@ dependencies = [
     "pymupdf4llm==1.27.2.3",
     "python-dotenv==1.1.1",
     "python-multipart==0.0.32",
+    "sentence-transformers>=6.0.1",
     "sqlalchemy==2.0.50",
     "uvicorn==0.35.0",
 ]

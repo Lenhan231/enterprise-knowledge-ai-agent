@@ -44,7 +44,6 @@ class SemanticDocumentChunker:
 
         return splitter.create_documents([markdown_content])
 
-
 if __name__ == "__main__":
     repo_root = Path(__file__).resolve().parents[3]
     test_path = repo_root / "src" /"data"/"processed" / "pdf2md" / "2024_Apple.md"
@@ -56,3 +55,5 @@ if __name__ == "__main__":
         print(f"Characters: {len(chunk.page_content)}")
         print(chunk.page_content)
         print("=" * 80)
+        vector = chunker.embeddings.embed_query(chunk.page_content)
+        print(len(vector))

@@ -12,3 +12,4 @@ class ChunkMetadata:
     parent_id: str | None     # parent structural unit / parent chunk id
     token_count: int | None   # token count for this chunk
     document_id: str          # UUID or deterministic document identifier
+

@@ -55,14 +55,15 @@ if __name__ == "__main__":
     chunks = splitter.chunk(test_path)
     print(chunks[:1])
 
-    # for chunk_index, chunk in enumerate(chunks[:3]):
-    #     chunk.metadata = ChunkMetadata{
-    #         "document_id": document_id,
-    #         "source_document": ...,
-    #         "document_type": ...,
-    #         "page_number": ...,
-    #         "chunk_index": chunk_index,
-    #         "section_title": ...,
-    #         "parent_id": ...,
-    #         "token_count": ...,
-    #     }
+    
+    # for chunk_index, chunk in enumerate(chunks):
+    #     metadata = ChunkMetadata(
+    #         source_document=test_path,
+    #         document_type=document_type,
+    #         page_number=None,
+    #         chunk_index=chunk_index,
+    #         section_title=None,
+    #         parent_id=None,
+    #         token_count=...,
+    #         document_id=document_id,
+    #     )

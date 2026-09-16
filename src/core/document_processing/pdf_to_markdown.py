@@ -59,9 +59,11 @@ class PDFtoMarkdownConverted:
 if __name__ == "__main__":
     repo_root = Path(__file__).resolve().parents[3]
 
-    input_dir = repo_root / "src" / "data" / "raws" / "pdf" 
+    input_dir = repo_root / "src" / "data" / "raws" / "pdf" / "2024_Apple.pdf"
     output_dir = repo_root / "src" / "data" / "processed" / "pdf2md"
 
     ingestor = PDFtoMarkdownConverted()
-    ingestor.convert_directory(input_dir, output_dir)
+    
+    print(ingestor.convert_pdf(input_dir, output_dir))
+
 

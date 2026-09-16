@@ -8,5 +8,6 @@ create table document_chunks (
     content text not null,
     metadata jsonb default '{}'::jsonb,
     embedding extensions.vector(384) not null,
-    created_at timestamptz default now()
+    created_at timestamptz default now(),
+    token_measurement,
 );

@@ -2,8 +2,6 @@ import os
 
 import psycopg
 from dotenv import load_dotenv
-
-from core.ingest.semantic_chunker import SemanticDocumentChunker
 from psycopg.types.json import Jsonb
 from pgvector.psycopg import register_vector
 from pathlib import Path
@@ -88,6 +86,7 @@ class VectorRepository:
             return cur.fetchall()
                 
 if __name__ == "__main__":
+    from core.chunking.semantic_chunker import SemanticDocumentChunker
     repo_root = Path(__file__).resolve().parents[3]
     test_path = repo_root / "src" /"data"/"processed" / "pdf2md" / "2024_Apple.md"
 

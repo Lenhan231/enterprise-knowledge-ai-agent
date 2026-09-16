@@ -1,3 +1,5 @@
+# src/core/chunking/semantic_chunker.py
+
 from pathlib import Path
 
 from langchain_core.documents import Document
@@ -45,15 +47,22 @@ class SemanticDocumentChunker:
         return splitter.create_documents([markdown_content])
 
 if __name__ == "__main__":
+    from core.models.document import ChunkMetadata
     repo_root = Path(__file__).resolve().parents[3]
     test_path = repo_root / "src" /"data"/"processed" / "pdf2md" / "2024_Apple.md"
 
-    chunker = SemanticDocumentChunker()
-    chunks = chunker.chunk(test_path)
-    for i, chunk in enumerate(chunks[:4]):
-        print(f"\n===== CHUNK {i + 1} =====")
-        print(f"Characters: {len(chunk.page_content)}")
-        print(chunk.page_content)
-        print("=" * 80)
-        vector = chunker.embeddings.embed_query(chunk.page_content)
-        print(len(vector))
+    splitter = SemanticDocumentChunker()
+    chunks = splitter.chunk(test_path)
+    print(chunks[:1])
+
+    # for chunk_index, chunk in enumerate(chunks[:3]):
+    #     chunk.metadata = ChunkMetadata{
+    #         "document_id": document_id,
+    #         "source_document": ...,
+    #         "document_type": ...,
+    #         "page_number": ...,
+    #         "chunk_index": chunk_index,
+    #         "section_title": ...,
+    #         "parent_id": ...,
+    #         "token_count": ...,
+    #     }

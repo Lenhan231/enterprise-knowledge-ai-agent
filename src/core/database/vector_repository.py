@@ -67,7 +67,7 @@ class VectorRepository:
                             limit: int)->tuple:
         """
         Comparation betweet question with the vector in database, set threshold for scoring
-        and top-k basic use Cosine distance
+        and top-k basic use Cosine distance, return the most similar chunks in descending order
 
         Arg:
             query_embedding: the query embedded by the same model embedded for the vector database
@@ -77,16 +77,26 @@ class VectorRepository:
         with self.conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT  chunk_index,
-                        left(content,150) AS content_preview,
+                SELECT  document_name,
+                        content,
+                        chunk_index,
+                        metadata,
                         1 - (embedding <=> %s) AS similarity_score
                 FROM document_chunks 
-                ORDER BY embedding <=> %s
+                ORDER BY embedding <=> %s ASC
                 LIMIT %s;
-                """,(query_vector, query_vector, limit)
+                """,(query_vector, query_vector, limit),
             )
-            return cur.fetchall()
-                
+            rows = cur.fetchall()
+
+        return [(
+            row[0],  # document_name    
+            row[1],  # content
+            row[2],  # chunk_index
+            row[3],  # metadata
+            row[4]   # similarity_score
+        ) for row in rows]
+
 if __name__ == "__main__":
     repo_root = Path(__file__).resolve().parents[3]
     test_path = repo_root / "src" /"data"/"processed" / "pdf2md" / "2024_Apple.md"

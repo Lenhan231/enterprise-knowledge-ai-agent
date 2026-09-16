@@ -11,8 +11,7 @@ class RAGService:
 
     def retrieve(self, question: str, limit: int = 5) -> dict:
         query_embedding = self.chunker.embeddings.embed_query(question)
-        results = self.repository.similarity_search(query_embedding, limit)
-        contexts = [result[1] for result in results]
+        contexts = self.repository.similarity_search(query_embedding, limit)
         return {
             "question": question,
             "contexts": contexts
@@ -22,7 +21,12 @@ class RAGService:
         retrieved = self.retrieve(question, limit)
         contexts = retrieved["contexts"]
 
-        context = ". ".join(contexts)
+        for index, item in enumerate(contexts):
+            print(f"RESULT {index}: type={type(item)} value={item!r}")
+
+        context = "\n\n".join(item[1] if isinstance(item, tuple) else str(item) for item in contexts[:3])
+        context = context[:24000]
+
         print(context)
 
         prompt = f"""You are an expert Enterprise Assistant. 
@@ -36,5 +40,6 @@ class RAGService:
 
 if __name__ == "__main__":
     rag = RAGService()
-    question = "What were Apple’s total net sales in 2024, and how did they compare with 2023?"
+    question = "tell me about Apple's Share repurchase activity during the three months"
     print(rag.generate_answer(question, 5))
+    print(rag.generate_answer("What were Apple's share repurchases during the three months ended September 28, 2024?", 3))

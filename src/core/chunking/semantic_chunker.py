@@ -24,6 +24,15 @@ class SemanticDocumentChunker:
         """
         return Path(markdown_file).read_text(encoding="utf-8")
 
+    def chunk_text(self, page_text: str):
+        splitter = SemanticChunker(
+                    embeddings=self.embeddings,
+                    breakpoint_threshold_type="percentile"
+                    )
+        
+        return splitter.create_documents([page_text])
+        
+
     def chunk(self,
             markdown_file: str
             ) -> list[Document]:
@@ -45,6 +54,7 @@ class SemanticDocumentChunker:
             )
 
         return splitter.create_documents([markdown_content])
+
 
 if __name__ == "__main__":
     from core.models.document import ChunkMetadata

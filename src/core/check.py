@@ -3,6 +3,7 @@
 from core.chunking.semantic_chunker import SemanticDocumentChunker
 from core.document_processing.pdf_to_markdown import PDFtoMarkdownConverted
 from core.models.document import ChunkMetadata
+from core.document_processing.ingest_documents import ChunkMetadataBuilder
 from uuid import uuid4
 from dataclasses import asdict
 
@@ -27,7 +28,7 @@ if __name__ == "__main__":
 
         document_id = str(uuid4())
         for chunk_index, chunk in enumerate(chunks):
-            metadata = ChunkMetadata(
+            metadata = ChunkMetadataBuilder.build(
                 source_document=input_dir.name,
                 document_type=file_type.lstrip("."),
                 page_number=None,

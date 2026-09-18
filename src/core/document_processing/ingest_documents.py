@@ -18,7 +18,13 @@ class Ingestion:
         self.PDFconverter = PDFtoMarkdownConverted()
 
         
-    def ingestion(self, input_path: Path, output_dir: Path):
+    def ingestion(
+        self,
+        input_path: Path,
+        output_dir: Path,
+        extra_metadata: dict | None = None,
+        document_id: str | None = None,
+    ):
 
         if not input_path.exists():
             raise FileNotFoundError(f"File does not exist: {input_path}")
@@ -30,7 +36,7 @@ class Ingestion:
                         input_path,
                         output_dir
                     )
-        document_id = str(uuid4())
+        document_id = document_id or str(uuid4())
         chunk_index = 0
         all_chunks = []
 
@@ -53,6 +59,7 @@ class Ingestion:
                 )
 
                 chunk.metadata = asdict(metadata)
+                chunk.metadata.update(extra_metadata or {})
 
                 all_chunks.append(chunk)
 

@@ -1,5 +1,5 @@
-create extension if not exists vector
-with schema extensions;
+create schema if not exists extensions;
+create extension if not exists vector with schema extensions;
 
 create table document_chunks (
     id bigint generated always as identity primary key,
@@ -9,5 +9,8 @@ create table document_chunks (
     metadata jsonb default '{}'::jsonb,
     embedding extensions.vector(384) not null,
     created_at timestamptz default now(),
-    token_measurement,
+    unique (document_name, chunk_index)
 );
+
+create index if not exists document_chunks_embedding_hnsw_idx
+on document_chunks using hnsw (embedding extensions.vector_cosine_ops);

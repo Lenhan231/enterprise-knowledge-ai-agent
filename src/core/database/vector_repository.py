@@ -60,6 +60,29 @@ class VectorRepository:
             )
             self.conn.commit()
 
+    def replace_document(self, document_name: str, chunks: list[tuple]) -> None:
+        """Atomically replace all chunks belonging to one source document."""
+        with self.conn.transaction(), self.conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM document_chunks WHERE document_name = %s",
+                (document_name,),
+            )
+            cur.executemany(
+                """
+                INSERT INTO document_chunks (
+                    document_name, chunk_index, content, metadata, embedding
+                )
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                [
+                    (name, index, content, Jsonb(metadata), embedding)
+                    for name, index, content, metadata, embedding in chunks
+                ],
+            )
+
+    def close(self) -> None:
+        self.conn.close()
+
     def similarity_search(self,
                             query_embedding: list[float],
                             limit: int)->tuple:
@@ -75,8 +98,10 @@ class VectorRepository:
         with self.conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT  chunk_index,
-                        left(content,150) AS content_preview,
+                SELECT  document_name,
+                        chunk_index,
+                        content,
+                        metadata,
                         1 - (embedding <=> %s) AS similarity_score
                 FROM document_chunks 
                 ORDER BY embedding <=> %s

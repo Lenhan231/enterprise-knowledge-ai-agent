@@ -12,7 +12,16 @@ class RAGService:
     def retrieve(self, question: str, limit: int = 5) -> dict:
         query_embedding = self.chunker.embeddings.embed_query(question)
         results = self.repository.similarity_search(query_embedding, limit)
-        contexts = [result[1] for result in results]
+        contexts = [
+            {
+                "document_name": result[0],
+                "chunk_index": result[1],
+                "content": result[2],
+                "metadata": result[3],
+                "similarity_score": float(result[4]),
+            }
+            for result in results
+        ]
         return {
             "question": question,
             "contexts": contexts
@@ -22,7 +31,7 @@ class RAGService:
         retrieved = self.retrieve(question, limit)
         contexts = retrieved["contexts"]
 
-        context = ". ".join(contexts)
+        context = "\n\n".join(item["content"] for item in contexts)
         print(context)
 
         prompt = f"""You are an expert Enterprise Assistant. 

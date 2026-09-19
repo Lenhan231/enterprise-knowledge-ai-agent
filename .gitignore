@@ -8,8 +8,11 @@ build/
 *.log
 /.idea
 /.vscode
+<<<<<<< HEAD
 */tests
+=======
 
 # Reproducible corpus artifacts (download from the committed manifest).
 /data/raw/apple/**/*.pdf
 /data/processed/apple/**/*.md
+>>>>>>> eca62225cf753bf2931f5ba76f3b7953f9265faf

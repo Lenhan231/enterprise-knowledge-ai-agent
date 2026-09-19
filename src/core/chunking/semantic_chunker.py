@@ -54,26 +54,3 @@ class SemanticDocumentChunker:
             )
 
         return splitter.create_documents([markdown_content])
-
-
-if __name__ == "__main__":
-    from core.models.document import ChunkMetadata
-    repo_root = Path(__file__).resolve().parents[3]
-    test_path = repo_root / "src" /"data"/"processed" / "pdf2md" / "2024_Apple.md"
-
-    splitter = SemanticDocumentChunker()
-    chunks = splitter.chunk(test_path)
-    print(chunks[:1])
-
-    
-    # for chunk_index, chunk in enumerate(chunks):
-    #     metadata = ChunkMetadata(
-    #         source_document=test_path,
-    #         document_type=document_type,
-    #         page_number=None,
-    #         chunk_index=chunk_index,
-    #         section_title=None,
-    #         parent_id=None,
-    #         token_count=...,
-    #         document_id=document_id,
-    #     )

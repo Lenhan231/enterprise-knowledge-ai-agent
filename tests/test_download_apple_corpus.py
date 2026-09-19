@@ -9,7 +9,9 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 from download_apple_corpus import DEFAULT_IDS, read_manifest, safe_filename
 
 
-MANIFEST = REPO_ROOT / "src/data/Apple/FA26AI69_Apple_Corpus_Manifest_v1.xlsx"
+MANIFEST = (
+    REPO_ROOT / "data/manifests/apple/FA26AI69_Apple_Corpus_Manifest_v1.xlsx"
+)
 
 
 class DownloadAppleCorpusTest(unittest.TestCase):

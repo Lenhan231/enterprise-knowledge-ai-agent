@@ -25,7 +25,7 @@ class PDFtoMarkdownConverted:
                                                     show_progress=True)
 
         all_text = ""
-        for page in markdown_content[:2]:
+        for page in markdown_content:
             all_text += page['text'] + "\n\n"
 
         markdown_file = output_path / f"{pdf_file.stem}.md"
@@ -61,16 +61,5 @@ class PDFtoMarkdownConverted:
             generated_files.append(self.convert_pdf(pdf_file, output_dir_path))
 
         return generated_files
-
-
-if __name__ == "__main__":
-    repo_root = Path(__file__).resolve().parents[3]
-
-    input_dir = repo_root / "src" / "data" / "raws" / "pdf" / "2024_Apple.pdf"
-    output_dir = repo_root / "src" / "data" / "processed" / "pdf2md"
-
-    ingestor = PDFtoMarkdownConverted()
-    markdown_path = ingestor.convert_pdf(input_dir, output_dir)
-
 
 

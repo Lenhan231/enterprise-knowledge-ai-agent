@@ -72,16 +72,3 @@ class Ingestion:
             )
 
         return all_chunks
-
-if __name__ == "__main__":
-    repo_root = Path(__file__).resolve().parents[3]
-    input_path = repo_root / "src" /"data" /"raws" /"pdf" / "2024_Apple.pdf"
-    output_dir = repo_root / "src" / "data" / "processed" / "pdf2md"
-
-    ingestor = Ingestion()
-    chunks = ingestor.ingestion(input_path, output_dir)        
-
-    for chunk in chunks[:3]:
-        print(chunk.page_content[:10])
-        print(chunk.metadata)
-        print("-" * 50)

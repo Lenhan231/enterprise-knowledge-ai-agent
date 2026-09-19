@@ -1,7 +1,7 @@
 # Apple corpus
 
 The raw Apple corpus is reproducible from the committed manifest at
-`src/data/Apple/FA26AI69_Apple_Corpus_Manifest_v1.xlsx`. Large downloaded PDFs
+`data/manifests/apple/FA26AI69_Apple_Corpus_Manifest_v1.xlsx`. Large downloaded PDFs
 and generated Markdown files are intentionally ignored by Git.
 
 ## Five-document vertical slice

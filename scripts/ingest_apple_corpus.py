@@ -22,7 +22,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--manifest",
         type=Path,
-        default=Path("src/data/Apple/FA26AI69_Apple_Corpus_Manifest_v1.xlsx"),
+        default=Path("data/manifests/apple/FA26AI69_Apple_Corpus_Manifest_v1.xlsx"),
     )
     return parser.parse_args()
 

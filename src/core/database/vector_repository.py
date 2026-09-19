@@ -4,7 +4,6 @@ import psycopg
 from dotenv import load_dotenv
 from psycopg.types.json import Jsonb
 from pgvector.psycopg import register_vector
-from pathlib import Path
 import numpy as np
 
 load_dotenv()
@@ -109,26 +108,3 @@ class VectorRepository:
                 """,(query_vector, query_vector, limit)
             )
             return cur.fetchall()
-                
-if __name__ == "__main__":
-    from core.chunking.semantic_chunker import SemanticDocumentChunker
-    repo_root = Path(__file__).resolve().parents[3]
-    test_path = repo_root / "src" /"data"/"processed" / "pdf2md" / "2024_Apple.md"
-
-    chunker = SemanticDocumentChunker()
-    repo = VectorRepository()
-    # chunks = chunker.chunk(test_path)
-
-    # for chunk_index, chunk in enumerate(chunks):
-    #     document_name = test_path.napgvectorme
-    #     content = chunk.page_content
-    #     metadata = chunk.metadata
-    #     vector = chunker.embeddings.embed_query(content)
-    #     repo.insert_chunk(document_name,chunk_index,content,metadata,vector)
-    
-    query = "What were Apple’s total net sales in 2024, and how did they compare with 2023?"
-    query_embedding = chunker.embeddings.embed_query(query)
-    results = repo.similarity_search(query_embedding, 5)
-
-    for row in results:
-        print(row)

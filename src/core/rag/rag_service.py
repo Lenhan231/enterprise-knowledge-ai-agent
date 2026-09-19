@@ -1,6 +1,7 @@
 # src/core/rag/rag_service.py
 from core.llm.groq_provider import GroqProvider
 from core.retrieval import RetrievalService
+from core.rag.prompts import ENTERPRISE_ASSISTANT_PROMPT
 
 class RAGService:
     def __init__(
@@ -18,12 +19,7 @@ class RAGService:
         context = "\n\n".join(item["content"] for item in contexts)
         print(context)
 
-        prompt = f"""You are an expert Enterprise Assistant. 
-        Use the following context from corporate reports 
-        to answer the user's question. 
-        If the context does not contain relevant information, politely indicate that you do not have enough data.
-        \n\nContext:\n{context}\n\nUser Question: {question}\n\nAnswer:
-        """
+        prompt = ENTERPRISE_ASSISTANT_PROMPT.format(context=context, question=question)
 
         return self.llm.generate(prompt)
 

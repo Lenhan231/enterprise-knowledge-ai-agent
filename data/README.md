@@ -29,7 +29,8 @@ Conduct. The downloader validates the PDF signature and skips existing files;
 pass `--force` to download them again.
 
 With `DATABASE_URL` pointing to a PostgreSQL database with pgvector and the
-schema in `src/database/migrations/001_create_document_chunks.sql` applied, run:
+schema in `src/database/migrations/001_create_document_chunks.sql` applied, set
+`EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2` and run:
 
 ```bash
 UV_CACHE_DIR=/tmp/uv-cache uv run python scripts/ingest_apple_corpus.py

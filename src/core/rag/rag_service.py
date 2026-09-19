@@ -1,34 +1,17 @@
-# src/core/rag/rag_service.py
-from core.chunking.semantic_chunker import SemanticDocumentChunker
-from core.database.vector_repository import VectorRepository
 from core.llm.groq_provider import GroqProvider
+from core.retrieval import RetrievalService
 
 class RAGService:
-    def __init__(self):
-        self.chunker = SemanticDocumentChunker()
-        self.repository = VectorRepository()
-        self.llm = GroqProvider()
-
-    def retrieve(self, question: str, limit: int = 5) -> dict:
-        query_embedding = self.chunker.embeddings.embed_query(question)
-        results = self.repository.similarity_search(query_embedding, limit)
-        contexts = [
-            {
-                "document_name": result[0],
-                "chunk_index": result[1],
-                "content": result[2],
-                "metadata": result[3],
-                "similarity_score": float(result[4]),
-            }
-            for result in results
-        ]
-        return {
-            "question": question,
-            "contexts": contexts
-        }
+    def __init__(
+        self,
+        retrieval_service: RetrievalService | None = None,
+        llm: GroqProvider | None = None,
+    ):
+        self.retrieval_service = retrieval_service or RetrievalService()
+        self.llm = llm or GroqProvider()
 
     def generate_answer(self, question: str, limit: int = 5) -> str:
-        retrieved = self.retrieve(question, limit)
+        retrieved = self.retrieval_service.retrieve(question, limit)
         contexts = retrieved["contexts"]
 
         context = "\n\n".join(item["content"] for item in contexts)
@@ -42,6 +25,9 @@ class RAGService:
         """
 
         return self.llm.generate(prompt)
+
+    def close(self) -> None:
+        self.retrieval_service.close()
 
 if __name__ == "__main__":
     rag = RAGService()

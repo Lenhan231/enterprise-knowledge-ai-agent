@@ -55,15 +55,18 @@ def main() -> int:
                     "official_url": manifest["official_url"],
                 },
             )
+            embeddings = ingestor.embedding_service.embed_documents(
+                [chunk.page_content for chunk in chunks]
+            )
             rows = [
                 (
                     pdf.name,
                     chunk.metadata["chunk_index"],
                     chunk.page_content,
                     chunk.metadata,
-                    ingestor.splitter.embeddings.embed_query(chunk.page_content),
+                    embedding,
                 )
-                for chunk in chunks
+                for chunk, embedding in zip(chunks, embeddings, strict=True)
             ]
             repository.replace_document(pdf.name, rows)
             print(f"ingested {pdf.name}: {len(rows)} chunks")

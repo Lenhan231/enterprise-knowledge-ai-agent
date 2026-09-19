@@ -2,6 +2,7 @@
 
 from core.chunking.semantic_chunker import SemanticDocumentChunker
 from core.document_processing.pdf_to_markdown import PDFtoMarkdownConverted
+from core.embeddings import EmbeddingService
 from core.models.document import ChunkMetadata
 from uuid import uuid4
 from dataclasses import asdict
@@ -10,11 +11,10 @@ from core.utils.token_counter import TokenCounter
 from pathlib import Path
 
 class Ingestion:
-    def __init__(self):
-        self.token_counter = TokenCounter(
-                    "sentence-transformers/all-MiniLM-L6-v2"
-                )
-        self.splitter = SemanticDocumentChunker()
+    def __init__(self, embedding_service: EmbeddingService | None = None):
+        self.embedding_service = embedding_service or EmbeddingService()
+        self.token_counter = TokenCounter(self.embedding_service.model_name)
+        self.splitter = SemanticDocumentChunker(self.embedding_service)
         self.PDFconverter = PDFtoMarkdownConverted()
 
         

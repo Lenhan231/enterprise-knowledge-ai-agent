@@ -11,7 +11,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from core.rag.rag_service import RAGService  # noqa: E402
+from core.retrieval import RetrievalService  # noqa: E402
 
 
 QUESTIONS = (
@@ -26,10 +26,10 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=5)
     args = parser.parse_args()
-    rag = RAGService()
+    retrieval = RetrievalService()
     try:
         for question in QUESTIONS:
-            result = rag.retrieve(question, args.limit)
+            result = retrieval.retrieve(question, args.limit)
             print(f"\nQUESTION: {question}")
             for rank, context in enumerate(result["contexts"], start=1):
                 compact = " ".join(context["content"].split())[:240]
@@ -46,7 +46,7 @@ def main() -> int:
                     )
                 )
     finally:
-        rag.repository.close()
+        retrieval.close()
     return 0
 
 

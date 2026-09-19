@@ -3,17 +3,13 @@
 from pathlib import Path
 
 from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
 from langchain_experimental.text_splitter import SemanticChunker
-from langchain_huggingface import HuggingFaceEmbeddings
-
-from dotenv import load_dotenv
-load_dotenv()
+from core.embeddings import EmbeddingService
 
 class SemanticDocumentChunker:
-    def __init__(self):
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2"
-        )
+    def __init__(self, embeddings: Embeddings | None = None):
+        self.embeddings = embeddings or EmbeddingService()
 
     def read_markdown(self, markdown_file: str) -> str:
         """

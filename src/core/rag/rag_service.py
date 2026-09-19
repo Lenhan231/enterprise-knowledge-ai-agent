@@ -1,6 +1,7 @@
 # src/core/rag/rag_service.py
 from core.ingest.semantic_chunker import SemanticDocumentChunker
 from core.database.vector_repository import VectorRepository
+
 from core.llm.groq_provider import GroqProvider
 
 class RAGService:

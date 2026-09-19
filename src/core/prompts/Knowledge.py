@@ -1,4 +1,4 @@
-# src/core/rag/prompts.py
+# src/core/prompts/Knowledge.py
 
 ENTERPRISE_ASSISTANT_PROMPT = """You are an expert Enterprise Assistant. 
 Use the following context from corporate reports 

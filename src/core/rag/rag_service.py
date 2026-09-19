@@ -1,7 +1,7 @@
 # src/core/rag/rag_service.py
 from core.llm.groq_provider import GroqProvider
 from core.retrieval import RetrievalService
-from core.rag.prompts import ENTERPRISE_ASSISTANT_PROMPT
+from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT
 
 class RAGService:
     def __init__(

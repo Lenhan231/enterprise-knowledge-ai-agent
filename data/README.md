@@ -1,8 +1,9 @@
 # Apple corpus
 
-The raw Apple corpus is reproducible from the committed manifest at
-`data/manifests/apple/FA26AI69_Apple_Corpus_Manifest_v1.xlsx`. Large downloaded PDFs
-and generated Markdown files are intentionally ignored by Git.
+The raw Apple corpus is reproducible from the project Google Sheet. A local
+snapshot is also committed at
+`data/manifests/apple/FA26AI69_Apple_Corpus_Manifest_v1.xlsx`. Large downloaded
+PDFs and generated Markdown files are intentionally ignored by Git.
 
 ## Five-document vertical slice
 
@@ -11,6 +12,31 @@ Download the initial corpus:
 ```bash
 python scripts/download_apple_corpus.py
 ```
+
+Download all rows from the manifest instead of the default five-document
+vertical slice:
+
+```bash
+python scripts/download_apple_corpus.py --all
+```
+
+Download one or more specific document IDs:
+
+```bash
+python scripts/download_apple_corpus.py --ids APL-PRC-013
+```
+
+The project Google Sheet is the default manifest. Another public sheet or the
+local snapshot can be selected explicitly:
+
+```bash
+python scripts/download_apple_corpus.py --manifest path/to/manifest.xlsx
+```
+
+The sheet must be accessible to anyone with the link. The downloader uses
+Google's XLSX export endpoint, preferring a worksheet named `Manifest` and
+otherwise reading the first worksheet. Restricted sheets require an
+authenticated Google API integration and are not supported by this command.
 
 This creates:
 
@@ -27,6 +53,16 @@ The default selection is Business Conduct Policy, Anti-Corruption Policy,
 Third Party Code of Conduct, Apple Purchase Order Terms, and Supplier Code of
 Conduct. The downloader validates the PDF signature and skips existing files;
 pass `--force` to download them again.
+
+Manifest rows declared as HTML (or multi-format landing pages ending in
+`.html`/`.aspx`) are saved as `.html`; PDF rows retain signature validation.
+Image rows support JPEG, PNG, GIF, WebP, TIFF, and SVG with signature
+validation. Format handling is split into independent modules under
+`scripts/source_downloaders/`; register additional source types in
+`registry.py` without changing the command-line workflow.
+When using `--all`, a failed source is reported and the remaining documents are
+still attempted. The command exits with status 1 if any downloads failed and
+prints a summary when complete.
 
 With `DATABASE_URL` pointing to a PostgreSQL database with pgvector and the
 schema in `src/database/migrations/001_create_document_chunks.sql` applied, set

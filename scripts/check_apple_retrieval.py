@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# scripts/check_apple_retrieval.py
 """Run the cross-document retrieval checkpoint for the Apple corpus."""
 
 from __future__ import annotations

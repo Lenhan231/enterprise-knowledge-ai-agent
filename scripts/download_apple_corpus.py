@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Download selected Apple documents from the committed XLSX manifest."""
+"""Download Apple documents from a local XLSX or public Google Sheet."""
 
 from __future__ import annotations
 
@@ -10,8 +10,11 @@ import sys
 import tempfile
 import urllib.request
 from pathlib import Path
+from urllib.parse import parse_qs, urlencode, urlparse
 from xml.etree import ElementTree as ET
 from zipfile import ZipFile
+
+from source_downloaders import download_source, source_extension
 
 
 DEFAULT_IDS = (
@@ -22,12 +25,37 @@ DEFAULT_IDS = (
     "APL-SUP-001",
 )
 
+DEFAULT_MANIFEST = (
+    "https://docs.google.com/spreadsheets/d/"
+    "10IYB7P7G7LK_AX15Jhlq0LZwMla--x1PH8UtLRWAd28/edit?gid=0#gid=0"
+)
+
 # The manifest intentionally records landing pages for documents whose direct
 # URLs can move. Pin the resolved English PDF used by this vertical slice.
 RESOLVED_URLS = {
+    "APL-ENV-001": (
+        "https://www.apple.com/environment/pdf/"
+        "Apple_Environmental_Progress_Report_2026.pdf"
+    ),
+    "APL-ENV-004": (
+        "https://www.apple.com/environment/pdf/"
+        "Apple_Environmental_Progress_Report_2023.pdf"
+    ),
+    "APL-ENV-005": (
+        "https://www.apple.com/environment/pdf/"
+        "Apple_Environmental_Progress_Report_2022.pdf"
+    ),
     "APL-SUP-001": (
         "https://www.supplychainreports.apple/"
         "Supplier-Code-of-Conduct-and-Supplier-Responsibility-Standards"
+    ),
+    "APL-SUP-002": (
+        "https://s203.q4cdn.com/367071867/files/doc_downloads/gov_docs/2026/"
+        "Apple-Supply-Chain-2026-Progress-Report.pdf"
+    ),
+    "APL-SUP-003": (
+        "https://s203.q4cdn.com/367071867/files/doc_downloads/"
+        "PeopleandEnvironment/2025/Apple-Supply-Chain-2025-Progress-Report.pdf"
     ),
 }
 
@@ -58,7 +86,28 @@ def _cell_text(cell: ET.Element, shared: list[str]) -> str:
     return shared[int(value.text)] if cell_type == "s" else value.text
 
 
-def read_manifest(path: Path) -> list[dict[str, str]]:
+def google_sheets_export_url(url: str) -> str:
+    """Convert a Google Sheets sharing URL to its XLSX export endpoint."""
+    parsed = urlparse(url)
+    if parsed.netloc not in {"docs.google.com", "www.docs.google.com"}:
+        raise ValueError(f"Not a Google Sheets URL: {url}")
+    match = re.search(r"/spreadsheets/d/([a-zA-Z0-9_-]+)", parsed.path)
+    if match is None:
+        raise ValueError(f"Could not find a spreadsheet ID in URL: {url}")
+
+    query = parse_qs(parsed.query)
+    fragment = parse_qs(parsed.fragment)
+    gid = (query.get("gid") or fragment.get("gid") or [None])[0]
+    parameters = {"format": "xlsx"}
+    if gid:
+        parameters["gid"] = gid
+    return (
+        f"https://docs.google.com/spreadsheets/d/{match.group(1)}/export?"
+        f"{urlencode(parameters)}"
+    )
+
+
+def _read_xlsx_manifest(path: Path) -> list[dict[str, str]]:
     """Read the Manifest sheet without adding a spreadsheet dependency."""
     with ZipFile(path) as archive:
         shared: list[str] = []
@@ -83,11 +132,14 @@ def read_manifest(path: Path) -> list[dict[str, str]]:
         sheets = workbook.find("m:sheets", XML_NS)
         if sheets is None:
             raise ValueError("Workbook has no sheets")
+        # Prefer the conventional name, but accept the first worksheet for
+        # Google Sheets (whose default tab name is locale-dependent).
         sheet = next(
-            item
-            for item in sheets
-            if item.attrib["name"] == "Manifest"
+            (item for item in sheets if item.attrib["name"] == "Manifest"),
+            sheets[0] if len(sheets) else None,
         )
+        if sheet is None:
+            raise ValueError("Workbook has no worksheets")
         relationship_id = sheet.attrib[f"{{{XML_NS['r']}}}id"]
         target = targets[relationship_id].lstrip("/")
         if not target.startswith("xl/"):
@@ -114,59 +166,98 @@ def read_manifest(path: Path) -> list[dict[str, str]]:
     return [dict(zip(headers, row, strict=False)) for row in rows[1:]]
 
 
-def safe_filename(document: dict[str, str]) -> str:
-    slug = re.sub(r"[^a-z0-9]+", "_", document["title"].lower()).strip("_")
-    return f"{document['document_id'].lower()}_{slug}.pdf"
+def read_manifest(source: Path | str) -> list[dict[str, str]]:
+    """Read a local XLSX file or a publicly accessible Google Sheet."""
+    source_text = str(source)
+    if not source_text.startswith(("https://", "http://")):
+        return _read_xlsx_manifest(Path(source))
 
-
-def download(url: str, destination: Path, force: bool = False) -> str:
-    if destination.exists() and not force:
-        return "exists"
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    request = urllib.request.Request(url, headers={"User-Agent": "AppleCorpusDownloader/1.0"})
+    export_url = google_sheets_export_url(source_text)
+    request = urllib.request.Request(
+        export_url,
+        headers={"User-Agent": "AppleCorpusDownloader/1.0"},
+    )
     with urllib.request.urlopen(request, timeout=90) as response, tempfile.NamedTemporaryFile(
-        dir=destination.parent, delete=False
+        suffix=".xlsx", delete=False
     ) as temporary:
         shutil.copyfileobj(response, temporary)
         temporary_path = Path(temporary.name)
     try:
-        if temporary_path.read_bytes()[:5] != b"%PDF-":
-            raise ValueError(f"Downloaded content is not a PDF: {url}")
-        temporary_path.replace(destination)
+        return _read_xlsx_manifest(temporary_path)
     finally:
         temporary_path.unlink(missing_ok=True)
-    return "downloaded"
+
+
+def document_extension(document: dict[str, str]) -> str:
+    """Choose a storage extension using the registered source downloader."""
+    return source_extension(document)
+
+
+def safe_filename(document: dict[str, str]) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "_", document["title"].lower()).strip("_")
+    return f"{document['document_id'].lower()}_{slug}{document_extension(document)}"
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--manifest",
-        type=Path,
-        default=Path("data/manifests/apple/FA26AI69_Apple_Corpus_Manifest_v1.xlsx"),
+        default=DEFAULT_MANIFEST,
+        help="Local XLSX path or public docs.google.com/spreadsheets URL",
     )
     parser.add_argument("--output", type=Path, default=Path("data/raw/apple"))
-    parser.add_argument("--ids", nargs="+", default=list(DEFAULT_IDS))
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument(
+        "--ids",
+        nargs="+",
+        metavar="DOCUMENT_ID",
+        help="Download only these document IDs (replaces the default selection)",
+    )
+    selection.add_argument(
+        "--all",
+        action="store_true",
+        help="Download every document in the manifest",
+    )
     parser.add_argument("--force", action="store_true")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    documents = {row["document_id"]: row for row in read_manifest(args.manifest)}
-    missing = [document_id for document_id in args.ids if document_id not in documents]
+    manifest_rows = read_manifest(args.manifest)
+    documents = {row["document_id"]: row for row in manifest_rows}
+    selected_ids = (
+        list(documents)
+        if args.all
+        else args.ids if args.ids is not None else list(DEFAULT_IDS)
+    )
+    missing = [document_id for document_id in selected_ids if document_id not in documents]
     if missing:
         print(f"Unknown document IDs: {', '.join(missing)}", file=sys.stderr)
         return 2
 
-    for document_id in args.ids:
+    downloaded = 0
+    existing = 0
+    failures: list[tuple[str, str]] = []
+    for document_id in selected_ids:
         document = documents[document_id]
-        domain = DOMAIN_DIRS[document["domain"]]
-        destination = args.output / domain / safe_filename(document)
-        url = RESOLVED_URLS.get(document_id, document["official_url"])
-        status = download(url, destination, args.force)
-        print(f"{status:10} {document_id} -> {destination}")
-    return 0
+        try:
+            domain = DOMAIN_DIRS[document["domain"]]
+            destination = args.output / domain / safe_filename(document)
+            url = RESOLVED_URLS.get(document_id, document["official_url"])
+            status = download_source(document, url, destination, args.force)
+            downloaded += status == "downloaded"
+            existing += status == "exists"
+            print(f"{status:10} {document_id} -> {destination}")
+        except Exception as error:
+            failures.append((document_id, str(error)))
+            print(f"failed     {document_id} -> {error}", file=sys.stderr)
+
+    print(
+        f"Summary: {downloaded} downloaded, {existing} existing, "
+        f"{len(failures)} failed"
+    )
+    return 1 if failures else 0
 
 
 if __name__ == "__main__":

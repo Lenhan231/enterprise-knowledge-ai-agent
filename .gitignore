@@ -9,3 +9,7 @@ build/
 /.idea
 /.vscode
 */tests
+
+# Reproducible corpus artifacts (download from the committed manifest).
+/data/raw/apple/**/*.pdf
+/data/processed/apple/**/*.md

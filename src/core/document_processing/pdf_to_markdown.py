@@ -3,7 +3,7 @@ import pymupdf4llm
 
 
 class PDFtoMarkdownConverted:
-    def convert_pdf(self, pdf_path: str | Path, output_dir: str | Path) -> str:
+    def convert_pdf(self, pdf_path: str | Path, output_dir: str | Path) -> list[dict]:
         """
         convert a pdf to markdown 
         Args:
@@ -20,15 +20,22 @@ class PDFtoMarkdownConverted:
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
 
-        markdown_content = pymupdf4llm.to_markdown(str(pdf_file), show_progress=True)
+        markdown_content = pymupdf4llm.to_markdown(str(pdf_file),
+                                                   page_chunks=True,
+                                                    show_progress=True)
+
+        all_text = ""
+        for page in markdown_content:
+            all_text += page['text'] + "\n\n"
+
         markdown_file = output_path / f"{pdf_file.stem}.md"
 
         markdown_file.write_text(
-            markdown_content,
+            all_text,
             encoding="utf-8"
         )
 
-        return str(markdown_file)
+        return markdown_content
 
     def convert_directory(self, dir_path: str | Path, output_dir: str | Path) -> list[str]:
         """
@@ -55,13 +62,4 @@ class PDFtoMarkdownConverted:
 
         return generated_files
 
-
-if __name__ == "__main__":
-    repo_root = Path(__file__).resolve().parents[3]
-
-    input_dir = repo_root / "src" / "data" / "raws" / "pdf" 
-    output_dir = repo_root / "src" / "data" / "processed" / "pdf2md"
-
-    ingestor = PDFtoMarkdownConverted()
-    ingestor.convert_directory(input_dir, output_dir)
 

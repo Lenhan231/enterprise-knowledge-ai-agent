@@ -23,3 +23,9 @@ Project layout
 - docker-compose.yml: local dev services (Postgres)
 
 See the source files for implementation stubs.
+
+## Dataset
+
+The reproducible Apple corpus workflow is documented in
+[`data/README.md`](data/README.md). Raw PDFs and generated Markdown are not
+committed.

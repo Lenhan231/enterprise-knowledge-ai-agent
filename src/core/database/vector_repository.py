@@ -2,11 +2,8 @@ import os
 
 import psycopg
 from dotenv import load_dotenv
-
-from core.ingest.semantic_chunker import SemanticDocumentChunker
 from psycopg.types.json import Jsonb
 from pgvector.psycopg import register_vector
-from pathlib import Path
 import numpy as np
 
 load_dotenv()
@@ -62,6 +59,29 @@ class VectorRepository:
             )
             self.conn.commit()
 
+    def replace_document(self, document_name: str, chunks: list[tuple]) -> None:
+        """Atomically replace all chunks belonging to one source document."""
+        with self.conn.transaction(), self.conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM document_chunks WHERE document_name = %s",
+                (document_name,),
+            )
+            cur.executemany(
+                """
+                INSERT INTO document_chunks (
+                    document_name, chunk_index, content, metadata, embedding
+                )
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                [
+                    (name, index, content, Jsonb(metadata), embedding)
+                    for name, index, content, metadata, embedding in chunks
+                ],
+            )
+
+    def close(self) -> None:
+        self.conn.close()
+
     def similarity_search(self,
                             query_embedding: list[float],
                             limit: int)->tuple:
@@ -78,8 +98,8 @@ class VectorRepository:
             cur.execute(
                 """
                 SELECT  document_name,
-                        content,
                         chunk_index,
+                        content,
                         metadata,
                         1 - (embedding <=> %s) AS similarity_score
                 FROM document_chunks 
@@ -87,34 +107,4 @@ class VectorRepository:
                 LIMIT %s;
                 """,(query_vector, query_vector, limit),
             )
-            rows = cur.fetchall()
-
-        return [(
-            row[0],  # document_name    
-            row[1],  # content
-            row[2],  # chunk_index
-            row[3],  # metadata
-            row[4]   # similarity_score
-        ) for row in rows]
-
-if __name__ == "__main__":
-    repo_root = Path(__file__).resolve().parents[3]
-    test_path = repo_root / "src" /"data"/"processed" / "pdf2md" / "2024_Apple.md"
-
-    chunker = SemanticDocumentChunker()
-    repo = VectorRepository()
-    # chunks = chunker.chunk(test_path)
-
-    # for chunk_index, chunk in enumerate(chunks):
-    #     document_name = test_path.napgvectorme
-    #     content = chunk.page_content
-    #     metadata = chunk.metadata
-    #     vector = chunker.embeddings.embed_query(content)
-    #     repo.insert_chunk(document_name,chunk_index,content,metadata,vector)
-    
-    query = "What were Apple’s total net sales in 2024, and how did they compare with 2023?"
-    query_embedding = chunker.embeddings.embed_query(query)
-    results = repo.similarity_search(query_embedding, 5)
-
-    for row in results:
-        print(row)
+            return cur.fetchall()

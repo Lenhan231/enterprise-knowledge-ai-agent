@@ -26,8 +26,9 @@ Download one or more specific document IDs:
 python scripts/download_apple_corpus.py --ids APL-PRC-013
 ```
 
-The project Google Sheet is the default manifest. Another public sheet or the
-local snapshot can be selected explicitly:
+The project Google Sheet is configured with
+`APPLE_CORPUS_MANIFEST_URL` in `.env`. Another public sheet or the local
+snapshot can be selected explicitly:
 
 ```bash
 python scripts/download_apple_corpus.py --manifest path/to/manifest.xlsx

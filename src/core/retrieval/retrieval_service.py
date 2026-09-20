@@ -2,8 +2,13 @@
 
 from __future__ import annotations
 
+from time import perf_counter
+
 from core.database.vector_repository import VectorRepository
 from core.embeddings import EmbeddingService
+from core.models.retrieval import (
+    RankedChunk, RetrievalRequest, RetrievalResponse, SourceLocation, make_chunk_id,
+)
 
 
 class RetrievalService:
@@ -15,20 +20,39 @@ class RetrievalService:
         self.embedding_service = embedding_service or EmbeddingService()
         self.repository = repository or VectorRepository()
 
-    def retrieve(self, question: str, limit: int = 5) -> dict:
-        query_embedding = self.embedding_service.embed_query(question)
-        results = self.repository.similarity_search(query_embedding, limit)
-        contexts = [
-            {
-                "document_name": result[0],
-                "chunk_index": result[1],
-                "content": result[2],
-                "metadata": result[3],
-                "similarity_score": float(result[4]),
-            }
-            for result in results
+    def retrieve(self, request: RetrievalRequest) -> RetrievalResponse:
+        """Rank typed chunks in repository order (cosine distance, then row ID).
+
+        Latency includes embedding, search and result mapping. Query text is
+        passed through unchanged; no legacy tuple or dictionary adapter is used.
+        """
+        if not isinstance(request, RetrievalRequest):
+            raise TypeError("request must be a RetrievalRequest")
+        started = perf_counter()
+        query_embedding = self.embedding_service.embed_query(request.query)
+        chunks = self.repository.similarity_search(query_embedding, request.top_k)
+        results = [
+            RankedChunk(
+                rank=rank,
+                chunk_id=make_chunk_id(chunk.document_id, chunk.chunk_index),
+                document_id=chunk.document_id,
+                text=chunk.content,
+                score=chunk.similarity_score,
+                source=chunk.document_name,
+                location=SourceLocation(
+                    chunk_index=chunk.chunk_index,
+                    page_number=chunk.metadata.get("page_number"),
+                    section_title=chunk.metadata.get("section_title"),
+                ),
+                metadata=chunk.metadata,
+            )
+            for rank, chunk in enumerate(chunks, start=1)
         ]
-        return {"question": question, "contexts": contexts}
+        return RetrievalResponse(
+            query=request.query,
+            latency_ms=(perf_counter() - started) * 1000,
+            results=results,
+        )
 
     def close(self) -> None:
         self.repository.close()

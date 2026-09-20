@@ -42,7 +42,8 @@ idempotent by document name.
 
 ## Retrieval checkpoint
 
-Use `RAGService.retrieve()` with these cross-document questions:
+Use `RetrievalService.retrieve(RetrievalRequest(query=question, top_k=5))`
+with these cross-document questions:
 
 ```text
 What standards must third parties working with Apple follow?
@@ -51,8 +52,8 @@ What requirements apply to supplier personnel?
 How does Apple's anti-corruption policy relate to third parties?
 ```
 
-Inspect `document_name`, `chunk_index`, `similarity_score`, and the full chunk
-content returned for each result before expanding to the rest of the manifest.
+Inspect `source`, `location.chunk_index`, `score`, and full `text` in each item of
+`RetrievalResponse.results` before expanding to the rest of the manifest.
 The repeatable checkpoint command is:
 
 ```bash

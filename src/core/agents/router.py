@@ -1,4 +1,4 @@
-from src.core.models.agents import AgentRequest, AgentResult
+from core.models.agents import AgentRequest, AgentResult
 
 class AgentRouter:
     def __init__(

@@ -1,5 +1,5 @@
 from core.agents.base import BaseAgent
-from core.models.agent import (
+from core.models.agents import (
     AgentRequest,
     AgentResult,
     Evidence,
@@ -44,3 +44,6 @@ class KnowledgeAgent(BaseAgent):
             agent="knowledge",
             evidence=evidence,
         )
+
+    def close(self) -> None:
+        self.rag.close()

@@ -9,10 +9,10 @@ class LLMInterface(ABC):
     def generate(self, prompt: str) -> str:
         pass
     
-    @abstractmethod
-    def generate_json(
-        self,
-        prompt: str,
-        schema: type[BaseModel],
-    ) -> BaseModel:
-        pass
+    # @abstractmethod
+    # def generate_json(
+    #     self,
+    #     prompt: str,
+    #     schema: type[BaseModel],
+    # ) -> BaseModel:
+    #     pass

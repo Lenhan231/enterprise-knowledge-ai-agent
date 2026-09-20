@@ -26,7 +26,7 @@ MANIFEST = (
 
 
 class DownloadAppleCorpusTest(unittest.TestCase):
-    def test_project_google_sheet_is_the_default_manifest(self):
+    def test_project_google_sheet_is_loaded_from_environment(self):
         self.assertIn("10IYB7P7G7LK_AX15Jhlq0LZwMla--x1PH8UtLRWAd28", DEFAULT_MANIFEST)
 
     def test_known_landing_pages_have_direct_pdf_urls(self):

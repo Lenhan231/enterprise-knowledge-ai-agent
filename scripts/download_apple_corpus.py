@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import shutil
 import sys
@@ -14,7 +15,12 @@ from urllib.parse import parse_qs, urlencode, urlparse
 from xml.etree import ElementTree as ET
 from zipfile import ZipFile
 
+from dotenv import load_dotenv
+
 from source_downloaders import download_source, source_extension
+
+
+load_dotenv()
 
 
 DEFAULT_IDS = (
@@ -25,9 +31,9 @@ DEFAULT_IDS = (
     "APL-SUP-001",
 )
 
-DEFAULT_MANIFEST = (
-    "https://docs.google.com/spreadsheets/d/"
-    "10IYB7P7G7LK_AX15Jhlq0LZwMla--x1PH8UtLRWAd28/edit?gid=0#gid=0"
+DEFAULT_MANIFEST = os.getenv(
+    "APPLE_CORPUS_MANIFEST_URL",
+    "data/manifests/apple/FA26AI69_Apple_Corpus_Manifest_v1.xlsx",
 )
 
 # The manifest intentionally records landing pages for documents whose direct

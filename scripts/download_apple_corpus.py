@@ -17,7 +17,7 @@ from zipfile import ZipFile
 
 from dotenv import load_dotenv
 
-from source_downloaders import download_source, source_extension
+from scripts.source_downloaders import download_source, source_extension
 
 
 load_dotenv()

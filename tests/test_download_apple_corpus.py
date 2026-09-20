@@ -14,10 +14,10 @@ from download_apple_corpus import (
     read_manifest,
     safe_filename,
 )
-from source_downloaders.registry import get_downloader
-from source_downloaders.html import HTMLDownloader
-from source_downloaders.image import ImageDownloader
-from source_downloaders.pdf import PDFDownloader
+from scripts.source_downloaders.registry import get_downloader
+from scripts.source_downloaders.html import HTMLDownloader
+from scripts.source_downloaders.image import ImageDownloader
+from scripts.source_downloaders.pdf import PDFDownloader
 
 
 MANIFEST = (

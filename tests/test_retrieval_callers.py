@@ -25,7 +25,6 @@ class RetrievalCallersTest(unittest.TestCase):
         self.retrieval.retrieve.return_value = self.response
 
     def test_rag_passes_request_and_uses_full_ranked_text(self):
-        self.response.results[0].text = " Full text\n" * 3000
         llm = MagicMock()
         llm.generate.return_value = "answer"
         rag = RAGService(self.retrieval, llm)
@@ -38,6 +37,29 @@ class RetrievalCallersTest(unittest.TestCase):
         self.assertIn(context, prompt)
         rag.close()
         self.retrieval.close.assert_called_once()
+
+    def test_rag_bounds_context_without_mutating_results_or_printing(self):
+        # Include separators and a second chunk in the cutoff, not just one
+        # oversized chunk, to verify the limit applies to the assembled context.
+        self.response.results[0].text = "A" * 12_000
+        self.response.results[1].text = "B" * 13_000
+        original = self.response.model_dump()
+        full_context = "\n\n".join(item.text for item in self.response.results)
+        llm = MagicMock()
+        llm.generate.return_value = "answer"
+        output = io.StringIO()
+
+        with redirect_stdout(output):
+            answer = RAGService(self.retrieval, llm).generate_answer("question", limit=2)
+
+        llm.generate.assert_called_once()
+        self.assertEqual(answer, "answer")
+        prompt = llm.generate.call_args.args[0]
+        context = prompt.split("Context:\n", 1)[1].split("\n\nUser Question:", 1)[0]
+        self.assertEqual(len(context), 24_000)
+        self.assertEqual(context, full_context[:24_000])
+        self.assertEqual(self.response.model_dump(), original)
+        self.assertEqual(output.getvalue(), "")
 
     def test_script_consumes_typed_results_and_closes_service(self):
         output = io.StringIO()

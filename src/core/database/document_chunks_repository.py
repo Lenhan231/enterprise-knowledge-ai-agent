@@ -9,7 +9,7 @@ import numpy as np
 load_dotenv()
 
 
-class VectorRepository:
+class DocumentChunkRepository:
     def __init__(self):
         DATABASE_URL = os.getenv("DATABASE_URL")
         if DATABASE_URL is None:

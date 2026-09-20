@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from core.database.document_chunks_repository import VectorRepository
+from core.database.document_chunks_repository import DocumentChunkRepository
 from core.embeddings import EmbeddingService
 
 
@@ -10,10 +10,10 @@ class RetrievalService:
     def __init__(
         self,
         embedding_service: EmbeddingService | None = None,
-        repository: VectorRepository | None = None,
+        repository: DocumentChunkRepository | None = None,
     ) -> None:
         self.embedding_service = embedding_service or EmbeddingService()
-        self.repository = repository or VectorRepository()
+        self.repository = repository or DocumentChunkRepository()
 
     def retrieve(self, question: str, limit: int = 5) -> dict:
         query_embedding = self.embedding_service.embed_query(question)

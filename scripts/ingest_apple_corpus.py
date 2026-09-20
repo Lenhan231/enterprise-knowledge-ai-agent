@@ -10,7 +10,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from core.database.document_chunks_repository import VectorRepository  # noqa: E402
+from core.database.document_chunks_repository import DocumentChunkRepository  # noqa: E402
 from core.document_processing.ingest_documents import Ingestion  # noqa: E402
 from download_apple_corpus import DEFAULT_MANIFEST, read_manifest, safe_filename  # noqa: E402
 
@@ -35,7 +35,7 @@ def main() -> int:
         raise SystemExit(f"No PDFs found below {args.input}")
 
     ingestor = Ingestion()
-    repository = VectorRepository()
+    repository = DocumentChunkRepository()
     try:
         for pdf in pdfs:
             manifest = manifest_by_filename.get(pdf.name)

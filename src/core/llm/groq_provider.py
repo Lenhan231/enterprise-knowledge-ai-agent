@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+from pydantic import BaseModel
 from core.llm.llm_interface import LLMInterface
 
 
@@ -21,11 +22,33 @@ class GroqProvider(LLMInterface):
         response = self.client.responses.create(
             model="openai/gpt-oss-20b",
             input=prompt,
-            max_output_tokens=500,
+            temperature=0,
+            max_tokens=500,
         )
 
         return response.output_text
     
+    def generate_json(
+        self,
+        prompt: str,
+        schema: type[BaseModel],
+    ) -> BaseModel:
+        schema_json = schema.model_json_schema()
+        system_prompt = f"Output valid JSON that matches the following schema:\n{schema_json}"
+        
+        response = self.client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+            response_format={"type": "json_object"},
+            temperature=0,
+            max_tokens=1000,
+        )
+
+        return schema.model_validate_json(response.choices[0].message.content)
+
 if __name__ == "__main__":
     response = GroqProvider()
     print(response.generate("What is RAG? Answer in one sentence."))

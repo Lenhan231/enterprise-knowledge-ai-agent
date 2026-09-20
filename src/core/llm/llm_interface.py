@@ -1,5 +1,6 @@
 # src/core/llm/llm_interface.py
 from abc import ABC, abstractmethod
+from pydantic import BaseModel
 
 
 class LLMInterface(ABC):

@@ -2,6 +2,11 @@
 from core.llm.groq_provider import GroqProvider
 from core.retrieval import RetrievalService
 from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT
+from pydantic import BaseModel, Field
+
+class RAGResult(BaseModel):
+    answer: str
+    contexts: list[dict] = Field(default_factory=list)
 
 class RAGService:
     def __init__(
@@ -55,9 +60,7 @@ class RAGService:
     def close(self) -> None:
         self.retrieval_service.close()
 
-class RAGResult(BaseModel):
-    answer:str
-    context:list[dict]
+
 
 if __name__ == "__main__":
     rag = RAGService()

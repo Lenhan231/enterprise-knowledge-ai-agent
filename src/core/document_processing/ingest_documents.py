@@ -59,7 +59,7 @@ class Ingestion:
                     token_count=self.token_counter.count(chunk.page_content),
                     document_id=document_id,
                 )
-                ParentMetadata = 
+
 
                 chunk.metadata = asdict(metadata)
                 chunk.metadata.update(extra_metadata or {})

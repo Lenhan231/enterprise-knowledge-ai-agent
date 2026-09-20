@@ -10,12 +10,4 @@ class MarkdownSectionExtractor:
             parent_id,
             document_id: str,
     ) -> list[ParentSection]:
-        current_title = None
-        current_text = []
-        start_page = None
-        end_page = None
-
-        for line in page:
-            if line startwith("#"):
-                if section_title == "None":
-                    metadata = ParentSection
+        pass

@@ -87,7 +87,7 @@ class VectorRepository:
                             limit: int)->tuple:
         """
         Comparation betweet question with the vector in database, set threshold for scoring
-        and top-k basic use Cosine distance
+        and top-k basic use Cosine distance, return the most similar chunks in descending order
 
         Arg:
             query_embedding: the query embedded by the same model embedded for the vector database
@@ -98,13 +98,52 @@ class VectorRepository:
             cur.execute(
                 """
                 SELECT  document_name,
+<<<<<<< HEAD
+                        content,
+                        chunk_index,
+=======
                         chunk_index,
                         content,
+>>>>>>> eca62225cf753bf2931f5ba76f3b7953f9265faf
                         metadata,
                         1 - (embedding <=> %s) AS similarity_score
                 FROM document_chunks 
-                ORDER BY embedding <=> %s
+                ORDER BY embedding <=> %s ASC
                 LIMIT %s;
-                """,(query_vector, query_vector, limit)
+                """,(query_vector, query_vector, limit),
             )
+<<<<<<< HEAD
+            rows = cur.fetchall()
+
+        return [(
+            row[0],  # document_name    
+            row[1],  # content
+            row[2],  # chunk_index
+            row[3],  # metadata
+            row[4]   # similarity_score
+        ) for row in rows]
+
+if __name__ == "__main__":
+    repo_root = Path(__file__).resolve().parents[3]
+    test_path = repo_root / "src" /"data"/"processed" / "pdf2md" / "2024_Apple.md"
+
+    chunker = SemanticDocumentChunker()
+    repo = VectorRepository()
+    # chunks = chunker.chunk(test_path)
+
+    # for chunk_index, chunk in enumerate(chunks):
+    #     document_name = test_path.napgvectorme
+    #     content = chunk.page_content
+    #     metadata = chunk.metadata
+    #     vector = chunker.embeddings.embed_query(content)
+    #     repo.insert_chunk(document_name,chunk_index,content,metadata,vector)
+    
+    query = "What were Apple’s total net sales in 2024, and how did they compare with 2023?"
+    query_embedding = chunker.embeddings.embed_query(query)
+    results = repo.similarity_search(query_embedding, 5)
+
+    for row in results:
+        print(row)
+=======
             return cur.fetchall()
+>>>>>>> eca62225cf753bf2931f5ba76f3b7953f9265faf

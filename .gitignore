@@ -13,3 +13,6 @@ build/
 # Reproducible corpus artifacts (download from the committed manifest).
 /data/raw/apple/**/*.pdf
 /data/processed/apple/**/*.md
+
+ponytail.md
+/rules

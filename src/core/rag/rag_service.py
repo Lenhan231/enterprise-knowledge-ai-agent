@@ -12,19 +12,52 @@ class RAGService:
         self.retrieval_service = retrieval_service or RetrievalService()
         self.llm = llm or GroqProvider()
 
-    def generate_answer(self, question: str, limit: int = 5) -> str:
-        retrieved = self.retrieval_service.retrieve(question, limit)
+    def generate_answer(
+        self, 
+        question: str, 
+        limit: int = 5
+    ) -> RAGResult:
+        retrieved = self.retrieval_service.retrieve(
+            question,
+            limit,
+        )
+
         contexts = retrieved["contexts"]
 
-        context = "\n\n".join(item["content"] for item in contexts)
-        print(context)
+        context = "\n\n".join(
+            item["content"]
+            for item in contexts
+        )
 
-        prompt = ENTERPRISE_ASSISTANT_PROMPT.format(context=context, question=question)
+        prompt = ENTERPRISE_ASSISTANT_PROMPT.format(
+            context=context,
+            question=question,
+        )
 
-        return self.llm.generate(prompt)
+        answer = self.llm.generate(prompt)
+
+        return RAGResult(
+            answer=answer,
+            contexts=contexts,
+        )
+
+    # def generate_answer(self, question: str, limit: int = 5) -> str:
+    #     retrieved = self.retrieval_service.retrieve(question, limit)
+    #     contexts = retrieved["contexts"]
+
+    #     context = "\n\n".join(item["content"] for item in contexts)
+    #     print(context)
+
+    #     prompt = ENTERPRISE_ASSISTANT_PROMPT.format(context=context, question=question)
+
+    #     return self.llm.generate(prompt)
 
     def close(self) -> None:
         self.retrieval_service.close()
+
+class RAGResult(BaseModel):
+    answer:str
+    context:list[dict]
 
 if __name__ == "__main__":
     rag = RAGService()

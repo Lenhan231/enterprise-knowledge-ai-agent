@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from core.database.vector_repository import VectorRepository
+from core.database.document_chunks_repository import VectorRepository
 from core.embeddings import EmbeddingService
 
 

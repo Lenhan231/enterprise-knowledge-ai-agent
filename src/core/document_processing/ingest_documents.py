@@ -47,7 +47,7 @@ class Ingestion:
             page_text = page["text"]
 
             page_chunks = self.splitter.chunk_text(page_text)
-            parent_id = str(uuid4())
+            
             for chunk in page_chunks:
                 metadata = ChunkMetadata(
                     source_document=input_path.name,
@@ -55,7 +55,7 @@ class Ingestion:
                     page_number=page_number,
                     chunk_index=chunk_index,
                     section_title=None,
-                    parent_id=parent_id,
+                    parent_id=None,
                     token_count=self.token_counter.count(chunk.page_content),
                     document_id=document_id,
                 )

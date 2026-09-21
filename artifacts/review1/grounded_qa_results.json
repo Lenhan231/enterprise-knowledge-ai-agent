@@ -1,0 +1,140 @@
+{
+  "generated_at": "2026-09-21T05:28:22.109727+00:00",
+  "git_commit": "0d93b340df156c93d95be68411afc2d60543f95b",
+  "top_k": 5,
+  "summary": {
+    "total": 4,
+    "passed": 2,
+    "failed": 2
+  },
+  "baseline": [
+    "Dense Top-K pgvector retrieval",
+    "Evidence-only generation prompt",
+    "Inline [S#] source citations",
+    "Citation ID validation",
+    "Document and page provenance",
+    "Insufficient-context refusal"
+  ],
+  "planned": [
+    "Clickable citation UX",
+    "Exact cited-span highlighting",
+    "Claim-level citation alignment",
+    "Automated faithfulness evaluation",
+    "Citation correctness benchmark",
+    "Regression evaluation harness"
+  ],
+  "results": [
+    {
+      "id": "policy_anti_corruption",
+      "domain": "compliance",
+      "question": "According to Apple's Anti-Corruption Policy,what responsibilities do third parties have concerning bribery and corruption?",
+      "expected_document_id": "APL-CMP-003",
+      "expect_insufficient": false,
+      "passed": false,
+      "reason": "Execution error",
+      "error": "ValueError: Generated answer contains no source citations. Answer: "
+    },
+    {
+      "id": "third_party_standards",
+      "domain": "compliance",
+      "question": "What standards must third parties working with Apple follow?",
+      "expected_document_id": "APL-CMP-004",
+      "expect_insufficient": false,
+      "passed": true,
+      "reason": "Answer cites the expected document",
+      "answer": "Third parties working with Apple must:\n\n* **Act with high ethical standards** and avoid any appearance of impropriety, complying with all applicable laws and regulations [S1].\n* **Undergo due‑diligence and monitoring** by Apple, with violations potentially leading to termination of the relationship [S3].\n* **Respect human rights** and treat all workers with dignity, prohibiting discrimination, harassment, abuse, involuntary labor, and human trafficking [S3].\n* **Maintain fair competition** in advertising, sales, and trade practices, avoiding price‑fixing or collusion [S2].\n* **Comply with trade restrictions, export controls, and customs laws** and screen for sanctioned entities [S2].\n* **Avoid bribery and facilitating payments** and report any requests for such payments [S4].\n* **Protect privacy** by complying with privacy laws and safeguarding customer data [S5].\n* **Keep Apple information confidential** and not disclose or comment on Apple business matters [S5].\n* **Respect intellectual property** and not use it without permission [S5].\n* **Refrain from insider trading** or disclosing material non‑public information [S5].\n\nThese standards collectively ensure that third parties conduct business ethically, transparently, and in full compliance with Apple’s policies and all relevant laws.",
+      "insufficient_context": false,
+      "source_ids": [
+        "S1",
+        "S3",
+        "S2",
+        "S4",
+        "S5"
+      ],
+      "sources": [
+        {
+          "source_id": "S1",
+          "document_id": "APL-CMP-004",
+          "source_document": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "page_number": 1,
+          "section_title": null,
+          "chunk_index": 0,
+          "similarity_score": 0.748926602271992,
+          "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
+          "content_preview": "## **Third Party Code of Conduct** ## **Our Principles** At Apple, we believe in doing business ethically, transparently, and in full compliance with all applicable laws and regulations. Apple requires all businesses and persons that associate themselves with our brand to uphold these same high standards. To that end, Apple requires certain third parties working with Apple or on behalf of Apple worldwide to comply with this Third Party Code of Conduct (Code). ## **Who** This Code applies to cert"
+        },
+        {
+          "source_id": "S2",
+          "document_id": "APL-CMP-004",
+          "source_document": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "page_number": 6,
+          "section_title": null,
+          "chunk_index": 11,
+          "similarity_score": 0.715530276298523,
+          "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
+          "content_preview": "**Trade Restrictions, Export Controls, and Customs.** All transactions must comply with United States export and customs laws and additional export and customs laws in the countries where business is being conducted. Third parties whose business activities involve the sale or shipment of Apple products, technologies, or services across international borders must understand and ensure compliance with all applicable laws or restrictions that apply in connection with those activities. Third parties"
+        },
+        {
+          "source_id": "S3",
+          "document_id": "APL-CMP-004",
+          "source_document": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "page_number": 2,
+          "section_title": null,
+          "chunk_index": 2,
+          "similarity_score": 0.683059375468457,
+          "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
+          "content_preview": "## **What You Should Know** Apple conducts due diligence and monitoring on all third parties to ensure compliance with this Code. As a condition of doing business with Apple, you consent to such due diligence and monitoring. Apple will assess a third party's compliance with this Code, and any violations of this Code may jeopardize the third party’s relationship with Apple up to and including termination. ## **Human Rights and Labor** Apple is deeply committed to respecting human rights as stated"
+        },
+        {
+          "source_id": "S4",
+          "document_id": "APL-CMP-004",
+          "source_document": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "page_number": 5,
+          "section_title": null,
+          "chunk_index": 9,
+          "similarity_score": 0.652524331362507,
+          "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
+          "content_preview": "Anything of value includes cash, cash equivalents, gifts, entertainment, internships, employment, or even a promise. Apple also does not allow for facilitating payments in relation to any Apple related business. Facilitating payments are typically demanded by low-level officials in exchange for providing a service that is ordinarily and commonly performed by the official. Third parties are required to report anytime they are confronted with a request to pay a bribe. Contact globalcompliance@appl"
+        },
+        {
+          "source_id": "S5",
+          "document_id": "APL-CMP-004",
+          "source_document": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "page_number": 7,
+          "section_title": null,
+          "chunk_index": 13,
+          "similarity_score": 0.648421406745911,
+          "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
+          "content_preview": "Third parties must never misstate facts, omit critical information, or modify records or reports in any way to mislead or assist others in doing so. **Privacy.** Apple is committed to ensuring the privacy of the end-user customers of Apple products and services. Third parties are required to comply with all privacy laws and regulations. Third parties must take appropriate precautions — including administrative, technical, and physical measures — to safeguard customers’ personal information again"
+        }
+      ],
+      "retrieved_context_count": 5,
+      "total_latency_ms": 2816.37
+    },
+    {
+      "id": "environment_report",
+      "domain": "report",
+      "question": "According to Apple's Anti-Corruption Policy, what responsibilities do third parties have concerning bribery and corruption?",
+      "expected_document_id": "APL-ENV-002",
+      "expect_insufficient": false,
+      "passed": false,
+      "reason": "Execution error",
+      "error": "ValueError: Generated answer contains no source citations. Answer: "
+    },
+    {
+      "id": "unsupported_private_data",
+      "domain": "negative_control",
+      "question": "What is Apple's private internal hiring budget for 2026?",
+      "expected_document_id": null,
+      "expect_insufficient": true,
+      "passed": true,
+      "reason": "Correctly refused unsupported question",
+      "answer": "Insufficient information in the retrieved documents.",
+      "insufficient_context": true,
+      "source_ids": [],
+      "sources": [],
+      "retrieved_context_count": 5,
+      "total_latency_ms": 6957.96
+    }
+  ]
+}

@@ -125,8 +125,8 @@ class RAGService:
 
         if not source_ids:
             raise ValueError(
-                "Generated answer contains no source citations"
-            )
+                f"Generated answer contains no source citations. Answer: {answer}"
+)
 
         allowed_source_ids = {
             context["source_id"]

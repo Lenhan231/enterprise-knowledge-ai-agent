@@ -1,5 +1,8 @@
 from core.llm.groq_provider import GroqProvider
+from core.models.retrieval import RetrievalRequest
 from core.retrieval import RetrievalService
+
+MAX_CONTEXT_CHARS = 24_000
 
 class RAGService:
     def __init__(
@@ -11,11 +14,10 @@ class RAGService:
         self.llm = llm or GroqProvider()
 
     def generate_answer(self, question: str, limit: int = 5) -> str:
-        retrieved = self.retrieval_service.retrieve(question, limit)
-        contexts = retrieved["contexts"]
+        retrieved = self.retrieval_service.retrieve(RetrievalRequest(query=question, top_k=limit))
+        contexts = retrieved.results
 
-        context = "\n\n".join(item["content"] for item in contexts)
-        print(context)
+        context = "\n\n".join(item.text for item in contexts)[:MAX_CONTEXT_CHARS]
 
         prompt = f"""You are an expert Enterprise Assistant. 
         Use the following context from corporate reports 

@@ -104,7 +104,19 @@ limit 5;
 
 ## Retrieval checkpoint
 
-Run the existing retrieval check after ingestion:
+Use `RetrievalService.retrieve(RetrievalRequest(query=question, top_k=5))`
+with these cross-document questions:
+
+```text
+What standards must third parties working with Apple follow?
+What obligations does a supplier have regarding subcontractors?
+What requirements apply to supplier personnel?
+How does Apple's anti-corruption policy relate to third parties?
+```
+
+Inspect `source`, `location.chunk_index`, `score`, and full `text` in each item of
+`RetrievalResponse.results` before expanding to the rest of the manifest.
+The repeatable checkpoint command is:
 
 ```bash
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \

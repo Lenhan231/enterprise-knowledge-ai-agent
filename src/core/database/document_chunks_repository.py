@@ -6,6 +6,8 @@ from psycopg.types.json import Jsonb
 from pgvector.psycopg import register_vector
 import numpy as np
 
+from core.models.retrieval import RetrievedChunk
+
 load_dotenv()
 
 
@@ -82,16 +84,13 @@ class DocumentChunkRepository:
     def close(self) -> None:
         self.conn.close()
 
-    def similarity_search(self,
-                            query_embedding: list[float],
-                            limit: int)->tuple:
-        """
-        Comparation betweet question with the vector in database, set threshold for scoring
-        and top-k basic use Cosine distance, return the most similar chunks in descending order
+    def similarity_search(
+        self, query_embedding: list[float], limit: int
+    ) -> list[RetrievedChunk]:
+        """Return full chunks ordered by descending cosine similarity.
 
-        Arg:
-            query_embedding: the query embedded by the same model embedded for the vector database
-            limit: select the top-K
+        Map database rows at this boundary. Missing metadata.document_id raises
+        a validation error, including when SQL NULL metadata becomes {}.
         """
         query_vector = np.array(query_embedding, dtype=np.float32)
         with self.conn.cursor() as cur:
@@ -103,8 +102,18 @@ class DocumentChunkRepository:
                         metadata,
                         1 - (embedding <=> %s) AS similarity_score
                 FROM document_chunks 
-                ORDER BY embedding <=> %s ASC
+                ORDER BY embedding <=> %s ASC, id ASC
                 LIMIT %s;
                 """,(query_vector, query_vector, limit),
             )
-            return cur.fetchall()
+            return [
+                RetrievedChunk(
+                    document_name=document_name,
+                    chunk_index=chunk_index,
+                    content=content,
+                    metadata={} if metadata is None else metadata,
+                    similarity_score=similarity_score,
+                )
+                for document_name, chunk_index, content, metadata, similarity_score
+                in cur.fetchall()
+            ]

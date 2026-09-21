@@ -168,7 +168,15 @@ def print_report(rows: list[dict], summary: dict) -> None:
     print(f"Median latency: {summary['median_latency_ms']:.1f} ms")
 
 
-def build_artifact(rows: list[dict], summary: dict, embedding_model: str) -> dict:
+def build_artifact(
+    rows: list[dict], summary: dict, embedding_model: str, fixture_path: Path
+) -> dict:
+    resolved_fixture = fixture_path.resolve()
+    fixture = (
+        resolved_fixture.relative_to(REPO_ROOT)
+        if resolved_fixture.is_relative_to(REPO_ROOT)
+        else resolved_fixture
+    )
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "git_commit": subprocess.check_output(
@@ -176,7 +184,7 @@ def build_artifact(rows: list[dict], summary: dict, embedding_model: str) -> dic
         ).strip(),
         "embedding_model": embedding_model,
         "top_k": TOP_K,
-        "fixture": str(DEFAULT_FIXTURE.relative_to(REPO_ROOT)),
+        "fixture": str(fixture),
         "summary": {
             "queries": summary["queries"],
             **{f"hit_at_{k}": summary["hit"][k] for k in K_VALUES},
@@ -208,7 +216,7 @@ def main() -> int:
         rows, summary = evaluate_cases(retrieval, cases)
         print_report(rows, summary)
         artifact = build_artifact(
-            rows, summary, retrieval.embedding_service.model_name
+            rows, summary, retrieval.embedding_service.model_name, args.fixture
         )
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(

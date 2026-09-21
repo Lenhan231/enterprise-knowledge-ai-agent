@@ -172,10 +172,12 @@ class DenseRetrievalEvaluationTest(unittest.TestCase):
             "median_latency_ms": 12,
         }
 
-        artifact = build_artifact(rows, summary, "test-model")
+        fixture = REPO_ROOT / "tests/fixtures/custom_cases.json"
+        artifact = build_artifact(rows, summary, "test-model", fixture)
 
         self.assertEqual(artifact["embedding_model"], "test-model")
         self.assertEqual(artifact["top_k"], TOP_K)
+        self.assertEqual(artifact["fixture"], "tests/fixtures/custom_cases.json")
         self.assertEqual(artifact["summary"]["hit_at_1"], 1)
         self.assertEqual(artifact["summary"]["recall_at_5"], 1.0)
         self.assertEqual(artifact["results"][0]["results"][0]["rank"], 1)

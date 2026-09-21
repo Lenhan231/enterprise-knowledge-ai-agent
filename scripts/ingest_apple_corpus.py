@@ -1,5 +1,5 @@
-# scripts/ingest_apple_corpus.py
 #!/usr/bin/env python3
+# scripts/ingest_apple_corpus.py
 """Parse, chunk, embed, and persist the five-document Apple vertical slice.
 
 python scripts/ingest_apple_corpus.py \

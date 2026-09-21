@@ -21,9 +21,12 @@ from core.retrieval.retrieval import RetrievedChunk
 
 def check_connection(conn) -> dict:
     """Caller owns rollback/close; all reads use one read-only snapshot."""
-    register_vector(conn)
+    # Establish a stable, read-only snapshot before pgvector queries its type catalog.
     with conn.cursor() as cur:
         cur.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+    register_vector(conn)
+    with conn.cursor() as cur:
+        # Read the embedding type/dimension and metadata nullability/default.
         cur.execute("""
             SELECT a.attname, t.typname, a.atttypmod, a.attnotnull,
                    pg_get_expr(d.adbin, d.adrelid)
@@ -33,6 +36,9 @@ def check_connection(conn) -> dict:
               AND a.attname IN ('embedding', 'metadata') AND NOT a.attisdropped
         """)
         columns = {row[0]: row[1:] for row in cur.fetchall()}
+
+        # List usable plain indexes so their method, columns and operator class
+        # can be checked without relying only on index names.
         cur.execute("""
             SELECT am.amname, i.indisunique, i.indnkeyatts,
                    a1.attname, a2.attname, op.opcname
@@ -57,6 +63,8 @@ def check_connection(conn) -> dict:
                 row[0] == "hnsw" and row[2] == 1 and row[3] == "embedding"
                 and row[5] == "vector_cosine_ops" for row in indexes),
         }
+
+        # Count rows that would violate retrieval assumptions or the unique key.
         cur.execute("""
             SELECT count(*), count(*) FILTER (WHERE metadata IS NULL),
                    count(*) FILTER (WHERE NOT COALESCE(
@@ -71,6 +79,8 @@ def check_connection(conn) -> dict:
         total, null_metadata, missing_ids, duplicates = cur.fetchone()
         report = {"schema": schema, "rows": total, "null_metadata": null_metadata,
                   "missing_document_id": missing_ids, "duplicate_keys": duplicates}
+
+        # Reuse one stored nonzero embedding to avoid model downloads or test writes.
         cur.execute("""
             SELECT embedding::text FROM public.document_chunks
             WHERE vector_norm(embedding) > 0 ORDER BY id LIMIT 1
@@ -79,10 +89,14 @@ def check_connection(conn) -> dict:
         if sample is None:
             report["retrieval"] = "not_checked_no_nonzero_vector"
             return report
-        # Deterministic SQL/mapping check, not ANN recall or index-use proof.
+
+        # Force an exact reference result for deterministic comparison. This does
+        # not measure HNSW recall or prove which plan production queries will use.
         cur.execute("SET LOCAL enable_indexscan = off")
         cur.execute("SET LOCAL enable_bitmapscan = off")
         vector = np.fromstring(sample[0].strip("[]"), sep=",", dtype=np.float32)
+
+        # Run the repository's cosine ordering and tie-break as reference SQL.
         cur.execute("""
             SELECT document_name, chunk_index, content, metadata,
                    1 - (embedding <=> %s) AS similarity_score

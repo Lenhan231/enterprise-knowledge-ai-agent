@@ -31,10 +31,16 @@ class IntegrationCheckTest(unittest.TestCase):
     @patch.object(check, "register_vector")
     def test_real_repository_mapping_on_mocked_read_only_connection(self, register):
         conn = self.connection()
+        cur = conn.cursor.return_value.__enter__.return_value
+        events = []
+        cur.execute.side_effect = lambda sql, *args: events.append(sql)
+        register.side_effect = lambda connection: events.append("register_vector")
+
         report = check.check_connection(conn)
+
         self.assertTrue(check.passed(report))
-        first_sql = conn.cursor.return_value.__enter__.return_value.execute.call_args_list[0].args[0]
-        self.assertIn("REPEATABLE READ, READ ONLY", first_sql)
+        self.assertIn("REPEATABLE READ, READ ONLY", events[0])
+        self.assertEqual(events[1], "register_vector")
         conn.commit.assert_not_called()
 
     @patch.object(check, "register_vector")

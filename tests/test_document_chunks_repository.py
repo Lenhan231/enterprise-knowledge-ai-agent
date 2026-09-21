@@ -10,14 +10,14 @@ from pydantic import ValidationError
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from core.database.vector_repository import VectorRepository
+from core.database.document_chunks_repository import DocumentChunkRepository
 from core.retrieval.retrieval import RetrievedChunk
 
 
-class VectorRepositorySearchTest(unittest.TestCase):
+class DocumentChunkRepositorySearchTest(unittest.TestCase):
     def setUp(self):
         # Exercise the real search method without connecting to PostgreSQL.
-        self.repository = VectorRepository.__new__(VectorRepository)
+        self.repository = DocumentChunkRepository.__new__(DocumentChunkRepository)
         self.repository.conn = MagicMock()
         self.cursor = self.repository.conn.cursor.return_value.__enter__.return_value
 

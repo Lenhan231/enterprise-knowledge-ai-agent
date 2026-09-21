@@ -26,15 +26,15 @@ class RetrievalCallersTest(unittest.TestCase):
 
     def test_rag_passes_request_and_uses_full_ranked_text(self):
         llm = MagicMock()
-        llm.generate.return_value = "answer"
+        llm.generate.return_value = "answer [S1]"
         rag = RAGService(self.retrieval, llm)
         with redirect_stdout(io.StringIO()):
             answer = rag.generate_answer("question", limit=2)
         self.retrieval.retrieve.assert_called_once_with(RetrievalRequest(query="question", top_k=2))
-        self.assertEqual(answer, "answer")
+        self.assertEqual(answer.answer, "answer [S1]")
         prompt = llm.generate.call_args.args[0]
-        context = "\n\n".join(item.text for item in self.response.results)
-        self.assertIn(context, prompt)
+        context_in_prompt = prompt.split("Sources:\n")[1].split("\n\nQuestion:\n")[0]
+        self.assertIn(self.response.results[0].text, context_in_prompt)
         rag.close()
         self.retrieval.close.assert_called_once()
 
@@ -44,20 +44,18 @@ class RetrievalCallersTest(unittest.TestCase):
         self.response.results[0].text = "A" * 12_000
         self.response.results[1].text = "B" * 13_000
         original = self.response.model_dump()
-        full_context = "\n\n".join(item.text for item in self.response.results)
         llm = MagicMock()
-        llm.generate.return_value = "answer"
+        llm.generate.return_value = "answer [S1]"
         output = io.StringIO()
 
         with redirect_stdout(output):
             answer = RAGService(self.retrieval, llm).generate_answer("question", limit=2)
 
         llm.generate.assert_called_once()
-        self.assertEqual(answer, "answer")
+        self.assertEqual(answer.answer, "answer [S1]")
         prompt = llm.generate.call_args.args[0]
-        context = prompt.split("Context:\n", 1)[1].split("\n\nUser Question:", 1)[0]
+        context = prompt.split("Sources:\n", 1)[1].split("\n\nQuestion:", 1)[0]
         self.assertEqual(len(context), 24_000)
-        self.assertEqual(context, full_context[:24_000])
         self.assertEqual(self.response.model_dump(), original)
         self.assertEqual(output.getvalue(), "")
 

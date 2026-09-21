@@ -63,9 +63,7 @@ class Ingestion:
 
                 chunk.metadata = asdict(metadata)
                 chunk.metadata.update(extra_metadata or {})
-
                 all_chunks.append(chunk)
-
                 chunk_index += 1
                 
 

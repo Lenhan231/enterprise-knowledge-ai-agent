@@ -1,8 +1,8 @@
 # scripts/download_apple_corpus.py::read_manifest
 
 #!/usr/bin/env python3
-"""Download selected Apple documents from the committed XLSX manifest."""
-"""python scripts/download_apple_corpus.py \
+"""Download selected Apple documents from the committed XLSX manifest.
+python scripts/download_apple_corpus.py \
   --output data/raw/apple_review1
 USE THIS FOR REVIEW 1 DEMO  
 """

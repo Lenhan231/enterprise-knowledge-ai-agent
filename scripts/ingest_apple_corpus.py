@@ -1,5 +1,13 @@
+# scripts/ingest_apple_corpus.py
 #!/usr/bin/env python3
-"""Parse, chunk, embed, and persist the five-document Apple vertical slice."""
+"""Parse, chunk, embed, and persist the five-document Apple vertical slice.
+
+python scripts/ingest_apple_corpus.py \
+  --input data/raw/apple_review1 \
+  --output data/processed/apple_review1
+"""
+
+
 
 from __future__ import annotations
 

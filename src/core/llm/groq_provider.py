@@ -27,7 +27,7 @@ class GroqProvider(LLMInterface):
             max_output_tokens=1000,
         )
 
-         answer = response.output_text.strip()
+        answer = response.output_text.strip()
 
         if not answer:
             raise RuntimeError(

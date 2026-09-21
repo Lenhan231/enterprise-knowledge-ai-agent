@@ -2,6 +2,10 @@
 
 #!/usr/bin/env python3
 """Download selected Apple documents from the committed XLSX manifest."""
+"""python scripts/download_apple_corpus.py \
+  --output data/raw/apple_review1
+USE THIS FOR REVIEW 1 DEMO  
+"""
 
 from __future__ import annotations
 

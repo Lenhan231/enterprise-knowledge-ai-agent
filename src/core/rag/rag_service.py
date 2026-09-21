@@ -1,8 +1,11 @@
 from core.llm.groq_provider import GroqProvider
+from core.retrieval.retrieval import RetrievalRequest
 from core.retrieval.retrieval_service import RetrievalService
 from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT
 from pydantic import BaseModel, Field
 import re
+
+MAX_CONTEXT_CHARS = 24_000
 
 INSUFFICIENT_ANSWER = (
     "Insufficient information in the retrieved documents."
@@ -51,8 +54,6 @@ def _extract_source_ids(answer: str) -> list[str]:
     return list(dict.fromkeys(CITATION_PATTERN.findall(answer)))
 
 
-MAX_CONTEXT_CHARS = 24_000
-
 class RAGService:
     def __init__(
         self,
@@ -69,17 +70,20 @@ class RAGService:
         limit: int = 5,
     ) -> RAGResult:
         retrieved = self.retrieval_service.retrieve(
-            question,
-            limit,
+            RetrievalRequest(query=question, top_k=limit)
         )
 
         contexts = [
             {
-                **context,
+                "document_name": context.source,
+                "chunk_index": context.location.chunk_index,
+                "content": context.text,
+                "metadata": context.metadata,
+                "similarity_score": context.score,
                 "source_id": f"S{index}",
             }
             for index, context in enumerate(
-                retrieved["contexts"],
+                retrieved.results,
                 start=1,
             )
         ]
@@ -92,7 +96,7 @@ class RAGService:
             )
 
         prompt = ENTERPRISE_ASSISTANT_PROMPT.format(
-            context=_format_contexts(contexts),
+            context=_format_contexts(contexts)[:MAX_CONTEXT_CHARS],
             question=question,
         )
 
@@ -133,15 +137,3 @@ class RAGService:
 
     def close(self) -> None:
         self.retrieval_service.close()
-
-    # def generate_answer(self, question: str, limit: int = 5) -> str:
-    #     retrieved = self.retrieval_service.retrieve(question, limit)
-    #     contexts = retrieved["contexts"]
-
-    #     context = "\n\n".join(item["content"] for item in contexts)
-    #     print(context)
-
-    #     prompt = ENTERPRISE_ASSISTANT_PROMPT.format(context=context, question=question)
-
-    #     return self.llm.generate(prompt)
-

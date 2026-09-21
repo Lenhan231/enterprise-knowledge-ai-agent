@@ -9,9 +9,9 @@ from pydantic import ValidationError
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from core.retrieval import RetrievalService
-from core.database.vector_repository import VectorRepository
+from core.database.document_chunks_repository import DocumentChunkRepository
 from core.retrieval.retrieval import RetrievalRequest, RetrievalResponse, RetrievedChunk
+from core.retrieval.retrieval_service import RetrievalService
 
 
 class FakeEmbeddingService:
@@ -122,7 +122,7 @@ class RetrievalServiceTest(unittest.TestCase):
         self.assertIsNone(self.repository.search_args)
 
     def test_real_repository_boundary_with_fake_cursor(self):
-        repository = VectorRepository.__new__(VectorRepository)
+        repository = DocumentChunkRepository.__new__(DocumentChunkRepository)
         repository.conn = MagicMock()
         cursor = repository.conn.cursor.return_value.__enter__.return_value
         cursor.fetchall.return_value = [

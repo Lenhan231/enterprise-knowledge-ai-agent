@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Enterprise Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark" data-icon="badge"></span><div><strong>FA26AI69</strong><small>Enterprise Knowledge AI</small></div></div>
+    <nav id="nav-main"></nav>
+    <div class="nav-divider"></div>
+    <nav id="nav-secondary"></nav>
+    <div class="case-card"><span class="case-icon" data-icon="database"></span><div><strong>Apple Case Study</strong><small>Public Corporate Documents</small></div><p>Turn documents into intelligence.<br>Support better decisions.</p></div>
+  </aside>
+
+  <main>
+    <header>
+      <button class="mobile-menu" aria-label="Open navigation" data-icon="menu"></button>
+      <div class="title"><h1>Enterprise Intelligence — Data Analytics &amp; Decision Support</h1><p>Powered by Apple Public Corporate Documents | From Information to Insight</p></div>
+      <div class="filters">
+        <label>Fiscal Year<select id="year"><option>FY2025</option><option>FY2024</option><option>FY2023</option></select></label>
+        <label>Document Source<select id="source"><option value="apple-public-corporate-corpus">Apple Public Corporate Corpus</option></select></label>
+        <button class="ask"><span data-icon="message"></span>Ask AI</button>
+      </div>
+      <div class="profile"><span>FA</span><div><strong>FA26AI69</strong><small>Capstone Project</small></div></div>
+    </header>
+
+    <div class="content">
+      <section id="kpis" class="kpi-grid" aria-label="Key performance indicators"></section>
+      <section class="charts-grid">
+        <article class="panel"><div class="panel-head"><h2>Net Sales Trend</h2><p>Total net sales (Billion USD)</p></div><div id="trend-chart" class="chart"></div></article>
+        <article class="panel"><div class="panel-head"><h2>Net Sales by Product Category (FY2025)</h2><p>Billion USD (Share of total)</p></div><div id="product-chart" class="chart"></div></article>
+        <article class="panel"><div class="panel-head"><h2>Net Sales by Region (FY2025)</h2><p>Billion USD (Share of total)</p></div><div id="region-chart" class="chart"></div></article>
+      </section>
+      <section class="bottom-grid">
+        <article class="panel insights-panel"><div class="section-title"><span class="sparkles" data-icon="sparkles"></span><div><h2>AI-Generated Insights</h2><p>Based on analysis of Apple public documents (e.g., FY2025 10-K). Always verify important information.</p></div><span class="ai-tag"><i data-icon="sparkles"></i>AI Generated</span></div><div id="insights"></div></article>
+        <div class="right-stack">
+          <article class="panel coverage-panel"><div class="section-title"><span class="db-title" data-icon="database"></span><div><h2>Knowledge Base Coverage</h2><p>Apple public corporate documents in the AI knowledge base.</p></div></div><div id="coverage"></div></article>
+          <article class="panel sources-panel"><div class="sources-head section-title"><span data-icon="folder"></span><div><h2>Recent Sources</h2><p>Latest documents in the knowledge base.</p></div><a href="#">View All <b>→</b></a></div><div id="sources"></div></article>
+        </div>
+      </section>
+    </div>
+  </main>
+  <div id="toast" role="status"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

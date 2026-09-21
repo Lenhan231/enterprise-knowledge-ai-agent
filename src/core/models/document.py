@@ -13,3 +13,12 @@ class ChunkMetadata:
     token_count: int | None   # token count for this chunk
     document_id: str          # UUID or deterministic document identifier
 
+@dataclass
+class ParentSection:
+    parent_id: str
+    document_id: str
+    section_title: str | None
+    start_page: int | None
+    end_page: int | None
+    text: str
+    content_type: str

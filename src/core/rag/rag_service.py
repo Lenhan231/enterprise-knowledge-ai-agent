@@ -1,7 +1,5 @@
-# src/core/rag/rag_service.py
 from core.llm.groq_provider import GroqProvider
 from core.retrieval import RetrievalService
-from core.llm.llm_interface import LLMInterface
 from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT
 from pydantic import BaseModel, Field
 import re
@@ -53,6 +51,8 @@ def _extract_source_ids(answer: str) -> list[str]:
     return list(dict.fromkeys(CITATION_PATTERN.findall(answer)))
 
 
+MAX_CONTEXT_CHARS = 24_000
+
 class RAGService:
     def __init__(
         self,
@@ -62,10 +62,11 @@ class RAGService:
         self.retrieval_service = retrieval_service or RetrievalService()
         self.llm = llm or GroqProvider()
 
+<<<<<<< HEAD
     def generate_answer(
-        self, 
-        question: str, 
-        limit: int = 5
+        self,
+        question: str,
+        limit: int = 5,
     ) -> RAGResult:
         retrieved = self.retrieval_service.retrieve(
             question,
@@ -103,13 +104,13 @@ class RAGService:
                 contexts=contexts,
                 insufficient_context=True,
             )
-        source_ids=_extract_source_ids(answer)
-        
+        source_ids = _extract_source_ids(answer)
+
         if not source_ids:
             raise ValueError(
                 "Generated answer contains no source citations"
             )
-        
+
         allowed_source_ids = {
             context["source_id"]
             for context in contexts
@@ -124,16 +125,15 @@ class RAGService:
                 f"{sorted(unknown_source_ids)}"
             )
 
-        
         return RAGResult(
             answer=answer,
             contexts=contexts,
             source_ids=source_ids,
         )
-    
+
     def close(self) -> None:
         self.retrieval_service.close()
-        
+
     # def generate_answer(self, question: str, limit: int = 5) -> str:
     #     retrieved = self.retrieval_service.retrieve(question, limit)
     #     contexts = retrieved["contexts"]
@@ -144,5 +144,4 @@ class RAGService:
     #     prompt = ENTERPRISE_ASSISTANT_PROMPT.format(context=context, question=question)
 
     #     return self.llm.generate(prompt)
-
 

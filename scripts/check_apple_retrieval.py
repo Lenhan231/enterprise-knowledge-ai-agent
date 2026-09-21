@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# scripts/check_apple_retrieval.py
 """Run the cross-document retrieval checkpoint for the Apple corpus."""
 
 from __future__ import annotations
@@ -12,6 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from core.retrieval import RetrievalService  # noqa: E402
+from core.retrieval.retrieval import RetrievalRequest  # noqa: E402
 
 
 QUESTIONS = (
@@ -29,17 +31,17 @@ def main() -> int:
     retrieval = RetrievalService()
     try:
         for question in QUESTIONS:
-            result = retrieval.retrieve(question, args.limit)
+            result = retrieval.retrieve(RetrievalRequest(query=question, top_k=args.limit))
             print(f"\nQUESTION: {question}")
-            for rank, context in enumerate(result["contexts"], start=1):
-                compact = " ".join(context["content"].split())[:240]
+            for context in result.results:
+                compact = " ".join(context.text.split())[:240]
                 print(
                     json.dumps(
                         {
-                            "rank": rank,
-                            "document_name": context["document_name"],
-                            "chunk_index": context["chunk_index"],
-                            "score": round(context["similarity_score"], 4),
+                            "rank": context.rank,
+                            "document_name": context.source,
+                            "chunk_index": context.location.chunk_index,
+                            "score": round(context.score, 4),
                             "preview": compact,
                         },
                         ensure_ascii=False,

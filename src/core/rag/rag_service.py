@@ -1,5 +1,5 @@
 from core.llm.groq_provider import GroqProvider
-from core.retrieval import RetrievalService
+from core.retrieval.retrieval_service import RetrievalService
 from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT
 from pydantic import BaseModel, Field
 import re
@@ -62,7 +62,7 @@ class RAGService:
         self.retrieval_service = retrieval_service or RetrievalService()
         self.llm = llm or GroqProvider()
 
-<<<<<<< HEAD
+
     def generate_answer(
         self,
         question: str,

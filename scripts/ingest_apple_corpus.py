@@ -16,11 +16,12 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from core.database.document_chunks_repository import DocumentChunkRepository  # noqa: E402
 from core.document_processing.ingest_documents import Ingestion  # noqa: E402
-from download_apple_corpus import read_manifest, safe_filename  # noqa: E402
+from scripts.download_apple_corpus import read_manifest, safe_filename  # noqa: E402
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()

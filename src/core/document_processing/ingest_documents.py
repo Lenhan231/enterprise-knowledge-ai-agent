@@ -7,6 +7,7 @@ from core.models.document import ChunkMetadata
 from uuid import uuid4
 from dataclasses import asdict
 from core.utils.token_counter import TokenCounter
+from core.document_processing.section_extractor import MarkdownSectionExtractor
 
 from pathlib import Path
 
@@ -16,6 +17,7 @@ class Ingestion:
         self.token_counter = TokenCounter(self.embedding_service.model_name)
         self.splitter = SemanticDocumentChunker(self.embedding_service)
         self.PDFconverter = PDFtoMarkdownConverted()
+        self.extract = MarkdownSectionExtractor()
 
         
     def ingestion(
@@ -45,7 +47,7 @@ class Ingestion:
             page_text = page["text"]
 
             page_chunks = self.splitter.chunk_text(page_text)
-
+            
             for chunk in page_chunks:
                 metadata = ChunkMetadata(
                     source_document=input_path.name,
@@ -58,11 +60,10 @@ class Ingestion:
                     document_id=document_id,
                 )
 
+
                 chunk.metadata = asdict(metadata)
                 chunk.metadata.update(extra_metadata or {})
-
                 all_chunks.append(chunk)
-
                 chunk_index += 1
                 
 

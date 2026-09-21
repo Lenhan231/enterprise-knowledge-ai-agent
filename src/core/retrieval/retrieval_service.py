@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
+from core.database.document_chunks_repository import DocumentChunkRepository
 from time import perf_counter
-
-from core.database.vector_repository import VectorRepository
 from core.embeddings import EmbeddingService
 from core.models.retrieval import (
     RankedChunk, RetrievalRequest, RetrievalResponse, SourceLocation, make_chunk_id,
@@ -15,10 +14,10 @@ class RetrievalService:
     def __init__(
         self,
         embedding_service: EmbeddingService | None = None,
-        repository: VectorRepository | None = None,
+        repository: DocumentChunkRepository | None = None,
     ) -> None:
         self.embedding_service = embedding_service or EmbeddingService()
-        self.repository = repository or VectorRepository()
+        self.repository = repository or DocumentChunkRepository()
 
     def retrieve(self, request: RetrievalRequest) -> RetrievalResponse:
         """Rank typed chunks in repository order (cosine distance, then row ID).

@@ -16,6 +16,10 @@ uv sync
 uvicorn src.app.main:app --reload --port 8000
 ```
 
+Open `http://localhost:8000` for the Enterprise Intelligence dashboard.
+The UI currently reads mock data from `GET /api/dashboard`; keep that response
+shape when replacing the mock implementation with live analytics services.
+
 Project layout
 
 - src/app: FastAPI application entrypoint and API routes

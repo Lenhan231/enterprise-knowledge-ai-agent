@@ -1,4 +1,3 @@
-# src/core/rag/rag_service.py
 from core.llm.groq_provider import GroqProvider
 from core.models.retrieval import RetrievalRequest
 from core.retrieval import RetrievalService

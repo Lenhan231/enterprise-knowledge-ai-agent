@@ -22,9 +22,11 @@ class KnowledgeAgent(BaseAgent):
         result = self.rag.generate_answer(
             request.question
         )
+        cited = set(result.source_ids)
 
         evidence = [
             Evidence(
+                citation_id=context["citation_id"],
                 source_type="document",
                 source=context["document_name"],
                 content=context["content"],
@@ -37,6 +39,7 @@ class KnowledgeAgent(BaseAgent):
                 },
             )
             for context in result.contexts
+            if context["citation_id"] in cited
         ]
 
         return AgentResult(

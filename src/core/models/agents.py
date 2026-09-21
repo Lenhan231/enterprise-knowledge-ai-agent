@@ -17,6 +17,7 @@ class AgentRequest(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 class Evidence(BaseModel):
+    citation_id: str | None = None
     source_type: str
     source: str
     content: str | None = None

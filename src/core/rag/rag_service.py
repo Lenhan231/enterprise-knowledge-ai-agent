@@ -1,5 +1,6 @@
 from core.llm.groq_provider import GroqProvider
 from core.retrieval.retrieval_service import RetrievalService
+from core.retrieval.retrieval import RetrievalRequest
 from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT
 from pydantic import BaseModel, Field
 import re

@@ -1,5 +1,11 @@
 # Dense retrieval fixture
 
+`apple_dense_retrieval_cases.json` contains five manually verified Apple
+document-level evaluation cases used by `scripts/check_apple_retrieval.py`.
+Each case has a nonblank question and one or more expected document IDs. See
+`docs/dense_retrieval_baseline.md` for metric definitions, measured results and
+fixture limitations.
+
 `ranked_dense_retrieval.json` is a synthetic, complete `RetrievalResponse` for
 context/citation development. Text, scores, latency, and URLs are examples, not
 retrieved evidence or measured performance. The second result demonstrates

@@ -1,0 +1,415 @@
+{
+  "generated_at": "2026-09-21T15:53:43.413845+00:00",
+  "git_commit": "c1ea7ac59c52e8fb99e0bf40d5ae367700d49033",
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "top_k": 5,
+  "fixture": "tests/fixtures/apple_dense_retrieval_cases.json",
+  "summary": {
+    "queries": 5,
+    "hit_at_1": 1,
+    "hit_at_3": 1,
+    "hit_at_5": 1,
+    "recall_at_1": 1.0,
+    "recall_at_3": 1.0,
+    "recall_at_5": 1.0,
+    "mean_latency_ms": 1084.743167600027,
+    "median_latency_ms": 427.9205519997049
+  },
+  "results": [
+    {
+      "question": "What responsibilities do third parties have under Apple's Anti-Corruption Policy?",
+      "expected_document_ids": [
+        "APL-CMP-003"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "chunk_id": "APL-CMP-003::chunk::5",
+          "document_id": "APL-CMP-003",
+          "chunk_index": 5,
+          "source_document": "apl-cmp-003_anti_corruption_policy.pdf",
+          "page_number": 3,
+          "section_title": null,
+          "official_url": "https://www.apple.com/compliance/pdfs/Anti-Corruption-Policy.pdf",
+          "content": "## **Third Parties** \n\nApple can be found responsible for bribes, kickbacks, and/or facilitating payments made by third parties in connection with Apple’s business. Third parties also have an obligation to ensure that their third parties, such as sub-contractors or agents, understand and comply with this Policy and applicable anti-corruption laws. Third parties may not be used to circumvent the laws or this Policy. Willful ignorance is not a defense. Before engaging a third party that will be interacting with the government or public officials on Apple’s behalf, contact globalcompliance@apple.com to evaluate whether we need to conduct additional due diligence. Please refer to the Due Diligence Policy for additional information. Be on the lookout for these red flags when dealing with third parties and subcontractors and alert Business Conduct if you become aware of any of the following: \n\n- Rumors of, or a reputation for, bribery; \n\n- Minimal detail on invoices or expense claims involving interactions with public officials or government agencies, including lump sum requests, requests for large commissions or payments, or payments made through a third party or another country; \n\n- A close relationship with a public official or ministry, or insistence on using a specific consultant or one who provides little to no obvious added value. ## **Accurate Records and Internal Controls** \n\nApple is legally required to make and keep accurate records that truthfully and accurately reflect all the transactions of the corporation and maintain an adequate system of internal accounting controls. This includes preserving supporting documentation and proper approvals. Ensure that all relevant records — including invoices, expense reports, and any other business record — accurately reflect the transaction. Do not misstate facts, omit information or modify records or reports in any way. Provide as much detail as possible.",
+          "similarity_score": 0.779534962232713
+        },
+        {
+          "rank": 2,
+          "chunk_id": "APL-CMP-004::chunk::9",
+          "document_id": "APL-CMP-004",
+          "chunk_index": 9,
+          "source_document": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "page_number": 5,
+          "section_title": null,
+          "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
+          "content": "Anything of value includes cash, cash equivalents, gifts, entertainment, internships, employment, or even a promise. Apple also does not allow for facilitating payments in relation to any Apple related business. Facilitating payments are typically demanded by low-level officials in exchange for providing a service that is ordinarily and commonly performed by the official. Third parties are required to report anytime they are confronted with a request to pay a bribe. Contact globalcompliance@apple.com or Apple’s external helpline. For additional details please refer to Apple’s Anti-Corruption Policy. **Responsible Sourcing and Due Diligence.** Third parties must exercise due diligence in their own business operations, including development of due diligence policies and management systems in order to identify applicable risks and take appropriate steps to mitigate such risks. **Interactions with Public Officials.** A public official is any person who is paid with government funds or serves in a public function. This includes individuals who work for a local, state/provincial, or national government, a public international organization, as well as employees of public (government-owned or operated) schools, hospitals, and state-owned enterprises. Employees at such organizations are considered public officials regardless of title or position. Apple expects any third party working with a public official to adhere to additional rules and obligations, including meal, gift, and travel limits. February 2022 \n\n5 \n\n",
+          "similarity_score": 0.765730738639837
+        },
+        {
+          "rank": 3,
+          "chunk_id": "APL-CMP-003::chunk::0",
+          "document_id": "APL-CMP-003",
+          "chunk_index": 0,
+          "source_document": "apl-cmp-003_anti_corruption_policy.pdf",
+          "page_number": 1,
+          "section_title": null,
+          "official_url": "https://www.apple.com/compliance/pdfs/Anti-Corruption-Policy.pdf",
+          "content": "## Apple Anti-Corruption Policy \n\nCorruption can take many forms, but most often it occurs through bribery. At Apple, we do not tolerate any form of corruption in connection with our business dealings. If you are unsure of the proper course of action, or whether something constitutes corruption, contact Business Conduct. ## **Bribery** \n\nA bribe is offering or giving anything of value to any person for the purpose of obtaining or retaining business, or securing an improper advantage. You cannot offer or receive bribes from any individual, regardless of whether that individual is a public official or a private party. Anything of value includes cash, cash equivalents such as gift cards, gifts, meals, travel and entertainment, and can also include a promise, or guarantee of something of value.",
+          "similarity_score": 0.713774280919179
+        },
+        {
+          "rank": 4,
+          "chunk_id": "APL-CMP-004::chunk::0",
+          "document_id": "APL-CMP-004",
+          "chunk_index": 0,
+          "source_document": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "page_number": 1,
+          "section_title": null,
+          "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
+          "content": "## **Third Party Code of Conduct** \n\n## **Our Principles** \n\nAt Apple, we believe in doing business ethically, transparently, and in full compliance with all applicable laws and regulations. Apple requires all businesses and persons that associate themselves with our brand to uphold these same high standards. To that end, Apple requires certain third parties working with Apple or on behalf of Apple worldwide to comply with this Third Party Code of Conduct (Code). ## **Who** \n\nThis Code applies to certain third parties that work with or on behalf of Apple. This includes, but is not limited to, channel members (distributors, resellers, service providers, and carriers) and any other third party not covered by Apple’s Supplier Code of Conduct (collectively, “third parties”). Your employees, independent and sub-contractors, consultants, or anyone that you work with or contract with as part of your relationship with Apple should understand and comply with all provisions of this Code. ## **Our Expectations** \n\nThird parties must be committed to high standards of ethical conduct in all business dealings and must comply with all applicable legal requirements. Third parties must demonstrate integrity in every business interaction and avoid engaging in any activity that involves the appearance of impropriety. ## **Your Responsibilities** \n\nWhere applicable or required by law, third parties must establish policies, procedures, and monitoring practices so their employees, independent contractors, consultants, and all others who do business for or on their behalf (in relation to Apple’s business) understand and comply with all provisions of this Code and other applicable Apple policies. This includes conducting due diligence on its own third parties who are performing work in relation to Apple’s business. Third parties must treat customers, business partners, employees, and others with respect and courtesy. Third parties should have a process in place to ensure complaints, questions, and allegations can be reported in a safe, confidential, and anonymous (where allowed by law) manner. Retaliation is not tolerated in relation to reporting good-faith violations of this Code.",
+          "similarity_score": 0.666354636360569
+        },
+        {
+          "rank": 5,
+          "chunk_id": "APL-CMP-003::chunk::8",
+          "document_id": "APL-CMP-003",
+          "chunk_index": 8,
+          "source_document": "apl-cmp-003_anti_corruption_policy.pdf",
+          "page_number": 4,
+          "section_title": null,
+          "official_url": "https://www.apple.com/compliance/pdfs/Anti-Corruption-Policy.pdf",
+          "content": "## **Reporting Potential or Actual Violations** \n\nYou should consult with Business Conduct if there is a question as to the appropriateness of a particular business decision or course of action. Monitor third parties closely, especially if they interact with public officials on Apple’s behalf or benefit. Any employee who learns of any misconduct or suspicious activities, including potential violations of this Policy and the law, must immediately report such misconduct either to Business Conduct or Legal. ## **Questions** \n\nAll questions about information contained in this Policy should be directed to Business Conduct. ## **Retaliation Is Not Tolerated** \n\nApple will not retaliate – and will not tolerate retaliation – against any individual for filing a good-faith complaint with management, HR, Legal, Internal Audit, Finance, or Business Conduct, or for participating in the investigation of any such complaint. June 2018 \n\n4 \n\n",
+          "similarity_score": 0.66154189935077
+        }
+      ],
+      "hit": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "latency_ms": 3836.11675200018
+    },
+    {
+      "question": "What standards must third parties working with Apple follow?",
+      "expected_document_ids": [
+        "APL-CMP-004"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "chunk_id": "APL-CMP-004::chunk::0",
+          "document_id": "APL-CMP-004",
+          "chunk_index": 0,
+          "source_document": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "page_number": 1,
+          "section_title": null,
+          "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
+          "content": "## **Third Party Code of Conduct** \n\n## **Our Principles** \n\nAt Apple, we believe in doing business ethically, transparently, and in full compliance with all applicable laws and regulations. Apple requires all businesses and persons that associate themselves with our brand to uphold these same high standards. To that end, Apple requires certain third parties working with Apple or on behalf of Apple worldwide to comply with this Third Party Code of Conduct (Code). ## **Who** \n\nThis Code applies to certain third parties that work with or on behalf of Apple. This includes, but is not limited to, channel members (distributors, resellers, service providers, and carriers) and any other third party not covered by Apple’s Supplier Code of Conduct (collectively, “third parties”). Your employees, independent and sub-contractors, consultants, or anyone that you work with or contract with as part of your relationship with Apple should understand and comply with all provisions of this Code. ## **Our Expectations** \n\nThird parties must be committed to high standards of ethical conduct in all business dealings and must comply with all applicable legal requirements. Third parties must demonstrate integrity in every business interaction and avoid engaging in any activity that involves the appearance of impropriety. ## **Your Responsibilities** \n\nWhere applicable or required by law, third parties must establish policies, procedures, and monitoring practices so their employees, independent contractors, consultants, and all others who do business for or on their behalf (in relation to Apple’s business) understand and comply with all provisions of this Code and other applicable Apple policies. This includes conducting due diligence on its own third parties who are performing work in relation to Apple’s business. Third parties must treat customers, business partners, employees, and others with respect and courtesy. Third parties should have a process in place to ensure complaints, questions, and allegations can be reported in a safe, confidential, and anonymous (where allowed by law) manner. Retaliation is not tolerated in relation to reporting good-faith violations of this Code.",
+          "similarity_score": 0.748926661876639
+        },
+        {
+          "rank": 2,
+          "chunk_id": "APL-CMP-004::chunk::11",
+          "document_id": "APL-CMP-004",
+          "chunk_index": 11,
+          "source_document": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "page_number": 6,
+          "section_title": null,
+          "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
+          "content": "**Trade Restrictions, Export Controls, and Customs.** All transactions must comply with United States export and customs laws and additional export and customs laws in the countries where business is being conducted. Third parties whose business activities involve the sale or shipment of Apple products, technologies, or services across international borders must understand and ensure compliance with all applicable laws or restrictions that apply in connection with those activities. Third parties conducting business on behalf of Apple must take additional steps to ensure that they are not interacting, contracting, or otherwise engaging with a sanctioned person or entity. This may include screening or other procedures that ensure that the third party is not conducting business with a sanctioned entity. **Competition and Sales Practices.** Third parties must uphold fair business standards in advertising, sales, and competition. Laws regulating competition and trade practices vary around the world, but certain activities, such as price fixing or agreeing with a competitor to allocate customers, are almost always illegal. Third parties must understand and ensure compliance with all competition and trade practices laws or restrictions that apply in connection with their business activities. February 2022 \n\n6 \n\n",
+          "similarity_score": 0.715530395507812
+        },
+        {
+          "rank": 3,
+          "chunk_id": "APL-CMP-004::chunk::2",
+          "document_id": "APL-CMP-004",
+          "chunk_index": 2,
+          "source_document": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "page_number": 2,
+          "section_title": null,
+          "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
+          "content": "## **What You Should Know** \n\nApple conducts due diligence and monitoring on all third parties to ensure compliance with this Code. As a condition of doing business with Apple, you consent to such due diligence and monitoring. Apple will assess a third party's compliance with this Code, and any violations of this Code may jeopardize the third party’s relationship with Apple up to and including termination. ## **Human Rights and Labor** \n\nApple is deeply committed to respecting human rights as stated in Apple’s Human Rights Policy. We expect our third parties to ensure the workplace is fair and ethical and that all workers are treated with the utmost respect and dignity. **Human Rights.** Third parties must uphold internationally recognized human rights and treat workers with dignity and respect. Please refer to Apple’s Human Rights Policy for detailed information and additional expectations. **Anti-Discrimination.** Third parties may not discriminate against any worker based on race, color, age, gender, sexual orientation, ethnicity, disability, pregnancy, religion, political affiliation, union membership, national origin, or marital status in hiring and employment practices such as applications for employment, promotions, rewards, access to training, job assignments, wages, benefits, discipline, termination, and retirement. In addition, third parties may not require workers or potential workers to undergo medical tests that could be used in a discriminatory way, except where required by applicable law or regulation or prudent for workplace safety. **Anti-Harassment and Abuse.** Third parties must be committed to a workplace free of harassment. Third parties may not threaten or subject workers to harsh or inhumane treatment, including sexual harassment, sexual abuse, corporal punishment, mental coercion, physical coercion, or verbal abuse. **Prevention of Involuntary Labor and Human Trafficking.** Third parties must ensure that all work is voluntary. Third parties may not traffic persons or use any form of slave, forced, bonded, indentured, or prison labor.",
+          "similarity_score": 0.683059494677753
+        },
+        {
+          "rank": 4,
+          "chunk_id": "APL-CMP-004::chunk::9",
+          "document_id": "APL-CMP-004",
+          "chunk_index": 9,
+          "source_document": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "page_number": 5,
+          "section_title": null,
+          "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
+          "content": "Anything of value includes cash, cash equivalents, gifts, entertainment, internships, employment, or even a promise. Apple also does not allow for facilitating payments in relation to any Apple related business. Facilitating payments are typically demanded by low-level officials in exchange for providing a service that is ordinarily and commonly performed by the official. Third parties are required to report anytime they are confronted with a request to pay a bribe. Contact globalcompliance@apple.com or Apple’s external helpline. For additional details please refer to Apple’s Anti-Corruption Policy. **Responsible Sourcing and Due Diligence.** Third parties must exercise due diligence in their own business operations, including development of due diligence policies and management systems in order to identify applicable risks and take appropriate steps to mitigate such risks. **Interactions with Public Officials.** A public official is any person who is paid with government funds or serves in a public function. This includes individuals who work for a local, state/provincial, or national government, a public international organization, as well as employees of public (government-owned or operated) schools, hospitals, and state-owned enterprises. Employees at such organizations are considered public officials regardless of title or position. Apple expects any third party working with a public official to adhere to additional rules and obligations, including meal, gift, and travel limits. February 2022 \n\n5 \n\n",
+          "similarity_score": 0.652524390967155
+        },
+        {
+          "rank": 5,
+          "chunk_id": "APL-CMP-004::chunk::13",
+          "document_id": "APL-CMP-004",
+          "chunk_index": 13,
+          "source_document": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "page_number": 7,
+          "section_title": null,
+          "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
+          "content": "Third parties must never misstate facts, omit critical information, or modify records or reports in any way to mislead or assist others in doing so. **Privacy.** Apple is committed to ensuring the privacy of the end-user customers of Apple products and services. Third parties are required to comply with all privacy laws and regulations. Third parties must take appropriate precautions — including administrative, technical, and physical measures — to safeguard customers’ personal information against loss, theft, and misuse, as well as unauthorized access, disclosure, alteration, and destruction. Failure to protect customer private information may damage Apple’s relations with its customers and may result in legal liability for third parties. For additional information, see Apple’s Privacy Policy at https://www.apple.com/privacy/. **Confidentiality of Apple Information.** Third parties will protect the confidentiality of Apple information that they have access to. Third parties must strictly abide by all Non-Disclosure Agreements and other agreements regarding the confidentiality of information. Third parties must not comment or provide information on Apple business matters, including any programs, policies, or contract terms. **Protection of Intellectual Property.** Third parties must respect the intellectual property rights of Apple and other third parties and may not knowingly use the intellectual property of any third party without permission or legal right. **Insider Trading.** Third parties who become aware of material nonpublic information regarding Apple or another company— such as an Apple business partner, channel member, vendor, or customer— in connection with their work at Apple, should not buy or sell securities of Apple or such other company. Third parties must also not disclose material nonpublic information to other persons, including family members, or make any recommendation about whether to buy or sell Apple securities or securities of such other companies. Determining whether information is “material” requires consideration of all relevant facts and circumstances. In general, information is material if it would likely be considered important by an investor who is deciding whether to buy or sell a security, or if the information is likely to have a significant effect on the market price of the security. Both positive and negative information may be material. “Nonpublic” information means information that has not been previously disclosed to the general public and is otherwise not available to the general public. Information \n\nFebruary 2022 \n\n7 \n\n",
+          "similarity_score": 0.6484215259552
+        }
+      ],
+      "hit": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "latency_ms": 496.71296499991513
+    },
+    {
+      "question": "What steps must a supplier complete in Supplier Connect before receiving an SAP vendor number?",
+      "expected_document_ids": [
+        "APL-PRC-002"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "chunk_id": "APL-PRC-002::chunk::1",
+          "document_id": "APL-PRC-002",
+          "chunk_index": 1,
+          "source_document": "apl-prc-002_supplier_connect_on_boarding_overview.pdf",
+          "page_number": 1,
+          "section_title": null,
+          "official_url": "https://www.apple.com/legal/procurement/docs/Supplier_Connect_On-Boarding_Overview.pdf",
+          "content": "Supplier will receive a second email notification to login to Supplier Connect allowing them to enter their company information in Supplier Connect. **==> picture [286 x 144] intentionally omitted <==**\n\n5. Supplier will complete the following sections in Supplier Connect: Company, Address, Contacts, Tax and Banking, then Submit their company information. 6. Applicable internal Apple reviews and approvals are completed in Supplier Connect. 7. Supplier and Apple Requestor will receive email notifications with new SAP vendor number. ",
+          "similarity_score": 0.755616017188077
+        },
+        {
+          "rank": 2,
+          "chunk_id": "APL-PRC-002::chunk::0",
+          "document_id": "APL-PRC-002",
+          "chunk_index": 0,
+          "source_document": "apl-prc-002_supplier_connect_on_boarding_overview.pdf",
+          "page_number": 1,
+          "section_title": null,
+          "official_url": "https://www.apple.com/legal/procurement/docs/Supplier_Connect_On-Boarding_Overview.pdf",
+          "content": " \n\n## **Supplier Connect** \n\n## Supplier On-Boarding Process \n\n1. Apple Requestor will create and submit the new supplier request in Supplier Connect \n\n2. Supplier will receive an email notification from myaccess@apple.com to register their company. **==> picture [232 x 154] intentionally omitted <==**\n\n3. After completing the MyAccess registration, Supplier needs to wait 30-60 minutes for the new account to be provisioned in Supplier Connect. 4.",
+          "similarity_score": 0.573557317256927
+        },
+        {
+          "rank": 3,
+          "chunk_id": "APL-PRC-002::chunk::3",
+          "document_id": "APL-PRC-002",
+          "chunk_index": 3,
+          "source_document": "apl-prc-002_supplier_connect_on_boarding_overview.pdf",
+          "page_number": 2,
+          "section_title": null,
+          "official_url": "https://www.apple.com/legal/procurement/docs/Supplier_Connect_On-Boarding_Overview.pdf",
+          "content": "1. For issues with receiving the registration email from Apple or creating an account with Apple, please contact myaccess.support@apple.com. 2. Once you have logged into Supplier Connect, please contact global_ap@apple.com for questions or issues on how to complete and submit your company information. ",
+          "similarity_score": 0.404996287971625
+        },
+        {
+          "rank": 4,
+          "chunk_id": "APL-ENV-002::chunk::157",
+          "document_id": "APL-ENV-002",
+          "chunk_index": 157,
+          "source_document": "apl-env-002_environmental_progress_report.pdf",
+          "page_number": 74,
+          "section_title": null,
+          "official_url": "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2025.pdf",
+          "content": "For more information about the Supplier Clean Energy Program, read the Electricity section. ## **Supplier Energy Efficiency Program** \n\nWe offer suppliers energy efficiency best practices and measures to help avoid emissions that will become requirements for all factories. The Supplier Energy Efficiency Program, launched in 2015, helps suppliers optimize their energy use. Implementing efficiencies reduces the energy intensity of manufacturing, which translates to reduced greenhouse gas emissions. We provide technical support to suppliers as they build more energy-efficient systems.",
+          "similarity_score": 0.338622490249724
+        },
+        {
+          "rank": 5,
+          "chunk_id": "APL-CMP-004::chunk::11",
+          "document_id": "APL-CMP-004",
+          "chunk_index": 11,
+          "source_document": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "page_number": 6,
+          "section_title": null,
+          "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
+          "content": "**Trade Restrictions, Export Controls, and Customs.** All transactions must comply with United States export and customs laws and additional export and customs laws in the countries where business is being conducted. Third parties whose business activities involve the sale or shipment of Apple products, technologies, or services across international borders must understand and ensure compliance with all applicable laws or restrictions that apply in connection with those activities. Third parties conducting business on behalf of Apple must take additional steps to ensure that they are not interacting, contracting, or otherwise engaging with a sanctioned person or entity. This may include screening or other procedures that ensure that the third party is not conducting business with a sanctioned entity. **Competition and Sales Practices.** Third parties must uphold fair business standards in advertising, sales, and competition. Laws regulating competition and trade practices vary around the world, but certain activities, such as price fixing or agreeing with a competitor to allocate customers, are almost always illegal. Third parties must understand and ensure compliance with all competition and trade practices laws or restrictions that apply in connection with their business activities. February 2022 \n\n6 \n\n",
+          "similarity_score": 0.338275402784348
+        }
+      ],
+      "hit": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "latency_ms": 331.3958180001464
+    },
+    {
+      "question": "What is the most reliable way to submit invoices to Apple?",
+      "expected_document_ids": [
+        "APL-PRC-015"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "chunk_id": "APL-PRC-015::chunk::4",
+          "document_id": "APL-PRC-015",
+          "chunk_index": 4,
+          "source_document": "apl-prc-015_remittance_faqs.pdf",
+          "page_number": 4,
+          "section_title": null,
+          "official_url": "https://www.apple.com/legal/procurement/docs/RemittanceFAQs.pdf",
+          "content": "The email for Accounts Payable queries can be found at the bottom of the payment advice. ## _**Q:  What is the most reliable way to submit invoices to Apple?**_ \n\nA:  e-Invoicing is generally the fastest, most efficient way to submit invoices to Apple and to expedite the payment process if it is permitted by your country. Send an email to the Accounts Payable email address located at the bottom of the payment advice to confirm - the best approach for your account. To set up e-invoicing, contact http://www.tungsten network.com/apple_new/. For invoicing instructions, see the purchase order. ",
+          "similarity_score": 0.807441044297282
+        },
+        {
+          "rank": 2,
+          "chunk_id": "APL-PRC-015::chunk::3",
+          "document_id": "APL-PRC-015",
+          "chunk_index": 3,
+          "source_document": "apl-prc-015_remittance_faqs.pdf",
+          "page_number": 4,
+          "section_title": null,
+          "official_url": "https://www.apple.com/legal/procurement/docs/RemittanceFAQs.pdf",
+          "content": "## Frequently Asked Questions and Answers Payments, Payment Advices and Invoice Discounting \n\n## _**Q:  Why am I receiving a payment from Apple?**_ \n\nA:  Apple’s records indicate a payment was due to you. Please refer to the details in the body of the payment advice for additional information. ## _**Q:  When will our other invoices be paid?**_ \n\nA:  Invoices are paid in accordance with the negotiated payment terms found in the purchase order issued by Apple. If your records indicate that an invoice is overdue, please contact Accounts Payable. ## _**Q:  How do I contact Accounts Payable?**_ \n\nA:  Send an email to the Accounts Payable email address located at the bottom of the payment advice. ## _**Q:  How do I change my mailing or email address?**_ \n\nA:  Send an email to the Accounts Payable email address noted on the payment advice. ## _**Q:  How do I interpret the date contained in the payment advice? It does not match our records.**_ \n\nA:  The date is in dd/mm/yyyy (day-month-year), e.g. 7-4-2016 is April 7, 2016. ## _**Q:  What are the “document” and “vendor numbers” in the header of the payment advice?**_ \n\nA:   The document number is the internal Apple reference for this payment advice and the vendor number is your account number with Apple. If you contact Accounts Payable with a query, **please reference both of these numbers** so your inquiry may be accurately addressed.",
+          "similarity_score": 0.584775601910092
+        },
+        {
+          "rank": 3,
+          "chunk_id": "APL-PRC-015::chunk::5",
+          "document_id": "APL-PRC-015",
+          "chunk_index": 5,
+          "source_document": "apl-prc-015_remittance_faqs.pdf",
+          "page_number": 5,
+          "section_title": null,
+          "official_url": "https://www.apple.com/legal/procurement/docs/RemittanceFAQs.pdf",
+          "content": "## Invoice Discounting \n\n## _**Q:  Why am I being paid less than the amount on my invoice to Apple?**_ \n\nA:  Common reasons for payment differences are related to early payment discount terms or taxes. ## _**Q:  My invoice shows a discount amount. How can I confirm that the correct discount amount has been applied to this payment?**_ \n\nA:  Your company’s contract(s) and/or purchase order(s) from Apple contain the agreed upon payment terms. Begin by confirming what the payment terms are between your company and Apple for the invoices included in this payment advice.",
+          "similarity_score": 0.543611098254719
+        },
+        {
+          "rank": 4,
+          "chunk_id": "APL-CMP-003::chunk::5",
+          "document_id": "APL-CMP-003",
+          "chunk_index": 5,
+          "source_document": "apl-cmp-003_anti_corruption_policy.pdf",
+          "page_number": 3,
+          "section_title": null,
+          "official_url": "https://www.apple.com/compliance/pdfs/Anti-Corruption-Policy.pdf",
+          "content": "## **Third Parties** \n\nApple can be found responsible for bribes, kickbacks, and/or facilitating payments made by third parties in connection with Apple’s business. Third parties also have an obligation to ensure that their third parties, such as sub-contractors or agents, understand and comply with this Policy and applicable anti-corruption laws. Third parties may not be used to circumvent the laws or this Policy. Willful ignorance is not a defense. Before engaging a third party that will be interacting with the government or public officials on Apple’s behalf, contact globalcompliance@apple.com to evaluate whether we need to conduct additional due diligence. Please refer to the Due Diligence Policy for additional information. Be on the lookout for these red flags when dealing with third parties and subcontractors and alert Business Conduct if you become aware of any of the following: \n\n- Rumors of, or a reputation for, bribery; \n\n- Minimal detail on invoices or expense claims involving interactions with public officials or government agencies, including lump sum requests, requests for large commissions or payments, or payments made through a third party or another country; \n\n- A close relationship with a public official or ministry, or insistence on using a specific consultant or one who provides little to no obvious added value. ## **Accurate Records and Internal Controls** \n\nApple is legally required to make and keep accurate records that truthfully and accurately reflect all the transactions of the corporation and maintain an adequate system of internal accounting controls. This includes preserving supporting documentation and proper approvals. Ensure that all relevant records — including invoices, expense reports, and any other business record — accurately reflect the transaction. Do not misstate facts, omit information or modify records or reports in any way. Provide as much detail as possible.",
+          "similarity_score": 0.487527519464496
+        },
+        {
+          "rank": 5,
+          "chunk_id": "APL-PRC-002::chunk::3",
+          "document_id": "APL-PRC-002",
+          "chunk_index": 3,
+          "source_document": "apl-prc-002_supplier_connect_on_boarding_overview.pdf",
+          "page_number": 2,
+          "section_title": null,
+          "official_url": "https://www.apple.com/legal/procurement/docs/Supplier_Connect_On-Boarding_Overview.pdf",
+          "content": "1. For issues with receiving the registration email from Apple or creating an account with Apple, please contact myaccess.support@apple.com. 2. Once you have logged into Supplier Connect, please contact global_ap@apple.com for questions or issues on how to complete and submit your company information. ",
+          "similarity_score": 0.48469231885901
+        }
+      ],
+      "hit": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "latency_ms": 427.9205519997049
+    },
+    {
+      "question": "By how much did Apple reduce gross greenhouse gas emissions compared with its 2015 baseline?",
+      "expected_document_ids": [
+        "APL-ENV-002"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "chunk_id": "APL-ENV-002::chunk::215",
+          "document_id": "APL-ENV-002",
+          "chunk_index": 215,
+          "source_document": "apl-env-002_environmental_progress_report.pdf",
+          "page_number": 103,
+          "section_title": null,
+          "official_url": "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2025.pdf",
+          "content": "Green Bond Impact Report **Appendix** \n\nContents Introduction Environmental Initiatives \n\n2025 Environmental Progress Report \n\nEngagement and Advocacy Data \n\n103 \n\n## **Appendix B** \n\n## **Apple’s life cycle assessment methodology** \n\nWhen conducting a product life cycle assessment \n\n(LCA), we calculate greenhouse gas emissions using the 100-year time horizon global warming potentials (GWP100) from the 2023 IPCC Sixth Assessment Report (AR6),[1] including biogenic carbon. There’s inherent uncertainty in modeling greenhouse gas emissions due primarily to data limitations. For the top component contributors to Apple’s greenhouse gas emissions, Apple develops detailed process-based environmental models with Applespecific parameters. For the remaining elements of Apple’s carbon footprint, we rely on industry average data and assumptions. We continuously improve our abilities to accurately calculate our emissions, seeking more detailed data and models to reflect the impact of our products as new information becomes available. > 1  Intergovernmental Panel on Climate Change (IPCC), Climate Change 2023: Synthesis Report. Contribution of Working Groups I, II, and III to the Sixth Assessment Report of the Intergovernmental Panel on Climate Change, ed.",
+          "similarity_score": 0.705574673746508
+        },
+        {
+          "rank": 2,
+          "chunk_id": "APL-ENV-002::chunk::223",
+          "document_id": "APL-ENV-002",
+          "chunk_index": 223,
+          "source_document": "apl-env-002_environmental_progress_report.pdf",
+          "page_number": 106,
+          "section_title": null,
+          "official_url": "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2025.pdf",
+          "content": "As a result, the reported figures increased slightly. Data reported by Apple on March 3, 2025, is as follows: **Manufacturing Transportation Product Use Recycling Total base product footprint 2024 29.03 1.95 4.68 0.07 35.73** [MMT CO2e] [MMT CO2e] [MMT CO2e] [MMT CO2e] [MMT CO2e] _MMT CO2e: million metric tons carbon dioxide equivalents_ The total scope 3 product related carbon footprint is reported to be 35.73 million metric tons CO2e, applying a location-based method reflecting the average emissions intensity of grids on which energy consumption occurs. This figure does not include greenhouse gas emissions reductions for manufacturing resulting from Apple renewable energy projects, supplier renewable electricity purchases, and supplier renewable electricity installations. Based on the process and procedures conducted, there is no evidence that the Greenhouse Gas (GHG) assertion with regards to scope 3 carbon footprint \n\n   - is not materially correct and is not a fair representation of GHG data and information, and \n\n   - has not been prepared in accordance with the related International Standard on GHG quantification, monitoring and reporting. - 2 Reviewed Data and Plausibility Check \n\nA verification and sampling plan as required by ISO 14046-3 has been established for the comprehensive carbon footprint review and verification, defining the level of assurance, objectives, criteria, scope and materiality of the verification. As part of this review and verification Apple disclosed following data to Fraunhofer IZM: \n\n- Sales data for FY2024, including accessories and including AppleCare, Apple's extended warranty and technical support plans for their devices. **==> picture [106 x 30] intentionally omitted <==**\n\n- Life cycle GHG emissions for all products, differentiating the actual product configurations (e.g. memory capacity and processor variant) \n\n- Calculation methodology for the comprehensive carbon footprint  Detailed analysis of the comprehensive carbon footprint including: \n\n   - The breakdown of the carbon footprint into life cycle phases manufacturing, transportation, product use and recycling \n\n   - `o` Detailed product specific split into life cycle phases `o` The contribution of individual products and product families to the overall carbon footprint \n\nThe data and information supporting the GHG assertion were projected (use phase and recycling) and historical (i.e. fiscal year 2024 data regarding sales figures, manufacturing, transportation, use patterns where available).",
+          "similarity_score": 0.701301932334905
+        },
+        {
+          "rank": 3,
+          "chunk_id": "APL-ENV-002::chunk::222",
+          "document_id": "APL-ENV-002",
+          "chunk_index": 222,
+          "source_document": "apl-env-002_environmental_progress_report.pdf",
+          "page_number": 106,
+          "section_title": null,
+          "official_url": "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2025.pdf",
+          "content": "**Appendix** \n\nIntroduction \n\nEnvironmental Initiatives \n\n2025 Environmental Progress Report \n\nEngagement and Advocacy \n\nGreen Bond Impact Report \n\n106 \n\nContents \n\nData \n\n## **Appendix C** \n\n## **Product carbon footprint (Fraunhofer Institute)** \n\n**==> picture [106 x 30] intentionally omitted <==**\n\n## **Letter of Assurance** \n\nComprehensive Carbon Footprint – Scope 3: Product related Carbon Footprint for Fiscal Year 2024 \n\nFraunhofer IZM reviewed Apple’s scope 3 carbon footprint data related to the products manufactured and sold by Apple Inc. in fiscal year 2024. - 1 Summary \n\nThis review checks transparency of data and calculations, appropriateness of supporting product related data and assumptions, and overall plausibility of the calculated comprehensive annual carbon footprint comprised of emissions derived from the life cycle assessment (LCA) of Apple products shipped in fiscal year 2024. This review and verification focuses on Scope 3 emissions for products sold by Apple Inc. (as defined by WRI/WBCSD/Greenhouse Gas Protocol – Scope 3 Accounting and Reporting Standard). Confidential data relating to product sales and shipments were excluded from the scope of this verification. This review and verification covers Apple’s annual greenhouse gas emissions and does not replace reviews conducted for individual product LCAs for greenhouse gas emissions (GHGs). The life cycle emissions data produced by Apple for individual products has been calculated in accordance to the standard ISO 14040/14044: Environmental management – Life cycle assessment – Principles and framework / Requirements and guidelines and ISO 14067: Greenhouse gases - Carbon footprint of products - Requirements and guidelines for quantification. This letter of assurance furthermore complies with verification report requirements of ISO 14064-3: Greenhouse gases – Part 3: Specification with guidance for the verification and validation of greenhouse gas statements. - The review of the annual carbon footprint has considered the following criteria: \n\n- The system, boundaries and functional unit are clearly defined \n\n- Assumptions and estimations made are appropriate \n\n- Selection of primary and secondary data is appropriate and methodologies used are adequately disclosed \n\nThese criteria are also fundamental to the review of LCAs conducted for individual product emissions. The reviewers note that the largest share of Apple Inc. annual carbon footprint is comprised of scope 3 emissions from individual products. The aforementioned criteria have \n\n**==> picture [106 x 30] intentionally omitted <==**\n\nbeen regularly reviewed by Fraunhofer IZM experts since 2007 with a view to providing independent feedback that can facilitate continuous improvement and refinement in the LCA methodology applied by Apple Inc. On February 28, 2025, Apple withdrew the originally reported results and introduced a revised and improved approach to accounting for component yield.",
+          "similarity_score": 0.69130838137642
+        },
+        {
+          "rank": 4,
+          "chunk_id": "APL-ENV-002::chunk::174",
+          "document_id": "APL-ENV-002",
+          "chunk_index": 174,
+          "source_document": "apl-env-002_environmental_progress_report.pdf",
+          "page_number": 82,
+          "section_title": null,
+          "official_url": "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2025.pdf",
+          "content": "- \n\n- 1 \n\nApple’s carbon footprint boundary is aligned with the Greenhouse Gas (GHG) Protocol framework and includes emissions that are material and relevant to Apple, where data is available. Apple’s carbon footprint includes direct scope 1 emissions; indirect scope 2 emissions from purchased electricity, steam, heating, and cooling; and indirect scope 3 emissions from purchased goods and services, other fuel and energy related activities, transportation and distribution, business travel, employee commute, product use, and end of life. - 2 Apple is carbon neutral for corporate emissions as of April 2020. Beginning in fiscal year 2022, we’ve expanded our footprint boundary to include scope 3 emissions associated with work from home, other cloud services, electricity transmission and distribution losses, and other fuel and energy-related activities.",
+          "similarity_score": 0.681185166906428
+        },
+        {
+          "rank": 5,
+          "chunk_id": "APL-ENV-002::chunk::254",
+          "document_id": "APL-ENV-002",
+          "chunk_index": 254,
+          "source_document": "apl-env-002_environmental_progress_report.pdf",
+          "page_number": 125,
+          "section_title": null,
+          "official_url": "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2025.pdf",
+          "content": "Engagement and Advocacy Data Green Bond Impact Report **Appendix** \n\nIntroduction \n\nEnvironmental Initiatives \n\n2025 Environmental Progress Report \n\nContents \n\n125 \n\n## **End notes** \n\n## **Introduction** \n\n1  Apple follows the GHG Protocol Corporate Accounting and Reporting Standard (GHG Protocol) to calculate value chain emissions. The GHG Protocol currently defines scope 1 emissions as direct greenhouse gas emissions that occur from sources that are owned or controlled by the company; scope 2 emissions as the indirect greenhouse gas emissions from the generation of purchased electricity, steam, heat, and cooling consumed by the company; and scope 3 emissions as all “other indirect emissions” that occur in the value chain of the reporting company, including both upstream and downstream emissions. Apple currently sets an operational boundary for its emissions and excludes the following scope 3 categories, as defined by the GHG Protocol, which collectively make up less than 10 percent of our 2015 base year scope 3 emissions currently: “capital goods” due to limited data availability, which limits our ability to influence these emissions, and “waste generated in operations,” as these emissions are negligible. The following subset of greenhouse gas categories recognized in the Kyoto Protocol are included: carbon dioxide (CO2), methane (CH4), nitrous oxide (N2O), hydrofluorocarbons (HFCs), perfluorocarbons (PFCs), and sulfur hexafluoride (SF6), nitrogen trifluoride (NF3). - 2  Carbon reductions are calculated against a product-specific business-as-usual scenario as modeled by Apple: No use of clean electricity for manufacturing or product use, beyond what is already available on the latest modeled grid (based on regional emissions factors). Apple’s carbon intensity of key materials as of 2015 (our baseline year for our 2030 product carbon neutrality goal). Carbon intensity of materials reflects use of recycled content and production technology. Apple’s average mix of transportation modes (air, rail, ocean, ground) by product line across three years (fiscal years 2017 to 2019) to best capture the baseline transportation emissions of our products. - 3  Cobalt in the battery claims or references uses mass balance allocation. - 4  Apple reports data about the recycled content of its products at different levels of fidelity, based on the level of independent data verification. The bulk of Apple’s recycled content data is certified and thus verified by a third party. Less than 1 percent of the total mass shipped in Apple products in fiscal year 2024 contained recycled content that is either supplier verified, meaning it has been reported by the supplier and crosschecked by Apple, or supplier reported, meaning it has been reported by the supplier based on production and allocation values. In all cases, Apple defines recycled content in alignment with ISO 14021. We do not currently include industry-average recycled content, which may result in underreporting actual recycled content. Total recycled material shipped in products is driven by product material composition and total sales — as a result, this overall recycled or renewable content percentage may fluctuate based on the number and type of products sold each year. - 5  In addition to working toward transitioning our entire product value chain to using 100 percent clean electricity by 2030, we’re prioritizing energy efficiency and emissions reductions within supplier facilities and operations. - 6  We plan to reach carbon neutrality for our fiscal year 2030 carbon footprint. - 7 Refer to footnote 4. 8  By the end of calendar year 2025, we plan to use 100 percent recycled cobalt in all Apple-designed batteries (using mass balance allocation), 100 percent recycled tin soldering and 100 percent recycled gold plating in all Apple-designed rigid and flexible printed circuit boards, and 100 percent recycled rare earth elements in all magnets. Our plan excludes products and components manufactured for replacement or repair. Cobalt in the battery claims or references uses mass balance allocation. ## 9 Refer to footnote 3. 10  By the end of calendar year 2025, we plan to remove plastic from packaging by transitioning to 100 percent fiber-based packaging. Apple’s goal to remove plastic from packaging includes retail bags, all finished goods boxes (including plastic content in labels and in-box documentation), packaging sent to our customers as part of Apple Trade In, AppleCare packaging for whole units and service modules (with the exception of plastics needed to protect items from electrostatic discharge), and secondary packaging of Apple products and accessories sold by Apple. Our goal does not include the inks, coatings, or adhesives used in our packaging. We plan to remove plastic from the packaging of refurbished products by 2027, once old product packaging designs are phased out. We’ll continue selling existing inventory of AppleCare packaging for whole units and service modules that contain plastics for vintage and products at end of life until it is consumed. This approach will enable us to avoid waste generated by repackaging goods in new 100 percent fiber-based packaging. 11 By 2030, we plan to replenish 100 percent of our corporate freshwater withdrawals in high-stress locations, as determined by a World Resources Institute (WRI) Aqueduct Baseline Water Stress Indicator and further refined through local context and analysis. - 12  By the end of fiscal year 2025, we plan to have certified all Apple-owned data centers to the Alliance for Water Stewardship Standard. - 13  By 2030, we plan to identify priority suppliers and drive their enrollment in our Supplier Clean Water Program. Apple prioritizes supplier facilities by overall basin stress indicator, onsite activity type, and annual water volume usage. ## **Environmental Initiatives** \n\n14  Renewable electricity refers to fossil fuel–free sources of energy from renewable sources, like wind, solar, and low-impact hydroelectricity projects. Clean electricity refers to both renewable electricity as well as other projects that Apple considers “low carbon” but not “renewable,” like nuclear and large-impact hydroelectricity projects. Apple currently only allows for clean electricity sources to address electricity for product use when part of a residual grid factor, in markets where there is sufficient data to ensure that the clean electricity is not already claimed. For Apple’s corporate footprint, supply chain manufacturing, and the portion of our product use impact that is not already clean electricity, Apple is investing in only new renewable electricity sources. - 15  Aluminum Apple Watch Series 9, Apple Watch Ultra 2, and Apple Watch SE when paired with a carbon neutral band \n\n## 16  Refer to footnote 4. - 17  Apple’s commitment is to use 100 percent recycled cobalt, using mass balance allocation, in all Apple-designed batteries by the end of calendar year 2025. Our commitment excludes products and components manufactured for replacement or repair. - 18  Apple’s commitment is to use 100 percent recycled tin soldering and gold plating in all Apple-designed rigid and flexible printed circuit boards by the end of calendar year 2025. Our commitment excludes products and components manufactured for replacement or repair. - 19  Apple’s commitment is to use 100 percent recycled rare earth elements in all magnets by the end of calendar year 2025. Our commitment excludes products and components manufactured for replacement or repair.",
+          "similarity_score": 0.677148144075165
+        }
+      ],
+      "hit": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "latency_ms": 331.56975100018826
+    }
+  ]
+}

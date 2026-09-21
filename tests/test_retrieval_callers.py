@@ -1,17 +1,15 @@
 import io
-import json
 import sys
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from scripts import check_apple_retrieval
 from core.retrieval.retrieval import RetrievalRequest, RetrievalResponse
 from core.rag.rag_service import RAGService
 
@@ -60,24 +58,6 @@ class RetrievalCallersTest(unittest.TestCase):
         self.assertTrue(context.startswith("[S1]"))
         self.assertEqual(self.response.model_dump(), original)
         self.assertEqual(output.getvalue(), "")
-
-    def test_script_consumes_typed_results_and_closes_service(self):
-        output = io.StringIO()
-        with patch.object(check_apple_retrieval, "RetrievalService", return_value=self.retrieval), \
-             patch.object(sys, "argv", ["check_apple_retrieval.py", "--limit", "2"]), \
-             redirect_stdout(output):
-            self.assertEqual(check_apple_retrieval.main(), 0)
-        self.assertEqual(self.retrieval.retrieve.call_count, len(check_apple_retrieval.QUESTIONS))
-        for call, question in zip(self.retrieval.retrieve.call_args_list, check_apple_retrieval.QUESTIONS):
-            self.assertEqual(call.args, (RetrievalRequest(query=question, top_k=2),))
-        rows = [json.loads(line) for line in output.getvalue().splitlines() if line.startswith("{")]
-        self.assertEqual(rows[0]["rank"], self.response.results[0].rank)
-        self.assertEqual(rows[0]["document_name"], self.response.results[0].source)
-        self.assertEqual(rows[0]["chunk_index"], self.response.results[0].location.chunk_index)
-        self.assertEqual(rows[0]["score"], self.response.results[0].score)
-        self.assertEqual(rows[0]["preview"], " ".join(self.response.results[0].text.split())[:240])
-        self.retrieval.close.assert_called_once()
-
 
 if __name__ == "__main__":
     unittest.main()

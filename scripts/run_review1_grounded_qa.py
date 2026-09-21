@@ -23,8 +23,8 @@ CASES = (
         "id": "policy_anti_corruption",
         "domain": "compliance",
         "question": (
-            "According to Apple's Anti-Corruption Policy,"
-            "what responsibilities do third parties have "
+            "According to Apple's Anti-Corruption Policy, "
+            "What responsibilities do third parties have "
             "concerning bribery and corruption?"
         ),
         "expected_document_id": "APL-CMP-003",
@@ -44,9 +44,10 @@ CASES = (
         "id": "environment_report",
         "domain": "report",
         "question": (
-            "According to Apple's Anti-Corruption Policy, "
-            "what responsibilities do third parties have "
-            "concerning bribery and corruption?"
+            "According to Apple's Environmental Progress Report, "
+            "what percentage reduction in gross greenhouse gas "
+            "emissions did Apple report compared with its "
+            "2015 baseline?"
         ),
         "expected_document_id": "APL-ENV-002",
         "expect_insufficient": False,

@@ -12,7 +12,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 import check_apple_retrieval
-from core.models.retrieval import RetrievalRequest, RetrievalResponse
+from core.retrieval.retrieval import RetrievalRequest, RetrievalResponse
 from core.rag.rag_service import RAGService
 
 

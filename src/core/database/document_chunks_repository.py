@@ -6,7 +6,7 @@ from psycopg.types.json import Jsonb
 from pgvector.psycopg import register_vector
 import numpy as np
 
-from core.models.retrieval import RetrievedChunk
+from core.retrieval.retrieval import RetrievedChunk
 
 load_dotenv()
 

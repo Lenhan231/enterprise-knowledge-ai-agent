@@ -11,7 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from core.database.vector_repository import VectorRepository
-from core.models.retrieval import RetrievedChunk
+from core.retrieval.retrieval import RetrievedChunk
 
 
 class VectorRepositorySearchTest(unittest.TestCase):

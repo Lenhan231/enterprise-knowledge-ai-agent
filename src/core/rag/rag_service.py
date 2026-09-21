@@ -1,5 +1,5 @@
 from core.llm.groq_provider import GroqProvider
-from core.models.retrieval import RetrievalRequest
+from core.retrieval.retrieval import RetrievalRequest
 from core.retrieval import RetrievalService
 
 MAX_CONTEXT_CHARS = 24_000

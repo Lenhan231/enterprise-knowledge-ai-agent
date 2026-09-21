@@ -5,7 +5,7 @@ from __future__ import annotations
 from core.database.document_chunks_repository import DocumentChunkRepository
 from time import perf_counter
 from core.embeddings import EmbeddingService
-from core.models.retrieval import (
+from core.retrieval.retrieval import (
     RankedChunk, RetrievalRequest, RetrievalResponse, SourceLocation, make_chunk_id,
 )
 

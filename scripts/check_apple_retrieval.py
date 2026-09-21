@@ -60,6 +60,10 @@ def main() -> int:
             passed = expected_document_id in retrieved_ids
             failed |= not passed
 
+            print(f"\nQUESTION: {question}")
+            for r in result.results:
+                print(f"  Rank {r.rank} | Score {r.score:.4f} | {r.source} | {result.latency_ms:.1f}ms")
+
             print(
                 f"[{'PASS' if passed else 'FAIL'}] "
                 f"{expected_document_id}: {sorted(retrieved_ids)} ({dt:.2f}s)"

@@ -40,3 +40,6 @@ enterprise-knowledge-ai-agent = "enterprise_knowledge_ai_agent:main"
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13.0"]
 build-backend = "uv_build"
+
+[tool.uv]
+package = false

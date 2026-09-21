@@ -16,12 +16,26 @@ from core.retrieval.retrieval import RetrievalRequest  # noqa: E402
 from core.retrieval.retrieval_service import RetrievalService  # noqa: E402
 
 
-QUESTIONS = (
-    "What standards must third parties working with Apple follow?",
-    "What obligations does a supplier have regarding subcontractors?",
-    "What requirements apply to supplier personnel?",
-    "How does Apple's anti-corruption policy relate to third parties?",
-)
+CASES = {
+    "APL-CMP-003": (
+        "What responsibilities do third parties have under "
+        "Apple's Anti-Corruption Policy?"
+    ),
+    "APL-CMP-004": (
+        "What standards must third parties working with Apple follow?"
+    ),
+    "APL-PRC-002": (
+        "What steps must a supplier complete in Supplier Connect "
+        "before receiving an SAP vendor number?"
+    ),
+    "APL-PRC-015": (
+        "What is the most reliable way to submit invoices to Apple?"
+    ),
+    "APL-ENV-002": (
+        "By how much did Apple reduce gross greenhouse gas emissions "
+        "compared with its 2015 baseline?"
+    ),
+}
 
 
 def main() -> int:
@@ -29,27 +43,28 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=5)
     args = parser.parse_args()
     retrieval = RetrievalService()
+    failed = False
+
     try:
-        for question in QUESTIONS:
-            result = retrieval.retrieve(RetrievalRequest(query=question, top_k=args.limit))
-            print(f"\nQUESTION: {question}")
-            for context in result.results:
-                compact = " ".join(context.text.split())[:240]
-                print(
-                    json.dumps(
-                        {
-                            "rank": context.rank,
-                            "document_name": context.source,
-                            "chunk_index": context.location.chunk_index,
-                            "score": round(context.score, 4),
-                            "preview": compact,
-                        },
-                        ensure_ascii=False,
-                    )
-                )
+        for expected_document_id, question in CASES.items():
+            result = retrieval.retrieve(
+                RetrievalRequest(query=question, top_k=args.limit)
+            )
+            retrieved_ids = {
+                context.document_id
+                for context in result.results
+            }
+            passed = expected_document_id in retrieved_ids
+            failed |= not passed
+
+            print(
+                f"[{'PASS' if passed else 'FAIL'}] "
+                f"{expected_document_id}: {sorted(retrieved_ids)}"
+            )
     finally:
         retrieval.close()
-    return 0
+
+    return int(failed)
 
 
 if __name__ == "__main__":

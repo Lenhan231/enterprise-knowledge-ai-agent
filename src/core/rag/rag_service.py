@@ -1,6 +1,7 @@
 from core.llm.groq_provider import GroqProvider
 from core.retrieval.retrieval import RetrievalRequest
 from core.retrieval.retrieval_service import RetrievalService
+from core.retrieval.retrieval import RetrievalRequest
 from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT
 from pydantic import BaseModel, Field
 import re
@@ -112,8 +113,8 @@ class RAGService:
 
         if not source_ids:
             raise ValueError(
-                "Generated answer contains no source citations"
-            )
+                f"Generated answer contains no source citations. Answer: {answer}"
+)
 
         allowed_source_ids = {
             context["source_id"]

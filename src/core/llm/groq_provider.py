@@ -23,10 +23,20 @@ class GroqProvider(LLMInterface):
             model="openai/gpt-oss-20b",
             input=prompt,
             temperature=0,
-            max_output_tokens=500,
+            reasoning={"effort": "low"},
+            max_output_tokens=1000,
         )
 
-        return response.output_text
+        answer = response.output_text.strip()
+
+        if not answer:
+            raise RuntimeError(
+                "Groq returned empty output "
+                f"(status={getattr(response, 'status', None)}, "
+                f"incomplete={getattr(response, 'incomplete_details', None)})"
+            )
+
+        return answer
     
     # def generate_json(
     #     self,

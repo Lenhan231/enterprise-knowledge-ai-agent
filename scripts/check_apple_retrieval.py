@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -47,9 +48,11 @@ def main() -> int:
 
     try:
         for expected_document_id, question in CASES.items():
+            t0 = time.time()
             result = retrieval.retrieve(
                 RetrievalRequest(query=question, top_k=args.limit)
             )
+            dt = time.time() - t0
             retrieved_ids = {
                 context.document_id
                 for context in result.results
@@ -59,7 +62,7 @@ def main() -> int:
 
             print(
                 f"[{'PASS' if passed else 'FAIL'}] "
-                f"{expected_document_id}: {sorted(retrieved_ids)}"
+                f"{expected_document_id}: {sorted(retrieved_ids)} ({dt:.2f}s)"
             )
     finally:
         retrieval.close()

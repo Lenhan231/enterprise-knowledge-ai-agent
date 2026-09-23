@@ -6,11 +6,11 @@ retrieved evidence or measured performance. The second result demonstrates
 unknown page and section values. The Markdown source illustrates the contract,
 not support for Markdown ingestion in the current pipeline.
 
-Import contracts from `core.models.retrieval` with `src` on the Python path:
+Import contracts from `core.retrieval.retrieval` with `src` on the Python path:
 
 ```python
 from pathlib import Path
-from core.models.retrieval import RetrievalResponse
+from core.retrieval.retrieval import RetrievalResponse
 
 response = RetrievalResponse.model_validate_json(
     Path("tests/fixtures/ranked_dense_retrieval.json").read_text(encoding="utf-8")

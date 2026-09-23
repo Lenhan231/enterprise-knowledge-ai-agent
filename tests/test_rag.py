@@ -10,17 +10,24 @@ from core.rag.rag_service import (
     INSUFFICIENT_ANSWER,
     RAGService,
 )
+from core.retrieval.retrieval import (
+    RankedChunk,
+    RetrievalResponse,
+    SourceLocation,
+    make_chunk_id,
+)
 
 
 class FakeRetrieval:
     def __init__(self, contexts):
         self.contexts = contexts
 
-    def retrieve(self, question, limit=5):
-        return {
-            "question": question,
-            "contexts": self.contexts[:limit],
-        }
+    def retrieve(self, request):
+        return RetrievalResponse(
+            query=request.query,
+            latency_ms=1,
+            results=self.contexts[:request.top_k],
+        )
 
     def close(self):
         pass
@@ -35,18 +42,25 @@ class FakeLLM:
 
 
 def context(document_id="DOC-1"):
-    return {
-        "document_name": "policy.pdf",
-        "chunk_index": 7,
-        "content": "Employees may report policy concerns.",
-        "metadata": {
+    return RankedChunk(
+        rank=1,
+        chunk_id=make_chunk_id(document_id, 7),
+        document_id=document_id,
+        text="Employees may report policy concerns.",
+        score=0.81,
+        source="policy.pdf",
+        location=SourceLocation(
+            chunk_index=7,
+            page_number=12,
+            section_title="Reporting Concerns",
+        ),
+        metadata={
             "document_id": document_id,
             "source_document": "policy.pdf",
             "page_number": 12,
             "section_title": "Reporting Concerns",
         },
-        "similarity_score": 0.81,
-    }
+    )
 
 
 class RAGServiceTest(unittest.TestCase):
@@ -60,8 +74,9 @@ class RAGServiceTest(unittest.TestCase):
         self.assertFalse(result.insufficient_context)
 
     def test_multiple_sources(self):
+        second = context("DOC-2").model_copy(update={"rank": 2})
         result = RAGService(
-            FakeRetrieval([context("DOC-1"), context("DOC-2")]),
+            FakeRetrieval([context("DOC-1"), second]),
             FakeLLM("The requirements are described in [S1] and [S2]."),
         ).generate_answer("What are the requirements?")
 

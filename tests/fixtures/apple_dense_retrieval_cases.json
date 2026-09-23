@@ -1,0 +1,22 @@
+[
+  {
+    "question": "What responsibilities do third parties have under Apple's Anti-Corruption Policy?",
+    "expected_document_ids": ["APL-CMP-003"]
+  },
+  {
+    "question": "What standards must third parties working with Apple follow?",
+    "expected_document_ids": ["APL-CMP-004"]
+  },
+  {
+    "question": "What steps must a supplier complete in Supplier Connect before receiving an SAP vendor number?",
+    "expected_document_ids": ["APL-PRC-002"]
+  },
+  {
+    "question": "What is the most reliable way to submit invoices to Apple?",
+    "expected_document_ids": ["APL-PRC-015"]
+  },
+  {
+    "question": "By how much did Apple reduce gross greenhouse gas emissions compared with its 2015 baseline?",
+    "expected_document_ids": ["APL-ENV-002"]
+  }
+]

@@ -152,14 +152,4 @@ class RAGService:
     def close(self) -> None:
         self.retrieval_service.close()
 
-    # def generate_answer(self, question: str, limit: int = 5) -> str:
-    #     retrieved = self.retrieval_service.retrieve(question, limit)
-    #     contexts = retrieved["contexts"]
-
-    #     context = "\n\n".join(item["content"] for item in contexts)
-    #     print(context)
-
-    #     prompt = ENTERPRISE_ASSISTANT_PROMPT.format(context=context, question=question)
-
-    #     return self.llm.generate(prompt)
 

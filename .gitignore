@@ -16,3 +16,15 @@ build/
 
 ponytail.md
 /rules
+/graphify-out
+
+/node_modules
+/package-lock.json
+/package.json
+/.agents
+/.claude
+/.continue
+/.qwen
+/.rovodev
+/.vibe
+/skills-lock.json

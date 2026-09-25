@@ -151,5 +151,3 @@ class RAGService:
 
     def close(self) -> None:
         self.retrieval_service.close()
-
-

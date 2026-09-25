@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-21T06:11:27.787058+00:00",
-  "git_commit": "7286c1221e886fc5e37e19208dd458aa89d0d080",
+  "generated_at": "2026-09-21T09:56:23.075970+00:00",
+  "git_commit": "f2098dcf7d2cf0f87db94cd1fbc3b564d85f07e2",
   "top_k": 5,
   "summary": {
     "total": 4,
@@ -32,11 +32,11 @@
       "expect_insufficient": false,
       "passed": true,
       "reason": "Answer cites the expected document",
-      "answer": "According to Apple’s Anti‑Corruption Policy, third parties must:\n\n- **Prohibit bribery and corruption**: They may not offer or receive any bribe, kickback, or facilitating payment in connection with Apple’s business, and must not engage in any form of corruption, extortion, or embezzlement. [S4]  \n- **Ensure compliance by their own sub‑parties**: They must make sure that their subcontractors, agents, and other third‑party vendors understand and comply with Apple’s policy and applicable anti‑corruption laws, and must not use third parties to circumvent those laws. [S1]  \n- **Report bribery requests**: If confronted with a request to pay a bribe, they must report it immediately to Apple (e.g., via globalcompliance@apple.com or Apple’s external helpline). [S3]  \n- **Maintain accurate records**: They must keep truthful, accurate records of all transactions, including invoices and expense reports, and provide proper approvals and documentation. [S1]",
+      "answer": "According to Apple’s Anti‑Corruption Policy, third parties must:\n\n- **Prohibit bribery and corruption**: They may not offer or receive any bribe, kickback, or facilitating payment in connection with Apple’s business, and must ensure that their own sub‑contractors or agents understand and comply with this prohibition. [S1] [S4]  \n- **Ensure compliance by their own third parties**: They are required to make sure that any sub‑contractors or agents they engage also comply with Apple’s policy and applicable anti‑corruption laws, and must not use third parties to circumvent those laws. [S1]  \n- **Report bribery requests**: If confronted with a request to pay a bribe, they must report it immediately to Apple (e.g., via globalcompliance@apple.com or Apple’s external helpline). [S3]  \n- **Exercise due diligence**: They must conduct due diligence in their own operations, develop due‑diligence policies and management systems to identify and mitigate corruption risks, and evaluate whether additional due diligence is needed before engaging third parties that will interact with public officials. [S3]  \n- **Adhere to additional rules when dealing with public officials**: They must follow extra obligations such as meal, gift, and travel limits when working with public officials. [S3]",
       "insufficient_context": false,
       "source_ids": [
-        "S4",
         "S1",
+        "S4",
         "S3"
       ],
       "sources": [
@@ -47,7 +47,7 @@
           "page_number": 3,
           "section_title": null,
           "chunk_index": 5,
-          "similarity_score": 0.780576229095465,
+          "similarity_score": 0.780576182569494,
           "official_url": "https://www.apple.com/compliance/pdfs/Anti-Corruption-Policy.pdf",
           "content_preview": "## **Third Parties** Apple can be found responsible for bribes, kickbacks, and/or facilitating payments made by third parties in connection with Apple’s business. Third parties also have an obligation to ensure that their third parties, such as sub-contractors or agents, understand and comply with this Policy and applicable anti-corruption laws. Third parties may not be used to circumvent the laws or this Policy. Willful ignorance is not a defense. Before engaging a third party that will be inte"
         },
@@ -58,7 +58,7 @@
           "page_number": 5,
           "section_title": null,
           "chunk_index": 9,
-          "similarity_score": 0.77202239895134,
+          "similarity_score": 0.772022352935217,
           "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
           "content_preview": "Anything of value includes cash, cash equivalents, gifts, entertainment, internships, employment, or even a promise. Apple also does not allow for facilitating payments in relation to any Apple related business. Facilitating payments are typically demanded by low-level officials in exchange for providing a service that is ordinarily and commonly performed by the official. Third parties are required to report anytime they are confronted with a request to pay a bribe. Contact globalcompliance@appl"
         },
@@ -69,13 +69,13 @@
           "page_number": 5,
           "section_title": null,
           "chunk_index": 8,
-          "similarity_score": 0.676920474492354,
+          "similarity_score": 0.676920493749395,
           "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
           "content_preview": "dining, food preparation, and storage facilities provided to employees must be sanitary. **Health and Safety Communication.** Third parties must provide workers with appropriate workplace health and safety training in their primary language. Health and safety related information shall be clearly posted in the facilities. ## **Law and Ethics** Apple expects the highest standards of ethical conduct in all of our endeavors. We expect our third parties to comply with all applicable laws and and be e"
         }
       ],
       "retrieved_context_count": 5,
-      "total_latency_ms": 14594.44
+      "total_latency_ms": 2543.88
     },
     {
       "id": "third_party_standards",
@@ -85,7 +85,7 @@
       "expect_insufficient": false,
       "passed": true,
       "reason": "Answer cites the expected document",
-      "answer": "Third parties working with Apple must adhere to a comprehensive set of standards that cover ethical conduct, legal compliance, human rights, anti‑corruption, privacy, confidentiality, and intellectual property, among others. Specifically, they are required to:\n\n* **Uphold high ethical standards** and comply with all applicable laws and regulations, avoiding any appearance of impropriety.  \n* **Conduct due diligence** on their own operations and any sub‑third parties, establish policies, procedures, and monitoring practices, and ensure employees, contractors, and consultants understand and follow the Code.  \n* **Respect human rights** by treating all workers with dignity, prohibiting discrimination, harassment, abuse, involuntary labor, and human trafficking.  \n* **Avoid bribery and corruption** by refusing facilitating payments, reporting any bribe requests, and following Apple’s Anti‑Corruption Policy.  \n* **Comply with trade, export, and customs laws**, including sanctions screening when dealing with Apple products or services across borders.  \n* **Maintain privacy and data protection** by safeguarding customer personal information and complying with all privacy laws.  \n* **Protect Apple’s confidential information** and intellectual property, and refrain from disclosing non‑public information or engaging in insider trading.  \n* **Adhere to competition and sales practices** that are fair and lawful, avoiding price‑fixing or collusion.  \n\nThese requirements are outlined in Apple’s Third Party Code of Conduct and are enforced through due diligence and monitoring, with violations potentially leading to termination of the relationship. [S1][S3][S4][S5]",
+      "answer": "Third parties working with Apple must adhere to a comprehensive set of standards that cover ethical conduct, legal compliance, human rights, anti‑corruption, privacy, confidentiality, and intellectual property, among others. Specifically, they are required to:\n\n* **Uphold high ethical standards** and comply with all applicable laws and regulations, avoiding any appearance of impropriety.  \n* **Conduct due diligence** on their own operations and any sub‑third parties, establish policies, procedures, and monitoring practices, and ensure employees, contractors, and consultants understand and follow the Code.  \n* **Respect human rights** by treating all workers with dignity, prohibiting discrimination, harassment, abuse, involuntary labor, and human trafficking.  \n* **Avoid bribery and corruption** by refusing facilitating payments, reporting any bribe requests, and following Apple’s Anti‑Corruption Policy.  \n* **Comply with trade, export, and customs laws**, including sanctions screening when dealing with Apple products or services across borders.  \n* **Maintain privacy and data protection** by safeguarding customer personal information and complying with all privacy laws.  \n* **Protect Apple’s confidential information** and intellectual property, and refrain from disclosing non‑public information or engaging in insider trading.  \n* **Follow fair competition and sales practices**, ensuring advertising, sales, and competition conduct is lawful and ethical.  \n\nThese requirements are outlined in Apple’s Third Party Code of Conduct and are enforced through due diligence and monitoring, with violations potentially leading to termination of the relationship. [S1][S3][S4][S5]",
       "insufficient_context": false,
       "source_ids": [
         "S1",
@@ -101,7 +101,7 @@
           "page_number": 1,
           "section_title": null,
           "chunk_index": 0,
-          "similarity_score": 0.748926602271992,
+          "similarity_score": 0.74892657259764,
           "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
           "content_preview": "## **Third Party Code of Conduct** ## **Our Principles** At Apple, we believe in doing business ethically, transparently, and in full compliance with all applicable laws and regulations. Apple requires all businesses and persons that associate themselves with our brand to uphold these same high standards. To that end, Apple requires certain third parties working with Apple or on behalf of Apple worldwide to comply with this Third Party Code of Conduct (Code). ## **Who** This Code applies to cert"
         },
@@ -112,7 +112,7 @@
           "page_number": 2,
           "section_title": null,
           "chunk_index": 2,
-          "similarity_score": 0.683059375468457,
+          "similarity_score": 0.683059413250731,
           "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
           "content_preview": "## **What You Should Know** Apple conducts due diligence and monitoring on all third parties to ensure compliance with this Code. As a condition of doing business with Apple, you consent to such due diligence and monitoring. Apple will assess a third party's compliance with this Code, and any violations of this Code may jeopardize the third party’s relationship with Apple up to and including termination. ## **Human Rights and Labor** Apple is deeply committed to respecting human rights as stated"
         },
@@ -123,7 +123,7 @@
           "page_number": 5,
           "section_title": null,
           "chunk_index": 9,
-          "similarity_score": 0.652524331362507,
+          "similarity_score": 0.6525243131802,
           "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
           "content_preview": "Anything of value includes cash, cash equivalents, gifts, entertainment, internships, employment, or even a promise. Apple also does not allow for facilitating payments in relation to any Apple related business. Facilitating payments are typically demanded by low-level officials in exchange for providing a service that is ordinarily and commonly performed by the official. Third parties are required to report anytime they are confronted with a request to pay a bribe. Contact globalcompliance@appl"
         },
@@ -134,13 +134,13 @@
           "page_number": 7,
           "section_title": null,
           "chunk_index": 13,
-          "similarity_score": 0.648421406745911,
+          "similarity_score": 0.648421448657345,
           "official_url": "https://www.apple.com/compliance/pdfs/third-party-code.pdf",
           "content_preview": "Third parties must never misstate facts, omit critical information, or modify records or reports in any way to mislead or assist others in doing so. **Privacy.** Apple is committed to ensuring the privacy of the end-user customers of Apple products and services. Third parties are required to comply with all privacy laws and regulations. Third parties must take appropriate precautions — including administrative, technical, and physical measures — to safeguard customers’ personal information again"
         }
       ],
       "retrieved_context_count": 5,
-      "total_latency_ms": 3261.99
+      "total_latency_ms": 1240.07
     },
     {
       "id": "environment_report",
@@ -163,13 +163,13 @@
           "page_number": 12,
           "section_title": null,
           "chunk_index": 19,
-          "similarity_score": 0.681833505630493,
+          "similarity_score": 0.681833466346069,
           "official_url": "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2025.pdf",
           "content_preview": "Our long-standing initiatives continue to yield clear results, including sourcing 100 percent renewable energy for our facilities, transitioning suppliers to renewable energy, and using low-carbon materials in our products.[24] While our revenue has grown by more than 65 percent since 2015, our gross emissions have decreased by more than 60 percent during the same period. Baseline 60% 75% **2015 2024 2030 Target** - Net greenhouse gas emissions represents our total gross footprint minus carbon o"
         }
       ],
       "retrieved_context_count": 5,
-      "total_latency_ms": 2298.06
+      "total_latency_ms": 1024.17
     },
     {
       "id": "unsupported_private_data",
@@ -184,7 +184,7 @@
       "source_ids": [],
       "sources": [],
       "retrieved_context_count": 5,
-      "total_latency_ms": 8684.6
+      "total_latency_ms": 9291.37
     }
   ]
 }

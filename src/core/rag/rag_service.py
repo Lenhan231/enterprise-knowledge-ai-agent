@@ -1,9 +1,12 @@
 from core.llm.groq_provider import GroqProvider
+from core.retrieval.retrieval import RetrievalRequest
 from core.retrieval.retrieval_service import RetrievalService
 from core.retrieval.retrieval import RetrievalRequest
 from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT
 from pydantic import BaseModel, Field
 import re
+
+MAX_CONTEXT_CHARS = 24_000
 
 INSUFFICIENT_ANSWER = (
     "Insufficient information in the retrieved documents."
@@ -52,8 +55,6 @@ def _extract_source_ids(answer: str) -> list[str]:
     return list(dict.fromkeys(CITATION_PATTERN.findall(answer)))
 
 
-MAX_CONTEXT_CHARS = 24_000
-
 class RAGService:
     def __init__(
         self,
@@ -69,38 +70,24 @@ class RAGService:
         question: str,
         limit: int = 5,
     ) -> RAGResult:
-        response = self.retrieval_service.retrieve(
-            RetrievalRequest(
-                query=question,
-                top_k=limit,
-            )
+        retrieved = self.retrieval_service.retrieve(
+            RetrievalRequest(query=question, top_k=limit)
         )
 
-        if hasattr(response, "results"):
-            contexts = [
-                {
-                    "source_id": f"S{chunk.rank}",
-                    "document_name": chunk.source,
-                    "chunk_index": chunk.location.chunk_index,
-                    "content": chunk.text,
-                    "metadata": chunk.metadata,
-                    "similarity_score": chunk.score,
-                }
-                for chunk in response.results
-            ]
-        elif isinstance(response, dict) and "contexts" in response:
-            contexts = [
-                {
-                    **context,
-                    "source_id": f"S{index}",
-                }
-                for index, context in enumerate(
-                    response["contexts"],
-                    start=1,
-                )
-            ]
-        else:
-            contexts = []
+        contexts = [
+            {
+                "document_name": context.source,
+                "chunk_index": context.location.chunk_index,
+                "content": context.text,
+                "metadata": context.metadata,
+                "similarity_score": context.score,
+                "source_id": f"S{index}",
+            }
+            for index, context in enumerate(
+                retrieved.results,
+                start=1,
+            )
+        ]
 
         if not contexts:
             return RAGResult(

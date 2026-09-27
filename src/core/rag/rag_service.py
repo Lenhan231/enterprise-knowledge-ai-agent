@@ -1,7 +1,6 @@
 from core.llm.groq_provider import GroqProvider
 from core.retrieval.retrieval import RetrievalRequest
 from core.retrieval.retrieval_service import RetrievalService
-from core.retrieval.retrieval import RetrievalRequest
 from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT
 from pydantic import BaseModel, Field
 import re
@@ -89,11 +88,18 @@ class RAGService:
             )
         ]
 
+        return self.generate_from_contexts(question, contexts)
+
+    def generate_from_contexts(
+        self,
+        question: str,
+        contexts: list[dict],
+    ) -> RAGResult:
+
         if not contexts:
             return RAGResult(
                 answer=INSUFFICIENT_ANSWER,
                 insufficient_context=True,
-                source_ids=[],
             )
 
         prompt = ENTERPRISE_ASSISTANT_PROMPT.format(

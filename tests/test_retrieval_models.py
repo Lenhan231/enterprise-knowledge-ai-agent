@@ -41,7 +41,7 @@ class RetrievalModelsTest(unittest.TestCase):
 
     def test_all_result_models_reject_unknown_fields(self):
         internal = dict(document_name="demo.pdf", chunk_index=0, content="text",
-                        metadata={"document_id": "DOC"}, similarity_score=0.5)
+                        metadata={"document_id": "DOC"}, retrieval_score=0.5)
         for model, payload in ((SourceLocation, {"chunk_index": 0}),
                                (RetrievedChunk, internal),
                                (RankedChunk, self.chunk),
@@ -114,7 +114,7 @@ class RetrievalModelsTest(unittest.TestCase):
                     RankedChunk(**self.chunk)
                 with self.assertRaisesRegex(ValidationError, "metadata.document_id"):
                     RetrievedChunk(document_name="fallback.pdf", chunk_index=0,
-                                   content="text", metadata=metadata, similarity_score=0.5)
+                                   content="text", metadata=metadata, retrieval_score=0.5)
 
     def test_document_id_must_match_ingested_metadata(self):
         self.chunk["document_id"] = "DIFFERENT-ID"
@@ -124,22 +124,22 @@ class RetrievalModelsTest(unittest.TestCase):
     def test_internal_result_has_no_rank_or_latency(self):
         result = RetrievedChunk(document_name=self.chunk["source"], chunk_index=0,
                                 content=self.chunk["text"], metadata=self.chunk["metadata"],
-                                similarity_score=self.chunk["score"])
+                                retrieval_score=self.chunk["score"])
         self.assertEqual(result.document_id, self.chunk["document_id"])
         self.assertEqual(set(result.model_dump()),
-                         {"document_name", "chunk_index", "content", "metadata", "similarity_score"})
+                         {"document_name", "chunk_index", "content", "metadata", "retrieval_score"})
 
     def test_response_supports_no_results(self):
         result = RetrievalResponse(query="question", latency_ms=0, results=[])
         self.assertEqual(result.results, [])
-        self.assertEqual(result.method, "dense")
+        self.assertEqual(result.method, "hybrid")
 
     def test_invalid_rank_method_latency_and_nonfinite_score(self):
-        for field, value in (("rank", 0), ("retrieval_method", "hybrid"), ("score", float("nan"))):
+        for field, value in (("rank", 0), ("retrieval_method", "sparse"), ("score", float("nan"))):
             with self.subTest(field=field):
                 with self.assertRaises(ValidationError):
                     RankedChunk(**{**self.chunk, field: value})
-        for field, value in (("method", "hybrid"), ("latency_ms", -1), ("latency_ms", float("inf"))):
+        for field, value in (("method", "sparse"), ("latency_ms", -1), ("latency_ms", float("inf"))):
             with self.subTest(field=field, value=value):
                 with self.assertRaises(ValidationError):
                     RetrievalResponse(**{**self.payload, field: value})

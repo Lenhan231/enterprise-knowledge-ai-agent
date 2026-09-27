@@ -21,7 +21,7 @@ dependencies = [
     "psycopg[binary]>=3.3.5",
     "psycopg2-binary==2.9.10",
     "pydantic==2.11.7",
-    "pymupdf4llm==1.27.2.3",
+    "pymupdf==1.27.2.3",
     "python-dotenv==1.1.1",
     "python-multipart==0.0.32",
     "sentence-transformers>=6.0.1",
@@ -32,7 +32,13 @@ dependencies = [
     "numpy>=2.4.6",
     "groq>=1.7.0",
     "pypdf>=6.19.0",
+    "pyjwt==2.14.0",
+    "langgraph>=1.2.4",
+    "sqlglot>=30.19.0",
 ]
+
+[project.optional-dependencies]
+ocr-paddle = ["paddleocr>=2.10.0", "paddlepaddle>=3.3.1"]
 
 [project.scripts]
 enterprise-knowledge-ai-agent = "enterprise_knowledge_ai_agent:main"

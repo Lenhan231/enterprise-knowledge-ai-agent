@@ -39,6 +39,15 @@ class RetrievalCallersTest(unittest.TestCase):
         rag.close()
         self.retrieval.close.assert_called_once()
 
+    def test_rag_passes_parent_strategy_to_retrieval(self):
+        llm = MagicMock()
+        llm.generate.return_value = "answer [S1]"
+        rag = RAGService(self.retrieval, llm)
+        rag.generate_answer("question", limit=2, retrieval_method="parent")
+        self.retrieval.retrieve.assert_called_once_with(
+            RetrievalRequest(query="question", top_k=2), method="parent"
+        )
+
     def test_rag_bounds_context_without_mutating_results_or_printing(self):
         # Include separators and a second chunk in the cutoff, not just one
         # oversized chunk, to verify the limit applies to the assembled context.
@@ -56,26 +65,43 @@ class RetrievalCallersTest(unittest.TestCase):
         self.assertEqual(answer.answer, "answer [S1]")
         prompt = llm.generate.call_args.args[0]
         context = prompt.split("Sources:\n", 1)[1].split("\n\nQuestion:", 1)[0]
-        self.assertEqual(len(context), 24_000)
+        self.assertLessEqual(len(context), 16_000)
         self.assertTrue(context.startswith("[S1]"))
         self.assertEqual(self.response.model_dump(), original)
         self.assertEqual(output.getvalue(), "")
 
+    def test_rag_only_returns_sources_that_fit_in_the_prompt(self):
+        self.response.results[0].text = "A" * 20_000
+        self.response.results[1].text = "B" * 2_000
+        llm = MagicMock()
+        llm.generate.return_value = "answer [S1]"
+
+        answer = RAGService(self.retrieval, llm).generate_answer("question", limit=2)
+
+        prompt = llm.generate.call_args.args[0]
+        context = prompt.split("Sources:\n", 1)[1].split("\n\nQuestion:", 1)[0]
+        self.assertLessEqual(len(context), 16_000)
+        self.assertEqual([item["source_id"] for item in answer.contexts], ["S1"])
+        self.assertIn("[S1]", context)
+        self.assertNotIn("[S2]", context)
+        self.assertEqual(len(self.response.results[0].text), 20_000)
+
     def test_script_consumes_typed_results_and_closes_service(self):
         output = io.StringIO()
+        result_by_id = {}
+        for document_id in check_apple_retrieval.CASES:
+            results = [item.model_copy(update={"document_id": document_id}) for item in self.response.results]
+            result_by_id[document_id] = self.response.model_copy(update={"results": results})
+        self.retrieval.retrieve.side_effect = list(result_by_id.values())
         with patch.object(check_apple_retrieval, "RetrievalService", return_value=self.retrieval), \
              patch.object(sys, "argv", ["check_apple_retrieval.py", "--limit", "2"]), \
              redirect_stdout(output):
             self.assertEqual(check_apple_retrieval.main(), 0)
-        self.assertEqual(self.retrieval.retrieve.call_count, len(check_apple_retrieval.QUESTIONS))
-        for call, question in zip(self.retrieval.retrieve.call_args_list, check_apple_retrieval.QUESTIONS):
+        self.assertEqual(self.retrieval.retrieve.call_count, len(check_apple_retrieval.CASES))
+        for index, (call, question) in enumerate(zip(self.retrieval.retrieve.call_args_list, check_apple_retrieval.CASES.values())):
             self.assertEqual(call.args, (RetrievalRequest(query=question, top_k=2),))
-        rows = [json.loads(line) for line in output.getvalue().splitlines() if line.startswith("{")]
-        self.assertEqual(rows[0]["rank"], self.response.results[0].rank)
-        self.assertEqual(rows[0]["document_name"], self.response.results[0].source)
-        self.assertEqual(rows[0]["chunk_index"], self.response.results[0].location.chunk_index)
-        self.assertEqual(rows[0]["score"], self.response.results[0].score)
-        self.assertEqual(rows[0]["preview"], " ".join(self.response.results[0].text.split())[:240])
+        self.assertIn("[PASS] APL-CMP-003", output.getvalue())
+        self.assertIn("demo_supplier_policy.pdf", output.getvalue())
         self.retrieval.close.assert_called_once()
 
 

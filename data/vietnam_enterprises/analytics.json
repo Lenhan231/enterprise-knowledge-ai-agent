@@ -1,0 +1,16 @@
+{
+  "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+  "fiscal_year": 2024,
+  "currency": "VND",
+  "unit": "billion",
+  "source_document_id": "VNM-AR-2024-VI",
+  "source_title": "Báo cáo thường niên Vinamilk 2024",
+  "source_page": 6,
+  "source_url": "https://www.vinamilk.com.vn/bao-cao-thuong-nien/bao-cao/2024/doc/vi/full-bao-cao.pdf",
+  "metrics": [
+    {"key": "consolidated_revenue", "label": "Doanh thu hợp nhất", "value": 61824, "unit": "tỷ đồng", "change_percent": 2.2},
+    {"key": "consolidated_after_tax_profit", "label": "Lợi nhuận sau thuế hợp nhất", "value": 9453, "unit": "tỷ đồng", "change_percent": 4.8},
+    {"key": "state_budget_contribution", "label": "Đóng góp ngân sách nhà nước", "value": 4569, "unit": "tỷ đồng", "change_percent": 11.3}
+  ],
+  "note": "Figures transcribed from the report's 2024 highlights; change percentages compare with 2023."
+}

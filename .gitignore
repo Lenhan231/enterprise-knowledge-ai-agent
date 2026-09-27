@@ -12,7 +12,12 @@ build/
 
 # Reproducible corpus artifacts (download from the committed manifest).
 /data/raw/apple/**/*.pdf
+/data/raw/vietnam_enterprises/
 /data/processed/apple/**/*.md
+/data/processed/vietnam_enterprises/
+/artifacts/evaluation/qa-review-private-key.json
 
 ponytail.md
 /rules
+
+/supabase/.temp/

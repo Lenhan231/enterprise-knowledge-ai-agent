@@ -37,25 +37,97 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
         self.assertEqual(results[0].content, text)
         self.assertEqual(results[0].metadata, metadata)
         self.assertEqual(results[0].document_id, "DOC-1")
-        self.assertEqual([item.similarity_score for item in results], [0.81234, -0.25])
+        self.assertEqual([item.retrieval_score for item in results], [0.81234, -0.25])
         self.assertEqual([item.document_name for item in results], ["policy.pdf", "other.pdf"])
 
     def test_query_uses_cosine_order_and_bound_parameters(self):
         self.cursor.fetchall.return_value = []
 
-        self.repository.similarity_search([0.1, 0.2], 3)
+        self.repository.similarity_search([0.1, 0.2], 3, query="profit, 2024?")
 
         self.cursor.execute.assert_called_once()
         sql, parameters = self.cursor.execute.call_args.args
         normalized = " ".join(sql.split())
-        self.assertIn("SELECT document_name, chunk_index, content, metadata,", normalized)
-        self.assertIn("1 - (embedding <=> %s) AS similarity_score", normalized)
-        self.assertIn("ORDER BY embedding <=> %s ASC, id ASC LIMIT %s", normalized)
-        self.assertEqual(len(parameters), 3)
-        self.assertEqual(parameters[2], 3)
-        for vector in parameters[:2]:
+        self.assertIn("SELECT e.document_name, e.chunk_index, e.content, e.metadata,", normalized)
+        self.assertIn("JOIN documents AS d ON d.document_id = c.metadata->>'document_id'", normalized)
+        self.assertIn("coalesce(d.processing_status, 'ready') = 'ready'", normalized)
+        self.assertIn("d.fiscal_year = %s", normalized)
+        self.assertIn("coalesce(%s::text IS NOT NULL AND d.fiscal_year = %s, false)", normalized)
+        self.assertNotIn("c.metadata->>'fiscal_year'", normalized)
+        self.assertIn("vector_candidates AS", normalized)
+        self.assertIn("bm25_candidates AS", normalized)
+        self.assertIn("unnest(to_tsvector('simple', %s))", normalized)
+        self.assertIn("document_frequencies AS", normalized)
+        self.assertIn("document_terms AS MATERIALIZED", normalized)
+        self.assertIn("sum(term_frequency) AS document_length", normalized)
+        self.assertNotIn("OVER (PARTITION BY", normalized)
+        self.assertIn("ln(1.0 + (cs.document_count - df.document_frequency + 0.5)", normalized)
+        self.assertEqual(len(parameters), 12)
+        for vector in (parameters[0], parameters[1]):
             np.testing.assert_array_equal(vector, np.array([0.1, 0.2], dtype=np.float32))
+        self.assertEqual(parameters[2:4], ["2024", "2024"])
+        self.assertEqual(parameters[4], "profit | 2024")
+        self.assertEqual(parameters[-1], 3)
+        self.assertEqual(parameters[-5:-1], [1.0, 60, 2.0, 60])
+
+    def test_hybrid_fusion_parameters_are_bound_and_validated(self):
+        self.cursor.fetchall.return_value = []
+        self.repository.similarity_search(
+            [0.1, 0.2], 3, query="profit 2024", method="hybrid",
+            dense_weight=2.0, bm25_weight=1.0, rrf_k=20,
+        )
+        sql, parameters = self.cursor.execute.call_args.args
+        normalized = " ".join(sql.split())
+        self.assertIn("%s / (%s + candidate_rank)", normalized)
+        self.assertEqual(parameters[-5:-1], [2.0, 20, 1.0, 20])
+
+        for values in ({"dense_weight": 0}, {"bm25_weight": -1}, {"rrf_k": -1}):
+            with self.subTest(values=values), self.assertRaisesRegex(ValueError, "hybrid weights"):
+                self.repository.similarity_search([0.1, 0.2], 3, method="hybrid", **values)
+
+    def test_lexical_query_removes_question_scaffolding(self):
+        from core.database.document_chunks_repository import _lexical_tsquery
+        self.assertEqual(
+            _lexical_tsquery("Lợi nhuận sau thuế hợp nhất của Vinamilk năm 2024 là bao nhiêu?"),
+            "lợi | nhuận | sau | thuế | hợp | nhất | 2024",
+        )
+
+    def test_explicit_year_prefers_one_year_but_not_comparisons(self):
+        from core.database.document_chunks_repository import _explicit_fiscal_year
+        self.assertEqual(_explicit_fiscal_year("revenue in 2024"), "2024")
+        self.assertIsNone(_explicit_fiscal_year("compare 2023 and 2024 revenue"))
+        self.assertIsNone(_explicit_fiscal_year("revenue trend"))
+
+    def test_query_filters_by_roles_before_ranking(self):
+        self.cursor.fetchall.return_value = []
+        self.repository.similarity_search([0.1, 0.2], 4, company="Vinamilk", roles=["finance_analyst"])
+        sql, parameters = self.cursor.execute.call_args.args
+        normalized = " ".join(sql.split())
+        self.assertIn("d.allowed_roles && %s::text[]", normalized)
+        self.assertLess(normalized.index("d.allowed_roles &&"), normalized.index("vector_candidates AS"))
+        self.assertLess(normalized.index("d.allowed_roles &&"), normalized.index("bm25_candidates AS"))
+        self.assertEqual(parameters[2:4], [None, None])
+        self.assertEqual(parameters[4:7], ["Vinamilk", ["finance_analyst"], ["finance_analyst"]])
+        self.assertEqual(parameters[7], "")
         self.repository.conn.commit.assert_not_called()
+
+    def test_method_selects_dense_bm25_or_hybrid_ranking(self):
+        cases = {
+            "dense": "v.similarity_score AS retrieval_score",
+            "bm25": "b.bm25_score AS retrieval_score",
+            "hybrid": "r.rrf_score AS retrieval_score",
+        }
+        for method, expected in cases.items():
+            with self.subTest(method=method):
+                self.cursor.fetchall.return_value = []
+                self.repository.similarity_search([0.1, 0.2], 3, query="profit 2024", method=method)
+                sql, _ = self.cursor.execute.call_args.args
+                self.assertIn(expected, " ".join(sql.split()))
+
+    def test_rejects_unknown_method_before_query(self):
+        with self.assertRaisesRegex(ValueError, "method must be"):
+            self.repository.similarity_search([0.1, 0.2], 3, method="sparse")
+        self.cursor.execute.assert_not_called()
 
     def test_empty_search_returns_empty_list(self):
         self.cursor.fetchall.return_value = []
@@ -75,6 +147,37 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
                 self.cursor.fetchall.return_value = [("no-fallback.pdf", 0, "text", metadata, 0.5)]
                 with self.assertRaisesRegex(ValidationError, "metadata.document_id"):
                     self.repository.similarity_search([0.1, 0.2], 1)
+
+    def test_parent_expansion_stays_within_section_and_reapplies_role_filter(self):
+        self.cursor.fetchall.return_value = [
+            ("DOC-1", 4, 2, "Earlier section passage"),
+            ("DOC-1", 4, 3, "Previous passage"),
+            ("DOC-1", 4, 4, "Anchor passage"),
+            ("DOC-1", 4, 5, "Next passage"),
+        ]
+        anchor = RetrievedChunk(
+            document_name="report.pdf", chunk_index=4, content="Anchor passage",
+            metadata={"document_id": "DOC-1", "section_title": "Revenue", "page_number": 2},
+            retrieval_score=0.9,
+        )
+
+        result = self.repository.expand_parent_contexts(
+            [anchor], company="Vinamilk", roles=["finance_analyst"]
+        )
+
+        context = result[("DOC-1", 4)]
+        self.assertEqual(context["text"], "Earlier section passage\nPrevious passage\nAnchor passage\nNext passage")
+        self.assertEqual(context["chunk_indices"], [2, 3, 4, 5])
+        self.assertEqual(context["parent_context_type"], "section_window")
+        sql, parameters = self.cursor.execute.call_args.args
+        normalized = " ".join(sql.split())
+        self.assertIn("jsonb_to_recordset", normalized)
+        self.assertIn("c.metadata->>'section_title' IS NOT DISTINCT FROM a.section_title", normalized)
+        self.assertIn("c.metadata->>'page_number' IS NOT DISTINCT FROM a.page_number", normalized)
+        self.assertIn("d.allowed_roles && %s::text[]", normalized)
+        self.assertIn("coalesce(d.processing_status, 'ready') = 'ready'", normalized)
+        self.assertEqual(parameters[1:3], [2, 2])
+        self.assertEqual(parameters[3:], ["Vinamilk", ["finance_analyst"], ["finance_analyst"]])
 
     def test_invalid_row_is_not_silently_skipped(self):
         self.cursor.fetchall.return_value = [

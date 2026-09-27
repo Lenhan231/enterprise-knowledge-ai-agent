@@ -27,15 +27,19 @@ class FakeRepository:
     def __init__(self):
         self.search_args = None
         self.closed = False
+        self.parent_contexts = {}
         self.results = [RetrievedChunk(
             document_name="policy.pdf", chunk_index=7,
             content="Relevant policy text", metadata={"document_id": "APL-CMP-001"},
-            similarity_score=0.81234,
+            retrieval_score=0.81234,
         )]
 
-    def similarity_search(self, embedding: list[float], limit: int):
-        self.search_args = (embedding, limit)
+    def similarity_search(self, embedding: list[float], limit: int, company=None, roles=None, query=None, method="hybrid", **fusion):
+        self.search_args = (embedding, limit, company, roles, query, method, fusion)
         return self.results
+
+    def expand_parent_contexts(self, chunks, company=None, roles=None):
+        return self.parent_contexts
 
     def close(self):
         self.closed = True
@@ -51,10 +55,10 @@ class RetrievalServiceTest(unittest.TestCase):
         result = self.service.retrieve(RetrievalRequest(query="What is required?", top_k=3))
 
         self.assertEqual(self.embeddings.questions, ["What is required?"])
-        self.assertEqual(self.repository.search_args, ([0.1, 0.2], 3))
+        self.assertEqual(self.repository.search_args, ([0.1, 0.2], 3, None, None, "What is required?", "hybrid", {"dense_weight": 1.0, "bm25_weight": 2.0, "rrf_k": 60}))
         self.assertIsInstance(result, RetrievalResponse)
         self.assertEqual(result.query, "What is required?")
-        self.assertEqual(result.method, "dense")
+        self.assertEqual(result.method, "hybrid")
         chunk = result.results[0]
         self.assertEqual(chunk.source, "policy.pdf")
         self.assertEqual(chunk.score, 0.81234)
@@ -64,7 +68,7 @@ class RetrievalServiceTest(unittest.TestCase):
         self.assertEqual(chunk.location.chunk_index, 7)
         self.assertIsNone(chunk.location.page_number)
         self.assertIsNone(chunk.location.section_title)
-        self.assertEqual(chunk.retrieval_method, "dense")
+        self.assertEqual(chunk.retrieval_method, "hybrid")
 
     def test_full_text_metadata_location_and_tie_order_are_preserved(self):
         first = self.repository.results[0]
@@ -72,9 +76,9 @@ class RetrievalServiceTest(unittest.TestCase):
         first.metadata.update(page_number=4, section_title="Policy", extra={"tags": ["x"]})
         self.repository.results.extend([
             RetrievedChunk(document_name="a.pdf", chunk_index=0, content="second",
-                           metadata={"document_id": "A"}, similarity_score=first.similarity_score),
+                           metadata={"document_id": "A"}, retrieval_score=first.retrieval_score),
             RetrievedChunk(document_name="negative.pdf", chunk_index=1, content="third",
-                           metadata={"document_id": "N"}, similarity_score=-0.2),
+                           metadata={"document_id": "N"}, retrieval_score=-0.2),
         ])
         result = self.service.retrieve(RetrievalRequest(query="  question\n"))
         self.assertEqual(self.embeddings.questions, ["  question\n"])
@@ -94,7 +98,7 @@ class RetrievalServiceTest(unittest.TestCase):
         def embed(query):
             events.append("embed")
             return [0.1, 0.2]
-        def search(vector, limit):
+        def search(vector, limit, company=None, roles=None, query=None, method="hybrid", **fusion):
             events.append("search")
             return self.repository.results
         from core.retrieval.retrieval import RankedChunk
@@ -140,6 +144,42 @@ class RetrievalServiceTest(unittest.TestCase):
         self.service.close()
 
         self.assertTrue(self.repository.closed)
+
+    def test_bm25_mode_is_passed_through_and_reported(self):
+        result = self.service.retrieve(RetrievalRequest(query="revenue"), method="bm25")
+        self.assertEqual(self.repository.search_args[5], "bm25")
+        self.assertEqual(self.repository.search_args[6], {})
+        self.assertEqual(self.embeddings.questions, [])
+        self.assertEqual(result.method, "bm25")
+        self.assertEqual(result.results[0].retrieval_method, "bm25")
+
+    def test_parent_mode_ranks_children_then_returns_acl_scoped_context(self):
+        child = self.repository.results[0]
+        child.metadata.update(section_title="Revenue", page_number=4)
+        self.repository.parent_contexts[(child.document_id, child.chunk_index)] = {
+            "text": "Previous section passage\nRelevant policy text\nNext section passage",
+            "chunk_indices": [6, 7, 8],
+            "parent_chunk_count": 3,
+            "parent_context_type": "section_window",
+        }
+
+        result = self.service.retrieve(
+            RetrievalRequest(query="revenue", top_k=1),
+            company="Vinamilk", roles=["finance_analyst"], method="parent",
+        )
+
+        self.assertEqual(self.repository.search_args, ([0.1, 0.2], 5, "Vinamilk", ["finance_analyst"], "revenue", "dense", {}))
+        self.assertEqual(result.method, "parent")
+        self.assertEqual(len(result.results), 1)
+        self.assertEqual(result.results[0].text, "Previous section passage\nRelevant policy text\nNext section passage")
+        self.assertEqual(result.results[0].retrieval_method, "parent")
+        self.assertEqual(result.results[0].metadata["parent_chunk_indices"], [6, 7, 8])
+        self.assertEqual(result.results[0].location.chunk_index, 7)
+
+    def test_unknown_method_is_rejected_before_embedding(self):
+        with self.assertRaisesRegex(ValueError, "method must be"):
+            self.service.retrieve(RetrievalRequest(query="revenue"), method="sparse")
+        self.assertEqual(self.embeddings.questions, [])
 
 
 if __name__ == "__main__":

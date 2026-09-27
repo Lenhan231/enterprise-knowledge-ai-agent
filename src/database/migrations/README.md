@@ -1,5 +1,22 @@
 # SCRUM-13: schema preparation
 
+## Fresh database migration order
+
+Apply `001` through `009` in this directory once, in numeric order. Then apply
+these supplemental migrations from `supabase/migrations/` in timestamp order:
+
+1. `20260926001712_public_table_security_hardening.sql`
+2. `20260926003217_document_upload_mime_types.sql`
+3. `20260926213836_processed_document_chunks.sql`
+4. `20260926214437_restrict_processed_chunks_grants.sql`
+
+The dated files for agent monitoring, monitoring grants and candidate status
+mirror numbered migrations `007` through `009`; do not apply those duplicates
+after the numbered sequence. A fresh install that omits the supplemental MIME
+migration will create a private bucket restricted to PDF, while the upload API
+also accepts DOCX, PPTX, XLSX, TXT, Markdown and images. This list is the
+current supported order; update it when either migration directory changes.
+
 Migration 003 follows the documents-table migration already numbered 002 and
 adds the unique document/chunk index, HNSW cosine index and metadata NOT
 NULL/default. It was applied to the audited Supabase database on 2026-09-21.
@@ -73,3 +90,96 @@ mapping all passed. `EXPLAIN` also used the HNSW index for the repository's
 distance-plus-ID ordering via an incremental sort. This does not verify ANN
 recall, model compatibility or semantic quality, and does not by itself mark
 all of SCRUM-13/SCRUM-14 Done.
+
+## Migration 005: source-backed metrics and upload registry
+
+`005_vinamilk_metrics_rbac.sql` adds a review-gated financial metrics table and
+metadata columns for Storage-backed uploads. Raw PDF bytes live in the private
+`enterprise-documents` bucket; `documents.storage_path` is only a pointer. Do
+not upload files as PostgreSQL blobs. The app requires the server-only Supabase
+service-role key, which must never be sent to the browser.
+
+Metrics default to `needs_review`; analytics selects only `verified` rows. RLS
+is enabled and direct `anon`/`authenticated` grants are revoked. The upload
+endpoint stores and registers a file with status `uploaded`; migration 006
+adds the page-aware text extraction, chunking, embedding and evidence-review
+path. Migration 005 was applied to the configured
+Supabase project on 2026-09-25. The `enterprise-documents` bucket is private,
+limited to 50 MiB, and `storage.objects` has RLS enabled with no direct
+object policies; the app must access it using its server-only Supabase secret.
+
+## Migration 006: dashboard processing and metric review
+
+Migration `006_dashboard_processing.sql` adds `extracted_metric_candidates`.
+The upload endpoint downloads the private original, extracts page-aware text,
+chunks and embeds it, writes role-scoped rows to `document_chunks`, then marks
+the document `ready`; failures remain visible as `failed`. Candidate extraction
+stores detected value strings with quote, page and hash as `needs_review`.
+Only an admin can normalize/review a candidate; verifying it writes the final
+source-backed row to `extracted_financial_metrics`, which powers KPI cards.
+Dashboard coverage and processing charts aggregate `documents` and
+`document_chunks` at request time. RLS is enabled on the new candidate table,
+with direct anon/authenticated access revoked. This migration was applied to
+the configured Supabase project on 2026-09-25.
+
+## Migration 009: superseded metric candidates
+
+`009_metric_candidate_superseding.sql` adds `superseded` as a parser-lifecycle
+status. When a document is reprocessed, the writer refreshes candidates still
+present in the new extraction and marks older unmatched pending candidates as
+superseded. The rows remain available for audit, but no longer clutter the
+admin review queue or appear as rejected decisions. Verified and explicitly
+rejected candidates are not rewritten. The matching Supabase CLI migration is
+`supabase/migrations/20260926185932_metric_candidate_superseding.sql` and was
+applied to the configured project on 2026-09-26 UTC.
+Supabase's security advisor reports RLS-enabled tables without policies; this
+project intentionally revokes `SELECT` from `anon` and `authenticated` and
+grants server-side access only. Read-only privilege checks confirmed both
+metric tables are inaccessible to those API roles and available to the trusted
+server role.
+
+## Supabase migration 20260926003217: supported upload MIME types
+
+`supabase/migrations/20260926003217_document_upload_mime_types.sql` expands the
+private bucket allowlist to the PDF, DOCX, PPTX, XLSX, TXT/Markdown, PNG, JPEG
+and TIFF formats parsed by the upload route. The file limit and private status
+remain unchanged. The migration was applied and the bucket configuration was
+verified against Supabase on 2026-09-26.
+
+The synchronous upload path uses PyMuPDF with Tesseract text OCR fallback and
+Open XML parsing for Office documents. PaddleOCR layout analysis and background
+retries are not enabled yet.
+
+## Migration 007: privacy-minimized agent monitoring
+
+`007_agent_run_monitoring.sql` creates `agent_run_events` for role, routed
+agent, retrieval method, result status, latency, citation count and error
+class. It deliberately stores no question, prompt, answer, source excerpt or
+user identifier. RLS is enabled and direct `anon`/`authenticated` table access
+is revoked; the application monitoring endpoint additionally requires the
+admin-only `view_agent_monitoring` permission. The table is queried for the
+last 24 hours and at most 100 recent rows. Applied to Supabase as migration
+`20260926103153_agent_run_monitoring` on 2026-09-26. Follow-up migration
+`20260926103626_restrict_agent_run_monitoring_grants` removes unused
+service_role UPDATE/DELETE privileges. Direct privilege checks confirmed
+anon/authenticated cannot SELECT and service_role can SELECT/INSERT but cannot
+UPDATE/DELETE.
+The Supabase security advisor reports the expected informational
+`rls_enabled_no_policy` finding: this server-owned table has no client grants
+or policies, while the trusted backend connection handles writes and the app
+permission guards monitoring reads.
+
+## Supabase migration 20260926213836: parsed chunk persistence
+
+`supabase/migrations/20260926213836_processed_document_chunks.sql` stores
+parser output before embedding, including chunk text, source metadata, stage
+status and bounded error text. The upload admin UI can inspect this output, and
+`scripts/retry_document_embeddings.py` rebuilds vectors from saved content
+without repeating OCR/layout parsing. The table has RLS enabled and grants no
+direct `anon` or `authenticated` access. Migration was applied to the configured
+Supabase project on 2026-09-26 UTC; catalog checks confirmed the table, columns,
+RLS flag, and service-role access. Follow-up migration
+`20260926214437_restrict_processed_chunks_grants.sql` removes excess default
+service-role grants, leaving only SELECT/INSERT/UPDATE/DELETE. Live privilege
+checks confirmed anon/authenticated have no table access and service_role has
+the required four privileges. Existing document rows were not modified.

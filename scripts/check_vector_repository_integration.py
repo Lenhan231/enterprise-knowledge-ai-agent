@@ -98,7 +98,7 @@ def check_connection(conn) -> dict:
         actual = repository.similarity_search(vector.tolist(), 5)
         expected = [RetrievedChunk(document_name=name, chunk_index=index,
                                    content=text, metadata={} if metadata is None else metadata,
-                                   similarity_score=score)
+                                   retrieval_score=score)
                     for name, index, text, metadata, score in rows]
         report["retrieval"] = "pass" if actual == expected else "mapping_mismatch"
     except ValidationError:

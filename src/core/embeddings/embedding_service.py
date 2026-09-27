@@ -13,8 +13,9 @@ load_dotenv()
 
 DEFAULT_EMBEDDING_MODEL = os.getenv(
     "EMBEDDING_MODEL",
-    "sentence-transformers/all-MiniLM-L6-v2",
+    "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
 )
+EMBEDDING_MAX_SEQUENCE_LENGTH = int(os.getenv("EMBEDDING_MAX_SEQUENCE_LENGTH", "512"))
 
 
 class EmbeddingService(Embeddings):
@@ -26,6 +27,7 @@ class EmbeddingService(Embeddings):
         backend: Embeddings | None = None,
     ) -> None:
         self.model_name = model_name
+        self.max_sequence_length = EMBEDDING_MAX_SEQUENCE_LENGTH
         self._backend = backend or HuggingFaceEmbeddings(model_name=model_name)
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:

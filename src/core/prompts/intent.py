@@ -7,7 +7,13 @@ knowledge:
 Retrieve factual information from enterprise documents.
 
 analytics:
-Query structured business data using SQL and calculate metrics.
+Query structured business data using SQL and calculate metrics. This also includes
+counts and group-by comparisons over document metadata, such as document counts
+by business domain, year, type, or processing status; these requests do not need
+document-text retrieval unless the user also asks what the documents say.
+
+Example: "Compare document counts by business domain" is analytics, needs_sql
+is true, and needs_knowledge is false.
 
 hybrid:
 Requires both document knowledge and structured business data.

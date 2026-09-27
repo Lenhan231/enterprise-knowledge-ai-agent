@@ -1,0 +1,50 @@
+[
+  {
+    "model_name": "gpt_oss_20b",
+    "sample_id": "q01",
+    "answer": "Insufficient information in the retrieved documents.",
+    "source_ids": [],
+    "insufficient_context": true,
+    "latency_ms": 8874.94660000084
+  },
+  {
+    "model_name": "gpt_oss_20b",
+    "sample_id": "q02",
+    "answer": "Insufficient information in the retrieved documents.",
+    "source_ids": [],
+    "insufficient_context": true,
+    "latency_ms": 551.0606000025291
+  },
+  {
+    "model_name": "qwen3",
+    "sample_id": "q01",
+    "answer": "Insufficient information in the retrieved documents.",
+    "source_ids": [],
+    "insufficient_context": true,
+    "latency_ms": 1032.8144000086468
+  },
+  {
+    "model_name": "qwen3",
+    "sample_id": "q02",
+    "answer": "Insufficient information in the retrieved documents.",
+    "source_ids": [],
+    "insufficient_context": true,
+    "latency_ms": 421.9916000001831
+  },
+  {
+    "model_name": "gpt_oss_120b",
+    "sample_id": "q01",
+    "answer": "Insufficient information in the retrieved documents.",
+    "source_ids": [],
+    "insufficient_context": true,
+    "latency_ms": 690.1624999882188
+  },
+  {
+    "model_name": "gpt_oss_120b",
+    "sample_id": "q02",
+    "answer": "Insufficient information in the retrieved documents.",
+    "source_ids": [],
+    "insufficient_context": true,
+    "latency_ms": 627.6229999930365
+  }
+]

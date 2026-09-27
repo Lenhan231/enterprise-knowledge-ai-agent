@@ -11,7 +11,11 @@ INSUFFICIENT_ANSWER = (
     "Insufficient information in the retrieved documents."
 )
 
-CITATION_PATTERN = re.compile(r"\[(S\d+)\]")
+CITATION_PATTERN = re.compile(r"(?:\[|【)(S\d+)(?:\]|】)")
+
+
+def _normalize_source_citations(answer: str) -> str:
+    return CITATION_PATTERN.sub(r"[\1]", answer)
 
 
 class RAGResult(BaseModel):
@@ -107,7 +111,7 @@ class RAGService:
             question=question,
         )
 
-        answer = self.llm.generate(prompt).strip()
+        answer = _normalize_source_citations(self.llm.generate(prompt).strip())
 
         if answer == INSUFFICIENT_ANSWER:
             return RAGResult(

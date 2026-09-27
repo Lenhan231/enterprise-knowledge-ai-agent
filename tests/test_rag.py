@@ -82,6 +82,15 @@ class RAGServiceTest(unittest.TestCase):
 
         self.assertEqual(result.source_ids, ["S1", "S2"])
 
+    def test_normalizes_fullwidth_source_citations(self):
+        result = RAGService(
+            FakeRetrieval([context()]),
+            FakeLLM("The result is supported by 【S1】."),
+        ).generate_answer("What is supported?")
+
+        self.assertEqual(result.answer, "The result is supported by [S1].")
+        self.assertEqual(result.source_ids, ["S1"])
+
     def test_empty_retrieval(self):
         result = RAGService(
             FakeRetrieval([]),

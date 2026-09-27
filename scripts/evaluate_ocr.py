@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import gc
 import importlib.metadata
 import hashlib
 import json
@@ -151,7 +152,6 @@ def main() -> int:
     output_dir = REPO_ROOT / "artifacts/evaluation/ocr-rendered"
     output_dir.mkdir(parents=True, exist_ok=True)
     engines = {}
-    engine_models = {}
     for engine in args.engines:
         available = (shutil.which("tesseract") is not None) if engine == "tesseract" else __import__("importlib.util").util.find_spec(engine) is not None
         engines[engine] = {
@@ -161,16 +161,9 @@ def main() -> int:
             "model_initialization_seconds": None,
             "model_initialization_error": None,
         }
-        if available and engine != "tesseract":
-            model_started = time.perf_counter()
-            try:
-                engine_models[engine] = create_engine(engine, "vie+eng")
-                engines[engine]["model_initialization_seconds"] = round(time.perf_counter() - model_started, 3)
-            except Exception as error:
-                engines[engine]["available"] = False
-                engines[engine]["model_initialization_error"] = f"{type(error).__name__}: {error}"
 
     page_specs = dataset["pages"][:args.max_pages]
+    prepared_pages = []
     for page_spec in page_specs:
         pdf_path = REPO_ROOT / page_spec["file"]
         if not pdf_path.is_file():
@@ -187,11 +180,35 @@ def main() -> int:
         source_pdf_sha256 = hashlib.sha256(pdf_path.read_bytes()).hexdigest()
         rendered_image_sha256 = hashlib.sha256(image_path.read_bytes()).hexdigest()
         normalized_reference = normalize(reference)
-        for engine in args.engines:
-            if not engines[engine]["available"]:
-                engines[engine]["pages"].append({"document_id": page_spec["document_id"], "page": page_spec["page"], "error": "engine package or executable unavailable"})
+        prepared_pages.append({
+            "spec": page_spec,
+            "image_path": image_path,
+            "source_pdf_sha256": source_pdf_sha256,
+            "rendered_image_sha256": rendered_image_sha256,
+            "reference": normalized_reference,
+        })
+
+    # Keep only one neural OCR model resident at a time on memory-constrained hosts.
+    for engine in args.engines:
+        engine_data = engines[engine]
+        model = None
+        if engine_data["available"] and engine != "tesseract":
+            model_started = time.perf_counter()
+            try:
+                model = create_engine(engine, "vie+eng")
+                engine_data["model_initialization_seconds"] = round(time.perf_counter() - model_started, 3)
+            except Exception as error:
+                engine_data["available"] = False
+                engine_data["model_initialization_error"] = f"{type(error).__name__}: {error}"
+
+        for prepared in prepared_pages:
+            page_spec = prepared["spec"]
+            normalized_reference = prepared["reference"]
+            if not engine_data["available"]:
+                error = engine_data["model_initialization_error"] or "engine package or executable unavailable"
+                engine_data["pages"].append({"document_id": page_spec["document_id"], "page": page_spec["page"], "error": error})
                 continue
-            hypothesis, seconds, error = run_engine(engine, engine_models.get(engine), image_path, "vie+eng")
+            hypothesis, seconds, error = run_engine(engine, model, prepared["image_path"], "vie+eng")
             normalized_hypothesis = normalize(hypothesis)
             reference_words = normalized_reference.split()
             hypothesis_words = normalized_hypothesis.split()
@@ -201,8 +218,8 @@ def main() -> int:
                 "document_id": page_spec["document_id"],
                 "page": page_spec["page"],
                 "language": page_spec["language"],
-                "source_pdf_sha256": source_pdf_sha256,
-                "rendered_image_sha256": rendered_image_sha256,
+                "source_pdf_sha256": prepared["source_pdf_sha256"],
+                "rendered_image_sha256": prepared["rendered_image_sha256"],
                 "reference_source": "manual_transcription" if page_spec.get("reference_text") is not None else "native_pdf_text_unreviewed",
                 "reference_characters": len(normalized_reference),
                 "reference_words": len(reference_words),
@@ -214,8 +231,11 @@ def main() -> int:
                 "latency_seconds": round(seconds, 3),
                 "error": error,
             }
-            engines[engine]["pages"].append(row)
+            engine_data["pages"].append(row)
             print(f"{engine}: {page_spec['document_id']} p.{page_spec['page']} CER={row['cer']} in {seconds:.1f}s", file=sys.stderr, flush=True)
+
+        del model
+        gc.collect()
 
     for engine_data in engines.values():
         engine_data["aggregate"] = summarize_pages(engine_data["pages"])

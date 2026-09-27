@@ -154,10 +154,20 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   `uv run python scripts/evaluate_ocr.py --dataset data/evaluation/vinamilk_ocr_ground_truth_v2.json --engines paddleocr easyocr surya tesseract --dpi 180 --output artifacts/evaluation/vinamilk-ocr-proposal-comparison.json`.
   Add physical scanned pages and manually labeled table/layout regions before
   using this comparison to select a production OCR engine.
-- On the measured host (about 3.6 GiB `MemAvailable`, swap nearly exhausted,
-  no CUDA), installing and loading additional OCR engines is not a safe way to
-  obtain valid measurements. Run the paired engines on a high-memory/GPU host;
-  record versions, model initialization, peak memory, and failures per engine.
+- The evaluator renders the selected PDF crops once, then initializes, runs,
+  and releases one engine before loading the next. Run a single engine with
+  `--engines paddleocr` (or `easyocr` / `surya`) to isolate setup and failures;
+  use the same dataset, DPI, and crop hashes for paired results. This lowers
+  peak memory versus holding all engines at once, but it cannot make a model
+  fit if one engine alone exceeds available memory.
+- For a no-cost accelerator, Kaggle Notebooks documents a weekly GPU quota of
+  30 hours or sometimes more depending on demand ([GPU usage guide](https://www.kaggle.com/docs/efficient-gpu-usage)); this is the best fit for a repeatable multi-engine batch. Colab offers free GPU access but says availability and limits fluctuate ([FAQ](https://research.google.com/colaboratory/faq.html)). Hugging Face ZeroGPU is convenient for a quick demo, but a free account currently gets five GPU minutes per day and its Spaces integration is Gradio/PyTorch-oriented ([ZeroGPU docs](https://huggingface.co/docs/hub/spaces-zerogpu)), so it is not the recommended host for the full Paddle/EasyOCR/Surya benchmark.
+- The local host has no CUDA device; at the latest check only about 1.7 GiB
+  was `MemAvailable` and swap was nearly exhausted. Do not load OCR models
+  here while the app is running. The benchmark corpus is public Vinamilk
+  material; never upload private enterprise files to a third-party free
+  notebook. Record the runtime, package/model versions, peak RAM/VRAM and
+  failures with each result.
 - Parser outputs and database status are different evidence; verify both after
   corpus ingestion or upload.
 - `tests/test_upload_processing_flow.py` exercises a borderless PDF table, a

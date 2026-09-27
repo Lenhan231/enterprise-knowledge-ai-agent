@@ -109,6 +109,59 @@ class OCREvaluationTest(unittest.TestCase):
             self.assertEqual(engine["aggregate"]["valid_pages"], 0)
             self.assertFalse(report["environment"]["cuda_available"])
 
+    def test_neural_engines_are_initialized_and_run_sequentially(self):
+        events = []
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            pdf = fitz.open()
+            pdf.new_page().insert_text((72, 72), "fixture")
+            (temp_root / "fixture.pdf").write_bytes(pdf.tobytes())
+            pdf.close()
+            dataset = {
+                "dataset_id": "fixture",
+                "reference_method": "test fixture",
+                "limitations": "test only",
+                "pages": [{
+                    "document_id": "fixture", "file": "fixture.pdf", "page": 1,
+                    "language": "vi", "reference_text": "fixture text",
+                }],
+            }
+            dataset_path = temp_root / "dataset.json"
+            dataset_path.write_text(json.dumps(dataset), encoding="utf-8")
+            output_path = temp_root / "report.json"
+
+            def create_engine(engine, _language):
+                events.append(("init", engine))
+                return object()
+
+            def run_engine(engine, _model, _image, _language):
+                events.append(("run", engine))
+                return "fixture text", 0.1, None
+
+            torch = MagicMock()
+            torch.cuda.is_available.return_value = False
+            with (
+                patch.object(evaluate_ocr, "REPO_ROOT", temp_root),
+                patch.object(evaluate_ocr.importlib.util, "find_spec", return_value=object()),
+                patch.dict(sys.modules, {"torch": torch}),
+                patch.object(evaluate_ocr, "engine_version", return_value="test"),
+                patch.object(evaluate_ocr, "create_engine", side_effect=create_engine),
+                patch.object(evaluate_ocr, "run_engine", side_effect=run_engine),
+                patch.object(sys, "argv", [
+                    str(SCRIPT), "--dataset", str(dataset_path), "--engines", "paddleocr", "easyocr",
+                    "--output", str(output_path),
+                ]),
+            ):
+                self.assertEqual(evaluate_ocr.main(), 0)
+
+            self.assertEqual(events, [
+                ("init", "paddleocr"), ("run", "paddleocr"),
+                ("init", "easyocr"), ("run", "easyocr"),
+            ])
+            report = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertEqual(report["engines"]["paddleocr"]["aggregate"]["valid_pages"], 1)
+            self.assertEqual(report["engines"]["easyocr"]["aggregate"]["valid_pages"], 1)
+
     def test_selected_page_language_uses_visible_page_not_document_suffix(self):
         dataset_path = Path(__file__).resolve().parents[1] / "data/evaluation/ocr_pages.json"
         dataset = json.loads(dataset_path.read_text(encoding="utf-8"))

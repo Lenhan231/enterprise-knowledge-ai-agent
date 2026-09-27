@@ -5,6 +5,8 @@ import sys
 import unittest
 from unittest.mock import patch, MagicMock
 
+import fitz
+
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts/evaluate_ocr.py"
 SPEC = importlib.util.spec_from_file_location("evaluate_ocr", SCRIPT)
 evaluate_ocr = importlib.util.module_from_spec(SPEC)
@@ -71,28 +73,40 @@ class OCREvaluationTest(unittest.TestCase):
     def test_model_initialization_failure_keeps_explicitly_unscored_engine(self):
         torch = MagicMock()
         torch.cuda.is_available.return_value = False
-        with (
-            patch.object(evaluate_ocr, "create_engine", side_effect=RuntimeError("model load failed")),
-            patch.object(evaluate_ocr.importlib.util, "find_spec", return_value=object()),
-            patch.dict(sys.modules, {"torch": torch}),
-            patch.object(sys, "argv", [
-                str(SCRIPT), "--dataset", str(Path(__file__).resolve().parents[1] / "data/evaluation/vinamilk_ocr_ground_truth_v2.json"),
-                "--engines", "paddleocr", "--max-pages", "1", "--output", "/tmp/ocr-evaluator-test.json",
-            ]),
-            patch.object(evaluate_ocr.Path, "mkdir"),
-            patch.object(evaluate_ocr.Path, "write_text") as write_text,
-        ):
-            with patch.object(evaluate_ocr, "time") as clock:
-                clock.perf_counter.side_effect = [10.0, 10.2]
-                status = evaluate_ocr.main()
-
-        self.assertEqual(status, 1)
-        report = json.loads(write_text.call_args.args[0])
-        engine = report["engines"]["paddleocr"]
-        self.assertFalse(engine["available"])
-        self.assertIn("model load failed", engine["model_initialization_error"])
-        self.assertEqual(engine["aggregate"]["valid_pages"], 0)
-        self.assertFalse(report["environment"]["cuda_available"])
+        dataset_path = Path(__file__).resolve().parents[1] / "data/evaluation/vinamilk_ocr_ground_truth_v2.json"
+        dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
+        pdf_path = Path(dataset["pages"][0]["file"])
+        pdf_path.parent.mkdir(parents=True, exist_ok=True)
+        document = fitz.open()
+        for _ in range(dataset["pages"][0]["page"]):
+            document.new_page()
+        document[dataset["pages"][0]["page"] - 1].insert_text((72, 72), "fixture page")
+        pdf_path.write_bytes(document.tobytes())
+        document.close()
+        try:
+            with (
+                patch.object(evaluate_ocr, "create_engine", side_effect=RuntimeError("model load failed")),
+                patch.object(evaluate_ocr.importlib.util, "find_spec", return_value=object()),
+                patch.dict(sys.modules, {"torch": torch}),
+                patch.object(sys, "argv", [
+                    str(SCRIPT), "--dataset", str(dataset_path),
+                    "--engines", "paddleocr", "--max-pages", "1", "--output", "/tmp/ocr-evaluator-test.json",
+                ]),
+                patch.object(evaluate_ocr.Path, "mkdir"),
+                patch.object(evaluate_ocr.Path, "write_text") as write_text,
+            ):
+                with patch.object(evaluate_ocr, "time") as clock:
+                    clock.perf_counter.side_effect = [10.0, 10.2]
+                    status = evaluate_ocr.main()
+                self.assertEqual(status, 1)
+                report = json.loads(write_text.call_args.args[0])
+            engine = report["engines"]["paddleocr"]
+            self.assertFalse(engine["available"])
+            self.assertIn("model load failed", engine["model_initialization_error"])
+            self.assertEqual(engine["aggregate"]["valid_pages"], 0)
+            self.assertFalse(report["environment"]["cuda_available"])
+        finally:
+            pdf_path.unlink(missing_ok=True)
 
     def test_selected_page_language_uses_visible_page_not_document_suffix(self):
         dataset_path = Path(__file__).resolve().parents[1] / "data/evaluation/ocr_pages.json"

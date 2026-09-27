@@ -9,6 +9,7 @@ from core.database.agent_run_repository import AgentRunRepository
 
 
 class AgentRunRepositoryTest(unittest.TestCase):
+    @patch.dict(os.environ, {"DATABASE_URL": "postgresql://example"})
     @patch("core.database.agent_run_repository.psycopg.connect")
     def test_record_event_persists_only_telemetry_fields(self, connect):
         connection = connect.return_value
@@ -26,6 +27,7 @@ class AgentRunRepositoryTest(unittest.TestCase):
         self.assertNotIn("prompt", query.lower())
         self.assertEqual(params, ("finance_analyst", "knowledge", "hybrid", "completed", 125, 2, None))
 
+    @patch.dict(os.environ, {"DATABASE_URL": "postgresql://example"})
     @patch("core.database.agent_run_repository.psycopg.connect")
     def test_monitoring_snapshot_reads_bounded_window_and_recent_limit(self, connect):
         connection = connect.return_value

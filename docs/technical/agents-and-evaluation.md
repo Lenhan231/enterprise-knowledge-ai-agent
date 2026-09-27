@@ -79,8 +79,8 @@ or limited evidence exists, but the proposal's acceptance condition is not met.
 
 | Group | Required comparison | Status | Acceptance gap |
 | --- | --- | --- | --- |
-| OCR | PaddleOCR, EasyOCR, Surya | Partial | Tesseract-only labels exist; Paddle/EasyOCR failed under current host memory limits and Surya is unrun. Run all three on identical reviewed Vietnamese scans/layouts on adequate hardware. |
-| Embeddings | BAAI BGE-M3, Qwen3 Embedding, e5-large-v2 | Partial | Paired 93-chunk/9-query scores exist; expand judged corpus and control batch/hardware before selecting a model. |
+| OCR | PaddleOCR, EasyOCR, Surya | Partial | Tesseract-only scores exist; cloud notebook now pins PaddleOCR/EasyOCR and Surya v1 on identical manually transcribed crops. No Kaggle run or model scores have been verified yet; physical scans and reviewed layout/table labels remain required. |
+| Embeddings | BAAI BGE-M3, Qwen3 Embedding, e5-large-v2 | Partial | Local BGE/e5 results exist; cloud notebook now compares all three on the same manifest-allowlisted 4,750-passage corpus and 12 cases with one GPU/batch configuration. Run it and bring back reports; labels remain sparse for selection. |
 | LLMs | Qwen3, Llama 3, GPT | Partial | Current paired results use explicitly labeled proxies, not exact requested checkpoints; collect blinded semantic-quality ratings and exact models where accessible. |
 | Retrieval | Dense, BM25, hybrid, parent-document | Partial | Four methods have a refreshed 12-query run on the 25-document corpus; selected passage labels remain sparse and need independent review and expansion. |
 | Rerankers | BGE Reranker, Qwen Reranker | Partial | BGE top-30 and Qwen top-2 are measured; run Qwen top-30 on the same candidate set/hardware class and compare downstream QA. |

@@ -102,14 +102,14 @@ def create_engine(engine: str, language: str):
         try:
             gpu_available = torch.cuda.is_available()
             return PaddleOCR(
-                lang="en", use_doc_orientation_classify=False,
+                lang="vi", use_doc_orientation_classify=False,
                 use_doc_unwarping=False, use_textline_orientation=False,
                 device="gpu:0" if gpu_available else "cpu",
                 cpu_threads=2, enable_mkldnn=False, show_log=False,
             )
         except (TypeError, ValueError):
             return PaddleOCR(
-                lang="en", use_angle_cls=False,
+                lang="vi", use_angle_cls=False,
                 use_gpu=torch.cuda.is_available(), show_log=False,
                 cpu_threads=2, enable_mkldnn=False,
             )

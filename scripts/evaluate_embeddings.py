@@ -102,10 +102,25 @@ def _sample_per_document(rows: list[dict], limit: int) -> list[dict]:
     return sampled
 
 
+def _load_public_corpus(path: Path, manifest_ids: set[str]) -> list[dict]:
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if not rows:
+        raise ValueError("Public embedding corpus is empty")
+    for row in rows:
+        if row.get("document_id") not in manifest_ids:
+            raise ValueError(f"Corpus document is not allowlisted by the public manifest: {row.get('document_id')}")
+        if not isinstance(row.get("content"), str) or not row["content"].strip():
+            raise ValueError("Every corpus row must contain non-empty text")
+        if not isinstance(row.get("allowed_roles"), list):
+            raise ValueError("Every corpus row must preserve allowed_roles")
+    return rows
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", required=True, choices=sorted(MODELS))
     parser.add_argument("--cases", type=Path, default=REPO_ROOT / "data/evaluation/vinamilk_retrieval_cases.json")
+    parser.add_argument("--corpus", type=Path, help="Optional public-manifest JSONL; avoids live database credentials")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--company", default="Công ty Cổ phần Sữa Việt Nam (Vinamilk)")
     parser.add_argument("--batch-size", type=int, default=8)
@@ -117,14 +132,26 @@ def main() -> int:
         parser.error("--batch-size and --max-chunks-per-document must be positive; --top-k must be between 1 and 100")
 
     load_dotenv(REPO_ROOT / ".env")
-    database_url = os.getenv("DATABASE_URL")
-    if not database_url:
-        parser.error("DATABASE_URL is required")
     case_bytes = args.cases.read_bytes()
     cases = json.loads(case_bytes)["cases"]
     if not cases:
         parser.error("No labeled cases found")
-    full_corpus = _load_corpus(database_url, args.company)
+    if args.corpus:
+        manifest_path = REPO_ROOT / "data/vietnam_enterprises/manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        documents = manifest["documents"] if isinstance(manifest, dict) else manifest
+        manifest_ids = {item["document_id"] for item in documents}
+        try:
+            full_corpus = _load_public_corpus(args.corpus, manifest_ids)
+        except (ValueError, json.JSONDecodeError) as error:
+            parser.error(str(error))
+        corpus_source = "public_manifest_jsonl"
+    else:
+        database_url = os.getenv("DATABASE_URL")
+        if not database_url:
+            parser.error("DATABASE_URL is required unless --corpus is supplied")
+        full_corpus = _load_corpus(database_url, args.company)
+        corpus_source = "live_database"
     if not full_corpus:
         parser.error(f"No ready chunks found for {args.company}")
     corpus = _sample_per_document(full_corpus, args.max_chunks_per_document)
@@ -143,6 +170,8 @@ def main() -> int:
     load_started = time.perf_counter()
     model = SentenceTransformer(spec["model_id"], device=args.device)
     model.max_seq_length = 512
+    if args.device == "cuda":
+        torch.cuda.reset_peak_memory_stats()
     model_load_seconds = time.perf_counter() - load_started
     revision = getattr(model[0].auto_model.config, "_commit_hash", None)
 
@@ -200,6 +229,14 @@ def main() -> int:
         key: round(sum(result["metrics"][key] for result in method_results) / len(method_results), 4)
         for key in metric_keys
     }
+    if args.device == "cuda":
+        torch.cuda.synchronize()
+        peak_gpu_allocated_mb = round(torch.cuda.max_memory_allocated() / (1024 * 1024), 1)
+        peak_gpu_reserved_mb = round(torch.cuda.max_memory_reserved() / (1024 * 1024), 1)
+        gpu_name = torch.cuda.get_device_name(0)
+    else:
+        peak_gpu_allocated_mb = peak_gpu_reserved_mb = None
+        gpu_name = None
     report = {
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "evaluation_level": "document; maximum chunk cosine per document",
@@ -210,6 +247,8 @@ def main() -> int:
         "case_file": args.cases.name,
         "case_file_sha256": hashlib.sha256(case_bytes).hexdigest(),
         "sampled_corpus_sha256": corpus_sha256,
+        "corpus_source": corpus_source,
+        "corpus_file_sha256": hashlib.sha256(args.corpus.read_bytes()).hexdigest() if args.corpus else None,
         "company": args.company,
         "corpus_chunks": len(corpus),
         "full_company_corpus_chunks": len(full_corpus),
@@ -228,6 +267,9 @@ def main() -> int:
             "platform": platform.platform(),
             "device": args.device,
             "gpu_available": torch.cuda.is_available(),
+            "gpu_name": gpu_name,
+            "peak_gpu_memory_allocated_mb": peak_gpu_allocated_mb,
+            "peak_gpu_memory_reserved_mb": peak_gpu_reserved_mb,
             "peak_rss_mb": _rss_peak_mb(),
         },
         "timing_seconds": {

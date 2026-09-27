@@ -1,10 +1,16 @@
+import json
+import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from evaluate_embeddings import MODELS, _sample_per_document, _visible
+import evaluate_embeddings
+from evaluate_embeddings import MODELS, _load_public_corpus, _sample_per_document, _visible
 
 
 class EmbeddingEvaluationTest(unittest.TestCase):
@@ -30,6 +36,55 @@ class EmbeddingEvaluationTest(unittest.TestCase):
         sampled = _sample_per_document(rows, 3)
         self.assertEqual([row["content"] for row in sampled if row["document_id"] == "A"], ["0", "4", "9"])
         self.assertEqual([row["content"] for row in sampled if row["document_id"] == "B"], ["only"])
+
+    def test_public_corpus_loader_preserves_roles_and_rejects_unknown_documents(self):
+        row = {"document_id": "VNM-AR-2024-VI", "allowed_roles": ["finance_analyst"], "content": "revenue"}
+        with tempfile.TemporaryDirectory() as temp_dir:
+            corpus_path = Path(temp_dir) / "corpus.jsonl"
+            corpus_path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+            self.assertEqual(_load_public_corpus(corpus_path, {"VNM-AR-2024-VI"}), [row])
+            with self.assertRaisesRegex(ValueError, "not allowlisted"):
+                _load_public_corpus(corpus_path, {"OTHER"})
+
+    def test_public_corpus_cli_runs_without_database_credentials(self):
+        import numpy as np
+
+        cases_path = Path(__file__).resolve().parents[1] / "data/evaluation/vinamilk_retrieval_cases.json"
+        case = json.loads(cases_path.read_text(encoding="utf-8"))["cases"][0]
+        document_id = case["relevant_document_ids"][0]
+        row = {"document_id": document_id, "allowed_roles": case["allowed_roles"], "content": "annual financial results"}
+
+        class Model:
+            max_seq_length = 512
+
+            def __getitem__(self, _index):
+                return SimpleNamespace(auto_model=SimpleNamespace(config=SimpleNamespace(_commit_hash="fixture")))
+
+            def encode(self, texts, **_kwargs):
+                return np.tile(np.array([[1.0, 0.0]]), (len(texts), 1))
+
+        torch = SimpleNamespace(cuda=SimpleNamespace(is_available=lambda: False))
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            corpus_path = root / "corpus.jsonl"
+            corpus_path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+            cases_fixture = root / "cases.json"
+            cases_fixture.write_text(json.dumps({"cases": [case]}), encoding="utf-8")
+            output_path = root / "report.json"
+            with (
+                patch.dict(sys.modules, {"sentence_transformers": MagicMock(SentenceTransformer=lambda *_args, **_kwargs: Model()), "torch": torch}),
+                patch.dict(os.environ, {"DATABASE_URL": ""}),
+                patch.object(evaluate_embeddings, "REPO_ROOT", Path(__file__).resolve().parents[1]),
+                patch.object(sys, "argv", [
+                    "evaluate_embeddings.py", "--model", "bge-m3", "--cases", str(cases_fixture),
+                    "--corpus", str(corpus_path), "--device", "cpu", "--output", str(output_path),
+                ]),
+            ):
+                self.assertEqual(evaluate_embeddings.main(), 0)
+            report = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertEqual(report["corpus_source"], "public_manifest_jsonl")
+            self.assertEqual(report["environment"]["gpu_name"], None)
+            self.assertEqual(report["aggregate"]["recall@1"], 1.0)
 
 
 if __name__ == "__main__":

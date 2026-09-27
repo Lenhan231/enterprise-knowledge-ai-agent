@@ -24,7 +24,7 @@ class OCREvaluationTest(unittest.TestCase):
         ):
             evaluate_ocr.create_engine("paddleocr", "vi")
         paddleocr.PaddleOCR.assert_called_once_with(
-            lang="en", use_doc_orientation_classify=False,
+            lang="vi", use_doc_orientation_classify=False,
             use_doc_unwarping=False, use_textline_orientation=False,
             device="gpu:0", cpu_threads=2, enable_mkldnn=False, show_log=False,
         )

@@ -47,6 +47,21 @@ did not complete on this CPU: its first batch took about 200 seconds. Full
 metrics, case-level ranks, hashes and this limitation are in
 [`vinamilk-embedding-three-model-expanded-25docs-12cases-20260927.json`](../../artifacts/evaluation/vinamilk-embedding-three-model-expanded-25docs-12cases-20260927.json).
 
+### Cloud run on the full public corpus
+
+The local evaluator now accepts `--corpus` JSONL as well as the live database.
+`uv run python scripts/export_public_embedding_corpus.py` exports only ready
+document IDs present in the public manifest, preserves their `allowed_roles`,
+and writes a SHA-256 metadata sidecar. The committed 2026-09-27 snapshot has
+4,750 passages from 25 public Vinamilk sources; no database credential is
+needed in a hosted runtime. The loader rejects any document ID outside the
+manifest allowlist. `notebooks/kaggle_embedding_benchmark.ipynb` runs BGE-M3,
+Qwen3-Embedding-0.6B and e5-large-v2 separately on the exact same complete
+corpus and twelve cases with CUDA and batch size 4. It records each model
+revision, data hashes, peak RAM/VRAM and per-case rankings. This is a larger
+paired smoke benchmark, not final selection: the twelve document-level labels
+remain sparse and do not replace passage-level judgments or human QA review.
+
 ## Input-length constraint
 
 The model reports a 512-token maximum sequence length. Seed PDF chunks target

@@ -35,6 +35,18 @@ scores are not directly comparable with the paired runs because the sample
 differs. All these runs are nine-query, document-level smoke evaluations; none
 uses the full ready corpus or passage-level judgments.
 
+### Refreshed 12-case embedding comparison
+
+After adding three governance queries, BGE-M3 and e5-large-v2 were rerun on the
+same 173 evenly sampled chunks across all 25 ready documents, with the same
+case hash, CPU, batch 8 and 512-token input limit. BGE/e5 MRR is 0.606/0.706,
+Recall@3 is 0.750/0.833, and nDCG@3 is 0.616/0.719. Corpus embedding took
+223/281 seconds; mean query encoding/scoring took 187/224 ms. The sample is 173
+of 4,750 chunks, so this is not full-corpus model selection. Qwen3-Embedding
+did not complete on this CPU: its first batch took about 200 seconds. Full
+metrics, case-level ranks, hashes and this limitation are in
+[`vinamilk-embedding-three-model-expanded-25docs-12cases-20260927.json`](../../artifacts/evaluation/vinamilk-embedding-three-model-expanded-25docs-12cases-20260927.json).
+
 ## Input-length constraint
 
 The model reports a 512-token maximum sequence length. Seed PDF chunks target

@@ -50,7 +50,7 @@ Metrics include document/passage MRR, Recall@k and nDCG; embedding query time an
 
 ### 5.1 Corpus and retrieval
 
-The retrieval/embedding comparison snapshot contained 34 documents and 4,087 chunks overall. The later 2026-09-27 corpus metadata audit reflects the refreshed corpus: 44 documents and 5,052 chunks overall, with all 25 Vinamilk manifest documents ready and 4,750 chunks. Existing comparison artifacts still refer to their earlier snapshot and have not been rerun against the expanded governance corpus. Their results use nine questions; passage judgments are selected rather than exhaustive.
+The initial retrieval/embedding comparison snapshot contained 34 documents and 4,087 chunks overall. The expanded-corpus snapshot contains 44 documents and 5,052 chunks overall, with all 25 Vinamilk manifest documents ready and 4,750 chunks. The first expanded-corpus retrieval run used nine questions; it has since been superseded by a 12-case run after adding governance queries. Passage judgments are selected rather than exhaustive.
 
 | Method | Document MRR | Passage MRR | Passage Recall@5 | Mean latency (ms) |
 | --- | ---: | ---: | ---: | ---: |
@@ -59,7 +59,7 @@ The retrieval/embedding comparison snapshot contained 34 documents and 4,087 chu
 | Hybrid (RRF) | 0.926 | 0.440 | 0.370 | 1,266 |
 | Parent context | 1.000 | context MRR 0.431 | gold passage coverage 0.278 | 1,703 |
 
-Dense and parent ranking retrieved the expected document for all nine cases, but passage retrieval was substantially harder. Hybrid had the best ordinary passage MRR/Recall@5 of these measured configurations. Parent is reported with context metrics because it returns expanded context, not a passage-level list equivalent to the other methods. First-query dense/hybrid/parent measurements include model initialization; BM25 does not. These results are a small baseline, not a stable winner. Artifact: [`vinamilk-retrieval-current-passage-comparison.json`](../artifacts/evaluation/vinamilk-retrieval-current-passage-comparison.json).
+Dense and parent ranking retrieved the expected document for all nine baseline cases, but passage retrieval was substantially harder. The current 12-case expanded-corpus rerun reports document MRR 1.000/0.958/0.944/1.000 and passage MRR 0.412/0.403/0.464 for dense/BM25/hybrid/parent (parent context MRR 0.469). Hybrid had the best ordinary passage MRR; the conflict-of-interest passage ranked poorly, demonstrating room to improve. Parent is reported with context metrics because it returns expanded context, not a passage-level list equivalent to the other methods. First-query dense/hybrid/parent measurements include model initialization; BM25 does not. These remain small baselines, not a stable winner. Historical artifacts are [`vinamilk-retrieval-current-passage-comparison.json`](../artifacts/evaluation/vinamilk-retrieval-current-passage-comparison.json) and [`vinamilk-retrieval-expanded-corpus-20260927.json`](../artifacts/evaluation/vinamilk-retrieval-expanded-corpus-20260927.json); the current artifact is [`vinamilk-retrieval-12cases-expanded-corpus-20260927.json`](../artifacts/evaluation/vinamilk-retrieval-12cases-expanded-corpus-20260927.json).
 
 ### 5.2 Embeddings
 
@@ -70,6 +70,12 @@ Dense and parent ranking retrieved the expected document for all nine cases, but
 | intfloat/e5-large-v2 | 93 chunks | 0.707 | 1.000 | 133.99 (batch 4) | 0.219 | 2,189 |
 
 The nine-case point estimates are close and the sample is small. Different batch sizes and model-specific instructions mean observed embedding times are not a controlled throughput ranking. No model is selected as a general winner from this run. Paired artifacts are [`BGE-M3`](../artifacts/evaluation/vinamilk-embedding-bge-m3-expanded-8-per-document.json), [`Qwen3 Embedding`](../artifacts/evaluation/vinamilk-embedding-qwen3-embedding-expanded-8-per-document.json), and [`e5-large-v2`](../artifacts/evaluation/vinamilk-embedding-e5-large-v2-expanded-8-per-document.json); configuration is in [embedding notes](technical/embeddings-tokenization.md).
+
+On the refreshed 173-chunk sample and current 12 cases, BGE/e5 MRR is
+0.606/0.706 and nDCG@3 is 0.616/0.719. Qwen was attempted but no score was
+produced because its first batch took about 200 seconds on CPU. This new
+comparison is also sampled/document-level and does not establish a winner.
+See the [paired 12-case summary](../artifacts/evaluation/vinamilk-embedding-three-model-expanded-25docs-12cases-20260927.json).
 
 ### 5.3 Reranking
 

@@ -9,21 +9,24 @@ from core.llm.llm_interface import LLMInterface
 
 
 class GroqProvider(LLMInterface):
-    def __init__(self):
-        self.groq_api_key = os.getenv("GROQ_API_KEY")
-        if self.groq_api_key is None:
-            raise ValueError("GROQ_API_KEY is not set")
+    def __init__(
+        self,
+        model: str = "openai/gpt-oss-20b",
+        temperature: float = 0,
+    ):    
+        self.model = model
+        self.temperature = temperature
         self.client = OpenAI(
-                    api_key=self.groq_api_key,
-                    base_url="https://api.groq.com/openai/v1",
-                )
-        
+            api_key=os.environ["GROQ_API_KEY"],
+            base_url="https://api.groq.com/openai/v1",
+        )
+    
     def generate(self, prompt: str) -> str:
         response = self.client.responses.create(
-            model="openai/gpt-oss-20b",
+            model=self.model,
             input=prompt,
-            temperature=0,
-            reasoning={"effort": "low"},
+            temperature=self.temperature,
+            #reasoning={"effort": "low"},
             max_output_tokens=1000,
         )
 

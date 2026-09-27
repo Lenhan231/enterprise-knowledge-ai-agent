@@ -22,7 +22,7 @@ Use the technical notes below for current settings and data flow.
 | Multi-agent QA, analytics/SQL, report, dashboard | Partial | [Agents and evaluation](technical/agents-and-evaluation.md); LangGraph routes current intents. Analytics generates bounded SELECT SQL over role-filtered CTEs, with AST validation, read-only execution and source citations. Live document-role SQL was checked; verified KPI rows are currently absent, and multi-source BI workflows and invoice cases remain. Admin monitoring reads privacy-minimized Supabase traces. |
 | Web chatbot, upload portal, search and interactive dashboard | Partial | QA UI uses authenticated `/ws/ask` with a processing event and REST fallback; Nginx forwards WebSocket upgrades. Local browser checks verified analyst login, Business analysis filters/database coverage/live cited answer, and admin processing, access and monitoring screens. Live authenticated XLSX upload reached `ready` and its parsed table/formula/chunk data and private Storage bytes were read back. An injected embedding failure on newline-terminated TXT then verified saved-output retry and role-filtered retrieval (analyst sees it, employee does not). Both test fixtures were cleaned and absence verified. Nginx reverse-proxy runtime remains. |
 | Retrieval, generation and system evaluation | Incomplete | The refreshed authenticated app suite passes 5/5 source/fact/route/citation/denial checks and a repeated 70-request in-process API load run exists. OCR uses a three-region manually transcribed Tesseract pilot, not a physical scan, and remains too small for model selection. The proposal also requires OCR/layout and document-field quality, semantic human QA review, GPU utilization, deployed scalability, optimization comparisons, and representative business-case/agent workflow evaluation. See the [evaluation master matrix](technical/agents-and-evaluation.md#proposal-evaluation-master-matrix); deployed load and corpus-scale behavior remain unmeasured. |
-| Docker/Nginx/CI-CD, monitoring, manuals and research report | Partial | [Deployment guide](deployment-guide.md) and [user guide](user-guide.md) cover current setup. The admin agent-monitoring console and RLS-protected event table exist. Hosted [CI run 36286844731](https://github.com/Lenhan231/enterprise-knowledge-ai-agent/actions/runs/36286844731) passed the 251-test suite, Compose configuration, application image build and Nginx configuration check. The local app health endpoint also returned HTTP 200. This proves build/config validation, not a deployed proxy or production CI/CD release. Production observability, operator walkthrough, deployed proxy/load evidence and final report revision remain. |
+| Docker/Nginx/CI-CD, monitoring, manuals and research report | Partial | [Deployment guide](deployment-guide.md) and [user guide](user-guide.md) cover current setup. The admin agent-monitoring console and RLS-protected event table exist. Hosted [CI run 36287481142](https://github.com/Lenhan231/enterprise-knowledge-ai-agent/actions/runs/36287481142) passed the 252-test suite, Compose configuration, application image build and Nginx configuration check. The local app health endpoint also returned HTTP 200. This proves build/config validation, not a deployed proxy or production CI/CD release. Production observability, operator walkthrough, deployed proxy/load evidence and final report revision remain. |
 
 ### Required handoff deliverables
 
@@ -64,15 +64,15 @@ every named package by default.
 ## Current validation snapshot
 
 - Corpus metadata audit: `uv run python scripts/evaluate_corpus_metadata.py`; latest read-only artifact checks all 25 ready manifest sources (350 document fields and 52,250 chunk fields) with zero propagation mismatches, across 4,750 chunks. This is not automatic extraction accuracy.
-- Automated suite: `uv run python -m unittest discover -s tests -q` (**251
+- Automated suite: `uv run python -m unittest discover -s tests -q` (**252
   passed on 2026-09-27**; includes processing, evaluation, retrieval, agent,
   API and dashboard checks, including an authenticated HTTP regression proving
   employee upload requests are denied before any Storage/database write).
 - Python syntax: `python -m compileall -q src tests scripts`.
 - Frontend syntax: `node --check src/app/static/app.js`.
-- Hosted CI: commit `56471e2` passed `uv sync --locked`, Python compile, all 251
+- Hosted CI: commit `5c135ce` passed `uv sync --locked`, Python compile, all 252
   unit tests, frontend syntax, Compose proxy configuration, Docker image build,
-  and `nginx -t`; see [run 36286844731](https://github.com/Lenhan231/enterprise-knowledge-ai-agent/actions/runs/36286844731).
+  and `nginx -t`; see [run 36287481142](https://github.com/Lenhan231/enterprise-knowledge-ai-agent/actions/runs/36287481142).
 - Local app: `http://127.0.0.1:8000/health` returned `200 {"status":"ok"}`
   during the same validation session. The proxy was validated in CI but not
   launched as a local or hosted deployment.

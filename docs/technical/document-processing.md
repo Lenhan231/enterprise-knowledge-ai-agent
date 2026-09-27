@@ -144,8 +144,9 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   PaddleOCR 2.10.0 and PaddlePaddle 3.3.1 CPU; neither package is installed in
   the current standard `.venv`. In that prior run, disabling PIR still ended
   in OS kill 137 on one 72-DPI page, so no Paddle quality score is valid. The
-  current host has about 3.9 GiB available memory, nearly exhausted swap, and
-  no CUDA device; rerun on a higher-memory host or supported GPU.
+  host has no CUDA device; a more recent check found about 1.7 GiB available
+  memory and nearly exhausted swap. Rerun on a higher-memory host or supported
+  GPU.
 - The OCR evaluator records each engine's installed package version, model
   initialization duration/error, and CUDA availability in its report. Failed
   model initialization remains an explicit unscored engine and does not produce

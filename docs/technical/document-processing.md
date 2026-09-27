@@ -169,6 +169,18 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   material; never upload private enterprise files to a third-party free
   notebook. Record the runtime, package/model versions, peak RAM/VRAM and
   failures with each result.
+- Reproducible cloud entry point: `notebooks/kaggle_ocr_benchmark.ipynb`.
+  Select one engine per session, enable Internet + GPU, and add a Kaggle
+  `GITHUB_READ_TOKEN` secret for this private repository. It downloads only
+  the three benchmark reports from the manifest and writes its JSON into
+  `/kaggle/working`. Versions are pinned in the notebook. PaddleOCR 3.7 uses
+  PaddlePaddle GPU 3.3.0 for CUDA 12.6; EasyOCR 1.7.2 uses the notebook's
+  PyTorch CUDA runtime. Surya 0.22.1's updated adapter reads its HTML blocks,
+  but actual inference also requires its vLLM/Docker backend, which a Kaggle
+  session may not expose. Treat Surya as pending until a backend run succeeds.
+- The evaluator records the actual PyTorch-visible GPU name and CUDA status;
+  PaddleOCR and EasyOCR select GPU when available and fall back to CPU. This
+  reports assigned runtime hardware, not measured peak VRAM/RAM.
 - Parser outputs and database status are different evidence; verify both after
   corpus ingestion or upload.
 - `tests/test_upload_processing_flow.py` exercises a borderless PDF table, a

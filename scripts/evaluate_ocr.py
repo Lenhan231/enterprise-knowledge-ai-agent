@@ -15,10 +15,45 @@ import subprocess
 import sys
 import time
 import unicodedata
+from html.parser import HTMLParser
 from datetime import datetime, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+class _HTMLText(HTMLParser):
+    """Collect visible text from Surya 2's HTML layout output."""
+
+    def __init__(self):
+        super().__init__()
+        self.parts = []
+        self.block_tags = {"p", "div", "h1", "h2", "h3", "li", "tr"}
+
+    def handle_starttag(self, tag, _attrs):
+        if tag in self.block_tags and self.parts and self.parts[-1] != "\n":
+            self.parts.append("\n")
+
+    def handle_endtag(self, tag):
+        if tag in self.block_tags and self.parts and self.parts[-1] != "\n":
+            self.parts.append("\n")
+
+    def handle_data(self, data):
+        text = data.strip()
+        if text:
+            self.parts.append(text)
+
+
+def environment_gpu() -> tuple[bool, str]:
+    try:
+        import torch
+
+        available = bool(torch.cuda.is_available())
+        if available:
+            return True, torch.cuda.get_device_name(0)
+        return False, "CPU; CUDA unavailable"
+    except (ImportError, RuntimeError, AttributeError):
+        return False, "CPU; PyTorch/CUDA unavailable"
 
 
 def normalize(text: str) -> str:
@@ -60,26 +95,40 @@ def summarize_pages(rows: list[dict]) -> dict:
 
 def create_engine(engine: str, language: str):
     if engine == "paddleocr":
+        import torch
         from paddleocr import PaddleOCR
         # PaddleOCR 2.x exposes `.ocr`; 3.x exposes `.predict`. Keep both
         # versions usable without changing the evaluated engine/model.
         try:
+            gpu_available = torch.cuda.is_available()
             return PaddleOCR(
                 lang="en", use_doc_orientation_classify=False,
                 use_doc_unwarping=False, use_textline_orientation=False,
+                device="gpu:0" if gpu_available else "cpu",
                 cpu_threads=2, enable_mkldnn=False, show_log=False,
             )
         except (TypeError, ValueError):
-            return PaddleOCR(lang="en", use_angle_cls=False, use_gpu=False, show_log=False, cpu_threads=2, enable_mkldnn=False)
+            return PaddleOCR(
+                lang="en", use_angle_cls=False,
+                use_gpu=torch.cuda.is_available(), show_log=False,
+                cpu_threads=2, enable_mkldnn=False,
+            )
     if engine == "easyocr":
         import easyocr
 
-        return easyocr.Reader(["vi", "en"], gpu=False, verbose=False)
+        import torch
+        return easyocr.Reader(["vi", "en"], gpu=torch.cuda.is_available(), verbose=False)
     if engine == "surya":
-        from surya.recognition import RecognitionPredictor
-        from surya.detection import DetectionPredictor
+        try:
+            from surya.inference import SuryaInferenceManager
+            from surya.recognition import RecognitionPredictor
 
-        return RecognitionPredictor(DetectionPredictor())
+            return RecognitionPredictor(SuryaInferenceManager())
+        except ImportError:
+            from surya.recognition import RecognitionPredictor
+            from surya.detection import DetectionPredictor
+
+            return RecognitionPredictor(DetectionPredictor())
     return None
 
 
@@ -126,8 +175,17 @@ def run_engine(engine: str, model, image_path: Path, language: str) -> tuple[str
 
             image = Image.open(image_path).convert("RGB")
             prediction = model([image])
-            lines = getattr(prediction[0], "text_lines", [])
-            return "\n".join(line.text for line in lines), time.perf_counter() - started, None
+            page = prediction[0]
+            lines = getattr(page, "text_lines", None)
+            if lines is not None:
+                text = "\n".join(line.text for line in lines)
+            else:
+                parser = _HTMLText()
+                for block in getattr(page, "blocks", []):
+                    markup = block.get("html", "") if isinstance(block, dict) else getattr(block, "html", "")
+                    parser.feed(markup)
+                text = "".join(parser.parts).strip()
+            return text, time.perf_counter() - started, None
         raise ValueError(f"Unknown engine: {engine}")
     except Exception as error:  # Keep failures visible in the report, not as fabricated empty scores.
         return "", time.perf_counter() - started, f"{type(error).__name__}: {error}"
@@ -243,6 +301,7 @@ def main() -> int:
             language: summarize_pages([row for row in engine_data["pages"] if row.get("language") == language])
             for language in sorted({page["language"] for page in page_specs})
         }
+    cuda_available, gpu_name = environment_gpu()
     report = {
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "dataset": dataset["dataset_id"],
@@ -255,8 +314,8 @@ def main() -> int:
         "environment": {
             "python": platform.python_version(),
             "platform": platform.platform(),
-            "gpu": "CPU; CUDA unavailable in verified environment",
-            "cuda_available": __import__("torch").cuda.is_available(),
+            "gpu": gpu_name,
+            "cuda_available": cuda_available,
         },
         "ocr_configuration": {
             "render_dpi": args.dpi,

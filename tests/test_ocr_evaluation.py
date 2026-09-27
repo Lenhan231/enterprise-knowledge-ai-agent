@@ -15,6 +15,54 @@ SPEC.loader.exec_module(evaluate_ocr)
 
 
 class OCREvaluationTest(unittest.TestCase):
+    def test_paddleocr_3_selects_cuda_when_available(self):
+        torch = MagicMock()
+        torch.cuda.is_available.return_value = True
+        paddleocr = MagicMock()
+        with (
+            patch.dict(sys.modules, {"torch": torch, "paddleocr": paddleocr}),
+        ):
+            evaluate_ocr.create_engine("paddleocr", "vi")
+        paddleocr.PaddleOCR.assert_called_once_with(
+            lang="en", use_doc_orientation_classify=False,
+            use_doc_unwarping=False, use_textline_orientation=False,
+            device="gpu:0", cpu_threads=2, enable_mkldnn=False, show_log=False,
+        )
+
+    def test_environment_gpu_reports_device_when_cuda_is_available(self):
+        torch = MagicMock()
+        torch.cuda.is_available.return_value = True
+        torch.cuda.get_device_name.return_value = "Kaggle T4"
+        with patch.dict(sys.modules, {"torch": torch}):
+            self.assertEqual(evaluate_ocr.environment_gpu(), (True, "Kaggle T4"))
+
+    def test_surya_v2_html_blocks_are_readable_text(self):
+        class SuryaV2:
+            def __call__(self, _images):
+                return [MagicMock(text_lines=None, blocks=[{"html": "<h1>Doanh thu</h1><p>61.824 tỷ đồng</p>"}])]
+
+        image_lib = MagicMock()
+        image_lib.open.return_value.convert.return_value = object()
+        pil = MagicMock()
+        pil.Image = image_lib
+        with patch.dict(sys.modules, {"PIL": pil}):
+            text, _, error = evaluate_ocr.run_engine("surya", SuryaV2(), Path("page.png"), "vie+eng")
+        self.assertEqual(text, "Doanh thu\n61.824 tỷ đồng")
+        self.assertIsNone(error)
+
+    def test_surya_v1_text_lines_remain_supported(self):
+        page = MagicMock(text_lines=[MagicMock(text="Vietnamese report")])
+        class SuryaV1:
+            def __call__(self, _images):
+                return [page]
+
+        image_lib = MagicMock()
+        image_lib.open.return_value.convert.return_value = object()
+        with patch.dict(sys.modules, {"PIL": MagicMock(Image=image_lib)}):
+            text, _, error = evaluate_ocr.run_engine("surya", SuryaV1(), Path("page.png"), "vie+eng")
+        self.assertEqual(text, "Vietnamese report")
+        self.assertIsNone(error)
+
     def test_normalization_ignores_case_and_punctuation(self):
         self.assertEqual(evaluate_ocr.normalize("Doanh thu, NĂM 2024!"), "doanh thu năm 2024")
 

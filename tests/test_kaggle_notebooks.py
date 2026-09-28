@@ -43,18 +43,20 @@ class KaggleNotebookTest(unittest.TestCase):
         )
         self.assertIn('ENGINE in {"easyocr", "surya"}', all_code)
         self.assertIn("REQUIRE_GPU and not cuda_available", all_code)
-        self.assertIn("REQUIRE_GPU = True", all_code)
+        self.assertIn("REQUIRE_GPU = False", all_code)
         self.assertIn('ENGINE == "tesseract"', all_code)
 
-    def test_ocr_notebook_uses_corrected_v6_scan_dataset(self):
+    def test_ocr_notebook_uses_reviewed_v7_dataset_and_psm_pairing(self):
         notebook = self.load("kaggle_ocr_benchmark.ipynb")
         source = "\n".join(
             "".join(cell["source"])
             for cell in notebook["cells"]
         )
-        self.assertIn("vinamilk_ocr_ground_truth_v6.json", source)
-        self.assertIn("Earlier v5 scan-page CER/WER are superseded", source)
-        self.assertIn("ltrngnhn/vinamilk-ocr-v6-benchmark-assets", source)
+        self.assertIn("vinamilk_ocr_ground_truth_v7.json", source)
+        self.assertIn("four additional English physical-scan regions", source)
+        self.assertIn("ltrngnhn/vinamilk-ocr-v7-benchmark-assets", source)
+        self.assertIn("TESSERACT_PSM = 3", source)
+        self.assertIn("--tesseract-psm", source)
         self.assertIn("set `REQUIRE_GPU = False`", source)
         self.assertNotIn("vinamilk-proposal-benchmark-assets", source)
 

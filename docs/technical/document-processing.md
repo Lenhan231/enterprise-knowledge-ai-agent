@@ -471,10 +471,12 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
 - Reproducible cloud entry point: `notebooks/kaggle_ocr_benchmark.ipynb`.
   Select one engine per session, enable Internet + GPU for EasyOCR/Surya
   (the PaddleOCR fallback and Tesseract can run on CPU), and add a Kaggle
-  private dataset [vinamilk-ocr-v6-benchmark-assets](https://www.kaggle.com/datasets/ltrngnhn/vinamilk-ocr-v6-benchmark-assets).
+  private dataset [vinamilk-ocr-v7-benchmark-assets](https://www.kaggle.com/datasets/ltrngnhn/vinamilk-ocr-v7-benchmark-assets).
   The notebook discovers the attached dataset by its project files, including
-  the bundled copies of the three source PDFs, and writes its JSON into
-  `/kaggle/working`. Versions are pinned in the notebook. PaddleOCR 3.7 uses
+  the five bundled source PDFs used by its ten reviewed regions. Rebuild the
+  bundle with `uv run python scripts/package_ocr_benchmark.py
+  build/kaggle-ocr-v7-dataset` and keep the Kaggle dataset private. The notebook
+  writes its JSON into `/kaggle/working`. Versions are pinned in the notebook. PaddleOCR 3.7 uses
   the official PaddlePaddle 3.3.0 CPU wheel because the 1.9 GB CUDA wheel
   failed pip validation on Kaggle; the report records the engine's actual
   runtime device. EasyOCR 1.7.2 uses the notebook's

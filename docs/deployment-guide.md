@@ -78,8 +78,9 @@ up to the upload limit, forwards standard client/protocol headers, and sets
 basic browser security headers. Configure TLS termination at the deployment
 edge and set `AUTH_COOKIE_SECURE=true` before exposing the app beyond localhost.
 The proxy forwards WebSocket upgrades for `/ws/ask`; the authenticated local
-Uvicorn path has been exercised through a cited knowledge answer. The Nginx
-container itself still needs runtime verification.
+Uvicorn path has been exercised through a cited knowledge answer. CI also
+builds the container, validates Nginx, and runs authenticated HTTP/WebSocket
+smoke checks through the Docker proxy.
 
 The web service uses the configured external database and Supabase services.
 The optional `local-db` profile starts plain PostgreSQL with pgvector:
@@ -89,62 +90,21 @@ Supabase's `storage.buckets`, and uploads require the Supabase Storage API. This
 profile cannot apply the full schema or verify uploads end to end. Use the
 linked Supabase project for app integration; treat local PostgreSQL as a
 lower-level vector experiment only. The development host has no Docker CLI, so
-local Compose/image/Nginx runtime validation is unavailable here. Hosted
-[CI run 36400367545](https://github.com/Lenhan231/enterprise-knowledge-ai-agent/actions/runs/36400367545)
-passed the test suite, Compose validation, application image build, `nginx -t`,
-and an authenticated HTTP/WebSocket smoke through the running Docker Nginx proxy
-on `main` at `109efd14`. The proxy container path is runtime-verified in CI;
-this is not a Render/Vercel deployment.
+local Compose/image/Nginx runtime validation is unavailable here. The proxy
+container path is runtime-verified in CI; this is not a hosted deployment.
 
-## Hosted prototype on Render
+## Hosting scope
 
-Render is the lowest-setup option for a public prototype from this private GitHub
-branch: connect the repository in the Render Dashboard, select a Web Service
-with the Docker runtime and `docker/Dockerfile`, and set `/health` as its health
-check. The container listens on `PORT` (defaults to 8000 for Compose). Render's
-web service handles public TLS and accepts WebSocket upgrades on the same port;
-deploying the separate Compose Nginx service is unnecessary for this topology.
-The Nginx Compose profile remains useful for local/CI reverse-proxy validation.
-Render supports private GitHub repositories, Docker builds, and inbound
-WebSockets ([web service docs](https://render.com/docs/web-services),
-[Docker docs](https://render.com/docs/docker),
-[WebSocket docs](https://render.com/docs/websocket)).
-
-The dashboard flow uses GitHub OAuth and does not need a Render API token. If
-automating account operations through the API/CLI, create a scoped token in
-Render and keep it out of chat, source files and `.env.example`. Enter runtime
-secrets in the service's Environment settings: `DATABASE_URL`, `SUPABASE_URL`,
-`SUPABASE_SECRET_KEY`, `GROQ_API_KEY`, `HUGGINGFACE_API_KEY`, and unique demo
-passwords. The repository's [`render.yaml`](../render.yaml) Blueprint uses a
-Free Singapore service, generates the auth secret, and uses hosted Hugging Face
-inference to avoid loading embedding weights into the small web instance. It
-marks provider credentials and demo passwords for entry in the Render
-Dashboard. Set `AUTH_COOKIE_SECURE=true`; retain the configured
-external Supabase database and private Storage bucket. Never add these values to
-the image or repository.
-
-Render's free service is suitable for a short smoke/demo only: it spins down
-after 15 minutes idle and can take about a minute to wake; its filesystem is
-ephemeral. Document uploads already go to Supabase Storage, so the service disk
-is not the source of truth. Choose a paid compute plan only after checking the
-current price and measuring memory under the embedding/OCR workload. Render's
-free-plan behavior is described in its
-[free service limits](https://render.com/docs/free).
+Hosted Render/Vercel deployment is outside this prototype's proposal scope.
+Validate the application locally and through the Docker/Nginx CI path above;
+do not use this guide as a hosted deployment recipe.
 
 ## Operations boundary
 
 An admin agent-monitoring console is available in the app, backed by
 privacy-minimized event rows; it is not centralized production observability.
-[`vercel.json`](../vercel.json) publishes the existing static UI from
-`src/app/static`, aliases `/static/*` to that output, and proxies API and health
-paths to the Render service. The chat UI retains its REST fallback if a hosting
-proxy does not pass WebSocket upgrades. Configure the Vercel project with the
-repository root and create the Render Blueprint from the same private GitHub
-repository. Provider-side account linking, secret entry, first deployment, and
-browser smoke testing remain required. There is no production load-tested
-profile. The in-process smoke benchmark in
-`technical/agents-and-evaluation.md` does not validate a deployed server. Before
-public exposure, configure TLS termination at the edge, restrict network access
-to PostgreSQL and Supabase secrets, and validate backups, retention, resource
-limits and recovery against the chosen hosting environment. Do not treat
-`/health` as a full dependency health check.
+The chat UI retains its REST fallback when WebSocket upgrades are unavailable.
+There is no production load-tested profile. The in-process smoke benchmark in
+`technical/agents-and-evaluation.md` measures only the local prototype and is
+not a production capacity claim. `/health` confirms the process responds; it is
+not a full dependency health check.

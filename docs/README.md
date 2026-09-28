@@ -104,6 +104,11 @@ every named package by default.
   at concurrency 4, mean latency was 3.64 s for analytics, 3.35 s for dashboard,
   and 2.42 ms for health (6–7 samples per route). These use loopback and do not
   establish higher-load local scalability.
+- A small loopback stress smoke at concurrency 8/16 passed 40/40 at level 8;
+  level 16 had one analytics 503 in 80 requests, while a 32-request repeat
+  passed. This is an intermittent database-path signal, not a capacity claim;
+  server/database telemetry and controlled repeats remain needed. See the
+  [stress artifact](../artifacts/evaluation/vinamilk-api-load-http-stress-20260928.json).
 - Seed corpus headings: after re-ingesting the 11 annual/sustainability PDFs,
   Supabase reports `section_title` on 3,773/3,780 chunks (99.8%); all 3,780
   report chunks have `allowed_roles`. No stored report chunk exceeds the

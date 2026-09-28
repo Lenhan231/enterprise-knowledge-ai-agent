@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from pgvector.psycopg import register_vector
 import numpy as np
 
+from core.database.connection_limit import close_database_connection, connect_database
 from core.retrieval.retrieval import RetrievedChunk
 
 load_dotenv()
@@ -41,8 +42,12 @@ class DocumentChunkRepository:
         if DATABASE_URL is None:
             raise ValueError("DATABASE_URL is not set")
         self.DATABASE_URL = DATABASE_URL
-        self.conn = psycopg.connect(self.DATABASE_URL)
-        register_vector(self.conn)
+        self.conn = connect_database(self.DATABASE_URL)
+        try:
+            register_vector(self.conn)
+        except BaseException:
+            close_database_connection(self.conn)
+            raise
         
 
     def insert_chunk(
@@ -106,7 +111,7 @@ class DocumentChunkRepository:
             )
 
     def close(self) -> None:
-        self.conn.close()
+        close_database_connection(self.conn)
 
     def expand_parent_contexts(
         self,

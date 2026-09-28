@@ -5,6 +5,7 @@ import psycopg
 from dotenv import load_dotenv
 from psycopg.rows import dict_row
 
+from core.database.connection_limit import close_database_connection, connect_database
 from core.analytics.sql_safety import validate_analytics_sql
 
 load_dotenv()
@@ -16,7 +17,7 @@ class DocumentRepository:
         if not database_url:
             raise ValueError("DATABASE_URL is not set")
 
-        self.conn = psycopg.connect(database_url, row_factory=dict_row)
+        self.conn = connect_database(database_url, row_factory=dict_row)
 
     def list_documents(self) -> list[dict]:
         with self.conn.cursor() as cursor:
@@ -427,4 +428,4 @@ class DocumentRepository:
             return cursor.fetchone()
 
     def close(self) -> None:
-        self.conn.close()
+        close_database_connection(self.conn)

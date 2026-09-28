@@ -151,6 +151,9 @@ async def main_async(args) -> int:
             "python": platform.python_version(),
             "platform": platform.platform(),
             "peak_rss_mb": round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024, 1),
+            "database_max_connections_per_process": int(
+                os.getenv("DATABASE_MAX_CONNECTIONS_PER_PROCESS", "10")
+            ),
             "gpu_utilization": None,
             "gpu_note": "Not sampled; no CUDA GPU was available in the verified host environment.",
         },

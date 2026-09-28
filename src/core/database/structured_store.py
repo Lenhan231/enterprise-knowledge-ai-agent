@@ -9,6 +9,8 @@ import psycopg
 from dotenv import load_dotenv
 from psycopg.types.json import Jsonb
 
+from core.database.connection_limit import close_database_connection, connect_database
+
 load_dotenv()
 
 
@@ -16,7 +18,7 @@ class StructuredDataStore:
     """Replace one document's extracted tables using the app's trusted DB role."""
 
     def __init__(self, connection: psycopg.Connection | None = None):
-        self.connection = connection or psycopg.connect(os.environ["DATABASE_URL"])
+        self.connection = connection or connect_database(os.environ["DATABASE_URL"])
         self._owns_connection = connection is None
 
     def save_document_tables(self, document_id: str, document_name: str, tables: list[dict[str, Any]]) -> tuple[int, int]:
@@ -80,4 +82,4 @@ class StructuredDataStore:
 
     def close(self) -> None:
         if self._owns_connection:
-            self.connection.close()
+            close_database_connection(self.connection)

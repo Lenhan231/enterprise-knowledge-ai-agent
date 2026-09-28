@@ -6,6 +6,8 @@ import psycopg
 from dotenv import load_dotenv
 from psycopg.rows import dict_row
 
+from core.database.connection_limit import close_database_connection, connect_database
+
 load_dotenv()
 
 
@@ -14,7 +16,7 @@ class AgentRunRepository:
         database_url = os.getenv("DATABASE_URL")
         if not database_url:
             raise ValueError("DATABASE_URL is not set")
-        self.conn = psycopg.connect(database_url, row_factory=dict_row)
+        self.conn = connect_database(database_url, row_factory=dict_row)
 
     def record_event(
         self,
@@ -73,4 +75,4 @@ class AgentRunRepository:
         return {"summary": summary, "by_agent": by_agent, "recent_runs": recent_runs}
 
     def close(self) -> None:
-        self.conn.close()
+        close_database_connection(self.conn)

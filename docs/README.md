@@ -66,6 +66,7 @@ every named package by default.
 - [Embedding model and tokenization](technical/embeddings-tokenization.md)
 - [LLM provider and answer evaluation](technical/llm.md)
 - [Retrieval and RBAC](technical/retrieval-rbac.md)
+- [Database connection limits](technical/database-connections.md)
 - [Agents, dashboard and evaluation](technical/agents-and-evaluation.md)
 - [User guide](user-guide.md)
 - [Deployment guide](deployment-guide.md)
@@ -106,9 +107,11 @@ every named package by default.
   establish higher-load local scalability.
 - A small loopback stress smoke at concurrency 8/16 passed 40/40 at level 8;
   level 16 had one analytics 503 in 80 requests, while a 32-request repeat
-  passed. This is an intermittent database-path signal, not a capacity claim;
-  server/database telemetry and controlled repeats remain needed. See the
-  [stress artifact](../artifacts/evaluation/vinamilk-api-load-http-stress-20260928.json).
+  passed. Captured logs identified Supavisor's 15-session pool cap. The app now
+  queues repository connections behind a 10-per-process bound; after the fix,
+  the same concurrency-16 workload passed 80/80 (3.784 req/s, p95 7.06 s).
+  This validates the fix, not capacity. See the [pre-fix stress artifact](../artifacts/evaluation/vinamilk-api-load-http-stress-20260928.json)
+  and [post-fix run](../artifacts/evaluation/vinamilk-api-load-http-bounded-20260928.json).
 - Seed corpus headings: after re-ingesting the 11 annual/sustainability PDFs,
   Supabase reports `section_title` on 3,773/3,780 chunks (99.8%); all 3,780
   report chunks have `allowed_roles`. No stored report chunk exceeds the

@@ -9,12 +9,14 @@ from dotenv import load_dotenv
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
+from core.database.connection_limit import close_database_connection, connect_database
+
 load_dotenv()
 
 
 class ProcessedChunksRepository:
     def __init__(self, connection: psycopg.Connection | None = None):
-        self.connection = connection or psycopg.connect(os.environ["DATABASE_URL"])
+        self.connection = connection or connect_database(os.environ["DATABASE_URL"])
         self._owns_connection = connection is None
 
     def replace_document(self, document_id: str, chunks: list[dict]) -> None:
@@ -70,4 +72,4 @@ class ProcessedChunksRepository:
 
     def close(self) -> None:
         if self._owns_connection:
-            self.connection.close()
+            close_database_connection(self.connection)

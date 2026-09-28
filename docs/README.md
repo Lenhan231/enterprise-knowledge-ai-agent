@@ -277,10 +277,13 @@ every named package by default.
   Tesseract 5.5.3 at 180 DPI/PSM 3 reproduces the original six page CER/WER
   values exactly when checked by source-PDF and rendered-crop hashes; the four
   new scans score micro-CER/WER 0.224055/0.267760. This is a single-engine
-  expansion smoke, not a new cross-engine comparison. The current Vinamilk PDF
+  expansion smoke, not a new cross-engine comparison. A paired Tesseract PSM 11
+  run on the same ten source/render hashes scores micro-CER/WER 0.127318/0.197497
+  overall and 0.111908/0.137978 on the four added scans; this is configuration
+  evidence only and does not select a production setting. The current Vinamilk PDF
   subset still lacks a Vietnamese physical scan and reviewed table-cell
   coordinates. See [v7 references](../data/evaluation/vinamilk_ocr_ground_truth_v7.json)
-  and [Tesseract run](../artifacts/evaluation/vinamilk-ocr-tesseract-scan-expansion-v7-180dpi-psm3-20260928.json).
+  and paired Tesseract [PSM 3](../artifacts/evaluation/vinamilk-ocr-tesseract-scan-expansion-v7-180dpi-psm3-20260928.json)/[PSM 11](../artifacts/evaluation/vinamilk-ocr-tesseract-scan-expansion-v7-180dpi-20260928.json) runs.
 - Extraction anchor report
   `artifacts/evaluation/vinamilk-document-extraction-scan-table-v9.json` uses five
   manually checked financial fields on two official annual-report pages

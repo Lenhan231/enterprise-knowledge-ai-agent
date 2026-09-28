@@ -313,6 +313,14 @@ every named package by default.
   PSM 6 for direct image uploads; text OCR remains PSM 11. This comparison
   uses two born-digital source pages rasterized synthetically, so it does not
   replace review on real scanned reports.
+- Expanded multi-year extraction report
+  `artifacts/evaluation/vinamilk-document-extraction-multiyear-v3-20260928.json`
+  supersedes the narrow five-field candidate count below for native financial
+  statement coverage. It contains 11 visually checked fields over five report
+  pages (2020–2024); born-digital candidate extraction matched 11/11 with
+  1.00 precision. Synthetic Tesseract raster OCR matched 1/11 exact text
+  anchors and 3/11 after normalization. These are not real-scan or
+  document-wide accuracy estimates.
 - Financial candidate extraction report
   `artifacts/evaluation/vinamilk-document-extraction-candidates-20260927.json`
   adds candidate-level scoring on those same five labeled fields. The rule-based

@@ -88,20 +88,13 @@ deployment of this app: the migration history also creates a private bucket in
 Supabase's `storage.buckets`, and uploads require the Supabase Storage API. This
 profile cannot apply the full schema or verify uploads end to end. Use the
 linked Supabase project for app integration; treat local PostgreSQL as a
-lower-level vector experiment only. Compose/container build and startup have
-not been runtime-verified on this development machine.
-The CI workflow validates the Compose profile, builds the app image, and runs
-`nginx -t`. Run
-[`36289635192`](https://github.com/Lenhan231/enterprise-knowledge-ai-agent/actions/runs/36289635192)
-passed all steps on `feature/vietnam-enterprise-corpus` at commit
-`47a68d209e2b5dde2da8c803cbe7fb7bcfdf408c` on 2026-09-27. The runner emitted
-a non-fatal warning when saving the uv cache because its disk was full; the
-test, Compose validation, image build, and Nginx checks had already passed.
-That run covers the committed SHA only, not later uncommitted worktree changes.
-The current worktree extends CI with an authenticated HTTP and WebSocket smoke
-through the Compose Nginx proxy; that workflow change still needs a hosted run.
-The development host has no Docker CLI, so local Compose/image/Nginx runtime
-validation is unavailable here.
+lower-level vector experiment only. The development host has no Docker CLI, so
+local Compose/image/Nginx runtime validation is unavailable here. Hosted
+[CI run 36400367545](https://github.com/Lenhan231/enterprise-knowledge-ai-agent/actions/runs/36400367545)
+passed the test suite, Compose validation, application image build, `nginx -t`,
+and an authenticated HTTP/WebSocket smoke through the running Docker Nginx proxy
+on `main` at `109efd14`. The proxy container path is runtime-verified in CI;
+this is not a Render/Vercel deployment.
 
 ## Hosted prototype on Render
 

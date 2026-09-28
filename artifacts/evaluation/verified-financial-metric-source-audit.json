@@ -1,0 +1,144 @@
+{
+  "created_at_utc": "2026-09-28T05:05:26.805593+00:00",
+  "source": "authenticated admin analytics API plus cited official PDF pages",
+  "verified_observation_count": 7,
+  "pending_candidate_count": 29,
+  "audited": 7,
+  "passed": 7,
+  "failed": 0,
+  "observations": [
+    {
+      "metric_name": "cost_of_goods_sold",
+      "metric_label": "Cost of goods sold",
+      "fiscal_year": 2020,
+      "metric_value": 31967662837839,
+      "unit": "VND",
+      "document_id": "VNM-AR-2020-VI",
+      "page_number": 73,
+      "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1617354921_f48f48ff7baf40d9af270083a736eaaf0f52a6c5873367d134b4c83f193b0677_a1d64e4bbf.pdf",
+      "source_pdf_sha256": "0abbd2bb78b4be637107b1975014a118c7eda9d79ebe4634d612337910b25f00",
+      "page_text_sha256": "a21e80a3860a35fc7b10b461573ae6941ce32cff4510aac1a22657cbfcfcf8bb",
+      "checks": {
+        "metric_label": true,
+        "fiscal_year": true,
+        "value": true,
+        "unit": true
+      },
+      "passed": true
+    },
+    {
+      "metric_name": "gross_profit",
+      "metric_label": "Gross profit",
+      "fiscal_year": 2020,
+      "metric_value": 27668623387708,
+      "unit": "VND",
+      "document_id": "VNM-AR-2020-VI",
+      "page_number": 73,
+      "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1617354921_f48f48ff7baf40d9af270083a736eaaf0f52a6c5873367d134b4c83f193b0677_a1d64e4bbf.pdf",
+      "source_pdf_sha256": "0abbd2bb78b4be637107b1975014a118c7eda9d79ebe4634d612337910b25f00",
+      "page_text_sha256": "a21e80a3860a35fc7b10b461573ae6941ce32cff4510aac1a22657cbfcfcf8bb",
+      "checks": {
+        "metric_label": true,
+        "fiscal_year": true,
+        "value": true,
+        "unit": true
+      },
+      "passed": true
+    },
+    {
+      "metric_name": "profit_after_tax",
+      "metric_label": "Profit after tax",
+      "fiscal_year": 2020,
+      "metric_value": 11236,
+      "unit": "billion VND",
+      "document_id": "VNM-AR-2020-VI",
+      "page_number": 2,
+      "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1617354921_f48f48ff7baf40d9af270083a736eaaf0f52a6c5873367d134b4c83f193b0677_a1d64e4bbf.pdf",
+      "source_pdf_sha256": "0abbd2bb78b4be637107b1975014a118c7eda9d79ebe4634d612337910b25f00",
+      "page_text_sha256": "83c6eddcdd6f786b1cc8e875321bae3ac57f0ef033600e7ae70edf9dfb86fdac",
+      "checks": {
+        "metric_label": true,
+        "fiscal_year": true,
+        "value": true,
+        "unit": true
+      },
+      "passed": true
+    },
+    {
+      "metric_name": "profit_before_tax",
+      "metric_label": "Profit before tax",
+      "fiscal_year": 2020,
+      "metric_value": 13519,
+      "unit": "billion VND",
+      "document_id": "VNM-AR-2020-VI",
+      "page_number": 9,
+      "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1617354921_f48f48ff7baf40d9af270083a736eaaf0f52a6c5873367d134b4c83f193b0677_a1d64e4bbf.pdf",
+      "source_pdf_sha256": "0abbd2bb78b4be637107b1975014a118c7eda9d79ebe4634d612337910b25f00",
+      "page_text_sha256": "69b8be8626265159b26b5e20ac3f85442cf8ccc468699dc976972d4def1f78d9",
+      "checks": {
+        "metric_label": true,
+        "fiscal_year": true,
+        "value": true,
+        "unit": true
+      },
+      "passed": true
+    },
+    {
+      "metric_name": "total_assets",
+      "metric_label": "Total assets",
+      "fiscal_year": 2020,
+      "metric_value": 48432,
+      "unit": "billion VND",
+      "document_id": "VNM-AR-2020-VI",
+      "page_number": 9,
+      "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1617354921_f48f48ff7baf40d9af270083a736eaaf0f52a6c5873367d134b4c83f193b0677_a1d64e4bbf.pdf",
+      "source_pdf_sha256": "0abbd2bb78b4be637107b1975014a118c7eda9d79ebe4634d612337910b25f00",
+      "page_text_sha256": "69b8be8626265159b26b5e20ac3f85442cf8ccc468699dc976972d4def1f78d9",
+      "checks": {
+        "metric_label": true,
+        "fiscal_year": true,
+        "value": true,
+        "unit": true
+      },
+      "passed": true
+    },
+    {
+      "metric_name": "total_assets",
+      "metric_label": "Total assets",
+      "fiscal_year": 2021,
+      "metric_value": 53332,
+      "unit": "billion VND",
+      "document_id": "VNM-AR-2021-VI",
+      "page_number": 10,
+      "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1650451537_6f22ffdd6ecd4ea5cc133b0046bc3085a10648db1369033c5dfe1daed93f04a7_1372ac1845.pdf",
+      "source_pdf_sha256": "83849d0fc12189be67828c7c0bd54464df4231b1ee712120f6905e291dadfb5b",
+      "page_text_sha256": "91772969ecd5f27141c4e0bcd1bbf12e64d2a7d4decbf7a689df8616ded0c22f",
+      "checks": {
+        "metric_label": true,
+        "fiscal_year": true,
+        "value": true,
+        "unit": true
+      },
+      "passed": true
+    },
+    {
+      "metric_name": "total_consolidated_revenue",
+      "metric_label": "Total consolidated revenue",
+      "fiscal_year": 2020,
+      "metric_value": 59723,
+      "unit": "billion VND",
+      "document_id": "VNM-AR-2020-VI",
+      "page_number": 8,
+      "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1617354921_f48f48ff7baf40d9af270083a736eaaf0f52a6c5873367d134b4c83f193b0677_a1d64e4bbf.pdf",
+      "source_pdf_sha256": "0abbd2bb78b4be637107b1975014a118c7eda9d79ebe4634d612337910b25f00",
+      "page_text_sha256": "2d6441d35d96a91a6911438ac7d7c9e07772194ca0b7e7363ac9d472160df360",
+      "checks": {
+        "metric_label": true,
+        "fiscal_year": true,
+        "value": true,
+        "unit": true
+      },
+      "passed": true
+    }
+  ]
+}

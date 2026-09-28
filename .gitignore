@@ -16,6 +16,7 @@ build/
 /data/processed/apple/**/*.md
 /data/processed/vietnam_enterprises/
 /artifacts/evaluation/qa-review-private-key.json
+/artifacts/evaluation/qa-review-private-key-*.json
 
 ponytail.md
 /rules

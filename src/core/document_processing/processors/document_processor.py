@@ -14,7 +14,9 @@ from .pdf_processor import PDFProcessor
 from .text_processor import split_text
 
 _W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+_M = "{http://schemas.openxmlformats.org/officeDocument/2006/math}"
 _A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
+_P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
 _X = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
 _R = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
 _PKG_R = "{http://schemas.openxmlformats.org/package/2006/relationships}"
@@ -73,6 +75,8 @@ class DocumentProcessor:
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
         self.chunking_strategy = self.config.get("chunking_strategy", "sentence")
+        self.paddle_formula_recognition = bool(self.config.get("paddle_formula_recognition", False))
+        self.paddle_layout = bool(self.config.get("paddle_layout", False) or self.paddle_formula_recognition)
         if self.chunking_strategy not in {"fixed", "sentence", "semantic"}:
             raise ValueError("chunking_strategy must be 'fixed' or 'sentence'")
         self.chunk_size = int(self.config.get("chunk_size", 1100))
@@ -87,9 +91,13 @@ class DocumentProcessor:
         common = {**metadata, "filename": Path(filename).name, "format": suffix[1:].upper()}
         if suffix == ".pdf":
             result = PDFProcessor({
-                "paddle_layout": False,
+                "paddle_layout": self.paddle_layout,
+                "paddle_formula_recognition": self.paddle_formula_recognition,
                 "ocr_fallback": True,
                 "ocr_language": "vie+eng",
+                "tesseract_psm": self.config.get("tesseract_psm", 11),
+                "tesseract_table_psm": self.config.get("tesseract_table_psm", 3),
+                "ocr_render_scale": self.config.get("ocr_render_scale", 1.5),
                 "extract_tables": True,
                 "chunking_strategy": self.chunking_strategy,
                 "chunk_size": self.chunk_size,
@@ -103,12 +111,20 @@ class DocumentProcessor:
             if PDFProcessor._looks_like_numeric_table(text):
                 import fitz
 
-                layout = PDFProcessor({"ocr_fallback": True, "ocr_language": self.config.get("ocr_language", "vie+eng")})
+                layout = PDFProcessor({
+                    "ocr_fallback": True,
+                    "ocr_language": self.config.get("ocr_language", "vie+eng"),
+                    "tesseract_table_psm": self.config.get("tesseract_table_psm", 6),
+                    "ocr_render_scale": self.config.get("ocr_render_scale", 1.5),
+                })
                 image = fitz.open(stream=content, filetype=suffix[1:])
                 try:
                     page = image[0]
                     words = layout._ocr_page_words(page)
-                    tables = PDFProcessor._tables_from_aligned_words(words, page.rect, 1)
+                    tables = PDFProcessor._tables_from_aligned_words(
+                        words, page.rect, 1,
+                        ocr_metadata=layout._ocr_table_metadata(),
+                    )
                 finally:
                     image.close()
             result = {
@@ -136,7 +152,7 @@ class DocumentProcessor:
 
     def _ocr(self, content: bytes) -> str:
         result = subprocess.run(
-            ["tesseract", "stdin", "stdout", "-l", self.config.get("ocr_language", "vie+eng"), "--psm", "3"],
+            ["tesseract", "stdin", "stdout", "-l", self.config.get("ocr_language", "vie+eng"), "--psm", str(self.config.get("tesseract_psm", 11))],
             input=content, capture_output=True, check=True, timeout=90,
         )
         return result.stdout.decode("utf-8", errors="replace").strip()
@@ -144,20 +160,68 @@ class DocumentProcessor:
     def _docx(self, archive: zipfile.ZipFile, metadata: dict) -> dict:
         root = ElementTree.fromstring(archive.read("word/document.xml"))
         chunks = []
-        for index, paragraph in enumerate(root.iter(f"{_W}p")):
-            text = "".join(node.text or "" for node in paragraph.iter(f"{_W}t"))
-            if text.strip():
-                chunks.extend(_split(text, {**metadata, "paragraph_index": index}, self.chunk_size, self.chunk_overlap, self.chunking_strategy))
         tables = []
-        for table_index, table in enumerate(root.iter(f"{_W}tbl")):
-            rows = []
-            for row in table.findall(f"{_W}tr"):
-                rows.append(["".join(node.text or "" for node in cell.iter(f"{_W}t")) for cell in row.findall(f"{_W}tc")])
-            if rows:
-                columns = rows[0]
-                tables.append({"page_number": 1, "table_index": table_index, "columns": columns,
-                               "rows": [dict(zip(columns, row + [None] * (len(columns) - len(row)))) for row in rows[1:]],
-                               "metadata": {"parser": "python-stdlib-docx-xml"}})
+        current_section_title = None
+        body = root.find(f"{_W}body")
+        for index, element in enumerate(body if body is not None else []):
+            if element.tag == f"{_W}p":
+                math_nodes = [node for node in element.iter() if node.tag == f"{_M}oMath"]
+                text_nodes = [node for node in element.iter() if node.tag in {f"{_W}t", f"{_M}t"}]
+                text = "".join(node.text or "" for node in text_nodes)
+                if not text.strip():
+                    continue
+                paragraph_properties = element.find(f"{_W}pPr")
+                style = paragraph_properties.find(f"{_W}pStyle") if paragraph_properties is not None else None
+                style_name = style.get(f"{_W}val", "") if style is not None else ""
+                if re.fullmatch(r"Heading[1-9]", style_name, re.IGNORECASE):
+                    current_section_title = text.strip()
+                paragraph_metadata = {
+                    **metadata,
+                    "paragraph_index": index,
+                    "section_title": current_section_title,
+                }
+                if math_nodes:
+                    paragraph_metadata["contains_formula"] = True
+                    paragraph_metadata["formula_text"] = "".join(
+                        node.text or "" for node in math_nodes[0].iter(f"{_M}t")
+                    )
+                chunks.extend(_split(text, paragraph_metadata, self.chunk_size, self.chunk_overlap, self.chunking_strategy))
+            elif element.tag == f"{_W}tbl":
+                rows = [
+                    ["".join(node.text or "" for node in cell.iter(f"{_W}t"))
+                     for cell in row.findall(f"{_W}tc")]
+                    for row in element.findall(f"{_W}tr")
+                ]
+                if not rows or not any(value for row in rows for value in row):
+                    continue
+                width = max(map(len, rows))
+                columns = [
+                    value.strip() or f"column_{column_index + 1}"
+                    for column_index, value in enumerate(rows[0] + [""] * (width - len(rows[0])))
+                ]
+                records = [
+                    dict(zip(columns, row + [""] * (width - len(row))))
+                    for row in rows[1:]
+                ]
+                table_index = len(tables)
+                tables.append({
+                    "page_number": 1,
+                    "table_index": table_index,
+                    "columns": columns,
+                    "rows": records,
+                    "metadata": {"parser": "python-stdlib-docx-xml"},
+                })
+                table_text = "\n\n".join(
+                    " | ".join(f"{column}: {record[column]}" for column in columns)
+                    for record in records
+                ) or " | ".join(columns)
+                chunks.extend(_split(table_text, {
+                    **metadata,
+                    "paragraph_index": index,
+                    "section_title": current_section_title,
+                    "layout_type": "table",
+                    "table_index": table_index,
+                }, self.chunk_size, self.chunk_overlap, self.chunking_strategy))
         return {"chunks": chunks, "tables": tables}
 
     def _pptx(self, archive: zipfile.ZipFile, metadata: dict) -> dict:
@@ -167,7 +231,19 @@ class DocumentProcessor:
         for page_number, name in enumerate(names, 1):
             root = ElementTree.fromstring(archive.read(name))
             text = " ".join(node.text or "" for node in root.iter(f"{_A}t"))
-            chunks.extend(_split(text, {**metadata, "page_number": page_number}, self.chunk_size, self.chunk_overlap, self.chunking_strategy))
+            slide_title = None
+            for shape in root.iter(f"{_P}sp"):
+                placeholder = shape.find(f"{_P}nvSpPr/{_P}nvPr/{_P}ph")
+                if placeholder is not None and placeholder.get("type") in {"title", "ctrTitle"}:
+                    title = " ".join(node.text or "" for node in shape.iter(f"{_A}t")).strip()
+                    if title:
+                        slide_title = title
+                        break
+            chunks.extend(_split(text, {
+                **metadata,
+                "page_number": page_number,
+                "section_title": slide_title,
+            }, self.chunk_size, self.chunk_overlap, self.chunking_strategy))
             for table_index, table in enumerate(root.iter(f"{_A}tbl")):
                 rows = [
                     ["".join(node.text or "" for node in cell.iter(f"{_A}t")) for cell in row.findall(f"{_A}tc")]
@@ -260,7 +336,12 @@ class DocumentProcessor:
                 )
             chunks.extend(_split(
                 "\n".join(lines),
-                {**metadata, "sheet_name": sheet.attrib["name"], "page_number": sheet_index},
+                {
+                    **metadata,
+                    "sheet_name": sheet.attrib["name"],
+                    "section_title": sheet.attrib["name"],
+                    "page_number": sheet_index,
+                },
                 self.chunk_size, self.chunk_overlap, self.chunking_strategy,
             ))
         return {"chunks": chunks, "tables": tables}

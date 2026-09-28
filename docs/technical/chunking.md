@@ -24,11 +24,32 @@ special tokens), with 32 content tokens of overlap when a source chunk needs
 splitting. Original parser chunk sizes remain the first-stage limits.
 
 PDF chunking stays within pages and carries page number, layout type, and the
-current section title. Short visually prominent or numbered native-text lines
-can set `section_title`; the current heading carries across pages. This
-heuristic does not find OCR-only headings reliably. Stored `parent_id` values
-remain null; runtime `parent` retrieval uses up to two neighboring chunks on
-the same page and under the same section title (or page when no title exists).
+current section title. Short visually prominent native-text lines and
+explicitly numbered OCR lines (`Chapter`, `Article`, numbered subsections) can
+set `section_title`; the current heading carries across pages. Unnumbered
+OCR-only headings remain unsupported. Existing indexed rows keep their old
+metadata unless they pass the exact-match backfill below. A read-only live
+snapshot on 2026-09-28 initially found 4,278/4,750 manifest chunks with a
+section title. Guarded metadata-only backfills then updated 22/28 eligible
+chunks in `VNM-CGR-2025-EN`, 267/269 in the 2026 Charter and Governance Rules,
+and 99 in five 2020–2024 governance reports. Each applied report had exact
+chunk-count, index, and content matches. The full corpus now has 4,666/4,750
+chunks titled; 84 remain null. Of those, 41 belong to the disclosure report,
+23 to 2020–2024 governance reports, 8 to the CGR-2025 and 2026 charter/rules,
+and 12 to annual/sustainability reports, HTML policies, or product information.
+The per-document read-only snapshot is the [coverage audit](../../artifacts/evaluation/section-title-corpus-coverage-post-backfill-20260928.json).
+A dry-run for seven annual/sustainability PDFs was skipped because parsed and stored
+chunk counts differed; no rows were changed for them. See the [2020–2024
+governance apply report](../../artifacts/evaluation/section-title-backfill-governance-2020-2024-applied.json)
+and [annual/sustainability dry-run](../../artifacts/evaluation/section-title-backfill-annual-sustainability-dry-run-20260928.json).
+The parser fix was also validated on a real scanned Governance Rules
+page; its source/page hashes are in the [OCR section-title smoke artifact](../../artifacts/evaluation/vinamilk-section-title-ocr-smoke-20260928.json)
+(3/3 chunks titled on PDF page 4). The backfill skips documents unless every
+stored chunk index and content string exactly matches the current parser output;
+it changes only section-title JSON metadata and writes a prior-value backup.
+Stored `parent_id` values remain null; runtime `parent` retrieval uses up to two
+neighboring chunks on the same page and under the same section title (or page
+when no title exists).
 This bounded context
 expansion does not yet provide full structural parents for long sections.
 
@@ -49,35 +70,48 @@ context quality, or answers and is not enough to choose a strategy; the raw
 per-page summary is in
 `artifacts/evaluation/vinamilk-chunking-2024-boundary-diagnostic.json`.
 
-A paired dense-retrieval diagnostic now compares the five fixed annual-report
+A paired dense-retrieval diagnostic compares the five fixed annual-report
 vectors currently in Supabase with sentence-aware chunks and vectors built in
 memory from the same 2020–2024 reports. It uses five finance questions, the
 application's year preference, and the existing 384-dimensional embedding
 model. Document MRR is 1.0 for both strategies (the five-document corpus is
 restricted to the five matching annual reports, so this is only a pipeline
-sanity check). Passage MRR is 0.2715 fixed vs 0.2648 sentence-aware; both have
-Recall@5 0.10. Fixed labels are manually reviewed, while sentence labels are
-transferred by same-page trigram overlap and have not been independently
-reviewed. This tiny paired run does not establish a winner or test BM25, hybrid,
-reranking, or answer quality. The baseline used 1,912 stored vectors; the
-alternate had 1,978 chunks. Sentence parsing took 48.48 s, embedding took
-94.77 s, and peak RSS was 2,140.7 MiB on CPU. It is read-only with respect to
-Supabase. Reproduce with:
+sanity check). The original 2026-09-26 run measured passage MRR 0.2715 fixed
+vs 0.2648 sentence-aware; an intermediate 2026-09-28 run measured 0.2715 vs
+0.2731. A source check found the 2022 case asked for net revenue but its two
+fixed labels pointed to a financial-summary table labelled only “revenue”.
+Those labels now point to the audited consolidated income statement (fixed
+chunks 239 and 240, PDF pages 109–110). On the corrected case set, passage MRR
+is 0.2615 fixed vs 0.2626 sentence-aware; both snapshots have Recall@5 0.10.
+Because the case-file hash and labels changed, these are different evaluation
+snapshots, not a reproducibility claim or demonstrated improvement. Fixed
+references are source-checked; sentence labels are still transferred by
+same-page trigram overlap and have not been independently reviewed. This five-
+question diagnostic does not establish a winner or test BM25, hybrid,
+reranking, or answer quality. The latest baseline used 1,912 stored vectors;
+the alternate had 1,979 chunks. Sentence parsing took 39.10 s, embedding took
+71.00 s, and peak RSS was 1,676.7 MiB on CPU. It is read-only with respect to
+Supabase. The corrected-label run is in
+`artifacts/evaluation/vinamilk-chunking-retrieval-source-reviewed-20260928.json`;
+reproduce with:
 
 ```bash
 uv run python scripts/evaluate_chunking_retrieval.py \
-  --output artifacts/evaluation/vinamilk-chunking-retrieval-finance-five-year.json
+  --output artifacts/evaluation/vinamilk-chunking-retrieval-source-reviewed-20260928.json
 ```
 
-The detailed per-question results, transferred-label mappings, source/case
-hashes, environment and limitations are recorded in
-`artifacts/evaluation/vinamilk-chunking-retrieval-finance-five-year.json`.
+The detailed per-question results, transferred-label mappings, case and source
+PDF hashes, candidate hashes, environment and limitations are recorded in the
+artifact. The active case set uses the corrected 2022 references; the two
+earlier artifacts remain historical snapshots.
 
 After re-ingesting the 11 annual and sustainability reports with the token
-limit, Supabase has `section_title` on 3,773 of 3,780 report chunks (99.8%). All
-report chunks have `allowed_roles`, and none exceeds the configured sequence
-limit. This is a coverage count only; heading precision and recall have not
-been evaluated. Seven chunks have no detected heading.
+limit, a prior Supabase audit found `section_title` on 3,773 of 3,780 report
+chunks (99.8%). All report chunks had `allowed_roles`, and none exceeded the
+configured sequence limit. That count excludes governance/charter sources and
+does not represent the full 25-document manifest. It measures coverage only;
+heading precision and recall have not been evaluated. Seven of those report
+chunks had no detected heading.
 
 An isolated run through the actual seed PDF parser/metadata adapter on the
 public 2024 annual report returned 397 chunks and one extracted table;

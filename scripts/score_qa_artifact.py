@@ -43,6 +43,48 @@ def summarize_human_reviews(results: list[dict]) -> dict:
         ]
         means[f"mean_{field}"] = round(sum(values) / len(values), 3) if values else None
 
+    agreement = {}
+    for field in score_fields:
+        paired = []
+        for row in results:
+            entries = row.get("human_reviews")
+            if not isinstance(entries, list):
+                legacy = row.get("human_review")
+                entries = [legacy] if isinstance(legacy, dict) else []
+            by_reviewer = {entry.get("reviewer"): entry.get(field) for entry in entries if isinstance(entry, dict)}
+            row_reviewers = sorted({entry.get("reviewer") for entry in entries if isinstance(entry, dict) and entry.get("reviewer")})
+            if len(row_reviewers) == 2 and all(
+                isinstance(by_reviewer.get(reviewer), int)
+                and not isinstance(by_reviewer.get(reviewer), bool)
+                and 1 <= by_reviewer[reviewer] <= 5
+                for reviewer in row_reviewers
+            ):
+                paired.append((by_reviewer[row_reviewers[0]], by_reviewer[row_reviewers[1]]))
+        observed = len(paired)
+        if observed:
+            observed_agreement = sum(left == right for left, right in paired) / observed
+            expected_disagreement = sum(
+                (left - right) ** 2 for left, right in paired
+            ) / (observed * (5 - 1) ** 2)
+            marginals_a = [sum(left == score for left, _ in paired) / observed for score in range(1, 6)]
+            marginals_b = [sum(right == score for _, right in paired) / observed for score in range(1, 6)]
+            expected_disagreement_by_chance = sum(
+                (a_score - b_score) ** 2 * marginals_a[a_score - 1] * marginals_b[b_score - 1]
+                for a_score in range(1, 6) for b_score in range(1, 6)
+            ) / (5 - 1) ** 2
+            kappa = (
+                1 - expected_disagreement / expected_disagreement_by_chance
+                if expected_disagreement_by_chance else (1.0 if expected_disagreement == 0 else None)
+            )
+        else:
+            observed_agreement = None
+            kappa = None
+        agreement[field] = {
+            "paired_response_count": observed,
+            "exact_agreement": round(observed_agreement, 4) if observed_agreement is not None else None,
+            "weighted_cohen_kappa": round(kappa, 4) if kappa is not None else None,
+        }
+
     claim_reviews = [
         review for review in reviewed
         if isinstance(review.get("factual_claim_count"), int)
@@ -57,6 +99,11 @@ def summarize_human_reviews(results: list[dict]) -> dict:
     return {
         "reviewed_case_count": reviewed_cases,
         "reviewer_count": len({review["reviewer"] for review in reviewed}),
+        "inter_rater_agreement": {
+            "method": "quadratic_weighted_cohen_kappa",
+            "scores": agreement,
+            "note": "Computed from responses with exactly two valid reviewers; descriptive on this small packet.",
+        },
         **means,
         "claim_review_case_count": len(claim_reviews),
         "factual_claim_count": factual_claims,
@@ -131,13 +178,26 @@ def main() -> int:
         ) if fact_cases else None,
     })
     valid = [row for row in report.get("results", []) if row.get("generation_metrics") and not row.get("insufficient_context")]
+    metric_rows = [row["generation_metrics"] for row in valid]
     report["generation_metric_summary"] = {
         "scored_answer_cases": len(valid),
         "mean_labeled_context_precision": round(sum(row["generation_metrics"]["context_precision_at_cited_sources"] for row in valid if row["generation_metrics"]["context_precision_at_cited_sources"] is not None) / max(1, sum(row["generation_metrics"]["context_precision_at_cited_sources"] is not None for row in valid)), 4),
         "mean_line_citation_coverage": round(sum(row["generation_metrics"]["citation_covered_line_fraction"] for row in valid if row["generation_metrics"]["citation_covered_line_fraction"] is not None) / max(1, sum(row["generation_metrics"]["citation_covered_line_fraction"] is not None for row in valid)), 4),
         "valid_citation_answer_rate": round(sum(row["generation_metrics"]["answer_has_valid_citation"] for row in valid) / max(1, len(valid)), 4),
+        "mean_expected_fact_cited_evidence_rate": round(
+            sum(metric["expected_fact_cited_evidence_rate"] for metric in metric_rows if metric["expected_fact_cited_evidence_rate"] is not None)
+            / max(1, sum(metric["expected_fact_cited_evidence_rate"] is not None for metric in metric_rows)),
+            4,
+        ),
+        "expected_fact_evidence_assessed_count": sum(metric["expected_fact_evidence_assessed_count"] for metric in metric_rows),
+        "expected_fact_evidence_unverifiable_count": sum(metric["expected_facts_unverifiable_due_to_truncated_preview"] for metric in metric_rows),
+        "expected_fact_evidence_coverage_rate": round(
+            sum(metric["expected_fact_evidence_assessed_count"] for metric in metric_rows)
+            / max(1, sum(metric["expected_fact_count"] for metric in metric_rows)),
+            4,
+        ),
         "human_review": summarize_human_reviews(report.get("results", [])),
-        "note": "Correct abstentions are excluded from answer citation averages; deterministic proxies are not semantic quality scores.",
+        "note": "Correct abstentions are excluded from answer citation averages; literal expected-fact presence in cited excerpts is a deterministic proxy, not semantic entailment or a human quality score.",
         "source_run": str(args.artifact),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)

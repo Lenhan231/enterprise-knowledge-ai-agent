@@ -3,17 +3,43 @@
 ## Vinamilk enterprise corpus
 
 `data/vietnam_enterprises/manifest.json` is a source-backed corpus for one
-enterprise: Vinamilk. All 25 manifest sources are now downloaded, parsed and
-indexed: annual reports for 2020–2024, sustainability reports for 2020–2025,
+enterprise: Vinamilk. The 26 manifest sources include annual reports for
+2020–2024, sustainability reports for 2020–2025,
 corporate-governance reports for 2020–2025, current governance/policy documents,
-three operating policies and a product page. The read-only metadata audit
-checked 4,750 chunks with no manifest propagation mismatches. Two image-based
+three operating policies, a customer-service returns policy and a product page.
+The read-only metadata audit checked a 25-document snapshot (4,750 chunks) with
+no manifest propagation mismatches; the returns policy was subsequently
+ingested as three chunks. Two image-based
 2026 governance PDFs completed the production Tesseract OCR path. These are
 public materials; synthetic RBAC assignments are demo controls and do not
-represent Vinamilk's real internal permissions or private records. Existing
-retrieval/embedding benchmark artifacts were collected before the ten
-governance sources were ingested; rerun them against the expanded corpus before
-comparing with those baseline scores.
+represent Vinamilk's real internal permissions or private records. Historical
+retrieval/embedding artifacts use different corpus snapshots and are not
+directly comparable. The refreshed corpus runs and limitations are
+listed in [`docs/README.md`](../docs/README.md) and the evaluation matrix.
+
+OCR benchmark labels are versioned separately under `data/evaluation/`.
+[`vinamilk_ocr_ground_truth_v5.json`](evaluation/vinamilk_ocr_ground_truth_v5.json)
+retains the five v4 reviewed regions and adds a visually checked 16-row,
+two-period Vietnamese balance-sheet table from annual-report PDF page 91.
+The new page is born-digital, not a physical scan. Its row labels and values
+support exact row-recall scoring; they do not yet establish general table or
+layout accuracy. Version 6, [`vinamilk_ocr_ground_truth_v6.json`](evaluation/vinamilk_ocr_ground_truth_v6.json),
+corrects horizontal crops on both English image-only governance scans: v5 had
+clipped printed text while retaining full-line transcriptions. The v6
+Tesseract baseline gives Charter CER/WER 0.008830/0.042254 and governance-TOC
+CER/WER 0.642038/0.322222. V5 scan-page scores and six-page CER/WER aggregates
+are superseded; table-only scores remain valid because that crop is unchanged.
+The new dataset uses a unique hash in rendered filenames so reruns do not
+overwrite earlier paired inputs. All four engines have v6 reports paired on
+the same six dataset/PDF/render hashes. Tesseract/EasyOCR/Surya/PaddleOCR
+CER is 0.325961/0.176672/0.071090/0.088994 and WER is
+0.259207/0.361190/0.143059/0.209632. Surya has the lowest errors in this
+sample, but the engines ran on CPU across different hosts; latency and memory
+are not controlled and no production winner is selected. The hash-checked
+comparison and raw reports are linked from
+[`docs/technical/document-processing.md`](../docs/technical/document-processing.md#current-boundaries).
+See the paired-engine matrix and limitations in
+[`docs/technical/document-processing.md`](../docs/technical/document-processing.md).
 
 Download the source documents locally (raw files are not committed):
 
@@ -44,22 +70,28 @@ and persistence, `ready` only after both chunks and extracted tables finish, or
 `failed` on error. Retrieval only returns `ready` documents, so partial writes
 stay hidden; rerun the same manifest ID to replace them. PDF bulk ingestion
 and uploads use the page-aware PyMuPDF parser with Vietnamese/English Tesseract
-OCR for pages under 50 native-text
-characters, and mixed pages under 500 characters when raster images cover at
-least 25% of the page. OCR text is appended to native text on mixed pages and the
-extraction method is recorded in chunk metadata. Seed PDF table rows are stored
+OCR for pages under 50 native-text characters, and mixed pages under 500
+characters when raster images cover at least 25% of the page. Text OCR uses
+PSM 11; scanned-table TSV word boxes use PSM 3. Mixed-page OCR is appended to
+native text, and extraction method is recorded in chunk metadata. Seed PDF table rows are stored
 in `public.extracted_tables` and `public.extracted_records`; uploads use the
 same structured store. Retrieval filters allowed roles before ranking and
 prioritizes an explicitly requested single fiscal year. It requires
-the project's `DATABASE_URL`, the `documents.allowed_roles` column from
-migration 004, and the configured embedding model.
+the project's `DATABASE_URL`, the schema applied from the canonical
+`supabase/migrations/` history, and the configured embedding model. See the
+[database setup guide](../docs/deployment-guide.md#database-migrations).
 
 The native-text heading heuristic populated `section_title` on 3,773/3,780
 chunks (99.8%) across the 11 indexed annual and sustainability reports after
-re-ingestion. Seven chunks had no detected heading; this is coverage, not a
-precision/recall assessment. Token-aware splitting now keeps every stored
-report chunk within the configured 512-token model limit. OCR-only headings and
-parent sections remain unsupported.
+re-ingestion; that figure is limited to those report chunks. After exact-match
+metadata backfills on eight governance reports, the 25-document report corpus
+snapshot has 4,666/4,750 chunks with a title (84 null); this does not include
+the later customer-service HTML policy. Token-aware splitting keeps all
+stored report chunks within the configured 512-token model limit. Numbered
+OCR headings are supported; unnumbered OCR-only headings and persisted parent
+sections remain unsupported. The per-document counts are in the [read-only
+coverage audit](../artifacts/evaluation/section-title-corpus-coverage-post-backfill-20260928.json);
+coverage does not measure heading correctness.
 
 All manifest URLs point to Vinamilk's own report, sustainability, policy, or
 product pages. Check the original source link shown in the UI when using an
@@ -73,8 +105,10 @@ from this Vinamilk demo. The Docker image includes only this manifest, not the
 downloaded corpus files.
 
 The dashboard reads verified financial metrics from
-`public.extracted_financial_metrics`, not from `analytics.json`. Migration 005
-defines the table. Extracted candidates retain source quote/page provenance
+`public.extracted_financial_metrics`, not from `analytics.json`. The table is
+created by
+`supabase/migrations/20260925143350_create_vinamilk_metrics_rbac_and_storage.sql`.
+Extracted candidates retain source quote/page provenance
 and remain `needs_review` until checked. `analytics.json` is not a dashboard
 source.
 
@@ -108,21 +142,27 @@ controlled save looks like:
 
 This stores current candidates as `needs_review`; it does not publish KPIs. A
 2026-09-27 rerun for `VNM-AR-2024-VI` stored six current source-linked candidates;
-two headline values came from page 2 (61.824 and 9.453, in the report's
-displayed `tỷ đồng` unit). Value/unit normalization still requires admin review.
-Migration 009 preserves unmatched older pending evidence as `superseded`, not
+two headline values came from page 2 (the report prints `61.824` and `9.453`
+with `tỷ đồng` units, using Vietnamese thousands punctuation). Preserve these
+as text while reviewing; the admin must normalize them to `61824` and `9453`
+before publication. See the [review input rules](../docs/user-guide.md#analytics-review).
+`supabase/migrations/20260926190105_metric_candidate_superseding.sql` preserves
+unmatched older pending evidence as `superseded`, not
 `rejected`, when that document is reprocessed.
 
-## Apple corpus
+## Archived Review 1 corpus (legacy Apple dataset)
 
-The `documents` table in Supabase is the source of truth for the Apple corpus
-manifest. Raw downloads and generated Markdown are local artifacts and are not
-committed.
+This is a retained, separate Review 1 experiment and is not part of the active
+Vinamilk demo manifest or its 25-document dashboard/QA scope. Its download and
+ingestion scripts remain for reproducing that earlier experiment; raw downloads
+and generated Markdown are local artifacts and are not committed. Do not use
+this legacy corpus as evidence for current Vinamilk evaluation.
 
 ## Prerequisites
 
 - Set `DATABASE_URL` in `.env`.
-- Apply the SQL migrations in `src/database/migrations/`.
+- Apply the canonical timestamped SQL migrations in `supabase/migrations/`
+  following the [database setup guide](../docs/deployment-guide.md#database-migrations).
 - Configure the embedding model required by the ingestion pipeline.
 
 ## Review 1 corpus

@@ -1,0 +1,1163 @@
+{
+  "created_at_utc": "2026-09-27T19:43:04.508129+00:00",
+  "benchmark": "paired proposal embedding models on the manifest-allowlisted Vinamilk corpus",
+  "paired_protocol": {
+    "case_file_sha256": "554f9837ed9ad6e3941e0edf38a88ac4d8614e2d138bb4d0c188374f21270b1a",
+    "corpus_file_sha256": "149b531c39b729c6a5df6e6c05c3761a565dab3fc1860080540024daeca984a7",
+    "sampled_corpus_sha256": "a74188469cc120764e92e9b6ddc303654687942967440cbd2d47af94f7fd8cd8",
+    "case_count": 12,
+    "corpus_chunks": 4750,
+    "full_company_corpus_chunks": 4750,
+    "sampled_chunks_per_document": 1000,
+    "evaluation_level": "document; maximum chunk cosine per document",
+    "configuration_without_conflicting_sample_strategy": {
+      "device": "cuda",
+      "batch_size": 4,
+      "max_sequence_length": 512,
+      "document_score": "maximum eligible chunk cosine per document"
+    }
+  },
+  "all_corpus_chunks_claimed": true,
+  "provenance_consistent": false,
+  "source_reports": {
+    "bge-m3": {
+      "path": "artifacts/evaluation/embedding-full-corpus-t4/vinamilk-embedding-bge-m3-full-public-corpus.json",
+      "sha256": "1a2ce96e23f80b025e1a9e429ae31807225a6d4bcd007cd3a55221c500051dec",
+      "limitations_note": "Small document-level Vinamilk smoke set. The same evenly spaced sample of up to 1000 passages per source is used for every model; this is not full-corpus retrieval. No database writes are made. Query-time includes query embedding and in-memory cosine scoring, but excludes model loading and corpus embedding. No human judgment or passage-level labels.",
+      "full_corpus_count_claim": true,
+      "sample_strategy_claim": "evenly spaced passages per document",
+      "provenance_conflict": true
+    },
+    "qwen3-embedding": {
+      "path": "artifacts/evaluation/embedding-full-corpus-t4/vinamilk-embedding-qwen3-embedding-full-public-corpus.json",
+      "sha256": "371a028b4c574210f02edf34718a8d4612e98e2e9c7ddf25513e4cb274c2a423",
+      "limitations_note": "Small document-level Vinamilk smoke set. The same evenly spaced sample of up to 1000 passages per source is used for every model; this is not full-corpus retrieval. No database writes are made. Query-time includes query embedding and in-memory cosine scoring, but excludes model loading and corpus embedding. No human judgment or passage-level labels.",
+      "full_corpus_count_claim": true,
+      "sample_strategy_claim": "evenly spaced passages per document",
+      "provenance_conflict": true
+    },
+    "e5-large-v2": {
+      "path": "artifacts/evaluation/embedding-full-corpus-t4/vinamilk-embedding-e5-large-v2-full-public-corpus.json",
+      "sha256": "6c30bbecbab0f21e0fc571e2f9713569ceaa30b2a38999e4e6cc59356d22fc8e",
+      "limitations_note": "Small document-level Vinamilk smoke set. The same evenly spaced sample of up to 1000 passages per source is used for every model; this is not full-corpus retrieval. No database writes are made. Query-time includes query embedding and in-memory cosine scoring, but excludes model loading and corpus embedding. No human judgment or passage-level labels.",
+      "full_corpus_count_claim": true,
+      "sample_strategy_claim": "evenly spaced passages per document",
+      "provenance_conflict": true
+    }
+  },
+  "models": [
+    {
+      "model_key": "bge-m3",
+      "model_id": "BAAI/bge-m3",
+      "model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "aggregate": {
+        "precision@1": 0.6667,
+        "precision@3": 0.2778,
+        "precision@5": 0.1833,
+        "recall@1": 0.6667,
+        "recall@3": 0.8333,
+        "recall@5": 0.9167,
+        "mrr": 0.7759,
+        "ndcg@1": 0.6667,
+        "ndcg@3": 0.7718,
+        "ndcg@5": 0.8041
+      },
+      "timing_seconds": {
+        "model_load": 33.58,
+        "corpus_embeddings": 266.02,
+        "mean_query": 0.0283
+      },
+      "environment": {
+        "python": "3.12.13",
+        "platform": "Linux-6.12.90+-x86_64-with-glibc2.35",
+        "device": "cuda",
+        "gpu_available": true,
+        "gpu_name": "Tesla T4",
+        "peak_gpu_memory_allocated_mb": 2270.8,
+        "peak_gpu_memory_reserved_mb": 2390.0,
+        "peak_rss_mb": 3697.3
+      }
+    },
+    {
+      "model_key": "qwen3-embedding",
+      "model_id": "Qwen/Qwen3-Embedding-0.6B",
+      "model_revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "aggregate": {
+        "precision@1": 0.75,
+        "precision@3": 0.2778,
+        "precision@5": 0.1833,
+        "recall@1": 0.75,
+        "recall@3": 0.8333,
+        "recall@5": 0.9167,
+        "mrr": 0.8028,
+        "ndcg@1": 0.75,
+        "ndcg@3": 0.7917,
+        "ndcg@5": 0.8239
+      },
+      "timing_seconds": {
+        "model_load": 12.72,
+        "corpus_embeddings": 782.41,
+        "mean_query": 0.0645
+      },
+      "environment": {
+        "python": "3.12.13",
+        "platform": "Linux-6.12.90+-x86_64-with-glibc2.35",
+        "device": "cuda",
+        "gpu_available": true,
+        "gpu_name": "Tesla T4",
+        "peak_gpu_memory_allocated_mb": 1620.5,
+        "peak_gpu_memory_reserved_mb": 1708.0,
+        "peak_rss_mb": 2492.7
+      }
+    },
+    {
+      "model_key": "e5-large-v2",
+      "model_id": "intfloat/e5-large-v2",
+      "model_revision": "f169b11e22de13617baa190a028a32f3493550b6",
+      "aggregate": {
+        "precision@1": 0.6667,
+        "precision@3": 0.3056,
+        "precision@5": 0.1833,
+        "recall@1": 0.6667,
+        "recall@3": 0.9167,
+        "recall@5": 0.9167,
+        "mrr": 0.7583,
+        "ndcg@1": 0.6667,
+        "ndcg@3": 0.7917,
+        "ndcg@5": 0.7917
+      },
+      "timing_seconds": {
+        "model_load": 11.98,
+        "corpus_embeddings": 336.36,
+        "mean_query": 0.0252
+      },
+      "environment": {
+        "python": "3.12.13",
+        "platform": "Linux-6.12.90+-x86_64-with-glibc2.35",
+        "device": "cuda",
+        "gpu_available": true,
+        "gpu_name": "Tesla T4",
+        "peak_gpu_memory_allocated_mb": 1385.5,
+        "peak_gpu_memory_reserved_mb": 1506.0,
+        "peak_rss_mb": 2413.5
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "finance-revenue-profit-2020-vi",
+      "role": "finance_analyst",
+      "eligible_chunks": 1914,
+      "relevant_document_ids": [
+        "VNM-AR-2020-VI"
+      ],
+      "models": {
+        "bge-m3": {
+          "ranked_document_ids": [
+            "VNM-AR-2020-VI",
+            "VNM-AR-2024-VI",
+            "VNM-AR-2021-VI",
+            "VNM-AR-2022-VI",
+            "VNM-AR-2023-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 50.8
+        },
+        "qwen3-embedding": {
+          "ranked_document_ids": [
+            "VNM-AR-2020-VI",
+            "VNM-AR-2024-VI",
+            "VNM-AR-2022-VI",
+            "VNM-AR-2021-VI",
+            "VNM-AR-2023-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 64.25
+        },
+        "e5-large-v2": {
+          "ranked_document_ids": [
+            "VNM-AR-2022-VI",
+            "VNM-AR-2024-VI",
+            "VNM-AR-2020-VI",
+            "VNM-AR-2021-VI",
+            "VNM-AR-2023-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 0.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 0.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 0.3333333333333333,
+            "ndcg@1": 0.0,
+            "ndcg@3": 0.5,
+            "ndcg@5": 0.5
+          },
+          "latency_ms": 26.2
+        }
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2021-vi",
+      "role": "finance_analyst",
+      "eligible_chunks": 1914,
+      "relevant_document_ids": [
+        "VNM-AR-2021-VI"
+      ],
+      "models": {
+        "bge-m3": {
+          "ranked_document_ids": [
+            "VNM-AR-2024-VI",
+            "VNM-AR-2021-VI",
+            "VNM-AR-2022-VI",
+            "VNM-AR-2020-VI",
+            "VNM-AR-2023-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 0.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 0.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 0.5,
+            "ndcg@1": 0.0,
+            "ndcg@3": 0.6309297535714575,
+            "ndcg@5": 0.6309297535714575
+          },
+          "latency_ms": 27.39
+        },
+        "qwen3-embedding": {
+          "ranked_document_ids": [
+            "VNM-AR-2024-VI",
+            "VNM-AR-2022-VI",
+            "VNM-AR-2021-VI",
+            "VNM-AR-2020-VI",
+            "VNM-AR-2023-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 0.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 0.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 0.3333333333333333,
+            "ndcg@1": 0.0,
+            "ndcg@3": 0.5,
+            "ndcg@5": 0.5
+          },
+          "latency_ms": 64.93
+        },
+        "e5-large-v2": {
+          "ranked_document_ids": [
+            "VNM-AR-2022-VI",
+            "VNM-AR-2024-VI",
+            "VNM-AR-2021-VI",
+            "VNM-AR-2023-EN",
+            "VNM-AR-2020-VI",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 0.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 0.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 0.3333333333333333,
+            "ndcg@1": 0.0,
+            "ndcg@3": 0.5,
+            "ndcg@5": 0.5
+          },
+          "latency_ms": 26.55
+        }
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2022-vi",
+      "role": "finance_analyst",
+      "eligible_chunks": 1914,
+      "relevant_document_ids": [
+        "VNM-AR-2022-VI"
+      ],
+      "models": {
+        "bge-m3": {
+          "ranked_document_ids": [
+            "VNM-AR-2022-VI",
+            "VNM-AR-2024-VI",
+            "VNM-AR-2023-EN",
+            "VNM-AR-2021-VI",
+            "VNM-AR-2020-VI",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 27.07
+        },
+        "qwen3-embedding": {
+          "ranked_document_ids": [
+            "VNM-AR-2022-VI",
+            "VNM-AR-2024-VI",
+            "VNM-AR-2020-VI",
+            "VNM-AR-2023-EN",
+            "VNM-AR-2021-VI",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 64.83
+        },
+        "e5-large-v2": {
+          "ranked_document_ids": [
+            "VNM-AR-2022-VI",
+            "VNM-AR-2024-VI",
+            "VNM-AR-2023-EN",
+            "VNM-AR-2021-VI",
+            "VNM-AR-2020-VI",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 26.4
+        }
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2023-en",
+      "role": "finance_analyst",
+      "eligible_chunks": 1914,
+      "relevant_document_ids": [
+        "VNM-AR-2023-EN"
+      ],
+      "models": {
+        "bge-m3": {
+          "ranked_document_ids": [
+            "VNM-AR-2023-EN",
+            "VNM-AR-2024-VI",
+            "VNM-AR-2021-VI",
+            "VNM-AR-2020-VI",
+            "VNM-AR-2022-VI",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 26.67
+        },
+        "qwen3-embedding": {
+          "ranked_document_ids": [
+            "VNM-AR-2023-EN",
+            "VNM-AR-2024-VI",
+            "VNM-AR-2020-VI",
+            "VNM-AR-2021-VI",
+            "VNM-AR-2022-VI",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 66.01
+        },
+        "e5-large-v2": {
+          "ranked_document_ids": [
+            "VNM-AR-2023-EN",
+            "VNM-AR-2021-VI",
+            "VNM-AR-2020-VI",
+            "VNM-AR-2022-VI",
+            "VNM-AR-2024-VI",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 25.74
+        }
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2024-en",
+      "role": "finance_analyst",
+      "eligible_chunks": 1914,
+      "relevant_document_ids": [
+        "VNM-AR-2024-VI"
+      ],
+      "models": {
+        "bge-m3": {
+          "ranked_document_ids": [
+            "VNM-AR-2024-VI",
+            "VNM-AR-2023-EN",
+            "VNM-AR-2021-VI",
+            "VNM-AR-2022-VI",
+            "VNM-AR-2020-VI",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 27.44
+        },
+        "qwen3-embedding": {
+          "ranked_document_ids": [
+            "VNM-AR-2024-VI",
+            "VNM-AR-2022-VI",
+            "VNM-AR-2020-VI",
+            "VNM-AR-2021-VI",
+            "VNM-AR-2023-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 65.41
+        },
+        "e5-large-v2": {
+          "ranked_document_ids": [
+            "VNM-AR-2024-VI",
+            "VNM-AR-2022-VI",
+            "VNM-AR-2021-VI",
+            "VNM-AR-2020-VI",
+            "VNM-AR-2023-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 25.43
+        }
+      }
+    },
+    {
+      "id": "sustainability-ghg-reporting-scopes-2020-en",
+      "role": "sustainability_analyst",
+      "eligible_chunks": 1873,
+      "relevant_document_ids": [
+        "VNM-SR-2020-EN"
+      ],
+      "models": {
+        "bge-m3": {
+          "ranked_document_ids": [
+            "VNM-SR-2024-EN",
+            "VNM-SR-2023-EN",
+            "VNM-SR-2025-EN",
+            "VNM-SR-2022-EN",
+            "VNM-SR-2020-EN",
+            "VNM-SR-2021-EN",
+            "VNM-POL-AGRI-2025-EN",
+            "VNM-POL-ANIMAL-2025-EN",
+            "VNM-POL-MILK-2025-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 0.0,
+            "precision@3": 0.0,
+            "precision@5": 0.2,
+            "recall@1": 0.0,
+            "recall@3": 0.0,
+            "recall@5": 1.0,
+            "mrr": 0.2,
+            "ndcg@1": 0.0,
+            "ndcg@3": 0.0,
+            "ndcg@5": 0.38685280723454163
+          },
+          "latency_ms": 26.56
+        },
+        "qwen3-embedding": {
+          "ranked_document_ids": [
+            "VNM-SR-2024-EN",
+            "VNM-SR-2025-EN",
+            "VNM-SR-2023-EN",
+            "VNM-SR-2021-EN",
+            "VNM-SR-2020-EN",
+            "VNM-SR-2022-EN",
+            "VNM-POL-AGRI-2025-EN",
+            "VNM-POL-ANIMAL-2025-EN",
+            "VNM-POL-MILK-2025-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 0.0,
+            "precision@3": 0.0,
+            "precision@5": 0.2,
+            "recall@1": 0.0,
+            "recall@3": 0.0,
+            "recall@5": 1.0,
+            "mrr": 0.2,
+            "ndcg@1": 0.0,
+            "ndcg@3": 0.0,
+            "ndcg@5": 0.38685280723454163
+          },
+          "latency_ms": 68.4
+        },
+        "e5-large-v2": {
+          "ranked_document_ids": [
+            "VNM-SR-2024-EN",
+            "VNM-SR-2025-EN",
+            "VNM-SR-2020-EN",
+            "VNM-SR-2022-EN",
+            "VNM-SR-2021-EN",
+            "VNM-SR-2023-EN",
+            "VNM-POL-AGRI-2025-EN",
+            "VNM-POL-ANIMAL-2025-EN",
+            "VNM-POL-MILK-2025-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 0.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 0.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 0.3333333333333333,
+            "ndcg@1": 0.0,
+            "ndcg@3": 0.5,
+            "ndcg@5": 0.5
+          },
+          "latency_ms": 25.75
+        }
+      }
+    },
+    {
+      "id": "sustainability-ghg-inventory-2024-en",
+      "role": "sustainability_analyst",
+      "eligible_chunks": 1873,
+      "relevant_document_ids": [
+        "VNM-SR-2024-EN"
+      ],
+      "models": {
+        "bge-m3": {
+          "ranked_document_ids": [
+            "VNM-SR-2025-EN",
+            "VNM-SR-2024-EN",
+            "VNM-SR-2023-EN",
+            "VNM-SR-2022-EN",
+            "VNM-SR-2021-EN",
+            "VNM-SR-2020-EN",
+            "VNM-POL-AGRI-2025-EN",
+            "VNM-POL-ANIMAL-2025-EN",
+            "VNM-POL-MILK-2025-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 0.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 0.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 0.5,
+            "ndcg@1": 0.0,
+            "ndcg@3": 0.6309297535714575,
+            "ndcg@5": 0.6309297535714575
+          },
+          "latency_ms": 26.04
+        },
+        "qwen3-embedding": {
+          "ranked_document_ids": [
+            "VNM-SR-2024-EN",
+            "VNM-SR-2025-EN",
+            "VNM-SR-2022-EN",
+            "VNM-SR-2023-EN",
+            "VNM-SR-2021-EN",
+            "VNM-SR-2020-EN",
+            "VNM-POL-AGRI-2025-EN",
+            "VNM-POL-ANIMAL-2025-EN",
+            "VNM-POL-MILK-2025-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 63.97
+        },
+        "e5-large-v2": {
+          "ranked_document_ids": [
+            "VNM-SR-2024-EN",
+            "VNM-SR-2025-EN",
+            "VNM-SR-2022-EN",
+            "VNM-SR-2023-EN",
+            "VNM-SR-2021-EN",
+            "VNM-SR-2020-EN",
+            "VNM-POL-AGRI-2025-EN",
+            "VNM-POL-ANIMAL-2025-EN",
+            "VNM-POL-MILK-2025-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 25.61
+        }
+      }
+    },
+    {
+      "id": "sustainability-ghg-inventory-2025-en",
+      "role": "sustainability_analyst",
+      "eligible_chunks": 1873,
+      "relevant_document_ids": [
+        "VNM-SR-2025-EN"
+      ],
+      "models": {
+        "bge-m3": {
+          "ranked_document_ids": [
+            "VNM-SR-2025-EN",
+            "VNM-SR-2024-EN",
+            "VNM-SR-2023-EN",
+            "VNM-SR-2022-EN",
+            "VNM-SR-2020-EN",
+            "VNM-SR-2021-EN",
+            "VNM-POL-AGRI-2025-EN",
+            "VNM-POL-MILK-2025-EN",
+            "VNM-POL-ANIMAL-2025-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 27.15
+        },
+        "qwen3-embedding": {
+          "ranked_document_ids": [
+            "VNM-SR-2025-EN",
+            "VNM-SR-2024-EN",
+            "VNM-SR-2023-EN",
+            "VNM-SR-2022-EN",
+            "VNM-SR-2021-EN",
+            "VNM-SR-2020-EN",
+            "VNM-POL-AGRI-2025-EN",
+            "VNM-POL-ANIMAL-2025-EN",
+            "VNM-POL-MILK-2025-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 64.46
+        },
+        "e5-large-v2": {
+          "ranked_document_ids": [
+            "VNM-SR-2025-EN",
+            "VNM-SR-2024-EN",
+            "VNM-SR-2022-EN",
+            "VNM-SR-2021-EN",
+            "VNM-SR-2023-EN",
+            "VNM-SR-2020-EN",
+            "VNM-POL-AGRI-2025-EN",
+            "VNM-POL-ANIMAL-2025-EN",
+            "VNM-POL-MILK-2025-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 25.04
+        }
+      }
+    },
+    {
+      "id": "product-nutrition-adm-low-sugar-vi",
+      "role": "employee",
+      "eligible_chunks": 2,
+      "relevant_document_ids": [
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "models": {
+        "bge-m3": {
+          "ranked_document_ids": [
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 23.83
+        },
+        "qwen3-embedding": {
+          "ranked_document_ids": [
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 62.25
+        },
+        "e5-large-v2": {
+          "ranked_document_ids": [
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 22.77
+        }
+      }
+    },
+    {
+      "id": "governance-charter-effective-date-2026",
+      "role": "legal_compliance",
+      "eligible_chunks": 967,
+      "relevant_document_ids": [
+        "VNM-CHARTER-2026-EN"
+      ],
+      "models": {
+        "bge-m3": {
+          "ranked_document_ids": [
+            "VNM-CHARTER-2026-EN",
+            "VNM-CODE-2025-EN",
+            "VNM-CGR-2020-EN",
+            "VNM-CGR-2021-EN",
+            "VNM-CGR-2022-EN",
+            "VNM-CGRULES-2026-EN",
+            "VNM-CGR-2025-EN",
+            "VNM-CGR-2024-EN",
+            "VNM-CGR-2023-EN",
+            "VNM-DISCLOSURE-2025-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 27.34
+        },
+        "qwen3-embedding": {
+          "ranked_document_ids": [
+            "VNM-CHARTER-2026-EN",
+            "VNM-CODE-2025-EN",
+            "VNM-CGRULES-2026-EN",
+            "VNM-CGR-2020-EN",
+            "VNM-CGR-2021-EN",
+            "VNM-CGR-2025-EN",
+            "VNM-CGR-2023-EN",
+            "VNM-CGR-2022-EN",
+            "VNM-CGR-2024-EN",
+            "VNM-DISCLOSURE-2025-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 63.96
+        },
+        "e5-large-v2": {
+          "ranked_document_ids": [
+            "VNM-CHARTER-2026-EN",
+            "VNM-CODE-2025-EN",
+            "VNM-CGRULES-2026-EN",
+            "VNM-CGR-2020-EN",
+            "VNM-CGR-2025-EN",
+            "VNM-DISCLOSURE-2025-EN",
+            "VNM-CGR-2021-EN",
+            "VNM-CGR-2022-EN",
+            "VNM-CGR-2023-EN",
+            "VNM-CGR-2024-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 24.44
+        }
+      }
+    },
+    {
+      "id": "governance-code-conflicts-of-interest",
+      "role": "legal_compliance",
+      "eligible_chunks": 967,
+      "relevant_document_ids": [
+        "VNM-CODE-2025-EN"
+      ],
+      "models": {
+        "bge-m3": {
+          "ranked_document_ids": [
+            "VNM-CODE-2025-EN",
+            "VNM-CHARTER-2026-EN",
+            "VNM-CGR-2023-EN",
+            "VNM-CGRULES-2026-EN",
+            "VNM-CGR-2022-EN",
+            "VNM-DISCLOSURE-2025-EN",
+            "VNM-CGR-2020-EN",
+            "VNM-CGR-2021-EN",
+            "VNM-CGR-2025-EN",
+            "VNM-CGR-2024-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 24.6
+        },
+        "qwen3-embedding": {
+          "ranked_document_ids": [
+            "VNM-CODE-2025-EN",
+            "VNM-CGR-2020-EN",
+            "VNM-CGR-2025-EN",
+            "VNM-CGR-2023-EN",
+            "VNM-CGR-2021-EN",
+            "VNM-CGR-2022-EN",
+            "VNM-CGR-2024-EN",
+            "VNM-CGRULES-2026-EN",
+            "VNM-CHARTER-2026-EN",
+            "VNM-DISCLOSURE-2025-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 63.0
+        },
+        "e5-large-v2": {
+          "ranked_document_ids": [
+            "VNM-CODE-2025-EN",
+            "VNM-CHARTER-2026-EN",
+            "VNM-CGR-2023-EN",
+            "VNM-CGR-2020-EN",
+            "VNM-CGR-2025-EN",
+            "VNM-DISCLOSURE-2025-EN",
+            "VNM-CGRULES-2026-EN",
+            "VNM-CGR-2021-EN",
+            "VNM-CGR-2022-EN",
+            "VNM-CGR-2024-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "latency_ms": 24.45
+        }
+      }
+    },
+    {
+      "id": "governance-disclosure-full-year-report-deadline",
+      "role": "legal_compliance",
+      "eligible_chunks": 967,
+      "relevant_document_ids": [
+        "VNM-DISCLOSURE-2025-EN"
+      ],
+      "models": {
+        "bge-m3": {
+          "ranked_document_ids": [
+            "VNM-CGR-2021-EN",
+            "VNM-CGR-2022-EN",
+            "VNM-CGR-2020-EN",
+            "VNM-CGR-2024-EN",
+            "VNM-CGR-2025-EN",
+            "VNM-CGR-2023-EN",
+            "VNM-CODE-2025-EN",
+            "VNM-CHARTER-2026-EN",
+            "VNM-DISCLOSURE-2025-EN",
+            "VNM-CGRULES-2026-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 0.0,
+            "precision@3": 0.0,
+            "precision@5": 0.0,
+            "recall@1": 0.0,
+            "recall@3": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.1111111111111111,
+            "ndcg@1": 0.0,
+            "ndcg@3": 0.0,
+            "ndcg@5": 0.0
+          },
+          "latency_ms": 25.27
+        },
+        "qwen3-embedding": {
+          "ranked_document_ids": [
+            "VNM-CODE-2025-EN",
+            "VNM-CGRULES-2026-EN",
+            "VNM-CGR-2020-EN",
+            "VNM-CHARTER-2026-EN",
+            "VNM-CGR-2021-EN",
+            "VNM-CGR-2023-EN",
+            "VNM-CGR-2022-EN",
+            "VNM-CGR-2025-EN",
+            "VNM-CGR-2024-EN",
+            "VNM-DISCLOSURE-2025-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 0.0,
+            "precision@3": 0.0,
+            "precision@5": 0.0,
+            "recall@1": 0.0,
+            "recall@3": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.1,
+            "ndcg@1": 0.0,
+            "ndcg@3": 0.0,
+            "ndcg@5": 0.0
+          },
+          "latency_ms": 62.96
+        },
+        "e5-large-v2": {
+          "ranked_document_ids": [
+            "VNM-CODE-2025-EN",
+            "VNM-CHARTER-2026-EN",
+            "VNM-CGRULES-2026-EN",
+            "VNM-CGR-2020-EN",
+            "VNM-CGR-2023-EN",
+            "VNM-CGR-2021-EN",
+            "VNM-CGR-2022-EN",
+            "VNM-CGR-2025-EN",
+            "VNM-CGR-2024-EN",
+            "VNM-DISCLOSURE-2025-EN",
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "metrics": {
+            "precision@1": 0.0,
+            "precision@3": 0.0,
+            "precision@5": 0.0,
+            "recall@1": 0.0,
+            "recall@3": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.1,
+            "ndcg@1": 0.0,
+            "ndcg@3": 0.0,
+            "ndcg@5": 0.0
+          },
+          "latency_ms": 24.49
+        }
+      }
+    }
+  ],
+  "limitations": "One run on 12 sparse document-level labels. Results do not measure passage-level retrieval, semantic answer quality, or human preference and are not a production model selection."
+}

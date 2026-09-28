@@ -9,39 +9,17 @@ import importlib.metadata
 import hashlib
 import json
 import platform
+import resource
 import re
 import shutil
 import subprocess
 import sys
 import time
 import unicodedata
-from html.parser import HTMLParser
 from datetime import datetime, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-
-
-class _HTMLText(HTMLParser):
-    """Collect visible text from Surya 2's HTML layout output."""
-
-    def __init__(self):
-        super().__init__()
-        self.parts = []
-        self.block_tags = {"p", "div", "h1", "h2", "h3", "li", "tr"}
-
-    def handle_starttag(self, tag, _attrs):
-        if tag in self.block_tags and self.parts and self.parts[-1] != "\n":
-            self.parts.append("\n")
-
-    def handle_endtag(self, tag):
-        if tag in self.block_tags and self.parts and self.parts[-1] != "\n":
-            self.parts.append("\n")
-
-    def handle_data(self, data):
-        text = data.strip()
-        if text:
-            self.parts.append(text)
 
 
 def environment_gpu() -> tuple[bool, str]:
@@ -77,58 +55,126 @@ def error_rate(reference: str, hypothesis: str) -> float:
     return edit_distance(reference, hypothesis) / len(reference)
 
 
+def matched_table_row_indices(table_rows: list[dict], hypothesis: str) -> list[int]:
+    normalized_hypothesis = normalize(hypothesis)
+    return [
+        index for index, row in enumerate(table_rows)
+        if normalize(" ".join((row["label"], *row["values"]))) in normalized_hypothesis
+    ]
+
+
+def exact_table_rows(table_rows: list[dict], hypothesis: str) -> int:
+    return len(matched_table_row_indices(table_rows, hypothesis))
+
+
+def table_cell_text_counts(table_rows: list[dict], hypothesis: str) -> tuple[int, int]:
+    """Count cell strings present in OCR output, ignoring row/column association."""
+    expected: dict[str, int] = {}
+    for row in table_rows:
+        for cell in (row["label"], *row["values"]):
+            normalized = normalize(cell)
+            expected[normalized] = expected.get(normalized, 0) + 1
+    tokens = normalize(hypothesis).split()
+    matched = 0
+    for cell, count in expected.items():
+        cell_tokens = cell.split()
+        occurrences = sum(
+            tokens[index:index + len(cell_tokens)] == cell_tokens
+            for index in range(len(tokens) - len(cell_tokens) + 1)
+        )
+        matched += min(count, occurrences)
+    return matched, sum(expected.values())
+
+
 def summarize_pages(rows: list[dict]) -> dict:
     valid = [row for row in rows if row.get("cer") is not None]
     reference_characters = sum(row["reference_characters"] for row in valid)
     reference_words = sum(row["reference_words"] for row in valid)
     character_edits = sum(row["character_edit_distance"] for row in valid)
     word_edits = sum(row["word_edit_distance"] for row in valid)
-    return {
+    total_inference_seconds = sum(row["latency_seconds"] for row in valid)
+    summary = {
         "valid_pages": len(valid),
         "macro_mean_page_cer": round(sum(row["cer"] for row in valid) / len(valid), 6) if valid else None,
         "micro_cer": round(character_edits / reference_characters, 6) if reference_characters else None,
         "macro_mean_page_wer": round(sum(row["wer"] for row in valid) / len(valid), 6) if valid else None,
         "micro_wer": round(word_edits / reference_words, 6) if reference_words else None,
         "mean_latency_seconds": round(sum(row["latency_seconds"] for row in valid) / len(valid), 3) if valid else None,
+        "pages_per_minute": round(len(valid) * 60 / total_inference_seconds, 3) if total_inference_seconds else None,
+    }
+    table_rows_expected = sum(row.get("table_rows_expected", 0) for row in valid)
+    if table_rows_expected:
+        summary["table_rows_expected"] = table_rows_expected
+        summary["table_rows_exact"] = sum(row.get("table_rows_exact", 0) for row in valid)
+        summary["table_row_recall"] = round(summary["table_rows_exact"] / table_rows_expected, 6)
+    table_cells_expected = sum(row.get("table_cells_expected", 0) for row in valid)
+    if table_cells_expected:
+        summary["table_cells_expected"] = table_cells_expected
+        summary["table_cells_text_matched"] = sum(row.get("table_cells_text_matched", 0) for row in valid)
+        summary["table_cell_text_recall"] = round(summary["table_cells_text_matched"] / table_cells_expected, 6)
+    return summary
+
+
+def peak_memory_mb() -> dict[str, float | None]:
+    """Return process and child-process high-water RSS in MiB."""
+    scale = 1024 if platform.system() == "Linux" else 1024 * 1024
+    result = {}
+    for label, scope in (("process_peak_rss_mb", resource.RUSAGE_SELF), ("child_peak_rss_mb", resource.RUSAGE_CHILDREN)):
+        try:
+            result[label] = round(resource.getrusage(scope).ru_maxrss / scale, 3)
+        except (OSError, ValueError):
+            result[label] = None
+    return result
+
+
+def reset_cuda_peak_memory() -> bool:
+    try:
+        import torch
+
+        if not torch.cuda.is_available():
+            return False
+        torch.cuda.synchronize()
+        torch.cuda.reset_peak_memory_stats()
+        return True
+    except (ImportError, RuntimeError, AttributeError):
+        return False
+
+
+def cuda_peak_memory_mb(enabled: bool) -> dict[str, float | None]:
+    if not enabled:
+        return {"torch_cuda_peak_allocated_mb": None, "torch_cuda_peak_reserved_mb": None}
+    import torch
+
+    torch.cuda.synchronize()
+    return {
+        "torch_cuda_peak_allocated_mb": round(torch.cuda.max_memory_allocated() / (1024 ** 2), 3),
+        "torch_cuda_peak_reserved_mb": round(torch.cuda.max_memory_reserved() / (1024 ** 2), 3),
     }
 
 
 def create_engine(engine: str, language: str):
     if engine == "paddleocr":
         import torch
+        import paddle
         from paddleocr import PaddleOCR
-        # PaddleOCR 2.x exposes `.ocr`; 3.x exposes `.predict`. Keep both
-        # versions usable without changing the evaluated engine/model.
-        try:
-            gpu_available = torch.cuda.is_available()
-            return PaddleOCR(
-                lang="vi", use_doc_orientation_classify=False,
-                use_doc_unwarping=False, use_textline_orientation=False,
-                device="gpu:0" if gpu_available else "cpu",
-                cpu_threads=2, enable_mkldnn=False, show_log=False,
-            )
-        except (TypeError, ValueError):
-            return PaddleOCR(
-                lang="vi", use_angle_cls=False,
-                use_gpu=torch.cuda.is_available(), show_log=False,
-                cpu_threads=2, enable_mkldnn=False,
-            )
+        gpu_available = torch.cuda.is_available() and paddle.is_compiled_with_cuda()
+        return PaddleOCR(
+            lang="vi", use_doc_orientation_classify=False,
+            use_doc_unwarping=False, use_textline_orientation=False,
+            device="gpu:0" if gpu_available else "cpu",
+            cpu_threads=2, enable_mkldnn=False,
+        )
     if engine == "easyocr":
         import easyocr
 
         import torch
         return easyocr.Reader(["vi", "en"], gpu=torch.cuda.is_available(), verbose=False)
     if engine == "surya":
-        try:
-            from surya.inference import SuryaInferenceManager
-            from surya.recognition import RecognitionPredictor
+        from surya.detection import DetectionPredictor
+        from surya.foundation import FoundationPredictor
+        from surya.recognition import RecognitionPredictor
 
-            return RecognitionPredictor(SuryaInferenceManager())
-        except ImportError:
-            from surya.recognition import RecognitionPredictor
-            from surya.detection import DetectionPredictor
-
-            return RecognitionPredictor(DetectionPredictor())
+        return RecognitionPredictor(FoundationPredictor()), DetectionPredictor()
     return None
 
 
@@ -148,11 +194,11 @@ def engine_version(engine: str) -> str | None:
         return None
 
 
-def run_engine(engine: str, model, image_path: Path, language: str) -> tuple[str, float, str | None]:
+def run_engine(engine: str, model, image_path: Path, language: str, tesseract_psm: int = 3) -> tuple[str, float, str | None]:
     started = time.perf_counter()
     try:
         if engine == "tesseract":
-            command = ["tesseract", str(image_path), "stdout", "-l", language, "--psm", "3"]
+            command = ["tesseract", str(image_path), "stdout", "-l", language, "--psm", str(tesseract_psm)]
             result = subprocess.run(command, capture_output=True, text=True, check=True)
             return result.stdout, time.perf_counter() - started, None
         if engine == "paddleocr":
@@ -174,17 +220,11 @@ def run_engine(engine: str, model, image_path: Path, language: str) -> tuple[str
             from PIL import Image
 
             image = Image.open(image_path).convert("RGB")
-            prediction = model([image])
-            page = prediction[0]
-            lines = getattr(page, "text_lines", None)
-            if lines is not None:
-                text = "\n".join(line.text for line in lines)
-            else:
-                parser = _HTMLText()
-                for block in getattr(page, "blocks", []):
-                    markup = block.get("html", "") if isinstance(block, dict) else getattr(block, "html", "")
-                    parser.feed(markup)
-                text = "".join(parser.parts).strip()
+            recognition_predictor, detection_predictor = model
+            prediction = recognition_predictor(
+                [image], det_predictor=detection_predictor
+            )[0]
+            text = "\n".join(line.text for line in prediction.text_lines)
             return text, time.perf_counter() - started, None
         raise ValueError(f"Unknown engine: {engine}")
     except Exception as error:  # Keep failures visible in the report, not as fabricated empty scores.
@@ -196,6 +236,8 @@ def main() -> int:
     parser.add_argument("--dataset", type=Path, default=REPO_ROOT / "data/evaluation/ocr_pages.json")
     parser.add_argument("--engines", nargs="+", choices=("paddleocr", "easyocr", "surya", "tesseract"), default=("paddleocr", "easyocr", "surya"))
     parser.add_argument("--dpi", type=int, default=160)
+    parser.add_argument("--tesseract-psm", type=int, choices=(3, 6, 11, 12), default=3,
+                        help="Tesseract page-segmentation mode; used only when tesseract is selected")
     parser.add_argument("--max-pages", type=int, help="Optional first-N-page slice for resource-constrained smoke runs")
     parser.add_argument("--output", type=Path, default=REPO_ROOT / "artifacts/evaluation/vinamilk-ocr-comparison.json")
     args = parser.parse_args()
@@ -207,6 +249,7 @@ def main() -> int:
     import fitz
 
     dataset = json.loads(args.dataset.read_text(encoding="utf-8"))
+    dataset_sha256 = hashlib.sha256(args.dataset.read_bytes()).hexdigest()
     output_dir = REPO_ROOT / "artifacts/evaluation/ocr-rendered"
     output_dir.mkdir(parents=True, exist_ok=True)
     engines = {}
@@ -233,9 +276,12 @@ def main() -> int:
             if reference is None:
                 reference = page.get_text("text", clip=clip)
             pixmap = page.get_pixmap(dpi=args.dpi, alpha=False, clip=clip)
-        image_path = output_dir / f"{page_spec['document_id']}-p{page_spec['page']}-{page_spec.get('id', 'full')}.png"
-        pixmap.save(image_path)
         source_pdf_sha256 = hashlib.sha256(pdf_path.read_bytes()).hexdigest()
+        image_path = output_dir / (
+            f"{page_spec['document_id']}-p{page_spec['page']}-{page_spec.get('id', 'full')}"
+            f"-d{args.dpi}-{dataset_sha256[:10]}-{source_pdf_sha256[:10]}.png"
+        )
+        pixmap.save(image_path)
         rendered_image_sha256 = hashlib.sha256(image_path.read_bytes()).hexdigest()
         normalized_reference = normalize(reference)
         prepared_pages.append({
@@ -249,12 +295,18 @@ def main() -> int:
     # Keep only one neural OCR model resident at a time on memory-constrained hosts.
     for engine in args.engines:
         engine_data = engines[engine]
+        cuda_telemetry_available = reset_cuda_peak_memory()
         model = None
         if engine_data["available"] and engine != "tesseract":
             model_started = time.perf_counter()
             try:
                 model = create_engine(engine, "vie+eng")
                 engine_data["model_initialization_seconds"] = round(time.perf_counter() - model_started, 3)
+                if engine == "paddleocr":
+                    import paddle
+                    engine_data["runtime_device"] = paddle.device.get_device()
+                else:
+                    engine_data["runtime_device"] = "cuda:0" if environment_gpu()[0] else "cpu"
             except Exception as error:
                 engine_data["available"] = False
                 engine_data["model_initialization_error"] = f"{type(error).__name__}: {error}"
@@ -266,7 +318,12 @@ def main() -> int:
                 error = engine_data["model_initialization_error"] or "engine package or executable unavailable"
                 engine_data["pages"].append({"document_id": page_spec["document_id"], "page": page_spec["page"], "error": error})
                 continue
-            hypothesis, seconds, error = run_engine(engine, model, prepared["image_path"], "vie+eng")
+            if engine == "tesseract":
+                hypothesis, seconds, error = run_engine(
+                    engine, model, prepared["image_path"], "vie+eng", args.tesseract_psm,
+                )
+            else:
+                hypothesis, seconds, error = run_engine(engine, model, prepared["image_path"], "vie+eng")
             normalized_hypothesis = normalize(hypothesis)
             reference_words = normalized_reference.split()
             hypothesis_words = normalized_hypothesis.split()
@@ -279,6 +336,7 @@ def main() -> int:
                 "source_pdf_sha256": prepared["source_pdf_sha256"],
                 "rendered_image_sha256": prepared["rendered_image_sha256"],
                 "reference_source": "manual_transcription" if page_spec.get("reference_text") is not None else "native_pdf_text_unreviewed",
+                "hypothesis_text": hypothesis,
                 "reference_characters": len(normalized_reference),
                 "reference_words": len(reference_words),
                 "hypothesis_characters": len(normalized_hypothesis),
@@ -289,11 +347,27 @@ def main() -> int:
                 "latency_seconds": round(seconds, 3),
                 "error": error,
             }
+            table_rows = page_spec.get("table_rows", [])
+            if table_rows:
+                exact_indices = matched_table_row_indices(table_rows, hypothesis) if not error else []
+                exact_rows = len(exact_indices)
+                cells_matched, cells_expected = table_cell_text_counts(table_rows, hypothesis) if not error else (None, None)
+                row["table_rows_expected"] = len(table_rows)
+                row["table_rows_exact"] = exact_rows if not error else None
+                row["table_row_recall"] = round(exact_rows / len(table_rows), 6) if not error else None
+                row["exact_table_row_indices"] = exact_indices if not error else None
+                row["table_cells_expected"] = cells_expected
+                row["table_cells_text_matched"] = cells_matched
+                row["table_cell_text_recall"] = round(cells_matched / cells_expected, 6) if cells_expected else None
             engine_data["pages"].append(row)
             print(f"{engine}: {page_spec['document_id']} p.{page_spec['page']} CER={row['cer']} in {seconds:.1f}s", file=sys.stderr, flush=True)
 
         del model
         gc.collect()
+        engine_data["memory_telemetry"] = {
+            **cuda_peak_memory_mb(cuda_telemetry_available),
+            "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines",
+        }
 
     for engine_data in engines.values():
         engine_data["aggregate"] = summarize_pages(engine_data["pages"])
@@ -305,7 +379,7 @@ def main() -> int:
     report = {
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "dataset": dataset["dataset_id"],
-        "dataset_sha256": __import__("hashlib").sha256(args.dataset.read_bytes()).hexdigest(),
+        "dataset_sha256": dataset_sha256,
         "reference_method": dataset["reference_method"],
         "reference_quality": dataset.get("reference_quality", "unspecified"),
         "primary_metric_selection_eligible": dataset.get("primary_metric_selection_eligible", False),
@@ -316,11 +390,14 @@ def main() -> int:
             "platform": platform.platform(),
             "gpu": gpu_name,
             "cuda_available": cuda_available,
+            **peak_memory_mb(),
+            "cpu_peak_scope": "whole evaluator process; run one engine per invocation for engine-specific comparison",
+            "child_peak_scope": "maximum high-water RSS among completed child processes, where supported",
         },
         "ocr_configuration": {
             "render_dpi": args.dpi,
             "tesseract_language": "vie+eng",
-            "tesseract_page_segmentation_mode": 3,
+            "tesseract_page_segmentation_mode": args.tesseract_psm,
         },
         "engines": engines,
     }

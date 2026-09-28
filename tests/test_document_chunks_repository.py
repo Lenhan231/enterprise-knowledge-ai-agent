@@ -23,7 +23,7 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
 
     def test_maps_rows_preserving_full_content_metadata_and_order(self):
         text = " Full content\n" * 3000
-        metadata = {"document_id": "DOC-1", "custom": {"tags": ["policy"]}}
+        metadata = {"document_id": "DOC-1", "document_type": "policy", "custom": {"tags": ["policy"]}}
         self.cursor.fetchall.return_value = [
             ("policy.pdf", 7, text, metadata, 0.81234),
             ("other.pdf", 0, "Other content", {"document_id": "DOC-2"}, -0.25),
@@ -50,6 +50,7 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
         normalized = " ".join(sql.split())
         self.assertIn("SELECT e.document_name, e.chunk_index, e.content, e.metadata,", normalized)
         self.assertIn("JOIN documents AS d ON d.document_id = c.metadata->>'document_id'", normalized)
+        self.assertIn("jsonb_build_object('document_type', d.document_type)", normalized)
         self.assertIn("coalesce(d.processing_status, 'ready') = 'ready'", normalized)
         self.assertIn("d.fiscal_year = %s", normalized)
         self.assertIn("coalesce(%s::text IS NOT NULL AND d.fiscal_year = %s, false)", normalized)

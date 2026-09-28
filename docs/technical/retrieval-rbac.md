@@ -12,10 +12,26 @@ The default `RetrievalRequest.top_k` is 5, bounded to 1–100.
 
 Access roles come from the authenticated server-side request and the
 `documents.allowed_roles` source of truth. Client-supplied roles are not trusted.
+`KnowledgeAgent` rejects a missing/blank trusted role before calling RAG, and
+`RAGService` independently requires a non-empty role list before retrieval. An
+omitted role therefore cannot fall through to an unfiltered repository query.
 The `employee` role cannot query restricted financial reports. The seeded
 financial documents allow `finance_analyst`, `executive`, and `admin`;
 sustainability reports use their own role set. These demo assignments are
 synthetic and do not describe Vinamilk's real permissions.
+
+## Grounded answer response cache
+
+`RAGService` caches only successfully generated, citation-validated grounded
+answers. Every request performs role-filtered retrieval first; the cache key
+includes the hash of the exact prompt/evidence, company, authenticated roles,
+and generation model/reasoning configuration. A changed question or retrieved passage misses the cache, and entries
+expire after 60 seconds with a 128-answer process-local cap. The cache stores
+the answer and validated source IDs, not retrieved document content. Retrieval
+and dynamic SQL analytics still run on each request; insufficient answers and
+uncited/invalid model outputs are not cached. Unit tests cover reuse across
+request-scoped service instances, role/company/model separation, evidence
+changes, and expiry. Provider-backed latency savings have not yet been measured.
 
 Application permissions are declared once in `src/app/main.py` as
 `ROLE_PERMISSIONS`; FastAPI route guards derive their allowed roles from that
@@ -26,6 +42,14 @@ document roles filter passages before retrieval.
 
 ## Current evaluation boundary
 
+A live read-only BM25 probe asked the same FY2024 finance question as
+`employee` and `finance_analyst`. The employee received no candidate documents;
+the analyst received 20 chunks from `VNM-AR-2024-VI`. A follow-up ACL read
+confirmed every returned document included the requesting role. This is one
+finance-specific query over the public demo corpus with synthetic role labels;
+it does not establish isolation for private documents or the full query set.
+See the [live isolation artifact](../../artifacts/evaluation/vinamilk-live-retrieval-rbac-isolation-20260928.json).
+
 `scripts/evaluate_retrieval.py` evaluates labeled cases at both document and
 passage level when chunk judgments are present. It supports dense, BM25, hybrid
 and parent-context modes. Before a run, passage IDs are checked against the
@@ -34,32 +58,36 @@ current ready corpus and the case's allowed roles; labels based on
 re-chunking. Parent results are expanded to their returned child indices for
 passage scoring.
 
-The current file has nine questions and 21 manually assigned selected passage
-labels; the labels are not exhaustive, so this remains a smoke set. The
-2026-09-27 rerun uses the current case hash and the expanded snapshot of 5,052
-chunks/44 documents overall, 4,750 chunks/25 ready Vinamilk documents,
-PostgreSQL 17.6. It is preserved separately from the earlier pre-governance
-baseline:
+The current file has twelve questions and 24 manually assigned selected
+passage labels. The labels are pooled and non-exhaustive, so this remains a
+smoke set. The 2026-09-28 live rerun uses the current case hash on PostgreSQL
+17.6: 5,052 chunks/44 documents overall and 4,750 chunks/25 ready Vinamilk
+documents. It includes all four proposal methods and is not a model-selection
+result:
 
 | Method | Document P@1 | Document MRR | Passage/context MRR | Passage Recall@5 or context gold coverage@5 | Mean latency |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Dense | 1.000 | 1.000 | Passage 0.373 | Passage Recall@5 0.259 | 2,082 ms |
-| BM25 | 0.889 | 0.944 | Passage 0.307 | Passage Recall@5 0.352 | 1,393 ms |
-| Hybrid | 0.889 | 0.926 | Passage 0.384 | Passage Recall@5 0.370 | 1,422 ms |
-| Parent context | 1.000 | 1.000 | Context 0.431 | Gold-passage coverage@5 0.278 | 2,236 ms |
+| Dense | 1.000 | 1.000 | Passage 0.412 | Passage Recall@5 0.444 | 1,562 ms |
+| BM25 | 0.917 | 0.958 | Passage 0.403 | Passage Recall@5 0.431 | 1,135 ms |
+| Hybrid (dense:BM25 1:2, RRF k=60) | 0.917 | 0.944 | Passage 0.464 | Passage Recall@5 0.444 | 1,177 ms |
+| Parent context | 1.000 | 1.000 | Context 0.469 | Gold-passage coverage@5 0.458 | 2,312 ms |
 
 Parent scores are context-window metrics and are not directly interchangeable
-with passage ranking metrics. The high document scores and low passage scores
-show why document-only evaluation is insufficient. The case hash, per-query
-ranks and settings are in
-`artifacts/evaluation/vinamilk-retrieval-expanded-corpus-20260927.json`;
+with passage ranking metrics. Mean dense latency includes a 13-second first
+query embedding-model load; subsequent dense queries were below one second.
+The high document scores and lower passage scores show why document-only
+evaluation is insufficient. The case-file SHA-256 is
+`554f9837ed9ad6e3941e0edf38a88ac4d8614e2d138bb4d0c188374f21270b1a`. Per-query
+ranks, settings and the exact live snapshot are in
+`artifacts/evaluation/vinamilk-retrieval-live-12cases-20260928.json`; the prior
+2026-09-27 run remains
+`artifacts/evaluation/vinamilk-retrieval-12cases-expanded-corpus-20260927.json`;
 the earlier pre-ingestion run remains
 `artifacts/evaluation/vinamilk-retrieval-current-passage-comparison.json`;
 the case file is `data/evaluation/vinamilk_retrieval_cases.json`. Labels must be
 independently reviewed and expanded before selecting a retrieval method. Hybrid
-has the highest ordinary passage MRR in this snapshot, while BM25 is faster;
-the difference is too small and the judgment set too limited to select a
-winner. See
+has the highest passage MRR in this snapshot, while dense leads document MRR;
+the selected judgments are too limited to select a winner. See
 [the evaluation matrix](agents-and-evaluation.md#proposal-evaluation-master-matrix).
 
 Fiscal-year preference reads authoritative `documents.fiscal_year`; missing
@@ -73,6 +101,14 @@ ready-status and role filters during expansion. It is a
 bounded runtime approximation because stored `parent_id`/`section_path` values
 are absent and long sections do not fit as a whole. Reranker models have
 offline comparison runs, but reranking is not enabled in the production
-retrieval path. Add passage-level judgments, broader role-denial cases and
-repeated runs where appropriate. Preserve the security invariant that
-authorization filters run before candidate limits and ranking.
+retrieval path. A second run against the same case hash and corpus snapshot
+produced identical per-case rankings and all document, passage and context
+metrics for all four methods. Mean latency varied between runs, so only the
+ranking/metric reproduction is established. The repeat is
+`artifacts/evaluation/vinamilk-retrieval-live-12cases-repeat2-20260928.json`.
+After the section-title metadata backfills, a third live run again matched the
+same per-case rankings and metrics; it is
+`artifacts/evaluation/vinamilk-retrieval-post-section-title-backfill-12cases-20260928.json`.
+Add independently reviewed passage labels and broader role-denial cases
+before selecting a method. Preserve the security invariant that authorization
+filters run before candidate limits and ranking.

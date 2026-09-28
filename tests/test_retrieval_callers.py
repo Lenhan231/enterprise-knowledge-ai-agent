@@ -13,11 +13,13 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from scripts import check_apple_retrieval
 from core.retrieval.retrieval import RetrievalRequest, RetrievalResponse
-from core.rag.rag_service import RAGService
+from core.rag.rag_service import RAGService, _RESPONSE_CACHE, _RESPONSE_CACHE_LOCK
 
 
 class RetrievalCallersTest(unittest.TestCase):
     def setUp(self):
+        with _RESPONSE_CACHE_LOCK:
+            _RESPONSE_CACHE.clear()
         self.response = RetrievalResponse.model_validate_json(
             (Path(__file__).parent / "fixtures" / "ranked_dense_retrieval.json").read_text(encoding="utf-8")
         )
@@ -29,8 +31,10 @@ class RetrievalCallersTest(unittest.TestCase):
         llm.generate.return_value = "answer [S1]"
         rag = RAGService(self.retrieval, llm)
         with redirect_stdout(io.StringIO()):
-            answer = rag.generate_answer("question", limit=2)
-        self.retrieval.retrieve.assert_called_once_with(RetrievalRequest(query="question", top_k=2))
+            answer = rag.generate_answer("question", limit=2, roles=["employee"])
+        self.retrieval.retrieve.assert_called_once_with(
+            RetrievalRequest(query="question", top_k=2), roles=["employee"]
+        )
         self.assertEqual(answer.answer, "answer [S1]")
         self.assertEqual(answer.source_ids, ["S1"])
         prompt = llm.generate.call_args.args[0]
@@ -38,14 +42,15 @@ class RetrievalCallersTest(unittest.TestCase):
             self.assertIn(item.text, prompt)
         rag.close()
         self.retrieval.close.assert_called_once()
+        llm.close.assert_called_once()
 
     def test_rag_passes_parent_strategy_to_retrieval(self):
         llm = MagicMock()
         llm.generate.return_value = "answer [S1]"
         rag = RAGService(self.retrieval, llm)
-        rag.generate_answer("question", limit=2, retrieval_method="parent")
+        rag.generate_answer("question", limit=2, roles=["employee"], retrieval_method="parent")
         self.retrieval.retrieve.assert_called_once_with(
-            RetrievalRequest(query="question", top_k=2), method="parent"
+            RetrievalRequest(query="question", top_k=2), roles=["employee"], method="parent"
         )
 
     def test_rag_bounds_context_without_mutating_results_or_printing(self):
@@ -59,7 +64,7 @@ class RetrievalCallersTest(unittest.TestCase):
         output = io.StringIO()
 
         with redirect_stdout(output):
-            answer = RAGService(self.retrieval, llm).generate_answer("question", limit=2)
+            answer = RAGService(self.retrieval, llm).generate_answer("question", limit=2, roles=["employee"])
 
         llm.generate.assert_called_once()
         self.assertEqual(answer.answer, "answer [S1]")
@@ -76,7 +81,7 @@ class RetrievalCallersTest(unittest.TestCase):
         llm = MagicMock()
         llm.generate.return_value = "answer [S1]"
 
-        answer = RAGService(self.retrieval, llm).generate_answer("question", limit=2)
+        answer = RAGService(self.retrieval, llm).generate_answer("question", limit=2, roles=["employee"])
 
         prompt = llm.generate.call_args.args[0]
         context = prompt.split("Sources:\n", 1)[1].split("\n\nQuestion:", 1)[0]

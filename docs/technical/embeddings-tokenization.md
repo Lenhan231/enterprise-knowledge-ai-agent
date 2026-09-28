@@ -2,16 +2,49 @@
 
 ## Active configuration
 
-- Environment setting: `EMBEDDING_MODEL`.
+- Environment settings: `EMBEDDING_MODEL`, `EMBEDDING_BACKEND`.
 - Input cap: `EMBEDDING_MAX_SEQUENCE_LENGTH` (default `512`, including special
   tokens required by the model).
 - Default in `.env.example` and `EmbeddingService`:
   `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`.
-- The same local Hugging Face Sentence Transformers model embeds document
-  passages and user queries through `EmbeddingService`.
+- `EMBEDDING_BACKEND=local` (default) uses local Hugging Face Sentence
+  Transformers weights. `EMBEDDING_BACKEND=huggingface_inference` calls the
+  Hugging Face Inference API with `HUGGINGFACE_API_KEY`, avoiding those weights
+  in app RAM. Both document passages and queries use the selected backend.
 - PostgreSQL stores `vector(384)` and ranks cosine distance with pgvector.
 - `TokenCounter` loads `AutoTokenizer` for the same model and records token
   counts in chunk metadata. It does not truncate or reject overlength text.
+
+The configured model is the only model currently used by the app. A read-only
+hosted/local compatibility check on one public Vinamilk chunk produced 384
+dimensions, cosine similarity 1.00000012, and maximum component difference
+4.2e-7, so the hosted backend can query existing vectors without re-embedding.
+The app has been switched locally through the ignored `.env`; `.env.example`
+still defaults to local. The hosted backend sends uploaded document text and
+question text to Hugging Face, so use it only when that data transfer is
+permitted. It has no silent local fallback: authentication, provider outages,
+or rate limits surface as errors. Hosted inference reduces model-weight RAM,
+but adds network latency and account usage; local inference avoids sending
+text to that provider but loads the model into RAM.
+
+The one-case hosted retrieval smoke reproduced the exact ranked document and
+passage IDs for the FY2024 financial question from three existing local runs;
+document MRR is 1.0 and passage MRR is 0.125 on the manually pooled labels.
+Hosted retrieval took 15.2 seconds for that request. This is a compatibility
+smoke, not a broad quality or latency benchmark. See the
+[`hosted-backend retrieval report`](../../artifacts/evaluation/vinamilk-hosted-embedding-retrieval-smoke-20260928.json).
+
+The embedding module now imports `HuggingFaceEmbeddings` only for the local
+backend. Before that change, the local-model dependency import alone raised a
+fresh process from 14.6 to 590 MiB RSS. On the same one-query smoke, hosted
+peak RSS fell from 576.2 to 76.7 MiB (86.7%); local mode remained at 1,480.5
+MiB. Hosted and local vectors still match (cosine 0.9999999999998066,
+maximum component difference 4.92e-7). The restarted Uvicorn explicitly loads
+`.env` with `EMBEDDING_BACKEND=huggingface_inference`; after one authenticated
+analyst ask returned HTTP 200 with a citation, its process high-water RSS was
+185,012 KiB and no local embedding model mappings were present. These are
+single-query resource checks, not a steady-state or concurrency benchmark;
+provider latency is not compared. See the [post-change artifact](../../artifacts/evaluation/vinamilk-embedding-hosted-lazy-import-20260928.json) and [pre-change reference](../../artifacts/evaluation/vinamilk-embedding-backend-resource-parity-20260928.json).
 
 The configured model is the only model currently used by the app. Proposal
 models are evaluated offline by `scripts/evaluate_embeddings.py`; its
@@ -55,12 +88,41 @@ document IDs present in the public manifest, preserves their `allowed_roles`,
 and writes a SHA-256 metadata sidecar. The committed 2026-09-27 snapshot has
 4,750 passages from 25 public Vinamilk sources; no database credential is
 needed in a hosted runtime. The loader rejects any document ID outside the
-manifest allowlist. `notebooks/kaggle_embedding_benchmark.ipynb` runs BGE-M3,
+manifest allowlist. Attach the private Kaggle dataset
+[vinamilk-proposal-benchmark-assets](https://www.kaggle.com/datasets/ltrngnhn/vinamilk-proposal-benchmark-assets).
+`notebooks/kaggle_embedding_benchmark.ipynb` runs BGE-M3,
 Qwen3-Embedding-0.6B and e5-large-v2 separately on the exact same complete
 corpus and twelve cases with CUDA and batch size 4. It records each model
 revision, data hashes, peak RAM/VRAM and per-case rankings. This is a larger
 paired smoke benchmark, not final selection: the twelve document-level labels
 remain sparse and do not replace passage-level judgments or human QA review.
+
+The completed run is summarized in
+[`vinamilk-embedding-three-model-full-corpus-t4-20260927.json`](../../artifacts/evaluation/vinamilk-embedding-three-model-full-corpus-t4-20260927.json);
+the three original Kaggle JSON reports and their SHA-256 values are retained
+under `artifacts/evaluation/embedding-full-corpus-t4/`. A later local hash replay
+is recorded in
+[`vinamilk-embedding-three-model-full-corpus-hash-verified-20260928.json`](../../artifacts/evaluation/vinamilk-embedding-three-model-full-corpus-hash-verified-20260928.json).
+It verifies the exact case hash `554f9837…f21270b1a`, source corpus hash
+`149b531c…eca984a7`, and sampled corpus hash `a7418846…f7fd8cd8` against the
+committed JSONL and case file. The replay reproduces all 4,750 selected chunks:
+the largest of 25 documents has 452 chunks, below the reported 1,000-per-document
+cap. Thus full-corpus coverage is verified. The raw reports still carry a stale
+`sample_strategy` value claiming evenly spaced sampling and a stale limitation
+sentence claiming a smaller sample; these source files remain unchanged, and
+the audit artifact records both the discrepancy and the hash proof. On those
+reported rankings, BGE-M3/Qwen3/e5 MRR is 0.7759/0.8028/0.7583,
+Recall@5 is 0.9167/0.9167/0.9167 and nDCG@5 is 0.8041/0.8239/0.7917. Mean query
+time is 28.3/64.5/25.2 ms; corpus embedding time is 266/782/336 seconds.
+These single-run measurements on sparse document-level labels are not a
+production winner or passage-level answer-quality result. The raw Kaggle
+reports contain a stale generated limitation sentence about sampling, and their
+sample-strategy field conflicts with the recorded counts. Raw reports remain
+unchanged; the hash audit proves the selected data and flags the stale metadata. The local evaluator
+now describes the sampling strategy based on the actual included/full counts.
+The notebook resolves Kaggle's attached dataset mount from its project files,
+installs the lockfile-matched `sentence-transformers` version, and checks CUDA
+before launching the three model runs.
 
 ## Input-length constraint
 
@@ -73,4 +135,4 @@ database check found no stored report chunk above the configured sequence limit.
 
 Useful source: `src/core/embeddings/embedding_service.py`,
 `src/core/utils/token_counter.py`, `.env.example`, and
-`src/database/migrations/001_create_document_chunks.sql`.
+`supabase/migrations/20260922000000_initial_knowledge_schema.sql`.

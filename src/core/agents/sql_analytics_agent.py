@@ -33,6 +33,12 @@ class SQLAnalyticsAgent(BaseAgent):
         role = request.metadata.get("role")
         if not role:
             raise ValueError("Analytics requires a trusted authenticated role")
+        chart_instruction = (
+            " For a requested dashboard visualization, return individual observations only: project metric_name, "
+            "metric_label, fiscal_year, metric_value, unit, and document_id directly, without summing or averaging values. "
+            "Group by those exact fields and keep every fiscal year separate."
+            if request.metadata.get("dashboard_visualization") else ""
+        )
         prompt = (
             "Translate the analytics request into exactly one PostgreSQL SELECT. Return JSON only: "
             '{"sql":"..."}. You may read only one source: authorized_financial_metrics '
@@ -52,7 +58,7 @@ class SQLAnalyticsAgent(BaseAgent):
             "authorized_financial_metrics, also project metric_name and fiscal_year directly and never "
             "combine different metric names or years in one result row; group by them when aggregating. "
             "This keeps each result tied to the exact source KPI. Use a numeric LIMIT at most 100. "
-            "Do not invent data.\n\n"
+            "Do not invent data." + chart_instruction + "\n\n"
             f"Request: {request.question}"
         )
         query = _sql_from_model(self.llm.generate(prompt))

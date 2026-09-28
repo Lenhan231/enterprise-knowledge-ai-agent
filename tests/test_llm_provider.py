@@ -11,6 +11,15 @@ from core.llm.groq_provider import GroqProvider
 
 class GroqProviderTest(unittest.TestCase):
     @patch("core.llm.groq_provider.OpenAI")
+    def test_close_releases_http_client(self, openai):
+        with patch.dict(os.environ, {"GROQ_API_KEY": "test-secret"}):
+            provider = GroqProvider()
+
+        provider.close()
+
+        openai.return_value.close.assert_called_once()
+
+    @patch("core.llm.groq_provider.OpenAI")
     def test_model_is_configurable_without_exposing_key(self, openai):
         with patch.dict(os.environ, {"GROQ_API_KEY": "test-secret", "GROQ_MODEL": "test/model"}):
             provider = GroqProvider()

@@ -17,7 +17,12 @@ def write_run(path: Path, model: str, context_hash: str = "same-context"):
             "question": "What happened?",
             "answer": "A source-backed response.",
             "context_sha256": context_hash,
-            "sources": [{"source_id": "S1", "page_number": 2, "content_preview": "Source evidence."}],
+            "sources": [{
+                "source_id": "S1", "page_number": 2,
+                "document_id": "D1", "source_document": "report.pdf",
+                "official_url": "https://example.test/report.pdf",
+                "content_preview": "Short preview.", "evidence": "Complete source evidence excerpt.",
+            }],
             "human_reviews": [],
         }],
     }), encoding="utf-8")
@@ -51,7 +56,14 @@ class BlindQAReviewTest(unittest.TestCase):
             packet_text = packet_a.read_text(encoding="utf-8")
             self.assertNotIn("model-secret-a", packet_text)
             self.assertNotIn("model-secret-b", packet_text)
-            self.assertEqual(len(json.loads(packet_a.read_text())["responses"]), 2)
+            self.assertNotIn("case-a", packet_text)
+            self.assertNotIn(str(run_a.resolve()), packet_text)
+            packet_data = json.loads(packet_a.read_text())
+            self.assertEqual(len(packet_data["responses"]), 2)
+            self.assertNotEqual(packet_data["responses"][0]["case_id"], "case-a")
+            packet_source = packet_data["responses"][0]["sources"][0]
+            self.assertEqual(packet_source["evidence"], "Complete source evidence excerpt.")
+            self.assertEqual(packet_source["official_url"], "https://example.test/report.pdf")
 
             packet_b.write_text(packet_text, encoding="utf-8")
             fill_packet(packet_a, "reviewer-1", hallucinated=1)
@@ -65,6 +77,25 @@ class BlindQAReviewTest(unittest.TestCase):
             self.assertEqual(summary["reviewer_count"], 2)
             self.assertEqual(summary["mean_faithfulness"], 4.0)
             self.assertEqual(summary["hallucination_rate"], 0.25)
+            faithfulness_agreement = summary["inter_rater_agreement"]["scores"]["faithfulness"]
+            self.assertEqual(faithfulness_agreement["paired_response_count"], 1)
+            self.assertEqual(faithfulness_agreement["exact_agreement"], 1.0)
+            self.assertEqual(faithfulness_agreement["weighted_cohen_kappa"], 1.0)
+
+    def test_agreement_is_only_reported_for_paired_two_reviewer_scores(self):
+        from score_qa_artifact import summarize_human_reviews
+
+        summary = summarize_human_reviews([{
+            "human_reviews": [
+                {"reviewer": "r1", "faithfulness": 5},
+                {"reviewer": "r2", "faithfulness": 3},
+                {"reviewer": "r3", "faithfulness": 4},
+            ]
+        }])
+        score = summary["inter_rater_agreement"]["scores"]["faithfulness"]
+        self.assertEqual(score["paired_response_count"], 0)
+        self.assertIsNone(score["exact_agreement"])
+        self.assertIsNone(score["weighted_cohen_kappa"])
 
     def test_prepare_rejects_model_runs_with_different_contexts(self):
         with tempfile.TemporaryDirectory() as temp:

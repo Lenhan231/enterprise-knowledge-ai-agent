@@ -10,6 +10,7 @@ import os
 import platform
 import subprocess
 import sys
+import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,6 +28,18 @@ from core.models.agents import AgentRequest, AgentResult  # noqa: E402
 _DATASET = REPO_ROOT / "data/evaluation/proposal_business_route_cases.json"
 _OUTPUT = REPO_ROOT / "artifacts/evaluation/proposal-business-route-evaluation.json"
 _ROUTES = ("knowledge", "analytics", "hybrid", "dashboard", "report")
+
+
+def prepare_output_path(path: Path) -> Path:
+    output = path if path.is_absolute() else REPO_ROOT / path
+    output.parent.mkdir(parents=True, exist_ok=True)
+    if output.exists():
+        with output.open("a", encoding="utf-8"):
+            pass
+    with tempfile.NamedTemporaryFile(dir=output.parent, prefix=".route-eval-write-check-") as probe:
+        probe.write(b"x" * 32768)
+        probe.flush()
+    return output
 
 
 def score_routes(results: list[dict]) -> dict:
@@ -95,6 +108,10 @@ def main() -> int:
     parser.add_argument("--case-id", action="append", help="Run selected case IDs; may be repeated")
     parser.add_argument("--output", type=Path, default=_OUTPUT)
     args = parser.parse_args()
+    try:
+        output = prepare_output_path(args.output)
+    except OSError as error:
+        parser.error(f"cannot write evaluation output before model calls: {error}")
     load_dotenv(REPO_ROOT / ".env", override=True)
     dataset_bytes = _DATASET.read_bytes()
     dataset = json.loads(dataset_bytes)
@@ -201,8 +218,6 @@ def main() -> int:
         "limitations": "Measures classifier/router selection against manually mapped proposal-task labels only. Agent tools and answer generation are stubbed; it does not establish task completion, answer quality, domain evidence, or coverage for private enterprise cases.",
         "results": results,
     }
-    output = args.output if args.output.is_absolute() else REPO_ROOT / args.output
-    output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"output": str(output), **metrics, "fallback_count": report["fallback_count"]}, indent=2))
     return 0 if metrics["correct"] == metrics["case_count"] else 1

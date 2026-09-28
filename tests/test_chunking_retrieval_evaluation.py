@@ -1,3 +1,5 @@
+import hashlib
+import tempfile
 import unittest
 from pathlib import Path
 import sys
@@ -5,10 +7,20 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.evaluate_chunking_retrieval import _as_vector, transfer_passage_labels
+from scripts.evaluate_chunking_retrieval import _as_vector, _sha256_file, transfer_passage_labels
 
 
 class ChunkingRetrievalEvaluationTest(unittest.TestCase):
+    def test_source_hash_is_streamed_from_exact_file_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "source.pdf"
+            source.write_bytes(b"source bytes\x00\xff")
+
+            self.assertEqual(
+                _sha256_file(source),
+                hashlib.sha256(b"source bytes\x00\xff").hexdigest(),
+            )
+
     def test_pgvector_adapter_converts_vector_to_numpy(self):
         from pgvector import Vector
 

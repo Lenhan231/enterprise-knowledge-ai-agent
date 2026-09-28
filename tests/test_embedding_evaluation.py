@@ -72,7 +72,11 @@ class EmbeddingEvaluationTest(unittest.TestCase):
             cases_fixture.write_text(json.dumps({"cases": [case]}), encoding="utf-8")
             output_path = root / "report.json"
             with (
-                patch.dict(sys.modules, {"sentence_transformers": MagicMock(SentenceTransformer=lambda *_args, **_kwargs: Model()), "torch": torch}),
+                patch.dict(sys.modules, {
+                    "sentence_transformers": MagicMock(SentenceTransformer=lambda *_args, **_kwargs: Model()),
+                    "torch": torch,
+                    "dotenv": None,
+                }),
                 patch.dict(os.environ, {"DATABASE_URL": ""}),
                 patch.object(evaluate_embeddings, "REPO_ROOT", Path(__file__).resolve().parents[1]),
                 patch.object(sys, "argv", [
@@ -85,6 +89,9 @@ class EmbeddingEvaluationTest(unittest.TestCase):
             self.assertEqual(report["corpus_source"], "public_manifest_jsonl")
             self.assertEqual(report["environment"]["gpu_name"], None)
             self.assertEqual(report["aggregate"]["recall@1"], 1.0)
+            self.assertTrue(report["all_corpus_chunks_included"])
+            self.assertIn("all eligible passages", report["configuration"]["sample_strategy"])
+            self.assertNotIn("not full-corpus retrieval", report["limitations"])
 
 
 if __name__ == "__main__":

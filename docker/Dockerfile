@@ -13,6 +13,7 @@ RUN uv sync --locked --no-dev --no-install-project
 COPY src ./src
 COPY data/vietnam_enterprises/manifest.json ./data/vietnam_enterprises/manifest.json
 ENV PATH="/app/.venv/bin:$PATH" \
-    PYTHONPATH="/app/src"
+    PYTHONPATH="/app/src" \
+    PORT="8000"
 EXPOSE 8000
-CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "exec uvicorn src.app.main:app --host 0.0.0.0 --port \"${PORT:-8000}\""]

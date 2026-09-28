@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "src/app/static",
+  "rewrites": [
+    { "source": "/static/:path*", "destination": "/:path*" },
+    { "source": "/api/:path*", "destination": "https://enterprise-knowledge-ai-api-lenhanm1.onrender.com/api/:path*" },
+    { "source": "/ws/:path*", "destination": "https://enterprise-knowledge-ai-api-lenhanm1.onrender.com/ws/:path*" },
+    { "source": "/health", "destination": "https://enterprise-knowledge-ai-api-lenhanm1.onrender.com/health" }
+  ]
+}

@@ -44,6 +44,40 @@ class StructuredDataStore:
                     records_count += len(rows)
         return len(tables), records_count
 
+    def get_document_tables(
+        self, document_id: str, *, company: str, table_offset: int = 0,
+        table_limit: int = 50, row_offset: int = 0, row_limit: int = 100,
+    ) -> list[dict[str, Any]]:
+        if table_offset < 0 or row_offset < 0:
+            raise ValueError("Offsets must be non-negative")
+        if not 1 <= table_limit <= 50 or not 1 <= row_limit <= 100:
+            raise ValueError("table_limit must be 1-50 and row_limit must be 1-100")
+        with self.connection.transaction(), self.connection.cursor() as cursor:
+            cursor.execute(
+                """SELECT t.id, t.page_number, t.table_index, t.columns, t.metadata,
+                          (SELECT count(*) FROM public.extracted_records r
+                           WHERE r.table_id = t.id) AS row_count,
+                          COALESCE((
+                              SELECT jsonb_agg(page.data ORDER BY page.row_index)
+                              FROM (
+                                  SELECT r.row_index, r.data
+                                  FROM public.extracted_records r
+                                  WHERE r.table_id = t.id
+                                  ORDER BY r.row_index
+                                  LIMIT %s OFFSET %s
+                              ) page
+                          ), '[]'::jsonb) AS rows
+                   FROM public.extracted_tables t
+                   JOIN public.documents d ON d.document_id = t.document_id
+                   WHERE t.document_id = %s AND d.company = %s
+                   ORDER BY t.page_number, t.table_index
+                   LIMIT %s OFFSET %s""",
+                (row_limit, row_offset, document_id, company, table_limit, table_offset),
+            )
+            columns = [item.name for item in cursor.description]
+            return [dict(row) if isinstance(row, dict) else dict(zip(columns, row))
+                    for row in cursor.fetchall()]
+
     def close(self) -> None:
         if self._owns_connection:
             self.connection.close()

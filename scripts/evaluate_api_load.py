@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure local ASGI health, dashboard, and analytics endpoints under light load."""
+"""Measure health, dashboard, and analytics endpoints through ASGI or HTTP."""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from dotenv import load_dotenv
 import httpx
@@ -30,6 +31,17 @@ def percentile(values: list[float], p: float) -> float | None:
     ordered = sorted(values)
     index = round((len(ordered) - 1) * p)
     return round(ordered[index], 2)
+
+
+def validate_base_url(value: str | None) -> str | None:
+    if value is None:
+        return None
+    parsed = urlsplit(value)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username or parsed.password:
+        raise ValueError("base URL must be an http(s) origin without embedded credentials")
+    if parsed.path not in {"", "/"} or parsed.query or parsed.fragment:
+        raise ValueError("base URL must be an origin only, without path, query or fragment")
+    return f"{parsed.scheme}://{parsed.netloc}"
 
 
 async def request_once(client: httpx.AsyncClient, path: str) -> dict:
@@ -51,6 +63,25 @@ async def request_once(client: httpx.AsyncClient, path: str) -> dict:
             "response_bytes": 0,
             "error": f"{type(error).__name__}: {error}",
         }
+
+
+def summarize_by_path(results: list[dict]) -> dict:
+    summary = {}
+    for path in sorted({row["path"] for row in results}):
+        rows = [row for row in results if row["path"] == path]
+        latencies = [row["latency_ms"] for row in rows]
+        summary[path] = {
+            "request_count": len(rows),
+            "success_count": sum(row["status_code"] is not None and 200 <= row["status_code"] < 300 for row in rows),
+            "failure_count": sum(row["status_code"] is None or not 200 <= row["status_code"] < 300 for row in rows),
+            "latency_ms": {
+                "mean": round(statistics.fmean(latencies), 2) if latencies else None,
+                "p50": percentile(latencies, 0.5),
+                "p95": percentile(latencies, 0.95),
+                "max": round(max(latencies), 2) if latencies else None,
+            },
+        }
+    return summary
 
 
 async def run_level(client: httpx.AsyncClient, paths: list[str], concurrency: int, iterations: int) -> dict:
@@ -79,6 +110,7 @@ async def run_level(client: httpx.AsyncClient, paths: list[str], concurrency: in
         "success_count": sum(row["status_code"] is not None and 200 <= row["status_code"] < 300 for row in results),
         "failure_count": sum(row["status_code"] is None or not 200 <= row["status_code"] < 300 for row in results),
         "status_counts": {str(code): sum(row["status_code"] == code for row in results) for code in sorted({row["status_code"] for row in results}, key=str)},
+        "by_path": summarize_by_path(results),
         "failures": [row for row in results if row["error"]],
     }
 
@@ -90,8 +122,9 @@ async def main_async(args) -> int:
     if not username or not password:
         raise RuntimeError("DEMO_ANALYST_USERNAME/PASSWORD must be configured in .env")
 
-    transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://testserver", timeout=30) as client:
+    base_url = validate_base_url(args.base_url)
+    transport = None if base_url else httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url=base_url or "http://testserver", timeout=30) as client:
         login = await client.post("/api/auth/login", json={"username": username, "password": password})
         if login.status_code != 200:
             raise RuntimeError(f"Analyst login failed with HTTP {login.status_code}")
@@ -108,7 +141,8 @@ async def main_async(args) -> int:
 
     report = {
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
-        "benchmark": "local FastAPI ASGI endpoints; no external network hop",
+        "benchmark": "authenticated HTTP endpoints on configured server" if base_url else "local FastAPI ASGI endpoints; no external network hop",
+        "base_url": base_url,
         "role": "finance_analyst",
         "paths": paths,
         "warmup": warmups,
@@ -121,7 +155,7 @@ async def main_async(args) -> int:
             "gpu_note": "Not sampled; no CUDA GPU was available in the verified host environment.",
         },
         "results": levels,
-        "limitations": "In-process ASGI benchmark against the configured database, not a deployed server/network benchmark. It measures health, dashboard and analytics only; no upload, concurrent document processing, QA generation, multi-user authorization matrix, or production-scale load. Use a dedicated load-test environment before capacity claims.",
+        "limitations": "Measures health, dashboard and analytics only; no upload, concurrent document processing, QA generation, multi-user authorization matrix, or production-scale load. HTTP mode exercises the configured server over its network interface but does not by itself establish deployed scalability or capacity.",
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -133,6 +167,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--concurrency", nargs="+", type=int, default=[1, 2, 4])
     parser.add_argument("--iterations", type=int, default=3, help="Requests per worker at each concurrency level")
+    parser.add_argument("--base-url", help="Optional running HTTP server origin; default benchmarks the app in-process via ASGI")
     parser.add_argument("--output", type=Path, default=REPO_ROOT / "artifacts/evaluation/vinamilk-api-load-smoke.json")
     args = parser.parse_args()
     if args.iterations < 1 or not args.concurrency or any(value < 1 or value > 16 for value in args.concurrency):

@@ -21,10 +21,15 @@ Requires both document knowledge and structured business data.
 dashboard:
 User explicitly requests charts, dashboard, visualization, or KPI view.
 
+report:
+User asks to summarize source documents or explicitly draft/write a report. Do not
+select this just because the request mentions a report as a data source or asks
+for report counts; those are knowledge or analytics requests.
+
 Return valid JSON only:
 
 {{
-  "intent": "knowledge | analytics | dashboard | hybrid",
+  "intent": "knowledge | analytics | dashboard | hybrid | report",
   "needs_knowledge": true,
   "needs_sql": false,
   "output_mode": "answer | dashboard",

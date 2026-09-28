@@ -1,8 +1,15 @@
+import hashlib
+import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
 import unittest
+from unittest.mock import patch
 
 from scripts.evaluate_rerankers import (
     MODELS,
     _available_memory_mb,
+    _candidate_sha256,
+    _load_candidate_bundle,
     _metrics,
     _passage_cutoffs,
     _ranked_documents,
@@ -15,11 +22,15 @@ class RerankerEvaluationTest(unittest.TestCase):
         self.assertEqual(MODELS["bge-reranker-v2-m3"], "BAAI/bge-reranker-v2-m3")
         self.assertEqual(MODELS["qwen3-reranker-0.6b"], "Qwen/Qwen3-Reranker-0.6B")
 
-    def test_available_memory_reader_returns_positive_value_when_procfs_exists(self):
+    def test_available_memory_reader_allows_genuine_zero_when_host_is_exhausted(self):
         value = _available_memory_mb()
         if value is not None:
-            self.assertGreater(value, 0)
+            self.assertGreaterEqual(value, 0)
             self.assertLess(value, 1024 * 1024)
+
+    def test_available_memory_reader_converts_kib_to_mib(self):
+        with patch("scripts.evaluate_rerankers.Path.read_text", return_value="MemAvailable: 2048 kB\n"):
+            self.assertEqual(_available_memory_mb(), 2)
 
     def test_chunk_ranking_collapses_to_first_document_occurrence(self):
         chunks = [
@@ -53,6 +64,47 @@ class RerankerEvaluationTest(unittest.TestCase):
         self.assertEqual(_passage_cutoffs([2, 2]), (1, 2))
         self.assertEqual(_passage_cutoffs([30, 30]), (1, 3, 5))
         self.assertEqual(_passage_cutoffs([0, 2]), ())
+
+    def test_candidate_bundle_requires_matching_case_labels_and_content_hash(self):
+        case = {
+            "id": "case-a", "question": "Find the source passage", "role": "finance_analyst",
+            "relevant_document_ids": ["report-2024"], "relevant_chunk_ids": ["report-2024::chunk::2"],
+        }
+        candidates = [{
+            "id": case["id"], "query": case["question"], "role": case["role"],
+            "relevant_document_ids": case["relevant_document_ids"],
+            "relevant_passage_ids": case["relevant_chunk_ids"], "retrieval_latency_ms": 12.5,
+            "items": [{"chunk_id": "report-2024::chunk::2", "text": "Source text", "dense_score": 0.9}],
+        }]
+        cases_bytes = b'{"cases":["frozen labels"]}'
+        bundle = {
+            "schema": "vinamilk-role-filtered-reranker-candidates-v1",
+            "case_file_sha256": hashlib.sha256(cases_bytes).hexdigest(),
+            "candidate_sha256": _candidate_sha256(candidates),
+            "cases": candidates,
+        }
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "candidates.json"
+            path.write_text(json.dumps(bundle), encoding="utf-8")
+            loaded, digest = _load_candidate_bundle(path, [case], cases_bytes, candidate_k=30)
+
+        self.assertEqual(loaded, candidates)
+        self.assertEqual(digest, bundle["candidate_sha256"])
+
+    def test_candidate_bundle_rejects_hash_mismatch_and_missing_cases(self):
+        case = {
+            "id": "case-a", "question": "Find the source passage", "role": "finance_analyst",
+            "relevant_document_ids": ["report-2024"], "relevant_chunk_ids": [],
+        }
+        bundle = {
+            "schema": "vinamilk-role-filtered-reranker-candidates-v1",
+            "case_file_sha256": "wrong", "candidate_sha256": "wrong", "cases": [],
+        }
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "candidates.json"
+            path.write_text(json.dumps(bundle), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "different labeled case file"):
+                _load_candidate_bundle(path, [case], b"labels", candidate_k=30)
 
 
 if __name__ == "__main__":

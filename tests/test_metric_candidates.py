@@ -36,6 +36,24 @@ class MetricCandidateTest(unittest.TestCase):
         )
         self.assertTrue(all(row["page_number"] == 12 and row["status"] == "needs_review" for row in rows))
 
+    def test_layout_does_not_pair_narrative_growth_sentence_with_large_number(self):
+        rows = candidates(
+            [],
+            {"company": "Example", "fiscal_year": 2021, "document_id": "DOC-2021",
+             "official_url": "https://example.test/report", "rbac": {"allowed_roles": ["finance_analyst"]}},
+            visual_pages=[{
+                "page_number": 53,
+                "spans": [
+                    {"text": "Net revenue from overseas subsidiaries reached", "bbox": [0, 0, 170, 20], "font_size": 12},
+                    {"text": "2.2", "bbox": [175, 0, 220, 50], "font_size": 36},
+                    {"text": "MCM specifically brought in VND 2,926 billion in net revenue, a 3.6% year-over-year increase", "bbox": [0, 100, 260, 120], "font_size": 12},
+                    {"text": "94.6", "bbox": [175, 120, 220, 160], "font_size": 36},
+                ],
+            }],
+        )
+
+        self.assertEqual(rows, [])
+
     def test_consolidated_net_revenue_is_not_duplicated_as_net_revenue(self):
         rows = candidates(
             [{"metadata": {"page_number": 46}, "text": "Consolidated net revenue 59,723 billion VND."}],
@@ -65,6 +83,19 @@ class MetricCandidateTest(unittest.TestCase):
 
         self.assertNotIn("net_revenue", {row["metric_name"] for row in rows})
 
+    def test_ambiguous_revenue_and_net_profit_labels_are_not_financial_candidates(self):
+        rows = candidates(
+            [{"metadata": {"page_number": 92}, "text": "Doanh thu 52.576.991 tỷ đồng. Lợi nhuận thuần 8.686.245 tỷ đồng."}],
+            {
+                "company": "Vinamilk", "fiscal_year": 2024,
+                "document_id": "VNM-AR-2024-VI",
+                "official_url": "https://example.vn/report.pdf",
+                "rbac": {"allowed_roles": ["finance_analyst"]},
+            },
+        )
+
+        self.assertEqual(rows, [])
+
     def test_candidate_keeps_page_evidence_pending_review(self):
         rows = candidates(
             [{"metadata": {"page_number": 12}, "text": "Doanh thu thuần 60.479 tỷ đồng"}],
@@ -81,6 +112,7 @@ class MetricCandidateTest(unittest.TestCase):
         self.assertEqual(rows[0]["metric_name"], "net_revenue")
         self.assertEqual(rows[0]["page_number"], 12)
         self.assertEqual(rows[0]["candidate_values"], ["60.479"])
+        self.assertEqual(rows[0]["unit"], "tỷ đồng")
         self.assertEqual(rows[0]["status"], "needs_review")
         self.assertEqual(rows[0]["company"], "Example JSC")
         self.assertTrue(rows[0]["source_quote_hash"])
@@ -92,6 +124,29 @@ class MetricCandidateTest(unittest.TestCase):
         )
 
         self.assertEqual(rows, [])
+
+    def test_restricted_financial_fallback_does_not_mine_narrative_pages(self):
+        rows = candidates(
+            [{"metadata": {"page_number": 4}, "text": "Net revenue 60,479 billion VND."}],
+            {"company": "Example", "fiscal_year": 2024, "document_id": "DOC-2024",
+             "official_url": "https://example.test/report", "rbac": {"allowed_roles": ["finance_analyst"]}},
+            text_evidence_page_numbers=set(),
+        )
+
+        self.assertEqual(rows, [])
+
+    def test_page_scale_completes_a_bare_vnd_table_header(self):
+        rows = candidates(
+            [{"metadata": {"page_number": 5}, "text": "Total assets 60,000 billion\\nVND."}],
+            {"company": "Example", "fiscal_year": 2024, "document_id": "DOC-2024",
+             "official_url": "https://example.test/report", "rbac": {"allowed_roles": ["finance_analyst"]}},
+            tables=[{
+                "page_number": 5, "columns": ["Metric", "2024 VND"],
+                "rows": [{"Metric": "Total assets", "2024 VND": "60,000"}],
+            }],
+        )
+
+        self.assertEqual(rows[0]["unit"], "billion VND")
 
     def test_ocr_report_label_keeps_consolidated_revenue_distinct(self):
         rows = candidates(
@@ -111,6 +166,7 @@ class MetricCandidateTest(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["metric_name"], "total_consolidated_revenue")
         self.assertEqual(rows[0]["candidate_values"], ["60,479"])
+        self.assertEqual(rows[0]["unit"], "billion VND")
         self.assertEqual(rows[0]["status"], "needs_review")
 
     def test_additional_financial_statement_labels_are_review_candidates(self):
@@ -190,13 +246,17 @@ class MetricCandidateTest(unittest.TestCase):
             tables=[{
                 "page_number": 9,
                 "rows": [{"label": "Net revenue", "2024": "60,479", "2023": "56,400"}],
+                "columns": ["Metric", "2024 (Triệu VND)", "2023 (Triệu VND)"],
             }],
+            text_evidence_page_numbers=set(),
         )
 
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["metric_name"], "net_revenue")
-        self.assertEqual(rows[0]["candidate_values"], ["60,479", "56,400"])
-        self.assertIn("Net revenue", rows[0]["source_quote"])
+        self.assertEqual(rows[0]["candidate_values"], ["60,479"])
+        self.assertEqual(rows[0]["unit"], "triệu VND")
+        self.assertIn("label: Net revenue", rows[0]["source_quote"])
+        self.assertIn("2024: 60,479", rows[0]["source_quote"])
 
     def test_rejects_ratio_percentages_and_narrative_connectors(self):
         rows = candidates(
@@ -240,7 +300,7 @@ class MetricCandidateTest(unittest.TestCase):
         self.assertEqual(rows[0]["metric_name"], "total_assets")
         self.assertEqual(rows[0]["candidate_values"], ["48,432"])
 
-    def test_prefers_first_structured_value_and_keeps_one_candidate_per_metric(self):
+    def test_prefers_the_document_year_from_a_comparative_table(self):
         rows = candidates(
             [{"metadata": {"page_number": 2}, "text": "Net revenue 60,479 billion VND."}],
             {
@@ -258,7 +318,9 @@ class MetricCandidateTest(unittest.TestCase):
 
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["page_number"], 5)
-        self.assertEqual(rows[0]["candidate_values"], ["60,479", "56,400"])
+        self.assertEqual(rows[0]["candidate_values"], ["60,479"])
+        self.assertIn("2024: 60,479", rows[0]["source_quote"])
+        self.assertIn("2023: 56,400", rows[0]["source_quote"])
 
     def test_table_candidate_drops_accounting_formula_codes(self):
         rows = candidates(
@@ -282,7 +344,92 @@ class MetricCandidateTest(unittest.TestCase):
             }],
         )
 
-        self.assertEqual(rows[0]["candidate_values"], ["60,479", "56,400"])
+        self.assertEqual(rows[0]["candidate_values"], ["60,479"])
+
+    def test_vinamilk_2021_total_revenue_uses_the_2021_table_column(self):
+        import fitz
+
+        from core.document_processing.processors.pdf_processor import PDFProcessor
+
+        report = Path(__file__).resolve().parents[1] / "data/raw/vietnam_enterprises/vnm/vnm-ar-2021-vi.pdf"
+        with fitz.open(report) as pdf:
+            page_text = pdf[9].get_text()
+            tables = PDFProcessor._extract_page_tables(pdf[9], 10)
+
+        rows = candidates(
+            [{"metadata": {"page_number": 10}, "text": page_text}],
+            {
+                "company": "Vinamilk", "fiscal_year": 2021,
+                "document_id": "VNM-AR-2021-VI",
+                "official_url": "https://www.vinamilk.com.vn/",
+                "rbac": {"allowed_roles": ["finance_analyst"]},
+            },
+            tables=tables,
+        )
+
+        revenue = next(row for row in rows if row["metric_name"] == "total_consolidated_revenue")
+        self.assertEqual(revenue["candidate_values"], ["61,012"])
+        self.assertIn("2017: 51,135", revenue["source_quote"])
+        self.assertIn("2021: 61,012", revenue["source_quote"])
+        self.assertEqual(revenue["status"], "needs_review")
+
+    def test_real_consolidated_income_statements_select_the_report_year_column(self):
+        import fitz
+
+        from core.document_processing.processors.pdf_processor import PDFProcessor
+
+        root = Path(__file__).resolve().parents[1] / "data/raw/vietnam_enterprises/vnm"
+        fixtures = (
+            ("vnm-ar-2023-en.pdf", 115, 2023, "VNM-AR-2023-EN", {
+                "net_revenue": "60,368,915,511,505",
+                "gross_profit": "24,544,731,615,410",
+                "profit_before_tax": "10,967,899,391,486",
+                "profit_after_tax": "9,019,354,165,051",
+            }),
+            ("vnm-ar-2024-vi.pdf", 92, 2024, "VNM-AR-2024-VI", {
+                "gross_profit": "15.166.269",
+                "profit_before_tax": "10.833.006",
+            }),
+        )
+
+        for filename, page_number, year, document_id, expected in fixtures:
+            with self.subTest(document=document_id), fitz.open(root / filename) as pdf:
+                page = pdf[page_number - 1]
+                rows = candidates(
+                    [{"metadata": {"page_number": page_number}, "text": page.get_text()}],
+                    {
+                        "company": "Vinamilk", "fiscal_year": year,
+                        "document_id": document_id,
+                        "official_url": "https://example.vn/report.pdf",
+                        "rbac": {"allowed_roles": ["finance_analyst"]},
+                    },
+                    tables=PDFProcessor._extract_page_tables(page, page_number),
+                )
+                by_metric = {row["metric_name"]: row for row in rows}
+                for metric_name, value in expected.items():
+                    self.assertEqual(by_metric[metric_name]["candidate_values"], [value])
+                    self.assertIn(f"{year}: {value}", by_metric[metric_name]["source_quote"])
+                if document_id == "VNM-AR-2024-VI":
+                    self.assertNotIn("net_revenue", by_metric)
+
+    def test_vinamilk_2022_domestic_segment_profit_is_not_company_gross_profit(self):
+        import fitz
+
+        report = Path(__file__).resolve().parents[1] / "data/raw/vietnam_enterprises/vnm/vnm-ar-2022-vi.pdf"
+        with fitz.open(report) as pdf:
+            page_text = pdf[5].get_text()
+
+        rows = candidates(
+            [{"metadata": {"page_number": 6}, "text": page_text}],
+            {
+                "company": "Vinamilk", "fiscal_year": 2022,
+                "document_id": "VNM-AR-2022-VI",
+                "official_url": "https://example.vn/report.pdf",
+                "rbac": {"allowed_roles": ["finance_analyst"]},
+            },
+        )
+
+        self.assertNotIn("gross_profit", {row["metric_name"] for row in rows})
 
     def test_skips_count_after_state_budget_label_when_followed_by_years(self):
         rows = candidates(

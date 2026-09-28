@@ -8,7 +8,8 @@ class IntentResult(BaseModel):
         "knowledge",
         "analytics",
         "dashboard",
-        "hybrid"
+        "hybrid",
+        "report",
     ]
 
     needs_knowledge: bool

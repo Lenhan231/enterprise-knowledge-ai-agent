@@ -11,10 +11,16 @@ Quick start
 uv sync
 ```
 
-2. Run the FastAPI app:
+2. Copy `.env.example` to `.env` and fill in the Supabase URL/secret, database
+   URL, provider key, and demo credentials described in
+   [`docs/deployment-guide.md`](docs/deployment-guide.md#configuration). The
+   local command below explicitly loads `.env`; Uvicorn does not load it
+   automatically.
+
+3. Run the FastAPI app:
 
 ```bash
-PYTHONPATH=src uvicorn app.main:app --reload --port 8000
+PYTHONPATH=src uvicorn app.main:app --reload --env-file .env --port 8000
 ```
 
 Open `http://localhost:8000` for the Enterprise Intelligence dashboard.
@@ -27,7 +33,7 @@ Project layout
 - src/core/database: PostgreSQL repositories and table persistence
 - src/core/retrieval and src/core/rag: role-scoped hybrid search and grounded answers
 - src/core/agents: runtime router for grounded QA, analytics, hybrid reports and dashboard data
-- docker-compose.yml: FastAPI service; optional local pgvector database profile
+- docker-compose.yml: FastAPI service; optional pgvector-only database profile (not the full Supabase stack)
 
 ## Dataset
 
@@ -48,7 +54,7 @@ browser. The demo has no user-registration or password-reset flow.
 - Analyst: viewer access plus the source-backed analytics dashboard.
 - Admin: analyst access plus the role permission matrix.
 
-Run `PYTHONPATH=src uv run uvicorn app.main:app --reload --port 8000` and open
+Run `PYTHONPATH=src uv run uvicorn app.main:app --reload --env-file .env --port 8000` and open
 `http://localhost:8000`. Corpus coverage and passage quality are computed
 from the indexed Supabase data. Do not treat the demo credentials as a
 production identity-management system.
@@ -65,13 +71,17 @@ not a dashboard data source. User uploads go through `/api/documents/upload`.
 
 The upload route requires `SUPABASE_SECRET_KEY` on the server (legacy
 `SUPABASE_SERVICE_ROLE_KEY` is also accepted), an
-`enterprise-documents` bucket provisioned by migration 005, and
+`enterprise-documents` bucket provisioned by `supabase/migrations/`, and
 `DEMO_UPLOADER_USERNAME` / `DEMO_UPLOADER_PASSWORD` (or an admin login). Never
 expose the secret key to frontend code. Text-based PDFs are extracted page by
 page, embedded and saved to `document_chunks` with their selected roles before
 the upload completes. PDF/DOCX/PPTX/XLSX/TXT/Markdown/PNG/JPEG/TIFF are
 supported. Tesseract handles scanned-page and image text OCR; extracted PDF and
-Office tables are stored separately. KPI candidates stay pending until an admin
+Office tables are stored separately. Table OCR uses PSM 3 for PDFs and PSM 6
+for direct image uploads based on a small labeled pilot; OCR-derived table
+metadata keeps the engine and settings used. See
+[`docs/technical/document-processing.md`](docs/technical/document-processing.md)
+for the evaluation and limitations. KPI candidates stay pending until an admin
 verifies their value and unit. See [`docs/README.md`](docs/README.md) for
 proposal coverage and the technical guide to processing, chunking, embeddings,
 retrieval, agents and evaluation.

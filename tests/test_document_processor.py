@@ -10,6 +10,7 @@ import fitz
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.document_processing.processors.document_processor import DocumentProcessor
+from core.document_processing.processors.pdf_processor import PDFProcessor
 
 
 def archive(files):
@@ -38,15 +39,54 @@ class DocumentProcessorTest(unittest.TestCase):
         )
         self.assertEqual(result["tables"][0]["rows"], [{"Year": "2024", "Revenue": "100"}])
 
+    def test_docx_heading_style_sets_section_title_for_following_chunks(self):
+        source = archive({"word/document.xml": """<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>
+          <w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>Financial performance</w:t></w:r></w:p>
+          <w:p><w:r><w:t>Revenue was 100 billion VND.</w:t></w:r></w:p>
+          <w:p><w:pPr><w:pStyle w:val="Heading2"/></w:pPr><w:r><w:t>Profit</w:t></w:r></w:p>
+          <w:p><w:r><w:t>Profit was 25 billion VND.</w:t></w:r></w:p>
+        </w:body></w:document>"""})
+
+        result = self.processor.process("report.docx", source, {})
+
+        self.assertEqual(
+            [chunk["metadata"]["section_title"] for chunk in result["chunks"]],
+            ["Financial performance", "Financial performance", "Profit", "Profit"],
+        )
+
+    def test_docx_office_math_is_kept_in_passage_and_marked_in_metadata(self):
+        source = archive({"word/document.xml": """<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"><w:body>
+          <w:p><w:r><w:t>Revenue relation: </w:t></w:r><m:oMath><m:sup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sup><m:r><m:t>= y</m:t></m:r></m:oMath></w:p>
+        </w:body></w:document>"""})
+
+        result = self.processor.process("equation.docx", source, {})
+
+        self.assertIn("Revenue relation: x2= y", result["chunks"][0]["text"])
+        self.assertTrue(result["chunks"][0]["metadata"]["contains_formula"])
+        self.assertEqual(result["chunks"][0]["metadata"]["formula_text"], "x2= y")
+
+    def test_formula_recognition_opt_in_enables_paddle_layout_for_pdf_uploads(self):
+        processor = DocumentProcessor({"paddle_formula_recognition": True})
+        with patch(
+            "core.document_processing.processors.document_processor.PDFProcessor",
+        ) as pdf_type:
+            pdf_type.return_value.process.return_value = {"chunks": [], "tables": []}
+            processor.process("report.pdf", b"pdf bytes", {"document_id": "PDF-FORMULA"})
+
+        settings = pdf_type.call_args.args[0]
+        self.assertTrue(settings["paddle_layout"])
+        self.assertTrue(settings["paddle_formula_recognition"])
+
     def test_pptx_preserves_slide_number(self):
         source = archive({"ppt/slides/slide1.xml": """<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
-          <p:spTree><p:sp><p:txBody><a:p><a:r><a:t>Slide one facts</a:t></a:r></a:p></p:txBody></p:sp>
+          <p:spTree><p:sp><p:nvSpPr><p:nvPr><p:ph type="title"/></p:nvPr></p:nvSpPr><p:txBody><a:p><a:r><a:t>Financial overview</a:t></a:r></a:p></p:txBody></p:sp>
           <a:graphicFrame><a:graphic><a:graphicData><a:tbl>
             <a:tr><a:tc><a:txBody><a:p><a:r><a:t>Year</a:t></a:r></a:p></a:txBody></a:tc><a:tc><a:txBody><a:p><a:r><a:t>Revenue</a:t></a:r></a:p></a:txBody></a:tc></a:tr>
             <a:tr><a:tc><a:txBody><a:p><a:r><a:t>2024</a:t></a:r></a:p></a:txBody></a:tc><a:tc><a:txBody><a:p><a:r><a:t>100 VND</a:t></a:r></a:p></a:txBody></a:tc></a:tr>
           </a:tbl></a:graphicData></a:graphic></a:graphicFrame></p:spTree></p:sld>"""})
         result = self.processor.process("report.pptx", source, {})
         self.assertEqual(result["chunks"][0]["metadata"]["page_number"], 1)
+        self.assertEqual(result["chunks"][0]["metadata"]["section_title"], "Financial overview")
         self.assertIn("Revenue", result["chunks"][0]["text"])
         self.assertEqual(result["tables"][0]["page_number"], 1)
         self.assertEqual(result["tables"][0]["columns"], ["Year", "Revenue"])
@@ -71,6 +111,7 @@ class DocumentProcessorTest(unittest.TestCase):
         }])
         self.assertIn("B3: =SUM(B2:B2) [cached value: 100]", result["chunks"][0]["text"])
         self.assertIn("Finance", result["chunks"][0]["metadata"]["sheet_name"])
+        self.assertEqual(result["chunks"][0]["metadata"]["section_title"], "Finance")
 
     def test_text_file_strips_utf8_bom_and_keeps_document_provenance(self):
         result = self.processor.process(
@@ -122,6 +163,7 @@ class DocumentProcessorTest(unittest.TestCase):
 
         command = run.call_args.args[0]
         self.assertEqual(command[:6], ["tesseract", "stdin", "stdout", "-l", "vie+eng", "--psm"])
+        self.assertEqual(command[-2:], ["--psm", "11"])
         self.assertEqual(run.call_args.kwargs["input"], b"image bytes")
         self.assertEqual(run.call_args.kwargs["timeout"], 90)
         self.assertEqual(result["chunks"][0]["text"], "Doanh thu nam 2024 la 100 ty dong.")
@@ -158,6 +200,35 @@ class DocumentProcessorTest(unittest.TestCase):
             "label": "Total assets", "value_1": "500", "value_2": "450",
         })
         self.assertEqual(result["tables"][0]["metadata"]["document_id"], "SCAN-TABLE")
+        self.assertEqual(result["tables"][0]["metadata"]["ocr"], {
+            "engine": "tesseract", "language": "vie+eng",
+            "table_psm": 6, "render_scale": 1.5,
+        })
+
+    def test_word_box_table_recovers_left_aligned_values_with_variable_widths(self):
+        words = []
+        rows = (
+            ("Revenue", "61,824", "59,723", 48, 48),
+            ("Profit", "9,453", "8,000", 39, 38),
+            ("Assets", "44,000", "42,000", 53, 53),
+        )
+        for row_index, (label, first, second, first_width, second_width) in enumerate(rows):
+            y = 30 + row_index * 24
+            words.extend([
+                (10, y, 80, y + 9, label, 1, row_index, 1),
+                (150, y, 150 + first_width, y + 9, first, 1, row_index, 2),
+                (300, y, 300 + second_width, y + 9, second, 1, row_index, 3),
+            ])
+
+        tables = PDFProcessor._tables_from_aligned_words(words, fitz.Rect(0, 0, 400, 120), 1)
+
+        self.assertEqual(len(tables), 1)
+        self.assertEqual(tables[0]["metadata"]["column_alignment"], "left")
+        self.assertEqual(tables[0]["rows"], [
+            {"label": "Revenue", "value_1": "61,824", "value_2": "59,723"},
+            {"label": "Profit", "value_1": "9,453", "value_2": "8,000"},
+            {"label": "Assets", "value_1": "44,000", "value_2": "42,000"},
+        ])
 
     def test_rejects_invalid_office_package(self):
         with self.assertRaisesRegex(ValueError, "Invalid Office archive"):

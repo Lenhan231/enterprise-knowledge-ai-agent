@@ -228,7 +228,8 @@ class DocumentChunkRepository:
             bm25_eligible = ", to_tsvector('simple', c.content) AS document_vector" if method != "dense" else ""
             ctes = [f"""
                 eligible AS MATERIALIZED (
-                    SELECT c.id, c.document_name, c.chunk_index, c.content, c.metadata,
+                    SELECT c.id, c.document_name, c.chunk_index, c.content,
+                           c.metadata || jsonb_build_object('document_type', d.document_type) AS metadata,
                            {eligible_vector}
                            coalesce(%s::text IS NOT NULL AND d.fiscal_year = %s, false) AS year_match
                            {bm25_eligible}

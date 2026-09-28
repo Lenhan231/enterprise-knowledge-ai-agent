@@ -1,12 +1,41 @@
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from evaluate_agent_routes import score_routes
+from evaluate_agent_routes import prepare_output_path, score_routes
 
 
 class AgentRouteEvaluationTest(unittest.TestCase):
+    def test_output_path_preflight_creates_parent_and_checks_writability(self):
+        with tempfile.TemporaryDirectory() as temp:
+            output = Path(temp) / "nested" / "report.json"
+            self.assertEqual(prepare_output_path(output), output)
+            self.assertTrue(output.parent.is_dir())
+            self.assertFalse(output.exists())
+
+    def test_output_path_preflight_rejects_a_directory_as_target(self):
+        with tempfile.TemporaryDirectory() as temp:
+            target = Path(temp) / "report.json"
+            target.mkdir()
+            with self.assertRaises(OSError):
+                prepare_output_path(target)
+
+    def test_output_path_preflight_checks_space_when_target_already_exists(self):
+        from unittest.mock import Mock, patch
+
+        with tempfile.TemporaryDirectory() as temp:
+            target = Path(temp) / "report.json"
+            target.touch()
+            probe = Mock()
+            probe.__enter__ = Mock(return_value=probe)
+            probe.__exit__ = Mock(return_value=False)
+            probe.write.side_effect = OSError("disk quota exceeded")
+            with patch("evaluate_agent_routes.tempfile.NamedTemporaryFile", return_value=probe):
+                with self.assertRaisesRegex(OSError, "disk quota exceeded"):
+                    prepare_output_path(target)
+
     def test_confusion_metrics_cover_expected_and_predicted_routes(self):
         metrics = score_routes([
             {"expected_route": "knowledge", "actual_route": "knowledge"},

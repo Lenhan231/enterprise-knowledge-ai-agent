@@ -1,3 +1,4 @@
+import builtins
 import unittest
 from pathlib import Path
 import sys
@@ -51,8 +52,34 @@ class PDFUploadProcessingTest(unittest.TestCase):
                 "extract_tables": False, "chunk_size": 200, "chunk_overlap": 20,
             }).process({"content": source, "metadata": {"document_id": "SCAN-1"}})
         run.assert_called_once()
+        self.assertEqual(run.call_args.args[0][-2:], ["--psm", "11"])
         self.assertIn("100 tỷ", result["chunks"][0]["text"])
         self.assertEqual(result["chunks"][0]["metadata"]["text_extraction_method"], "tesseract")
+
+    def test_numeric_scan_reuses_render_between_text_and_table_ocr(self):
+        pdf = fitz.open()
+        pdf.new_page()
+        source = pdf.tobytes()
+        pdf.close()
+        processor = PDFProcessor({
+            "paddle_layout": False, "ocr_fallback": True, "extract_tables": True,
+        })
+        processor.ocr_available = True
+
+        with (
+            patch.object(processor, "_needs_ocr", return_value=True),
+            patch.object(
+                processor, "_ocr_page",
+                return_value="Revenue 100 90\nCash 25 20\nAssets 500 450",
+            ) as text_ocr,
+            patch.object(processor, "_ocr_page_words", return_value=[]) as table_ocr,
+            patch.object(PDFProcessor, "_extract_page_tables", return_value=[]),
+        ):
+            processor._extract_pdf(source)
+
+        text_ocr.assert_called_once()
+        table_ocr.assert_called_once()
+        self.assertIs(text_ocr.call_args.args[1], table_ocr.call_args.args[1])
 
     def test_mixed_page_appends_ocr_without_losing_native_text(self):
         pdf = fitz.open()
@@ -93,6 +120,75 @@ class PDFUploadProcessingTest(unittest.TestCase):
         self.assertEqual(len(tables), 1)
         self.assertEqual(tables[0]["metadata"]["layout_type"], "table")
         self.assertEqual(tables[0]["metadata"]["element_type"], "table")
+
+    def test_optional_paddle_path_keeps_chart_recognition_text_and_geometry(self):
+        pdf = fitz.open()
+        pdf.new_page()
+        source = pdf.tobytes()
+        pdf.close()
+        output = SimpleNamespace(json={"res": {"parsing_res_list": [{
+            "block_label": "chart", "block_content": "Revenue: 100; Profit: 20",
+            "block_bbox": [10, 20, 200, 120],
+        }]}})
+        pipeline = Mock()
+        pipeline.predict.return_value = [output]
+        paddle = SimpleNamespace(PPStructureV3=Mock(return_value=pipeline))
+
+        original_import = builtins.__import__
+
+        def import_paddleocr(name, *args, **kwargs):
+            if name == "paddleocr":
+                return paddle
+            return original_import(name, *args, **kwargs)
+
+        with patch("builtins.__import__", side_effect=import_paddleocr):
+            result = PDFProcessor({"chunk_size": 200, "chunk_overlap": 20})._process_with_paddle(
+                source, None, {"metadata": {"document_id": "CHART-1"}},
+            )
+
+        paddle.PPStructureV3.assert_called_once()
+        self.assertTrue(paddle.PPStructureV3.call_args.kwargs["use_chart_recognition"])
+        chart_chunk = result["chunks"][0]
+        self.assertEqual(chart_chunk["text"], "Revenue: 100; Profit: 20")
+        self.assertEqual(chart_chunk["metadata"]["element_type"], "chart")
+        self.assertEqual(chart_chunk["metadata"]["layout_type"], "chart")
+        self.assertEqual(chart_chunk["metadata"]["bbox"], [10, 20, 200, 120])
+        self.assertTrue(chart_chunk["metadata"]["visual_content_extracted"])
+
+    def test_optional_paddle_formula_path_keeps_latex_and_source_geometry(self):
+        pdf = fitz.open()
+        pdf.new_page()
+        source = pdf.tobytes()
+        pdf.close()
+        output = SimpleNamespace(json={"res": {"parsing_res_list": [{
+            "block_label": "formula", "block_content": r"\frac{R}{A}=0.25",
+            "block_bbox": [10, 20, 200, 80],
+        }]}})
+        pipeline = Mock()
+        pipeline.predict.return_value = [output]
+        paddle = SimpleNamespace(PPStructureV3=Mock(return_value=pipeline))
+
+        original_import = builtins.__import__
+
+        def import_paddleocr(name, *args, **kwargs):
+            if name == "paddleocr":
+                return paddle
+            return original_import(name, *args, **kwargs)
+
+        with patch("builtins.__import__", side_effect=import_paddleocr):
+            result = PDFProcessor({"paddle_formula_recognition": True})._process_with_paddle(
+                source, None, {"metadata": {"document_id": "FORMULA-1"}},
+            )
+
+        paddle.PPStructureV3.assert_called_once()
+        self.assertTrue(paddle.PPStructureV3.call_args.kwargs["use_formula_recognition"])
+        chunk = result["chunks"][0]
+        self.assertEqual(chunk["text"], r"\frac{R}{A}=0.25")
+        self.assertEqual(chunk["metadata"]["element_type"], "formula")
+        self.assertEqual(chunk["metadata"]["layout_type"], "formula")
+        self.assertEqual(chunk["metadata"]["bbox"], [10, 20, 200, 80])
+        self.assertTrue(chunk["metadata"]["contains_formula"])
+        self.assertEqual(chunk["metadata"]["formula_representation"], "latex")
 
     def test_borderless_aligned_financial_table_rebuilds_labels_and_value_columns(self):
         matrix = [
@@ -200,13 +296,32 @@ class PDFUploadProcessingTest(unittest.TestCase):
         with patch(
             "core.document_processing.processors.pdf_processor.subprocess.run",
             return_value=SimpleNamespace(stdout=tsv.encode("utf-8")),
-        ):
+        ) as run:
             words = processor._ocr_page_words(page)
         pdf.close()
 
         self.assertEqual(len(words), 1)
         self.assertEqual(words[0][:4], (10.0, 20.0, 30.0, 30.0))
         self.assertEqual(words[0][4], "Revenue")
+        self.assertEqual(run.call_args.args[0][-3:], ["--psm", "3", "tsv"])
+
+    def test_tesseract_tsv_boxes_follow_configured_render_scale(self):
+        pdf = fitz.open()
+        page = pdf.new_page(width=100, height=100)
+        processor = PDFProcessor({"ocr_fallback": True, "ocr_render_scale": 2.5})
+        processor.ocr_available = True
+        tsv = (
+            "level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n"
+            "5\t1\t1\t1\t1\t1\t25\t50\t50\t25\t95\tRevenue\n"
+        )
+        with patch(
+            "core.document_processing.processors.pdf_processor.subprocess.run",
+            return_value=SimpleNamespace(stdout=tsv.encode("utf-8")),
+        ):
+            words = processor._ocr_page_words(page)
+        pdf.close()
+
+        self.assertEqual(words[0][:4], (10.0, 20.0, 30.0, 30.0))
 
     def test_visually_prominent_heading_is_carried_to_following_pages(self):
         pdf = fitz.open()
@@ -237,6 +352,33 @@ class PDFUploadProcessingTest(unittest.TestCase):
         self.assertTrue(page_two)
         self.assertTrue(all(chunk["metadata"]["section_title"] == "Financial Performance" for chunk in page_one))
         self.assertTrue(all(chunk["metadata"]["section_title"] == "Financial Performance" for chunk in page_two))
+
+    def test_ocr_numbered_headings_set_section_title_for_scanned_pdf_chunks(self):
+        pdf = fitz.open()
+        pdf.new_page()
+        source = pdf.tobytes()
+        pdf.close()
+        processor = PDFProcessor({
+            "paddle_layout": False, "ocr_fallback": True, "extract_tables": False,
+            "chunk_size": 800, "chunk_overlap": 100,
+        })
+
+        with patch.object(
+            processor,
+            "_ocr_page",
+            return_value=(
+                "CHAPTER IV\nArticle 12. Rights and duties of the Audit Committee\n"
+                "The Audit Committee reviews the financial statements and reports."
+            ),
+        ):
+            result = processor.process({"content": source, "metadata": {"document_id": "SCAN-1"}})
+
+        self.assertTrue(result["chunks"])
+        self.assertEqual(result["chunks"][0]["metadata"]["text_extraction_method"], "tesseract")
+        self.assertEqual(
+            result["chunks"][0]["metadata"]["section_title"],
+            "Article 12. Rights and duties of the Audit Committee",
+        )
 
 
 if __name__ == "__main__":

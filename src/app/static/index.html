@@ -4,30 +4,50 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f3f6fa">
-  <title>Vietnam Enterprise Knowledge</title>
+  <title>Vietnam Enterprise Knowledge AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=business-analysis-1">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css?v=enterprise-dashboard-en-5">
+  <script>
+    (function() {
+      const saved = localStorage.getItem("app_theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (saved === "dark" || (!saved && prefersDark)) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="/" aria-label="Enterprise Knowledge home">
-      <span class="brand-mark">K</span>
-      <span><strong>Enterprise Knowledge</strong><small>Vietnam public company corpus</small></span>
+      <span class="brand-mark">EK</span>
+      <span><strong>Enterprise Knowledge AI</strong><small>Vietnam public company corpus</small></span>
     </a>
-    <div class="topbar-status"><span class="status-dot"></span><span id="connection-status">Sign in required</span><span id="user-badge" hidden></span><button id="logout-button" hidden>Sign out</button></div>
+    <div class="topbar-status">
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light and dark mode" title="Toggle theme">
+        <span class="theme-icon light-icon" aria-hidden="true">Light</span>
+        <span class="theme-icon dark-icon" aria-hidden="true">Dark</span>
+      </button>
+      <span class="status-dot"></span>
+      <span id="connection-status">Sign in required</span>
+      <span id="user-badge" hidden></span>
+      <button id="logout-button" class="logout-btn" hidden>Sign out</button>
+    </div>
   </header>
 
   <main id="login-view" class="login-view">
     <form id="login-form" class="login-card">
       <p class="eyebrow">SECURE ENTERPRISE ACCESS</p>
       <h1>Sign in to your knowledge workspace</h1>
-      <label for="username">Username</label><input id="username" name="username" autocomplete="username" required>
-      <label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required>
+      <label for="username">Username</label>
+      <input id="username" name="username" autocomplete="username" placeholder="e.g. admin, analyst, viewer" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
       <p id="login-error" class="error-message" hidden></p>
-      <button type="submit">Sign in</button>
-      <small>Demo roles are configured by the administrator in the app environment.</small>
+      <button type="submit" class="primary-button">Sign in to workspace</button>
+      <small>Demo role accounts are configured securely in your environment variables.</small>
     </form>
   </main>
 
@@ -36,119 +56,315 @@
       <div>
         <p class="eyebrow">GROUNDED COMPANY INTELLIGENCE</p>
         <h1>Ask company documents.<br><span>Get answers with sources.</span></h1>
-        <p class="intro-copy">Search Vinamilk’s public reports, policies, and product information. Every answer is grounded in retrieved passages and linked to its source.</p>
+        <p class="intro-copy">Search Vinamilk’s public reports, financial statements, and sustainability records. Every answer is grounded in retrieved passages and directly linked to primary evidence.</p>
       </div>
-      <div class="corpus-scope"><span>ONE ENTERPRISE</span><strong>Vinamilk · VNM</strong></div>
+      <div class="corpus-scope">
+        <span>ENTERPRISE SCOPE</span>
+        <strong>Vinamilk · VNM (HOSE)</strong>
+      </div>
     </section>
 
     <section class="stats" aria-label="Knowledge base coverage">
-      <article class="stat-card"><span class="stat-label">Enterprises</span><strong id="company-name">—</strong><span class="stat-note">Visible in your role scope</span></article>
-      <article class="stat-card"><span class="stat-label">Documents</span><strong id="document-count">—</strong><span class="stat-note">Registered sources</span></article>
-      <article class="stat-card"><span class="stat-label">Indexed passages</span><strong id="chunk-count">—</strong><span class="stat-note">Ready for retrieval</span></article>
-      <article class="stat-card source-stat"><span class="stat-label">Processing</span><strong id="processing-count">—</strong><span class="stat-note">Uploaded · processing · failed</span></article>
+      <article class="stat-card">
+        <div>
+          <span class="stat-label">Enterprises</span>
+          <strong id="company-name">—</strong>
+          <span class="stat-note">Visible in your role scope</span>
+        </div>
+      </article>
+      <article class="stat-card">
+        <div>
+          <span class="stat-label">Indexed Documents</span>
+          <strong id="document-count">—</strong>
+          <span class="stat-note">Verified primary records</span>
+        </div>
+      </article>
+      <article class="stat-card">
+        <div>
+          <span class="stat-label">Passages</span>
+          <strong id="chunk-count">—</strong>
+          <span class="stat-note">Available for semantic search</span>
+        </div>
+      </article>
+      <article class="stat-card source-stat">
+        <div>
+          <span class="stat-label">Processing</span>
+          <strong id="processing-count">—</strong>
+          <span class="stat-note">Uploaded / OCR / chunking</span>
+        </div>
+      </article>
     </section>
 
-    <nav id="workspace-tabs" class="workspace-tabs" role="tablist" aria-label="Workspace sections">
-      <button id="tab-button-knowledge" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="tab-knowledge" data-tab-target="knowledge">Knowledge</button>
-      <button id="tab-button-analytics" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-analytics" data-tab-target="analytics" hidden>Business analysis</button>
-      <button id="tab-button-processing" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-processing" data-tab-target="processing" hidden>Document processing</button>
-      <button id="tab-button-access" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-access" data-tab-target="access" hidden>Access</button>
-      <button id="tab-button-monitoring" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" data-tab-target="monitoring" hidden>Agent monitoring</button>
+    <nav id="workspace-tabs" class="workspace-tabs" role="tablist" aria-label="Workspace navigation">
+      <button id="tab-button-knowledge" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="tab-knowledge" data-tab-target="knowledge">
+        Knowledge Q&amp;A
+      </button>
+      <button id="tab-button-analytics" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-analytics" data-tab-target="analytics" hidden>
+        Business Analysis
+      </button>
+      <button id="tab-button-processing" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-processing" data-tab-target="processing" hidden>
+        Document Processing
+      </button>
+      <button id="tab-button-access" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-access" data-tab-target="access" hidden>
+        Access Control
+      </button>
+      <button id="tab-button-monitoring" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" data-tab-target="monitoring" hidden>
+        Agent Monitoring
+      </button>
     </nav>
 
-    <section id="tab-analytics" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-analytics" hidden>
-    <section id="analytics-section" class="analytics-section" hidden>
-      <div class="section-heading"><div><p class="eyebrow">BUSINESS DECISION SUPPORT</p><h2>Business analysis</h2></div><div class="analytics-tools"><label>Company <select id="analytics-company"><option value="">All companies</option></select></label><label>Year <select id="analytics-year"><option value="">All years</option></select></label></div></div>
-      <div id="analysis-summary" class="analysis-summary" aria-label="Analysis coverage"></div>
-      <section class="analysis-section" aria-labelledby="financial-title">
-        <div class="analysis-section-heading"><div><p class="eyebrow">VERIFIED FINANCIAL PERFORMANCE</p><h3 id="financial-title">Financial results and year-over-year change</h3></div><span>Only admin-verified values are included</span></div>
-        <div id="financial-kpis" class="financial-kpis"></div>
-        <div id="financial-insights" class="financial-insights" aria-live="polite"></div>
-        <div id="financial-trends" class="financial-trends"></div>
-      </section>
-      <section class="analysis-section" aria-labelledby="business-question-title">
-        <div class="analysis-section-heading"><div><p class="eyebrow">DOCUMENT-GROUNDED ANALYSIS</p><h3 id="business-question-title">Ask a business question</h3></div><span>Answers use role-authorized documents; filters above apply to figures and charts only.</span></div>
-        <form id="business-question-form" class="business-question-form">
-          <label class="visually-hidden" for="business-question">Business question</label>
-          <textarea id="business-question" minlength="3" maxlength="1000" required placeholder="For example: Summarize Vinamilk’s 2024 revenue and profit, and compare them with the prior year."></textarea>
-          <button id="business-question-button" type="submit">Analyze sources <span aria-hidden="true">↗</span></button>
+    <!-- TAB 1: KNOWLEDGE / Q&A -->
+    <section id="tab-knowledge" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-knowledge">
+      <section class="ask-panel" aria-labelledby="ask-title">
+        <div class="ask-heading">
+          <div>
+            <p class="eyebrow">SOURCE-GROUNDED RETRIEVAL (HYBRID RAG)</p>
+            <h2 id="ask-title">What would you like to know?</h2>
+          </div>
+          <span class="grounded-badge">Cited source grounding</span>
+        </div>
+        <form id="ask-form">
+          <label class="visually-hidden" for="question">Search or ask a question about company documents</label>
+          <div class="textarea-wrapper">
+            <textarea id="question" minlength="3" maxlength="1000" required placeholder="Example: What were Vinamilk's consolidated revenue and profit after tax in 2024? How did they change compared to 2023?"></textarea>
+          </div>
+          <div class="quick-prompts" id="quick-prompts">
+            <span class="quick-prompt-label">Quick prompts:</span>
+            <button type="button" class="quick-chip" data-prompt="What were Vinamilk's consolidated net revenue and profit after tax in 2024?">2024 Revenue &amp; Profit</button>
+            <button type="button" class="quick-chip" data-prompt="Summarize Vinamilk's Net Zero 2050 targets and ESG commitments in recent reports.">Net Zero &amp; ESG Strategy</button>
+            <button type="button" class="quick-chip" data-prompt="What is the breakdown of Vinamilk's current and non-current assets as of December 31, 2024?">Asset Composition 2024</button>
+            <button type="button" class="quick-chip" data-prompt="What cash dividends did Vinamilk distribute or approve for fiscal year 2024?">2024 Cash Dividends</button>
+          </div>
+          <div class="ask-controls">
+            <span id="question-hint">Use precise questions for exact passage retrieval and primary source citations.</span>
+            <div class="ask-actions">
+              <label class="retrieval-picker" for="retrieval-method">
+                Strategy:
+                <select id="retrieval-method" name="retrieval_method">
+                  <option value="hybrid" selected>Hybrid (Dense + BM25)</option>
+                  <option value="dense">Dense (Vector Embeddings)</option>
+                  <option value="bm25">BM25 (Full-text Keyword)</option>
+                  <option value="parent">Parent Context (Extended)</option>
+                </select>
+              </label>
+              <button id="ask-button" type="submit" class="submit-query-btn">
+                <span>Ask documents</span>
+              </button>
+            </div>
+          </div>
         </form>
-        <div id="business-answer-panel" class="answer-panel" hidden aria-live="polite"></div>
+        <div id="answer-panel" class="answer-panel" hidden aria-live="polite"></div>
       </section>
-      <section class="analysis-section" aria-labelledby="operations-title">
-        <div class="analysis-section-heading"><div><p class="eyebrow">EVIDENCE COVERAGE</p><h3 id="operations-title">Knowledge base supporting the analysis</h3></div><span id="analysis-coverage-note"></span></div>
-        <div class="analytics-grid">
-          <article class="analytics-card"><h4>Documents by business domain</h4><div id="domain-chart" class="domain-chart"></div></article>
-          <article class="analytics-card"><h4>Reports by year and processing status</h4><div id="processing-chart" class="domain-chart"></div></article>
-          <article class="analytics-card"><h4>Indexed passage quality</h4><div id="quality-chart" class="quality-chart"></div></article>
+
+      <section class="corpus-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">PRIMARY SOURCE LIBRARY</p>
+            <h2>Vinamilk verified documents</h2>
+          </div>
+          <span id="source-count" class="source-count"></span>
+        </div>
+        <div id="company-grid" class="company-grid">
+          <div class="loading-card">Loading verified company records…</div>
         </div>
       </section>
-    </section>
+      <p class="corpus-note">This demo operates on public Vinamilk disclosure documents (Annual Reports, Financial Statements, ESG Reports). Always verify against original sources for business decisions.</p>
     </section>
 
+    <!-- TAB 2: ANALYTICS / BUSINESS ANALYSIS -->
+    <section id="tab-analytics" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-analytics" hidden>
+      <section id="analytics-section" class="analytics-section" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">EXECUTIVE DECISION SUPPORT</p>
+            <h2>Business Analysis &amp; KPI Dashboard</h2>
+          </div>
+          <div class="analytics-tools">
+            <label>Company:
+              <select id="analytics-company">
+                <option value="">All companies</option>
+              </select>
+            </label>
+            <label>Fiscal Year:
+              <select id="analytics-year">
+                <option value="">All years</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div id="analysis-summary" class="analysis-summary" aria-label="Analysis coverage"></div>
+
+        <section class="analysis-section" aria-labelledby="financial-title">
+          <div class="analysis-section-heading">
+            <div>
+              <p class="eyebrow">VERIFIED FINANCIAL PERFORMANCE</p>
+              <h3 id="financial-title">Financial Results &amp; Year-over-Year Variance</h3>
+            </div>
+            <span class="badge-verified-only">Admin verified only</span>
+          </div>
+          <div id="financial-kpis" class="financial-kpis"></div>
+          <div id="financial-insights" class="financial-insights" aria-live="polite"></div>
+          <div id="financial-trends" class="financial-trends"></div>
+        </section>
+
+        <section class="analysis-section" aria-labelledby="business-question-title">
+          <div class="analysis-section-heading">
+            <div>
+              <p class="eyebrow">DOCUMENT-GROUNDED SYNTHESIS</p>
+              <h3 id="business-question-title">Ask an analytical business question</h3>
+            </div>
+            <span>Answers synthesize role-authorized documents; filters above apply to metrics and charts.</span>
+          </div>
+          <form id="business-question-form" class="business-question-form">
+            <label class="visually-hidden" for="business-question">Analytical question</label>
+            <textarea id="business-question" minlength="3" maxlength="1000" required placeholder="Example: Summarize Vinamilk's 2024 revenue growth drivers and domestic vs export performance."></textarea>
+            <button id="business-question-button" type="submit" class="submit-query-btn">
+              <span>Analyze sources</span>
+            </button>
+          </form>
+          <div id="business-answer-panel" class="answer-panel" hidden aria-live="polite"></div>
+        </section>
+
+        <section class="analysis-section" aria-labelledby="operations-title">
+          <div class="analysis-section-heading">
+            <div>
+              <p class="eyebrow">EVIDENCE BASE COVERAGE</p>
+              <h3 id="operations-title">Knowledge base supporting the analysis</h3>
+            </div>
+            <span id="analysis-coverage-note"></span>
+          </div>
+          <div class="analytics-grid">
+            <article class="analytics-card">
+              <h4>Documents by business domain</h4>
+              <div id="domain-chart" class="domain-chart"></div>
+            </article>
+            <article class="analytics-card">
+              <h4>Reports by fiscal year &amp; processing status</h4>
+              <div id="processing-chart" class="domain-chart"></div>
+            </article>
+            <article class="analytics-card">
+              <h4>Indexed passage quality</h4>
+              <div id="quality-chart" class="quality-chart"></div>
+            </article>
+          </div>
+        </section>
+      </section>
+    </section>
+
+    <!-- TAB 3: PROCESSING / PARSING & OCR -->
     <section id="tab-processing" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-processing" hidden>
-    <section id="upload-section" class="upload-section" hidden>
-      <div class="section-heading"><div><p class="eyebrow">DOCUMENT PROCESSING</p><h2>Upload and classify a document</h2></div></div>
-      <form id="upload-form" class="upload-form">
-        <label for="upload-file">Document</label><input id="upload-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff" required>
-        <label for="upload-title">Document title</label><input id="upload-title" name="title" required maxlength="200">
-        <label for="upload-type">Document type</label><input id="upload-type" name="document_type" required maxlength="80" placeholder="annual_report">
-        <label for="upload-domain">Domain</label><input id="upload-domain" name="domain" required maxlength="80" placeholder="finance_and_operations">
-        <label for="upload-year">Fiscal year</label><input id="upload-year" name="fiscal_year" type="number" min="1900" max="2100">
-        <fieldset><legend>Roles that may retrieve this document</legend>
-          <div id="upload-role-options" class="upload-role-options"></div>
-        </fieldset>
-        <button id="upload-button" type="submit">Upload to secure storage</button>
-        <p id="upload-status" class="corpus-note" aria-live="polite"></p>
-      </form>
-    </section>
-    <section id="parsed-chunk-inspector" class="candidate-review" hidden>
-      <div class="section-heading"><div><p class="eyebrow">OCR / LAYOUT OUTPUT</p><h2>Inspect parsed document chunks</h2></div></div>
-      <p>Review persisted parser output before embedding. Each passage retains its page, section and extraction metadata.</p>
-      <form id="parsed-chunk-form" class="review-form">
-        <label for="parsed-document">Uploaded document</label><select id="parsed-document" required></select>
-        <label for="parsed-offset">Start at passage</label><input id="parsed-offset" type="number" min="0" value="0">
-        <button type="submit">Load parsed passages</button>
-      </form>
-      <div id="parsed-chunk-list"></div>
-    </section>
-    <section id="candidate-review" class="candidate-review" hidden><div class="section-heading"><div><p class="eyebrow">ADMIN REVIEW</p><h2>Metric evidence awaiting approval</h2></div></div><p>Confirm each value and unit against its cited source page before publishing it to Business analysis.</p><div id="candidate-list"></div></section>
+      <section id="upload-section" class="upload-section" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">CORPUS MANAGEMENT</p>
+            <h2>Upload &amp; Classify Enterprise Document</h2>
+          </div>
+        </div>
+        <form id="upload-form" class="upload-form">
+          <label for="upload-file">Document file</label>
+          <input id="upload-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff" required>
+
+          <label for="upload-title">Document title</label>
+          <input id="upload-title" name="title" required maxlength="200" placeholder="e.g. Annual Report 2024">
+
+          <label for="upload-type">Document type</label>
+          <input id="upload-type" name="document_type" required maxlength="80" placeholder="annual_report">
+
+          <label for="upload-domain">Domain</label>
+          <input id="upload-domain" name="domain" required maxlength="80" placeholder="finance_and_operations">
+
+          <label for="upload-year">Fiscal year</label>
+          <input id="upload-year" name="fiscal_year" type="number" min="1900" max="2100" placeholder="2024">
+
+          <fieldset>
+            <legend>Roles authorized to retrieve this document</legend>
+            <div id="upload-role-options" class="upload-role-options"></div>
+          </fieldset>
+          <button id="upload-button" type="submit" class="primary-button">Upload &amp; Process Document</button>
+          <p id="upload-status" class="corpus-note" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section id="parsed-chunk-inspector" class="candidate-review" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">PARSER &amp; OCR OUTPUT</p>
+            <h2>Inspect parsed document passages</h2>
+          </div>
+        </div>
+        <p>Review persisted parser chunks, OCR layout, and structured tables before vector embeddings.</p>
+        <form id="parsed-chunk-form" class="review-form">
+          <label for="parsed-document">Uploaded document</label>
+          <select id="parsed-document" required></select>
+          <label for="parsed-offset">Start at passage</label>
+          <input id="parsed-offset" type="number" min="0" value="0">
+          <button type="submit" class="secondary-button">Load parsed passages</button>
+        </form>
+        <div id="parsed-chunk-list"></div>
+        <h3 class="subheading-margin">Extracted structured tables</h3>
+        <div id="parsed-table-list"></div>
+      </section>
+
+      <section id="candidate-review" class="candidate-review" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">ADMINISTRATIVE REVIEW</p>
+            <h2>Financial metric evidence awaiting verification</h2>
+          </div>
+        </div>
+        <p>Verify numeric values and reporting units against the cited source page before publishing to the Business Analysis dashboard.</p>
+        <div id="candidate-list"></div>
+      </section>
     </section>
 
-    <section id="tab-knowledge" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-knowledge">
-    <section class="ask-panel" aria-labelledby="ask-title">
-      <div class="ask-heading"><div><p class="eyebrow">DOCUMENT QUESTION ANSWERING</p><h2 id="ask-title">What would you like to know?</h2></div><span class="grounded-badge">Answers cite sources</span></div>
-      <form id="ask-form">
-        <label class="visually-hidden" for="question">Ask a question about Vinamilk documents</label>
-        <textarea id="question" minlength="3" maxlength="1000" required placeholder="For example: What were Vinamilk's consolidated revenue and after-tax profit in 2024?"></textarea>
-        <div class="ask-controls"><span id="question-hint">Use a specific question for the clearest source-backed answer.</span><label class="retrieval-picker" for="retrieval-method">Retrieval<select id="retrieval-method" name="retrieval_method"><option value="hybrid" selected>Hybrid</option><option value="dense">Dense</option><option value="bm25">BM25</option><option value="parent">Parent context</option></select></label><button id="ask-button" type="submit">Ask the documents <span aria-hidden="true">↗</span></button></div>
-      </form>
-      <div id="answer-panel" class="answer-panel" hidden aria-live="polite"></div>
-    </section>
-
-    <section class="corpus-section">
-      <div class="section-heading"><div><p class="eyebrow">SOURCE LIBRARY</p><h2>Vinamilk documents</h2></div><span id="source-count" class="source-count"></span></div>
-      <div id="company-grid" class="company-grid"><div class="loading-card">Loading verified company records…</div></div>
-    </section>
-    <p class="corpus-note">This demo uses public Vinamilk documents. It does not contain private internal company records. Always consult the linked original before making business decisions.</p>
-    </section>
-
+    <!-- TAB 4: ACCESS / RBAC -->
     <section id="tab-access" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-access" hidden>
-    <section id="admin-section" class="admin-section" hidden>
-      <div class="section-heading"><div><p class="eyebrow">ACCESS CONTROL</p><h2>Role permissions</h2></div></div>
-      <div id="access-matrix" class="access-matrix"></div>
-    </section>
+      <section id="admin-section" class="admin-section" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">ROLE-BASED ACCESS CONTROL (RBAC)</p>
+            <h2>Role permissions matrix</h2>
+          </div>
+        </div>
+        <div id="access-matrix" class="access-matrix"></div>
+      </section>
     </section>
 
+    <!-- TAB 5: MONITORING / AGENT RUNS -->
     <section id="tab-monitoring" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-monitoring" hidden>
       <section id="monitoring-section" class="monitoring-section" hidden>
-        <div class="section-heading"><div><p class="eyebrow">LIVE SYSTEM OPERATIONS</p><h2>Agent monitoring</h2><p class="monitoring-note">Privacy-minimized runs from the last 24 hours. Questions and answer content are not stored.</p></div><button id="monitoring-refresh" class="secondary-button" type="button">Refresh</button></div>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">REAL-TIME SYSTEM OPERATIONS</p>
+            <h2>Agent Performance &amp; Latency Monitoring</h2>
+            <p class="monitoring-note">Telemetry from the last 24 hours. Privacy preserved: user questions and generated text are not recorded.</p>
+          </div>
+          <button id="monitoring-refresh" class="secondary-button" type="button">
+            <span>Refresh</span>
+          </button>
+        </div>
         <div id="monitoring-summary" class="monitoring-summary" aria-live="polite"></div>
-        <section class="analysis-section"><div class="analysis-section-heading"><div><p class="eyebrow">ROUTED WORKLOAD</p><h3>Runs by agent</h3></div></div><div id="monitoring-agents" class="monitoring-agents"></div></section>
-        <section class="analysis-section"><div class="analysis-section-heading"><div><p class="eyebrow">RECENT EXECUTIONS</p><h3>Last 100 runs</h3></div></div><div id="monitoring-runs" class="monitoring-runs" aria-live="polite"></div></section>
+        <section class="analysis-section">
+          <div class="analysis-section-heading">
+            <div>
+              <p class="eyebrow">ROUTED WORKLOAD</p>
+              <h3>Executions by Agent</h3>
+            </div>
+          </div>
+          <div id="monitoring-agents" class="monitoring-agents"></div>
+        </section>
+        <section class="analysis-section">
+          <div class="analysis-section-heading">
+            <div>
+              <p class="eyebrow">RECENT EXECUTIONS</p>
+              <h3>Last 100 Runs</h3>
+            </div>
+          </div>
+          <div id="monitoring-runs" class="monitoring-runs" aria-live="polite"></div>
+        </section>
       </section>
     </section>
   </main>
-  <script src="/static/app.js?v=number-format-en-us-1" defer></script>
+  <script src="/static/app.js?v=enterprise-dashboard-financial-format-6" defer></script>
 </body>
 </html>

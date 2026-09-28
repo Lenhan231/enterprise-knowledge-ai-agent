@@ -49,6 +49,9 @@ class GroqProvider(LLMInterface):
             )
 
         return answer
+
+    def close(self) -> None:
+        self.client.close()
     
     # def generate_json(
     #     self,

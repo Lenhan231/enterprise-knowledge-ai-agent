@@ -9,6 +9,7 @@ from unittest.mock import Mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from evaluate_document_extraction import (
     anchor_present,
+    compact_result,
     evaluate_table_strategies,
     native_single_page_pdf,
     normalized_anchor_present,
@@ -20,6 +21,24 @@ from evaluate_document_extraction import (
 
 
 class DocumentExtractionEvaluationTest(unittest.TestCase):
+    def test_compact_result_keeps_scores_but_drops_raw_parser_dumps(self):
+        result = {
+            "file_sha256": "abc",
+            "conditions": [{
+                "condition": "born_digital_pdf",
+                "text_anchor_recall": 1.0,
+                "extracted_page_text": "large text dump",
+                "extracted_tables": [{"rows": ["large table dump"]}],
+            }],
+        }
+
+        compact = compact_result(result)
+
+        self.assertEqual(compact["file_sha256"], "abc")
+        self.assertEqual(compact["conditions"][0]["text_anchor_recall"], 1.0)
+        self.assertNotIn("extracted_page_text", compact["conditions"][0])
+        self.assertNotIn("extracted_tables", compact["conditions"][0])
+
     def test_table_strategy_sweep_scores_same_manual_fields_and_records_shapes(self):
         table = SimpleNamespace(
             row_count=1,

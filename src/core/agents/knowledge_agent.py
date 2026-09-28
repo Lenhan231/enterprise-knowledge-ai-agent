@@ -27,11 +27,13 @@ class KnowledgeAgent(BaseAgent):
         self,
         request: AgentRequest,
     ) -> AgentResult:
-
+        role = request.metadata.get("role")
+        if not isinstance(role, str) or not role:
+            raise ValueError("Knowledge retrieval requires a trusted authenticated role")
         rag_options = {
             "limit": 10,
             "company": request.metadata.get("company"),
-            "roles": [request.metadata["role"]] if request.metadata.get("role") else None,
+            "roles": [role],
         }
         if request.metadata.get("retrieval_method", "hybrid") != "hybrid":
             rag_options["retrieval_method"] = request.metadata["retrieval_method"]

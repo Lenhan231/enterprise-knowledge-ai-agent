@@ -12,8 +12,8 @@
         "VNM-AR-2020-VI"
       ],
       "relevant_chunk_ids": [
-        "VNM-AR-2020-VI::chunk::1",
-        "VNM-AR-2020-VI::chunk::14"
+        "VNM-AR-2020-VI::chunk::224",
+        "VNM-AR-2020-VI::chunk::225"
       ]
     },
     {
@@ -27,8 +27,8 @@
         "VNM-AR-2021-VI"
       ],
       "relevant_chunk_ids": [
-        "VNM-AR-2021-VI::chunk::2",
-        "VNM-AR-2021-VI::chunk::21"
+        "VNM-AR-2021-VI::chunk::256",
+        "VNM-AR-2021-VI::chunk::257"
       ]
     },
     {
@@ -42,8 +42,8 @@
         "VNM-AR-2022-VI"
       ],
       "relevant_chunk_ids": [
-        "VNM-AR-2022-VI::chunk::31",
-        "VNM-AR-2022-VI::chunk::32"
+        "VNM-AR-2022-VI::chunk::239",
+        "VNM-AR-2022-VI::chunk::240"
       ]
     },
     {
@@ -58,8 +58,7 @@
       ],
       "relevant_chunk_ids": [
         "VNM-AR-2023-EN::chunk::262",
-        "VNM-AR-2023-EN::chunk::263",
-        "VNM-AR-2023-EN::chunk::264"
+        "VNM-AR-2023-EN::chunk::263"
       ]
     },
     {
@@ -143,25 +142,43 @@
       "id": "governance-charter-effective-date-2026",
       "question": "When did Vinamilk's current Company Charter enter into force?",
       "role": "legal_compliance",
-      "allowed_roles": ["legal_compliance"],
-      "relevant_document_ids": ["VNM-CHARTER-2026-EN"],
-      "relevant_chunk_ids": ["VNM-CHARTER-2026-EN::chunk::128"]
+      "allowed_roles": [
+        "legal_compliance"
+      ],
+      "relevant_document_ids": [
+        "VNM-CHARTER-2026-EN"
+      ],
+      "relevant_chunk_ids": [
+        "VNM-CHARTER-2026-EN::chunk::128"
+      ]
     },
     {
       "id": "governance-code-conflicts-of-interest",
       "question": "What does Vinamilk's Code of Conduct say about employees' conflicts of interest?",
       "role": "legal_compliance",
-      "allowed_roles": ["legal_compliance"],
-      "relevant_document_ids": ["VNM-CODE-2025-EN"],
-      "relevant_chunk_ids": ["VNM-CODE-2025-EN::chunk::50"]
+      "allowed_roles": [
+        "legal_compliance"
+      ],
+      "relevant_document_ids": [
+        "VNM-CODE-2025-EN"
+      ],
+      "relevant_chunk_ids": [
+        "VNM-CODE-2025-EN::chunk::50"
+      ]
     },
     {
       "id": "governance-disclosure-full-year-report-deadline",
       "question": "When is Vinamilk's full-year corporate governance report due for disclosure?",
       "role": "legal_compliance",
-      "allowed_roles": ["legal_compliance"],
-      "relevant_document_ids": ["VNM-DISCLOSURE-2025-EN"],
-      "relevant_chunk_ids": ["VNM-DISCLOSURE-2025-EN::chunk::27"]
+      "allowed_roles": [
+        "legal_compliance"
+      ],
+      "relevant_document_ids": [
+        "VNM-DISCLOSURE-2025-EN"
+      ],
+      "relevant_chunk_ids": [
+        "VNM-DISCLOSURE-2025-EN::chunk::27"
+      ]
     }
   ],
   "passage_judgment_basis": "Pooled top-result chunks and source pages were manually reviewed to label selected passages that directly answer each question. IDs use document_id::chunk::chunk_index from the ready corpus snapshot on 2026-09-27; the pool is not exhaustive and labels must be reviewed after re-ingestion or re-chunking."

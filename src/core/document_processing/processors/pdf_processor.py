@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 _HEADING_PATTERNS = {
     "chapter": re.compile(r"^chapter\s*(?:[ivxlcdm]+|\d+)", re.IGNORECASE),
     "article": re.compile(r"^article\s*\d+(?:\.\d+)*", re.IGNORECASE),
-    "subsection": re.compile(r"^\([a-z0-9ivx]+\)\s+\S", re.IGNORECASE),
+    "subsection": re.compile(r"^(?:\d+(?:\.\d+)+|\([a-z0-9ivx]+\))\s+\S", re.IGNORECASE),
 }
 
 
@@ -71,6 +71,10 @@ class PDFProcessor:
         }
         self.config.setdefault("extract_tables", True)
         self.config.setdefault("paddle_layout", True)
+        self.config.setdefault("paddle_formula_recognition", False)
+        self.config.setdefault("tesseract_psm", 11)
+        self.config.setdefault("tesseract_table_psm", 3)
+        self.config.setdefault("ocr_render_scale", 1.5)
 
         # Initialize OCR if needed
         if self.config.get("ocr_fallback", False):
@@ -195,15 +199,16 @@ class PDFProcessor:
             use_doc_orientation_classify=False,
             use_doc_unwarping=False,
             use_textline_orientation=False,
-            use_formula_recognition=False,
-            use_chart_recognition=False,
+            use_formula_recognition=bool(self.config["paddle_formula_recognition"]),
+            use_chart_recognition=True,
             use_seal_recognition=False,
         )
         tables: List[Dict[str, Any]] = []
         page_blocks: List[Dict[str, Any]] = []
         try:
             for page_number, page in enumerate(pdf_document, start=1):
-                pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5), alpha=False)
+                render_scale = self.config["ocr_render_scale"]
+                pix = page.get_pixmap(matrix=fitz.Matrix(render_scale, render_scale), alpha=False)
                 import numpy as np
 
                 image = np.frombuffer(pix.samples, dtype=np.uint8).reshape(
@@ -240,7 +245,7 @@ class PDFProcessor:
                                     "layout_type": "table",
                                     "bbox": bbox,
                                     "bbox_coordinate_system": "rendered_page_pixel",
-                                    "render_scale": 1.5,
+                                    "render_scale": render_scale,
                                     "parser": "paddleocr.PP-StructureV3",
                                     "layout_model": "PP-DocLayout-S",
                                     "table_model": "PP-TableStructureV3",
@@ -287,20 +292,27 @@ class PDFProcessor:
                         element_type = "figure_caption"
                     elif label == "table_title":
                         element_type = "table_caption"
+                    elif label == "formula":
+                        element_type = "formula"
                     elif label in ("image", "figure", "chart"):
-                        continue
+                        element_type = label
                     else:
                         element_type = "paragraph"
-                    page_blocks.append(
-                        {
-                            "page_number": page_number,
-                            "type": element_type,
-                            "text": text,
-                            "bbox": bbox,
-                            "section_path": [],
-                            "heading_kind": heading_kind,
-                        }
-                    )
+                    block_metadata = {
+                        "page_number": page_number,
+                        "type": element_type,
+                        "text": text,
+                        "bbox": bbox,
+                        "section_path": [],
+                        "heading_kind": heading_kind,
+                    }
+                    if label in ("image", "figure", "chart"):
+                        block_metadata["visual_content_extracted"] = True
+                        block_metadata["source_layout_label"] = label
+                    elif label == "formula":
+                        block_metadata["contains_formula"] = True
+                        block_metadata["formula_representation"] = "latex"
+                    page_blocks.append(block_metadata)
         finally:
             pdf_document.close()
 
@@ -361,11 +373,19 @@ class PDFProcessor:
                         "layout_type": element_type,
                         "bbox": bbox,
                         "bbox_coordinate_system": "rendered_page_pixel",
-                        "render_scale": 1.5,
+                                    "render_scale": render_scale,
                         "parser": "paddleocr.PP-StructureV3",
                         "layout_model": "PP-DocLayout-S",
                         "ocr_model": "PP-OCRv5_mobile",
                         "chunking_method": self.config.get("chunking_strategy", "fixed"),
+                        **({
+                            "contains_formula": True,
+                            "formula_representation": "latex",
+                        } if element_type == "formula" else {}),
+                        **({
+                            "visual_content_extracted": True,
+                            "source_layout_label": blocks[0]["source_layout_label"],
+                        } if element_type in {"image", "figure", "chart"} else {}),
                     }
                 )
                 chunk["metadata"]["chunk_index"] = len(chunks)
@@ -464,22 +484,32 @@ class PDFProcessor:
                     and self.config.get("ocr_fallback", False)
                     and self._needs_ocr(page, native_text)
                 ):
-                    ocr_text = self._ocr_page(page).strip()
+                    ocr_pixmap = page.get_pixmap(
+                        matrix=fitz.Matrix(self.config["ocr_render_scale"], self.config["ocr_render_scale"]),
+                        alpha=False,
+                    )
+                    ocr_text = self._ocr_page(page, ocr_pixmap).strip()
                     if ocr_text:
                         if self.config.get("extract_tables", False) and self._looks_like_numeric_table(ocr_text):
-                            ocr_table_words[page_num + 1] = self._ocr_page_words(page)
+                            ocr_table_words[page_num + 1] = self._ocr_page_words(page, ocr_pixmap)
                         if len(native_text) < 50:
                             page_text = ocr_text
                             ocr_pages[page_num + 1] = "tesseract"
                         else:
                             page_text = f"{page_text}\n{ocr_text}"
                             ocr_pages[page_num + 1] = "pymupdf+tesseract"
+                        ocr_headings = self._extract_ocr_page_headings(ocr_text)
+                        if ocr_headings:
+                            page_headings[page_num + 1] = [
+                                *page_headings.get(page_num + 1, []), *ocr_headings,
+                            ]
 
                 extracted_text.append(f"\n--- Page {page_num + 1} ---\n{page_text}")
 
                 if self.config.get("extract_tables", False):
                     tables.extend(self._extract_page_tables(
                         page, page_num + 1, ocr_table_words.get(page_num + 1),
+                        ocr_metadata=self._ocr_table_metadata(),
                     ))
 
                 if self.config.get("extract_images", False) and file_path:
@@ -527,6 +557,19 @@ class PDFProcessor:
         return headings
 
     @staticmethod
+    def _extract_ocr_page_headings(text: str) -> List[str]:
+        """Recover only explicitly numbered structural headings from OCR text."""
+        headings = []
+        for line in text.splitlines():
+            line = " ".join(line.split()).strip(" .\t")
+            if not line or len(line) > 140:
+                continue
+            if any(pattern.match(line) for pattern in _HEADING_PATTERNS.values()):
+                if line not in headings:
+                    headings.append(line)
+        return headings
+
+    @staticmethod
     def _needs_ocr(page, native_text: str) -> bool:
         """OCR sparse pages and mixed pages dominated by a large raster image."""
         if len(native_text) < 50:
@@ -549,8 +592,18 @@ class PDFProcessor:
         )
         return likely_rows >= 3
 
+    def _ocr_table_metadata(self) -> Dict[str, Any]:
+        return {
+            "engine": "tesseract",
+            "language": self.config.get("ocr_language", "vie+eng"),
+            "table_psm": self.config["tesseract_table_psm"],
+            "render_scale": self.config["ocr_render_scale"],
+        }
+
     @staticmethod
-    def _extract_page_tables(page, page_number: int, ocr_words=None) -> List[Dict[str, Any]]:
+    def _extract_page_tables(
+        page, page_number: int, ocr_words=None, ocr_metadata=None,
+    ) -> List[Dict[str, Any]]:
         """Return detected page tables as column names and row dictionaries."""
         try:
             found_tables = page.find_tables().tables
@@ -625,12 +678,14 @@ class PDFProcessor:
                         )
         if not extracted and ocr_words:
             extracted = PDFProcessor._tables_from_aligned_words(
-                ocr_words, page.rect, page_number,
+                ocr_words, page.rect, page_number, ocr_metadata=ocr_metadata,
             )
         return extracted
 
     @staticmethod
-    def _tables_from_aligned_words(words, page_rect, page_number: int) -> List[Dict[str, Any]]:
+    def _tables_from_aligned_words(
+        words, page_rect, page_number: int, ocr_metadata=None,
+    ) -> List[Dict[str, Any]]:
         """Build borderless scanned tables from OCR word boxes and repeated values."""
         def is_number(value: str) -> bool:
             value = str(value or "").strip().replace("−", "-")
@@ -657,16 +712,25 @@ class PDFProcessor:
         if len(candidates) < 3:
             return []
 
-        edges = sorted(word[2] for _, _, numeric in candidates for word in numeric)
-        edge_clusters = []
-        for edge in edges:
-            if not edge_clusters or edge - edge_clusters[-1][-1] > 15:
-                edge_clusters.append([edge])
-            else:
-                edge_clusters[-1].append(edge)
-        columns = [sum(cluster) / len(cluster) for cluster in edge_clusters if len(cluster) >= 3]
-        if len(columns) < 2:
+        alignments = []
+        for edge_index in (0, 2):
+            edges = sorted(word[edge_index] for _, _, numeric in candidates for word in numeric)
+            edge_clusters = []
+            for edge in edges:
+                if not edge_clusters or edge - edge_clusters[-1][-1] > 15:
+                    edge_clusters.append([edge])
+                else:
+                    edge_clusters[-1].append(edge)
+            supported = [cluster for cluster in edge_clusters if len(cluster) >= 3]
+            if len(supported) >= 2:
+                spread = sum(cluster[-1] - cluster[0] for cluster in supported)
+                alignments.append((
+                    sum(map(len, supported)), -spread, edge_index,
+                    [sum(cluster) / len(cluster) for cluster in supported],
+                ))
+        if not alignments:
             return []
+        _, _, alignment_edge, columns = max(alignments)
         gaps = [right - left for left, right in zip(columns, columns[1:])]
         typical_gap = statistics.median(gaps) if gaps else 0
         split_gap = max(page_rect.width * 0.15, typical_gap * 2.5)
@@ -687,8 +751,8 @@ class PDFProcessor:
             for center_y, row, numeric in candidates:
                 aligned = []
                 for edge in column_group:
-                    match = min(numeric, key=lambda word: abs(word[2] - edge))
-                    aligned.append(match if abs(match[2] - edge) <= 18 else None)
+                    match = min(numeric, key=lambda word: abs(word[alignment_edge] - edge))
+                    aligned.append(match if abs(match[alignment_edge] - edge) <= 18 else None)
                 if sum(word is not None for word in aligned) < 2:
                     continue
                 first_value = next(word for word in aligned if word is not None)
@@ -719,6 +783,8 @@ class PDFProcessor:
                     "layout_type": "table",
                     "table_extraction_method": "tesseract.tsv_aligned_columns",
                     "table_detection_strategy": "ocr_word_boxes",
+                    **({"ocr": ocr_metadata} if ocr_metadata else {}),
+                    "column_alignment": "left" if alignment_edge == 0 else "right",
                     "bbox": (
                         min(word[0] for word in row_boxes),
                         min(word[1] for word in row_boxes),
@@ -835,7 +901,7 @@ class PDFProcessor:
             })
         return result
 
-    def _ocr_page(self, page) -> str:
+    def _ocr_page(self, page, pixmap=None) -> str:
         """
         Perform OCR on a PDF page.
 
@@ -849,28 +915,36 @@ class PDFProcessor:
             return ""
 
         try:
-            pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5), alpha=False)
+            if pixmap is None:
+                render_scale = self.config["ocr_render_scale"]
+                pixmap = page.get_pixmap(
+                    matrix=fitz.Matrix(render_scale, render_scale), alpha=False,
+                )
             return subprocess.run(
-                ["tesseract", "stdin", "stdout", "-l", self.config.get("ocr_language", "vie+eng"), "--psm", "3"],
-                input=pix.tobytes("png"), capture_output=True, check=True, timeout=90,
+                ["tesseract", "stdin", "stdout", "-l", self.config.get("ocr_language", "vie+eng"), "--psm", str(self.config["tesseract_psm"])],
+                input=pixmap.tobytes("png"), capture_output=True, check=True, timeout=90,
             ).stdout.decode("utf-8", errors="replace").strip()
         except (OSError, subprocess.SubprocessError) as e:
             logger.error("OCR error: %s", str(e))
             return ""
 
-    def _ocr_page_words(self, page) -> List[Tuple[float, float, float, float, str, int, int, int]]:
+    def _ocr_page_words(self, page, pixmap=None) -> List[Tuple[float, float, float, float, str, int, int, int]]:
         """Return Tesseract word boxes in PDF points for scanned-table layout."""
         if not self.ocr_available:
             return []
-        pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5), alpha=False)
+        if pixmap is None:
+            render_scale = self.config["ocr_render_scale"]
+            pixmap = page.get_pixmap(
+                matrix=fitz.Matrix(render_scale, render_scale), alpha=False,
+            )
         try:
             output = subprocess.run(
-                ["tesseract", "stdin", "stdout", "-l", self.config.get("ocr_language", "vie+eng"), "--psm", "3", "tsv"],
-                input=pix.tobytes("png"), capture_output=True,
+                ["tesseract", "stdin", "stdout", "-l", self.config.get("ocr_language", "vie+eng"), "--psm", str(self.config["tesseract_table_psm"]), "tsv"],
+                input=pixmap.tobytes("png"), capture_output=True,
                 check=True, timeout=90,
             ).stdout.decode("utf-8", errors="replace")
-            scale_x = pix.width / page.rect.width
-            scale_y = pix.height / page.rect.height
+            scale_x = pixmap.width / page.rect.width
+            scale_y = pixmap.height / page.rect.height
             words = []
             for row in csv.DictReader(output.splitlines(), delimiter="\t"):
                 if row.get("level") != "5" or not row.get("text", "").strip():

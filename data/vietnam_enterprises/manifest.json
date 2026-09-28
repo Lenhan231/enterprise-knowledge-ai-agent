@@ -818,6 +818,7 @@
         "policy_profile": "governance_restricted",
         "classification": "confidential",
         "allowed_roles": [
+          "employee",
           "legal_compliance",
           "executive",
           "admin"
@@ -987,6 +988,41 @@
         "enforce_at_retrieval": true,
         "inherit_to_chunks": true,
         "note": "Vinamilk source is publicly available; this restriction is synthetic and exists only to test enterprise RBAC."
+      }
+    },
+    {
+      "document_id": "VNM-POL-RETURNS-2026-VI",
+      "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+      "ticker": "VNM",
+      "domain": "customer_service",
+      "title": "Chính sách Đổi trả và Hoàn tiền Cửa hàng Vinamilk",
+      "year_or_version": "2026-01-08",
+      "format": "HTML",
+      "ingestion_format": "HTML",
+      "document_type": "customer_service_policy",
+      "fiscal_year": null,
+      "language": "vi",
+      "official_url": "https://new.vinamilk.com.vn/support/return-refund-store",
+      "verification": "Official Vinamilk Shop support page; page states it was updated on 2026-01-08.",
+      "rag_value": "Customer-facing return and refund scope, eligibility conditions, timing, and support contact for Vinamilk stores.",
+      "rbac": {
+        "mode": "synthetic_demo",
+        "source_visibility": "public",
+        "policy_profile": "public_customer_service",
+        "classification": "public",
+        "allowed_roles": [
+          "employee",
+          "finance_analyst",
+          "sustainability_analyst",
+          "procurement",
+          "operations",
+          "legal_compliance",
+          "executive",
+          "admin"
+        ],
+        "enforce_at_retrieval": true,
+        "inherit_to_chunks": true,
+        "note": "Vinamilk source is publicly available; this access assignment is a synthetic demo control, not Vinamilk's internal permission policy."
       }
     }
   ]

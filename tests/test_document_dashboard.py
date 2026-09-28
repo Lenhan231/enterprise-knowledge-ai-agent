@@ -6,11 +6,29 @@ from unittest.mock import MagicMock, Mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.database.document_repository import DocumentRepository
-from core.agents.dashboard_agent import DashboardAgent
-from core.models.agents import AgentRequest
+from core.agents.dashboard_agent import DashboardAgent, _financial_time_series
+from core.models.agents import AgentRequest, AgentResult, Evidence
 
 
 class DocumentDashboardTest(unittest.TestCase):
+    def test_uploaded_source_lookup_requires_ready_upload_in_company_scope(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        cursor.fetchone.return_value = {
+            "title": "Annual report", "format": "PDF", "storage_path": "UPLOAD-1/report.pdf",
+        }
+
+        result = repository.uploaded_source("UPLOAD-1", "Vinamilk")
+
+        self.assertEqual(result["storage_path"], "UPLOAD-1/report.pdf")
+        query, params = cursor.execute.call_args.args
+        normalized = " ".join(query.lower().split())
+        self.assertIn("source_type = 'user_upload'", normalized)
+        self.assertIn("processing_status = 'ready'", normalized)
+        self.assertIn("storage_path is not null", normalized)
+        self.assertEqual(params, ("UPLOAD-1", "Vinamilk"))
+
     def test_manifest_upsert_persists_processing_status(self):
         repository = DocumentRepository.__new__(DocumentRepository)
         repository.conn = MagicMock()
@@ -84,6 +102,69 @@ class DocumentDashboardTest(unittest.TestCase):
         )
         self.assertEqual(result.data, {"documents": []})
 
+    def test_dashboard_agent_creates_only_source_backed_financial_time_series(self):
+        repository = Mock()
+        analytics = Mock()
+        analytics.run.return_value = AgentResult(
+            answer="Revenue by year [M1] [M2]", agent="analytics",
+            evidence=[Evidence(
+                citation_id="M1", source_type="verified_metric", source="FY2023 revenue",
+                metadata={"document_id": "AR23"},
+            ), Evidence(
+                citation_id="M2", source_type="verified_metric", source="FY2024 revenue",
+                metadata={"document_id": "AR24"},
+            )],
+            data={"financial": [
+                {"metric_name": "net_revenue", "metric_label": "Net revenue", "fiscal_year": 2023,
+                 "metric_value": "60322", "unit": "billion VND", "document_id": "AR23"},
+                {"metric_name": "net_revenue", "metric_label": "Net revenue", "fiscal_year": 2024,
+                 "metric_value": "61524", "unit": "billion VND", "document_id": "AR24"},
+            ]},
+        )
+        agent = DashboardAgent(repository, analytics)
+        request = AgentRequest(
+            question="Show a chart of revenue by year", user_id="analyst",
+            metadata={"role": "finance_analyst", "company": "Vinamilk"},
+        )
+
+        result = agent.run(request)
+
+        analytics.run.assert_called_once()
+        chart_request = analytics.run.call_args.args[0]
+        self.assertEqual(chart_request.metadata["role"], "finance_analyst")
+        self.assertEqual(chart_request.metadata["company"], "Vinamilk")
+        self.assertTrue(chart_request.metadata["dashboard_visualization"])
+        repository.corpus_dashboard.assert_not_called()
+        self.assertEqual(result.agent, "dashboard")
+        self.assertEqual(result.evidence[0].citation_id, "M1")
+        self.assertEqual(result.data["visualization"]["categories"], [2023, 2024])
+        self.assertEqual(result.data["visualization"]["series"][0]["values"], [60322.0, 61524.0])
+
+    def test_financial_chart_rejects_ambiguous_or_incomparable_rows(self):
+        base = {"metric_name": "net_revenue", "metric_label": "Net revenue", "unit": "billion VND"}
+        rows = [
+            {**base, "fiscal_year": 2023, "metric_value": 10},
+            {**base, "fiscal_year": 2024, "metric_value": 12},
+        ]
+        self.assertIsNotNone(_financial_time_series(rows, "Revenue trend"))
+        self.assertIsNone(_financial_time_series(rows + [rows[0]], "Revenue trend"))
+        self.assertIsNone(_financial_time_series([
+            rows[0], {**rows[1], "unit": "million VND"},
+        ], "Revenue trend"))
+        self.assertIsNone(_financial_time_series([
+            rows[0], {**rows[1], "metric_value": "1e9999"},
+        ], "Revenue trend"))
+
+    def test_dashboard_agent_requires_authenticated_role_before_querying(self):
+        analytics = Mock()
+        repository = Mock()
+        with self.assertRaisesRegex(ValueError, "authenticated role"):
+            DashboardAgent(repository, analytics).run(AgentRequest(
+                question="Show a chart of revenue by year",
+            ))
+        analytics.run.assert_not_called()
+        repository.corpus_dashboard.assert_not_called()
+
     def test_unreviewed_metric_candidates_are_only_returned_to_admins(self):
         candidate = {"id": 7, "status": "needs_review"}
         for role, expected_queries, candidates in (
@@ -104,6 +185,8 @@ class DocumentDashboardTest(unittest.TestCase):
                     candidate_query = cursor.execute.call_args_list[-1].args[0]
                     self.assertIn("FROM extracted_metric_candidates", candidate_query)
                     self.assertIn("text_extraction_method", candidate_query)
+                    self.assertIn("candidate.extraction_method", candidate_query)
+                    self.assertIn("candidate.selection_evidence", candidate_query)
                     self.assertIn("c.document_id", candidate_query)
                     self.assertIn("d.processing_status = 'ready'", candidate_query)
                     normalized = " ".join(candidate_query.lower().split())
@@ -143,6 +226,7 @@ class DocumentDashboardTest(unittest.TestCase):
             "page_number": 2,
             "source_quote": "Net revenue 60,479 billion VND",
             "source_quote_hash": "hash",
+            "unit": "billion VND",
         }]
 
         repository.save_metric_candidates("VNM-AR-2023-EN", rows)
@@ -151,6 +235,13 @@ class DocumentDashboardTest(unittest.TestCase):
         upsert = " ".join(cursor.executemany.call_args.args[0].lower().split())
         self.assertIn("on conflict", upsert)
         self.assertIn("created_at = now()", upsert)
+        self.assertIn("selection_evidence = excluded.selection_evidence", upsert)
+        self.assertEqual(upsert.count("unit = excluded.unit"), 1)
+        self.assertNotIn("unit = null", upsert)
+        candidate_values = cursor.executemany.call_args.args[1]
+        self.assertEqual(candidate_values[0][8], "billion VND")
+        self.assertEqual(candidate_values[0][9], "rule_based_page_evidence")
+        self.assertEqual(candidate_values[0][12].obj, {})
         self.assertIn("status in ('needs_review', 'superseded')", upsert)
         supersede, params = cursor.execute.call_args.args
         supersede = " ".join(supersede.lower().split())

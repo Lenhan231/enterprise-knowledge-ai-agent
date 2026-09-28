@@ -59,9 +59,7 @@ class AgentRouter:
         request = state["request"]
         intent = self.classifier.classify(request.question)
 
-        if self.report_agent and any(term in request.question.casefold() for term in (
-            "summarize", "summarise", "summary", "tóm tắt", "report", "tổng hợp", "báo cáo"
-        )):
+        if intent.intent == "report" and self.report_agent:
             destination = "report"
         elif intent.output_mode == "dashboard":
             destination = "dashboard"

@@ -9,10 +9,26 @@ import re
 from core.analytics.metric_ontology import METRIC_ONTOLOGY
 
 NUMBER = re.compile(r"(?<![\w.])(?:\(?\d[\d,.]*\)?)(?!\w)")
+PERIOD_HEADER = re.compile(
+    r"\b(20\d{2})\s+(?:(?:triệu|tỷ)\s+)?(?:vnd|đồng)\s+"
+    r"(20\d{2})\s+(?:(?:triệu|tỷ)\s+)?(?:vnd|đồng)\b",
+    re.IGNORECASE,
+)
 MAX_VALUE_DISTANCE = 80
 VALUE_CONNECTORS = {"năm"}
 ROW_QUALIFIERS = {"net", "consolidated", "total", "current", "gross"}
 NON_VALUE_ROW_TERMS = {"ratio", "margin", "turnover", "per share", "percentage", "%"}
+SEGMENT_SCOPE_TERMS = (
+    "thị trường nội địa", "thị trường nước ngoài", "domestic market", "overseas market",
+    "export market", "xuất khẩu",
+)
+UNIT_HINTS = (
+    ("million VND", re.compile(r"(?:million\s+vnd|vnd\s+million)", re.IGNORECASE)),
+    ("billion VND", re.compile(r"(?:billion\s+vnd|vnd\s+billion)", re.IGNORECASE)),
+    ("triệu VND", re.compile(r"(?:triệu\s+(?:vnd|đồng)|(?:vnd|đồng)\s+triệu)", re.IGNORECASE)),
+    ("tỷ đồng", re.compile(r"(?:tỷ\s+đồng|đồng\s+tỷ)", re.IGNORECASE)),
+    ("VND", re.compile(r"\bvnd\b", re.IGNORECASE)),
+)
 METRICS = {name: definition["source_labels"] for name, definition in METRIC_ONTOLOGY.items()}
 
 
@@ -38,15 +54,71 @@ def _label_matches(text: str) -> list[tuple[int, int, str, str]]:
     ]
 
 
+def _unit_hint(text: str) -> str | None:
+    for unit, pattern in UNIT_HINTS[:-1]:
+        if pattern.search(text):
+            return unit
+    if re.search(r"\bbillion\b", text, re.IGNORECASE) and re.search(r"\bvnd\b", text, re.IGNORECASE):
+        return "billion VND"
+    if re.search(r"\bmillion\b", text, re.IGNORECASE) and re.search(r"\bvnd\b", text, re.IGNORECASE):
+        return "million VND"
+    if UNIT_HINTS[-1][1].search(text):
+        return UNIT_HINTS[-1][0]
+    return None
+
+
 def candidates(
     pages: list[dict],
     document: dict,
     tables: list[dict] | None = None,
     visual_pages: list[dict] | None = None,
+    text_evidence_page_numbers: set[int] | None = None,
 ) -> list[dict]:
     """Find source-located metric evidence; leave figure/year interpretation for review."""
     found = []
     seen = set()
+    page_texts = {}
+    page_table_units = {}
+    for page in pages:
+        page_number = page.get("metadata", {}).get("page_number")
+        if page_number:
+            page_texts.setdefault(int(page_number), []).append(page.get("text", ""))
+    for page in visual_pages or []:
+        page_number = page.get("page_number")
+        if page_number:
+            page_texts.setdefault(int(page_number), []).append(" ".join(
+                str(span.get("text", "")) for span in page.get("spans", [])
+            ))
+    for table in tables or []:
+        page_number = table.get("page_number")
+        if page_number:
+            values = [str(value or "") for value in table.get("columns", [])]
+            table_unit = _unit_hint(" ".join(values))
+            if table_unit:
+                page_table_units[int(page_number)] = table_unit
+            for row in table.get("rows", []):
+                values.extend(str(value or "") for value in row.values())
+            page_texts.setdefault(int(page_number), []).append(" ".join(values))
+    page_units = {}
+    fiscal_year = str(document.get("fiscal_year") or "")
+    page_period_years = {}
+    for page_number, texts in page_texts.items():
+        page_text = " ".join(texts)
+        table_unit = page_table_units.get(page_number)
+        page_unit = _unit_hint(page_text)
+        for match in PERIOD_HEADER.finditer(page_text):
+            years = [match.group(1), match.group(2)]
+            if fiscal_year in years:
+                page_period_years[page_number] = years
+                break
+        # A bare VND table header often sits beside an explicit billion/million
+        # scale in the report summary; preserve the scale when the table lacks it.
+        page_units[page_number] = (
+            page_unit if page_number <= 25 and table_unit in {None, "VND"}
+            and page_unit not in {None, "VND"}
+            else page_unit if table_unit == "VND" and page_unit not in {None, "VND"}
+            else table_unit or page_unit
+        )
 
     def add_candidate(key: str, page_number: int, values: list[str], quote: str) -> None:
         found.append({
@@ -55,6 +127,7 @@ def candidates(
             "metric_name": key,
             "metric_label": METRIC_ONTOLOGY[key]["label"],
             "candidate_values": values,
+            "unit": page_units.get(page_number),
             "document_id": document["document_id"],
             "page_number": page_number,
             "source_quote": quote,
@@ -62,6 +135,10 @@ def candidates(
             "source_url": document["official_url"],
             "allowed_roles": document["rbac"]["allowed_roles"],
             "status": "needs_review",
+            "extraction_method": "rule_based_page_evidence",
+            "extractor_model": None,
+            "prompt_version": None,
+            "selection_evidence": {},
         })
         seen.add(key)
 
@@ -74,6 +151,14 @@ def candidates(
             text = str(span.get("text", "")).strip()
             bbox = span.get("bbox")
             if not text or not bbox or len(bbox) != 4:
+                continue
+            if len(text.split()) > 8:
+                continue
+            if re.search(
+                r"\b(?:reached|reach|grew|growth|increased|increase|declined|decreased|margin|while|compared|brought)\b|"
+                r"tăng trưởng|đạt mức|so với cùng kỳ",
+                text, re.IGNORECASE,
+            ):
                 continue
             if float(span.get("font_size", 0)) >= 28:
                 if NUMBER.fullmatch(text) and not (text.isdigit() and 1900 <= int(text) <= 2100):
@@ -105,7 +190,8 @@ def candidates(
         if not page_number:
             continue
         for row in table.get("rows", []):
-            cells = [str(value or "").strip() for value in row.values()]
+            row_items = [(str(key), str(value or "").strip()) for key, value in row.items()]
+            cells = [value for _, value in row_items]
             if len(cells) < 2:
                 continue
             label_cell = cells[0]
@@ -113,21 +199,17 @@ def candidates(
             if "/" in label_cell or any(term in folded_label for term in NON_VALUE_ROW_TERMS):
                 continue
             matched = set()
-            for key, labels in METRICS.items():
-                for label in labels:
-                    match = re.search(rf"(?<!\w){re.escape(label)}(?!\w)", label_cell, re.IGNORECASE)
-                    if not match:
-                        continue
-                    prefix = label_cell[:match.start()]
-                    qualifiers = re.findall(r"[\wÀ-ỹ]+", prefix.casefold())
-                    if all(word in ROW_QUALIFIERS for word in qualifiers):
-                        suffix = label_cell[match.end():]
-                        suffix = re.sub(r"\([^)]*\)", " ", suffix)
-                        suffix = re.sub(r"\b(?:V|VI)\.?\d+(?:\.\d+)*\b", " ", suffix, flags=re.IGNORECASE)
-                        suffix = re.sub(r"\b\d{1,3}\b", " ", suffix)
-                        suffix_words = re.findall(r"[\wÀ-ỹ]+", suffix.casefold())
-                        if not suffix_words:
-                            matched.add(key)
+            for start, end, _, key in _label_matches(label_cell):
+                prefix = label_cell[:start]
+                qualifiers = re.findall(r"[\wÀ-ỹ]+", prefix.casefold())
+                if all(word in ROW_QUALIFIERS for word in qualifiers):
+                    suffix = label_cell[end:]
+                    suffix = re.sub(r"\([^)]*\)", " ", suffix)
+                    suffix = re.sub(r"\b(?:V|VI)\.?\d+(?:\.\d+)*\b", " ", suffix, flags=re.IGNORECASE)
+                    suffix = re.sub(r"\b\d{1,3}\b", " ", suffix)
+                    suffix_words = re.findall(r"[\wÀ-ỹ]+", suffix.casefold())
+                    if not suffix_words:
+                        matched.add(key)
             if len(matched) != 1:
                 continue
             key = next(iter(matched))
@@ -137,7 +219,8 @@ def candidates(
             formula = re.search(r"\(([^)]*=[^)]*)\)", formula_context)
             formula_codes = set(re.findall(r"\d+", formula.group(1))) if formula else set()
             values = []
-            for index, cell in enumerate(cells[1:], start=1):
+            fiscal_year_values = []
+            for index, (column, cell) in enumerate(row_items[1:], start=1):
                 if "=" in cell:
                     continue
                 for number in NUMBER.findall(cell):
@@ -156,16 +239,32 @@ def candidates(
                     ):
                         continue
                     values.append(number)
+                    if fiscal_year and re.search(rf"(?<!\d){re.escape(fiscal_year)}(?!\d)", column):
+                        fiscal_year_values.append(number)
             if values:
-                add_candidate(key, int(page_number), values, " | ".join(cells)[:500])
-
-    page_texts = {}
-    for page in pages:
-        page_number = page.get("metadata", {}).get("page_number")
-        if page_number:
-            page_texts.setdefault(int(page_number), []).append(page.get("text", ""))
+                period_years = page_period_years.get(int(page_number), [])
+                if not fiscal_year_values and fiscal_year in period_years and len(values) >= len(period_years):
+                    fiscal_year_values = [values[period_years.index(fiscal_year)]]
+                    quote_items = [
+                        f"{column}: {value}" for column, value in row_items
+                        if not NUMBER.fullmatch(column.strip())
+                    ]
+                    quote_items.extend(
+                        f"{year}: {value}" for year, value in zip(period_years, values)
+                    )
+                    quote = " | ".join(quote_items)
+                else:
+                    quote = " | ".join(f"{column}: {value}" for column, value in row_items)
+                add_candidate(
+                    key,
+                    int(page_number),
+                    fiscal_year_values or values,
+                    quote[:500],
+                )
 
     for page_number, page_chunks in sorted(page_texts.items()):
+        if text_evidence_page_numbers is not None and page_number not in text_evidence_page_numbers:
+            continue
         text = " ".join(page_chunks)
         for key in METRICS:
             if key in seen:
@@ -210,6 +309,8 @@ def candidates(
                         if (
                             "/" in preceding
                             or "%" in preceding
+                            or any(term in text[max(0, start - 500):start].casefold()
+                                   for term in SEGMENT_SCOPE_TERMS)
                             or any(term in context for term in (
                                 "vòng quay", "inventory turnover", "change in", "merchandise",
                                 "raw material", "finished goods", "allowance for", "margin",

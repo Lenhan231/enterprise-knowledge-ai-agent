@@ -16,7 +16,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
-from dotenv import load_dotenv
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
@@ -131,7 +130,6 @@ def main() -> int:
     if args.batch_size < 1 or not 1 <= args.top_k <= 100 or args.max_chunks_per_document < 1:
         parser.error("--batch-size and --max-chunks-per-document must be positive; --top-k must be between 1 and 100")
 
-    load_dotenv(REPO_ROOT / ".env")
     case_bytes = args.cases.read_bytes()
     cases = json.loads(case_bytes)["cases"]
     if not cases:
@@ -147,6 +145,9 @@ def main() -> int:
             parser.error(str(error))
         corpus_source = "public_manifest_jsonl"
     else:
+        from dotenv import load_dotenv
+
+        load_dotenv(REPO_ROOT / ".env")
         database_url = os.getenv("DATABASE_URL")
         if not database_url:
             parser.error("DATABASE_URL is required unless --corpus is supplied")
@@ -155,6 +156,12 @@ def main() -> int:
     if not full_corpus:
         parser.error(f"No ready chunks found for {args.company}")
     corpus = _sample_per_document(full_corpus, args.max_chunks_per_document)
+    all_corpus_chunks_included = len(corpus) == len(full_corpus)
+    sample_strategy = (
+        "all eligible passages per document (corpus fits per-document cap)"
+        if all_corpus_chunks_included else
+        "evenly spaced passages per document"
+    )
     corpus_sha256 = hashlib.sha256(
         "\n".join(
             f"{row['document_id']}\0{row['content']}" for row in corpus
@@ -252,13 +259,14 @@ def main() -> int:
         "company": args.company,
         "corpus_chunks": len(corpus),
         "full_company_corpus_chunks": len(full_corpus),
+        "all_corpus_chunks_included": all_corpus_chunks_included,
         "sampled_chunks_per_document": args.max_chunks_per_document,
         "max_sequence_length": model.max_seq_length,
         "configuration": {
             "device": args.device,
             "batch_size": args.batch_size,
             "max_sequence_length": model.max_seq_length,
-            "sample_strategy": "evenly spaced passages per document",
+            "sample_strategy": sample_strategy,
             "document_score": "maximum eligible chunk cosine per document",
         },
         "query_instruction": spec["instruction"],
@@ -279,7 +287,11 @@ def main() -> int:
         },
         "aggregate": aggregate,
         "results": method_results,
-        "limitations": f"Small document-level Vinamilk smoke set. The same evenly spaced sample of up to {args.max_chunks_per_document} passages per source is used for every model; this is not full-corpus retrieval. No database writes are made. Query-time includes query embedding and in-memory cosine scoring, but excludes model loading and corpus embedding. No human judgment or passage-level labels.",
+        "limitations": (
+            "Small document-level Vinamilk smoke set using every available corpus passage. No database writes are made. Query-time includes query embedding and in-memory cosine scoring, but excludes model loading and corpus embedding. No human judgment or passage-level labels."
+            if all_corpus_chunks_included else
+            f"Small document-level Vinamilk smoke set using an evenly spaced sample capped at {args.max_chunks_per_document} passages per source; this is not full-corpus retrieval. No database writes are made. Query-time includes query embedding and in-memory cosine scoring, but excludes model loading and corpus embedding. No human judgment or passage-level labels."
+        ),
     }
     output = args.output or REPO_ROOT / "artifacts/evaluation" / f"vinamilk-embedding-{args.model}.json"
     output.parent.mkdir(parents=True, exist_ok=True)

@@ -6,9 +6,11 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import platform
 import re
 import sys
+import subprocess
 import time
 import unicodedata
 from datetime import datetime, timezone
@@ -20,6 +22,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from core.document_processing.processors.document_processor import DocumentProcessor  # noqa: E402
+from core.analytics.metric_candidates import candidates as extract_metric_candidates  # noqa: E402
+from core.analytics.financial_extraction import select_financial_pages  # noqa: E402
 
 
 def normalized(value: str) -> str:
@@ -196,8 +200,17 @@ def evaluate_table_strategies(page: fitz.Page, case: dict) -> list[dict]:
     return results
 
 
-def evaluate_case(case: dict, file_bytes: bytes) -> dict:
-    processor = DocumentProcessor()
+def evaluate_case(
+    case: dict,
+    file_bytes: bytes,
+    tesseract_psm: int = 11,
+    render_scale: float = 1.5,
+    tesseract_table_psm: int | None = None,
+) -> dict:
+    processor_config = {"tesseract_psm": tesseract_psm, "ocr_render_scale": render_scale}
+    if tesseract_table_psm is not None:
+        processor_config["tesseract_table_psm"] = tesseract_table_psm
+    processor = DocumentProcessor(processor_config)
     native_pdf = native_single_page_pdf(file_bytes, case["page_index"])
     native = processor.process(
         Path(case["file"]).name,
@@ -206,16 +219,71 @@ def evaluate_case(case: dict, file_bytes: bytes) -> dict:
     )
     scan_pdf = rasterized_single_page_pdf(file_bytes, case["page_index"], case.get("raster_dpi", 180))
     scan_png = rasterized_single_page_png(file_bytes, case["page_index"], case.get("raster_dpi", 180))
-    raster = DocumentProcessor().process(
+    raster = DocumentProcessor(processor_config).process(
         Path(case["file"]).name,
         scan_pdf,
         {"document_id": case["document_id"]},
     )
-    image = DocumentProcessor().process(
+    image = DocumentProcessor(processor_config).process(
         f"{case['document_id']}.png",
         scan_png,
         {"document_id": case["document_id"]},
     )
+    visual_pdf = fitz.open(stream=native_pdf, filetype="pdf")
+    try:
+        visual_spans = [
+            {"text": span["text"], "bbox": span["bbox"], "font_size": span["size"]}
+            for block in visual_pdf[0].get_text("dict")["blocks"]
+            for line in block.get("lines", [])
+            for span in line["spans"]
+            if span["text"].strip()
+        ]
+    finally:
+        visual_pdf.close()
+    candidate_chunks = [{"metadata": chunk["metadata"], "text": chunk["text"]}
+                        for chunk in native["chunks"]]
+    selected_financial_pages = select_financial_pages(candidate_chunks, native.get("tables", []))
+    text_evidence_page_numbers = {
+        page["page_number"] for page in selected_financial_pages
+        if page["selection_signals"]["summary_area_with_metric"]
+    }
+
+    parser_candidates = extract_metric_candidates(
+        candidate_chunks,
+        {
+            "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+            "fiscal_year": int(case["document_id"].split("-")[2]),
+            "document_id": case["document_id"],
+            "official_url": case["official_url"],
+            "rbac": {"allowed_roles": ["finance_analyst", "executive", "admin"]},
+        },
+        native.get("tables", []),
+        visual_pages=[{"page_number": 1, "spans": visual_spans}],
+        text_evidence_page_numbers=text_evidence_page_numbers,
+    )
+    candidate_results = []
+    candidate_metric_rows = [
+        candidate for candidate in parser_candidates
+        if any(candidate["metric_name"] in field.get("metric_names", []) for field in case["fields"])
+    ]
+    correct_candidate_ids = set()
+    for field in case["fields"]:
+        expected_digits = {re.sub(r"\D", "", value) for value in field["values"]}
+        field_candidates = [
+            candidate for candidate in parser_candidates
+            if candidate["metric_name"] in field.get("metric_names", [])
+        ]
+        matching = [candidate for candidate in field_candidates
+                    if any(re.sub(r"\D", "", value) in expected_digits
+                           for value in candidate["candidate_values"])]
+        correct_candidate_ids.update(id(candidate) for candidate in matching)
+        candidate_results.append({
+            "field_id": field["id"],
+            "candidate_found": bool(matching),
+            "candidate_count": len(field_candidates),
+            "matched_candidate_count": len(matching),
+            "candidates": field_candidates,
+        })
     table_strategy_sweep = None
     if case.get("expected_table_regions"):
         source = fitz.open(stream=file_bytes, filetype="pdf")
@@ -238,10 +306,39 @@ def evaluate_case(case: dict, file_bytes: bytes) -> dict:
         "printed_pages": case.get("printed_pages", []),
         "synthetic_raster_dpi": case.get("raster_dpi", 180),
         "table_strategy_sweep": table_strategy_sweep,
+        "rule_candidate_extraction": {
+            "candidate_count": len(parser_candidates),
+            "labeled_metric_candidate_count": len(candidate_metric_rows),
+            "correct_labeled_candidate_count": sum(
+                id(candidate) in correct_candidate_ids for candidate in candidate_metric_rows
+            ),
+            "anchor_precision": round(
+                sum(id(candidate) in correct_candidate_ids for candidate in candidate_metric_rows)
+                / len(candidate_metric_rows), 4
+            ) if candidate_metric_rows else None,
+            "expected_field_count": len(case["fields"]),
+            "matched_field_count": sum(result["candidate_found"] for result in candidate_results),
+            "anchor_recall": round(
+                sum(result["candidate_found"] for result in candidate_results) / len(case["fields"]), 4
+            ) if case["fields"] else None,
+            "fields": candidate_results,
+        },
         "conditions": [
             score_parse(case, native, 1, "born_digital_pdf"),
             score_parse(case, raster, 1, "synthetic_raster_pdf_tesseract"),
             score_parse(case, image, None, "synthetic_raster_image_upload_tesseract"),
+        ],
+    }
+
+
+def compact_result(result: dict) -> dict:
+    """Keep scores and provenance while omitting bulky parser dumps."""
+    return {
+        **result,
+        "conditions": [
+            {key: value for key, value in condition.items()
+             if key not in {"extracted_page_text", "extracted_tables"}}
+            for condition in result["conditions"]
         ],
     }
 
@@ -256,13 +353,42 @@ def main() -> int:
         "--output", type=Path,
         default=REPO_ROOT / "artifacts/evaluation/vinamilk-document-extraction-smoke.json",
     )
+    parser.add_argument(
+        "--compact", action="store_true",
+        help="omit full extracted text/table dumps while preserving scores and provenance",
+    )
+    parser.add_argument("--tesseract-psm", type=int, choices=(3, 6, 11, 12), default=11)
+    parser.add_argument(
+        "--tesseract-table-psm", type=int, choices=(3, 6, 11), default=None,
+        help="Override the format defaults: PDF uses 3 and image uploads use 6.",
+    )
+    parser.add_argument("--render-scale", type=float, default=1.5)
     args = parser.parse_args()
     case_bytes = args.cases.read_bytes()
     dataset = json.loads(case_bytes)
     results = []
     for case in dataset["cases"]:
         source = (REPO_ROOT / case["file"]).read_bytes()
-        results.append(evaluate_case(case, source))
+        results.append(evaluate_case(
+            case, source, tesseract_psm=args.tesseract_psm,
+            render_scale=args.render_scale,
+            tesseract_table_psm=args.tesseract_table_psm,
+        ))
+    tesseract_version = subprocess.run(
+        ["tesseract", "--version"], capture_output=True, text=True,
+        check=False, timeout=10,
+    ).stdout.splitlines()
+    tessdata_listing = subprocess.run(
+        ["tesseract", "--list-langs"], capture_output=True, text=True,
+        check=False, timeout=10,
+    )
+    tessdata_match = re.search(r'available languages in "([^"]+)"', tessdata_listing.stderr + tessdata_listing.stdout)
+    tessdata_dir = Path(os.getenv("TESSDATA_PREFIX") or (tessdata_match.group(1) if tessdata_match else ""))
+    traineddata_hashes = {
+        language: hashlib.sha256((tessdata_dir / f"{language}.traineddata").read_bytes()).hexdigest()
+        for language in ("vie", "eng")
+        if (tessdata_dir / f"{language}.traineddata").is_file()
+    }
     payload = {
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "dataset_id": dataset["dataset_id"],
@@ -270,8 +396,21 @@ def main() -> int:
         "reference_quality": dataset["reference_quality"],
         "reference_method": dataset["reference_method"],
         "limitations": dataset["limitations"],
-        "software": {"python": platform.python_version(), "pymupdf": fitz.VersionBind},
-        "results": results,
+        "software": {
+            "python": platform.python_version(),
+            "pymupdf": fitz.VersionBind,
+            "tesseract": tesseract_version[0] if tesseract_version else "unavailable",
+            "tesseract_traineddata_sha256": traineddata_hashes,
+        },
+        "ocr_config": {
+            "language": "vie+eng", "tesseract_psm": args.tesseract_psm,
+            "tesseract_table_psm": (
+                args.tesseract_table_psm if args.tesseract_table_psm is not None
+                else {"pdf": 3, "image": 6}
+            ),
+            "render_scale": args.render_scale,
+        },
+        "results": [compact_result(result) for result in results] if args.compact else results,
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -286,6 +425,14 @@ def main() -> int:
             "detected_tables": condition["detected_tables"],
             "expected_table_regions": condition["expected_table_regions"],
         } for condition in result["conditions"]],
+        "rule_candidate_extraction": {
+            key: result["rule_candidate_extraction"][key]
+            for key in (
+                "candidate_count", "labeled_metric_candidate_count",
+                "correct_labeled_candidate_count", "anchor_precision",
+                "expected_field_count", "matched_field_count", "anchor_recall",
+            )
+        },
     } for result in results]
     print(json.dumps({"output": str(args.output), "results": summary}, ensure_ascii=False, indent=2))
     return 0

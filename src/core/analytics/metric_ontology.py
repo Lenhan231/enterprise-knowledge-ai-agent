@@ -9,20 +9,21 @@ import unicodedata
 METRIC_ONTOLOGY = {
     "net_revenue": {
         "label": "Net revenue",
-        "aliases": ("net revenue", "net sales", "revenue", "doanh thu thuần"),
+        "aliases": ("net revenue", "net sales", "revenue", "doanh thu", "doanh thu thuần"),
         "source_labels": ("net revenue", "net sales", "doanh thu thuần"),
     },
     "total_consolidated_revenue": {
         "label": "Total consolidated revenue",
         "aliases": (
             "total consolidated revenue",
+            "total revenue",
             "consolidated revenue",
             "consolidated net revenue",
             "doanh thu hợp nhất",
             "tổng doanh thu hợp nhất",
         ),
         "source_labels": (
-            "total consolidated revenue", "consolidated revenue", "consolidated net revenue",
+            "total consolidated revenue", "total revenue", "consolidated revenue", "consolidated net revenue",
             "tổng doanh thu hợp nhất", "doanh thu hợp nhất",
         ),
     },
@@ -34,10 +35,22 @@ METRIC_ONTOLOGY = {
             "profit",
             "net income",
             "earnings",
+            "consolidated net profit after tax",
+            "net profit after tax",
             "lợi nhuận sau thuế",
             "lợi nhuận hợp nhất sau thuế",
+            "lợi nhuận sau thuế hợp nhất",
         ),
-        "source_labels": ("profit after tax", "after-tax profit", "net income", "lợi nhuận sau thuế"),
+        "source_labels": (
+            "profit after tax", "after-tax profit", "net income",
+            "consolidated net profit after tax", "net profit after tax",
+            "lợi nhuận sau thuế", "lợi nhuận sau thuế hợp nhất",
+        ),
+    },
+    "profit_before_tax": {
+        "label": "Profit before tax",
+        "aliases": ("profit before tax", "consolidated profit before tax", "earnings before tax", "lợi nhuận trước thuế"),
+        "source_labels": ("profit before tax", "consolidated profit before tax", "earnings before tax", "lợi nhuận trước thuế"),
     },
     "total_assets": {
         "label": "Total assets",

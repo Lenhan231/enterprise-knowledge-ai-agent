@@ -24,6 +24,19 @@ def check_connection(conn) -> dict:
     register_vector(conn)
     with conn.cursor() as cur:
         cur.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+        cur.execute("SELECT version::text FROM supabase_migrations.schema_migrations ORDER BY version")
+        remote_migrations = [row[0] for row in cur.fetchall()]
+        local_migrations = sorted(
+            path.name.split("_", 1)[0]
+            for path in (REPO_ROOT / "supabase/migrations").glob("*.sql")
+        )
+        migrations = {
+            "local_count": len(local_migrations),
+            "remote_count": len(remote_migrations),
+            "unapplied": sorted(set(local_migrations) - set(remote_migrations)),
+            "unknown_remote": sorted(set(remote_migrations) - set(local_migrations)),
+            "matches": local_migrations == sorted(remote_migrations),
+        }
         cur.execute("""
             SELECT a.attname, t.typname, a.atttypmod, a.attnotnull,
                    pg_get_expr(d.adbin, d.adrelid)
@@ -69,7 +82,7 @@ def check_connection(conn) -> dict:
             FROM public.document_chunks
         """)
         total, null_metadata, missing_ids, duplicates = cur.fetchone()
-        report = {"schema": schema, "rows": total, "null_metadata": null_metadata,
+        report = {"migrations": migrations, "schema": schema, "rows": total, "null_metadata": null_metadata,
                   "missing_document_id": missing_ids, "duplicate_keys": duplicates}
         cur.execute("""
             SELECT embedding::text FROM public.document_chunks
@@ -84,10 +97,12 @@ def check_connection(conn) -> dict:
         cur.execute("SET LOCAL enable_bitmapscan = off")
         vector = np.fromstring(sample[0].strip("[]"), sep=",", dtype=np.float32)
         cur.execute("""
-            SELECT document_name, chunk_index, content, metadata,
-                   1 - (embedding <=> %s) AS similarity_score
-            FROM public.document_chunks
-            ORDER BY embedding <=> %s ASC, id ASC LIMIT %s
+            SELECT c.document_name, c.chunk_index, c.content, c.metadata,
+                   1 - (c.embedding <=> %s) AS similarity_score
+            FROM public.document_chunks c
+            JOIN public.documents d ON d.document_id = c.metadata->>'document_id'
+            WHERE coalesce(d.processing_status, 'ready') = 'ready'
+            ORDER BY c.embedding <=> %s ASC, c.id ASC LIMIT %s
         """, (vector, vector, 5))
         rows = cur.fetchall()
 
@@ -95,7 +110,7 @@ def check_connection(conn) -> dict:
     repository = DocumentChunkRepository.__new__(DocumentChunkRepository)
     repository.conn = conn
     try:
-        actual = repository.similarity_search(vector.tolist(), 5)
+        actual = repository.similarity_search(vector.tolist(), 5, method="dense")
         expected = [RetrievedChunk(document_name=name, chunk_index=index,
                                    content=text, metadata={} if metadata is None else metadata,
                                    retrieval_score=score)
@@ -107,7 +122,7 @@ def check_connection(conn) -> dict:
 
 
 def passed(report: dict) -> bool:
-    return (all(report["schema"].values()) and report["null_metadata"] == 0
+    return (report["migrations"]["matches"] and all(report["schema"].values()) and report["null_metadata"] == 0
             and report["missing_document_id"] == 0 and report["duplicate_keys"] == 0
             and report["retrieval"] == "pass")
 

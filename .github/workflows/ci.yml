@@ -30,3 +30,44 @@ jobs:
         run: docker compose build web
       - name: Validate Nginx configuration
         run: docker run --rm --add-host web:127.0.0.1 -v "$PWD/docker/nginx.conf:/etc/nginx/nginx.conf:ro" nginx:1.27-alpine nginx -t
+      - name: Smoke test HTTP and authenticated WebSocket through Nginx
+        run: |
+          cp .env.example .env
+          sed -i \
+            -e 's|^AUTH_SECRET_KEY=.*|AUTH_SECRET_KEY=ci-test-secret-key-with-at-least-32-characters|' \
+            -e 's|^DEMO_VIEWER_PASSWORD=.*|DEMO_VIEWER_PASSWORD=ci-test-viewer-password|' .env
+          docker compose --profile proxy up -d --build web proxy
+          trap 'docker compose --profile proxy down' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8080/health; then
+              break
+            fi
+            sleep 2
+          done
+          curl --fail --silent http://127.0.0.1:8080/health | python -c 'import json,sys; assert json.load(sys.stdin)["status"] == "ok"'
+          uv run python - <<'PY'
+          import http.cookiejar
+          import json
+          from urllib.request import HTTPCookieProcessor, Request, build_opener
+          from websockets.sync.client import connect
+
+          base = "http://127.0.0.1:8080"
+          cookies = http.cookiejar.CookieJar()
+          client = build_opener(HTTPCookieProcessor(cookies))
+          request = Request(
+              f"{base}/api/auth/login",
+              data=json.dumps({"username": "viewer", "password": "ci-test-viewer-password"}).encode(),
+              headers={"Content-Type": "application/json"},
+          )
+          with client.open(request) as response:
+              assert json.load(response)["role"] == "employee"
+          session = next(cookie.value for cookie in cookies if cookie.name == "enterprise_session")
+          with connect(
+              "ws://127.0.0.1:8080/ws/ask",
+              additional_headers={"Cookie": f"enterprise_session={session}", "Origin": base},
+          ) as socket:
+              socket.send("{}")
+              message = json.loads(socket.recv(timeout=5))
+              assert message["type"] == "error" and isinstance(message["detail"], list), message
+          print("Nginx HTTP health and authenticated WebSocket upgrade passed")
+          PY

@@ -27,9 +27,6 @@ from core.evaluation.retrieval_metrics import (  # noqa: E402
     recall_at_k,
     reciprocal_rank,
 )
-from core.retrieval.retrieval import RetrievalRequest  # noqa: E402
-from core.retrieval.retrieval_service import RetrievalService  # noqa: E402
-from scripts.evaluate_retrieval import validate_passage_labels  # noqa: E402
 
 MODELS = {
     "bge-reranker-v2-m3": "BAAI/bge-reranker-v2-m3",
@@ -91,11 +88,58 @@ def _available_memory_mb() -> int | None:
     return None
 
 
+def _candidate_sha256(candidates: list[dict]) -> str:
+    payload = [
+        {"id": case["id"], "items": [{"chunk_id": item["chunk_id"], "text": item["text"]} for item in case["items"]]}
+        for case in candidates
+    ]
+    return hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()
+
+
+def _load_candidate_bundle(path: Path, cases: list[dict], cases_bytes: bytes, candidate_k: int) -> tuple[list[dict], str]:
+    bundle = json.loads(path.read_text(encoding="utf-8"))
+    if bundle.get("schema") != "vinamilk-role-filtered-reranker-candidates-v1":
+        raise ValueError("Unsupported candidate bundle schema")
+    expected_case_hash = hashlib.sha256(cases_bytes).hexdigest()
+    if bundle.get("case_file_sha256") != expected_case_hash:
+        raise ValueError("Candidate bundle was built for a different labeled case file")
+    by_id = {case["id"]: case for case in cases}
+    bundled = {case["id"]: case for case in bundle.get("cases", [])}
+    if len(bundled) != len(bundle.get("cases", [])) or bundled.keys() != by_id.keys():
+        raise ValueError("Candidate bundle case IDs do not exactly match the selected labels")
+
+    candidates = []
+    for case_id, label in by_id.items():
+        candidate = bundled[case_id]
+        if (
+            candidate.get("query") != label["question"]
+            or candidate.get("role") != label["role"]
+            or set(candidate.get("relevant_document_ids", [])) != set(label["relevant_document_ids"])
+            or set(candidate.get("relevant_passage_ids", [])) != set(label.get("relevant_chunk_ids", []))
+        ):
+            raise ValueError(f"Candidate bundle labels or query changed for {case_id}")
+        items = candidate.get("items")
+        if not isinstance(items, list) or not items or len(items) > candidate_k:
+            raise ValueError(f"Invalid candidate count for {case_id}")
+        if any(not item.get("chunk_id") or not item.get("text") for item in items):
+            raise ValueError(f"Candidate text is missing for {case_id}")
+        if len({item["chunk_id"] for item in items}) != len(items):
+            raise ValueError(f"Duplicate passage IDs for {case_id}")
+        candidates.append(candidate)
+
+    candidate_sha256 = _candidate_sha256(candidates)
+    if bundle.get("candidate_sha256") != candidate_sha256:
+        raise ValueError("Candidate bundle content hash does not match its metadata")
+    return candidates, candidate_sha256
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model", required=True, choices=sorted(MODELS))
+    parser.add_argument("--model", choices=sorted(MODELS))
     parser.add_argument("--cases", type=Path, default=REPO_ROOT / "data/evaluation/vinamilk_retrieval_cases.json")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--candidate-input", type=Path, help="Use a hash-verified role-filtered dense candidate bundle; avoids database access")
+    parser.add_argument("--export-candidates", type=Path, help="Export public role-filtered dense candidates without loading a reranker")
     parser.add_argument("--company", default="Công ty Cổ phần Sữa Việt Nam (Vinamilk)")
     parser.add_argument("--candidate-k", type=int, default=30)
     parser.add_argument("--batch-size", type=int, default=8)
@@ -108,6 +152,10 @@ def main() -> int:
         help="Optional hard CPU memory budget measured from a completed pilot peak RSS, in MiB.",
     )
     args = parser.parse_args()
+    if args.candidate_input and args.export_candidates:
+        parser.error("--candidate-input and --export-candidates cannot be used together")
+    if not args.export_candidates and not args.model:
+        parser.error("--model is required unless exporting candidates")
     if not 1 <= args.candidate_k <= 100 or args.batch_size < 1 or args.max_sequence_length < 8:
         parser.error("candidate-k must be 1..100; batch-size positive; max-sequence-length at least 8")
 
@@ -115,7 +163,7 @@ def main() -> int:
         parser.error("--max-memory-mb must be positive")
 
     load_dotenv(REPO_ROOT / ".env")
-    if not os.getenv("DATABASE_URL"):
+    if not args.candidate_input and not os.getenv("DATABASE_URL"):
         parser.error("DATABASE_URL is required")
     cases_bytes = args.cases.read_bytes()
     cases = json.loads(cases_bytes)["cases"]
@@ -128,48 +176,69 @@ def main() -> int:
     if not cases:
         parser.error("No labeled cases selected")
 
-    service = RetrievalService()
-    candidates = []
-    try:
-        validate_passage_labels(service, cases, args.company)
-        for case in cases:
-            response = service.retrieve(
-                RetrievalRequest(query=case["question"], top_k=args.candidate_k),
-                company=args.company,
-                roles=case.get("allowed_roles", [case["role"]]),
-                method="dense",
-            )
-            items = [
-                {
-                    "chunk_id": result.chunk_id,
-                    "document_id": result.document_id,
-                    "text": result.text,
-                    "dense_score": result.score,
-                }
-                for result in response.results
-            ]
-            candidates.append({
-                "id": case["id"],
-                "query": case["question"],
-                "role": case["role"],
-                "relevant_document_ids": sorted(set(case["relevant_document_ids"])),
-                "relevant_passage_ids": sorted(set(case.get("relevant_chunk_ids", []))),
-                "retrieval_latency_ms": response.latency_ms,
-                "items": items,
-            })
-    finally:
-        service.close()
+    if args.candidate_input:
+        try:
+            candidates, candidate_sha256 = _load_candidate_bundle(args.candidate_input, cases, cases_bytes, args.candidate_k)
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            parser.error(f"invalid candidate bundle: {error}")
+    else:
+        from core.retrieval.retrieval import RetrievalRequest
+        from core.retrieval.retrieval_service import RetrievalService
+        from scripts.evaluate_retrieval import validate_passage_labels
+
+        service = RetrievalService()
+        candidates = []
+        try:
+            validate_passage_labels(service, cases, args.company)
+            for case in cases:
+                response = service.retrieve(
+                    RetrievalRequest(query=case["question"], top_k=args.candidate_k),
+                    company=args.company,
+                    roles=case.get("allowed_roles", [case["role"]]),
+                    method="dense",
+                )
+                items = [
+                    {
+                        "chunk_id": result.chunk_id,
+                        "document_id": result.document_id,
+                        "text": result.text,
+                        "dense_score": result.score,
+                    }
+                    for result in response.results
+                ]
+                candidates.append({
+                    "id": case["id"],
+                    "query": case["question"],
+                    "role": case["role"],
+                    "relevant_document_ids": sorted(set(case["relevant_document_ids"])),
+                    "relevant_passage_ids": sorted(set(case.get("relevant_chunk_ids", []))),
+                    "retrieval_latency_ms": response.latency_ms,
+                    "items": items,
+                })
+        finally:
+            service.close()
     passage_cutoffs = _passage_cutoffs([len(case["items"]) for case in candidates])
     if not passage_cutoffs:
         parser.error("Dense retrieval returned no candidates for the selected cases")
 
-    candidate_payload = [
-        {"id": case["id"], "items": [{"chunk_id": item["chunk_id"], "text": item["text"]} for item in case["items"]]}
-        for case in candidates
-    ]
-    candidate_sha256 = hashlib.sha256(
-        json.dumps(candidate_payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
-    ).hexdigest()
+    candidate_sha256 = _candidate_sha256(candidates)
+
+    if args.export_candidates:
+        export = {
+            "schema": "vinamilk-role-filtered-reranker-candidates-v1",
+            "case_file": args.cases.name,
+            "case_file_sha256": hashlib.sha256(cases_bytes).hexdigest(),
+            "candidate_sha256": candidate_sha256,
+            "company": args.company,
+            "candidate_method": "role-filtered-dense",
+            "candidate_k": args.candidate_k,
+            "cases": candidates,
+            "limitations": "Public source excerpts only; candidates were retrieved with role filters before export. This bundle contains no database credentials or private uploads.",
+        }
+        args.export_candidates.parent.mkdir(parents=True, exist_ok=True)
+        args.export_candidates.write_text(json.dumps(export, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps({"output": str(args.export_candidates), "case_count": len(candidates), "candidate_sha256": candidate_sha256}, ensure_ascii=False))
+        return 0
 
     import torch
     from sentence_transformers import CrossEncoder

@@ -16,11 +16,13 @@
         {
           "id": "net-revenue-2020",
           "label": "CONSOLIDATED NET REVENUE",
+          "metric_names": ["net_revenue", "total_consolidated_revenue"],
           "values": ["59,723"]
         },
         {
           "id": "profit-after-tax-2020",
           "label": "CONSOLIDATED NET PROFIT AFTER TAX",
+          "metric_names": ["profit_after_tax"],
           "values": ["11,236"]
         }
       ]
@@ -38,16 +40,19 @@
         {
           "id": "cash-2024-2023",
           "label": "Tiền và các khoản tương đương tiền",
+          "metric_names": ["cash_and_equivalents"],
           "values": ["2.225.944", "2.912.027"]
         },
         {
           "id": "inventory-2024-2023",
           "label": "Hàng tồn kho",
+          "metric_names": ["inventory"],
           "values": ["5.634.710", "6.082.233"]
         },
         {
           "id": "total-assets-2024-2023",
           "label": "Tổng tài sản",
+          "metric_names": ["total_assets"],
           "values": ["56.993.245", "54.232.491"]
         }
       ]

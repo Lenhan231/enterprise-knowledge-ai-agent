@@ -71,18 +71,22 @@ def prepare_review(runs: list[Path], packet_path: Path, key_path: Path, seed: in
     private_map = {}
     for model_index, path, case_id, row in indexed:
         response_id = secrets.token_urlsafe(12)
+        blind_case_id = secrets.token_urlsafe(9)
         source_rows = [
             {
                 "source_id": source.get("source_id"),
+                "document_id": source.get("document_id"),
+                "source_document": source.get("source_document"),
                 "page_number": source.get("page_number"),
                 "section_title": source.get("section_title"),
-                "evidence": source.get("content_preview", ""),
+                "official_url": source.get("official_url"),
+                "evidence": source.get("evidence") or source.get("content_preview", ""),
             }
             for source in row.get("sources", [])
         ]
         response_rows.append({
             "response_id": response_id,
-            "case_id": case_id,
+            "case_id": blind_case_id,
             "question": row.get("question", ""),
             "answer": row["answer"],
             "insufficient_context": bool(row.get("insufficient_context")),
@@ -102,6 +106,7 @@ def prepare_review(runs: list[Path], packet_path: Path, key_path: Path, seed: in
             "run_index": model_index,
             "model_label": labels[model_index],
             "case_id": case_id,
+            "blind_case_id": blind_case_id,
         }
 
     # Shuffle answers so a reviewer cannot infer the model from grouped order.

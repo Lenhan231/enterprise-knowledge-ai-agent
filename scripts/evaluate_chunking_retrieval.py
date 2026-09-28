@@ -112,6 +112,14 @@ def _peak_rss_mb() -> float:
     return round(value / (1024 if sys.platform != "darwin" else 1024 * 1024), 1)
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for block in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
 def _as_vector(value) -> np.ndarray:
     return value.to_numpy() if hasattr(value, "to_numpy") else np.asarray(value, dtype=np.float32)
 
@@ -249,6 +257,7 @@ def main() -> int:
     # experiment focused on shared page text and avoid unrelated table analysis.
     ingestor = Ingestion(TokenizerOnly(), chunking_strategy="sentence", extract_tables=False)
     sentence_chunks = []
+    source_sha256 = {}
     parse_started = time.perf_counter()
     with tempfile.TemporaryDirectory(prefix="chunking-ablation-") as temp_dir:
         for document_id in document_ids:
@@ -256,6 +265,7 @@ def main() -> int:
             source = source_root / item["ticker"].lower() / (document_id.lower() + source_extension(item))
             if not source.is_file():
                 raise FileNotFoundError(source)
+            source_sha256[document_id] = _sha256_file(source)
             chunks = ingestor.ingestion(
                 source,
                 Path(temp_dir) / item["ticker"].lower(),
@@ -356,6 +366,7 @@ def main() -> int:
         "company": COMPANY,
         "role": "finance_analyst",
         "document_ids": document_ids,
+        "source_sha256": source_sha256,
         "case_ids": [case["id"] for case in finance_cases],
         "case_file": str(args.cases.relative_to(REPO_ROOT) if args.cases.is_relative_to(REPO_ROOT) else args.cases),
         "case_file_sha256": hashlib.sha256(cases_bytes).hexdigest(),

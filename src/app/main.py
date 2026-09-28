@@ -14,12 +14,12 @@ from jwt import InvalidTokenError
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic import ValidationError
-from urllib.parse import urlsplit
+from urllib.parse import quote, urlsplit
 from openai import RateLimitError
 
 from core.database.document_repository import DocumentRepository
@@ -81,7 +81,7 @@ def _storage_client():
     if not url or not key:
         raise HTTPException(503, "SUPABASE_URL and server-only SUPABASE_SECRET_KEY are required for uploads")
     if os.getenv("SUPABASE_DOCUMENT_BUCKET", "enterprise-documents") != "enterprise-documents":
-        raise HTTPException(503, "Migration 005 provisions the private enterprise-documents bucket")
+        raise HTTPException(503, "SUPABASE_DOCUMENT_BUCKET must match the private enterprise-documents bucket")
     return create_client(url, key), os.getenv("SUPABASE_DOCUMENT_BUCKET", "enterprise-documents")
 
 
@@ -155,13 +155,13 @@ class LoginRequest(BaseModel):
 class CandidateReviewRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     status: Literal["verified", "rejected"]
-    normalized_value: float | None = None
+    normalized_value: str | int | float | None = None
     unit: str | None = Field(default=None, max_length=40)
 
     @field_validator("normalized_value")
     @classmethod
     def finite_metric_value(cls, value):
-        if value is not None and not math.isfinite(value):
+        if value is not None and isinstance(value, (float, int)) and not math.isfinite(value):
             raise ValueError("Metric value must be finite")
         return value
 
@@ -171,6 +171,43 @@ class CandidateReviewRequest(BaseModel):
         if value is not None and not value.strip():
             raise ValueError("Unit cannot be blank")
         return value.strip() if value is not None else None
+
+    @field_validator("normalized_value", mode="before")
+    @classmethod
+    def parse_reviewed_metric_value(cls, value):
+        if value is None:
+            return value
+        if isinstance(value, int):
+            return value
+        if isinstance(value, float):
+            raise ValueError("Send reviewed values as text so thousands and decimal separators stay unambiguous")
+        if not isinstance(value, str):
+            raise ValueError("Metric value must be a number")
+        text = value.strip()
+        if not text:
+            raise ValueError("Metric value is required")
+        grouped_vi = re.fullmatch(r"[+-]?\d{1,3}(?:\.\d{3})+(?:,\d+)?", text)
+        plain_vi = re.fullmatch(r"[+-]?\d+(?:,\d+)?", text)
+        plain_dot_decimal = re.fullmatch(r"[+-]?\d+\.\d+", text)
+        if grouped_vi:
+            canonical = text.replace(".", "").replace(",", ".")
+        elif plain_vi:
+            canonical = text.replace(",", ".")
+        elif plain_dot_decimal:
+            canonical = text
+        else:
+            raise ValueError("Use Vietnamese number format: . for thousands and , for decimals (for example 11.236,5)")
+        try:
+            from decimal import Decimal, InvalidOperation
+
+            parsed = Decimal(canonical)
+            if not parsed.is_finite():
+                raise ValueError("Metric value must be finite")
+            return int(parsed) if parsed == parsed.to_integral_value() else float(parsed)
+        except ValueError as error:
+            raise ValueError("Metric value must be finite") from error
+        except InvalidOperation as error:
+            raise ValueError("Metric value must be finite") from error
 
 
 @app.get("/", include_in_schema=False)
@@ -337,6 +374,10 @@ async def upload_document(
         }
         processor = DocumentProcessor({
             "chunking_strategy": os.getenv("DOCUMENT_CHUNKING_STRATEGY", "sentence"),
+            "paddle_layout": os.getenv("DOCUMENT_PADDLE_LAYOUT", "false").strip().lower() == "true",
+            "paddle_formula_recognition": os.getenv(
+                "DOCUMENT_PADDLE_FORMULA_RECOGNITION", "false",
+            ).strip().lower() == "true",
         })
         try:
             processed = processor.process(filename, content, metadata)
@@ -379,14 +420,67 @@ async def upload_document(
             parsed_repository.replace_document(document_id, chunks)
         finally:
             parsed_repository.close()
+        candidate_chunks = chunks
+        candidate_tables = processed.get("tables", [])
+        if fiscal_year and extension == ".pdf":
+            from core.analytics.financial_extraction import select_financial_pages
+
+            selected = select_financial_pages(chunks, candidate_tables)
+            selected_page_numbers = {page["page_number"] for page in selected}
+            text_evidence_page_numbers = {
+                page["page_number"] for page in selected
+                if page["selection_signals"]["summary_area_with_metric"]
+            }
+            candidate_chunks = [
+                chunk for chunk in chunks
+                if int(chunk["metadata"].get("page_number") or 0) in selected_page_numbers
+            ]
+            candidate_tables = [
+                table for table in candidate_tables
+                if int(table.get("page_number") or 0) in selected_page_numbers
+            ]
         metric_candidates = extract_metric_candidates(
-            [{"metadata": chunk["metadata"], "text": chunk["text"]} for chunk in chunks],
+            [{"metadata": chunk["metadata"], "text": chunk["text"]} for chunk in candidate_chunks],
             {
                 **metadata,
                 "rbac": {"allowed_roles": allowed_roles},
             },
-            processed.get("tables", []),
+            candidate_tables,
+            text_evidence_page_numbers=(
+                text_evidence_page_numbers if fiscal_year and extension == ".pdf" else None
+            ),
         ) if fiscal_year else []
+        if fiscal_year and extension == ".pdf":
+            llm_provider = None
+            try:
+                from core.analytics.financial_extraction import (
+                    extract_financial_candidates, merge_candidate_sources,
+                )
+                from core.llm.groq_provider import GroqProvider
+
+                llm_provider = GroqProvider()
+                llm_candidates, selected_pages = extract_financial_candidates(
+                    chunks, processed.get("tables", []),
+                    {**metadata, "rbac": {"allowed_roles": allowed_roles}},
+                    llm_provider,
+                )
+                metric_candidates = merge_candidate_sources(metric_candidates, llm_candidates)
+                logger.info(
+                    "Financial page extraction document=%s selected_pages=%s candidates=%s method=%s",
+                    document_id, [page["page_number"] for page in selected_pages],
+                    len(llm_candidates), "llm" if llm_candidates else "rule_fallback",
+                )
+            except Exception:
+                logger.exception(
+                    "Financial LLM extraction failed for %s; retaining parser candidates",
+                    document_id,
+                )
+            finally:
+                if llm_provider is not None:
+                    try:
+                        llm_provider.close()
+                    except Exception:
+                        logger.exception("Failed to close financial extraction provider for %s", document_id)
         repository.save_metric_candidates(document_id, metric_candidates)
         parsed_repository = ProcessedChunksRepository()
         parsed_repository.set_status(document_id, "embedding")
@@ -491,6 +585,84 @@ def inspect_processed_chunks(
         repository.close()
 
 
+@app.get("/api/admin/processing/{document_id}/tables")
+def inspect_extracted_tables(
+    document_id: str, table_offset: int = 0, table_limit: int = 50,
+    row_offset: int = 0, row_limit: int = 100,
+    user: dict = Depends(require_permission("review_metrics")),
+):
+    from core.database.structured_store import StructuredDataStore
+
+    store = StructuredDataStore()
+    try:
+        tables = store.get_document_tables(
+            document_id, company=CORPUS_COMPANY, table_offset=table_offset,
+            table_limit=table_limit, row_offset=row_offset, row_limit=row_limit,
+        )
+        if not tables:
+            raise HTTPException(404, "No extracted tables found in the active company corpus")
+        return {
+            "document_id": document_id,
+            "table_offset": table_offset,
+            "table_limit": table_limit,
+            "row_offset": row_offset,
+            "row_limit": row_limit,
+            "tables": tables,
+        }
+    except ValueError as error:
+        raise HTTPException(422, str(error)) from error
+    finally:
+        store.close()
+
+
+@app.get("/api/admin/processing/{document_id}/source")
+def open_uploaded_source(
+    document_id: str,
+    user: dict = Depends(require_permission("review_metrics")),
+):
+    """Stream a ready upload to an authorized reviewer without exposing Storage credentials."""
+    repository = DocumentRepository()
+    try:
+        source = repository.uploaded_source(document_id, company=CORPUS_COMPANY)
+    finally:
+        repository.close()
+    if source is None:
+        raise HTTPException(404, "Uploaded source not found in the active company corpus")
+
+    storage, bucket = _storage_client()
+    try:
+        content = storage.storage.from_(bucket).download(source["storage_path"])
+    except Exception as error:
+        logger.exception("Could not open uploaded source %s", document_id)
+        raise HTTPException(502, "The stored source file could not be opened") from error
+
+    extension = str(source["format"] or "").casefold()
+    media_type = {
+        "pdf": "application/pdf",
+        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "txt": "text/plain",
+        "md": "text/markdown",
+        "png": "image/png",
+        "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
+        "tif": "image/tiff",
+        "tiff": "image/tiff",
+    }.get(extension, "application/octet-stream")
+    title = re.sub(r"[\r\n/\\]+", " ", str(source["title"] or document_id)).strip()
+    filename = quote(f"{title[:120]}.{extension}", safe="")
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={
+            "Content-Disposition": f"inline; filename*=UTF-8''{filename}",
+            "Cache-Control": "private, no-store",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
+
+
 @app.post("/api/analytics/candidates/{candidate_id}/review")
 def review_candidate(candidate_id: int, request: CandidateReviewRequest, user: dict = Depends(require_permission("review_metrics"))):
     repository = None
@@ -556,9 +728,9 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
         knowledge = KnowledgeAgent()
         analytics = SQLAnalyticsAgent()
         hybrid = HybridAgent(knowledge, analytics)
-        dashboard = DashboardAgent()
+        dashboard = DashboardAgent(analytics=analytics)
         classifier = IntentClassifier()
-        report = ReportAgent(hybrid=hybrid)
+        report = ReportAgent(knowledge=knowledge)
         router = AgentRouter(
             classifier=classifier,
             knowledge_agent=knowledge,
@@ -621,17 +793,16 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
             detail="Question answering is unavailable. Check the database, embedding model, and GROQ_API_KEY.",
         ) from error
     finally:
-        # ReportAgent owns the hybrid stack, which owns the QA and analytics agents.
+        # ReportAgent shares KnowledgeAgent; close it through the hybrid stack once.
         if report is not None:
             report.close()
+        if hybrid is not None:
+            hybrid.close()
         else:
-            if hybrid is not None:
-                hybrid.close()
-            else:
-                if knowledge is not None:
-                    knowledge.close()
-                if analytics is not None:
-                    analytics.close()
+            if knowledge is not None:
+                knowledge.close()
+            if analytics is not None:
+                analytics.close()
         if dashboard is not None:
             dashboard.close()
         if classifier is not None:

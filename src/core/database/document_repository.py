@@ -185,6 +185,8 @@ class DocumentRepository:
                                    c.candidate_values, c.normalized_value, c.unit,
                                    c.fiscal_year, c.page_number, c.source_quote, c.status,
                                    d.official_url, c.evidence_count,
+                                   c.extraction_method, c.extractor_model,
+                                   c.prompt_version, c.selection_evidence,
                                    (SELECT max(ch.metadata->>'text_extraction_method')
                                     FROM document_chunks ch
                                     WHERE ch.metadata->>'document_id' = c.document_id
@@ -196,6 +198,8 @@ class DocumentRepository:
                                        candidate.candidate_values, candidate.normalized_value,
                                        candidate.unit, candidate.page_number,
                                        candidate.source_quote, candidate.status,
+                                       candidate.extraction_method, candidate.extractor_model,
+                                       candidate.prompt_version, candidate.selection_evidence,
                                        candidate.created_at,
                                        coalesce(candidate.fiscal_year,
                                            CASE WHEN d.fiscal_year ~ '^[0-9]{{4}}$'
@@ -316,19 +320,29 @@ class DocumentRepository:
             cursor.executemany(
                 """INSERT INTO extracted_metric_candidates (
                        document_id, metric_name, metric_label, candidate_values,
-                       fiscal_year, page_number, source_quote, source_quote_hash
-                   ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                       fiscal_year, page_number, source_quote, source_quote_hash, unit,
+                       extraction_method, extractor_model, prompt_version, selection_evidence
+                   ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                    ON CONFLICT (document_id, metric_name, page_number, source_quote_hash)
                    DO UPDATE SET candidate_values = EXCLUDED.candidate_values,
                                  metric_label = EXCLUDED.metric_label,
                                  fiscal_year = EXCLUDED.fiscal_year,
                                  source_quote = EXCLUDED.source_quote,
-                                 status = 'needs_review', normalized_value = NULL, unit = NULL,
+                                 unit = EXCLUDED.unit,
+                                 extraction_method = EXCLUDED.extraction_method,
+                                 extractor_model = EXCLUDED.extractor_model,
+                                 prompt_version = EXCLUDED.prompt_version,
+                                 selection_evidence = EXCLUDED.selection_evidence,
+                                 status = 'needs_review', normalized_value = NULL,
                                  reviewed_by = NULL, reviewed_at = NULL, created_at = now()
                    WHERE extracted_metric_candidates.status IN ('needs_review', 'superseded')""",
                 [(document_id, row["metric_name"], row["metric_label"],
                   psycopg.types.json.Jsonb(row["candidate_values"]), row["fiscal_year"],
-                  row["page_number"], row["source_quote"], row["source_quote_hash"])
+                  row["page_number"], row["source_quote"], row["source_quote_hash"],
+                  row.get("unit"),
+                  row.get("extraction_method", "rule_based_page_evidence"),
+                  row.get("extractor_model"), row.get("prompt_version"),
+                  psycopg.types.json.Jsonb(row.get("selection_evidence", {})))
                  for row in candidates],
             )
             cursor.execute(
@@ -397,6 +411,20 @@ class DocumentRepository:
                 (status, document_id),
             )
             self.conn.commit()
+
+    def uploaded_source(self, document_id: str, company: str) -> dict | None:
+        """Return private Storage coordinates for a ready upload in this corpus."""
+        with self.conn.cursor() as cursor:
+            cursor.execute(
+                """SELECT title, format, storage_path
+                   FROM public.documents
+                   WHERE document_id = %s AND company = %s
+                     AND source_type = 'user_upload'
+                     AND processing_status = 'ready'
+                     AND storage_path IS NOT NULL""",
+                (document_id, company),
+            )
+            return cursor.fetchone()
 
     def close(self) -> None:
         self.conn.close()

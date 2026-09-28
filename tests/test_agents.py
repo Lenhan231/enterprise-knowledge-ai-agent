@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from core.agents.intent_classifier import IntentClassifier
 from core.analytics.metric_ontology import resolve_metric_names
 from core.agents.knowledge_agent import KnowledgeAgent, _report_retrieval_query
-from core.agents.report_agent import ReportAgent
+from core.agents.report_agent import ReportAgent, _financial_facts_match_cited_evidence
 from core.agents.router import AgentRouter
 from core.agents.sql_analytics_agent import SQLAnalyticsAgent
 from core.agents.report_agent import _normalize_numeric_citations
@@ -18,9 +18,22 @@ from core.rag.rag_service import RAGResult
 
 
 class AgentFlowTest(unittest.TestCase):
+    def test_knowledge_agent_fails_closed_without_authenticated_role(self):
+        rag = Mock()
+
+        for metadata in ({}, {"role": ""}, {"role": None}):
+            with self.subTest(metadata=metadata), self.assertRaisesRegex(ValueError, "authenticated role"):
+                KnowledgeAgent(rag).run(AgentRequest(question="restricted policy", metadata=metadata))
+
+        rag.generate_answer.assert_not_called()
+        rag.retrieve_contexts.assert_not_called()
+
     def test_metric_ontology_resolves_bilingual_aliases_and_prefers_specific_phrase(self):
         self.assertEqual(resolve_metric_names("Revenue and profit after tax"), {"net_revenue", "profit_after_tax"})
+        self.assertEqual(resolve_metric_names("Total revenue"), {"total_consolidated_revenue"})
+        self.assertEqual(resolve_metric_names("Net revenue"), {"net_revenue"})
         self.assertEqual(resolve_metric_names("Tổng doanh thu hợp nhất năm 2024"), {"total_consolidated_revenue"})
+        self.assertEqual(resolve_metric_names("Doanh thu 2024 là 52.576.991"), {"net_revenue"})
 
     def test_generic_how_many_question_stays_document_qa(self):
         intent = IntentClassifier.fallback("Trong 100 ml sữa có bao nhiêu năng lượng và protein?")
@@ -52,11 +65,65 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(repository.execute_authorized_analytics.call_args.args[1:], ("finance_analyst", "", None))
         self.assertEqual([row["metric_name"] for row in result.data["financial"]], ["total_consolidated_revenue"])
 
-    def test_classifier_fallback_routes_summary_of_metrics_to_hybrid(self):
+    def test_dashboard_sql_prompt_requests_individual_source_observations(self):
+        repository = Mock()
+        repository.execute_authorized_analytics.return_value = {
+            "results": [], "evidence": [], "documents": [],
+        }
+        llm = Mock()
+        llm.generate.return_value = (
+            '{"sql":"SELECT metric_name, fiscal_year, ARRAY_AGG(DISTINCT document_id) '
+            'AS evidence_document_ids FROM authorized_financial_metrics '
+            'GROUP BY metric_name, fiscal_year LIMIT 10"}'
+        )
+        agent = SQLAnalyticsAgent(repository, llm)
+
+        agent.run(AgentRequest(
+            question="Revenue by year", metadata={"role": "finance_analyst", "dashboard_visualization": True},
+        ))
+
+        prompt = llm.generate.call_args.args[0]
+        self.assertIn("return individual observations only", prompt.lower())
+        self.assertIn("metric_value, unit, and document_id directly", prompt)
+        self.assertIn("without summing or averaging values", prompt)
+
+    def test_classifier_fallback_routes_summary_request_to_report_agent(self):
         intent = IntentClassifier.fallback("Summarize Vinamilk revenue and profit for 2024")
-        self.assertEqual(intent.intent, "hybrid")
+        self.assertEqual(intent.intent, "report")
         self.assertTrue(intent.needs_sql)
         self.assertTrue(intent.needs_knowledge)
+
+    def test_classifier_accepts_explicit_report_intent(self):
+        llm = Mock()
+        llm.generate.return_value = (
+            '{"intent":"report","needs_knowledge":true,"needs_sql":true,'
+            '"output_mode":"answer","confidence":0.9}'
+        )
+        intent = IntentClassifier(llm).classify("Summarize these company documents")
+        self.assertEqual(intent.intent, "report")
+
+    def test_report_intent_falls_back_to_hybrid_when_report_agent_is_not_configured(self):
+        classifier = Mock()
+        classifier.classify.return_value = IntentClassifier.fallback("Summarize these company documents")
+        hybrid = Mock()
+        hybrid.run.return_value = AgentResult(answer="grounded summary", agent="hybrid")
+        unused = Mock()
+        router = AgentRouter(classifier, unused, unused, hybrid, unused)
+
+        result = router.route(AgentRequest(question="Summarize these company documents"))
+
+        self.assertEqual(result.agent, "hybrid")
+        hybrid.run.assert_called_once()
+
+    def test_explicit_dashboard_output_is_not_rewritten_to_report(self):
+        llm = Mock()
+        llm.generate.return_value = (
+            '{"intent":"dashboard","needs_knowledge":false,"needs_sql":true,'
+            '"output_mode":"dashboard","confidence":0.9}'
+        )
+        intent = IntentClassifier(llm).classify("Summarize these metrics in a dashboard")
+        self.assertEqual(intent.intent, "dashboard")
+        self.assertEqual(intent.output_mode, "dashboard")
 
     def test_document_metadata_counts_are_analytics_even_if_llm_says_knowledge(self):
         llm = Mock()
@@ -70,6 +137,30 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(intent.intent, "analytics")
         self.assertFalse(intent.needs_knowledge)
         self.assertTrue(intent.needs_sql)
+
+        report_count_intent = IntentClassifier(llm).classify(
+            "How many annual reports were published each year?"
+        )
+        self.assertEqual(report_count_intent.intent, "analytics")
+        self.assertTrue(report_count_intent.needs_sql)
+
+    def test_report_counts_are_analytics_not_document_summaries(self):
+        intent = IntentClassifier.fallback("How many annual reports were published each year?")
+        self.assertEqual(intent.intent, "analytics")
+        self.assertFalse(intent.needs_knowledge)
+        self.assertTrue(intent.needs_sql)
+
+        report = Mock()
+        unused = Mock()
+        unused.run.return_value = AgentResult(answer="count", agent="analytics")
+        classifier = Mock()
+        classifier.classify.return_value = intent
+        router = AgentRouter(classifier, unused, unused, unused, unused, report)
+        result = router.route(AgentRequest(question="How many annual reports were published each year?"))
+
+        self.assertEqual(result.agent, "analytics")
+        unused.run.assert_called_once()
+        report.run.assert_not_called()
 
     def test_financial_fact_questions_use_both_verified_analytics_and_documents(self):
         intent = IntentClassifier.fallback("What was Vinamilk's revenue in 2024?")
@@ -148,6 +239,20 @@ class AgentFlowTest(unittest.TestCase):
                 report.run.assert_called_once()
                 unused.run.assert_not_called()
 
+    def test_mentioning_an_annual_report_does_not_force_report_generation(self):
+        question = "What does the annual report say about governance?"
+        classifier = Mock()
+        classifier.classify.return_value = IntentClassifier.fallback(question)
+        knowledge, unused, report = Mock(), Mock(), Mock()
+        knowledge.run.return_value = AgentResult(answer="source answer", agent="knowledge")
+        router = AgentRouter(classifier, knowledge, unused, unused, unused, report)
+
+        result = router.route(AgentRequest(question=question))
+
+        self.assertEqual(result.agent, "knowledge")
+        knowledge.run.assert_called_once()
+        report.run.assert_not_called()
+
     def test_router_keeps_selected_destination_when_agent_raises(self):
         classifier = Mock()
         classifier.classify.return_value = IntentClassifier.fallback("What does the policy say?")
@@ -225,9 +330,31 @@ class AgentFlowTest(unittest.TestCase):
         hybrid.run.return_value = source
         llm = Mock()
         llm.generate.return_value = "Unsupported figure [S9]"
-        result = ReportAgent(hybrid=hybrid, llm=llm).run(AgentRequest(question="summarize report"))
+        result = ReportAgent(knowledge=hybrid, llm=llm).run(AgentRequest(question="summarize report"))
         self.assertEqual(result.answer, "The answer was withheld because its citations could not be verified. Please retry the question.")
+        self.assertEqual(result.agent, "report")
         self.assertTrue(result.metadata["citation_validation_failed"])
+
+    def test_executive_report_distinguishes_documented_initiatives_from_inferred_risks(self):
+        knowledge = Mock()
+        knowledge.run.return_value = AgentResult(answer="Source passages", agent="knowledge", evidence=[
+            Evidence(
+                citation_id="S1", source_type="document", source="2025 report, page 104",
+                content="The company reported leadership training and a 360-degree assessment.",
+            )
+        ])
+        llm = Mock()
+        llm.generate.return_value = "The report describes leadership training and a 360-degree assessment [S1]."
+
+        result = ReportAgent(knowledge=knowledge, llm=llm).run(
+            AgentRequest(question="Summarize the options and risks for leadership")
+        )
+
+        prompt = llm.generate.call_args.args[0]
+        self.assertIn("distinguish report-stated initiatives from actual alternatives", prompt)
+        self.assertIn("List a risk only when the cited evidence explicitly identifies it", prompt)
+        self.assertIn("say so clearly", prompt)
+        self.assertEqual(result.agent, "report")
 
     def test_report_financial_summary_uses_matching_metric_without_inventing_reconciliation(self):
         hybrid = Mock()
@@ -237,15 +364,55 @@ class AgentFlowTest(unittest.TestCase):
         ])
         llm = Mock()
         llm.generate.return_value = "Vinamilk reported total consolidated revenue of 61.824 trillion VND and consolidated profit after tax of 9.453 trillion VND [1]."
-        result = ReportAgent(hybrid=hybrid, llm=llm).run(AgentRequest(question="Summarize revenue and profit"))
+        result = ReportAgent(knowledge=hybrid, llm=llm).run(AgentRequest(question="Summarize revenue and profit"))
         self.assertIn("61.824T", llm.generate.call_args.args[0])
         self.assertIn("return exactly two concise bullets", llm.generate.call_args.args[0])
         self.assertIn("do not invent an accounting basis or reconciliation", llm.generate.call_args.args[0])
+        self.assertIn("never convert or rescale values", llm.generate.call_args.args[0])
+        self.assertIn("tỷ to triệu", llm.generate.call_args.args[0])
         self.assertNotIn("Include both headline and statement figures for every requested metric", llm.generate.call_args.args[0])
         self.assertIn("Vietnamese periods group thousands", llm.generate.call_args.args[0])
         self.assertIn("Priority IDs: [S7]", llm.generate.call_args.args[0])
         self.assertEqual(result.answer, "Vinamilk reported total consolidated revenue of 61.824 trillion VND and consolidated profit after tax of 9.453 trillion VND [S7].")
         self.assertTrue(hybrid.run.call_args.args[0].metadata["evidence_only"])
+
+    def test_financial_report_rejects_rescaled_or_rounded_cited_values(self):
+        evidence = [Evidence(
+            citation_id="S3", source_type="document", source="annual report",
+            content="Total consolidated revenue 2024; profit after tax 2024; tỷ đồng tỷ đồng 9.453 61.824",
+        )]
+
+        self.assertTrue(_financial_facts_match_cited_evidence(
+            "Revenue 61.824 tỷ đồng and profit 9.453 tỷ đồng [S3]", evidence,
+        ))
+        self.assertFalse(_financial_facts_match_cited_evidence(
+            "Revenue 61.824 triệu đồng and profit 9.453 triệu đồng [S3]", evidence,
+        ))
+        self.assertFalse(_financial_facts_match_cited_evidence(
+            "Revenue 61.8 tỷ đồng and profit 9.453 tỷ đồng [S3]", evidence,
+        ))
+        self.assertFalse(_financial_facts_match_cited_evidence(
+            "Revenue 61.824 billion USD and profit 9.453 billion USD [S3]", evidence,
+        ))
+
+    def test_report_withholds_a_financial_answer_with_a_cited_unit_mismatch(self):
+        hybrid = Mock()
+        hybrid.run.return_value = AgentResult(answer="Revenue [S1]", agent="hybrid", evidence=[
+            Evidence(
+                citation_id="S1", source_type="document", source="annual report",
+                content="Revenue 2024; profit 2024; tỷ đồng tỷ đồng 9.453 61.824",
+            )
+        ])
+        llm = Mock()
+        llm.generate.return_value = "Revenue 61.824 triệu đồng and profit 9.453 triệu đồng [S1]"
+
+        result = ReportAgent(knowledge=hybrid, llm=llm).run(
+            AgentRequest(question="Summarize revenue and profit")
+        )
+
+        self.assertTrue(result.metadata["financial_evidence_validation_failed"])
+        self.assertEqual(result.agent, "report")
+        self.assertIn("withheld", result.answer)
 
     def test_numeric_report_citations_map_to_prompt_evidence_and_reject_out_of_range(self):
         evidence = [

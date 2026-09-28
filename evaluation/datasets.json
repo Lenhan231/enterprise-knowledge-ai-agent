@@ -1,58 +1,27 @@
 [
   {
     "id": "q01",
-    "question": "According to Vinamilk's 2023 Annual Report, what was the company's total consolidated revenue in 2023?"
+    "question": "According to Vinamilk's 2023 Annual Report, what was the company's total consolidated revenue in 2023?",
+    "expected_document_id": "VNM-AR-2023-EN"
   },
   {
     "id": "q02",
-    "question": "According to Vinamilk's 2023 Annual Report, what was its consolidated net profit after tax in 2023?"
+    "question": "According to Vinamilk's 2023 Annual Report, what was its consolidated net profit after tax in 2023?",
+    "expected_document_id": "VNM-AR-2023-EN"
   },
   {
     "id": "q03",
-    "question": "By how much did Vinamilk's total consolidated revenue increase year over year in 2023?"
+    "question": "By how much did Vinamilk's total consolidated revenue increase year over year in 2023?",
+    "expected_document_id": "VNM-AR-2023-EN"
   },
   {
     "id": "q04",
-    "question": "What was Vinamilk's international business net revenue in 2023, and how much came from overseas subsidiaries versus exports?"
+    "question": "What was Vinamilk's international business net revenue in 2023, and how much came from overseas subsidiaries versus exports?",
+    "expected_document_id": "VNM-AR-2023-EN"
   },
   {
     "id": "q05",
-    "question": "How many online orders did Vinamilk report in 2023?"
-  },
-  {
-    "id": "q06",
-    "question": "What brand value did Vinamilk report for 2023, and how did it compare with the previous year?"
-  },
-  {
-    "id": "q07",
-    "question": "What carbon-neutrality milestone did Vinamilk report for its factories and farms, and which standard was used?"
-  },
-  {
-    "id": "q08",
-    "question": "What was Vinamilk's total dividend declared per share in 2023?"
-  },
-  {
-    "id": "q09",
-    "question": "According to Apple's 2025 Environmental Progress Report, by what percentage did gross greenhouse gas emissions decrease compared with the 2015 baseline?"
-  },
-  {
-    "id": "q10",
-    "question": "By what percentage did Apple reduce the carbon footprint of the carbon-neutral Mac mini compared with its business-as-usual scenario?"
-  },
-  {
-    "id": "q11",
-    "question": "How much clean energy did Apple's suppliers support worldwide according to the 2025 Environmental Progress Report?"
-  },
-  {
-    "id": "q12",
-    "question": "What waste diversion rate did Apple achieve at its corporate facilities in 2024?"
-  },
-  {
-    "id": "q13",
-    "question": "According to Apple's environmental report, how much lower are ocean shipping emissions than air transport emissions on average?"
-  },
-  {
-    "id": "q14",
-    "question": "What is Apple's private internal hiring budget for 2026?"
+    "question": "How many online orders did Vinamilk report in 2023?",
+    "expected_document_id": "VNM-AR-2023-EN"
   }
 ]

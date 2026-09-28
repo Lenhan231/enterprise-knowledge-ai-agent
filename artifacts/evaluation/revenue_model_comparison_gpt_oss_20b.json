@@ -1,0 +1,29 @@
+{
+  "question_id": "q01",
+  "question": "According to Vinamilk's 2023 Annual Report, what was the company's total consolidated revenue in 2023?",
+  "expected_document_id": "VNM-AR-2023-EN",
+  "retrieved_document_ids": [
+    "VNM-AR-2023-EN",
+    "VNM-AR-2020-VI",
+    "VNM-AR-2022-VI",
+    "VNM-AR-2021-VI",
+    "VNM-AR-2024-VI"
+  ],
+  "models": {
+    "gpt_oss_20b": {
+      "model": "openai/gpt-oss-20b",
+      "answer": "The company’s total consolidated revenue in 2023 was VND 51,465,324 million. [S1]",
+      "source_ids": [
+        "S1"
+      ],
+      "cited_document_ids": [
+        "VNM-AR-2023-EN"
+      ],
+      "cited_pages": [
+        173
+      ],
+      "insufficient_context": false,
+      "latency_ms": 1986.8256999761797
+    }
+  }
+}

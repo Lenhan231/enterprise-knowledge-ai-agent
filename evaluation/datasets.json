@@ -2,26 +2,44 @@
   {
     "id": "q01",
     "question": "According to Vinamilk's 2023 Annual Report, what was the company's total consolidated revenue in 2023?",
+    "metric": "total revenue",
+    "entity_scope": "consolidated group",
+    "expected_answer": "60,479 billion VND",
+    "expected_pages": [2, 7, 15, 17],
     "expected_document_id": "VNM-AR-2023-EN"
   },
   {
     "id": "q02",
     "question": "According to Vinamilk's 2023 Annual Report, what was its consolidated net profit after tax in 2023?",
+    "metric": "net profit after tax",
+    "entity_scope": "consolidated group",
+    "expected_answer": "9,019 billion VND",
+    "expected_pages": [7, 15, 17, 115, 116],
     "expected_document_id": "VNM-AR-2023-EN"
   },
   {
     "id": "q03",
     "question": "By how much did Vinamilk's total consolidated revenue increase year over year in 2023?",
+    "metric": "total revenue increase year over year",
+    "entity_scope": "consolidated group",
+    "expected_answer": "404 billion VND",
+    "expected_pages": [2, 7],
     "expected_document_id": "VNM-AR-2023-EN"
   },
   {
     "id": "q04",
     "question": "What was Vinamilk's international business net revenue in 2023, and how much came from overseas subsidiaries versus exports?",
+    "metric": "international business net revenue subsidiaries exports",
+    "expected_answer": "9,752 billion VND total: 5,039 billion VND from overseas subsidiaries and 4,713 billion VND from exports",
+    "expected_pages": [8],
     "expected_document_id": "VNM-AR-2023-EN"
   },
   {
     "id": "q05",
     "question": "How many online orders did Vinamilk report in 2023?",
+    "metric": "online orders",
+    "expected_answer": "4 million online orders",
+    "expected_pages": [3],
     "expected_document_id": "VNM-AR-2023-EN"
   }
 ]

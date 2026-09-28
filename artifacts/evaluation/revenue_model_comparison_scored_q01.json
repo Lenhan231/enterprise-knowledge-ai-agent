@@ -1,0 +1,79 @@
+{
+  "question_id": "q01",
+  "question": "According to Vinamilk's 2023 Annual Report, what was the company's total consolidated revenue in 2023?",
+  "expected_answer": "60,479 billion VND",
+  "expected_document_id": "VNM-AR-2023-EN",
+  "expected_pages": [
+    2,
+    7,
+    15,
+    17
+  ],
+  "scoring_method": "Answer and evidence faithfulness use numeric-value overlap, not semantic entailment.",
+  "retrieved_document_ids": [
+    "VNM-AR-2023-EN",
+    "VNM-AR-2020-VI",
+    "VNM-AR-2022-VI",
+    "VNM-AR-2021-VI",
+    "VNM-AR-2024-VI"
+  ],
+  "models": {
+    "gpt_oss_20b": {
+      "model": "openai/gpt-oss-20b",
+      "answer": "The company’s total consolidated revenue in 2023 was VND 51,465,324 million. [S1]",
+      "source_ids": [
+        "S1"
+      ],
+      "cited_document_ids": [
+        "VNM-AR-2023-EN"
+      ],
+      "cited_pages": [
+        173
+      ],
+      "answer_correct": false,
+      "document_correct": true,
+      "page_correct": false,
+      "faithful_to_cited_evidence": true,
+      "expected_evidence_retrieved": true,
+      "failure_type": "metric_disambiguation",
+      "insufficient_context": false,
+      "latency_ms": 2191.114399989601
+    },
+    "gemini_flash": {
+      "model": "gemini-2.5-flash",
+      "answer": "Insufficient information in the retrieved documents.",
+      "source_ids": [],
+      "cited_document_ids": [],
+      "cited_pages": [],
+      "answer_correct": false,
+      "document_correct": false,
+      "page_correct": false,
+      "faithful_to_cited_evidence": true,
+      "expected_evidence_retrieved": true,
+      "failure_type": "insufficient_context",
+      "insufficient_context": true,
+      "latency_ms": 4253.092800005106
+    },
+    "qwen3": {
+      "model": "qwen/qwen3.8-27b",
+      "answer": "According to Vinamilk's 2023 Annual Report, the company's total consolidated revenue in 2023 was VND 60,479 billion [S2].",
+      "source_ids": [
+        "S2"
+      ],
+      "cited_document_ids": [
+        "VNM-AR-2023-EN"
+      ],
+      "cited_pages": [
+        7
+      ],
+      "answer_correct": true,
+      "document_correct": true,
+      "page_correct": true,
+      "faithful_to_cited_evidence": true,
+      "expected_evidence_retrieved": true,
+      "failure_type": null,
+      "insufficient_context": false,
+      "latency_ms": 604.3718000000808
+    }
+  }
+}

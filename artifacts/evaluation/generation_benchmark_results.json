@@ -2,49 +2,31 @@
   {
     "model_name": "gpt_oss_20b",
     "sample_id": "q01",
-    "answer": "Insufficient information in the retrieved documents.",
-    "source_ids": [],
-    "insufficient_context": true,
-    "latency_ms": 8874.94660000084
+    "answer": "The company\u2019s total consolidated revenue in 2023 was VND\u202f51,465,324\u202fmillion. [S1]",
+    "source_ids": [
+      "S1"
+    ],
+    "insufficient_context": false,
+    "latency_ms": 2118.5225999797694
   },
   {
     "model_name": "gpt_oss_20b",
     "sample_id": "q02",
-    "answer": "Insufficient information in the retrieved documents.",
-    "source_ids": [],
-    "insufficient_context": true,
-    "latency_ms": 551.0606000025291
+    "answer": "According to Vinamilk\u2019s 2023 Annual Report, its consolidated net profit after tax for the year ended 31\u202fDecember\u202f2023 was **VND\u202f8,247,142\u202fmillion**[S1].",
+    "source_ids": [
+      "S1"
+    ],
+    "insufficient_context": false,
+    "latency_ms": 651.059299998451
   },
   {
-    "model_name": "qwen3",
-    "sample_id": "q01",
-    "answer": "Insufficient information in the retrieved documents.",
-    "source_ids": [],
-    "insufficient_context": true,
-    "latency_ms": 1032.8144000086468
-  },
-  {
-    "model_name": "qwen3",
-    "sample_id": "q02",
-    "answer": "Insufficient information in the retrieved documents.",
-    "source_ids": [],
-    "insufficient_context": true,
-    "latency_ms": 421.9916000001831
-  },
-  {
-    "model_name": "gpt_oss_120b",
-    "sample_id": "q01",
-    "answer": "Insufficient information in the retrieved documents.",
-    "source_ids": [],
-    "insufficient_context": true,
-    "latency_ms": 690.1624999882188
-  },
-  {
-    "model_name": "gpt_oss_120b",
-    "sample_id": "q02",
-    "answer": "Insufficient information in the retrieved documents.",
-    "source_ids": [],
-    "insufficient_context": true,
-    "latency_ms": 627.6229999930365
+    "model_name": "gpt_oss_20b",
+    "sample_id": "q03",
+    "answer": "Vinamilk\u2019s total consolidated revenue rose by **VND\u202f404\u202fbillion** year\u2011over\u2011year in 2023. [S1]",
+    "source_ids": [
+      "S1"
+    ],
+    "insufficient_context": false,
+    "latency_ms": 11215.45079999487
   }
 ]

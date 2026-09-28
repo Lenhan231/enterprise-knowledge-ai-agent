@@ -17,7 +17,7 @@ Only hash-matched v6 reports may be compared.
 
 | Proposal requirement | Status | Evidence / remaining work |
 | --- | --- | --- |
-| Regression suite | Verified locally | `.venv/bin/python -m unittest discover -s tests` passed 412 tests on 2026-09-28. This is repository regression coverage only; it does not close proposal rows whose live/provider or human-review evidence is still pending. |
+| Regression suite | Verified locally | `uv run python -m unittest discover -s tests -q` passed 420 tests on 2026-09-28. This is repository regression coverage only; it does not close proposal rows whose live/provider or human-review evidence is still pending. |
 | Enterprise document Q&A with grounded citations | Partial | [RAG and agents](technical/agents-and-evaluation.md); small live corpus and retrieval checks exist. Expand QA cases and evaluate answer quality. |
 | PDF, Word, Excel, PowerPoint, scans and images | Partial | [Processing](technical/document-processing.md); PDF/DOCX/XLSX/PPTX/TXT/MD/images parse; DOCX table chunks keep column labels and row relationships for RAG while preserving structured review tables. A live one-fixture DOCX upload/Storage/table-readback and analyst-vs-employee retrieval smoke passed and cleaned up its data ([artifact](../artifacts/evaluation/vinamilk-docx-table-live-e2e-20260928.json)). Office ZIP expansion is bounded. Legacy XLS, paired OCR across real scans, broader real-file tests and user verification remain. |
 | Layout, tables, figures, invoices, formulas, metadata | Partial | XLSX formulas and DOCX Office Math text runs are included in retrieval chunks with parser metadata; PDF tables persist as structured rows. Optional Paddle parsing now supports chart and formula recognition (`DOCUMENT_PADDLE_FORMULA_RECOGNITION=true` also enables layout) and retains returned text/LaTeX, page coordinates and labels. It remains off by default and has adapter-mock coverage only; real formula extraction and chart accuracy are unmeasured. The latest [manifest metadata audit](../artifacts/evaluation/vinamilk-corpus-metadata-audit-access-policy-20260928.json) checks 26 ready sources (4,753 chunks, 52,283 chunk-field checks) with no metadata mismatches. A generated TIFF smoke verifies Tesseract OCR, borderless-table reconstruction and transactional Supabase table readback; this is a path check, not representative accuracy evidence. Financial OCR/table anchors remain narrow; paired scan/layout labels, formula accuracy/equation evaluation, generated figure captions, invoices and representative multi-format quality evaluation remain. |
@@ -74,7 +74,7 @@ every named package by default.
 ## Current validation snapshot
 
 - Corpus metadata audit: `uv run python scripts/evaluate_corpus_metadata.py`; latest read-only artifact checks all 26 ready manifest sources (364 document fields and 52,283 chunk fields) with zero propagation mismatches, across 4,753 chunks. This is not automatic extraction accuracy.
-- Automated suite: `uv run python -m unittest discover -s tests -q` (**399
+- Automated suite: `uv run python -m unittest discover -s tests -q` (**420
   passed on 2026-09-28**; includes processing, evaluation, retrieval, agent,
   API and dashboard checks, including OCR/embedding Kaggle notebook setup
   validation and authenticated upload/admin-processing RBAC regressions).

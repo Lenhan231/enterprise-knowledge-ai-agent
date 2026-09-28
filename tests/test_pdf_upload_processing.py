@@ -362,6 +362,9 @@ class PDFUploadProcessingTest(unittest.TestCase):
             "paddle_layout": False, "ocr_fallback": True, "extract_tables": False,
             "chunk_size": 800, "chunk_overlap": 100,
         })
+        # Keep this parser unit test independent of whether Tesseract is installed
+        # on the host; the OCR call itself is replaced below.
+        processor.ocr_available = True
 
         with patch.object(
             processor,

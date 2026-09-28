@@ -96,6 +96,7 @@ class DocumentProcessor:
             result = PDFProcessor({
                 "paddle_layout": self.paddle_layout,
                 "paddle_formula_recognition": self.paddle_formula_recognition,
+                "vision_captioning": self.vision_captioning,
                 "ocr_fallback": True,
                 "ocr_language": "vie+eng",
                 "tesseract_psm": self.config.get("tesseract_psm", 11),

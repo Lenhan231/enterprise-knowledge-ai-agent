@@ -81,10 +81,11 @@ model ID and generated-content provenance. If the provider is unavailable or
 rejects the image, the parser keeps the OCR result and logs only the error type.
 The model accepts visual input through Groq's documented [vision API](https://console.groq.com/docs/vision).
 Caption text is labeled as unverified in retrieval context, and the KPI candidate
-extractor excludes model-generated chunks as source evidence.
-PDF/PPTX-embedded figures do not yet use this caption path, and caption quality
-has not been manually evaluated. Treat captions as retrieval hints, not
-verified evidence.
+extractor excludes model-generated chunks as source evidence. PDFs use the same
+opt-in setting to caption up to three prominent embedded raster figures per
+document; each caption keeps its source page and PDF-point bounding box. PPTX
+figures and vector-only PDF charts are not covered. Caption quality has not been
+manually evaluated. Treat captions as retrieval hints, not verified evidence.
 DOCX chunks inherit the most recent Word `Heading 1`–`Heading 9` paragraph as
 `section_title`; PPTX chunks use the slide title placeholder; XLSX chunks use
 the worksheet name. Native PDF headings use short, visually prominent lines;
@@ -174,7 +175,7 @@ PP-Structure chart recognition and retains textual chart/figure blocks as
 retrieval chunks with layout labels and page coordinates. Paddle labels such as
 `figure_caption` and `table_caption` are also retained. Production seed/upload
 configuration disables this path, and chart recognition has only adapter-mock
-coverage; real-chart quality, captions for PDF/PPTX figures, image interpretation
+coverage; real-chart quality, PPTX figure captions, image interpretation
 and diagram understanding remain unverified. Standalone image uploads have an
 independent, opt-in Groq vision caption path; no caption-quality review has been
 completed.

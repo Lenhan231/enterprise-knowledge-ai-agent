@@ -387,7 +387,10 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
-            patch.dict("os.environ", {"DOCUMENT_PADDLE_FORMULA_RECOGNITION": "true"}),
+            patch.dict("os.environ", {
+                "DOCUMENT_PADDLE_FORMULA_RECOGNITION": "true",
+                "DOCUMENT_VISION_CAPTIONS": "true",
+            }),
             patch.object(DocumentProcessor, "__init__", capture_processor_settings),
         ):
             counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
@@ -405,6 +408,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
 
         self.assertEqual(response["processing_status"], "ready")
         self.assertTrue(processor_settings["paddle_formula_recognition"])
+        self.assertTrue(processor_settings["vision_captioning"])
         saved_tables = structured_store.save_document_tables.call_args.args[2]
         self.assertEqual(len(saved_tables), 1)
         self.assertEqual(saved_tables[0]["columns"], ["label", "31/12/2024", "31/12/2023"])

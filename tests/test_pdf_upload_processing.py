@@ -108,6 +108,35 @@ class PDFUploadProcessingTest(unittest.TestCase):
         self.assertIn("61.8 trillion", combined_text)
         self.assertEqual(result["chunks"][0]["metadata"]["text_extraction_method"], "pymupdf+tesseract")
 
+    def test_opt_in_caption_crops_embedded_pdf_figure_with_source_page_metadata(self):
+        pdf = fitz.open()
+        page = pdf.new_page(width=600, height=800)
+        page.insert_text((40, 50), "Annual results")
+        pixmap = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, 200, 200), False)
+        page.insert_image(fitz.Rect(50, 100, 300, 350), pixmap=pixmap)
+        source = pdf.tobytes()
+        pdf.close()
+
+        with patch("core.llm.groq_provider.GroqProvider") as provider_type:
+            provider = provider_type.return_value
+            provider.caption_image.return_value = "A bar chart compares revenue by year."
+            provider.vision_model_name = "qwen/qwen3.8-27b"
+            result = PDFProcessor({
+                "paddle_layout": False, "ocr_fallback": False,
+                "extract_tables": False, "vision_captioning": True,
+            }).process({"content": source, "metadata": {"document_id": "PDF-FIGURE"}})
+
+        provider.caption_image.assert_called_once()
+        image_bytes, mime_type = provider.caption_image.call_args.args
+        self.assertTrue(image_bytes.startswith(b"\x89PNG\r\n\x1a\n"))
+        self.assertEqual(mime_type, "image/png")
+        provider.close.assert_called_once()
+        caption = next(chunk for chunk in result["chunks"] if chunk["metadata"].get("layout_type") == "figure_caption")
+        self.assertEqual(caption["metadata"]["page_number"], 1)
+        self.assertEqual(caption["metadata"]["document_id"], "PDF-FIGURE")
+        self.assertEqual(caption["metadata"]["caption_model"], "qwen/qwen3.8-27b")
+        self.assertTrue(caption["metadata"]["is_model_generated"])
+
     def test_detected_pdf_tables_have_explicit_layout_metadata(self):
         table = SimpleNamespace(
             header=SimpleNamespace(names=["Metric"], external=False),

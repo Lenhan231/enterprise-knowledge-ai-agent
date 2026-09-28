@@ -75,6 +75,8 @@ class PDFProcessor:
         self.config.setdefault("tesseract_psm", 11)
         self.config.setdefault("tesseract_table_psm", 3)
         self.config.setdefault("ocr_render_scale", 1.5)
+        self.config.setdefault("vision_captioning", False)
+        self.config.setdefault("vision_caption_max_images", 3)
 
         # Initialize OCR if needed
         if self.config.get("ocr_fallback", False):
@@ -113,7 +115,8 @@ class PDFProcessor:
 
         if self.config.get("paddle_layout", True):
             try:
-                return self._process_with_paddle(pdf_source, file_path, document)
+                result = self._process_with_paddle(pdf_source, file_path, document)
+                return self._caption_pdf_images(result, pdf_source, document)
             except ImportError:
                 logger.warning("PaddleOCR is unavailable; using the existing PDF/OCR path")
             except Exception:
@@ -149,7 +152,10 @@ class PDFProcessor:
             overlap = int(self.config.get("chunk_overlap", 120))
             chunking_strategy = self.config.get("chunking_strategy", "sentence")
             for start, end in split_ranges(
-                page_text, size=chunk_size, overlap=overlap, strategy=chunking_strategy
+                page_text,
+                size=chunk_size,
+                overlap=overlap,
+                strategy=chunking_strategy,
             ):
                 text = page_text[start:end].strip()
                 if text:
@@ -176,8 +182,74 @@ class PDFProcessor:
                             "parser": "pymupdf",
                         },
                     })
+        return self._caption_pdf_images({"chunks": chunks, "tables": tables}, pdf_source, document)
 
-        return {"chunks": chunks, "tables": tables}
+    def _caption_pdf_images(self, result: Dict[str, Any], source: Any, document: Dict[str, Any]) -> Dict[str, Any]:
+        if not self.config["vision_captioning"]:
+            return result
+
+        pdf = fitz.open(stream=source, filetype="pdf") if isinstance(source, bytes) else fitz.open(source)
+        try:
+            candidates = []
+            for page_number, page in enumerate(pdf, start=1):
+                page_area = max(page.rect.get_area(), 1)
+                for image in page.get_image_info(xrefs=True):
+                    rect = fitz.Rect(image.get("bbox", (0, 0, 0, 0))).intersect(page.rect)
+                    area_ratio = rect.get_area() / page_area
+                    if 0.02 <= area_ratio <= 0.85:
+                        candidates.append((area_ratio, page_number, rect))
+            candidates.sort(reverse=True, key=lambda item: item[0])
+            selected = candidates[:max(0, int(self.config["vision_caption_max_images"]))]
+            if not selected:
+                return result
+
+            from core.llm.groq_provider import GroqProvider
+
+            try:
+                provider = GroqProvider()
+            except Exception as error:
+                logger.warning("Vision caption provider unavailable (%s)", type(error).__name__)
+                return result
+            try:
+                metadata = document.get("metadata", {})
+                for _, page_number, rect in selected:
+                    try:
+                        page = pdf[page_number - 1]
+                        scale = min(2.0, 2048 / max(rect.width, rect.height))
+                        image = page.get_pixmap(
+                            matrix=fitz.Matrix(scale, scale), clip=rect, alpha=False,
+                        ).tobytes("png")
+                        caption = provider.caption_image(image, "image/png")
+                    except Exception as error:
+                        logger.warning(
+                            "Vision caption failed for PDF page %d (%s)",
+                            page_number, type(error).__name__,
+                        )
+                        continue
+                    result["chunks"].append({
+                        "text": f"AI-generated image caption (unverified): {caption}",
+                        "metadata": {
+                            **metadata,
+                            "chunk_index": len(result["chunks"]),
+                            "page_number": page_number,
+                            "bbox": list(rect),
+                            "bbox_coordinate_system": "pdf_points",
+                            "element_type": "figure_caption",
+                            "layout_type": "figure_caption",
+                            "text_extraction_method": "groq_vision_caption",
+                            "caption_model": provider.vision_model_name,
+                            "is_model_generated": True,
+                            "parser": "pymupdf.embedded_image_caption",
+                        },
+                    })
+            finally:
+                try:
+                    provider.close()
+                except Exception as error:
+                    logger.warning("Could not close vision caption provider (%s)", type(error).__name__)
+            return result
+        finally:
+            pdf.close()
 
     def _process_with_paddle(
         self, source: Any, file_path: Optional[str], document: Dict[str, Any]

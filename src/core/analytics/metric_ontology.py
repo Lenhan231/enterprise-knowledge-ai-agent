@@ -19,12 +19,15 @@ METRIC_ONTOLOGY = {
             "total revenue",
             "consolidated revenue",
             "consolidated net revenue",
+            "revenue from sales of goods and provision of services",
             "doanh thu hợp nhất",
             "tổng doanh thu hợp nhất",
+            "doanh thu bán hàng và cung cấp dịch vụ",
         ),
         "source_labels": (
             "total consolidated revenue", "total revenue", "consolidated revenue", "consolidated net revenue",
-            "tổng doanh thu hợp nhất", "doanh thu hợp nhất",
+            "revenue from sales of goods and provision of services",
+            "tổng doanh thu hợp nhất", "doanh thu hợp nhất", "doanh thu bán hàng và cung cấp dịch vụ",
         ),
     },
     "profit_after_tax": {
@@ -38,6 +41,7 @@ METRIC_ONTOLOGY = {
             "consolidated net profit after tax",
             "net profit after tax",
             "lợi nhuận sau thuế",
+            "lợi nhuận sau thuế tndn",
             "lợi nhuận hợp nhất sau thuế",
             "lợi nhuận sau thuế hợp nhất",
         ),
@@ -45,6 +49,7 @@ METRIC_ONTOLOGY = {
             "profit after tax", "after-tax profit", "net income",
             "consolidated net profit after tax", "net profit after tax",
             "lợi nhuận sau thuế", "lợi nhuận sau thuế hợp nhất",
+            "lợi nhuận sau thuế tndn",
         ),
     },
     "profit_before_tax": {

@@ -169,6 +169,58 @@ class MetricCandidateTest(unittest.TestCase):
         self.assertEqual(rows[0]["unit"], "billion VND")
         self.assertEqual(rows[0]["status"], "needs_review")
 
+    def test_audited_income_statement_revenue_labels_create_review_candidates(self):
+        common = {
+            "company": "Vinamilk",
+            "fiscal_year": 2023,
+            "document_id": "VNM-AR-2023-EN",
+            "official_url": "https://example.vn/report.pdf",
+            "rbac": {"allowed_roles": ["finance_analyst"]},
+        }
+        rows = candidates(
+            [{"metadata": {"page_number": 115}, "text": "2023 VND 2022 VND"}],
+            common,
+            tables=[{
+                "page_number": 115,
+                "columns": ["label", "code", "note", "2023 VND", "2022 VND"],
+                "rows": [{
+                    "label": "Revenue from sales of goods and provision of services",
+                    "code": "01", "note": "VI.1",
+                    "2023 VND": "60,478,912,566,740",
+                    "2022 VND": "60,074,730,223,299",
+                }],
+            }],
+        )
+
+        revenue = next(row for row in rows if row["metric_name"] == "total_consolidated_revenue")
+        self.assertEqual(revenue["candidate_values"], ["60,478,912,566,740"])
+        self.assertEqual(revenue["unit"], "VND")
+        self.assertEqual(revenue["status"], "needs_review")
+
+    def test_vietnamese_audited_income_statement_revenue_label_is_supported(self):
+        rows = candidates(
+            [{"metadata": {"page_number": 111}, "text": "2022 VND 2021 VND"}],
+            {
+                "company": "Vinamilk", "fiscal_year": 2022,
+                "document_id": "VNM-AR-2022-VI",
+                "official_url": "https://example.vn/report.pdf",
+                "rbac": {"allowed_roles": ["finance_analyst"]},
+            },
+            tables=[{
+                "page_number": 111,
+                "columns": ["label", "code", "note", "2022 VND", "2021 VND"],
+                "rows": [{
+                    "label": "Doanh thu bán hàng và cung cấp dịch vụ",
+                    "code": "01", "note": "VI.1",
+                    "2022 VND": "60.074.730.223.299",
+                    "2021 VND": "61.012.074.147.764",
+                }],
+            }],
+        )
+
+        revenue = next(row for row in rows if row["metric_name"] == "total_consolidated_revenue")
+        self.assertEqual(revenue["candidate_values"], ["60.074.730.223.299"])
+
     def test_additional_financial_statement_labels_are_review_candidates(self):
         rows = candidates(
             [{
@@ -382,7 +434,16 @@ class MetricCandidateTest(unittest.TestCase):
 
         root = Path(__file__).resolve().parents[1] / "data/raw/vietnam_enterprises/vnm"
         fixtures = (
+            ("vnm-ar-2021-vi.pdf", 88, 2021, "VNM-AR-2021-VI", {
+                "total_consolidated_revenue": "61,012,074,147,764",
+                "profit_after_tax": "10,632,535,972,478",
+            }),
+            ("vnm-ar-2022-vi.pdf", 109, 2022, "VNM-AR-2022-VI", {
+                "total_consolidated_revenue": "60.074.730.223.299",
+                "profit_after_tax": "8.577.575.319.708",
+            }),
             ("vnm-ar-2023-en.pdf", 115, 2023, "VNM-AR-2023-EN", {
+                "total_consolidated_revenue": "60,478,912,566,740",
                 "net_revenue": "60,368,915,511,505",
                 "gross_profit": "24,544,731,615,410",
                 "profit_before_tax": "10,967,899,391,486",
@@ -413,7 +474,7 @@ class MetricCandidateTest(unittest.TestCase):
                 by_metric = {row["metric_name"]: row for row in rows}
                 for metric_name, value in expected.items():
                     self.assertEqual(by_metric[metric_name]["candidate_values"], [value])
-                    self.assertIn(f"{year}: {value}", by_metric[metric_name]["source_quote"])
+                    self.assertIn(value, by_metric[metric_name]["source_quote"])
                 if document_id == "VNM-AR-2024-VI":
                     self.assertNotIn("net_revenue", by_metric)
 

@@ -533,6 +533,29 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   saved parsed output, but durable/background jobs, OCR alternatives,
   layout-quality checks, and broad real-file validation remain.
 
+The manually reviewed financial extraction fixture now covers five Vinamilk
+annual-report pages from 2020–2024, with eleven labels/values transcribed from
+rendered pages and checked against period and unit. Run it with:
+
+```sh
+uv run python scripts/evaluate_document_extraction.py \\
+  --cases data/evaluation/vinamilk_document_extraction_cases.json --compact \\
+  --output artifacts/evaluation/vinamilk-document-extraction-multiyear-v3-20260928.json
+```
+
+The 2020 highlight and 2024 balance-sheet figures are in VND billion and VND
+million respectively; audited 2021–2023 income-statement values are in VND.
+The rule-based candidate extractor matched all 11 expected fields with 1.00
+anchor precision on these born-digital pages. The synthetic Tesseract raster
+conditions matched 1/11 exact text anchors and 3/11 normalized text anchors;
+normalized table-anchor recall was also 3/11 (exact table-anchor recall 0/11).
+These OCR pages are rasterizations of born-digital reports, not scanned source
+documents, and the sample is too small for accuracy or model-selection claims.
+Real-report regression coverage also found line-wrapped statement labels and
+the Vietnamese “lợi nhuận sau thuế TNDN” wording; metric matching now spans
+whitespace and recognizes that label. This verifies candidate creation and
+period-column selection, not OCR quality.
+
 The current Tesseract diagnostic uses ten born-digital report pages and the
 native PDF text layer as an unreviewed reference. The 2026-09-26 report is
 `artifacts/evaluation/vinamilk-ocr-tesseract-diagnostic-v3.json`: macro page

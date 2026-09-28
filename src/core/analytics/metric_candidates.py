@@ -36,9 +36,10 @@ def _label_matches(text: str) -> list[tuple[int, int, str, str]]:
     matches = []
     for key, labels in METRICS.items():
         for label in labels:
+            label_pattern = r"\s+".join(re.escape(part) for part in label.split())
             matches.extend(
                 (match.start(), match.end(), label, key)
-                for match in re.finditer(rf"(?<!\w){re.escape(label)}(?!\w)", text, re.IGNORECASE)
+                for match in re.finditer(rf"(?<!\w){label_pattern}(?!\w)", text, re.IGNORECASE)
             )
     return [
         item for item in matches

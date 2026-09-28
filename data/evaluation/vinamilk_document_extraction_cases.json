@@ -1,8 +1,8 @@
 {
-  "dataset_id": "VNM-MULTIYEAR-MANUAL-EXTRACTION-ANCHORS-V2",
+  "dataset_id": "VNM-MULTIYEAR-MANUAL-EXTRACTION-ANCHORS-V3",
   "reference_quality": "human_visually_checked_sampled_financial_fields",
-  "reference_method": "The selected strings and figures were manually transcribed from rendered images of each source PDF page and checked against visible labels/headings. The 2020 values come from the financial infographic on PDF page index 7 (printed pages 14-15); 2024 balance-sheet rows come from PDF page index 90 (printed pages 180-181).",
-  "limitations": "Two born-digital PDF pages and five sampled financial anchors only. Each OCR arm rasterizes its source page into a synthetic scan; neither is a real scanned-source benchmark. This is a reproducible diagnostic fixture, not representative document-extraction accuracy or a model-selection result.",
+  "reference_method": "The selected strings and figures were manually transcribed from rendered source PDF pages and visually checked against printed labels, reporting periods, and units. The 2020 values come from the infographic on PDF page index 7 (printed pages 14-15). The 2021, 2022, and 2023 revenue/profit values come from audited consolidated income statements on indices 87 (printed pages 174-175), 108 (printed page 111), and 114 (printed page 115). The 2024 balance-sheet rows come from index 90 (printed pages 180-181).",
+  "limitations": "Five born-digital annual-report pages and eleven sampled financial anchors only. The 2020 highlights are in VND billion; the 2021-2023 income-statement figures are in VND; 2024 balance-sheet rows are in VND million and retain their 2024/2023 column order. OCR arms rasterize source pages into synthetic scans; no real scanned-source benchmark is included. This is a reproducible diagnostic, not representative document-extraction accuracy or model-selection evidence.",
   "cases": [
     {
       "id": "ar2020-financial-infographic-p8",
@@ -24,6 +24,75 @@
           "label": "CONSOLIDATED NET PROFIT AFTER TAX",
           "metric_names": ["profit_after_tax"],
           "values": ["11,236"]
+        }
+      ]
+    },
+    {
+      "id": "ar2021-consolidated-income-p88",
+      "document_id": "VNM-AR-2021-VI",
+      "file": "data/raw/vietnam_enterprises/vnm/vnm-ar-2021-vi.pdf",
+      "official_url": "https://d8um25gjecm9v.cloudfront.net/cms/1650451537_6f22ffdd6ecd4ea5cc133b0046bc3085a10648db1369033c5dfe1daed93f04a7_1372ac1845.pdf",
+      "page_index": 87,
+      "printed_pages": [174, 175],
+      "raster_dpi": 180,
+      "fields": [
+        {
+          "id": "total-revenue-2021",
+          "label": "Revenue from sales of goods and provision of services 01 VI.1",
+          "metric_names": ["total_consolidated_revenue"],
+          "values": ["61,012,074,147,764"]
+        },
+        {
+          "id": "profit-after-tax-2021",
+          "label": "Net profit after tax (60 = 50 - 51 - 52) (carried forward to next page) 60",
+          "metric_names": ["profit_after_tax"],
+          "values": ["10,632,535,972,478"]
+        }
+      ]
+    },
+    {
+      "id": "ar2022-consolidated-income-p109",
+      "document_id": "VNM-AR-2022-VI",
+      "file": "data/raw/vietnam_enterprises/vnm/vnm-ar-2022-vi.pdf",
+      "official_url": "https://www.vinamilk.com.vn/bao-cao-thuong-nien/bao-cao/2022/download-file/vinamilk_ar_2022.pdf",
+      "page_index": 108,
+      "printed_pages": [111],
+      "raster_dpi": 180,
+      "fields": [
+        {
+          "id": "total-revenue-2022",
+          "label": "Doanh thu bán hàng và cung cấp dịch vụ 01 VI.1",
+          "metric_names": ["total_consolidated_revenue"],
+          "values": ["60.074.730.223.299"]
+        },
+        {
+          "id": "profit-after-tax-2022",
+          "label": "Lợi nhuận sau thuế TNDN (60 = 50 - 51 - 52) (mang sang trang sau) 60",
+          "metric_names": ["profit_after_tax"],
+          "values": ["8.577.575.319.708"]
+        }
+      ]
+    },
+    {
+      "id": "ar2023-consolidated-income-p115",
+      "document_id": "VNM-AR-2023-EN",
+      "file": "data/raw/vietnam_enterprises/vnm/vnm-ar-2023-en.pdf",
+      "official_url": "https://www.vinamilk.com.vn/bao-cao-thuong-nien/bao-cao/2023/_astro/VINAMILK-ANNUAL-REPORT-2023.CA8i9BsJ.pdf",
+      "page_index": 114,
+      "printed_pages": [115],
+      "raster_dpi": 180,
+      "fields": [
+        {
+          "id": "total-revenue-2023",
+          "label": "Revenue from sales of goods and provision of services 01 VI.1",
+          "metric_names": ["total_consolidated_revenue"],
+          "values": ["60,478,912,566,740"]
+        },
+        {
+          "id": "profit-after-tax-2023",
+          "label": "Net profit after tax (60 = 50 - 51 - 52) (carried forward to next page) 60",
+          "metric_names": ["profit_after_tax"],
+          "values": ["9,019,354,165,051"]
         }
       ]
     },

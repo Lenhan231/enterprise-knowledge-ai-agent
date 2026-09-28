@@ -378,6 +378,7 @@ async def upload_document(
             "paddle_formula_recognition": os.getenv(
                 "DOCUMENT_PADDLE_FORMULA_RECOGNITION", "false",
             ).strip().lower() == "true",
+            "vision_captioning": os.getenv("DOCUMENT_VISION_CAPTIONS", "false").strip().lower() == "true",
         })
         try:
             processed = processor.process(filename, content, metadata)

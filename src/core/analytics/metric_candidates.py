@@ -81,6 +81,8 @@ def candidates(
     page_texts = {}
     page_table_units = {}
     for page in pages:
+        if page.get("metadata", {}).get("is_model_generated"):
+            continue
         page_number = page.get("metadata", {}).get("page_number")
         if page_number:
             page_texts.setdefault(int(page_number), []).append(page.get("text", ""))

@@ -172,6 +172,39 @@ class DocumentProcessorTest(unittest.TestCase):
         self.assertEqual(result["chunks"][0]["metadata"]["format"], "TIFF")
         self.assertEqual(result["tables"], [])
 
+    def test_opt_in_vision_caption_adds_a_separate_source_marked_chunk(self):
+        processor = DocumentProcessor({"vision_captioning": True})
+        with (
+            patch.object(processor, "_ocr", return_value="Revenue 100 VND"),
+            patch("core.llm.groq_provider.GroqProvider") as provider_type,
+        ):
+            provider = provider_type.return_value
+            provider.caption_image.return_value = "A chart labels revenue as 100 VND."
+            provider.vision_model_name = "qwen/qwen3.8-27b"
+            result = processor.process("chart.png", b"png bytes", {"document_id": "D-CAPTION"})
+
+        provider.caption_image.assert_called_once_with(b"png bytes", "image/png")
+        provider.close.assert_called_once()
+        self.assertEqual(len(result["chunks"]), 2)
+        caption = result["chunks"][1]
+        self.assertEqual(caption["text"], "AI-generated image caption (unverified): A chart labels revenue as 100 VND.")
+        self.assertEqual(caption["metadata"]["layout_type"], "figure_caption")
+        self.assertEqual(caption["metadata"]["text_extraction_method"], "groq_vision_caption")
+        self.assertEqual(caption["metadata"]["caption_model"], "qwen/qwen3.8-27b")
+        self.assertTrue(caption["metadata"]["is_model_generated"])
+
+    def test_vision_caption_failure_keeps_ocr_text(self):
+        processor = DocumentProcessor({"vision_captioning": True})
+        with (
+            patch.object(processor, "_ocr", return_value="Scanned policy title"),
+            patch("core.llm.groq_provider.GroqProvider") as provider_type,
+        ):
+            provider_type.return_value.caption_image.side_effect = RuntimeError("provider unavailable")
+            result = processor.process("scan.jpg", b"image bytes", {"document_id": "D-CAPTION-FAIL"})
+
+        self.assertEqual([chunk["text"] for chunk in result["chunks"]], ["Scanned policy title"])
+        provider_type.return_value.close.assert_called_once()
+
     def test_image_ocr_recovers_table_from_word_boxes(self):
         document = fitz.open()
         page = document.new_page(width=300, height=200)

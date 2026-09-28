@@ -221,6 +221,22 @@ class MetricCandidateTest(unittest.TestCase):
         revenue = next(row for row in rows if row["metric_name"] == "total_consolidated_revenue")
         self.assertEqual(revenue["candidate_values"], ["60.074.730.223.299"])
 
+    def test_model_generated_caption_is_not_accepted_as_financial_source_evidence(self):
+        rows = candidates(
+            [{
+                "metadata": {"page_number": 1, "is_model_generated": True},
+                "text": "AI-generated image caption (unverified): Revenue was 100 billion VND.",
+            }],
+            {
+                "company": "Example JSC", "fiscal_year": 2024,
+                "document_id": "IMAGE-2024",
+                "official_url": "",
+                "rbac": {"allowed_roles": ["finance_analyst"]},
+            },
+        )
+
+        self.assertEqual(rows, [])
+
     def test_additional_financial_statement_labels_are_review_candidates(self):
         rows = candidates(
             [{

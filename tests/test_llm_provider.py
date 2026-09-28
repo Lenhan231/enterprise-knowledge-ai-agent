@@ -70,6 +70,34 @@ class GroqProviderTest(unittest.TestCase):
             {"input_tokens": 12, "output_tokens": 3, "total_tokens": 15},
         )
 
+    @patch("core.llm.groq_provider.OpenAI")
+    def test_caption_image_sends_bounded_base64_input_to_configured_vision_model(self, openai):
+        openai.return_value.responses.create.return_value = MagicMock(
+            output_text="A bar chart shows annual revenue."
+        )
+        with patch.dict(os.environ, {
+            "GROQ_API_KEY": "test-secret",
+            "GROQ_VISION_MODEL": "test/vision-model",
+        }):
+            provider = GroqProvider()
+            caption = provider.caption_image(b"png bytes", "image/png")
+
+        call = openai.return_value.responses.create.call_args.kwargs
+        image_url = call["input"][0]["content"][1]["image_url"]
+        self.assertEqual(caption, "A bar chart shows annual revenue.")
+        self.assertEqual(call["model"], "test/vision-model")
+        self.assertEqual(image_url, "data:image/png;base64,cG5nIGJ5dGVz")
+        self.assertEqual(call["max_output_tokens"], 160)
+
+    @patch("core.llm.groq_provider.OpenAI")
+    def test_caption_image_rejects_payloads_over_provider_request_budget(self, openai):
+        with patch.dict(os.environ, {"GROQ_API_KEY": "test-secret"}):
+            provider = GroqProvider()
+            with self.assertRaisesRegex(ValueError, "too large"):
+                provider.caption_image(b"x" * (14 * 1024 * 1024 + 1), "image/png")
+
+        openai.return_value.responses.create.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

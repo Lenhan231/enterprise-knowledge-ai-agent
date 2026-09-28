@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import logging
 import re
 import subprocess
 import zipfile
@@ -24,6 +25,7 @@ _MAX_OFFICE_ARCHIVE_ENTRIES = 10_000
 _MAX_OFFICE_MEMBER_BYTES = 100 * 1024 * 1024
 _MAX_OFFICE_TOTAL_BYTES = 200 * 1024 * 1024
 _MAX_OFFICE_COMPRESSION_RATIO = 200
+logger = logging.getLogger(__name__)
 
 
 def _validate_office_archive(archive: zipfile.ZipFile) -> None:
@@ -77,6 +79,7 @@ class DocumentProcessor:
         self.chunking_strategy = self.config.get("chunking_strategy", "sentence")
         self.paddle_formula_recognition = bool(self.config.get("paddle_formula_recognition", False))
         self.paddle_layout = bool(self.config.get("paddle_layout", False) or self.paddle_formula_recognition)
+        self.vision_captioning = bool(self.config.get("vision_captioning", False))
         if self.chunking_strategy not in {"fixed", "sentence", "semantic"}:
             raise ValueError("chunking_strategy must be 'fixed' or 'sentence'")
         self.chunk_size = int(self.config.get("chunk_size", 1100))
@@ -131,6 +134,30 @@ class DocumentProcessor:
                 "chunks": _split(text, {**common, "text_extraction_method": "tesseract"}, self.chunk_size, self.chunk_overlap, self.chunking_strategy),
                 "tables": tables,
             }
+            if self.vision_captioning:
+                try:
+                    image_bytes, mime_type = self._caption_image_input(content, suffix)
+                    from core.llm.groq_provider import GroqProvider
+
+                    provider = GroqProvider()
+                    try:
+                        caption = provider.caption_image(image_bytes, mime_type)
+                        model_name = provider.vision_model_name
+                    finally:
+                        provider.close()
+                    result["chunks"].extend(_split(f"AI-generated image caption (unverified): {caption}", {
+                        **common,
+                        "text_extraction_method": "groq_vision_caption",
+                        "element_type": "figure_caption",
+                        "layout_type": "figure_caption",
+                        "caption_model": model_name,
+                        "is_model_generated": True,
+                    }, self.chunk_size, self.chunk_overlap, self.chunking_strategy))
+                except Exception as error:
+                    logger.warning(
+                        "Vision caption failed for uploaded image %s (%s)",
+                        common["filename"], type(error).__name__,
+                    )
         else:
             try:
                 with zipfile.ZipFile(io.BytesIO(content)) as archive:
@@ -156,6 +183,22 @@ class DocumentProcessor:
             input=content, capture_output=True, check=True, timeout=90,
         )
         return result.stdout.decode("utf-8", errors="replace").strip()
+
+    @staticmethod
+    def _caption_image_input(content: bytes, suffix: str) -> tuple[bytes, str]:
+        if suffix in {".png", ".jpg", ".jpeg"}:
+            return content, "image/png" if suffix == ".png" else "image/jpeg"
+        if len(content) > 14 * 1024 * 1024:
+            raise ValueError("TIFF is too large for the bounded vision caption request")
+        import fitz
+
+        image = fitz.open(stream=content, filetype=suffix[1:])
+        try:
+            page = image[0]
+            scale = min(1.0, 2048 / max(page.rect.width, page.rect.height))
+            return page.get_pixmap(matrix=fitz.Matrix(scale, scale), alpha=False).tobytes("png"), "image/png"
+        finally:
+            image.close()
 
     def _docx(self, archive: zipfile.ZipFile, metadata: dict) -> dict:
         root = ElementTree.fromstring(archive.read("word/document.xml"))

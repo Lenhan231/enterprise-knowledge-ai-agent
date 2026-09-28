@@ -296,7 +296,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         structured_cls.return_value.save_document_tables.assert_called_once()
         storage.storage.from_.return_value.remove.assert_not_called()
 
-    def test_scanned_image_table_flows_through_upload_to_structured_store(self):
+    def test_image_ocr_caption_and_table_flow_through_upload_to_persistence(self):
         source = blank_table_image()
         words = []
         for row, (label, current, previous) in enumerate((
@@ -315,7 +315,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         storage = MagicMock()
         storage.storage.from_.return_value.upload.return_value = None
         embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
-        embedding.embed_documents.return_value = [[0.1, 0.2]]
+        embedding.embed_documents.return_value = [[0.1, 0.2], [0.3, 0.4]]
         with (
             patch.object(app_main, "_require_same_origin"),
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
@@ -327,7 +327,11 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
+            patch.dict("os.environ", {"DOCUMENT_VISION_CAPTIONS": "true"}),
+            patch("core.llm.groq_provider.GroqProvider") as vision_provider,
         ):
+            vision_provider.return_value.caption_image.return_value = "A financial table lists revenue, cash, and assets."
+            vision_provider.return_value.vision_model_name = "qwen/qwen3.8-27b"
             counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
             counter_cls.return_value.count.return_value = 4
             response = asyncio.run(app_main.upload_document(
@@ -346,6 +350,10 @@ class UploadProcessingFlowTest(unittest.TestCase):
         self.assertTrue(parsed_chunks)
         self.assertIn("Revenue", parsed_chunks[0]["text"])
         self.assertEqual(parsed_chunks[0]["metadata"]["embedding_model"], "test-embedding")
+        caption_chunk = next(chunk for chunk in parsed_chunks if chunk["metadata"].get("layout_type") == "figure_caption")
+        self.assertEqual(caption_chunk["text"], "AI-generated image caption (unverified): A financial table lists revenue, cash, and assets.")
+        self.assertEqual(caption_chunk["metadata"]["caption_model"], "qwen/qwen3.8-27b")
+        vision_provider.return_value.close.assert_called_once()
         self.assertEqual(parsed_cls.return_value.set_status.call_args.args[1], "embedded")
         saved_tables = structured_store.save_document_tables.call_args.args[2]
         self.assertEqual(len(saved_tables), 1)

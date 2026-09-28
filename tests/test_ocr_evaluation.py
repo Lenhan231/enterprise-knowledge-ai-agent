@@ -380,7 +380,31 @@ class OCREvaluationTest(unittest.TestCase):
                 self.assertLessEqual(clip.x0, 60)
                 self.assertLessEqual(page.rect.width - clip.x1, 31)
                 self.assertEqual(page.get_text().strip(), "")
+                self.assertTrue(page.get_images(full=True))
             self.assertIn("clipped", scan["annotation"])
+
+    def test_v7_adds_four_manually_labeled_image_only_scan_regions(self):
+        root = Path(__file__).resolve().parents[1]
+        dataset = json.loads((root / "data/evaluation/vinamilk_ocr_ground_truth_v7.json").read_text(encoding="utf-8"))
+        additions = [
+            page for page in dataset["pages"]
+            if page["id"] in {
+                "charter-2026-board-duties-toc-scan-en",
+                "charter-2026-definitions-scan-en",
+                "governance-rules-2026-board-meeting-toc-scan-en",
+                "governance-rules-2026-ceo-toc-scan-en",
+            }
+        ]
+        self.assertEqual(len(dataset["pages"]), 10)
+        self.assertEqual(len(additions), 4)
+        self.assertTrue(all(page.get("physical_scan") and page["reference_text"].strip() for page in additions))
+        for scan in additions:
+            self.require_source_pdf(root, scan["file"])
+            with fitz.open(root / scan["file"]) as pdf:
+                page = pdf[scan["page"] - 1]
+                self.assertEqual(page.get_text().strip(), "")
+                self.assertTrue(page.get_images(full=True))
+                self.assertTrue(page.rect.contains(fitz.Rect(scan["clip_rect"])))
 
 
 if __name__ == "__main__":

@@ -189,6 +189,7 @@ class RAGService:
         company: str | None = None,
         roles: list[str] | None = None,
         retrieval_method: Literal["dense", "bm25", "hybrid", "parent"] = "hybrid",
+        retrieval_query: str | None = None,
     ) -> RAGResult:
         requested_record_type = _requested_record_type(question)
         if requested_record_type == "invoice" and retrieval_method == "hybrid":
@@ -196,7 +197,7 @@ class RAGService:
             # payment-term sentence; parent expansion remains role/company filtered.
             retrieval_method = "parent"
         contexts = self.retrieve_contexts(
-            question,
+            retrieval_query or question,
             limit=limit,
             company=company,
             roles=roles,

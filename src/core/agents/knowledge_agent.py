@@ -7,11 +7,11 @@ from core.models.agents import (
 from core.rag.rag_service import RAGResult, RAGService
 
 
-def _report_retrieval_query(question: str, company: str | None, evidence_only: bool) -> str:
+def _financial_retrieval_query(question: str, company: str | None) -> str:
     text = question.casefold()
     asks_revenue = any(term in text for term in ("revenue", "sales", "doanh thu"))
     asks_profit = any(term in text for term in ("profit", "earnings", "net income", "lợi nhuận"))
-    if evidence_only and company and "vinamilk" in company.casefold() and asks_revenue and asks_profit:
+    if company and "vinamilk" in company.casefold() and asks_revenue and asks_profit:
         return f"{question} Tổng doanh thu hợp nhất và lợi nhuận sau thuế hợp nhất"
     return question
 
@@ -41,10 +41,9 @@ class KnowledgeAgent(BaseAgent):
             # Report synthesis uses one generation over its evidence; keep its
             # ranked context small enough for the configured model's TPM cap.
             rag_options["limit"] = 5
-            retrieval_query = _report_retrieval_query(
+            retrieval_query = _financial_retrieval_query(
                 request.question,
                 request.metadata.get("company"),
-                evidence_only=True,
             )
             contexts = self.rag.retrieve_contexts(retrieval_query, **rag_options)
             result = RAGResult(
@@ -53,6 +52,12 @@ class KnowledgeAgent(BaseAgent):
                 insufficient_context=not contexts,
             )
         else:
+            retrieval_query = _financial_retrieval_query(
+                request.question,
+                request.metadata.get("company"),
+            )
+            if retrieval_query != request.question:
+                rag_options["retrieval_query"] = retrieval_query
             result = self.rag.generate_answer(request.question, **rag_options)
         evidence = [
             Evidence(

@@ -80,7 +80,7 @@ class ProposalBusinessAppEvaluationTest(unittest.TestCase):
     def test_financial_case_checks_both_values_unit_and_source(self):
         payload = {
             "answer": "Revenue was 61,824 and profit after tax was 9,453 billion VND [S1] [S2]",
-            "agent": "hybrid", "insufficient_context": False,
+            "agent": "report", "insufficient_context": False,
             "citations": [
                 {"id": "S1", "document_id": "VNM-AR-2024-VI", "page_number": 2,
                  "excerpt": "Total consolidated revenue 61,824 billion VND."},

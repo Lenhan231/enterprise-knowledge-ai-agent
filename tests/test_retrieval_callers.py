@@ -53,6 +53,21 @@ class RetrievalCallersTest(unittest.TestCase):
             RetrievalRequest(query="question", top_k=2), roles=["employee"], method="parent"
         )
 
+    def test_rag_uses_retrieval_query_without_changing_question_prompt(self):
+        llm = MagicMock()
+        llm.generate.return_value = "Revenue and profit are reported [S1]."
+        rag = RAGService(self.retrieval, llm)
+        rag.generate_answer(
+            "What were revenue and profit?",
+            retrieval_query="What were revenue and profit? Tổng doanh thu hợp nhất",
+            roles=["employee"],
+        )
+        self.assertEqual(
+            self.retrieval.retrieve.call_args.args[0],
+            RetrievalRequest(query="What were revenue and profit? Tổng doanh thu hợp nhất", top_k=5),
+        )
+        self.assertIn("Question:\nWhat were revenue and profit?", llm.generate.call_args.args[0])
+
     def test_rag_bounds_context_without_mutating_results_or_printing(self):
         # Include separators and a second chunk in the cutoff, not just one
         # oversized chunk, to verify the limit applies to the assembled context.

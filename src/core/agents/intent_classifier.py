@@ -1,4 +1,5 @@
 import json
+import re
 
 from core.analytics.metric_ontology import resolve_metric_names
 from core.llm.groq_provider import GroqProvider
@@ -44,15 +45,26 @@ class IntentClassifier:
         text = question.casefold()
         financial_metrics = resolve_metric_names(text)
         metadata_counts = _is_document_count_request(text)
+        financial_summary = (
+            any(term in text for term in ("revenue", "sales", "doanh thu"))
+            and any(term in text for term in ("profit", "earnings", "net income", "lợi nhuận"))
+            and len(set(re.findall(r"\b(?:19|20)\d{2}\b", text))) <= 1
+            and not any(term in text for term in (
+                "trend", "growth", "compare", "comparison", "compared", "versus", " vs ",
+                "year over year", "year-over-year", "change", "between", "across years", "by year",
+                "tăng trưởng", "so sánh", "so với", "thay đổi", "qua các năm", "theo năm",
+                "chart", "dashboard", "biểu đồ",
+            ))
+        )
         analytics = metadata_counts or bool(financial_metrics) or any(term in text for term in (
             "trend", "compare", "growth", "tăng trưởng", "so sánh", "thống kê"
         ))
         dashboard = any(term in text for term in ("dashboard", "chart", "visualize", "biểu đồ", "đồ thị"))
-        report = not metadata_counts and any(term in text for term in (
+        report = not metadata_counts and (financial_summary or any(term in text for term in (
             "summarize", "summarise", "summary of", "tóm tắt", "write a report",
             "draft a report", "generate a report", "prepare a report", "create a report",
             "viết báo cáo", "lập báo cáo", "tạo báo cáo",
-        ))
+        )))
         financial_metric = bool(financial_metrics) or any(term in text for term in ("financial", "tài chính", "biên lợi nhuận"))
         intent = "dashboard" if dashboard else "report" if report else "hybrid" if analytics and financial_metric else "analytics" if analytics else "knowledge"
         return IntentResult(intent=intent, needs_knowledge=intent in {"knowledge", "hybrid", "report"} or financial_metric,

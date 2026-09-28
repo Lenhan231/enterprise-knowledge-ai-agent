@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.agents.intent_classifier import IntentClassifier
 from core.analytics.metric_ontology import resolve_metric_names
-from core.agents.knowledge_agent import KnowledgeAgent, _report_retrieval_query
+from core.agents.knowledge_agent import KnowledgeAgent, _financial_retrieval_query
 from core.agents.report_agent import ReportAgent, _financial_facts_match_cited_evidence
 from core.agents.router import AgentRouter
 from core.agents.sql_analytics_agent import SQLAnalyticsAgent
@@ -168,6 +168,24 @@ class AgentFlowTest(unittest.TestCase):
         self.assertTrue(intent.needs_sql)
         self.assertTrue(intent.needs_knowledge)
 
+    def test_single_period_revenue_and_profit_summary_uses_guarded_report_agent(self):
+        summary = IntentClassifier.fallback(
+            "What were Vinamilk's revenue and profit after tax in 2024?"
+        )
+        self.assertEqual(summary.intent, "report")
+        comparison = IntentClassifier.fallback(
+            "Compare Vinamilk's revenue and profit after tax across years"
+        )
+        self.assertEqual(comparison.intent, "hybrid")
+        year_comparison = IntentClassifier.fallback(
+            "What were Vinamilk's revenue and profit after tax in 2024 vs 2023?"
+        )
+        self.assertEqual(year_comparison.intent, "hybrid")
+        multiple_periods = IntentClassifier.fallback(
+            "What were Vinamilk's revenue and profit after tax in 2024 and 2023?"
+        )
+        self.assertEqual(multiple_periods.intent, "hybrid")
+
     def test_knowledge_agent_passes_trusted_role_and_maps_source_id(self):
         rag = Mock()
         rag.generate_answer.return_value = RAGResult(
@@ -180,6 +198,19 @@ class AgentFlowTest(unittest.TestCase):
         result = agent.run(AgentRequest(question="revenue", user_id="analyst", metadata={"role": "finance_analyst"}))
         rag.generate_answer.assert_called_once_with("revenue", limit=10, company=None, roles=["finance_analyst"])
         self.assertEqual(result.evidence[0].citation_id, "S1")
+
+    def test_knowledge_agent_uses_bilingual_financial_query_for_retrieval_only(self):
+        rag = Mock()
+        rag.generate_answer.return_value = RAGResult(answer="Reported result [S1]", source_ids=["S1"])
+        question = "What were Vinamilk's 2024 revenue and profit after tax?"
+        KnowledgeAgent(rag).run(AgentRequest(
+            question=question,
+            metadata={"role": "finance_analyst", "company": "Vinamilk"},
+        ))
+        call = rag.generate_answer.call_args
+        self.assertEqual(call.args[0], question)
+        self.assertIn("Tổng doanh thu hợp nhất", call.kwargs["retrieval_query"])
+        self.assertIn("lợi nhuận sau thuế hợp nhất", call.kwargs["retrieval_query"])
 
     def test_knowledge_agent_preserves_uncited_retrieved_context_for_report_stage(self):
         rag = Mock()
@@ -422,18 +453,17 @@ class AgentFlowTest(unittest.TestCase):
         answer = _normalize_numeric_citations("Headline 【2】, audited [1], year [2024], invalid [3]", evidence)
         self.assertEqual(answer, "Headline [S7], audited [S1], year [2024], invalid [3]")
 
-    def test_vinamilk_report_retrieval_rewrites_english_financial_summary_bilingually(self):
-        rewritten = _report_retrieval_query(
-            "Summarize Vinamilk's 2024 revenue and profit",
+    def test_vinamilk_financial_retrieval_rewrites_english_queries_bilingually(self):
+        rewritten = _financial_retrieval_query(
+            "What were Vinamilk's 2024 revenue and profit?",
             "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
-            evidence_only=True,
         )
         self.assertIn("Tổng doanh thu hợp nhất", rewritten)
         self.assertIn("lợi nhuận sau thuế hợp nhất", rewritten)
 
     def test_other_queries_are_not_rewritten(self):
         self.assertEqual(
-            _report_retrieval_query("Summarize sustainability initiatives", "Vinamilk", evidence_only=True),
+            _financial_retrieval_query("Summarize sustainability initiatives", "Vinamilk"),
             "Summarize sustainability initiatives",
         )
 

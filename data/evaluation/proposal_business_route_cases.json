@@ -6,7 +6,7 @@
     {"id": "internal-document-search", "category": "Internal Document Search", "question": "Search for the employee access policy", "expected_route": "knowledge"},
     {"id": "hr-policy-consultation", "category": "Human Resource Policy Consultation", "question": "What does the leave policy say about annual leave?", "expected_route": "knowledge"},
     {"id": "contract-analysis", "category": "Contract Analysis", "question": "Which termination obligations are stated in this contract?", "expected_route": "knowledge"},
-    {"id": "financial-report-analysis", "category": "Financial Report Analysis", "question": "What were revenue and profit after tax in 2024?", "expected_route": "hybrid"},
+    {"id": "financial-report-analysis", "category": "Financial Report Analysis", "question": "Summarize Vinamilk's 2024 headline total consolidated revenue and consolidated profit after tax.", "expected_route": "report"},
     {"id": "invoice-information-retrieval", "category": "Invoice Information Retrieval", "question": "Find the payment terms stated on the invoice", "expected_route": "knowledge"},
     {"id": "manufacturing-documentation", "category": "Manufacturing Documentation", "question": "What maintenance steps are in the production manual?", "expected_route": "knowledge"},
     {"id": "customer-service-knowledge", "category": "Customer Service Knowledge Base", "question": "What return steps should customer support follow?", "expected_route": "knowledge"},

@@ -1,0 +1,247 @@
+{
+  "generated_at": "2026-09-23T03:59:40.998200+00:00",
+  "git_commit": "71afb25383e1b6b900eb965a89e15a260c7341e7",
+  "top_k": 5,
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0
+  },
+  "results": [
+    {
+      "expected_document_id": "APL-CMP-003",
+      "question": "What responsibilities do third parties have under Apple's Anti-Corruption Policy?",
+      "passed": true,
+      "retrieved_ids": [
+        "APL-CMP-003",
+        "APL-CMP-004"
+      ],
+      "total_latency_ms": 877.64,
+      "chunks": [
+        {
+          "rank": 1,
+          "score": 0.779534889487334,
+          "document_id": "APL-CMP-003",
+          "source": "apl-cmp-003_anti_corruption_policy.pdf",
+          "latency_ms": 877.2188000002643
+        },
+        {
+          "rank": 2,
+          "score": 0.765730724676296,
+          "document_id": "APL-CMP-004",
+          "source": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "latency_ms": 877.2188000002643
+        },
+        {
+          "rank": 3,
+          "score": 0.71377432346344,
+          "document_id": "APL-CMP-003",
+          "source": "apl-cmp-003_anti_corruption_policy.pdf",
+          "latency_ms": 877.2188000002643
+        },
+        {
+          "rank": 4,
+          "score": 0.6663546760784,
+          "document_id": "APL-CMP-004",
+          "source": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "latency_ms": 877.2188000002643
+        },
+        {
+          "rank": 5,
+          "score": 0.661541938781738,
+          "document_id": "APL-CMP-003",
+          "source": "apl-cmp-003_anti_corruption_policy.pdf",
+          "latency_ms": 877.2188000002643
+        }
+      ]
+    },
+    {
+      "expected_document_id": "APL-CMP-004",
+      "question": "What standards must third parties working with Apple follow?",
+      "passed": true,
+      "retrieved_ids": [
+        "APL-CMP-004"
+      ],
+      "total_latency_ms": 385.94,
+      "chunks": [
+        {
+          "rank": 1,
+          "score": 0.748926602271992,
+          "document_id": "APL-CMP-004",
+          "source": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "latency_ms": 384.70330000018294
+        },
+        {
+          "rank": 2,
+          "score": 0.715530276298523,
+          "document_id": "APL-CMP-004",
+          "source": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "latency_ms": 384.70330000018294
+        },
+        {
+          "rank": 3,
+          "score": 0.683059375468457,
+          "document_id": "APL-CMP-004",
+          "source": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "latency_ms": 384.70330000018294
+        },
+        {
+          "rank": 4,
+          "score": 0.652524331362507,
+          "document_id": "APL-CMP-004",
+          "source": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "latency_ms": 384.70330000018294
+        },
+        {
+          "rank": 5,
+          "score": 0.648421406745911,
+          "document_id": "APL-CMP-004",
+          "source": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "latency_ms": 384.70330000018294
+        }
+      ]
+    },
+    {
+      "expected_document_id": "APL-PRC-002",
+      "question": "What steps must a supplier complete in Supplier Connect before receiving an SAP vendor number?",
+      "passed": true,
+      "retrieved_ids": [
+        "APL-CMP-004",
+        "APL-ENV-002",
+        "APL-PRC-002"
+      ],
+      "total_latency_ms": 384.64,
+      "chunks": [
+        {
+          "rank": 1,
+          "score": 0.755616017188077,
+          "document_id": "APL-PRC-002",
+          "source": "apl-prc-002_supplier_connect_on_boarding_overview.pdf",
+          "latency_ms": 384.63309999997364
+        },
+        {
+          "rank": 2,
+          "score": 0.573557376861572,
+          "document_id": "APL-PRC-002",
+          "source": "apl-prc-002_supplier_connect_on_boarding_overview.pdf",
+          "latency_ms": 384.63309999997364
+        },
+        {
+          "rank": 3,
+          "score": 0.404996258169301,
+          "document_id": "APL-PRC-002",
+          "source": "apl-prc-002_supplier_connect_on_boarding_overview.pdf",
+          "latency_ms": 384.63309999997364
+        },
+        {
+          "rank": 4,
+          "score": 0.338622490249724,
+          "document_id": "APL-ENV-002",
+          "source": "apl-env-002_environmental_progress_report.pdf",
+          "latency_ms": 384.63309999997364
+        },
+        {
+          "rank": 5,
+          "score": 0.338275372982025,
+          "document_id": "APL-CMP-004",
+          "source": "apl-cmp-004_third_party_code_of_conduct.pdf",
+          "latency_ms": 384.63309999997364
+        }
+      ]
+    },
+    {
+      "expected_document_id": "APL-PRC-015",
+      "question": "What is the most reliable way to submit invoices to Apple?",
+      "passed": true,
+      "retrieved_ids": [
+        "APL-CMP-003",
+        "APL-PRC-002",
+        "APL-PRC-015"
+      ],
+      "total_latency_ms": 377.46,
+      "chunks": [
+        {
+          "rank": 1,
+          "score": 0.807440996170044,
+          "document_id": "APL-PRC-015",
+          "source": "apl-prc-015_remittance_faqs.pdf",
+          "latency_ms": 378.6328000001049
+        },
+        {
+          "rank": 2,
+          "score": 0.584775567054749,
+          "document_id": "APL-PRC-015",
+          "source": "apl-prc-015_remittance_faqs.pdf",
+          "latency_ms": 378.6328000001049
+        },
+        {
+          "rank": 3,
+          "score": 0.543611065852972,
+          "document_id": "APL-PRC-015",
+          "source": "apl-prc-015_remittance_faqs.pdf",
+          "latency_ms": 378.6328000001049
+        },
+        {
+          "rank": 4,
+          "score": 0.487527371196308,
+          "document_id": "APL-CMP-003",
+          "source": "apl-cmp-003_anti_corruption_policy.pdf",
+          "latency_ms": 378.6328000001049
+        },
+        {
+          "rank": 5,
+          "score": 0.484692319771419,
+          "document_id": "APL-PRC-002",
+          "source": "apl-prc-002_supplier_connect_on_boarding_overview.pdf",
+          "latency_ms": 378.6328000001049
+        }
+      ]
+    },
+    {
+      "expected_document_id": "APL-ENV-002",
+      "question": "By how much did Apple reduce gross greenhouse gas emissions compared with its 2015 baseline?",
+      "passed": true,
+      "retrieved_ids": [
+        "APL-ENV-002"
+      ],
+      "total_latency_ms": 1169.75,
+      "chunks": [
+        {
+          "rank": 1,
+          "score": 0.705574750900269,
+          "document_id": "APL-ENV-002",
+          "source": "apl-env-002_environmental_progress_report.pdf",
+          "latency_ms": 1167.8953000000547
+        },
+        {
+          "rank": 2,
+          "score": 0.701301890534051,
+          "document_id": "APL-ENV-002",
+          "source": "apl-env-002_environmental_progress_report.pdf",
+          "latency_ms": 1167.8953000000547
+        },
+        {
+          "rank": 3,
+          "score": 0.691308280566582,
+          "document_id": "APL-ENV-002",
+          "source": "apl-env-002_environmental_progress_report.pdf",
+          "latency_ms": 1167.8953000000547
+        },
+        {
+          "rank": 4,
+          "score": 0.681184947490692,
+          "document_id": "APL-ENV-002",
+          "source": "apl-env-002_environmental_progress_report.pdf",
+          "latency_ms": 1167.8953000000547
+        },
+        {
+          "rank": 5,
+          "score": 0.677148103713989,
+          "document_id": "APL-ENV-002",
+          "source": "apl-env-002_environmental_progress_report.pdf",
+          "latency_ms": 1167.8953000000547
+        }
+      ]
+    }
+  ]
+}

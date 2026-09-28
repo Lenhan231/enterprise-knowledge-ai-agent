@@ -352,6 +352,8 @@ class MetricCandidateTest(unittest.TestCase):
         from core.document_processing.processors.pdf_processor import PDFProcessor
 
         report = Path(__file__).resolve().parents[1] / "data/raw/vietnam_enterprises/vnm/vnm-ar-2021-vi.pdf"
+        if not report.is_file():
+            self.skipTest("requires the optional downloaded Vinamilk report corpus")
         with fitz.open(report) as pdf:
             page_text = pdf[9].get_text()
             tables = PDFProcessor._extract_page_tables(pdf[9], 10)
@@ -391,6 +393,9 @@ class MetricCandidateTest(unittest.TestCase):
                 "profit_before_tax": "10.833.006",
             }),
         )
+        missing = [filename for filename, *_ in fixtures if not (root / filename).is_file()]
+        if missing:
+            self.skipTest("requires optional downloaded Vinamilk reports: " + ", ".join(missing))
 
         for filename, page_number, year, document_id, expected in fixtures:
             with self.subTest(document=document_id), fitz.open(root / filename) as pdf:
@@ -416,6 +421,8 @@ class MetricCandidateTest(unittest.TestCase):
         import fitz
 
         report = Path(__file__).resolve().parents[1] / "data/raw/vietnam_enterprises/vnm/vnm-ar-2022-vi.pdf"
+        if not report.is_file():
+            self.skipTest("requires the optional downloaded Vinamilk report corpus")
         with fitz.open(report) as pdf:
             page_text = pdf[5].get_text()
 

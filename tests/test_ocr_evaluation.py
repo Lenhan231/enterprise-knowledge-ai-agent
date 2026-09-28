@@ -16,6 +16,10 @@ SPEC.loader.exec_module(evaluate_ocr)
 
 
 class OCREvaluationTest(unittest.TestCase):
+    def require_source_pdf(self, root, relative_path):
+        if not (root / relative_path).is_file():
+            self.skipTest("requires the optional downloaded Vinamilk source PDF corpus")
+
     def test_paddleocr_3_selects_cuda_when_available(self):
         torch = MagicMock()
         torch.cuda.is_available.return_value = True
@@ -331,6 +335,7 @@ class OCREvaluationTest(unittest.TestCase):
         scan = next(page for page in dataset["pages"] if page.get("physical_scan"))
         self.assertFalse(dataset["primary_metric_selection_eligible"])
         self.assertEqual((scan["document_id"], scan["page"], scan["language"]), ("VNM-CHARTER-2026-EN", 4, "en"))
+        self.require_source_pdf(root, scan["file"])
         with fitz.open(root / scan["file"]) as pdf:
             page = pdf[scan["page"] - 1]
             self.assertEqual(page.get_text().strip(), "")
@@ -344,6 +349,7 @@ class OCREvaluationTest(unittest.TestCase):
         self.assertEqual({page["document_id"] for page in scans}, {"VNM-CHARTER-2026-EN", "VNM-CGRULES-2026-EN"})
         self.assertTrue(all(page["reference_text"].strip() and len(page["clip_rect"]) == 4 for page in scans))
         for scan in scans:
+            self.require_source_pdf(root, scan["file"])
             with fitz.open(root / scan["file"]) as pdf:
                 page = pdf[scan["page"] - 1]
                 self.assertEqual(page.get_text().strip(), "")
@@ -355,6 +361,7 @@ class OCREvaluationTest(unittest.TestCase):
         table = next(page for page in dataset["pages"] if page.get("layout_type") == "financial_table")
         self.assertFalse(table.get("physical_scan", False))
         self.assertEqual(len(table["table_rows"]), 16)
+        self.require_source_pdf(root, table["file"])
         with fitz.open(root / table["file"]) as pdf:
             page = pdf[table["page"] - 1]
             native_text = page.get_text("text", clip=fitz.Rect(table["clip_rect"]))
@@ -366,6 +373,7 @@ class OCREvaluationTest(unittest.TestCase):
         scans = [page for page in dataset["pages"] if page.get("physical_scan")]
         self.assertEqual(len(scans), 2)
         for scan in scans:
+            self.require_source_pdf(root, scan["file"])
             with fitz.open(root / scan["file"]) as pdf:
                 page = pdf[scan["page"] - 1]
                 clip = fitz.Rect(scan["clip_rect"])

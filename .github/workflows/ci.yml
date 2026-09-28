@@ -20,8 +20,6 @@ jobs:
           node-version: "24"
       - run: uv sync --locked
       - run: uv run python -m compileall -q src tests scripts
-      - name: Download report PDFs used by source parser tests
-        run: uv run python scripts/download_vietnam_enterprise_corpus.py --ids VNM-AR-2021-VI VNM-AR-2022-VI VNM-AR-2023-EN VNM-AR-2024-VI VNM-CHARTER-2026-EN
       - run: uv run python -m unittest discover -s tests -v
       - run: node --check src/app/static/app.js
       - name: Validate Compose proxy profile

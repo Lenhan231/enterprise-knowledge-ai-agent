@@ -21,7 +21,7 @@ class VietnamEnterpriseManifestTest(unittest.TestCase):
         for document_id in governance_ids:
             with self.subTest(document_id=document_id):
                 item = by_id[document_id]
-                self.assertTrue(item["official_url"].lower().endswith(".pdf"))
+                self.assertTrue(item["source_url"].lower().endswith(".pdf"))
                 self.assertEqual(item["format"], "PDF")
         code = by_id["VNM-CODE-2025-EN"]
         self.assertEqual(code["year_or_version"], "January 2010")

@@ -11,7 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from scripts import check_apple_retrieval
+from scripts.retrieval import check_apple_retrieval
 from core.retrieval.retrieval import RetrievalRequest, RetrievalResponse
 from core.rag.rag_service import RAGService, _RESPONSE_CACHE, _RESPONSE_CACHE_LOCK
 
@@ -114,7 +114,7 @@ class RetrievalCallersTest(unittest.TestCase):
             result_by_id[document_id] = self.response.model_copy(update={"results": results})
         self.retrieval.retrieve.side_effect = list(result_by_id.values())
         with patch.object(check_apple_retrieval, "RetrievalService", return_value=self.retrieval), \
-             patch.object(sys, "argv", ["check_apple_retrieval.py", "--limit", "2"]), \
+             patch.object(sys, "argv", ["scripts.retrieval.check_apple_retrieval.py", "--limit", "2"]), \
              redirect_stdout(output):
             self.assertEqual(check_apple_retrieval.main(), 0)
         self.assertEqual(self.retrieval.retrieve.call_count, len(check_apple_retrieval.CASES))

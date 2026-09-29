@@ -19,7 +19,7 @@ class AskRequestTest(unittest.TestCase):
             citation_id="S1", source_type="document", source="2024 annual report",
             content="Vinamilk reported its 2024 strategy and risks.",
             metadata={"document_id": "VNM-AR-2024-VI", "page_number": 20,
-                      "official_url": "https://example.com/report.pdf"},
+                      "source_url": "https://example.com/report.pdf"},
         )
         knowledge = Mock()
         analytics = Mock()
@@ -48,7 +48,7 @@ class AskRequestTest(unittest.TestCase):
                 {"sub": "admin-test", "role": "admin"},
             )
 
-        report_factory.assert_called_once_with(knowledge=knowledge)
+        report_factory.assert_called_once_with(knowledge=knowledge, analytics=analytics)
         report.run.assert_called_once()
         hybrid.run.assert_not_called()
         analytics.run.assert_not_called()

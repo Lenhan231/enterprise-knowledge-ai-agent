@@ -47,7 +47,7 @@ single-query resource checks, not a steady-state or concurrency benchmark;
 provider latency is not compared. See the [post-change artifact](../../artifacts/evaluation/vinamilk-embedding-hosted-lazy-import-20260928.json) and [pre-change reference](../../artifacts/evaluation/vinamilk-embedding-backend-resource-parity-20260928.json).
 
 The configured model is the only model currently used by the app. Proposal
-models are evaluated offline by `scripts/evaluate_embeddings.py`; its
+models are evaluated offline by `scripts/retrieval/evaluate_embeddings.py`; its
 same-sample smoke reports live under `artifacts/evaluation/` and do not change
 the production vectors. Changing the app model requires matching vector
 dimensions and re-embedding every stored chunk before search.
@@ -83,7 +83,7 @@ metrics, case-level ranks, hashes and this limitation are in
 ### Cloud run on the full public corpus
 
 The local evaluator now accepts `--corpus` JSONL as well as the live database.
-`uv run python scripts/export_public_embedding_corpus.py` exports only ready
+`uv run python scripts/retrieval/export_public_embedding_corpus.py` exports only ready
 document IDs present in the public manifest, preserves their `allowed_roles`,
 and writes a SHA-256 metadata sidecar. The committed 2026-09-27 snapshot has
 4,750 passages from 25 public Vinamilk sources; no database credential is

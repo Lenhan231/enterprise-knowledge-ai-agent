@@ -28,6 +28,11 @@ class IntentClassifier:
         self.llm = llm or GroqProvider()
 
     def classify(self, question: str) -> IntentResult:
+        fallback = self.fallback(question)
+        if fallback.intent == "report" and any(term in question.casefold() for term in (
+            "why", "reason", "cause", "tại sao", "vì sao", "nguyên nhân",
+        )):
+            return fallback
         prompt = INTENT_CLASSIFIER_PROMPT.format(
             question=question,
         )
@@ -56,11 +61,16 @@ class IntentClassifier:
                 "chart", "dashboard", "biểu đồ",
             ))
         )
+        why_financial_change = (
+            any(term in text for term in ("why", "reason", "cause", "tại sao", "vì sao", "nguyên nhân"))
+            and len(financial_metrics) >= 1
+            and len(set(re.findall(r"\b(?:19|20)\d{2}\b", text))) >= 2
+        )
         analytics = metadata_counts or bool(financial_metrics) or any(term in text for term in (
             "trend", "compare", "growth", "tăng trưởng", "so sánh", "thống kê"
         ))
         dashboard = any(term in text for term in ("dashboard", "chart", "visualize", "biểu đồ", "đồ thị"))
-        report = not metadata_counts and (financial_summary or any(term in text for term in (
+        report = not metadata_counts and (financial_summary or why_financial_change or any(term in text for term in (
             "summarize", "summarise", "summary of", "tóm tắt", "write a report",
             "draft a report", "generate a report", "prepare a report", "create a report",
             "viết báo cáo", "lập báo cáo", "tạo báo cáo",

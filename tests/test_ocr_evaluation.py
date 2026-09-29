@@ -9,7 +9,7 @@ from unittest.mock import patch, MagicMock
 
 import fitz
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts/evaluate_ocr.py"
+SCRIPT = Path(__file__).resolve().parents[1] / "scripts/processing/evaluate_ocr.py"
 SPEC = importlib.util.spec_from_file_location("evaluate_ocr", SCRIPT)
 evaluate_ocr = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(evaluate_ocr)

@@ -30,9 +30,11 @@ Project layout
 
 - src/app: FastAPI routes and dashboard UI
 - src/core/document_processing: seed ingestion orchestration and format processors
+- src/core/chunking: shared chunk splitting and section metadata
 - src/core/database: PostgreSQL repositories and table persistence
 - src/core/retrieval and src/core/rag: role-scoped hybrid search and grounded answers
 - src/core/agents: runtime router for grounded QA, analytics, hybrid reports and dashboard data
+- [scripts](scripts/README.md): reproducible CLI entry points grouped by workstream; see the [repository map](docs/technical/repository-ownership.md) for ownership and shared contracts
 - docker-compose.yml: FastAPI service; optional pgvector-only database profile (not the full Supabase stack)
 
 ## Dataset

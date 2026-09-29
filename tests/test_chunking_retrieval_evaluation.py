@@ -7,7 +7,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.evaluate_chunking_retrieval import _as_vector, _sha256_file, transfer_passage_labels
+from scripts.chunking.evaluate_chunking_retrieval import _as_vector, _sha256_file, transfer_passage_labels
 
 
 class ChunkingRetrievalEvaluationTest(unittest.TestCase):

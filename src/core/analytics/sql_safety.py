@@ -7,7 +7,7 @@ SOURCE_CTES = {"authorized_financial_metrics", "authorized_documents"}
 ALLOWED_COLUMNS = {
     "company", "domain", "title", "document_type", "format", "fiscal_year",
     "processing_status", "metric_name", "metric_label", "metric_value", "unit",
-    "document_id", "page_number", "source_url", "source_quote", "official_url",
+    "document_id", "metric_id", "page_number", "source_url", "source_quote",
 }
 ALLOWED_AGGREGATES = (exp.Count, exp.Sum, exp.Avg, exp.Min, exp.Max, exp.ArrayAgg)
 ALLOWED_EXPRESSION_NODES = (exp.Case, exp.If)
@@ -33,6 +33,10 @@ def validate_analytics_sql(sql: str) -> str:
     tables = list(query.find_all(exp.Table))
     if len(tables) != 1 or tables[0].name not in SOURCE_CTES or tables[0].db or tables[0].catalog:
         raise UnsafeAnalyticsQuery("Query must read one authorized analytics source")
+    evidence_alias = (
+        "evidence_metric_ids" if tables[0].name == "authorized_financial_metrics"
+        else "evidence_document_ids"
+    )
     if tables[0].name == "authorized_financial_metrics":
         projected_metrics = {
             selection.name.casefold()
@@ -59,16 +63,17 @@ def validate_analytics_sql(sql: str) -> str:
     output_names = [selection.alias_or_name.casefold() for selection in query.expressions]
     if len(output_names) != len(set(output_names)):
         raise UnsafeAnalyticsQuery("Selected columns must have unique names")
-    if "evidence_document_ids" not in output_names:
-        raise UnsafeAnalyticsQuery("Query must return evidence_document_ids for source citations")
+    if evidence_alias not in output_names:
+        raise UnsafeAnalyticsQuery(f"Query must return {evidence_alias} for source citations")
     evidence_projection = next(
         selection for selection in query.expressions
-        if selection.alias_or_name.casefold() == "evidence_document_ids"
+        if selection.alias_or_name.casefold() == evidence_alias
     )
     evidence_expression = evidence_projection.this if isinstance(evidence_projection, exp.Alias) else evidence_projection
     evidence_columns = {column.name.casefold() for column in evidence_expression.find_all(exp.Column)}
-    if not isinstance(evidence_expression, exp.ArrayAgg) or evidence_columns != {"document_id"}:
-        raise UnsafeAnalyticsQuery("evidence_document_ids must aggregate source document IDs")
+    expected_evidence_column = "metric_id" if evidence_alias == "evidence_metric_ids" else "document_id"
+    if not isinstance(evidence_expression, exp.ArrayAgg) or evidence_columns != {expected_evidence_column}:
+        raise UnsafeAnalyticsQuery(f"{evidence_alias} must aggregate authorized source IDs")
 
     limit = query.args.get("limit")
     if limit:

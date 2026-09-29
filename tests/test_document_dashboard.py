@@ -38,7 +38,7 @@ class DocumentDashboardTest(unittest.TestCase):
 
         cursor = repository.conn.cursor.return_value.__enter__.return_value
         query = " ".join(cursor.execute.call_args.args[0].lower().split())
-        self.assertIn("allowed_roles, access_scope, processing_status", query)
+        self.assertIn("allowed_roles, processing_status", query)
         self.assertIn("processing_status = excluded.processing_status", query)
         self.assertEqual(cursor.execute.call_args.args[1], document)
         repository.conn.commit.assert_called_once()
@@ -82,7 +82,7 @@ class DocumentDashboardTest(unittest.TestCase):
 
         self.assertEqual(cursor.execute.call_count, 6)
         for query, parameters in (call.args for call in cursor.execute.call_args_list):
-            self.assertIn("d.company = %s::text", query)
+            self.assertTrue("d.company = %s::text" in query or "m.company = %s::text" in query or "coalesce(candidate.company, d.company) = %s::text" in query)
             self.assertEqual(parameters[-1], "Vinamilk Ltd.")
 
     def test_dashboard_agent_passes_trusted_company_scope(self):
@@ -191,7 +191,7 @@ class DocumentDashboardTest(unittest.TestCase):
                     self.assertIn("d.processing_status = 'ready'", candidate_query)
                     normalized = " ".join(candidate_query.lower().split())
                     self.assertIn("row_number() over", normalized)
-                    self.assertIn("partition by candidate.document_id, candidate.metric_name", normalized)
+                    self.assertIn("partition by coalesce(candidate.document_id, 'manual-' || candidate.id::text), candidate.metric_name", normalized)
                     self.assertIn("candidate.created_at desc, candidate.id desc", normalized)
                     self.assertIn("where c.review_rank = 1", normalized)
                     self.assertIn("not exists", normalized)

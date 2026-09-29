@@ -243,6 +243,10 @@ class UploadProcessingFlowTest(unittest.TestCase):
 
         self.assertEqual(response["processing_status"], "ready")
         persisted = chunks_cls.return_value.replace_document.call_args.args[1]
+        self.assertEqual(
+            chunks_cls.return_value.replace_document.call_args.args[0], response["document_id"],
+        )
+        self.assertEqual(persisted[0][0], "finance.docx")
         self.assertEqual(persisted[0][3]["section_title"], "Financial performance")
         self.assertEqual(persisted[0][3]["embedding_model"], "test-embedding")
         table_chunk = next((row for row in persisted if row[3].get("layout_type") == "table"), None)

@@ -144,6 +144,7 @@ every named package by default.
 
 ## Technical notes
 
+- [Repository ownership and navigation](technical/repository-ownership.md)
 - [Document parsing, OCR and tables](technical/document-processing.md)
 - [Chunking and section metadata](technical/chunking.md)
 - [Embedding model and tokenization](technical/embeddings-tokenization.md)
@@ -156,17 +157,17 @@ every named package by default.
 
 ## Current validation snapshot
 
-- Corpus metadata audit: `uv run python scripts/evaluate_corpus_metadata.py`; latest read-only artifact checks all 26 ready manifest sources (364 document fields and 52,283 chunk fields) with zero propagation mismatches, across 4,753 chunks. This is not automatic extraction accuracy.
+- Corpus metadata audit: `uv run python scripts/analytics/evaluate_corpus_metadata.py`; latest read-only artifact checks all 26 ready manifest sources (364 document fields and 52,283 chunk fields) with zero propagation mismatches, across 4,753 chunks. This is not automatic extraction accuracy.
 - Automated suite: `uv run python -m unittest discover -s tests -q` (**462
   passed on 2026-09-29**; includes processing, evaluation, retrieval, agent,
   API and dashboard checks, including OCR benchmark packaging, the separate
   2011 scan diagnostic notebook, and OCR/embedding Kaggle setup
   validation and authenticated upload/admin-processing RBAC regressions).
-- Proposal corpus-coverage audit: `uv run python scripts/evaluate_proposal_case_coverage.py` validates all 12 case labels against the active route set and 26-document manifest; current counts are 2 supported, 6 partial and 4 unsupported. The public Code of Conduct supports a narrow employee-access answer, while its referenced dedicated Information System Policy is absent; the synthetic demo ACL lets employees retrieve it, but not finance analysts. The employee app QA passed 1/1 with Qwen3.8 ([artifact](../artifacts/evaluation/employee-access-policy-qwen38-rerun-20260928.json)). The authenticated invoice task passed its grounded-answer checks in [the final evaluation](../artifacts/evaluation/proposal-business-app-invoice-narrow-quote-final-20260928.json). Use `scripts/evaluate_app_qa.py --case-id <id>` for focused role-specific QA.
+- Proposal corpus-coverage audit: `uv run python scripts/agents/evaluate_proposal_case_coverage.py` validates all 12 case labels against the active route set and 26-document manifest; current counts are 2 supported, 6 partial and 4 unsupported. The public Code of Conduct supports a narrow employee-access answer, while its referenced dedicated Information System Policy is absent; the synthetic demo ACL lets employees retrieve it, but not finance analysts. The employee app QA passed 1/1 with Qwen3.8 ([artifact](../artifacts/evaluation/employee-access-policy-qwen38-rerun-20260928.json)). The authenticated invoice task passed its grounded-answer checks in [the final evaluation](../artifacts/evaluation/proposal-business-app-invoice-narrow-quote-final-20260928.json). Use `scripts/agents/evaluate_app_qa.py --case-id <id>` for focused role-specific QA.
 - Embedding comparison: the paired Tesla T4 reports and independent hash audit cover all 4,750 passages in the 25-source snapshot for BGE-M3, Qwen3 Embedding and e5-large-v2. The separate 173-chunk CPU run has only BGE/e5 results because Qwen was stopped at its first slow batch. The two protocols and the raw artifact metadata discrepancy are described in [the evaluation matrix](technical/agents-and-evaluation.md#proposal-evaluation-master-matrix).
-- Query rewriting: `uv run python scripts/evaluate_query_rewriting.py --output artifacts/evaluation/vinamilk-query-rewriting-metric-labels-20260928.json` compares raw and ontology-expanded queries on identical role-filtered retrieval inputs. The small paired result was mixed, so rewriting remains evaluation-only; other optimization experiments remain open.
-- Response cache: `uv run python scripts/evaluate_response_cache.py --output artifacts/evaluation/vinamilk-response-cache-api-smoke-20260928.json` verified two identical authenticated, cited `/api/ask` responses with one answer-generation call and live role-filtered retrieval. The deterministic answer stub isolates cache wiring; embedding and DB retrieval still execute on cache hits, so recorded latency is not a real-provider speedup benchmark.
-- Context compression: `uv run python scripts/evaluate_context_compression.py --output artifacts/evaluation/vinamilk-context-compression-20260928.json` performs query-term extractive sentence selection against the blinded QA packet. Fifteen responses (five distinct questions) have a mean 0.3976 character ratio; responses with all expected fact groups present remained 6/15 before and after, with baseline indicators unchanged in 15/15. These repeated contexts and character counts are preliminary; answer quality and tokenizer savings remain unmeasured, so compression stays off in production.
+- Query rewriting: `uv run python scripts/agents/evaluate_query_rewriting.py --output artifacts/evaluation/vinamilk-query-rewriting-metric-labels-20260928.json` compares raw and ontology-expanded queries on identical role-filtered retrieval inputs. The small paired result was mixed, so rewriting remains evaluation-only; other optimization experiments remain open.
+- Response cache: `uv run python scripts/agents/evaluate_response_cache.py --output artifacts/evaluation/vinamilk-response-cache-api-smoke-20260928.json` verified two identical authenticated, cited `/api/ask` responses with one answer-generation call and live role-filtered retrieval. The deterministic answer stub isolates cache wiring; embedding and DB retrieval still execute on cache hits, so recorded latency is not a real-provider speedup benchmark.
+- Context compression: `uv run python scripts/agents/evaluate_context_compression.py --output artifacts/evaluation/vinamilk-context-compression-20260928.json` performs query-term extractive sentence selection against the blinded QA packet. Fifteen responses (five distinct questions) have a mean 0.3976 character ratio; responses with all expected fact groups present remained 6/15 before and after, with baseline indicators unchanged in 15/15. These repeated contexts and character counts are preliminary; answer quality and tokenizer savings remain unmeasured, so compression stays off in production.
 - Python syntax: `python -m compileall -q src tests scripts`.
 - Frontend syntax: `node --check src/app/static/app.js`.
 - Hosted CI: commit `5c135ce` passed `uv sync --locked`, Python compile, all 252
@@ -177,7 +178,7 @@ every named package by default.
 - Local HTTP load through Uvicorn:
 
   ```bash
-  uv run python scripts/evaluate_api_load.py --base-url http://127.0.0.1:8000 \
+  uv run python scripts/operations/evaluate_api_load.py --base-url http://127.0.0.1:8000 \
     --concurrency 1 2 4 --iterations 10
   ```
 
@@ -442,7 +443,7 @@ candidates replace parser candidates only for the same document/metric/year/
 page, preserving parser evidence for metrics the LLM did not return. Provider
 errors keep parser candidates from the shortlisted finance pages.
 
-Run `.venv/bin/python scripts/process_vinamilk_financial_reports.py
+Run `.venv/bin/python scripts/processing/process_vinamilk_financial_reports.py
 --page-selection-only --ids VNM-AR-2020-VI VNM-AR-2024-VI` to inspect selection
 without model calls, or add `--llm --dry-run` to inspect extraction output
 without saving. `--save-candidates` saves review-only candidates.

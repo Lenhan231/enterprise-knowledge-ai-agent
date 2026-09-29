@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, Mock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from scripts.ingest_vietnam_enterprise_corpus import ingest_one_document
+from scripts.ingestion.ingest_vietnam_enterprise_corpus import ingest_one_document
 
 
 class SeedIngestionPipelineTest(unittest.TestCase):
@@ -16,8 +16,8 @@ class SeedIngestionPipelineTest(unittest.TestCase):
             "document_id": "VNM-AR-2024-VI", "ticker": "VNM",
             "company": "Vinamilk JSC", "domain": "finance", "title": "Annual report",
             "document_type": "annual_report", "fiscal_year": 2024, "language": "vi",
-            "year_or_version": "2024", "official_url": "https://example.test/report.pdf",
-            "rbac": {"classification": "public", "allowed_roles": ["employee"]},
+            "year_or_version": "2024", "source_url": "https://example.test/report.pdf",
+            "rbac": {"allowed_roles": ["employee"]},
         }
         self.input_path = Path("report.pdf")
         self.chunk = SimpleNamespace(
@@ -38,7 +38,7 @@ class SeedIngestionPipelineTest(unittest.TestCase):
         timeline.attach_mock(self.documents, "documents")
         timeline.attach_mock(self.chunk_repository, "chunks")
         timeline.attach_mock(structured_store, "tables")
-        with patch("scripts.ingest_vietnam_enterprise_corpus.StructuredDataStore", return_value=structured_store):
+        with patch("scripts.ingestion.ingest_vietnam_enterprise_corpus.StructuredDataStore", return_value=structured_store):
             counts = ingest_one_document(
                 self.item, self.input_path, Path("processed"), self.ingestor,
                 self.embeddings, self.documents, self.chunk_repository,
@@ -53,13 +53,15 @@ class SeedIngestionPipelineTest(unittest.TestCase):
         self.assertLess(calls.index("tables.save_document_tables"), calls.index("documents.update_processing_status"))
         self.assertEqual(self.documents.update_processing_status.call_args.args, ("VNM-AR-2024-VI", "ready"))
         self.chunk_repository.replace_document.assert_called_once()
+        self.assertEqual(self.chunk_repository.replace_document.call_args.args[0], "VNM-AR-2024-VI")
+        self.assertEqual(self.chunk_repository.replace_document.call_args.args[1][0][0], "report.pdf")
         structured_store.save_document_tables.assert_called_once()
         structured_store.close.assert_called_once()
 
     def test_failed_table_persistence_keeps_document_unsearchable(self):
         structured_store = MagicMock()
         structured_store.save_document_tables.side_effect = RuntimeError("table insert failed")
-        with patch("scripts.ingest_vietnam_enterprise_corpus.StructuredDataStore", return_value=structured_store):
+        with patch("scripts.ingestion.ingest_vietnam_enterprise_corpus.StructuredDataStore", return_value=structured_store):
             with self.assertRaisesRegex(RuntimeError, "table insert failed"):
                 ingest_one_document(
                     self.item, self.input_path, Path("processed"), self.ingestor,

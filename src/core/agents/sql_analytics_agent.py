@@ -44,7 +44,7 @@ class SQLAnalyticsAgent(BaseAgent):
             '{"sql":"..."}. You may read only one source: authorized_financial_metrics '
             "(company, fiscal_year, metric_name, metric_label, metric_value, unit, document_id, "
             "page_number, source_url, source_quote) or authorized_documents (document_id, company, "
-            "domain, title, document_type, format, fiscal_year (integer or NULL), processing_status, official_url). They are already "
+            "domain, title, document_type, format, fiscal_year (integer or NULL), processing_status, source_url). They are already "
             "filtered for this user's role and requested company. Do not add a company equality filter. "
             "Use only these columns. No joins, nested queries, CTEs, "
             "comments, semicolons, or functions other than COUNT, SUM, AVG, MIN, MAX, ARRAY_AGG. "
@@ -54,8 +54,9 @@ class SQLAnalyticsAgent(BaseAgent):
             "inventory, employees, state_budget_contribution. Map consolidated revenue to "
             "total_consolidated_revenue, net revenue to net_revenue, and after-tax profit to "
             "profit_after_tax; do not use display words such as 'Revenue' or 'Profit' as codes. "
-            "Always select ARRAY_AGG(DISTINCT document_id) AS evidence_document_ids. For queries over "
-            "authorized_financial_metrics, also project metric_name and fiscal_year directly and never "
+            "For authorized_financial_metrics, select ARRAY_AGG(DISTINCT metric_id) AS evidence_metric_ids. "
+            "For authorized_documents, select ARRAY_AGG(DISTINCT document_id) AS evidence_document_ids. "
+            "For queries over authorized_financial_metrics, also project metric_name and fiscal_year directly and never "
             "combine different metric names or years in one result row; group by them when aggregating. "
             "This keeps each result tied to the exact source KPI. Use a numeric LIMIT at most 100. "
             "Do not invent data." + chart_instruction + "\n\n"
@@ -65,18 +66,21 @@ class SQLAnalyticsAgent(BaseAgent):
         data = self.repository.execute_authorized_analytics(
             query, role, request.user_id or "", request.metadata.get("company")
         )
+        is_metric_query = "from authorized_financial_metrics" in query.casefold()
+        evidence_key = "evidence_metric_ids" if is_metric_query else "evidence_document_ids"
         rows = [
             row for row in data["results"]
-            if isinstance(row.get("evidence_document_ids"), (list, tuple))
-            and row["evidence_document_ids"]
+            if isinstance(row.get(evidence_key), (list, tuple))
+            and row[evidence_key]
         ]
         answer = "No verified, role-visible data matched this analytics request."
         metric_evidence = [Evidence(
             citation_id=f"M{index}", source_type="verified_metric",
             source=f"{row['company']} {row['fiscal_year']} · {row['metric_label']}",
-            content=row["source_quote"],
-            metadata={"document_id": row["document_id"], "page_number": row["page_number"],
-                      "source_url": row["source_url"], "metric_name": row["metric_name"],
+            content=row.get("source_quote") or row.get("source_note"),
+            metadata={"metric_id": row.get("metric_id"), "document_id": row.get("document_id"), "page_number": row.get("page_number"),
+                      "source_url": row.get("source_url"), "metric_name": row["metric_name"],
+                      "source_reference": row.get("source_reference"), "entry_method": row.get("entry_method", "extracted"),
                       "company": row["company"], "fiscal_year": row["fiscal_year"],
                       "metric_label": row["metric_label"], "metric_value": row["metric_value"],
                       "unit": row["unit"]},
@@ -85,9 +89,8 @@ class SQLAnalyticsAgent(BaseAgent):
             citation_id=f"D{index}", source_type="document",
             source=row["title"], content=None,
             metadata={"document_id": row["document_id"], "company": row["company"],
-                      "domain": row["domain"], "source_url": row["official_url"]},
+                      "domain": row["domain"], "source_url": row["source_url"]},
         ) for index, row in enumerate(data["documents"], 1)]
-        is_metric_query = "from authorized_financial_metrics" in query.casefold()
         source_evidence = metric_evidence if is_metric_query else document_evidence
         financial_rows_by_citation = {
             f"M{index}": row for index, row in enumerate(data["evidence"], 1)
@@ -96,11 +99,11 @@ class SQLAnalyticsAgent(BaseAgent):
         if rows:
             lines = ["Analytics results (computed from role-visible verified data):"]
             for row in rows:
-                values = [f"{key}: {value}" for key, value in row.items() if key != "evidence_document_ids"]
-                document_ids = set(row.get("evidence_document_ids", []))
+                values = [f"{key}: {value}" for key, value in row.items() if key != evidence_key]
+                source_ids = set(row.get(evidence_key, []))
                 matching_evidence = [
                     item for item in source_evidence
-                    if item.metadata.get("document_id") in document_ids
+                    if item.metadata.get("metric_id" if is_metric_query else "document_id") in source_ids
                     and (not is_metric_query or all(
                         key not in row or str(row[key]) == str(item.metadata.get(key))
                         for key in ("metric_name", "fiscal_year", "company", "unit")

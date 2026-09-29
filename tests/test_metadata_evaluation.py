@@ -2,8 +2,8 @@ import sys
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from evaluate_corpus_metadata import (  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from scripts.analytics.evaluate_corpus_metadata import (  # noqa: E402
     expected_chunk_metadata,
     expected_document_metadata,
     mismatches,
@@ -15,16 +15,16 @@ class CorpusMetadataEvaluationTest(unittest.TestCase):
         self.item = {
             "document_id": "VNM-POL-1", "company": "Vinamilk JSC", "ticker": "VNM",
             "domain": "operations", "title": "Policy", "year_or_version": "2025",
-            "format": "HTML", "ingestion_format": "HTML", "official_url": "https://example.test",
-            "verification": "Official source", "rag_value": "Operations policy",
+            "format": "HTML", "source_url": "https://example.test",
+            "verification": "Official source",
             "document_type": "operating_policy", "fiscal_year": "2025", "language": "en",
-            "rbac": {"classification": "internal", "allowed_roles": ["operations"]},
+            "rbac": {"allowed_roles": ["operations"]},
         }
 
     def test_document_and_chunk_expected_metadata_map_manifest_fields(self):
         document = expected_document_metadata(self.item)
         chunk = expected_chunk_metadata(self.item)
-        self.assertEqual(document["access_scope"], "internal")
+        self.assertEqual(document["source_url"], "https://example.test")
         self.assertEqual(document["allowed_roles"], ["operations"])
         self.assertEqual(chunk["source_type"], "public_enterprise_document")
         self.assertEqual(chunk["language"], "en")

@@ -26,6 +26,22 @@ class DocumentProcessorTest(unittest.TestCase):
     def setUp(self):
         self.processor = DocumentProcessor()
 
+    def test_document_title_and_uploader_are_not_copied_into_chunk_metadata(self):
+        pdf = fitz.open()
+        page = pdf.new_page()
+        page.insert_text((40, 50), "Revenue and operations report content.")
+        source = pdf.tobytes()
+        pdf.close()
+
+        result = self.processor.process("report.pdf", source, {
+            "document_id": "DOC-1", "title": "Database title", "uploaded_by": "admin",
+        })
+
+        metadata = result["chunks"][0]["metadata"]
+        self.assertNotIn("title", metadata)
+        self.assertNotIn("uploaded_by", metadata)
+        self.assertEqual(metadata["filename"], "report.pdf")
+
     def test_docx_extracts_paragraphs_and_structured_table(self):
         source = archive({"word/document.xml": """<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>
           <w:p><w:r><w:t>Annual revenue was 100 VND.</w:t></w:r></w:p><w:p><w:r><w:t>Profit was 25 VND.</w:t></w:r></w:p>

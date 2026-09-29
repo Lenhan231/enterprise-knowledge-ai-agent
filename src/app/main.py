@@ -33,6 +33,7 @@ from core.agents.router import AgentRouter
 from core.agents.sql_analytics_agent import SQLAnalyticsAgent
 from core.models.agents import AgentRequest
 from core.rag.rag_service import extract_source_ids
+from core.analytics.metric_ontology import METRIC_ONTOLOGY
 from supabase import create_client
 
 logger = logging.getLogger(__name__)
@@ -55,7 +56,7 @@ ROLE_PERMISSIONS = {
     "operations": {"view_corpus", "ask_documents"},
     "legal_compliance": {"view_corpus", "ask_documents"},
     "executive": {"view_corpus", "ask_documents", "view_analytics"},
-    "admin": {"view_corpus", "ask_documents", "view_analytics", "upload_documents", "classify_documents", "review_metrics", "manage_access", "view_agent_monitoring"},
+    "admin": {"view_corpus", "ask_documents", "view_analytics", "upload_documents", "classify_documents", "review_metrics", "manage_metrics", "manage_access", "view_agent_monitoring"},
     "document_uploader": {"view_corpus", "upload_documents", "classify_documents"},
 }
 
@@ -210,6 +211,53 @@ class CandidateReviewRequest(BaseModel):
             raise ValueError("Metric value must be finite") from error
 
 
+class ManualMetricRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    metric_name: str
+    fiscal_year: int = Field(ge=1900, le=2100)
+    metric_value: str = Field(min_length=1, max_length=40)
+    unit: str = Field(min_length=1, max_length=40)
+    source_reference: str | None = Field(default=None, max_length=1000)
+    source_note: str = Field(min_length=12, max_length=2000)
+    allowed_roles: list[str] = Field(min_length=1)
+
+    @field_validator("metric_name")
+    @classmethod
+    def canonical_metric(cls, value: str) -> str:
+        if value not in METRIC_ONTOLOGY:
+            raise ValueError("Choose a metric from the canonical metric catalog")
+        return value
+
+    @field_validator("unit", "source_note", "source_reference")
+    @classmethod
+    def trim_text(cls, value: str | None) -> str | None:
+        value = value.strip() if value is not None else None
+        return value or None
+
+    @field_validator("unit", "source_note")
+    @classmethod
+    def required_text(cls, value: str | None) -> str:
+        if not value:
+            raise ValueError("This field cannot be blank")
+        return value
+
+    @field_validator("allowed_roles")
+    @classmethod
+    def known_roles(cls, value: list[str]) -> list[str]:
+        roles = sorted(set(value))
+        if not roles or set(roles) - DOCUMENT_ROLES - {"document_uploader"}:
+            raise ValueError("Select one or more known roles")
+        return roles
+
+    @field_validator("metric_value")
+    @classmethod
+    def valid_value(cls, value: str) -> str:
+        parsed = CandidateReviewRequest(
+            status="verified", normalized_value=value, unit="validation",
+        ).normalized_value
+        return str(parsed)
+
+
 @app.get("/", include_in_schema=False)
 def home():
     return FileResponse(STATIC_DIR / "index.html")
@@ -338,16 +386,13 @@ async def upload_document(
             "title": title.strip(),
             "year_or_version": str(fiscal_year) if fiscal_year else None,
             "format": extension[1:].upper(),
-            "ingestion_format": extension[1:].upper(),
-            "official_url": "",
+            "source_url": None,
             "verification": f"User upload SHA-256 {source_hash}",
-            "rag_value": "User-uploaded document pending processing",
             "document_type": document_type,
             "fiscal_year": str(fiscal_year) if fiscal_year else None,
             "company": CORPUS_COMPANY,
             "source_type": "user_upload",
             "allowed_roles": allowed_roles,
-            "access_scope": "synthetic_demo",
             "storage_path": storage_path,
             "uploaded_by": user["sub"],
             "processing_status": "uploaded",
@@ -368,7 +413,7 @@ async def upload_document(
             "title": title.strip(),
             "document_type": document_type,
             "fiscal_year": fiscal_year,
-            "official_url": "",
+            "source_url": None,
             "source_type": "user_upload",
             "allowed_roles": allowed_roles,
         }
@@ -387,6 +432,9 @@ async def upload_document(
         chunks = processed["chunks"]
         if not chunks:
             raise ValueError("No text could be extracted; check OCR availability or the source file")
+        for chunk in chunks:
+            chunk["metadata"].pop("title", None)
+            chunk["metadata"].pop("author", None)
         parsed_repository = ProcessedChunksRepository()
         try:
             parsed_repository.replace_document(document_id, chunks)
@@ -492,7 +540,7 @@ async def upload_document(
         chunk_repository = DocumentChunkRepository()
         try:
             chunk_repository.replace_document(document_id, [
-                (document_id, index, chunk["text"],
+                (filename, index, chunk["text"],
                  {**chunk["metadata"], "document_id": document_id, "allowed_roles": allowed_roles}, vector)
                 for index, (chunk, vector) in enumerate(zip(chunks, vectors, strict=True))
             ])
@@ -565,6 +613,42 @@ def analytics_data(user: dict = Depends(require_permission("view_analytics"))):
             repository.close()
 
 
+@app.get("/api/metrics/catalog")
+def metric_catalog(user: dict = Depends(require_permission("view_analytics"))):
+    return [{"metric_name": name, **definition}
+            for name, definition in METRIC_ONTOLOGY.items()]
+
+
+@app.post("/api/metrics/manual")
+def create_manual_metric(
+    request: ManualMetricRequest,
+    user: dict = Depends(require_permission("manage_metrics")),
+):
+    repository = None
+    try:
+        repository = DocumentRepository()
+        candidate_id = repository.create_manual_metric_candidate(
+            company=CORPUS_COMPANY,
+            metric_name=request.metric_name,
+            metric_label=METRIC_ONTOLOGY[request.metric_name]["label"],
+            metric_value=request.metric_value,
+            fiscal_year=request.fiscal_year,
+            unit=request.unit,
+            source_reference=request.source_reference,
+            source_note=request.source_note,
+            allowed_roles=request.allowed_roles,
+        )
+        return {"id": candidate_id, "status": "needs_review"}
+    except (TypeError, ValueError) as error:
+        raise HTTPException(422, str(error)) from error
+    except Exception as error:
+        logger.exception("Could not save manual metric candidate")
+        raise HTTPException(503, "Could not save manual metric") from error
+    finally:
+        if repository is not None:
+            repository.close()
+
+
 @app.get("/api/admin/processing/{document_id}/chunks")
 def inspect_processed_chunks(
     document_id: str, offset: int = 0, limit: int = 25,
@@ -577,9 +661,22 @@ def inspect_processed_chunks(
         chunks = repository.get_document(
             document_id, limit=limit, offset=offset, company=CORPUS_COMPANY,
         )
+        stage = "parser"
         if not chunks:
-            raise HTTPException(404, "No parsed chunks found in the active company corpus")
-        return {"document_id": document_id, "offset": offset, "limit": limit, "chunks": chunks}
+            from core.database.document_chunks_repository import DocumentChunkRepository
+
+            indexed_repository = DocumentChunkRepository()
+            try:
+                chunks = indexed_repository.get_document_chunks(
+                    document_id, limit=limit, offset=offset, company=CORPUS_COMPANY,
+                )
+            finally:
+                indexed_repository.close()
+            stage = "indexed"
+        if not chunks:
+            raise HTTPException(404, "No parsed or indexed chunks found for this corpus document")
+        return {"document_id": document_id, "offset": offset, "limit": limit,
+                "stage": stage, "chunks": chunks}
     except ValueError as error:
         raise HTTPException(422, str(error)) from error
     finally:
@@ -731,7 +828,7 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
         hybrid = HybridAgent(knowledge, analytics)
         dashboard = DashboardAgent(analytics=analytics)
         classifier = IntentClassifier()
-        report = ReportAgent(knowledge=knowledge)
+        report = ReportAgent(knowledge=knowledge, analytics=analytics)
         router = AgentRouter(
             classifier=classifier,
             knowledge_agent=knowledge,
@@ -758,7 +855,7 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
                 "document_id": evidence.metadata.get("document_id"),
                 "chunk_index": evidence.metadata.get("chunk_index"),
                 "page_number": evidence.metadata.get("page_number"),
-                "official_url": evidence.metadata.get("official_url", evidence.metadata.get("source_url")),
+                "source_url": evidence.metadata.get("source_url"),
                 "excerpt": evidence.content[:700] if evidence.content else "",
                 "score": evidence.metadata.get("retrieval_score"),
                 "retrieval_method": evidence.metadata.get("retrieval_method"),

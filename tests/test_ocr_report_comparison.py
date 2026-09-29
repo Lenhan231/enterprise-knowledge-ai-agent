@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.compare_ocr_reports import compare_reports
+from scripts.processing.compare_ocr_reports import compare_reports
 
 
 def report(engine, *, dataset_hash="dataset", dpi=180, image_hash="image"):

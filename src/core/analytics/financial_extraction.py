@@ -305,7 +305,7 @@ def extract_financial_candidates(
                 "document_id": document["document_id"],
                 "source_quote": quote,
                 "source_quote_hash": hashlib.sha256(quote.encode()).hexdigest(),
-                "source_url": document.get("official_url", ""),
+                "source_url": document.get("source_url", ""),
                 "allowed_roles": document["rbac"]["allowed_roles"],
                 "status": "needs_review",
                 "extraction_method": "llm_selected_financial_page",

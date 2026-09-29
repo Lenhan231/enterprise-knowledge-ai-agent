@@ -92,7 +92,7 @@ def _employee_access_policy_disclosure(question: str, contexts: list[dict]) -> "
     code_id = "VNM-CODE-2025-EN"
     for context in contexts:
         metadata = context.get("metadata") or {}
-        document_name = str(metadata.get("title") or metadata.get("source_document") or context.get("document_name") or "")
+        document_name = str(metadata.get("source_document") or context.get("document_name") or "")
         document_type = str(metadata.get("document_type") or "").casefold().replace("_", " ")
         if (
             metadata.get("document_id") != code_id

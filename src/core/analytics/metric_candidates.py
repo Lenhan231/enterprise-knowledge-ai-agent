@@ -135,7 +135,7 @@ def candidates(
             "page_number": page_number,
             "source_quote": quote,
             "source_quote_hash": hashlib.sha256(quote.encode()).hexdigest(),
-            "source_url": document["official_url"],
+            "source_url": document["source_url"],
             "allowed_roles": document["rbac"]["allowed_roles"],
             "status": "needs_review",
             "extraction_method": "rule_based_page_evidence",

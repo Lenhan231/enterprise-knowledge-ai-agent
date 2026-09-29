@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts import check_vector_repository_integration as check
+from scripts.retrieval import check_vector_repository_integration as check
 
 
 class IntegrationCheckTest(unittest.TestCase):
@@ -25,8 +25,9 @@ class IntegrationCheckTest(unittest.TestCase):
             [(version,) for version in remote_migrations],
             [("embedding", "vector", 384, True, None),
              ("metadata", "jsonb", -1, True, "'{}'::jsonb")],
-            [("btree", True, 2, "document_name", "chunk_index", "text_ops"),
-             ("hnsw", False, 1, "embedding", None, "vector_cosine_ops")],
+            [("btree", True, 2, None, "chunk_index", "text_ops",
+              "(metadata ->> 'document_id'::text)"),
+             ("hnsw", False, 1, "embedding", None, "vector_cosine_ops", None)],
             rows, rows,
         ]
         vector = "[" + ",".join(["1.0"] + ["0.0"] * 383) + "]"

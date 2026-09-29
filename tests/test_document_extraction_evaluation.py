@@ -6,8 +6,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from evaluate_document_extraction import (
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from scripts.processing.evaluate_document_extraction import (
     anchor_present,
     compact_result,
     evaluate_table_strategies,
@@ -24,7 +24,7 @@ from evaluate_document_extraction import (
 
 
 class DocumentExtractionEvaluationTest(unittest.TestCase):
-    @patch("evaluate_document_extraction.extract_financial_candidates")
+    @patch("scripts.processing.evaluate_document_extraction.extract_financial_candidates")
     def test_llm_candidate_score_keeps_page_validation_trace(self, extract_candidates):
         candidate = {
             "metric_name": "profit_after_tax",
@@ -39,7 +39,7 @@ class DocumentExtractionEvaluationTest(unittest.TestCase):
         }])
         case = {
             "document_id": "VNM-AR-2023-EN",
-            "official_url": "https://example.test/report.pdf",
+            "source_url": "https://example.test/report.pdf",
             "fields": [{
                 "id": "profit", "metric_names": ["profit_after_tax"], "values": ["9,019"],
             }],
@@ -52,8 +52,8 @@ class DocumentExtractionEvaluationTest(unittest.TestCase):
         self.assertEqual(result["page_extraction"][0]["metrics_accepted"], 1)
         self.assertEqual(extract_candidates.call_args.kwargs["max_pages"], 1)
 
-    @patch("evaluate_document_extraction.extract_metric_candidates")
-    @patch("evaluate_document_extraction.select_financial_pages")
+    @patch("scripts.processing.evaluate_document_extraction.extract_metric_candidates")
+    @patch("scripts.processing.evaluate_document_extraction.select_financial_pages")
     def test_kpi_candidate_score_checks_metric_and_source_value(self, select_pages, extract_candidates):
         select_pages.return_value = [{
             "page_number": 1,

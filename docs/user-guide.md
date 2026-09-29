@@ -37,7 +37,7 @@ Supported formats and file-size limit are listed in the root README. If
 embedding fails, admins can inspect saved OCR/layout passages in Document
 processing, including extracted table rows and parser metadata; maintainers can
 retry embedding without reprocessing the original:
-`uv run python scripts/retry_document_embeddings.py UPLOAD-<document-id>`.
+`uv run python scripts/retrieval/retry_document_embeddings.py UPLOAD-<document-id>`.
 
 Assign only the roles that need the document. Public annual reports may be
 available to all demo roles, while internal or sensitive files should receive

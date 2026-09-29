@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.download_apple_corpus import (
+from scripts.ingestion.download_apple_corpus import (
     DEFAULT_IDS,
     read_manifest,
     safe_filename,
@@ -14,7 +14,7 @@ from scripts.download_apple_corpus import (
 
 
 class DownloadAppleCorpusTest(unittest.TestCase):
-    @patch("scripts.download_apple_corpus.DocumentRepository")
+    @patch("scripts.ingestion.download_apple_corpus.DocumentRepository")
     def test_manifest_is_loaded_from_repository_and_connection_is_closed(self, repository_type):
         repository = MagicMock()
         repository.list_documents.return_value = [{"document_id": DEFAULT_IDS[0]}]

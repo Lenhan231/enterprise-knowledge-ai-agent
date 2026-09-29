@@ -60,7 +60,10 @@ class DocumentProcessor:
         else:
             result = OfficeProcessor(self.config).process(suffix, content, common)
         for index, chunk in enumerate(result["chunks"]):
-            chunk["metadata"].update({key: value for key, value in common.items() if key not in chunk["metadata"]})
+            chunk["metadata"].update({
+                key: value for key, value in common.items()
+                if key not in chunk["metadata"] and key not in {"title", "uploaded_by"}
+            })
             chunk["metadata"]["chunk_index"] = index
         for table in result["tables"]:
             table.setdefault("metadata", {}).update({key: value for key, value in common.items() if key not in table["metadata"]})

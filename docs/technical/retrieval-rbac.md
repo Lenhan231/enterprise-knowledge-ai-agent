@@ -50,13 +50,30 @@ finance-specific query over the public demo corpus with synthetic role labels;
 it does not establish isolation for private documents or the full query set.
 See the [live isolation artifact](../../artifacts/evaluation/vinamilk-live-retrieval-rbac-isolation-20260928.json).
 
-`scripts/evaluate_retrieval.py` evaluates labeled cases at both document and
+`scripts/retrieval/evaluate_retrieval.py` evaluates labeled cases at both document and
 passage level when chunk judgments are present. It supports dense, BM25, hybrid
 and parent-context modes. Before a run, passage IDs are checked against the
 current ready corpus and the case's allowed roles; labels based on
 `document_id::chunk::chunk_index` must be reviewed after re-ingestion or
 re-chunking. Parent results are expanded to their returned child indices for
 passage scoring.
+
+### Retrieval code map
+
+Each ranking method has its own SQL implementation under
+`src/core/retrieval/methods/`: `dense.py` handles vector-distance ranking,
+`bm25.py` handles lexical ranking, `hybrid.py` combines both with reciprocal
+rank fusion, and `parent.py` expands dense child hits into ACL-filtered page or
+section windows. `common.py` holds only shared eligible-document/ACL SQL,
+BM25 scoring CTEs, and database-row mapping. `RetrievalService` dispatches the
+selected mode, owns query-embedding lifecycle and maps results to the public
+contract; `DocumentChunkRepository.similarity_search()` remains the compatible
+database entry point and delegates SQL to those method modules. This makes a
+single method's ranking easier to inspect without changing RAG/API callers.
+
+Parent-context remains a bounded sibling-window approximation: stored
+`parent_id`/`section_path` are not populated, and its expansion query stays in
+`DocumentChunkRepository` because it owns the ACL-filtered database read.
 
 The current file has twelve questions and 24 manually assigned selected
 passage labels. The labels are pooled and non-exhaustive, so this remains a

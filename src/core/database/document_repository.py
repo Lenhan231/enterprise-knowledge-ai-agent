@@ -26,16 +26,13 @@ class DocumentRepository:
                                     title, 
                                     year_or_version,
                                     format,
-                                    ingestion_format,
-                                    official_url,
+                                    source_url,
                                     verification,
-                                    rag_value,
                                     document_type,
                                     fiscal_year,
                                     company,
                                     source_type,
-                                    allowed_roles,
-                                    access_scope
+                                    allowed_roles
                                     FROM documents
                                     ORDER by document_id""")
             return cursor.fetchall()
@@ -46,31 +43,28 @@ class DocumentRepository:
                 """
                 INSERT INTO documents (
                     document_id, domain, title, year_or_version, format,
-                    ingestion_format, official_url, verification, rag_value,
+                    source_url, verification,
                     document_type, fiscal_year, company, source_type,
-                    allowed_roles, access_scope, processing_status
+                    allowed_roles, processing_status
                 ) VALUES (
                     %(document_id)s, %(domain)s, %(title)s, %(year_or_version)s,
-                    %(format)s, %(ingestion_format)s, %(official_url)s,
-                    %(verification)s, %(rag_value)s, %(document_type)s,
+                    %(format)s, %(source_url)s,
+                    %(verification)s, %(document_type)s,
                     %(fiscal_year)s, %(company)s, %(source_type)s,
-                    %(allowed_roles)s, %(access_scope)s, %(processing_status)s
+                    %(allowed_roles)s, %(processing_status)s
                 )
                 ON CONFLICT (document_id) DO UPDATE SET
                     domain = EXCLUDED.domain,
                     title = EXCLUDED.title,
                     year_or_version = EXCLUDED.year_or_version,
                     format = EXCLUDED.format,
-                    ingestion_format = EXCLUDED.ingestion_format,
-                    official_url = EXCLUDED.official_url,
+                    source_url = EXCLUDED.source_url,
                     verification = EXCLUDED.verification,
-                    rag_value = EXCLUDED.rag_value,
                     document_type = EXCLUDED.document_type,
                     fiscal_year = EXCLUDED.fiscal_year,
                     company = EXCLUDED.company,
                     source_type = EXCLUDED.source_type,
                     allowed_roles = EXCLUDED.allowed_roles,
-                    access_scope = EXCLUDED.access_scope,
                     processing_status = EXCLUDED.processing_status
                 """,
                 document,
@@ -84,16 +78,16 @@ class DocumentRepository:
                 """
                 INSERT INTO documents (
                     document_id, domain, title, year_or_version, format,
-                    ingestion_format, official_url, verification, rag_value,
+                    source_url, verification,
                     document_type, fiscal_year, company, source_type,
-                    allowed_roles, access_scope, storage_path, processing_status,
+                    allowed_roles, storage_path, processing_status,
                     uploaded_by, uploaded_at
                 ) VALUES (
                     %(document_id)s, %(domain)s, %(title)s, %(year_or_version)s,
-                    %(format)s, %(ingestion_format)s, %(official_url)s,
-                    %(verification)s, %(rag_value)s, %(document_type)s,
+                    %(format)s, %(source_url)s,
+                    %(verification)s, %(document_type)s,
                     %(fiscal_year)s, %(company)s, %(source_type)s,
-                    %(allowed_roles)s, %(access_scope)s, %(storage_path)s,
+                    %(allowed_roles)s, %(storage_path)s,
                     'uploaded', %(uploaded_by)s, now()
                 )
                 """,
@@ -115,8 +109,8 @@ class DocumentRepository:
             cursor.execute(
                 f"""
                 SELECT d.document_id, d.company, d.domain, d.title, d.document_type,
-                       d.format, d.fiscal_year, d.official_url, d.allowed_roles,
-                       d.access_scope, d.processing_status, count(c.id)::int AS chunks
+                       d.format, d.fiscal_year, d.source_url, d.allowed_roles,
+                       d.processing_status, count(c.id)::int AS chunks
                 FROM documents d
                 LEFT JOIN document_chunks c
                   ON c.metadata->>'document_id' = d.document_id
@@ -169,23 +163,27 @@ class DocumentRepository:
             processing = cursor.fetchall()
             if include_analytics:
                 cursor.execute(
-                    f"""SELECT d.company, m.metric_name, m.metric_label, m.fiscal_year,
+                    f"""SELECT m.company, m.metric_name, m.metric_label, m.fiscal_year,
                               m.metric_value, m.unit, m.document_id, m.page_number,
-                              m.source_url, d.allowed_roles
+                              m.source_url, m.entry_method, m.source_reference, m.source_note,
+                              m.allowed_roles
                        FROM extracted_financial_metrics m
-                       JOIN documents d USING (document_id)
                        WHERE m.status = 'verified'
-                         AND (d.allowed_roles @> %s::text[] OR %s = 'admin'){company_filter}
-                       ORDER BY d.company, m.metric_name, m.fiscal_year""",
-                    ([role], role) + ((company,) if company is not None else ()),
+                         AND (m.allowed_roles @> %s::text[] OR %s = 'admin')
+                         AND (%s::text IS NULL OR m.company = %s::text)
+                       ORDER BY m.company, m.metric_name, m.fiscal_year""",
+                    ([role], role, company, company),
                 )
                 financial = cursor.fetchall()
                 if role == "admin":
                     cursor.execute(
-                        f"""SELECT c.id, c.document_id, d.company, d.title, c.metric_name, c.metric_label,
+                        f"""SELECT c.id, c.document_id, coalesce(c.company, d.company) AS company,
+                                   coalesce(d.title, c.source_reference, 'Manual entry') AS title,
+                                   c.metric_name, c.metric_label,
                                    c.candidate_values, c.normalized_value, c.unit,
                                    c.fiscal_year, c.page_number, c.source_quote, c.status,
-                                   d.official_url, c.evidence_count,
+                                   d.source_url, c.evidence_count, c.entry_method,
+                                   c.source_reference, c.source_note, c.allowed_roles,
                                    c.extraction_method, c.extractor_model,
                                    c.prompt_version, c.selection_evidence,
                                    (SELECT max(ch.metadata->>'text_extraction_method')
@@ -195,10 +193,13 @@ class DocumentRepository:
                                      AS text_extraction_method
                             FROM (
                                 SELECT candidate.id, candidate.document_id,
+                                       candidate.company, candidate.allowed_roles,
                                        candidate.metric_name, candidate.metric_label,
                                        candidate.candidate_values, candidate.normalized_value,
                                        candidate.unit, candidate.page_number,
                                        candidate.source_quote, candidate.status,
+                                       candidate.entry_method, candidate.source_reference,
+                                       candidate.source_note,
                                        candidate.extraction_method, candidate.extractor_model,
                                        candidate.prompt_version, candidate.selection_evidence,
                                        candidate.created_at,
@@ -206,27 +207,33 @@ class DocumentRepository:
                                            CASE WHEN d.fiscal_year ~ '^[0-9]{{4}}$'
                                                 THEN d.fiscal_year::integer END) AS fiscal_year,
                                        row_number() OVER (
-                                           PARTITION BY candidate.document_id, candidate.metric_name
+                                           PARTITION BY coalesce(candidate.document_id, 'manual-' || candidate.id::text), candidate.metric_name
                                            ORDER BY candidate.created_at DESC, candidate.id DESC
                                        ) AS review_rank,
                                        count(*) OVER (
-                                           PARTITION BY candidate.document_id, candidate.metric_name
+                                           PARTITION BY coalesce(candidate.document_id, 'manual-' || candidate.id::text), candidate.metric_name
                                        )::int AS evidence_count
                                 FROM extracted_metric_candidates candidate
-                                JOIN documents d USING (document_id)
+                                LEFT JOIN documents d USING (document_id)
                                 WHERE candidate.status = 'needs_review'
-                                  AND d.processing_status = 'ready' AND {visible_filter}
+                                  AND (candidate.document_id IS NULL OR d.processing_status = 'ready')
+                                  AND (%s::text IS NULL OR coalesce(candidate.company, d.company) = %s::text)
+                                  AND (candidate.document_id IS NULL OR {visible_filter})
                                   AND NOT EXISTS (
                                       SELECT 1 FROM extracted_financial_metrics verified
-                                      WHERE verified.document_id = candidate.document_id
+                                      WHERE verified.company = coalesce(candidate.company, d.company)
                                         AND verified.metric_name = candidate.metric_name
+                                        AND verified.fiscal_year = coalesce(candidate.fiscal_year,
+                                            CASE WHEN d.fiscal_year ~ '^[0-9]{{4}}$'
+                                                 THEN d.fiscal_year::integer END)
                                         AND verified.status = 'verified'
                                   )
                             ) c
-                            JOIN documents d USING (document_id)
+                            LEFT JOIN documents d USING (document_id)
                             WHERE c.review_rank = 1
-                            ORDER BY d.company, c.fiscal_year NULLS LAST, d.title, c.page_number""",
-                        visible_params,
+                            ORDER BY coalesce(c.company, d.company), c.fiscal_year NULLS LAST,
+                                     coalesce(d.title, c.source_reference), c.page_number""",
+                        (company, company) + visible_params,
                     )
                     candidates = cursor.fetchall()
                 else:
@@ -250,8 +257,9 @@ class DocumentRepository:
         """Run validated SELECT SQL inside role-filtered CTEs and a read-only transaction."""
         query = validate_analytics_sql(query)
         metric_cte = """authorized_financial_metrics AS (
-            SELECT company, fiscal_year, metric_name, metric_label, metric_value, unit,
-                   document_id, page_number, source_url, source_quote
+            SELECT id AS metric_id, company, fiscal_year, metric_name, metric_label, metric_value, unit,
+                   document_id, page_number, source_url, source_quote, source_reference,
+                   source_note, entry_method
             FROM public.extracted_financial_metrics
             WHERE status = 'verified'
               AND (allowed_roles @> %s::text[] OR %s = 'admin')
@@ -260,13 +268,14 @@ class DocumentRepository:
         document_cte = """authorized_documents AS (
             SELECT d.document_id, d.company, d.domain, d.title, d.document_type, d.format,
                    CASE WHEN d.fiscal_year ~ '^[0-9]{4}$' THEN d.fiscal_year::integer END AS fiscal_year,
-                   d.processing_status, d.official_url
+                   d.processing_status, d.source_url
             FROM public.documents d
             WHERE source_type IN ('public_enterprise_document', 'user_upload')
               AND (allowed_roles && %s::text[] OR %s = 'admin'
                    OR (%s = 'document_uploader' AND uploaded_by = %s))
               AND (%s::text IS NULL OR company = %s)
         )"""
+        metric_ids: set[int] = set()
         document_ids: set[str] = set()
         evidence = []
         documents = []
@@ -283,28 +292,46 @@ class DocumentRepository:
                 results = [dict(row) if isinstance(row, dict) else dict(zip(columns, row))
                            for row in cursor.fetchall()]
                 for row in results:
-                    ids = row.get("evidence_document_ids")
+                    ids = row.get("evidence_metric_ids")
                     if isinstance(ids, (list, tuple)):
-                        document_ids.update(value for value in ids if isinstance(value, str))
-                if len(document_ids) > 250:
+                        metric_ids.update(value for value in ids if isinstance(value, int))
+                    document_evidence_ids = row.get("evidence_document_ids")
+                    if isinstance(document_evidence_ids, (list, tuple)):
+                        document_ids.update(value for value in document_evidence_ids if isinstance(value, str))
+                if len(metric_ids) > 500 or len(document_ids) > 250:
                     raise ValueError("Analytics matched too many source documents; narrow the request")
-                if document_ids:
-                    ids = sorted(document_ids)
+                if metric_ids:
+                    ids = sorted(metric_ids)
                     cursor.execute(
-                        """SELECT company, fiscal_year, metric_name, metric_label, metric_value,
-                                  unit, document_id, page_number, source_url, source_quote
+                        """SELECT id AS metric_id, company, fiscal_year, metric_name, metric_label,
+                                  metric_value, unit, document_id, page_number, source_url, source_quote,
+                                  source_reference, source_note, entry_method
                            FROM public.extracted_financial_metrics
-                           WHERE status = 'verified' AND document_id = ANY(%s)
+                           WHERE status='verified' AND id = ANY(%s)
                              AND (allowed_roles @> %s::text[] OR %s = 'admin')
-                           ORDER BY company, fiscal_year, metric_name
-                           LIMIT 501""",
+                           ORDER BY company, fiscal_year, metric_name LIMIT 501""",
                         (ids, [role], role),
                     )
                     evidence = cursor.fetchall()
                     if len(evidence) > 500:
                         raise ValueError("Analytics returned too many metric sources; narrow the request")
+                    source_document_ids = sorted({
+                        row["document_id"] for row in evidence if row["document_id"]
+                    })
+                    if source_document_ids:
+                        cursor.execute(
+                            """SELECT document_id, company, domain, title, source_url
+                               FROM public.documents WHERE document_id = ANY(%s)
+                                 AND (allowed_roles && %s::text[] OR %s = 'admin'
+                                      OR (%s = 'document_uploader' AND uploaded_by = %s))
+                               ORDER BY title""",
+                            (source_document_ids, [role], role, role, username),
+                        )
+                        documents = cursor.fetchall()
+                if document_ids:
+                    ids = sorted(document_ids)
                     cursor.execute(
-                        """SELECT document_id, company, domain, title, official_url
+                        """SELECT document_id, company, domain, title, source_url
                            FROM public.documents
                            WHERE document_id = ANY(%s)
                              AND source_type IN ('public_enterprise_document', 'user_upload')
@@ -313,7 +340,7 @@ class DocumentRepository:
                            ORDER BY title""",
                         (ids, [role], role, role, username),
                     )
-                    documents = cursor.fetchall()
+                    documents.extend(cursor.fetchall())
         return {"results": results, "evidence": evidence, "documents": documents}
 
     def save_metric_candidates(self, document_id: str, candidates: list[dict]) -> None:
@@ -361,6 +388,27 @@ class DocumentRepository:
                  [row["source_quote_hash"] for row in candidates]),
             )
 
+    def create_manual_metric_candidate(
+        self, *, company: str, metric_name: str, metric_label: str,
+        metric_value: str, fiscal_year: int, unit: str,
+        source_reference: str | None, source_note: str, allowed_roles: list[str],
+    ) -> int:
+        with self.conn.transaction(), self.conn.cursor() as cursor:
+            cursor.execute(
+                """INSERT INTO public.extracted_metric_candidates (
+                       company, metric_name, metric_label, candidate_values,
+                       fiscal_year, unit, status, extraction_method, entry_method,
+                       source_reference, source_note, allowed_roles, selection_evidence
+                   ) VALUES (%s, %s, %s, %s, %s, %s, 'needs_review', 'manual_entry',
+                             'manual', %s, %s, %s, %s)
+                   RETURNING id""",
+                (company, metric_name, metric_label,
+                 psycopg.types.json.Jsonb([metric_value]), fiscal_year, unit,
+                 source_reference, source_note, allowed_roles,
+                 psycopg.types.json.Jsonb({"entry_method": "manual"})),
+            )
+            return cursor.fetchone()[0]
+
     def review_metric_candidate(
         self, candidate_id: int, status: str, value: float | None,
         unit: str | None, reviewer: str, company: str | None = None,
@@ -371,14 +419,19 @@ class DocumentRepository:
             cursor.execute(
                 """UPDATE extracted_metric_candidates AS candidate
                    SET status=%s, normalized_value=%s, unit=%s, reviewed_by=%s, reviewed_at=now()
-                   FROM documents d
                    WHERE candidate.id=%s AND candidate.status='needs_review'
-                     AND d.document_id=candidate.document_id AND d.processing_status='ready'
-                     AND (%s::text IS NULL OR d.company=%s::text)
+                     AND (candidate.document_id IS NULL OR EXISTS (
+                         SELECT 1 FROM documents d
+                         WHERE d.document_id=candidate.document_id
+                           AND d.processing_status='ready'
+                           AND (%s::text IS NULL OR d.company=%s::text)
+                     ))
+                     AND (candidate.document_id IS NOT NULL OR
+                          (%s::text IS NULL OR candidate.company=%s::text))
                    RETURNING candidate.*""",
                 (status, value if status == "verified" else None,
                  unit if status == "verified" else None, reviewer, candidate_id,
-                 company, company),
+                 company, company, company, company),
             )
             candidate = cursor.fetchone()
             if candidate is None:
@@ -388,19 +441,25 @@ class DocumentRepository:
                     """INSERT INTO extracted_financial_metrics (
                            company, fiscal_year, metric_name, metric_label, metric_value,
                            unit, document_id, page_number, source_quote, source_quote_hash,
-                           source_url, allowed_roles, status
-                       ) SELECT d.company, coalesce(c.fiscal_year,
+                           source_url, allowed_roles, status, entry_method,
+                           source_reference, source_note, verified_by, verified_at
+                       ) SELECT coalesce(c.company, d.company), coalesce(c.fiscal_year,
                                 CASE WHEN d.fiscal_year ~ '^[0-9]{4}$' THEN d.fiscal_year::integer END),
                                 c.metric_name, c.metric_label, c.normalized_value, c.unit,
                                 d.document_id, c.page_number, c.source_quote,
-                                c.source_quote_hash, d.official_url, d.allowed_roles, 'verified'
-                         FROM extracted_metric_candidates c JOIN documents d USING(document_id)
-                         WHERE c.id=%s
-                         ON CONFLICT (document_id, fiscal_year, metric_name) DO NOTHING""",
-                    (candidate_id,),
+                                c.source_quote_hash, d.source_url,
+                                coalesce(nullif(c.allowed_roles, '{}'::text[]), d.allowed_roles),
+                                'verified', c.entry_method, c.source_reference, c.source_note,
+                                %s, now()
+                         FROM extracted_metric_candidates c
+                         LEFT JOIN documents d USING(document_id)
+                   WHERE c.id=%s
+                         ON CONFLICT (company, fiscal_year, metric_name)
+                             WHERE status = 'verified' DO NOTHING""",
+                    (reviewer, candidate_id),
                 )
                 if cursor.rowcount == 0:
-                    raise ValueError("A verified value already exists for this document, year, and metric")
+                    raise ValueError("A verified value already exists for this company, year, and metric")
         return True
 
     def update_processing_status(self, document_id: str, status: str) -> None:

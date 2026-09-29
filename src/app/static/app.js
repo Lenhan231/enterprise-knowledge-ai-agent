@@ -41,13 +41,17 @@ function selectWorkspaceTab(name) {
   });
 }
 
-function syncWorkspaceTabs() {
+function syncWorkspaceTabs(user = currentUser) {
+  const isAdmin = user?.role === "admin";
+  const canViewAnalytics = ["finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user?.role);
+  const canUpload = ["document_uploader", "admin"].includes(user?.role);
   const available = {
     knowledge: true,
-    analytics: !$("#analytics-section").hidden,
-    processing: !$("#upload-section").hidden,
-    access: !$("#admin-section").hidden,
-    monitoring: !$("#monitoring-section").hidden,
+    analytics: canViewAnalytics,
+    processing: canUpload,
+    metrics: isAdmin,
+    access: isAdmin,
+    monitoring: isAdmin,
   };
   document.querySelectorAll(".workspace-tab").forEach((button) => {
     button.hidden = !available[button.dataset.tabTarget];
@@ -55,6 +59,10 @@ function syncWorkspaceTabs() {
   if (!available[activeTab]) activeTab = "knowledge";
   selectWorkspaceTab(activeTab);
 }
+
+document.querySelectorAll("[data-open-tab]").forEach((button) => {
+  button.addEventListener("click", () => selectWorkspaceTab(button.dataset.openTab));
+});
 
 function renderCorpus(data) {
   const companies = new Set(data.documents.map((doc) => doc.company).filter(Boolean));
@@ -77,7 +85,7 @@ function renderCorpus(data) {
     <article class="company-card">
       <div class="company-card-head"><div><span class="company-kicker">${escapeHtml(docs[0].domain.replaceAll("_", " "))}</span><h3>${escapeHtml(company)}</h3></div><span class="doc-total">${formatNumber(docs.length)} doc${docs.length === 1 ? "" : "s"}</span></div>
       <div class="document-list">${docs.map((doc) => {
-        const href = validSourceUrl(doc.official_url);
+        const href = validSourceUrl(doc.source_url);
         const link = href
           ? `<a class="document-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Open official source</a>`
           : "";
@@ -88,18 +96,35 @@ function renderCorpus(data) {
 }
 
 function renderParsedChunkInspector(data) {
-  const uploads = data.documents.filter((doc) => doc.document_id.startsWith("UPLOAD-"));
+  const documents = data.documents;
   const section = $("#parsed-chunk-inspector");
-  section.hidden = uploads.length === 0;
-  $("#parsed-document").innerHTML = uploads.map((doc) =>
+  section.hidden = documents.length === 0;
+  $("#parsed-document").innerHTML = documents.map((doc) =>
     `<option value="${escapeHtml(doc.document_id)}">${escapeHtml(doc.title)} · ${escapeHtml(doc.processing_status || "unknown")}</option>`
   ).join("");
+}
+
+function renderMetricCatalog(metrics) {
+  const select = $("#manual-metric-name");
+  select.innerHTML = metrics.map((metric) =>
+    `<option value="${escapeHtml(metric.metric_name)}">${escapeHtml(metric.label)}</option>`
+  ).join("");
+  const showDefinition = () => {
+    const metric = metrics.find((item) => item.metric_name === select.value);
+    $("#metric-definition").innerHTML = metric
+      ? `<article class="analysis-stat"><span>${escapeHtml(metric.metric_name)}</span><strong>${escapeHtml(metric.definition)}</strong><small>${escapeHtml(metric.unit_guidance)}</small></article>`
+      : "";
+    const unit = $("#manual-metric-unit");
+    if (!unit.value && metric?.unit_guidance) unit.placeholder = metric.unit_guidance;
+  };
+  select.onchange = showDefinition;
+  showDefinition();
 }
 
 function renderParsedChunks(chunks) {
   $("#parsed-chunk-list").innerHTML = chunks.map((chunk) => `
     <article class="candidate-row">
-      <div class="candidate-heading"><strong>Passage ${formatNumber(chunk.chunk_index + 1)}</strong><span>${escapeHtml(chunk.processing_status || "extracted")} · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")}</span></div>
+        <div class="candidate-heading"><strong>Passage ${formatNumber(chunk.chunk_index + 1)}</strong><span>${escapeHtml(chunk.processing_status || "extracted")} · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")}</span></div>
       ${chunk.processing_error ? `<p class="corpus-note">Processing error: ${escapeHtml(chunk.processing_error)}</p>` : ""}
       <blockquote>${escapeHtml(chunk.content)}</blockquote>
       <details class="candidate-source"><summary>Parser metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details>
@@ -210,7 +235,10 @@ function applyAnalyticsFilters() {
     const comparison = previous && previous.unit === latest.unit
       ? `Change vs FY ${escapeHtml(previous.fiscal_year)}: ${diff >= 0 ? "+" : ""}${formatFinancialValue(diff)} ${escapeHtml(latest.unit)}${Number(previous.metric_value) ? ` (${formatFinancialValue(diff / Math.abs(Number(previous.metric_value)) * 100)}%)` : ""}`
       : "One verified reporting period";
-    return `<article class="financial-card"><span>${escapeHtml(latest.metric_label)}</span><strong>${formatFinancialValue(latest.metric_value)} <small>${escapeHtml(latest.unit)}</small></strong><em class="${isNegative ? "negative" : ""}">FY ${escapeHtml(latest.fiscal_year)} · ${comparison}</em>${href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Source · page ${escapeHtml(latest.page_number)}</a>` : `<span>Source · page ${escapeHtml(latest.page_number)}</span>`}</article>`;
+    const provenance = latest.entry_method === "manual"
+      ? `<span class="metric-provenance">Manual entry · admin verified${latest.verified_by ? ` by ${escapeHtml(latest.verified_by)}` : ""}</span>${latest.source_reference ? (validSourceUrl(latest.source_reference) ? `<a href="${escapeHtml(validSourceUrl(latest.source_reference))}" target="_blank" rel="noopener noreferrer">${escapeHtml(latest.source_reference)}</a>` : `<span>${escapeHtml(latest.source_reference)}</span>`) : ""}${latest.source_note ? `<details class="candidate-source"><summary>Verification context</summary><p>${escapeHtml(latest.source_note)}</p></details>` : ""}`
+      : href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Source · page ${escapeHtml(latest.page_number)}</a>` : `<span>Source · page ${escapeHtml(latest.page_number ?? "not recorded")}</span>`;
+    return `<article class="financial-card"><span>${escapeHtml(latest.metric_label)}</span><strong>${formatFinancialValue(latest.metric_value)} <small>${escapeHtml(latest.unit)}</small></strong><em class="${isNegative ? "negative" : ""}">FY ${escapeHtml(latest.fiscal_year)} · ${comparison}</em>${provenance}</article>`;
   }).join("") : '<p class="analysis-empty"><strong>No verified financial results for this selection</strong><span>Unreviewed extraction candidates are excluded. Admins can validate source evidence in Document processing.</span></p>';
 
   const comparisons = metrics.flatMap((series) => {
@@ -252,7 +280,7 @@ function renderCandidates(data) {
   const candidates = data.candidates || [];
   $("#candidate-review").hidden = !candidates.length;
   $("#candidate-list").innerHTML = candidates.map((item) => {
-    const href = sourcePageUrl(item.official_url, item.page_number);
+    const href = sourcePageUrl(item.source_url, item.page_number);
     const uploadedSourceHref = String(item.document_id || "").startsWith("UPLOAD-")
       ? `/api/admin/processing/${encodeURIComponent(item.document_id)}/source#page=${encodeURIComponent(item.page_number)}`
       : "";
@@ -261,7 +289,8 @@ function renderCandidates(data) {
     const figures = Array.isArray(item.candidate_values)
       ? item.candidate_values.map(String).filter(Boolean)
       : [];
-    const extraction = item.extraction_method === "llm_selected_financial_page"
+  const isManual = item.entry_method === "manual";
+  const extraction = isManual ? "Manual entry · user supplied" : item.extraction_method === "llm_selected_financial_page"
       ? `LLM · ${item.extractor_model || "configured model"}`
       : item.text_extraction_method || "Rule-based evidence";
     const signals = item.selection_evidence || {};
@@ -279,12 +308,12 @@ function renderCandidates(data) {
     return `<article class="candidate-row">
       <div class="candidate-evidence">
         <div class="candidate-heading"><div><strong>${escapeHtml(item.metric_label)}</strong><span>${escapeHtml(item.company)} · ${escapeHtml(item.title)}</span></div><span class="candidate-status">Admin review${evidenceCount > 1 ? ` · ${formatNumber(evidenceCount)} excerpts` : ""}</span></div>
-        <div class="candidate-facts"><span><small>Reporting year</small><strong>${escapeHtml(item.fiscal_year || "Needs review")}</strong></span><span><small>Source page</small><strong>${escapeHtml(item.page_number)}</strong></span><span><small>Document</small><strong>${escapeHtml(item.document_id)}</strong></span><span><small>Extraction</small><strong>${escapeHtml(extractionLabel)}</strong></span></div>
-        <div class="candidate-value"><small>${figures.length > 1 ? "Figures in excerpt · select a value, then confirm its reporting year in the source" : "Figure found in excerpt · select it only after checking the source"}</small><div class="candidate-figures">${figuresMarkup}</div><small>Confirm the reporting year and scale on the source. Use one consistent dashboard unit across periods (for example, billion VND).${evidenceCount > 1 ? " Rejecting this excerpt will show the next pending source excerpt." : ""}</small></div>
-        <details class="candidate-source"><summary>Check source excerpt${sourceHref ? ` · <a href="${escapeHtml(sourceHref)}" target="_blank" rel="noopener noreferrer">${sourceLabel} · page ${escapeHtml(item.page_number)}</a>` : ""}</summary>${labelMatchNotice}<blockquote>${escapeHtml(item.source_quote)}</blockquote>${selectionSummary ? `<small>Page-selection signals · ${escapeHtml(selectionSummary)}</small>` : ""}${item.prompt_version ? `<small>Extraction prompt · ${escapeHtml(item.prompt_version)}</small>` : ""}</details>
+        <div class="candidate-facts"><span><small>Reporting year</small><strong>${escapeHtml(item.fiscal_year || "Needs review")}</strong></span><span><small>Source page</small><strong>${escapeHtml(item.page_number ?? (isManual ? "Manual reference" : "—"))}</strong></span><span><small>Document</small><strong>${escapeHtml(item.document_id || (isManual ? "Manual entry" : "—"))}</strong></span><span><small>Entry method</small><strong>${escapeHtml(extractionLabel)}</strong></span></div>
+        <div class="candidate-value"><small>${isManual ? "User-supplied value · confirm its provenance and reporting basis" : figures.length > 1 ? "Figures in excerpt · select a value, then confirm its reporting year in the source" : "Figure found in excerpt · select it only after checking the source"}</small><div class="candidate-figures">${figuresMarkup}</div><small>Confirm the reporting year and scale. Use one consistent dashboard unit across periods.${evidenceCount > 1 ? " Rejecting this excerpt will show the next pending source excerpt." : ""}</small></div>
+        <details class="candidate-source"><summary>${isManual ? "Review manual source context" : `Check source excerpt${sourceHref ? ` · <a href="${escapeHtml(sourceHref)}" target="_blank" rel="noopener noreferrer">${sourceLabel} · page ${escapeHtml(item.page_number)}</a>` : ""}`}</summary>${isManual ? `${item.source_reference ? `<p>Source reference: ${escapeHtml(item.source_reference)}</p>` : "<p>No external source URL supplied.</p>"}<p>${escapeHtml(item.source_note)}</p>` : `${labelMatchNotice}<blockquote>${escapeHtml(item.source_quote)}</blockquote>${selectionSummary ? `<small>Page-selection signals · ${escapeHtml(selectionSummary)}</small>` : ""}${item.prompt_version ? `<small>Extraction prompt · ${escapeHtml(item.prompt_version)}</small>` : ""}`}</details>
       </div>
       <form data-candidate-id="${item.id}" class="review-form">
-        <label>Verified value<input name="normalized_value" type="text" inputmode="decimal" pattern="[+-]?[0-9.,]+" required placeholder="e.g. 59723 or 59.723" aria-describedby="metric-value-help"></label><small id="metric-value-help">Nhập chữ số liền nhau (59723) hoặc theo cách viết Việt Nam (59.723; phần thập phân: 59.723,5). Dashboard cũng hiển thị theo cách viết Việt Nam: 59.723.</small><output class="review-value-preview" aria-live="polite"></output>
+        <label>Verified value<input name="normalized_value" type="text" inputmode="decimal" pattern="[+-]?[0-9.,]+" value="${isManual ? escapeHtml(figures[0] || "") : ""}" required placeholder="e.g. 59723 or 59.723" aria-describedby="metric-value-help"></label><small id="metric-value-help">Nhập chữ số liền nhau (59723) hoặc theo cách viết Việt Nam (59.723; phần thập phân: 59.723,5). Dashboard cũng hiển thị theo cách viết Việt Nam: 59.723.</small><output class="review-value-preview" aria-live="polite"></output>
         <label>Dashboard unit (verify)<input name="unit" value="${escapeHtml(item.unit || "")}" required placeholder="e.g. billion VND"></label>
         <div class="review-actions"><button type="submit">Verify and publish</button><button type="button" data-reject>Reject</button></div>
       </form>
@@ -360,7 +389,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
           <span class="citation-count-badge">${citations.length} source${citations.length === 1 ? "" : "s"}</span>
         </div>
         ${citations.map((source) => {
-          const href = validSourceUrl(source.official_url);
+          const href = validSourceUrl(source.source_url);
           const link = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View original</a>` : "";
           const location = source.page_number ? `Page ${source.page_number}` : `Passage ${source.chunk_index + 1}`;
           const relevanceScore = Number.isFinite(source.score) ? source.score * 100 : null;
@@ -504,6 +533,8 @@ async function loadWorkspace(user) {
   $("#upload-section").hidden = true;
   $("#admin-section").hidden = true;
   $("#monitoring-section").hidden = true;
+  $("#metric-management-section").hidden = user.role !== "admin";
+  $("#candidate-review").hidden = true;
   syncWorkspaceTabs();
   $("#access-matrix").replaceChildren();
   $("#connection-status").textContent = "Knowledge base connected";
@@ -514,6 +545,14 @@ async function loadWorkspace(user) {
     const data = await api("/api/dashboard");
     renderCorpus(data);
     if (user.role === "admin") renderParsedChunkInspector(data);
+    if (user.role === "admin") {
+      $("#metric-management-section").hidden = false;
+      const roles = await api("/api/documents/roles");
+      $("#manual-metric-role-options").innerHTML = roles.roles.map((role) =>
+        `<label><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}" ${["admin", "executive", "finance_analyst"].includes(role) ? "checked" : ""}> ${escapeHtml(role.replaceAll("_", " "))}</label>`
+      ).join("");
+      renderMetricCatalog(await api("/api/metrics/catalog"));
+    }
     try {
       const capability = await api("/api/documents/upload-capability");
       $("#upload-section").hidden = !capability.can_upload;
@@ -536,9 +575,10 @@ async function loadWorkspace(user) {
       $("#monitoring-section").hidden = false;
       await refreshAgentMonitoring();
     }
-    syncWorkspaceTabs();
+    syncWorkspaceTabs(user);
     $("#login-error").hidden = true;
   } catch (error) {
+    syncWorkspaceTabs(user);
     if (error.message !== "Sign in to continue") {
       $("#login-error").textContent = `Signed in, but the workspace could not load: ${error.message}`;
       $("#login-error").hidden = false;
@@ -572,6 +612,7 @@ $("#parsed-chunk-form").addEventListener("submit", async (event) => {
   try {
     const result = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/chunks?offset=${offset}&limit=25`);
     renderParsedChunks(result.chunks);
+    $("#parsed-chunk-list").insertAdjacentHTML("afterbegin", `<p class="corpus-note">Showing ${result.stage === "parser" ? "saved parser output before embeddings" : "indexed retrieval chunks after embeddings"}.</p>`);
   } catch (error) {
     $("#parsed-chunk-list").innerHTML = `<p class="loading-card">${escapeHtml(error.message)}</p>`;
   }
@@ -732,6 +773,30 @@ $("#upload-form").addEventListener("submit", async (event) => {
     await loadWorkspace(await api("/api/auth/me"));
   } catch (error) {
     $("#upload-status").textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+
+$("#manual-metric-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const values = Object.fromEntries(new FormData(form));
+  values.allowed_roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
+  if (!values.allowed_roles.length) {
+    $("#manual-metric-status").textContent = "Select at least one role allowed to view this metric.";
+    return;
+  }
+  const button = $("#manual-metric-button");
+  button.disabled = true;
+  $("#manual-metric-status").textContent = "Saving metric for verification…";
+  try {
+    await api("/api/metrics/manual", {method: "POST", body: JSON.stringify(values)});
+    form.reset();
+    $("#manual-metric-status").textContent = "Saved to the review queue. Verify it below before it appears in Business Analysis.";
+    await loadWorkspace(await api("/api/auth/me"));
+  } catch (error) {
+    $("#manual-metric-status").textContent = error.message;
   } finally {
     button.disabled = false;
   }

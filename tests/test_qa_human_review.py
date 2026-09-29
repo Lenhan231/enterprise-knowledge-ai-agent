@@ -5,8 +5,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from qa_human_review import import_reviews, prepare_review  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from scripts.agents.qa_human_review import import_reviews, prepare_review  # noqa: E402
 
 
 def write_run(path: Path, model: str, context_hash: str = "same-context"):
@@ -20,7 +20,7 @@ def write_run(path: Path, model: str, context_hash: str = "same-context"):
             "sources": [{
                 "source_id": "S1", "page_number": 2,
                 "document_id": "D1", "source_document": "report.pdf",
-                "official_url": "https://example.test/report.pdf",
+                "source_url": "https://example.test/report.pdf",
                 "content_preview": "Short preview.", "evidence": "Complete source evidence excerpt.",
             }],
             "human_reviews": [],
@@ -63,7 +63,7 @@ class BlindQAReviewTest(unittest.TestCase):
             self.assertNotEqual(packet_data["responses"][0]["case_id"], "case-a")
             packet_source = packet_data["responses"][0]["sources"][0]
             self.assertEqual(packet_source["evidence"], "Complete source evidence excerpt.")
-            self.assertEqual(packet_source["official_url"], "https://example.test/report.pdf")
+            self.assertEqual(packet_source["source_url"], "https://example.test/report.pdf")
 
             packet_b.write_text(packet_text, encoding="utf-8")
             fill_packet(packet_a, "reviewer-1", hallucinated=1)
@@ -83,7 +83,7 @@ class BlindQAReviewTest(unittest.TestCase):
             self.assertEqual(faithfulness_agreement["weighted_cohen_kappa"], 1.0)
 
     def test_agreement_is_only_reported_for_paired_two_reviewer_scores(self):
-        from score_qa_artifact import summarize_human_reviews
+        from scripts.agents.score_qa_artifact import summarize_human_reviews
 
         summary = summarize_human_reviews([{
             "human_reviews": [

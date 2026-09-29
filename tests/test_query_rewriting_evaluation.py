@@ -2,8 +2,8 @@ import sys
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from evaluate_query_rewriting import expand_metric_labels
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from scripts.agents.evaluate_query_rewriting import expand_metric_labels
 
 
 class QueryRewritingEvaluationTest(unittest.TestCase):

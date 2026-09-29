@@ -171,7 +171,7 @@ should lead to a limited source-backed response or abstention, not inferred
 answers.
 This is a manual source-coverage audit, not evidence of task success; synthetic
 role labels do not supply missing policy text. Reproduce label/manifest
-consistency with `uv run python scripts/evaluate_proposal_case_coverage.py`;
+consistency with `uv run python scripts/agents/evaluate_proposal_case_coverage.py`;
 artifact: [`proposal-business-case-corpus-coverage.json`](../artifacts/evaluation/proposal-business-case-corpus-coverage.json).
 The current employee access answer was evaluated end to end with an authenticated
 employee account using Qwen3.8-27B; its citation, supported clauses, and missing

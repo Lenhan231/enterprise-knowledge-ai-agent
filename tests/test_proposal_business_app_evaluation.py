@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts/evaluate_proposal_business_cases.py"
+SCRIPT = ROOT / "scripts/agents/evaluate_proposal_business_cases.py"
 SPEC = importlib.util.spec_from_file_location("evaluate_proposal_business_cases", SCRIPT)
 evaluation = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = evaluation
@@ -68,7 +68,7 @@ class ProposalBusinessAppEvaluationTest(unittest.TestCase):
             "agent": "knowledge", "insufficient_context": False,
             "citations": [{
                 "id": "S1", "document_id": "VNM-CODE-2025-EN", "page_number": 28,
-                "official_url": "https://example.com/code.pdf",
+                "source_url": "https://example.com/code.pdf",
             }],
         }
         self.assertTrue(evaluation.score_case(case, payload)["passed"])

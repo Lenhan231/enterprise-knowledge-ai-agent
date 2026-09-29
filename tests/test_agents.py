@@ -45,17 +45,17 @@ class AgentFlowTest(unittest.TestCase):
         repository.execute_authorized_analytics.return_value = {
             "results": [{"metric_name": "total_consolidated_revenue", "metric_label": "Doanh thu hợp nhất",
                          "fiscal_year": 2024, "metric_value": 61824, "unit": "tỷ đồng",
-                         "evidence_document_ids": ["AR24"]}],
+                         "evidence_metric_ids": [1]}],
             "evidence": [{"metric_name": "total_consolidated_revenue", "metric_label": "Doanh thu hợp nhất",
                           "fiscal_year": 2024, "metric_value": 61824, "unit": "tỷ đồng",
-                          "company": "Vinamilk", "document_id": "AR24", "page_number": 12,
+                          "company": "Vinamilk", "metric_id": 1, "document_id": "AR24", "page_number": 12,
                           "source_url": "https://example.test/ar24", "source_quote": "Doanh thu 61.824 tỷ đồng"}],
             "documents": [],
         }
         llm = Mock()
         llm.generate.return_value = (
             '{"sql":"SELECT metric_name, metric_label, fiscal_year, metric_value, unit, '
-            'ARRAY_AGG(DISTINCT document_id) AS evidence_document_ids '
+            'ARRAY_AGG(DISTINCT metric_id) AS evidence_metric_ids '
             'FROM authorized_financial_metrics WHERE fiscal_year = 2024 AND '
             "metric_name = 'total_consolidated_revenue' GROUP BY metric_name, metric_label, fiscal_year, metric_value, unit" + '"}'
         )
@@ -72,8 +72,8 @@ class AgentFlowTest(unittest.TestCase):
         }
         llm = Mock()
         llm.generate.return_value = (
-            '{"sql":"SELECT metric_name, fiscal_year, ARRAY_AGG(DISTINCT document_id) '
-            'AS evidence_document_ids FROM authorized_financial_metrics '
+            '{"sql":"SELECT metric_name, fiscal_year, ARRAY_AGG(DISTINCT metric_id) '
+            'AS evidence_metric_ids FROM authorized_financial_metrics '
             'GROUP BY metric_name, fiscal_year LIMIT 10"}'
         )
         agent = SQLAnalyticsAgent(repository, llm)
@@ -185,6 +185,22 @@ class AgentFlowTest(unittest.TestCase):
             "What were Vinamilk's revenue and profit after tax in 2024 and 2023?"
         )
         self.assertEqual(multiple_periods.intent, "hybrid")
+
+    def test_why_financial_change_question_uses_grounded_report_route(self):
+        intent = IntentClassifier.fallback(
+            "tại sao total assets của 2021 lại tăng so với 2020"
+        )
+        self.assertEqual(intent.intent, "report")
+        self.assertTrue(intent.needs_knowledge)
+        self.assertTrue(intent.needs_sql)
+
+    def test_why_financial_change_bypasses_intent_llm_call(self):
+        llm = Mock()
+        result = IntentClassifier(llm).classify(
+            "tại sao total assets của 2021 lại tăng so với 2020"
+        )
+        self.assertEqual(result.intent, "report")
+        llm.generate.assert_not_called()
 
     def test_knowledge_agent_passes_trusted_role_and_maps_source_id(self):
         rag = Mock()
@@ -410,6 +426,31 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("List a risk only when the cited evidence explicitly identifies it", prompt)
         self.assertIn("say so clearly", prompt)
         self.assertEqual(result.agent, "report")
+
+    def test_financial_change_report_combines_metric_rows_and_cited_causes(self):
+        knowledge = Mock()
+        knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[
+            Evidence(citation_id="S1", source_type="document", source="2021 annual report, p. 55",
+                     content="The company expanded dairy farms and invested in a new production facility.")
+        ])
+        analytics = Mock()
+        analytics.run.return_value = AgentResult(answer="", agent="analytics", evidence=[
+            Evidence(citation_id="M1", source_type="verified_metric", source="Vinamilk 2021 · Total assets",
+                     content="Total assets increased from 10 to 12 billion VND.",
+                     metadata={"metric_name": "total_assets", "fiscal_year": 2021})
+        ], data={"financial": []})
+        llm = Mock()
+        llm.generate.return_value = "Tổng tài sản tăng từ 10 lên 12 tỷ đồng [M1]. Báo cáo nêu công ty đầu tư cơ sở sản xuất [S1], nhưng không xác nhận đây là nguyên nhân trực tiếp."
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
+            AgentRequest(question="tại sao total assets của 2021 lại tăng so với 2020")
+        )
+
+        analytics.run.assert_called_once()
+        self.assertIn("do not establish why", llm.generate.call_args.args[0])
+        self.assertIn("[S1]", result.answer)
+        self.assertIn("[M1]", result.answer)
+        self.assertEqual({item.citation_id for item in result.evidence}, {"S1", "M1"})
 
     def test_report_financial_summary_uses_matching_metric_without_inventing_reconciliation(self):
         hybrid = Mock()

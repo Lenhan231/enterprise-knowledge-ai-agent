@@ -3,8 +3,8 @@ import sys
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from evaluate_proposal_case_coverage import evaluate_coverage
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from scripts.agents.evaluate_proposal_case_coverage import evaluate_coverage
 
 ROOT = Path(__file__).resolve().parents[1]
 

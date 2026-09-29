@@ -96,7 +96,7 @@ Supabase. The corrected-label run is in
 reproduce with:
 
 ```bash
-uv run python scripts/evaluate_chunking_retrieval.py \
+uv run python scripts/chunking/evaluate_chunking_retrieval.py \
   --output artifacts/evaluation/vinamilk-chunking-retrieval-source-reviewed-20260928.json
 ```
 

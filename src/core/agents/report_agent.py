@@ -5,6 +5,8 @@ import logging
 
 from core.agents.base import BaseAgent
 from core.agents.knowledge_agent import KnowledgeAgent
+from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+from core.analytics.metric_ontology import resolve_metric_names
 from core.llm.groq_provider import GroqProvider
 from core.models.agents import AgentRequest, AgentResult, Evidence
 from core.rag.rag_service import INSUFFICIENT_ANSWER
@@ -34,6 +36,15 @@ def _is_financial_summary(question: str) -> bool:
     return (
         any(term in text for term in ("revenue", "sales", "doanh thu"))
         and any(term in text for term in ("profit", "earnings", "net income", "lợi nhuận"))
+    )
+
+
+def _is_financial_change_explanation(question: str) -> bool:
+    text = question.casefold()
+    return (
+        bool(resolve_metric_names(text))
+        and len(set(re.findall(r"\b(?:19|20)\d{2}\b", text))) >= 2
+        and any(term in text for term in ("why", "reason", "cause", "tại sao", "vì sao", "nguyên nhân"))
     )
 
 
@@ -111,10 +122,12 @@ class ReportAgent(BaseAgent):
     def __init__(
         self,
         knowledge: KnowledgeAgent | None = None,
+        analytics: SQLAnalyticsAgent | None = None,
         llm: GroqProvider | None = None,
     ):
         self.knowledge = knowledge or KnowledgeAgent()
         self._owns_knowledge = knowledge is None
+        self.analytics = analytics
         self.llm = llm or GroqProvider()
 
     def run(self, request: AgentRequest) -> AgentResult:
@@ -122,6 +135,13 @@ class ReportAgent(BaseAgent):
             "metadata": {**request.metadata, "evidence_only": True},
         })
         source_data = self.knowledge.run(report_request)
+        if _is_financial_change_explanation(request.question) and self.analytics is not None:
+            metric_data = self.analytics.run(request)
+            source_data = source_data.model_copy(update={
+                "evidence": source_data.evidence + metric_data.evidence,
+                "data": metric_data.data,
+                "metadata": {**source_data.metadata, **metric_data.metadata},
+            })
         allowed = {item.citation_id for item in source_data.evidence if item.citation_id}
         if not allowed:
             return source_data.model_copy(update={
@@ -171,11 +191,19 @@ class ReportAgent(BaseAgent):
                 "leadership", "executive", "options", "risks", "lãnh đạo", "rủi ro",
             )) else ""
         )
+        change_instruction = (
+            "The user asks why a reported financial metric changed between years. Use verified metric evidence only "
+            "to state the amounts and direction. Explain a cause only if the retrieved report evidence explicitly "
+            "states it and cite that passage. A temporal association or nearby narrative is not proof of causation. "
+            "If no cited source explicitly explains the change, say the reports establish the increase but do not "
+            "establish why; do not infer causes. Keep metrics and explanations clearly separated.\n\n"
+            if _is_financial_change_explanation(request.question) else ""
+        )
         prompt = (
             "Write a concise answer in the question's language using only the evidence. Every factual sentence or "
             "bullet must end with exact supplied citation IDs in [S1] format. Never invent a citation. "
             "Do not calculate from unverified candidates.\n\n"
-            f"{financial_instruction}{executive_instruction}Request: {request.question}\n\n{priority_note}Evidence:\n{sources}"
+            f"{financial_instruction}{executive_instruction}{change_instruction}Request: {request.question}\n\n{priority_note}Evidence:\n{sources}"
         )
         answer = _normalize_numeric_citations(self.llm.generate(prompt).strip(), prompt_evidence)
         validation_failure = _report_validation_failure(

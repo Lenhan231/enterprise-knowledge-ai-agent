@@ -15,7 +15,7 @@ from core.models.agents import AgentRequest
 class AnalyticsSqlSafetyTest(unittest.TestCase):
     def test_accepts_aggregate_select_and_caps_limit(self):
         sql = """SELECT metric_name, fiscal_year, SUM(metric_value) AS total,
-                         ARRAY_AGG(DISTINCT document_id) AS evidence_document_ids
+                         ARRAY_AGG(DISTINCT metric_id) AS evidence_metric_ids
                   FROM authorized_financial_metrics
                   GROUP BY metric_name, fiscal_year LIMIT 900"""
         normalized = validate_analytics_sql(sql)
@@ -26,7 +26,7 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         sql = """SELECT company, metric_name, fiscal_year,
                          SUM(CASE WHEN metric_name = 'Revenue' THEN metric_value END) AS revenue,
                          SUM(CASE WHEN metric_name = 'Profit' THEN metric_value END) AS profit,
-                         ARRAY_AGG(DISTINCT document_id) AS evidence_document_ids
+                         ARRAY_AGG(DISTINCT metric_id) AS evidence_metric_ids
                   FROM authorized_financial_metrics
                   GROUP BY company, metric_name, fiscal_year"""
         normalized = validate_analytics_sql(sql)
@@ -65,7 +65,7 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
     def test_financial_analytics_must_keep_metric_and_year_dimensions(self):
         sql = (
             "SELECT SUM(metric_value) AS total, "
-            "ARRAY_AGG(DISTINCT document_id) AS evidence_document_ids "
+            "ARRAY_AGG(DISTINCT metric_id) AS evidence_metric_ids "
             "FROM authorized_financial_metrics"
         )
         with self.assertRaisesRegex(UnsafeAnalyticsQuery, "metric_name and fiscal_year"):
@@ -83,18 +83,18 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         repository = Mock()
         repository.execute_authorized_analytics.return_value = {
             "results": [{"metric_name": "net_revenue", "fiscal_year": 2024,
-                         "total": 61824, "evidence_document_ids": ["AR24"]}],
+                         "total": 61824, "evidence_metric_ids": [1]}],
             "evidence": [{"company": "Vinamilk", "fiscal_year": 2024,
                           "metric_name": "net_revenue", "metric_label": "Net revenue",
                           "metric_value": 61824, "unit": "billion VND", "document_id": "AR24",
-                          "page_number": 12, "source_url": "https://example.test/ar24",
+                          "metric_id": 1, "page_number": 12, "source_url": "https://example.test/ar24",
                           "source_quote": "Total revenue 61,824 billion VND"}],
             "documents": [],
         }
         llm = Mock()
         llm.generate.return_value = (
             '{"sql":"SELECT metric_name, fiscal_year, SUM(metric_value) AS total, '
-            'ARRAY_AGG(DISTINCT document_id) AS evidence_document_ids '
+            'ARRAY_AGG(DISTINCT metric_id) AS evidence_metric_ids '
             'FROM authorized_financial_metrics WHERE fiscal_year = 2024 '
             'AND metric_name = \'net_revenue\' GROUP BY metric_name, fiscal_year"}'
         )
@@ -119,14 +119,14 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
     def test_empty_aggregate_result_with_null_evidence_is_reported_as_no_verified_data(self):
         repository = Mock()
         repository.execute_authorized_analytics.return_value = {
-            "results": [{"total": None, "evidence_document_ids": None}],
+            "results": [{"total": None, "evidence_metric_ids": None}],
             "evidence": [],
             "documents": [],
         }
         llm = Mock()
         llm.generate.return_value = (
             '{"sql":"SELECT metric_name, fiscal_year, SUM(metric_value) AS total, '
-            'ARRAY_AGG(DISTINCT document_id) AS evidence_document_ids '
+            'ARRAY_AGG(DISTINCT metric_id) AS evidence_metric_ids '
             'FROM authorized_financial_metrics GROUP BY metric_name, fiscal_year"}'
         )
         result = SQLAnalyticsAgent(repository, llm).run(AgentRequest(
@@ -177,11 +177,11 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         repository = Mock()
         repository.execute_authorized_analytics.return_value = {
             "results": [{"metric_name": "net_revenue", "fiscal_year": 2024,
-                         "total": 61824, "evidence_document_ids": ["AR24"]}],
+                         "total": 61824, "evidence_metric_ids": [1]}],
             "evidence": [
                 {"company": "Vinamilk", "fiscal_year": 2024, "metric_name": "net_revenue",
                  "metric_label": "Consolidated revenue", "metric_value": 61824, "unit": "billion VND",
-                 "document_id": "AR24", "page_number": 12, "source_url": "https://example.test/ar24",
+                 "document_id": "AR24", "metric_id": 1, "page_number": 12, "source_url": "https://example.test/ar24",
                  "source_quote": "Consolidated revenue 61,824 billion VND"},
                 {"company": "Vinamilk", "fiscal_year": 2024, "metric_name": "profit_after_tax",
                  "metric_label": "Profit after tax", "metric_value": 9453, "unit": "billion VND",
@@ -197,7 +197,7 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         llm = Mock()
         llm.generate.return_value = (
             '{"sql":"SELECT metric_name, fiscal_year, SUM(metric_value) AS total, '
-            'ARRAY_AGG(DISTINCT document_id) AS evidence_document_ids '
+            'ARRAY_AGG(DISTINCT metric_id) AS evidence_metric_ids '
             'FROM authorized_financial_metrics WHERE metric_name = \'net_revenue\' '
             'AND fiscal_year = 2024 GROUP BY metric_name, fiscal_year"}'
         )
@@ -222,7 +222,7 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
                           "document_id": "AR24", "page_number": 12, "source_url": "https://example.test/ar24",
                           "source_quote": "Revenue 61,824 billion VND"}],
             "documents": [{"document_id": "AR24", "company": "Vinamilk", "domain": "finance",
-                           "title": "Annual report 2024", "official_url": "https://example.test/ar24"}],
+                           "title": "Annual report 2024", "source_url": "https://example.test/ar24"}],
         }
         llm = Mock()
         llm.generate.return_value = (

@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.evaluate_context_compression import compress_extractively, _fact_groups_present, _fact_coverage
+from scripts.agents.evaluate_context_compression import compress_extractively, _fact_groups_present, _fact_coverage
 
 
 class ContextCompressionEvaluationTests(unittest.TestCase):

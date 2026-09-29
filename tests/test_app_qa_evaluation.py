@@ -2,7 +2,7 @@ import importlib.util
 from pathlib import Path
 import unittest
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts/evaluate_app_qa.py"
+SCRIPT = Path(__file__).resolve().parents[1] / "scripts/agents/evaluate_app_qa.py"
 SPEC = importlib.util.spec_from_file_location("evaluate_app_qa", SCRIPT)
 evaluate_app_qa = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(evaluate_app_qa)
@@ -112,7 +112,7 @@ class AppQAEvaluationTest(unittest.TestCase):
         payload = {
             "answer": "The Code of Conduct requires manager and IT approval. The separate policy is not included in the retrieved documents [S1].",
             "agent": "knowledge", "insufficient_context": False,
-            "citations": [{"id": "S1", "document_id": "VNM-CODE-2025-EN", "official_url": "https://example.com/code.pdf"}],
+            "citations": [{"id": "S1", "document_id": "VNM-CODE-2025-EN", "source_url": "https://example.com/code.pdf"}],
         }
         self.assertTrue(evaluate_app_qa.score_case(case, payload)["passed"])
         payload["answer"] = "Employees need manager and IT approval [S1]."

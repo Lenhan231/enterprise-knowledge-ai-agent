@@ -3,8 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from evaluate_agent_routes import prepare_output_path, score_routes
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from scripts.agents.evaluate_agent_routes import prepare_output_path, score_routes
 
 
 class AgentRouteEvaluationTest(unittest.TestCase):
@@ -32,7 +32,7 @@ class AgentRouteEvaluationTest(unittest.TestCase):
             probe.__enter__ = Mock(return_value=probe)
             probe.__exit__ = Mock(return_value=False)
             probe.write.side_effect = OSError("disk quota exceeded")
-            with patch("evaluate_agent_routes.tempfile.NamedTemporaryFile", return_value=probe):
+            with patch("scripts.agents.evaluate_agent_routes.tempfile.NamedTemporaryFile", return_value=probe):
                 with self.assertRaisesRegex(OSError, "disk quota exceeded"):
                     prepare_output_path(target)
 

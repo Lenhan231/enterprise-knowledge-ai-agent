@@ -15,7 +15,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Vinamilk",
                 "fiscal_year": 2024,
                 "document_id": "VNM-AR-2024-VI",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
             visual_pages=[{
@@ -40,7 +40,7 @@ class MetricCandidateTest(unittest.TestCase):
         rows = candidates(
             [],
             {"company": "Example", "fiscal_year": 2021, "document_id": "DOC-2021",
-             "official_url": "https://example.test/report", "rbac": {"allowed_roles": ["finance_analyst"]}},
+             "source_url": "https://example.test/report", "rbac": {"allowed_roles": ["finance_analyst"]}},
             visual_pages=[{
                 "page_number": 53,
                 "spans": [
@@ -61,7 +61,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Vinamilk",
                 "fiscal_year": 2020,
                 "document_id": "VNM-AR-2020-VI",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -76,7 +76,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Vinamilk",
                 "fiscal_year": 2024,
                 "document_id": "VNM-AR-2024-VI",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -89,7 +89,7 @@ class MetricCandidateTest(unittest.TestCase):
             {
                 "company": "Vinamilk", "fiscal_year": 2024,
                 "document_id": "VNM-AR-2024-VI",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -103,7 +103,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2025,
                 "document_id": "DOC-2025",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -129,7 +129,7 @@ class MetricCandidateTest(unittest.TestCase):
         rows = candidates(
             [{"metadata": {"page_number": 4}, "text": "Net revenue 60,479 billion VND."}],
             {"company": "Example", "fiscal_year": 2024, "document_id": "DOC-2024",
-             "official_url": "https://example.test/report", "rbac": {"allowed_roles": ["finance_analyst"]}},
+             "source_url": "https://example.test/report", "rbac": {"allowed_roles": ["finance_analyst"]}},
             text_evidence_page_numbers=set(),
         )
 
@@ -139,7 +139,7 @@ class MetricCandidateTest(unittest.TestCase):
         rows = candidates(
             [{"metadata": {"page_number": 5}, "text": "Total assets 60,000 billion\\nVND."}],
             {"company": "Example", "fiscal_year": 2024, "document_id": "DOC-2024",
-             "official_url": "https://example.test/report", "rbac": {"allowed_roles": ["finance_analyst"]}},
+             "source_url": "https://example.test/report", "rbac": {"allowed_roles": ["finance_analyst"]}},
             tables=[{
                 "page_number": 5, "columns": ["Metric", "2024 VND"],
                 "rows": [{"Metric": "Total assets", "2024 VND": "60,000"}],
@@ -158,7 +158,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2023,
                 "document_id": "DOC-2023",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -174,7 +174,7 @@ class MetricCandidateTest(unittest.TestCase):
             "company": "Vinamilk",
             "fiscal_year": 2023,
             "document_id": "VNM-AR-2023-EN",
-            "official_url": "https://example.vn/report.pdf",
+            "source_url": "https://example.vn/report.pdf",
             "rbac": {"allowed_roles": ["finance_analyst"]},
         }
         rows = candidates(
@@ -203,7 +203,7 @@ class MetricCandidateTest(unittest.TestCase):
             {
                 "company": "Vinamilk", "fiscal_year": 2022,
                 "document_id": "VNM-AR-2022-VI",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
             tables=[{
@@ -230,7 +230,7 @@ class MetricCandidateTest(unittest.TestCase):
             {
                 "company": "Example JSC", "fiscal_year": 2024,
                 "document_id": "IMAGE-2024",
-                "official_url": "",
+                "source_url": "",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -248,7 +248,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2024,
                 "document_id": "DOC-2024",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -271,7 +271,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2023,
                 "document_id": "DOC-2023",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -289,7 +289,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2024,
                 "document_id": "DOC-2024",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -308,7 +308,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2024,
                 "document_id": "DOC-2024",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
             tables=[{
@@ -336,7 +336,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2024,
                 "document_id": "DOC-2024",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -350,7 +350,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2024,
                 "document_id": "DOC-2024",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
             tables=[{
@@ -375,7 +375,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2024,
                 "document_id": "DOC-2024",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
             tables=[{
@@ -397,7 +397,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2024,
                 "document_id": "DOC-2024",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
             tables=[{
@@ -431,7 +431,7 @@ class MetricCandidateTest(unittest.TestCase):
             {
                 "company": "Vinamilk", "fiscal_year": 2021,
                 "document_id": "VNM-AR-2021-VI",
-                "official_url": "https://www.vinamilk.com.vn/",
+                "source_url": "https://www.vinamilk.com.vn/",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
             tables=tables,
@@ -482,7 +482,7 @@ class MetricCandidateTest(unittest.TestCase):
                     {
                         "company": "Vinamilk", "fiscal_year": year,
                         "document_id": document_id,
-                        "official_url": "https://example.vn/report.pdf",
+                        "source_url": "https://example.vn/report.pdf",
                         "rbac": {"allowed_roles": ["finance_analyst"]},
                     },
                     tables=PDFProcessor._extract_page_tables(page, page_number),
@@ -508,7 +508,7 @@ class MetricCandidateTest(unittest.TestCase):
             {
                 "company": "Vinamilk", "fiscal_year": 2022,
                 "document_id": "VNM-AR-2022-VI",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -525,7 +525,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2023,
                 "document_id": "DOC-2023",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -542,7 +542,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2023,
                 "document_id": "DOC-2023",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -560,7 +560,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2023,
                 "document_id": "DOC-2023",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -577,7 +577,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2023,
                 "document_id": "DOC-2023",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )
@@ -595,7 +595,7 @@ class MetricCandidateTest(unittest.TestCase):
                 "company": "Example JSC",
                 "fiscal_year": 2023,
                 "document_id": "DOC-2023",
-                "official_url": "https://example.vn/report.pdf",
+                "source_url": "https://example.vn/report.pdf",
                 "rbac": {"allowed_roles": ["finance_analyst"]},
             },
         )

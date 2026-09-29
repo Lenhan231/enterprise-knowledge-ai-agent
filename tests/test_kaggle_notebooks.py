@@ -19,7 +19,7 @@ class KaggleNotebookTest(unittest.TestCase):
                 self.assertEqual(len(setup), 1)
                 if name == "kaggle_embedding_benchmark.ipynb":
                     self.assertIn('input_root.rglob("project")', setup[0])
-                    self.assertIn('"evaluate_embeddings.py"', setup[0])
+                    self.assertIn('"scripts.retrieval.evaluate_embeddings.py"', setup[0])
                 else:
                     self.assertIn('input_root.glob("*/project")', setup[0])
                     self.assertIn('input_root.glob("datasets/*/*/project")', setup[0])
@@ -145,7 +145,7 @@ class KaggleNotebookTest(unittest.TestCase):
             for cell in notebook["cells"] if cell["cell_type"] == "code"
         )
         self.assertIn("Missing benchmark source PDF", all_code)
-        self.assertNotIn("download_vietnam_enterprise_corpus.py", all_code)
+        self.assertNotIn("scripts.ingestion.download_vietnam_enterprise_corpus.py", all_code)
 
     def test_code_cells_are_valid_python_after_removing_notebook_magics(self):
         for name in ("kaggle_ocr_benchmark.ipynb", "kaggle_ocr_v9_cpu_paired.ipynb", "kaggle_ocr_scan_diagnostic.ipynb", "kaggle_charter_scan_page8/kaggle-charter-scan-page8.ipynb", "kaggle_vinamilk_2011_cafef_scan/kaggle-vinamilk-2011-cafef-scan.ipynb", "kaggle_embedding_benchmark.ipynb"):

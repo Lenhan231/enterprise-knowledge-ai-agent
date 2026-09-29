@@ -16,7 +16,7 @@ provider on both success and provider-error paths; regressions are in
 `tests/test_upload_processing_flow.py` and `tests/test_llm_provider.py`.
 
 `data/evaluation/vinamilk_qa_cases.json` and
-`scripts/run_review1_grounded_qa.py --cases ... --company ...` exercise answers,
+`scripts/agents/run_review1_grounded_qa.py --cases ... --company ...` exercise answers,
 source-document citation, expected financial/product facts and an employee
 access-denial control. The reports are
 `artifacts/evaluation/vinamilk-qa-smoke.json` and
@@ -50,7 +50,7 @@ transparent proxies, not RAGAS context precision, bullet-level attribution or
 semantic faithfulness. Faithfulness, answer relevancy and hallucination rate
 still require human review. Correct abstentions are excluded from answer
 citation averages. Re-score a saved report without model calls using
-`uv run python scripts/score_qa_artifact.py <run.json> --output <scored.json>`.
+`uv run python scripts/agents/score_qa_artifact.py <run.json> --output <scored.json>`.
 New runs also include per-case hashes of the exact retrieved context and final
 prompt, plus the prompt-template hash. Compare these hashes across model runs;
 only cases with matching fingerprints had identical model inputs.
@@ -198,7 +198,7 @@ To run the blind comparison, prepare a shuffled packet and keep its mapping key
 private from reviewers:
 
 ```bash
-uv run python scripts/qa_human_review.py prepare \
+uv run python scripts/agents/qa_human_review.py prepare \
   --runs artifacts/evaluation/vinamilk-qa-gpt-oss-20b-full-evidence.json \
          artifacts/evaluation/vinamilk-qa-qwen3.8-full-evidence.json \
          artifacts/evaluation/vinamilk-qa-gpt-oss-120b-full-evidence.json \
@@ -212,7 +212,7 @@ Give each reviewer an independent copy of the packet, named
 a distinct anonymous reviewer ID, import them together:
 
 ```bash
-uv run python scripts/qa_human_review.py import \
+uv run python scripts/agents/qa_human_review.py import \
   --packets artifacts/evaluation/qa-review-reviewer-1-full-evidence.json \
            artifacts/evaluation/qa-review-reviewer-2-full-evidence.json \
   --key artifacts/evaluation/qa-review-private-key-full-evidence.json \

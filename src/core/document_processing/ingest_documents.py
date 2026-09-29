@@ -82,6 +82,11 @@ class Ingestion:
         file_type = input_path.suffix.lower()
         extracted_tables = []
 
+        document_metadata = {
+            key: value for key, value in (extra_metadata or {}).items()
+            if key != "title"
+        }
+
         if file_type == ".pdf":
             # Seed corpus ingestion follows the same page-aware parser as uploads.
             # Keep bulk parsing bounded while OCRing sparse scans and mixed pages
@@ -161,7 +166,7 @@ class Ingestion:
                     )
                     bounded_chunk = Document(page_content=bounded_text, metadata=asdict(metadata))
                     bounded_chunk.metadata.update(page_metadata)
-                    bounded_chunk.metadata.update(extra_metadata or {})
+                    bounded_chunk.metadata.update(document_metadata)
                     bounded_chunk.metadata["chunk_index"] = chunk_index
                     bounded_chunk.metadata["token_count"] = self.token_counter.count(bounded_text)
                     all_chunks.append(bounded_chunk)

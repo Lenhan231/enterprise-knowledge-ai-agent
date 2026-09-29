@@ -2,7 +2,7 @@ import importlib.util
 from pathlib import Path
 import unittest
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts/audit_verified_financial_metrics.py"
+SCRIPT = Path(__file__).resolve().parents[1] / "scripts/analytics/audit_verified_financial_metrics.py"
 SPEC = importlib.util.spec_from_file_location("audit_verified_financial_metrics", SCRIPT)
 audit_module = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(audit_module)
@@ -37,7 +37,7 @@ class VerifiedMetricSourceAuditTest(unittest.TestCase):
     def test_source_must_match_the_official_manifest_url(self):
         manifest = {"documents": [{
             "document_id": "VNM-AR-2021-VI",
-            "official_url": "https://reports.example.test/annual.pdf",
+            "source_url": "https://reports.example.test/annual.pdf",
         }]}
 
         self.assertTrue(audit_module._is_manifest_source(

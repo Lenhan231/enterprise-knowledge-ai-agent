@@ -3,8 +3,8 @@ from pathlib import Path
 import sys
 import unittest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from evaluate_scan_document_processing import crop_pdf_page, rasterize_for_ocr, score_table_anchors, select_cases
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from scripts.processing.evaluate_scan_document_processing import crop_pdf_page, rasterize_for_ocr, score_table_anchors, select_cases
 
 
 class ScanDocumentProcessingEvaluationTest(unittest.TestCase):

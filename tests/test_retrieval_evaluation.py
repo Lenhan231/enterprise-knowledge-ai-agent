@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.evaluate_retrieval import parent_context_metrics, ranked_passage_ids
+from scripts.retrieval.evaluate_retrieval import parent_context_metrics, ranked_passage_ids
 
 
 class RetrievalEvaluationTest(unittest.TestCase):

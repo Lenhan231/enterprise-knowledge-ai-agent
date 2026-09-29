@@ -7,10 +7,10 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import evaluate_embeddings
-from evaluate_embeddings import MODELS, _load_public_corpus, _sample_per_document, _visible
+import scripts.retrieval.evaluate_embeddings as evaluate_embeddings
+from scripts.retrieval.evaluate_embeddings import MODELS, _load_public_corpus, _sample_per_document, _visible
 
 
 class EmbeddingEvaluationTest(unittest.TestCase):
@@ -80,7 +80,7 @@ class EmbeddingEvaluationTest(unittest.TestCase):
                 patch.dict(os.environ, {"DATABASE_URL": ""}),
                 patch.object(evaluate_embeddings, "REPO_ROOT", Path(__file__).resolve().parents[1]),
                 patch.object(sys, "argv", [
-                    "evaluate_embeddings.py", "--model", "bge-m3", "--cases", str(cases_fixture),
+                    "scripts.retrieval.evaluate_embeddings.py", "--model", "bge-m3", "--cases", str(cases_fixture),
                     "--corpus", str(corpus_path), "--device", "cpu", "--output", str(output_path),
                 ]),
             ):

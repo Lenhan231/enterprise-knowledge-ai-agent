@@ -84,7 +84,7 @@ class FinancialPageSelectionTests(unittest.TestCase):
             "company": "Công ty Cổ phần Sữa Việt Nam",
             "fiscal_year": 2024,
             "document_id": "VNM-AR-2024-VI",
-            "official_url": "https://example.vn/report.pdf",
+            "source_url": "https://example.vn/report.pdf",
             "rbac": {"allowed_roles": ["finance_analyst"]},
         }
 

@@ -1,7 +1,7 @@
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 
 import numpy as np
 from pydantic import ValidationError
@@ -20,6 +20,38 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
         self.repository = DocumentChunkRepository.__new__(DocumentChunkRepository)
         self.repository.conn = MagicMock()
         self.cursor = self.repository.conn.cursor.return_value.__enter__.return_value
+
+    def test_document_inspection_reads_ready_indexed_chunks_with_company_filter(self):
+        self.cursor.description = [
+            MagicMock(name="chunk_index"), MagicMock(name="content"),
+            MagicMock(name="metadata"), MagicMock(name="processing_status"),
+            MagicMock(name="processing_error"),
+        ]
+        for column, name in zip(self.cursor.description,
+                                ("chunk_index", "content", "metadata", "processing_status", "processing_error")):
+            column.name = name
+        self.cursor.fetchall.return_value = [(0, "indexed text", {"document_id": "DOC-1"}, "embedded", None)]
+
+        rows = self.repository.get_document_chunks("DOC-1", limit=10, offset=20, company="Vinamilk")
+
+        self.assertEqual(rows[0]["content"], "indexed text")
+        sql, params = self.cursor.execute.call_args.args
+        normalized = " ".join(sql.lower().split())
+        self.assertIn("join public.documents", normalized)
+        self.assertIn("coalesce(d.processing_status, 'ready') = 'ready'", normalized)
+        self.assertEqual(params, ("DOC-1", "Vinamilk", "Vinamilk", 10, 20))
+
+    def test_replace_document_deletes_by_stable_id_and_keeps_source_filename(self):
+        rows = [("report.pdf", 0, "content", {"document_id": "DOC-1"}, [0.1])]
+
+        self.repository.replace_document("DOC-1", rows)
+
+        statements = [call.args for call in self.cursor.execute.call_args_list]
+        self.assertEqual(statements[0][1], ("DOC-1",))
+        self.assertIn("metadata->>'document_id' = %s", " ".join(statements[0][0].split()))
+        persisted = self.cursor.executemany.call_args.args[1][0]
+        self.assertEqual(persisted[:3], rows[0][:3])
+        self.assertEqual(persisted[3].obj, rows[0][3])
 
     def test_maps_rows_preserving_full_content_metadata_and_order(self):
         text = " Full content\n" * 3000

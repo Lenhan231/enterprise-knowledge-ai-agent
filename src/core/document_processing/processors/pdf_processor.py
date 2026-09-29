@@ -96,6 +96,11 @@ class PDFProcessor:
 
         # Merge extracted metadata with document metadata
         metadata = document.get("metadata", {}).copy()
+        metadata.pop("uploaded_by", None)
+        metadata.pop("title", None)
+        metadata.pop("author", None)
+        metadata.pop("subject", None)
+        metadata.pop("keywords", None)
         metadata.update(pdf_metadata)
 
         # Chunk each page separately so every chunk keeps accurate page provenance.
@@ -279,12 +284,6 @@ class PDFProcessor:
         ocr_table_words = {}
         page_headings = {}
         metadata = {
-            "title": pdf_document.metadata.get("title", ""),
-            "author": pdf_document.metadata.get("author", ""),
-            "subject": pdf_document.metadata.get("subject", ""),
-            "keywords": pdf_document.metadata.get("keywords", ""),
-            "creator": pdf_document.metadata.get("creator", ""),
-            "producer": pdf_document.metadata.get("producer", ""),
             "page_count": len(pdf_document),
         }
         if file_path:

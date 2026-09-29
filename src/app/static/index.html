@@ -105,6 +105,9 @@
       <button id="tab-button-processing" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-processing" data-tab-target="processing" hidden>
         Document Processing
       </button>
+      <button id="tab-button-metrics" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-metrics" data-tab-target="metrics" hidden>
+        Metric Management
+      </button>
       <button id="tab-button-access" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-access" data-tab-target="access" hidden>
         Access Control
       </button>
@@ -292,9 +295,9 @@
             <h2>Inspect parsed document passages</h2>
           </div>
         </div>
-        <p>Review persisted parser chunks, OCR layout, and structured tables before vector embeddings.</p>
+        <p>Inspect saved parser output before embeddings, or the indexed retrieval chunks for corpus documents.</p>
         <form id="parsed-chunk-form" class="review-form">
-          <label for="parsed-document">Uploaded document</label>
+          <label for="parsed-document">Corpus document</label>
           <select id="parsed-document" required></select>
           <label for="parsed-offset">Start at passage</label>
           <input id="parsed-offset" type="number" min="0" value="0">
@@ -305,14 +308,47 @@
         <div id="parsed-table-list"></div>
       </section>
 
+    </section>
+
+    <section id="tab-metrics" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-metrics" hidden>
+      <section id="metric-management-section" class="candidate-review" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">CANONICAL KPI CATALOG</p>
+            <h2>Enter a missing financial metric</h2>
+          </div>
+        </div>
+        <p>Choose a canonical metric, record its reporting period and source context. Manual entries stay pending until verified by an admin.</p>
+        <div id="metric-definition" class="analysis-summary" aria-live="polite"></div>
+        <form id="manual-metric-form" class="upload-form">
+          <label for="manual-metric-name">Metric</label>
+          <select id="manual-metric-name" name="metric_name" required></select>
+          <label for="manual-metric-year">Fiscal year</label>
+          <input id="manual-metric-year" name="fiscal_year" type="number" min="1900" max="2100" required>
+          <label for="manual-metric-value">Reported value</label>
+          <input id="manual-metric-value" name="metric_value" type="text" inputmode="decimal" pattern="[+-]?[0-9.,]+" required placeholder="e.g. 59.723 or 59.723,5">
+          <label for="manual-metric-unit">Unit</label>
+          <input id="manual-metric-unit" name="unit" maxlength="40" required placeholder="billion VND">
+          <label for="manual-metric-reference">Source reference (URL or publication/page)</label>
+          <input id="manual-metric-reference" name="source_reference" maxlength="1000" placeholder="e.g. audited FY2024 statement, page 8">
+          <label for="manual-metric-note">Verification context</label>
+          <textarea id="manual-metric-note" name="source_note" minlength="12" maxlength="2000" required placeholder="Where did this number come from, and what entity/reporting basis does it describe?"></textarea>
+          <fieldset>
+            <legend>Roles allowed to view this metric</legend>
+            <div id="manual-metric-role-options" class="upload-role-options"></div>
+          </fieldset>
+          <button id="manual-metric-button" type="submit" class="primary-button">Save for admin verification</button>
+          <p id="manual-metric-status" class="corpus-note" aria-live="polite"></p>
+        </form>
+      </section>
       <section id="candidate-review" class="candidate-review" hidden>
         <div class="section-heading">
           <div>
             <p class="eyebrow">ADMINISTRATIVE REVIEW</p>
-            <h2>Financial metric evidence awaiting verification</h2>
+            <h2>Metric entries awaiting verification</h2>
           </div>
         </div>
-        <p>Verify numeric values and reporting units against the cited source page before publishing to the Business Analysis dashboard.</p>
+        <p>Check the source evidence and reporting basis. Only verified values appear in Business Analysis.</p>
         <div id="candidate-list"></div>
       </section>
     </section>

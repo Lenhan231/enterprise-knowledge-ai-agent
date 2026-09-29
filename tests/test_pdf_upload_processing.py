@@ -14,6 +14,26 @@ from core.document_processing.processors.pdf_processor import PDFProcessor
 
 
 class PDFUploadProcessingTest(unittest.TestCase):
+    def test_pdf_file_properties_are_not_repeated_in_each_chunk(self):
+        pdf = fitz.open()
+        page = pdf.new_page()
+        page.insert_text((40, 50), "Report body text with enough words.")
+        pdf.set_metadata({
+            "title": "Embedded PDF title", "author": "Scanner Device",
+            "subject": "Subject metadata", "keywords": "secretariat, report",
+        })
+        source = pdf.tobytes()
+        pdf.close()
+
+        result = PDFProcessor({"paddle_layout": False, "extract_tables": False}).process({
+            "content": source,
+            "metadata": {"document_id": "DOC-METADATA", "filename": "report.pdf"},
+        })
+
+        metadata = result["chunks"][0]["metadata"]
+        for field in ("title", "author", "subject", "keywords"):
+            self.assertNotIn(field, metadata)
+
     def test_real_vinamilk_balance_sheet_upload_extracts_native_text_table(self):
         root = Path(__file__).resolve().parents[1]
         source = (root / "data/raw/vietnam_enterprises/vnm/vnm-ar-2024-vi.pdf").read_bytes()

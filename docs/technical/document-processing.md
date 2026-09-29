@@ -17,12 +17,21 @@ boundary rather than one cross-table transaction.
 
 ## Module boundaries
 
-- `processors/document_processor.py` is the upload parser dispatcher. It
-  validates Office ZIP resource limits, dispatches PDF to `PDFProcessor`,
-  parses DOCX/PPTX/XLSX with the standard library, and handles plain text and
-  image OCR. It returns chunks and structured tables; it does not persist them.
-- `processors/pdf_processor.py` owns native PDF text, table extraction,
-  optional layout analysis, and sparse-page OCR.
+- `processors/document_processor.py` is the upload dispatcher. It selects a
+  format processor and attaches common source metadata; it does not parse file
+  contents or persist results.
+- `processors/office_processor.py` parses DOCX/PPTX/XLSX Open XML and enforces
+  archive expansion limits. These formats share ZIP/XML handling, so one module
+  owns their common boundary.
+- `processors/text_processor.py` decodes UTF-8 TXT/Markdown and provides the
+  shared chunking implementation.
+- `processors/image_processor.py` handles standalone-image OCR, OCR-derived
+  tables, and optional vision captions.
+- `processors/pdf_processor.py` orchestrates native text extraction, OCR,
+  chunking and optional image captions. Its focused helpers are
+  `processors/pdf_layout_processor.py` for Paddle layout analysis and
+  `processors/pdf_table_extractor.py` for native/OCR table reconstruction.
+  Compatibility methods remain on `PDFProcessor` for existing callers.
 - `ingest_documents.py` adapts seed PDFs and HTML into token-bounded chunks.
   Seed PDFs reuse `PDFProcessor`; public HTML uses the local HTML text
   extractor.

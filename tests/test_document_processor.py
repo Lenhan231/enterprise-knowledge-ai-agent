@@ -10,6 +10,7 @@ import fitz
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.document_processing.processors.document_processor import DocumentProcessor
+from core.document_processing.processors.image_processor import ImageProcessor
 from core.document_processing.processors.pdf_processor import PDFProcessor
 
 
@@ -152,7 +153,7 @@ class DocumentProcessorTest(unittest.TestCase):
         processor = DocumentProcessor({"ocr_language": "vie+eng"})
         completed = Mock(stdout=b"Doanh thu nam 2024 la 100 ty dong.\n")
         with patch(
-            "core.document_processing.processors.document_processor.subprocess.run",
+            "core.document_processing.processors.image_processor.subprocess.run",
             return_value=completed,
         ) as run:
             result = processor.process(
@@ -175,7 +176,7 @@ class DocumentProcessorTest(unittest.TestCase):
     def test_opt_in_vision_caption_adds_a_separate_source_marked_chunk(self):
         processor = DocumentProcessor({"vision_captioning": True})
         with (
-            patch.object(processor, "_ocr", return_value="Revenue 100 VND"),
+            patch.object(ImageProcessor, "_ocr", return_value="Revenue 100 VND"),
             patch("core.llm.groq_provider.GroqProvider") as provider_type,
         ):
             provider = provider_type.return_value
@@ -196,7 +197,7 @@ class DocumentProcessorTest(unittest.TestCase):
     def test_vision_caption_failure_keeps_ocr_text(self):
         processor = DocumentProcessor({"vision_captioning": True})
         with (
-            patch.object(processor, "_ocr", return_value="Scanned policy title"),
+            patch.object(ImageProcessor, "_ocr", return_value="Scanned policy title"),
             patch("core.llm.groq_provider.GroqProvider") as provider_type,
         ):
             provider_type.return_value.caption_image.side_effect = RuntimeError("provider unavailable")
@@ -229,7 +230,7 @@ class DocumentProcessorTest(unittest.TestCase):
             return words
 
         with (
-            patch.object(self.processor, "_ocr", return_value="Revenue 100 90\nCash 25 20\nTotal assets 500 450"),
+            patch.object(ImageProcessor, "_ocr", return_value="Revenue 100 90\nCash 25 20\nTotal assets 500 450"),
             patch(
                 "core.document_processing.processors.pdf_processor.PDFProcessor._ocr_page_words",
                 autospec=True, side_effect=read_table_words,

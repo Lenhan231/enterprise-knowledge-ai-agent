@@ -98,28 +98,22 @@ class TextProcessor:
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
 
+    def process_file(self, content: bytes, metadata: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+        """Decode a UTF-8 text/Markdown upload and chunk it with source metadata."""
+        text = content.decode("utf-8-sig")
+        return {"chunks": self.process({"text": text, "metadata": metadata}), "tables": []}
+
     def process(self, document: dict[str, Any]) -> list[dict[str, Any]]:
         text = document.get("content", document.get("text"))
         if not isinstance(text, str):
             raise ValueError("Document must contain a text or content string")
-        strategy = self.config.get("chunking_strategy", "sentence")
-        strategy = "sentence" if strategy == "semantic" else strategy
-        chunks = split_text(
+        return split_document_text(
             text,
-            size=int(self.config.get("chunk_size", 1100)),
-            overlap=int(self.config.get("chunk_overlap", 120)),
-            strategy=strategy,
+            document.get("metadata", {}),
+            int(self.config.get("chunk_size", 1100)),
+            int(self.config.get("chunk_overlap", 120)),
+            self.config.get("chunking_strategy", "sentence"),
         )
-        return [{
-            "text": chunk,
-            "metadata": {
-                **document.get("metadata", {}),
-                "chunk_index": index,
-                "chunk_strategy": strategy,
-                "chunk_size_chars": int(self.config.get("chunk_size", 1100)),
-                "chunk_overlap_chars": int(self.config.get("chunk_overlap", 120)) if strategy == "fixed" else 0,
-            },
-        } for index, chunk in enumerate(chunks)]
 
     def _fixed_size_chunking(self, text: str) -> list[str]:
         return split_text(
@@ -135,3 +129,23 @@ class TextProcessor:
 
     def _recursive_chunking(self, text: str) -> list[str]:
         return self._semantic_chunking(text)
+
+
+def split_document_text(
+    text: str,
+    metadata: dict[str, Any],
+    size: int = 1100,
+    overlap: int = 120,
+    strategy: str = "sentence",
+) -> list[dict[str, Any]]:
+    """Split text into retrieval chunks while attaching consistent metadata."""
+    return [{
+        "text": value,
+        "metadata": {
+            **metadata,
+            "chunk_index": index,
+            "chunk_strategy": "sentence" if strategy == "semantic" else strategy,
+            "chunk_size_chars": size,
+            "chunk_overlap_chars": overlap if strategy == "fixed" else 0,
+        },
+    } for index, value in enumerate(split_text(text, size=size, overlap=overlap, strategy=strategy))]

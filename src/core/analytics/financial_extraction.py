@@ -6,7 +6,9 @@ import hashlib
 import json
 import logging
 import re
+import unicodedata
 from collections import defaultdict
+from difflib import SequenceMatcher
 
 from core.analytics.metric_ontology import METRIC_ONTOLOGY
 
@@ -46,6 +48,26 @@ def _flat(text: str) -> str:
     return " ".join(str(text or "").casefold().split())
 
 
+def _ocr_label_match(labels: tuple[str, ...], quote: str) -> bool:
+    """Allow a close OCR label only inside an otherwise exact source quote."""
+    def words(value: str) -> list[str]:
+        folded = unicodedata.normalize("NFKD", value.casefold())
+        plain = "".join(char for char in folded if not unicodedata.combining(char))
+        return re.findall(r"\w+", plain)
+
+    quote_words = words(quote)
+    for label in labels:
+        expected = words(label)
+        if not expected:
+            continue
+        for width in range(max(1, len(expected) - 1), len(expected) + 2):
+            for start in range(max(0, len(quote_words) - width + 1)):
+                observed = quote_words[start:start + width]
+                if SequenceMatcher(None, " ".join(expected), " ".join(observed)).ratio() >= 0.90:
+                    return True
+    return False
+
+
 def _table_text(table: dict) -> str:
     columns = table.get("columns", [])
     rows = table.get("rows", [])
@@ -63,6 +85,7 @@ def select_financial_pages(
     """Rank only pages with financial-section/metric signals or financial tables."""
     pages: dict[int, dict] = defaultdict(lambda: {
         "texts": [], "sections": [], "tables": [], "structured_tables": [],
+        "extraction_methods": set(),
     })
     for chunk in chunks:
         metadata = chunk.get("metadata", {})
@@ -73,6 +96,9 @@ def select_financial_pages(
         if page_number < 1:
             continue
         text = str(chunk.get("text", "")).strip()
+        extraction_method = str(metadata.get("text_extraction_method") or "").casefold()
+        if extraction_method:
+            pages[page_number]["extraction_methods"].add(extraction_method)
         if text and text not in pages[page_number]["texts"]:
             pages[page_number]["texts"].append(text)
         section = str(metadata.get("section_title") or "").strip()
@@ -122,6 +148,10 @@ def select_financial_pages(
             "page_number": page_number,
             "text": text[:16000],
             "structured_tables": content["structured_tables"],
+            "is_ocr_page": any(
+                "tesseract" in method or "ocr" in method
+                for method in content["extraction_methods"]
+            ),
             "selection_signals": {
                 "financial_terms": term_hits,
                 "metric_labels": metric_hits,
@@ -159,6 +189,7 @@ Page content:
 
 def _validated_metrics(
     response: str, page_text: str, document_year: int | None = None,
+    allow_ocr_label_recovery: bool = False,
 ) -> tuple[list[dict], dict[str, int]]:
     payload = json.loads(response)
     if not isinstance(payload, dict) or set(payload) != {"metrics"} or not isinstance(payload["metrics"], list):
@@ -195,11 +226,16 @@ def _validated_metrics(
             continue
         quote_flat = _flat(quote)
         labels = METRIC_ONTOLOGY.get(name, {}).get("source_labels", ())
+        exact_label = any(_flat(label) in quote_flat for label in labels)
+        recovered_ocr_label = (
+            allow_ocr_label_recovery and not exact_label
+            and _ocr_label_match(labels, quote)
+        )
         if (
             quote_flat not in page_flat
             or _flat(value) not in quote_flat
             or _flat(unit) not in page_flat
-            or not any(_flat(label) in quote_flat for label in labels)
+            or not (exact_label or recovered_ocr_label)
             or str(year) not in page_flat
         ):
             rejected["quote_not_verbatim_or_missing_label_value_year"] += 1
@@ -211,6 +247,7 @@ def _validated_metrics(
             "unit": unit,
             "fiscal_year": year,
             "source_quote": quote,
+            "source_label_match": "ocr_near_match" if recovered_ocr_label else "exact",
         })
     return valid, dict(rejected)
 
@@ -238,6 +275,7 @@ def extract_financial_candidates(
             )
             result, rejected = _validated_metrics(
                 response, page["text"], document.get("fiscal_year"),
+                allow_ocr_label_recovery=page["is_ocr_page"],
             )
             page["llm_metrics_accepted"] = len(result)
             page["llm_metrics_rejected"] = max(
@@ -261,6 +299,7 @@ def extract_financial_candidates(
                 "metric_name": metric["metric_name"],
                 "metric_label": metric["metric_label"],
                 "candidate_values": metric["candidate_values"],
+                "unit": metric["unit"],
                 "fiscal_year": metric["fiscal_year"],
                 "page_number": page["page_number"],
                 "document_id": document["document_id"],
@@ -272,7 +311,11 @@ def extract_financial_candidates(
                 "extraction_method": "llm_selected_financial_page",
                 "extractor_model": getattr(llm, "model_name", llm.__class__.__name__),
                 "prompt_version": PROMPT_VERSION,
-                "selection_evidence": page["selection_signals"],
+                "selection_evidence": {
+                    **page["selection_signals"],
+                    **({"source_label_match": metric["source_label_match"]}
+                       if metric["source_label_match"] != "exact" else {}),
+                },
             })
     return candidates, selected_pages
 

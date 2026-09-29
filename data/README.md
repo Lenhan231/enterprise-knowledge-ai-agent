@@ -17,7 +17,50 @@ retrieval/embedding artifacts use different corpus snapshots and are not
 directly comparable. The refreshed corpus runs and limitations are
 listed in [`docs/README.md`](../docs/README.md) and the evaluation matrix.
 
+The separate [`2011 Vietnamese scan diagnostic v2`](evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v2.json)
+adds two visually transcribed balance-sheet pages to the signed income
+statement case. The production-parser run removes embedded OCR text by
+rasterizing each labeled page before processing, then scores selected row,
+period and numeric-cell associations. It matches 17/17 rows, 34/34 numeric
+cells, 6/6 period headers and 20/20 visually checked value-cell boxes on this
+three-page, third-party packet. CER/WER is
+reported only for the fully transcribed income-statement page; the other two
+pages have targeted financial anchors rather than full-page text references.
+The coordinate boxes derive from the source text layer and were visually
+checked, not independently click-annotated.
+This is supplemental single-source evidence, not a model-selection dataset.
+
+The separate [`2011 scan diagnostic v4`](evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v4.json)
+adds raster-derived boxes for 14 value cells across seven income-statement
+rows. Those boxes were mapped from the exact 180-DPI clipped render and visually
+checked without PDF text-layer assistance. The existing 20 balance-sheet boxes
+remain text-layer-derived. The full three-page upload-parser check scored 33/34 cell locations, 17/17
+rows and 34/34 values; its single miss is the 2011 dash with no useful parser
+box. This remains single-reviewer evidence from one source packet.
+
+The internal employee-access case is explicitly assigned the `employee` demo role; its expected answer preserves the official English Code of Conduct wording, including the source phrase “appropriate for the execution of their employees” rather than silently correcting that translation. The full routed-case runner records the selected role and switches demo accounts accordingly.
+
 OCR benchmark labels are versioned separately under `data/evaluation/`.
+[`vinamilk_ocr_ground_truth_v9.json`](evaluation/vinamilk_ocr_ground_truth_v9.json)
+combines the eleven v8 regions with three full-page regions from a 2011
+Vietnamese financial-statement scan packet. The four-engine v9 comparison
+reuses v2/v8 predictions only after checking engine versions, settings, runtime
+devices, and exact source/render hashes. Its references mix direct visual
+transcription with text-layer-assisted, visually checked labels; it remains a
+diagnostic and is not eligible for engine selection. Table cell counts measure
+text presence, while exact-row recall measures a stricter linearized sequence;
+neither establishes spatial cell reconstruction. See the reproducible merge
+and score commands in
+[`document-processing.md`](../docs/technical/document-processing.md#current-boundaries).
+
+[`vinamilk_ocr_charter_scan_en_v1.json`](evaluation/vinamilk_ocr_charter_scan_en_v1.json)
+isolates page 8 of the issuer-hosted, image-only 2026 Company Charter for a
+four-engine paired diagnostic. Its English full-page transcription is from one
+visual annotator and has not been independently reviewed; do not use it to
+select an OCR engine. Its separate private Kaggle asset dataset is
+`ltrngnhn/vinamilk-charter-scan-page8-assets` version 2. The paired raw reports
+and comparison are linked in the technical processing notes.
+
 [`vinamilk_ocr_ground_truth_v5.json`](evaluation/vinamilk_ocr_ground_truth_v5.json)
 retains the five v4 reviewed regions and adds a visually checked 16-row,
 two-period Vietnamese balance-sheet table from annual-report PDF page 91.

@@ -1,0 +1,98 @@
+{
+  "created_at_utc": "2026-09-28T17:12:10.777980+00:00",
+  "dataset": "vinamilk-2011-vietnamese-financial-scan-diagnostic-v1",
+  "dataset_sha256": "c0acb87c2103ab3bdbe29a61d33efa569d6b05d522b84e4aefdd10dcb008c7a9",
+  "reference_method": "Manual visual transcription of the scanned page; financial labels and figures checked against the official born-digital Vinamilk annual report.",
+  "reference_quality": "human_transcribed_visual_review_cross_checked_against_official_report",
+  "primary_metric_selection_eligible": false,
+  "limitations": "Single page from a third-party preview, not an issuer-hosted scan asset. Diagnostic only: it does not represent a broad Vietnamese scan sample, has no reviewed cell coordinates, and must not be pooled into the v7 paired benchmark or used for OCR model selection.",
+  "render_dpi": 180,
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Linux-6.12.90+-x86_64-with-glibc2.35",
+    "gpu": "CPU; CUDA unavailable",
+    "cuda_available": false,
+    "process_peak_rss_mb": 3439.945,
+    "child_peak_rss_mb": 3439.945,
+    "cpu_peak_scope": "whole evaluator process; run one engine per invocation for engine-specific comparison",
+    "child_peak_scope": "maximum high-water RSS among completed child processes, where supported"
+  },
+  "ocr_configuration": {
+    "render_dpi": 180,
+    "tesseract_language": "vie+eng",
+    "tesseract_page_segmentation_mode": 3
+  },
+  "engines": {
+    "paddleocr": {
+      "available": true,
+      "engine_version": "3.7.0",
+      "pages": [
+        {
+          "document_id": "VNM-FS-2011-VI-SCAN-DIAGNOSTIC",
+          "page": 10,
+          "language": "vi",
+          "source_pdf_sha256": "80f38fbb18f729fab611ed84f699d06cde76fb2ab18f89dd953d2e589f39f0bc",
+          "rendered_image_sha256": "9b857c3d51a6eb626b4ccfab7e45bae8382c6940b9dfd667d24b9558f2f320c0",
+          "reference_source": "manual_transcription",
+          "hypothesis_text": "CÔNG TY CÓ PHAN SÛA VIĘT NAM\nMãu ső B 02 - DN/HN\nBÁO CÁO KÉT QUÀ HOAT DÔNG KINH DOANH HOP NHÁT\nNăm tài chính két thúc ngày\nMã\nThuyt\n31.12.2011\n31.12.2010\nsó\nminh\nVND\nVND\n01\nDoanh thu bán hàng và cung cáp dch vu\n22.070.557.490.766\n16.081.466.183.586\n02\nCác khon gim trù doanh thu\n(443.128.597.657)\n(328.600.184.161)\n10\nDoanh thu thuàn vè bán hàng và cung cp dich vu 23(a)\n21.627.428.893.109\n15.752.865.999.425\n11\nGiá vôn hàng bán\n24\n(15.039.305.378.364)\n(10.579.208.129.197)\n20\nLi nhun gp vè bán hàng và cung cp dch v\n6.588.123.514.745\n5.173.657.870.228\n21\nDoanh thu hot đng tài chính\n23(b)\n680.232.453.133\n448.530.127.237\n22\nChi phí tài chính\n25\n(246.429.909.362)\n(153.198.613.988)\n24\nChi phí bán hàng\n26\n(1.811.914.247.629)\n(1.438.185.805.872)\n25\nChi phí qun lý doanh nghip\n27\n(459.431.997.199)\n(388.147.124.772)\n30\nLi nhun t hot đng kinh doanh\n4.750.579.813.688\n3.642.656.452.833\n40\nThu nhp khác - s thun\n28\n237.226.032.153\n608.785.500.303\n41\nPhn l trong liên doanh, liên kt\n(8.813.950.770)\n(234.529.528)\n50\nTồng li nhun ké toán trưóc thué\n4.978.991.895.071\n4.251.207.423.608\n51\nChi phí thu thu nhp doanh nghip - hin hành\n29\n(778.588.561.106)\n(645.058.588.114)\n52\nChi phí thu thu nhp doanh nghip - hoăn li\n29,12\n17.778.374.972\n9.344.103.477\n53\nL phn b cho c đông thiu só\n693.010.209\n60\nLi nhun sau thu thu nhp doanh nghip\n4.218.181.708.937\n3.616.185.949.180\n70 Lāi co bàn trên c phiéu (đồng)\n30\n6.834\nCOPHAN\nSÜA VIĚT NAI\nCithe\nVINAMILI\nTP.HO\nLê Thành Liêm\nNgô Thi Thu Trang\nMai Kièu Liên\nK toán trưng\nGiám đc Điu hành Tài chính\nTồng Giám đc\nNgày 28 tháng 2 năm 2012\nCác thuyt minh t trang 11 đn trang 48 là mt phn cu thành các báo cáo tài chính hp nht này.\n8\nTai-Lieu.com",
+          "reference_characters": 1287,
+          "reference_words": 309,
+          "hypothesis_characters": 1631,
+          "character_edit_distance": 481,
+          "word_edit_distance": 183,
+          "cer": 0.373737,
+          "wer": 0.592233,
+          "latency_seconds": 80.686,
+          "error": null,
+          "table_rows_expected": 7,
+          "table_rows_exact": 0,
+          "table_row_recall": 0.0,
+          "exact_table_row_indices": [],
+          "table_cells_expected": 21,
+          "table_cells_text_matched": 14,
+          "table_cell_text_recall": 0.666667
+        }
+      ],
+      "model_initialization_seconds": 41.185,
+      "model_initialization_error": null,
+      "runtime_device": "cpu",
+      "memory_telemetry": {
+        "torch_cuda_peak_allocated_mb": null,
+        "torch_cuda_peak_reserved_mb": null,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "aggregate": {
+        "valid_pages": 1,
+        "macro_mean_page_cer": 0.373737,
+        "micro_cer": 0.373737,
+        "macro_mean_page_wer": 0.592233,
+        "micro_wer": 0.592233,
+        "mean_latency_seconds": 80.686,
+        "pages_per_minute": 0.744,
+        "table_rows_expected": 7,
+        "table_rows_exact": 0,
+        "table_row_recall": 0.0,
+        "table_cells_expected": 21,
+        "table_cells_text_matched": 14,
+        "table_cell_text_recall": 0.666667
+      },
+      "by_language": {
+        "vi": {
+          "valid_pages": 1,
+          "macro_mean_page_cer": 0.373737,
+          "micro_cer": 0.373737,
+          "macro_mean_page_wer": 0.592233,
+          "micro_wer": 0.592233,
+          "mean_latency_seconds": 80.686,
+          "pages_per_minute": 0.744,
+          "table_rows_expected": 7,
+          "table_rows_exact": 0,
+          "table_row_recall": 0.0,
+          "table_cells_expected": 21,
+          "table_cells_text_matched": 14,
+          "table_cell_text_recall": 0.666667
+        }
+      }
+    }
+  }
+}

@@ -130,6 +130,50 @@ class RAGServiceTest(unittest.TestCase):
         self.assertEqual(result.source_ids, ["S1"])
         self.assertEqual(len(llm.calls), 1)
 
+    def test_employee_access_query_quotes_code_and_discloses_referenced_policy_is_not_retrieved(self):
+        access = context("VNM-CODE-2025-EN")
+        access["metadata"].update({"document_type": "code_of_conduct", "page_number": 28})
+        access["content"] = (
+            "Employees are assigned rights to access and process information, which is appropriate for the execution of their employees. "
+            "For the exceptions, employees are required to obtain approvals from both their competent managers and IT Department. "
+            "Unauthorized access and processing will be treated as an act of infringement of property of VINAMILK."
+        )
+        reference = context("VNM-CODE-2025-EN")
+        reference["chunk_index"] = 8
+        reference["metadata"].update({"document_type": "code_of_conduct", "page_number": 27})
+        reference["content"] = (
+            "The Company stipulates the usage and protection of the Information System in Information System Policy."
+        )
+        llm = FakeLLM("The separate Information System Policy sets detailed rules [S1].")
+
+        result = RAGService(FakeRetrieval([access, reference]), llm).generate_answer(
+            "Search for the employee access policy", roles=["employee"],
+        )
+
+        self.assertIn("Code of Conduct", result.answer)
+        self.assertIn("competent managers and IT Department", result.answer)
+        self.assertIn("The separate Information System Policy is not included in the retrieved documents", result.answer)
+        self.assertEqual(result.source_ids, ["S1", "S2"])
+        self.assertEqual([item["metadata"]["page_number"] for item in result.contexts], [28, 27])
+        self.assertEqual(llm.calls, [])
+
+    def test_employee_access_disclosure_does_not_override_retrieved_policy_document(self):
+        access = context("VNM-CODE-2025-EN")
+        access["content"] = "Employees are assigned rights to access and process information. For the exceptions, approval is required. Unauthorized access is prohibited."
+        reference = context("VNM-CODE-2025-EN")
+        reference["chunk_index"] = 8
+        reference["content"] = "The Company stipulates protection in Information System Policy."
+        policy = context("VNM-INFO-SYSTEM-POLICY")
+        policy["metadata"].update({"document_type": "policy", "title": "Information System Policy"})
+        llm = FakeLLM("The retrieved policy gives the access rules [S3].")
+
+        result = RAGService(FakeRetrieval([access, reference, policy]), llm).generate_answer(
+            "Search for the employee access policy", roles=["employee"],
+        )
+
+        self.assertEqual(result.answer, "The retrieved policy gives the access rules [S3].")
+        self.assertEqual(len(llm.calls), 1)
+
     def test_retrieval_fails_closed_without_a_role(self):
         retrieval = FakeRetrieval([context()])
         service = RAGService(retrieval, FakeLLM("Should not be used"))

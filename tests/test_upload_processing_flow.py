@@ -174,6 +174,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         candidate = candidates[0]
         self.assertEqual(candidate["metric_name"], "net_revenue")
         self.assertEqual(candidate["candidate_values"], ["100"])
+        self.assertEqual(candidate["unit"], "billion VND")
         self.assertEqual(candidate["extraction_method"], "llm_selected_financial_page")
         self.assertEqual(candidate["extractor_model"], "test-financial-model")
         self.assertEqual(candidate["fiscal_year"], 2024)
@@ -418,6 +419,75 @@ class UploadProcessingFlowTest(unittest.TestCase):
         self.assertEqual(saved_tables[0]["metadata"]["table_extraction_method"], "pymupdf.find_tables_text_aligned_columns")
         chunks_cls.return_value.replace_document.assert_called_once()
 
+    def test_scanned_pdf_table_flows_from_ocr_parser_to_structured_store(self):
+        pdf = fitz.open()
+        pdf.new_page(width=600, height=400)
+        source = pdf.tobytes()
+        pdf.close()
+        words = [
+            (40, 30, 180, 38, "Period", 1, 0, 1),
+            (300, 30, 390, 38, "31122024", 1, 0, 2),
+            (470, 30, 560, 38, "31122023", 1, 0, 3),
+        ]
+        for row, (label, current, previous) in enumerate((
+            ("Revenue", "100000", "90000"),
+            ("Cash balance", "25000", "20000"),
+            ("Total assets", "500000", "450000"),
+        )):
+            y = 60 + row * 25
+            words.extend([
+                (40, y, 180, y + 8, label, 1, row + 1, 1),
+                (300, y, 390, y + 8, current, 1, row + 1, 2),
+                (470, y, 560, y + 8, previous, 1, row + 1, 3),
+            ])
+
+        document_repo = MagicMock()
+        structured_store = MagicMock()
+        storage = MagicMock()
+        storage.storage.from_.return_value.upload.return_value = None
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
+        embedding.embed_documents.return_value = [[0.1, 0.2]]
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.document_processing.processors.pdf_processor.shutil.which", return_value="/usr/bin/tesseract"),
+            patch.object(PDFProcessor, "_ocr_page", return_value="Revenue 100000 90000\nCash balance 25000 20000\nTotal assets 500000 450000"),
+            patch.object(PDFProcessor, "_ocr_page_words", return_value=words),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
+            patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
+            patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
+            patch.dict("os.environ", {
+                "DOCUMENT_PADDLE_LAYOUT": "false",
+                "DOCUMENT_PADDLE_FORMULA_RECOGNITION": "false",
+                "DOCUMENT_VISION_CAPTIONS": "false",
+            }),
+        ):
+            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+            counter_cls.return_value.count.return_value = 4
+            response = asyncio.run(app_main.upload_document(
+                request=None,
+                file=UploadFile(filename="scanned-statement.pdf", file=io.BytesIO(source)),
+                title="Scanned statement",
+                document_type="annual_report",
+                domain="finance",
+                fiscal_year=None,
+                allowed_roles=["finance_analyst"],
+                user={"sub": "uploader-1"},
+            ))
+
+        self.assertEqual(response["processing_status"], "ready")
+        saved_tables = structured_store.save_document_tables.call_args.args[2]
+        self.assertEqual(saved_tables[0]["columns"], ["label", "31/12/2024", "31/12/2023"])
+        self.assertEqual(saved_tables[0]["rows"], [
+            {"label": "Revenue", "31/12/2024": "100000", "31/12/2023": "90000"},
+            {"label": "Cash balance", "31/12/2024": "25000", "31/12/2023": "20000"},
+            {"label": "Total assets", "31/12/2024": "500000", "31/12/2023": "450000"},
+        ])
+        chunks_cls.return_value.replace_document.assert_called_once()
+
     def test_pptx_table_flows_from_upload_to_structured_store(self):
         source = pptx_with_table()
         document_repo = MagicMock()
@@ -506,15 +576,18 @@ class UploadProcessingFlowTest(unittest.TestCase):
         connection = MagicMock()
         store = StructuredDataStore(connection=connection)
         formulas = [{"cell": "B2", "formula": "=SUM(B1:B1)", "cached_value": "100"}]
+        row_cell_bboxes = [{"label": [10, 20, 50, 30], "2024": [100, 20, 130, 30]}]
 
         store.save_document_tables("DOC-1", "Finance", [{
             "page_number": 1, "table_index": 0, "columns": ["Value"],
-            "rows": [{"Value": "100"}], "metadata": {"formulas": formulas},
+            "rows": [{"Value": "100"}],
+            "metadata": {"formulas": formulas, "row_cell_bboxes": row_cell_bboxes},
         }])
 
         cursor = connection.cursor.return_value.__enter__.return_value
         insert_params = cursor.execute.call_args.args[1]
         self.assertEqual(insert_params[-1].obj["formulas"], formulas)
+        self.assertEqual(insert_params[-1].obj["row_cell_bboxes"], row_cell_bboxes)
         record_params = cursor.executemany.call_args.args[1]
         self.assertEqual(record_params[0][3].obj, {"Value": "100"})
 

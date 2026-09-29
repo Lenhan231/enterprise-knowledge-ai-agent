@@ -1,0 +1,209 @@
+{
+  "dataset": "vinamilk-ocr-human-reviewed-regions-v7",
+  "dataset_sha256": "928044ceaa05cdccd237c46c8d90870cbcfcda2591dcd1a04f60887c9b4c1bc3",
+  "render_dpi": 180,
+  "paired_pages": [
+    {
+      "document_id": "VNM-AR-2020-VI",
+      "page": 22,
+      "language": "vi",
+      "source_pdf_sha256": "0abbd2bb78b4be637107b1975014a118c7eda9d79ebe4634d612337910b25f00",
+      "rendered_image_sha256": "7d1efe264c7a89f9fc74a0cb1d48dac98f0555e2037fed89622578d46c312757"
+    },
+    {
+      "document_id": "VNM-AR-2024-VI",
+      "page": 12,
+      "language": "vi",
+      "source_pdf_sha256": "4c756bba77e39d192515f377caafa4f7105234b2c943eb164d0a0987ecedfc55",
+      "rendered_image_sha256": "d26843ac9dc52e506236c30885907059e78727e339e13102279e2259cd449122"
+    },
+    {
+      "document_id": "VNM-AR-2024-VI",
+      "page": 91,
+      "language": "vi",
+      "source_pdf_sha256": "4c756bba77e39d192515f377caafa4f7105234b2c943eb164d0a0987ecedfc55",
+      "rendered_image_sha256": "5b92862eb79cf4a55835a9d6b6ad1ba585a608145ba69273064577ecc287aeea"
+    },
+    {
+      "document_id": "VNM-CGRULES-2026-EN",
+      "page": 3,
+      "language": "en",
+      "source_pdf_sha256": "74e12eb76f9a0b1fbee4e6c90c929c30263abad4c1e9fc48ccbcb44b84cca558",
+      "rendered_image_sha256": "da865399036e36e6844b1e07829dce7203a977c73192b14192010a076a8426d4"
+    },
+    {
+      "document_id": "VNM-CGRULES-2026-EN",
+      "page": 4,
+      "language": "en",
+      "source_pdf_sha256": "74e12eb76f9a0b1fbee4e6c90c929c30263abad4c1e9fc48ccbcb44b84cca558",
+      "rendered_image_sha256": "32300d93f68eca9ef0d547da3236cb8b02c99a00b9bfbc211e81eee4df46d29f"
+    },
+    {
+      "document_id": "VNM-CGRULES-2026-EN",
+      "page": 5,
+      "language": "en",
+      "source_pdf_sha256": "74e12eb76f9a0b1fbee4e6c90c929c30263abad4c1e9fc48ccbcb44b84cca558",
+      "rendered_image_sha256": "c1fb8475b625c87f5cc6271a453324dc8c32fcf078dc799fa4c4c4bdabfc3b73"
+    },
+    {
+      "document_id": "VNM-CHARTER-2026-EN",
+      "page": 3,
+      "language": "en",
+      "source_pdf_sha256": "2c49760156a72204756004be0b8fd1c8dc10e2ecd88abea78ea3fefbf0bf040f",
+      "rendered_image_sha256": "b3f1cd3dfe8a4cdf250fdf2cb7c5807baca408548c2c1041bab32d7fb4e128fd"
+    },
+    {
+      "document_id": "VNM-CHARTER-2026-EN",
+      "page": 4,
+      "language": "en",
+      "source_pdf_sha256": "2c49760156a72204756004be0b8fd1c8dc10e2ecd88abea78ea3fefbf0bf040f",
+      "rendered_image_sha256": "aaeb9382994f986b6e3e59b6061417ef77222d1b478c0c8fc8c454082898b32f"
+    },
+    {
+      "document_id": "VNM-CHARTER-2026-EN",
+      "page": 5,
+      "language": "en",
+      "source_pdf_sha256": "2c49760156a72204756004be0b8fd1c8dc10e2ecd88abea78ea3fefbf0bf040f",
+      "rendered_image_sha256": "5c38ce75879b96461b7eea58904f0c24dac8fc9bb706aabb8d1cf672a65e7950"
+    },
+    {
+      "document_id": "VNM-SR-2024-EN",
+      "page": 3,
+      "language": "en",
+      "source_pdf_sha256": "018ba885f223c3d766a44d3d7aeb3536098ad33a6751d1a492d60271b30af8de",
+      "rendered_image_sha256": "fceaa3f9bff47457218dbd8d301a07b7aabd20a0980a753ac4a09a20b1b4aeac"
+    }
+  ],
+  "engines": [
+    {
+      "engine": "tesseract_psm3",
+      "engine_version": "tesseract 5.5.3",
+      "runtime_device": "CPU; CUDA unavailable",
+      "valid_pages": 10,
+      "failed_pages": 0,
+      "micro_cer": 0.272556,
+      "micro_wer": 0.263561,
+      "mean_latency_seconds": 2.155,
+      "pages_per_minute": 27.845,
+      "initialization_seconds": null,
+      "process_peak_rss_mb": 578.812,
+      "child_peak_rss_mb": 578.812,
+      "cuda_memory": {
+        "torch_cuda_peak_allocated_mb": null,
+        "torch_cuda_peak_reserved_mb": null,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "table_rows_expected": 16,
+      "table_rows_exact": 8,
+      "table_row_recall": 0.5,
+      "table_cells_expected": 48,
+      "table_cells_text_matched": 40,
+      "table_cell_text_recall": 0.833333,
+      "table_cell_metric_scope": "cell text presence only; ignores row and column association"
+    },
+    {
+      "engine": "tesseract_psm11",
+      "engine_version": "tesseract 5.5.3",
+      "runtime_device": "CPU; CUDA unavailable",
+      "valid_pages": 10,
+      "failed_pages": 0,
+      "micro_cer": 0.127318,
+      "micro_wer": 0.197497,
+      "mean_latency_seconds": 1.803,
+      "pages_per_minute": 33.287,
+      "initialization_seconds": null,
+      "process_peak_rss_mb": 578.656,
+      "child_peak_rss_mb": 578.656,
+      "cuda_memory": {
+        "torch_cuda_peak_allocated_mb": null,
+        "torch_cuda_peak_reserved_mb": null,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "table_rows_expected": 16,
+      "table_rows_exact": 6,
+      "table_row_recall": 0.375,
+      "table_cells_expected": 48,
+      "table_cells_text_matched": 40,
+      "table_cell_text_recall": 0.833333,
+      "table_cell_metric_scope": "cell text presence only; ignores row and column association"
+    },
+    {
+      "engine": "easyocr",
+      "engine_version": "1.7.2",
+      "runtime_device": "cuda:0",
+      "valid_pages": 10,
+      "failed_pages": 0,
+      "micro_cer": 0.110025,
+      "micro_wer": 0.248261,
+      "mean_latency_seconds": 1.185,
+      "pages_per_minute": 50.616,
+      "initialization_seconds": 10.78,
+      "process_peak_rss_mb": 1583.164,
+      "child_peak_rss_mb": 1583.164,
+      "cuda_memory": {
+        "torch_cuda_peak_allocated_mb": 1800.277,
+        "torch_cuda_peak_reserved_mb": 2570.0,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "table_rows_expected": 16,
+      "table_rows_exact": 2,
+      "table_row_recall": 0.125,
+      "table_cells_expected": 48,
+      "table_cells_text_matched": 47,
+      "table_cell_text_recall": 0.979167,
+      "table_cell_metric_scope": "cell text presence only; ignores row and column association"
+    },
+    {
+      "engine": "paddleocr",
+      "engine_version": "3.7.0",
+      "runtime_device": "cpu",
+      "valid_pages": 10,
+      "failed_pages": 0,
+      "micro_cer": 0.043609,
+      "micro_wer": 0.108484,
+      "mean_latency_seconds": 26.919,
+      "pages_per_minute": 2.229,
+      "initialization_seconds": 38.759,
+      "process_peak_rss_mb": 3998.148,
+      "child_peak_rss_mb": 3998.148,
+      "cuda_memory": {
+        "torch_cuda_peak_allocated_mb": 0.0,
+        "torch_cuda_peak_reserved_mb": 0.0,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "table_rows_expected": 16,
+      "table_rows_exact": 0,
+      "table_row_recall": 0.0,
+      "table_cells_expected": 48,
+      "table_cells_text_matched": 32,
+      "table_cell_text_recall": 0.666667,
+      "table_cell_metric_scope": "cell text presence only; ignores row and column association"
+    },
+    {
+      "engine": "surya",
+      "engine_version": "0.17.1",
+      "runtime_device": "cuda:0",
+      "valid_pages": 10,
+      "failed_pages": 0,
+      "micro_cer": 0.043233,
+      "micro_wer": 0.090403,
+      "mean_latency_seconds": 3.339,
+      "pages_per_minute": 17.967,
+      "initialization_seconds": 76.422,
+      "process_peak_rss_mb": 4447.688,
+      "child_peak_rss_mb": 1311.531,
+      "cuda_memory": {
+        "torch_cuda_peak_allocated_mb": 2330.526,
+        "torch_cuda_peak_reserved_mb": 2618.0,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "table_rows_expected": 16,
+      "table_rows_exact": 14,
+      "table_row_recall": 0.875,
+      "table_cells_expected": 48,
+      "table_cells_text_matched": 47,
+      "table_cell_text_recall": 0.979167,
+      "table_cell_metric_scope": "cell text presence only; ignores row and column association"
+    }
+  ]
+}

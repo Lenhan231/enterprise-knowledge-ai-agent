@@ -29,9 +29,19 @@ def environment_gpu() -> tuple[bool, str]:
         available = bool(torch.cuda.is_available())
         if available:
             return True, torch.cuda.get_device_name(0)
-        return False, "CPU; CUDA unavailable"
     except (ImportError, RuntimeError, AttributeError):
-        return False, "CPU; PyTorch/CUDA unavailable"
+        pass
+
+    try:
+        result = subprocess.run(
+            ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
+            capture_output=True, text=True, timeout=5, check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        result = None
+    if result and result.returncode == 0 and result.stdout.strip():
+        return True, result.stdout.splitlines()[0].strip()
+    return False, "CPU; CUDA unavailable"
 
 
 def normalize(text: str) -> str:
@@ -56,11 +66,22 @@ def error_rate(reference: str, hypothesis: str) -> float:
 
 
 def matched_table_row_indices(table_rows: list[dict], hypothesis: str) -> list[int]:
-    normalized_hypothesis = normalize(hypothesis)
-    return [
-        index for index, row in enumerate(table_rows)
-        if normalize(" ".join((row["label"], *row["values"]))) in normalized_hypothesis
-    ]
+    hypothesis_tokens = normalize(hypothesis).split()
+    matched = []
+    for index, row in enumerate(table_rows):
+        cursor = 0
+        for cell in (row["label"], *row["values"]):
+            cell_tokens = normalize(cell).split()
+            found = next((
+                offset for offset in range(cursor, len(hypothesis_tokens) - len(cell_tokens) + 1)
+                if hypothesis_tokens[offset:offset + len(cell_tokens)] == cell_tokens
+            ), None)
+            if found is None:
+                break
+            cursor = found + len(cell_tokens)
+        else:
+            matched.append(index)
+    return matched
 
 
 def exact_table_rows(table_rows: list[dict], hypothesis: str) -> int:
@@ -87,30 +108,32 @@ def table_cell_text_counts(table_rows: list[dict], hypothesis: str) -> tuple[int
 
 
 def summarize_pages(rows: list[dict]) -> dict:
-    valid = [row for row in rows if row.get("cer") is not None]
+    processed = [row for row in rows if not row.get("error")]
+    valid = [row for row in processed if row.get("cer") is not None]
     reference_characters = sum(row["reference_characters"] for row in valid)
     reference_words = sum(row["reference_words"] for row in valid)
     character_edits = sum(row["character_edit_distance"] for row in valid)
     word_edits = sum(row["word_edit_distance"] for row in valid)
-    total_inference_seconds = sum(row["latency_seconds"] for row in valid)
     summary = {
         "valid_pages": len(valid),
+        "ocr_pages": len(processed),
         "macro_mean_page_cer": round(sum(row["cer"] for row in valid) / len(valid), 6) if valid else None,
         "micro_cer": round(character_edits / reference_characters, 6) if reference_characters else None,
         "macro_mean_page_wer": round(sum(row["wer"] for row in valid) / len(valid), 6) if valid else None,
         "micro_wer": round(word_edits / reference_words, 6) if reference_words else None,
-        "mean_latency_seconds": round(sum(row["latency_seconds"] for row in valid) / len(valid), 3) if valid else None,
-        "pages_per_minute": round(len(valid) * 60 / total_inference_seconds, 3) if total_inference_seconds else None,
+        "mean_latency_seconds": round(sum(row["latency_seconds"] for row in processed) / len(processed), 3) if processed else None,
+        "pages_per_minute": round(len(processed) * 60 / sum(row["latency_seconds"] for row in processed), 3) if processed and sum(row["latency_seconds"] for row in processed) else None,
     }
-    table_rows_expected = sum(row.get("table_rows_expected", 0) for row in valid)
+    table_scored = [row for row in processed if row.get("table_rows_expected") or row.get("table_cells_expected")]
+    table_rows_expected = sum(row.get("table_rows_expected", 0) for row in table_scored)
     if table_rows_expected:
         summary["table_rows_expected"] = table_rows_expected
-        summary["table_rows_exact"] = sum(row.get("table_rows_exact", 0) for row in valid)
+        summary["table_rows_exact"] = sum(row.get("table_rows_exact", 0) for row in table_scored)
         summary["table_row_recall"] = round(summary["table_rows_exact"] / table_rows_expected, 6)
-    table_cells_expected = sum(row.get("table_cells_expected", 0) for row in valid)
+    table_cells_expected = sum(row.get("table_cells_expected", 0) for row in table_scored)
     if table_cells_expected:
         summary["table_cells_expected"] = table_cells_expected
-        summary["table_cells_text_matched"] = sum(row.get("table_cells_text_matched", 0) for row in valid)
+        summary["table_cells_text_matched"] = sum(row.get("table_cells_text_matched", 0) for row in table_scored)
         summary["table_cell_text_recall"] = round(summary["table_cells_text_matched"] / table_cells_expected, 6)
     return summary
 
@@ -154,10 +177,9 @@ def cuda_peak_memory_mb(enabled: bool) -> dict[str, float | None]:
 
 def create_engine(engine: str, language: str):
     if engine == "paddleocr":
-        import torch
         import paddle
         from paddleocr import PaddleOCR
-        gpu_available = torch.cuda.is_available() and paddle.is_compiled_with_cuda()
+        gpu_available = paddle.is_compiled_with_cuda() and paddle.device.cuda.device_count() > 0
         return PaddleOCR(
             lang="vi", use_doc_orientation_classify=False,
             use_doc_unwarping=False, use_textline_orientation=False,
@@ -314,6 +336,7 @@ def main() -> int:
         for prepared in prepared_pages:
             page_spec = prepared["spec"]
             normalized_reference = prepared["reference"]
+            table_rows = page_spec.get("table_rows", [])
             if not engine_data["available"]:
                 error = engine_data["model_initialization_error"] or "engine package or executable unavailable"
                 engine_data["pages"].append({"document_id": page_spec["document_id"], "page": page_spec["page"], "error": error})
@@ -335,7 +358,11 @@ def main() -> int:
                 "language": page_spec["language"],
                 "source_pdf_sha256": prepared["source_pdf_sha256"],
                 "rendered_image_sha256": prepared["rendered_image_sha256"],
-                "reference_source": "manual_transcription" if page_spec.get("reference_text") is not None else "native_pdf_text_unreviewed",
+                "reference_source": (
+                    "manual_transcription" if normalized_reference and page_spec.get("reference_text") is not None
+                    else "manual_table_anchors_only" if page_spec.get("reference_text") == "" and table_rows
+                    else "native_pdf_text_unreviewed"
+                ),
                 "hypothesis_text": hypothesis,
                 "reference_characters": len(normalized_reference),
                 "reference_words": len(reference_words),
@@ -347,7 +374,6 @@ def main() -> int:
                 "latency_seconds": round(seconds, 3),
                 "error": error,
             }
-            table_rows = page_spec.get("table_rows", [])
             if table_rows:
                 exact_indices = matched_table_row_indices(table_rows, hypothesis) if not error else []
                 exact_rows = len(exact_indices)

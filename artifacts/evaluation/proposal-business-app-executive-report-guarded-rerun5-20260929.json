@@ -1,0 +1,54 @@
+{
+  "created_at_utc": "2026-09-28T19:50:59.857415+00:00",
+  "route": "POST /api/ask",
+  "corpus_id": "VNM-ENTERPRISE-RAG-DEMO",
+  "corpus_manifest_sha256": "236010d3c0973b27fed8ffc5f70099496931251e3160fb088ddc74353d244031",
+  "route_dataset_sha256": "1ad8e2a2b1687694d7b3141cf3c2fc18783b68485a4871018fbac16a875937bd",
+  "coverage_dataset_sha256": "1c81bf452ffe9c0e158c2e24219b0c3175d15d7bddf638dff47fd539bc5b6d5a",
+  "model": "openai/gpt-oss-20b",
+  "actor_role": "admin",
+  "case_count": 1,
+  "attempted_count": 1,
+  "unrun_case_ids": [],
+  "stop_reason": null,
+  "passed": 1,
+  "failed": 0,
+  "mean_latency_seconds": 24.566,
+  "results": [
+    {
+      "id": "executive-decision-support",
+      "corpus_coverage": "partial",
+      "expected_outcome": "summarize_reported_strategy_and_risks_without_inventing_alternatives",
+      "expected_route": "report",
+      "actual_route": "report",
+      "passed": true,
+      "checks": {
+        "expected_route": true,
+        "citation_integrity": true,
+        "no_citation_validation_failure": true,
+        "citations_have_source_locations": true,
+        "partial_case_abstains_or_uses_labeled_source": true,
+        "does_not_claim_unreported_options_were_considered": true,
+        "discloses_decision_options_are_not_reported": true
+      },
+      "insufficient_context": false,
+      "cited_document_ids": [
+        "VNM-SR-2024-EN",
+        "VNM-SR-2025-EN"
+      ],
+      "citation_pages": [
+        75,
+        81,
+        104
+      ],
+      "answer": "**Reported initiatives for leadership**\n\n- A leadership‑training programme focused on embedding food‑safety culture, identifying core elements, assessing practices at each business unit, and promoting responsibility across the production chain. [S1]  \n- A performance‑management system that evaluates all employees, establishes common standards, and supports capability development and succession planning, with a 360‑degree assessment rollout in 2025. [S1]  \n- A gender‑equity strategy that includes leadership‑skills training for women, transparent hiring, gender‑balanced leadership representation, and mentorship & succession planning. [S2]  \n- A water‑management strategy that treats water‑related risks as core business risks, integrating leadership commitment, implementation, and transparent disclosure of impacts. [S3]  \n\n**Risks identified**\n\n- Water‑related risks are explicitly noted as potential impacts on production continuity, operating costs, and brand reputation. [S3]  \n\nNo other risks or alternative leadership options are explicitly mentioned in the provided evidence.",
+      "data_result_count": 0,
+      "latency_seconds": 24.566
+    }
+  ],
+  "limitations": [
+    "This is a single authenticated admin run over the public Vinamilk corpus; it is not a role-matrix test.",
+    "Supported and unsupported outcomes have deterministic route, source, value, abstention and result-shape checks.",
+    "Partial HR, compliance and executive cases still need blinded semantic review; these labels do not prove private-domain capability."
+  ]
+}

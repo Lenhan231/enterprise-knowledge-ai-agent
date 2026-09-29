@@ -75,6 +75,7 @@ class PDFProcessor:
         self.config.setdefault("tesseract_psm", 11)
         self.config.setdefault("tesseract_table_psm", 3)
         self.config.setdefault("ocr_render_scale", 1.5)
+        self.config.setdefault("ocr_table_render_scale", 2.5)
         self.config.setdefault("vision_captioning", False)
         self.config.setdefault("vision_caption_max_images", 3)
 
@@ -563,7 +564,16 @@ class PDFProcessor:
                     ocr_text = self._ocr_page(page, ocr_pixmap).strip()
                     if ocr_text:
                         if self.config.get("extract_tables", False) and self._looks_like_numeric_table(ocr_text):
-                            ocr_table_words[page_num + 1] = self._ocr_page_words(page, ocr_pixmap)
+                            table_render_scale = self.config["ocr_table_render_scale"]
+                            table_pixmap = (
+                                ocr_pixmap
+                                if table_render_scale == self.config["ocr_render_scale"]
+                                else page.get_pixmap(
+                                    matrix=fitz.Matrix(table_render_scale, table_render_scale),
+                                    alpha=False,
+                                )
+                            )
+                            ocr_table_words[page_num + 1] = self._ocr_page_words(page, table_pixmap)
                         if len(native_text) < 50:
                             page_text = ocr_text
                             ocr_pages[page_num + 1] = "tesseract"
@@ -669,7 +679,7 @@ class PDFProcessor:
             "engine": "tesseract",
             "language": self.config.get("ocr_language", "vie+eng"),
             "table_psm": self.config["tesseract_table_psm"],
-            "render_scale": self.config["ocr_render_scale"],
+            "render_scale": self.config["ocr_table_render_scale"],
         }
 
     @staticmethod
@@ -748,6 +758,18 @@ class PDFProcessor:
                                 table, page, page_number, len(extracted), words,
                             )
                         )
+        if not extracted:
+            try:
+                text_tables = page.find_tables(strategy="text").tables
+            except Exception as e:
+                logger.warning("Text-based table detection failed on page %d: %s", page_number, e)
+            else:
+                for table in text_tables:
+                    extracted.extend(
+                        PDFProcessor._split_aligned_text_table(
+                            table, page, page_number, len(extracted), words,
+                        )
+                    )
         if not extracted and ocr_words:
             extracted = PDFProcessor._tables_from_aligned_words(
                 ocr_words, page.rect, page_number, ocr_metadata=ocr_metadata,
@@ -795,6 +817,38 @@ class PDFProcessor:
                     edge_clusters[-1].append(edge)
             supported = [cluster for cluster in edge_clusters if len(cluster) >= 3]
             if len(supported) >= 2:
+                max_support = max(map(len, supported))
+                frequent_columns = [
+                    cluster for cluster in supported
+                    if len(cluster) >= max(3, max_support * 0.5)
+                ]
+                if len(frequent_columns) >= 2:
+                    supported = frequent_columns
+                # Judge each numeric column against labels on its own rows.
+                # A single page-wide boundary drops the left-hand table when
+                # two financial statements are printed side by side.
+                amount_columns = []
+                for cluster in supported:
+                    edge = sum(cluster) / len(cluster)
+                    matched_rows = label_rows = 0
+                    for _, row, numeric in candidates:
+                        word = min(numeric, key=lambda item: abs(item[edge_index] - edge))
+                        if abs(word[edge_index] - edge) > 18:
+                            continue
+                        matched_rows += 1
+                        preceding_labels = [
+                            item[2] for item in row
+                            if not is_number(item[4]) and item[2] <= word[0]
+                        ]
+                        if (
+                            preceding_labels
+                            and word[0] - max(preceding_labels) >= max(8, page_rect.width * 0.02)
+                        ):
+                            label_rows += 1
+                    if matched_rows and label_rows / matched_rows >= 0.5:
+                        amount_columns.append(cluster)
+                if len(amount_columns) >= 2:
+                    supported = amount_columns
                 spread = sum(cluster[-1] - cluster[0] for cluster in supported)
                 alignments.append((
                     sum(map(len, supported)), -spread, edge_index,
@@ -819,13 +873,22 @@ class PDFProcessor:
         result = []
         for group_index, column_group in enumerate(column_groups):
             previous_right = column_groups[group_index - 1][-1] if group_index else page_rect.x0
-            rows, row_boxes = [], []
+            rows, row_boxes, row_cell_boxes = [], [], []
+            table_headers = None
             for center_y, row, numeric in candidates:
                 aligned = []
                 for edge in column_group:
                     match = min(numeric, key=lambda word: abs(word[alignment_edge] - edge))
                     aligned.append(match if abs(match[alignment_edge] - edge) <= 18 else None)
                 if sum(word is not None for word in aligned) < 2:
+                    continue
+                period_headers = [
+                    PDFProcessor._ocr_period_header(word[4]) if word else None
+                    for word in aligned
+                ]
+                if len(period_headers) >= 2 and all(period_headers):
+                    table_headers = period_headers
+                    row_boxes.extend(word for word in aligned if word is not None)
                     continue
                 first_value = next(word for word in aligned if word is not None)
                 lower = previous_right + 3 if group_index else page_rect.x0
@@ -841,10 +904,25 @@ class PDFProcessor:
                 rows.append([label, *value_words])
                 row_boxes.extend(label_words)
                 row_boxes.extend(word for word in aligned if word is not None)
+                row_cell_boxes.append([
+                    (
+                        min(word[0] for word in label_words),
+                        min(word[1] for word in label_words),
+                        max(word[2] for word in label_words),
+                        max(word[3] for word in label_words),
+                    ),
+                    *[tuple(word[:4]) if word is not None else None for word in aligned],
+                ])
             if len(rows) < 3:
                 continue
-            headers = [f"value_{index}" for index in range(1, len(column_group) + 1)]
+            headers = table_headers or [
+                f"value_{index}" for index in range(1, len(column_group) + 1)
+            ]
             columns_out = ["label", *headers]
+            cells_with_boxes = [
+                dict(zip(columns_out, [list(box) if box is not None else None for box in boxes]))
+                for boxes in row_cell_boxes
+            ]
             result.append({
                 "page_number": page_number,
                 "table_index": len(result),
@@ -864,9 +942,22 @@ class PDFProcessor:
                         max(word[3] for word in row_boxes),
                     ),
                     "bbox_coordinate_system": "pdf_points",
+                    "row_cell_bboxes": cells_with_boxes,
                 },
             })
         return result
+
+    @staticmethod
+    def _ocr_period_header(value: str) -> Optional[str]:
+        """Normalize OCR'd day/month/year or standalone year table headers."""
+        digits = re.sub(r"\D", "", str(value or ""))
+        if len(digits) == 4 and 1900 <= int(digits) <= 2100:
+            return digits
+        if len(digits) == 8:
+            day, month, year = int(digits[:2]), int(digits[2:4]), int(digits[4:])
+            if 1 <= day <= 31 and 1 <= month <= 12 and 1900 <= year <= 2100:
+                return f"{day:02d}/{month:02d}/{year}"
+        return None
 
     @staticmethod
     def _split_aligned_text_table(

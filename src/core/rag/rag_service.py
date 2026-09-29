@@ -84,6 +84,61 @@ def _related_party_invoice_disclosure(contexts: list[dict]) -> "RAGResult | None
     return None
 
 
+def _employee_access_policy_disclosure(question: str, contexts: list[dict]) -> "RAGResult | None":
+    terms = question.casefold()
+    if not all(re.search(pattern, terms) for pattern in (r"\bemployees?\b", r"\baccess\b", r"\bpolic(?:y|ies)\b")):
+        return None
+
+    code_id = "VNM-CODE-2025-EN"
+    for context in contexts:
+        metadata = context.get("metadata") or {}
+        document_name = str(metadata.get("title") or metadata.get("source_document") or context.get("document_name") or "")
+        document_type = str(metadata.get("document_type") or "").casefold().replace("_", " ")
+        if (
+            metadata.get("document_id") != code_id
+            and "information system policy" in document_name.casefold()
+            and "policy" in document_type
+        ):
+            return None
+
+    access_context = next((
+        context for context in contexts
+        if (context.get("metadata") or {}).get("document_id") == code_id
+        and "employees are assigned rights to access and process information" in str(context.get("content", "")).casefold()
+    ), None)
+    reference_context = next((
+        context for context in contexts
+        if (context.get("metadata") or {}).get("document_id") == code_id
+        and "in information system policy" in str(context.get("content", "")).casefold()
+    ), None)
+    if not access_context or not reference_context:
+        return None
+
+    def sentence(context: dict, start: str) -> str | None:
+        match = re.search(re.escape(start) + r"[^.]*\.", str(context.get("content", "")), re.IGNORECASE)
+        return match.group(0).strip() if match else None
+
+    rights = sentence(access_context, "Employees are assigned rights to access and process information")
+    exceptions = sentence(access_context, "For the exceptions")
+    prohibited = sentence(access_context, "Unauthorized access and processing")
+    policy_reference = sentence(reference_context, "The Company stipulates the usage and protection")
+    if not all((rights, exceptions, prohibited, policy_reference)):
+        return None
+
+    access_id = access_context["source_id"]
+    reference_id = reference_context["source_id"]
+    return RAGResult(
+        answer=(
+            f"The Code of Conduct's Network and access section says: “{rights}” [{access_id}] "
+            f"“{exceptions}” [{access_id}] “{prohibited}” [{access_id}] "
+            f"The Code separately refers to the Information System Policy: “{policy_reference}” [{reference_id}] "
+            f"The separate Information System Policy is not included in the retrieved documents; this answer covers only the Code of Conduct provisions [{reference_id}]."
+        ),
+        contexts=[access_context, reference_context],
+        source_ids=list(dict.fromkeys((access_id, reference_id))),
+    )
+
+
 class RAGResult(BaseModel):
     answer: str
     contexts: list[dict] = Field(default_factory=list)
@@ -221,6 +276,10 @@ class RAGService:
                 insufficient_context=True,
                 source_ids=[],
             )
+
+        access_policy_disclosure = _employee_access_policy_disclosure(question, contexts)
+        if access_policy_disclosure:
+            return access_policy_disclosure
 
         # Only expose contexts that were actually sent to the model as sources.
         # A raw string slice could truncate midway through a chunk while still

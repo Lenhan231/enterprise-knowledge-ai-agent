@@ -365,6 +365,30 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(result.answer, "The answer was withheld because its citations could not be verified. Please retry the question.")
         self.assertEqual(result.agent, "report")
         self.assertTrue(result.metadata["citation_validation_failed"])
+        self.assertEqual(llm.generate.call_count, 2)
+
+    def test_report_repairs_one_missing_citation_without_weakening_validation(self):
+        knowledge = Mock()
+        knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[
+            Evidence(
+                citation_id="S1", source_type="document", source="annual report, page 12",
+                content="The report describes the company's strategy and initiatives.",
+            )
+        ])
+        llm = Mock()
+        llm.generate.side_effect = [
+            "The report describes its strategy.",
+            "The report describes its strategy [S1].",
+        ]
+
+        result = ReportAgent(knowledge=knowledge, llm=llm).run(
+            AgentRequest(question="Summarize the strategy")
+        )
+
+        self.assertEqual(result.answer, "The report describes its strategy [S1].")
+        self.assertTrue(result.metadata["citation_repair_attempted"])
+        self.assertEqual(llm.generate.call_count, 2)
+        self.assertIn("missing_or_unknown_citations", llm.generate.call_args.args[0])
 
     def test_executive_report_distinguishes_documented_initiatives_from_inferred_risks(self):
         knowledge = Mock()

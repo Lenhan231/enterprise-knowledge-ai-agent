@@ -21,13 +21,12 @@ class OCREvaluationTest(unittest.TestCase):
             self.skipTest("requires the optional downloaded Vinamilk source PDF corpus")
 
     def test_paddleocr_3_selects_cuda_when_available(self):
-        torch = MagicMock()
-        torch.cuda.is_available.return_value = True
         paddle = MagicMock()
         paddle.is_compiled_with_cuda.return_value = True
+        paddle.device.cuda.device_count.return_value = 1
         paddleocr = MagicMock()
         with (
-            patch.dict(sys.modules, {"torch": torch, "paddle": paddle, "paddleocr": paddleocr}),
+            patch.dict(sys.modules, {"torch": None, "paddle": paddle, "paddleocr": paddleocr}),
         ):
             evaluate_ocr.create_engine("paddleocr", "vi")
         paddleocr.PaddleOCR.assert_called_once_with(
@@ -37,12 +36,11 @@ class OCREvaluationTest(unittest.TestCase):
         )
 
     def test_paddleocr_uses_cpu_when_wheel_has_no_cuda_support(self):
-        torch = MagicMock()
-        torch.cuda.is_available.return_value = True
         paddle = MagicMock()
         paddle.is_compiled_with_cuda.return_value = False
+        paddle.device.cuda.device_count.return_value = 0
         paddleocr = MagicMock()
-        with patch.dict(sys.modules, {"torch": torch, "paddle": paddle, "paddleocr": paddleocr}):
+        with patch.dict(sys.modules, {"torch": None, "paddle": paddle, "paddleocr": paddleocr}):
             evaluate_ocr.create_engine("paddleocr", "vi")
         self.assertEqual(paddleocr.PaddleOCR.call_args.kwargs["device"], "cpu")
 
@@ -52,6 +50,18 @@ class OCREvaluationTest(unittest.TestCase):
         torch.cuda.get_device_name.return_value = "Kaggle T4"
         with patch.dict(sys.modules, {"torch": torch}):
             self.assertEqual(evaluate_ocr.environment_gpu(), (True, "Kaggle T4"))
+
+    def test_environment_gpu_falls_back_to_nvidia_smi_if_torch_cuda_cannot_load(self):
+        result = SimpleNamespace(returncode=0, stdout="Tesla T4\n", stderr="")
+        with (
+            patch.dict(sys.modules, {"torch": None}),
+            patch.object(evaluate_ocr.subprocess, "run", return_value=result) as run,
+        ):
+            self.assertEqual(evaluate_ocr.environment_gpu(), (True, "Tesla T4"))
+        run.assert_called_once_with(
+            ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
+            capture_output=True, text=True, timeout=5, check=False,
+        )
 
     def test_surya_0171_uses_foundation_recognition_and_detection_predictors(self):
         surya = ModuleType("surya")
@@ -118,6 +128,13 @@ class OCREvaluationTest(unittest.TestCase):
         self.assertEqual(evaluate_ocr.exact_table_rows(rows, hypothesis), 1)
         self.assertEqual(evaluate_ocr.matched_table_row_indices(rows, hypothesis), [0])
 
+    def test_table_row_recall_allows_interleaved_table_columns_but_keeps_cell_order(self):
+        rows = [{"label": "Net revenue", "values": ["21.627", "15.752"]}]
+        hypothesis = "Net revenue 10 VII.1 21.627 15.752. Note: audited"
+
+        self.assertEqual(evaluate_ocr.matched_table_row_indices(rows, hypothesis), [0])
+        self.assertEqual(evaluate_ocr.matched_table_row_indices(rows, "Net revenue 10 VII.1 15.752 21.627"), [])
+
     def test_table_cell_text_recall_ignores_association_but_respects_duplicates(self):
         rows = [
             {"label": "Revenue", "values": ["1,200", "900"]},
@@ -147,6 +164,22 @@ class OCREvaluationTest(unittest.TestCase):
         }])
         self.assertAlmostEqual(summary["table_cell_text_recall"], 5 / 6, places=5)
 
+    def test_ocr_summary_keeps_table_anchor_only_pages_without_text_reference(self):
+        summary = evaluate_ocr.summarize_pages([{
+            "cer": None, "wer": None, "character_edit_distance": None,
+            "word_edit_distance": None, "reference_characters": 0,
+            "reference_words": 0, "latency_seconds": 2, "error": None,
+            "table_rows_expected": 4, "table_rows_exact": 3,
+            "table_cells_expected": 12, "table_cells_text_matched": 10,
+        }])
+
+        self.assertEqual(summary["valid_pages"], 0)
+        self.assertEqual(summary["ocr_pages"], 1)
+        self.assertEqual(summary["table_rows_expected"], 4)
+        self.assertEqual(summary["table_rows_exact"], 3)
+        self.assertEqual(summary["table_cells_text_matched"], 10)
+        self.assertEqual(summary["pages_per_minute"], 30.0)
+
     def test_aggregate_reports_macro_and_reference_length_weighted_scores(self):
         summary = evaluate_ocr.summarize_pages([
             {"cer": 0.5, "wer": 0.5, "character_edit_distance": 5, "word_edit_distance": 1,
@@ -157,10 +190,11 @@ class OCREvaluationTest(unittest.TestCase):
              "reference_characters": 20, "reference_words": 4, "latency_seconds": 0.1},
         ])
         self.assertEqual(summary["valid_pages"], 2)
+        self.assertEqual(summary["ocr_pages"], 3)
         self.assertEqual(summary["macro_mean_page_cer"], 0.3)
         self.assertEqual(summary["micro_cer"], 0.14)
         self.assertEqual(summary["micro_wer"], 0.25)
-        self.assertEqual(summary["pages_per_minute"], 30.0)
+        self.assertAlmostEqual(summary["pages_per_minute"], 43.9024, places=3)
 
     def test_peak_memory_reports_process_and_child_scopes(self):
         memory = evaluate_ocr.peak_memory_mb()
@@ -405,6 +439,25 @@ class OCREvaluationTest(unittest.TestCase):
                 self.assertEqual(page.get_text().strip(), "")
                 self.assertTrue(page.get_images(full=True))
                 self.assertTrue(page.rect.contains(fitz.Rect(scan["clip_rect"])))
+
+
+    def test_cafef_2011_v2_reference_matches_bounded_scan_scope_and_corrected_values(self):
+        root = Path(__file__).resolve().parents[1]
+        dataset = json.loads((root / "data/evaluation/vinamilk_ocr_2011_cafef_scan_v2.json").read_text(encoding="utf-8"))
+        page_spec = dataset["pages"][0]
+        self.assertFalse(dataset["primary_metric_selection_eligible"])
+        self.assertEqual(page_spec["clip_rect"], [30, 80, 565, 645])
+        self.assertIn("3.615.492.938.971", page_spec["reference_text"])
+        self.assertIn("7.717 6.721", page_spec["reference_text"])
+        after_tax = page_spec["reference_text"].split("Lợi nhuận sau thuế", 1)[1].split("Phân bổ cho", 1)[0]
+        self.assertNotIn("3.616.185.949.180", after_tax)
+        self.assertEqual(len(page_spec["table_rows"]), 7)
+        self.require_source_pdf(root, page_spec["file"])
+        with fitz.open(root / page_spec["file"]) as pdf:
+            page = pdf[page_spec["page"] - 1]
+            clip = fitz.Rect(page_spec["clip_rect"])
+            self.assertTrue(page.rect.contains(clip))
+            self.assertEqual(page.get_text().strip(), "")
 
 
 if __name__ == "__main__":

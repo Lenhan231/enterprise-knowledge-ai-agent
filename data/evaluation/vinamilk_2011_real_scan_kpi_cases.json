@@ -1,0 +1,32 @@
+{
+  "dataset_id": "VNM-2011-REAL-SCAN-KPI-UPLOAD-DIAGNOSTIC-V1",
+  "reference_quality": "human_visually_reviewed_income_statement_transcription_officially_corroborated",
+  "reference_method": "The Vietnamese consolidated income-statement page was manually transcribed and visually reviewed. The labeled revenue and after-tax-profit figures were cross-checked against Vinamilk's official 2011 annual report.",
+  "limitations": "One real scanned Vietnamese income-statement page from one third-party preview packet. It is a diagnostic, not representative OCR or LLM model-selection evidence. Financial suggestions remain pending until admin review.",
+  "cases": [
+    {
+      "id": "real-scan-2011-income-statement-vi",
+      "document_id": "VNM-FS-2011-VI-SCAN-DIAGNOSTIC",
+      "file": "data/raw/vietnam_enterprises/vnm/vnm-financial-statements-2011-scan-preview.pdf",
+      "official_url": "https://tai-lieu.com/tai-lieu/bao-cao-tai-chinh-hop-nhat-cho-nam-tai-chinh-ket-thuc-ngay-31-thang-12-nam-2011-cong-ty-co-phan-sua-viet-nam-17812/",
+      "page_index": 9,
+      "printed_pages": [8],
+      "physical_scan": true,
+      "raster_dpi": 180,
+      "fields": [
+        {
+          "id": "total-consolidated-revenue-2011",
+          "label": "Doanh thu bán hàng và cung cấp dịch vụ",
+          "metric_names": ["total_consolidated_revenue"],
+          "values": ["22.070.557.490.766"]
+        },
+        {
+          "id": "profit-after-tax-2011",
+          "label": "Lợi nhuận sau thuế thu nhập doanh nghiệp",
+          "metric_names": ["profit_after_tax"],
+          "values": ["4.218.181.708.937"]
+        }
+      ]
+    }
+  ]
+}

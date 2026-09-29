@@ -270,6 +270,9 @@ function renderCandidates(data) {
       ...(signals.metric_labels || []),
       signals.table_count ? `${signals.table_count} parsed tables` : "",
     ].filter(Boolean).join(" · ");
+    const labelMatchNotice = signals.source_label_match === "ocr_near_match"
+      ? "<small>OCR label is approximate; verify the printed metric label, value, and year in the source.</small>"
+      : "";
     const evidenceCount = Math.max(1, Number(item.evidence_count) || 1);
     const extractionLabel = extraction.includes("tesseract") ? "OCR assisted" : extraction;
     const figuresMarkup = renderCandidateFigures(figures);
@@ -278,7 +281,7 @@ function renderCandidates(data) {
         <div class="candidate-heading"><div><strong>${escapeHtml(item.metric_label)}</strong><span>${escapeHtml(item.company)} · ${escapeHtml(item.title)}</span></div><span class="candidate-status">Admin review${evidenceCount > 1 ? ` · ${formatNumber(evidenceCount)} excerpts` : ""}</span></div>
         <div class="candidate-facts"><span><small>Reporting year</small><strong>${escapeHtml(item.fiscal_year || "Needs review")}</strong></span><span><small>Source page</small><strong>${escapeHtml(item.page_number)}</strong></span><span><small>Document</small><strong>${escapeHtml(item.document_id)}</strong></span><span><small>Extraction</small><strong>${escapeHtml(extractionLabel)}</strong></span></div>
         <div class="candidate-value"><small>${figures.length > 1 ? "Figures in excerpt · select a value, then confirm its reporting year in the source" : "Figure found in excerpt · select it only after checking the source"}</small><div class="candidate-figures">${figuresMarkup}</div><small>Confirm the reporting year and scale on the source. Use one consistent dashboard unit across periods (for example, billion VND).${evidenceCount > 1 ? " Rejecting this excerpt will show the next pending source excerpt." : ""}</small></div>
-        <details class="candidate-source"><summary>Check source excerpt${sourceHref ? ` · <a href="${escapeHtml(sourceHref)}" target="_blank" rel="noopener noreferrer">${sourceLabel} · page ${escapeHtml(item.page_number)}</a>` : ""}</summary><blockquote>${escapeHtml(item.source_quote)}</blockquote>${selectionSummary ? `<small>Page-selection signals · ${escapeHtml(selectionSummary)}</small>` : ""}${item.prompt_version ? `<small>Extraction prompt · ${escapeHtml(item.prompt_version)}</small>` : ""}</details>
+        <details class="candidate-source"><summary>Check source excerpt${sourceHref ? ` · <a href="${escapeHtml(sourceHref)}" target="_blank" rel="noopener noreferrer">${sourceLabel} · page ${escapeHtml(item.page_number)}</a>` : ""}</summary>${labelMatchNotice}<blockquote>${escapeHtml(item.source_quote)}</blockquote>${selectionSummary ? `<small>Page-selection signals · ${escapeHtml(selectionSummary)}</small>` : ""}${item.prompt_version ? `<small>Extraction prompt · ${escapeHtml(item.prompt_version)}</small>` : ""}</details>
       </div>
       <form data-candidate-id="${item.id}" class="review-form">
         <label>Verified value<input name="normalized_value" type="text" inputmode="decimal" pattern="[+-]?[0-9.,]+" required placeholder="e.g. 59723 or 59.723" aria-describedby="metric-value-help"></label><small id="metric-value-help">Nhập chữ số liền nhau (59723) hoặc theo cách viết Việt Nam (59.723; phần thập phân: 59.723,5). Dashboard cũng hiển thị theo cách viết Việt Nam: 59.723.</small><output class="review-value-preview" aria-live="polite"></output>

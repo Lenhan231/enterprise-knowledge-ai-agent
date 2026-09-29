@@ -4,7 +4,7 @@ import struct
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from evaluate_document_extraction import (
@@ -13,14 +13,75 @@ from evaluate_document_extraction import (
     evaluate_table_strategies,
     native_single_page_pdf,
     normalized_anchor_present,
+    ordered_table_values_match,
     rasterized_single_page_pdf,
     rasterized_single_page_png,
+    score_llm_candidates,
+    score_metric_candidates,
     score_parse,
     table_page_text,
 )  # noqa: E402
 
 
 class DocumentExtractionEvaluationTest(unittest.TestCase):
+    @patch("evaluate_document_extraction.extract_financial_candidates")
+    def test_llm_candidate_score_keeps_page_validation_trace(self, extract_candidates):
+        candidate = {
+            "metric_name": "profit_after_tax",
+            "candidate_values": ["9,019"],
+        }
+        extract_candidates.return_value = ([candidate], [{
+            "page_number": 1,
+            "selection_signals": {"score": 12},
+            "llm_metrics_returned": 2,
+            "llm_metrics_accepted": 1,
+            "validation_rejections": {"quote_not_verbatim_or_missing_label_value_year": 1},
+        }])
+        case = {
+            "document_id": "VNM-AR-2023-EN",
+            "official_url": "https://example.test/report.pdf",
+            "fields": [{
+                "id": "profit", "metric_names": ["profit_after_tax"], "values": ["9,019"],
+            }],
+        }
+
+        result = score_llm_candidates(case, {"chunks": [], "tables": []}, Mock())
+
+        self.assertEqual(result["anchor_recall"], 1.0)
+        self.assertEqual(result["page_extraction"][0]["metrics_returned"], 2)
+        self.assertEqual(result["page_extraction"][0]["metrics_accepted"], 1)
+        self.assertEqual(extract_candidates.call_args.kwargs["max_pages"], 1)
+
+    @patch("evaluate_document_extraction.extract_metric_candidates")
+    @patch("evaluate_document_extraction.select_financial_pages")
+    def test_kpi_candidate_score_checks_metric_and_source_value(self, select_pages, extract_candidates):
+        select_pages.return_value = [{
+            "page_number": 1,
+            "selection_signals": {"summary_area_with_metric": True},
+        }]
+        extract_candidates.return_value = [
+            {"metric_name": "total_consolidated_revenue", "candidate_values": ["61,012"]},
+            {"metric_name": "profit_after_tax", "candidate_values": ["10,000"]},
+        ]
+        case = {
+            "document_id": "VNM-AR-2021-VI",
+            "fields": [{
+                "id": "revenue", "metric_names": ["total_consolidated_revenue"],
+                "values": ["61,012"],
+            }],
+        }
+        parsed = {
+            "chunks": [{"metadata": {"page_number": 1}, "text": "table OCR"}],
+            "tables": [{"page_number": 1, "rows": []}],
+        }
+
+        score = score_metric_candidates(case, parsed, "https://example.test/report.pdf")
+
+        self.assertEqual(score["anchor_recall"], 1.0)
+        self.assertEqual(score["anchor_precision"], 1.0)
+        self.assertEqual(score["fields"][0]["matched_candidate_count"], 1)
+        self.assertEqual(extract_candidates.call_args.kwargs["text_evidence_page_numbers"], {1})
+
     def test_compact_result_keeps_scores_but_drops_raw_parser_dumps(self):
         result = {
             "file_sha256": "abc",
@@ -118,6 +179,32 @@ class DocumentExtractionEvaluationTest(unittest.TestCase):
 
         self.assertEqual(result["detected_tables"], 1)
         self.assertEqual(result["table_anchor_exact_match_count"], 1)
+
+    def test_table_value_score_survives_label_ocr_errors_but_preserves_value_order(self):
+        case = {"id": "scan", "fields": [{
+            "id": "revenue", "label": "Revenue from sales 01 VI.1",
+            "values": ["61,012,074,147,764", "59,722,908,393,236"],
+        }]}
+        parsed = {
+            "chunks": [{"text": "page", "metadata": {"page_number": 1}}],
+            "tables": [{
+                "page_number": 1,
+                "columns": ["label", "account", "2021", "2020"],
+                "rows": [{
+                    "label": "garbled OCR row label", "account": "01",
+                    "2021": "61.012.074.147.764", "2020": "59.722.908.393.236",
+                }],
+            }],
+        }
+
+        result = score_parse(case, parsed, 1, "synthetic_raster_pdf_tesseract")
+
+        self.assertEqual(result["table_anchor_normalized_match_count"], 0)
+        self.assertEqual(result["table_values_ordered_match_count"], 1)
+        self.assertFalse(ordered_table_values_match(
+            {"label": "Revenue", "2021": "59.722.908.393.236", "2020": "61.012.074.147.764"},
+            ["label", "2021", "2020"], case["fields"][0]["values"],
+        ))
 
     def test_rasterized_fixture_removes_native_text_layer(self):
         source = fitz.open()

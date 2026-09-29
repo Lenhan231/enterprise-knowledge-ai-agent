@@ -29,6 +29,12 @@ ROUTES = ROOT / "data/evaluation/proposal_business_route_cases.json"
 LABELS = ROOT / "data/evaluation/proposal_business_case_corpus_labels.json"
 MANIFEST = ROOT / "data/vietnam_enterprises/manifest.json"
 OUTPUT = ROOT / "artifacts/evaluation/proposal-business-app-evaluation.json"
+DEMO_ACCOUNT_BY_ROLE = {
+    "admin": "ADMIN",
+    "employee": "VIEWER",
+    "finance_analyst": "ANALYST",
+    "sustainability_analyst": "SUSTAINABILITY_ANALYST",
+}
 
 
 def _read(path: Path) -> dict:
@@ -159,8 +165,31 @@ def score_case(case: dict, payload: dict) -> dict:
     else:
         checks["supported_or_partial_answer_has_labeled_source"] = bool(citations) and bool(cited_documents & allowed_sources)
 
+    if case["id"] == "executive-decision-support":
+        normalized_answer = answer.casefold()
+        option_claims = re.finditer(
+            r"\b(?:options?|alternatives?)\s+(?:for leadership\s+)?"
+            r"(?:considered|evaluated|weighed)\s+by\s+(?:leadership|vinamilk|the company)\b",
+            normalized_answer,
+        )
+        unsupported_options = []
+        for claim in option_claims:
+            prefix = normalized_answer[max(0, claim.start() - 60):claim.start()]
+            negated = re.search(
+                r"\b(?:do not|does not|did not|no|not|never)\b(?:\W+\w+){0,5}\s*$",
+                prefix,
+            )
+            if not negated:
+                unsupported_options.append(claim.group(0))
+        checks["does_not_claim_unreported_options_were_considered"] = not unsupported_options
+        checks["discloses_decision_options_are_not_reported"] = bool(re.search(
+            r"\b(?:no|not|none|do not|does not|did not)\b.{0,80}\b(?:options?|alternatives?)\b",
+            normalized_answer,
+        ))
+
     return {
         "id": case["id"],
+        "actor_role": case.get("actor_role", "admin"),
         "corpus_coverage": coverage,
         "expected_outcome": case["expected_outcome"],
         "expected_route": case["expected_route"],
@@ -200,17 +229,31 @@ def main() -> int:
     if args.model:
         os.environ["GROQ_MODEL"] = args.model
     model = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
-    username, password = os.getenv("DEMO_ADMIN_USERNAME"), os.getenv("DEMO_ADMIN_PASSWORD")
-    if not username or not password:
-        parser.error("DEMO_ADMIN_USERNAME and DEMO_ADMIN_PASSWORD are required in .env")
+    actor_roles = list(dict.fromkeys(case.get("actor_role", "admin") for case in cases))
+    credentials = {}
+    for role in actor_roles:
+        account = DEMO_ACCOUNT_BY_ROLE.get(role)
+        if not account:
+            parser.error(f"unsupported actor_role for proposal case: {role}")
+        username, password = os.getenv(f"DEMO_{account}_USERNAME"), os.getenv(f"DEMO_{account}_PASSWORD")
+        if not username or not password:
+            parser.error(f"DEMO_{account}_USERNAME and DEMO_{account}_PASSWORD are required in .env")
+        credentials[role] = (username, password)
 
     results = []
     stop_reason = None
+    current_role = None
     with TestClient(app) as client:
-        login = client.post("/api/auth/login", json={"username": username, "password": password})
-        if login.status_code != 200:
-            parser.error(f"Admin demo login failed with HTTP {login.status_code}")
         for case in cases:
+            actor_role = case.get("actor_role", "admin")
+            if actor_role != current_role:
+                if current_role is not None:
+                    client.post("/api/auth/logout")
+                username, password = credentials[actor_role]
+                login = client.post("/api/auth/login", json={"username": username, "password": password})
+                if login.status_code != 200:
+                    parser.error(f"Demo {actor_role} login failed with HTTP {login.status_code}")
+                current_role = actor_role
             started = time.perf_counter()
             response = client.post("/api/ask", json={"question": case["question"]})
             elapsed = time.perf_counter() - started
@@ -218,7 +261,7 @@ def main() -> int:
                 result = score_case(case, response.json())
             else:
                 result = {
-                    "id": case["id"], "corpus_coverage": case["corpus_coverage"],
+                    "id": case["id"], "actor_role": actor_role, "corpus_coverage": case["corpus_coverage"],
                     "expected_route": case["expected_route"], "passed": False,
                     "http_status": response.status_code,
                     "error": response.json().get("detail", "Request failed"),
@@ -233,7 +276,8 @@ def main() -> int:
             if response.status_code >= 500:
                 stop_reason = "server_error"
                 break
-        client.post("/api/auth/logout")
+        if current_role is not None:
+            client.post("/api/auth/logout")
 
     attempted_ids = {result["id"] for result in results}
     report = {
@@ -244,7 +288,8 @@ def main() -> int:
         "route_dataset_sha256": labeled["route_cases_sha256"],
         "coverage_dataset_sha256": hashlib.sha256(LABELS.read_bytes()).hexdigest(),
         "model": model,
-        "actor_role": "admin",
+        "actor_roles_in_scope": actor_roles,
+        "actor_roles_used": sorted({result["actor_role"] for result in results if result.get("actor_role")}),
         "case_count": len(cases),
         "attempted_count": len(results),
         "unrun_case_ids": [case["id"] for case in cases if case["id"] not in attempted_ids],

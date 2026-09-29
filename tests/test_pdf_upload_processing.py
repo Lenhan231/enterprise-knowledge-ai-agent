@@ -1,4 +1,5 @@
 import builtins
+import json
 import unittest
 from pathlib import Path
 import sys
@@ -13,6 +14,35 @@ from core.document_processing.processors.pdf_processor import PDFProcessor
 
 
 class PDFUploadProcessingTest(unittest.TestCase):
+    def test_real_vinamilk_balance_sheet_upload_extracts_native_text_table(self):
+        root = Path(__file__).resolve().parents[1]
+        source = (root / "data/raw/vietnam_enterprises/vnm/vnm-ar-2024-vi.pdf").read_bytes()
+        ground_truth = json.loads(
+            (root / "data/evaluation/vinamilk_ocr_ground_truth_v8.json").read_text()
+        )
+        case = next(page for page in ground_truth["pages"] if page["id"] == "annual-2024-balance-sheet-table-vi")
+        source_doc = fitz.open(stream=source, filetype="pdf")
+        cropped_doc = fitz.open()
+        cropped_doc.insert_pdf(source_doc, from_page=case["page"] - 1, to_page=case["page"] - 1)
+        cropped_doc[0].set_cropbox(fitz.Rect(case["clip_rect"]))
+        cropped_source = cropped_doc.tobytes()
+        cropped_doc.close()
+        source_doc.close()
+
+        result = PDFProcessor({"paddle_layout": False}).process({
+            "content": cropped_source,
+            "metadata": {"document_id": "VNM-AR-2024-VI"},
+        })
+
+        table = next(
+            table for table in result["tables"]
+            if any(row.get("label") == "Tổng tài sản" for row in table["rows"])
+        )
+        self.assertEqual(table["metadata"]["table_extraction_method"], "pymupdf.find_tables_text_aligned_columns")
+        total_assets = next(row for row in table["rows"] if row.get("label") == "Tổng tài sản")
+        self.assertEqual(total_assets["31/12/2024"], "56.993.245")
+        self.assertEqual(total_assets["31/12/2023"], "54.232.491")
+
     def test_native_text_chunks_keep_page_and_document_metadata(self):
         pdf = fitz.open()
         page = pdf.new_page()
@@ -56,7 +86,7 @@ class PDFUploadProcessingTest(unittest.TestCase):
         self.assertIn("100 tỷ", result["chunks"][0]["text"])
         self.assertEqual(result["chunks"][0]["metadata"]["text_extraction_method"], "tesseract")
 
-    def test_numeric_scan_reuses_render_between_text_and_table_ocr(self):
+    def test_numeric_scan_renders_table_words_at_higher_resolution(self):
         pdf = fitz.open()
         pdf.new_page()
         source = pdf.tobytes()
@@ -79,7 +109,11 @@ class PDFUploadProcessingTest(unittest.TestCase):
 
         text_ocr.assert_called_once()
         table_ocr.assert_called_once()
-        self.assertIs(text_ocr.call_args.args[1], table_ocr.call_args.args[1])
+        text_pixmap = text_ocr.call_args.args[1]
+        table_pixmap = table_ocr.call_args.args[1]
+        self.assertIsNot(text_pixmap, table_pixmap)
+        self.assertAlmostEqual(table_pixmap.width / text_pixmap.width, 2.5 / 1.5, places=2)
+        self.assertEqual(processor._ocr_table_metadata()["render_scale"], 2.5)
 
     def test_mixed_page_appends_ocr_without_losing_native_text(self):
         pdf = fitz.open()
@@ -312,6 +346,64 @@ class PDFUploadProcessingTest(unittest.TestCase):
             {"label": "Total assets", "value_1": "500", "value_2": "450"},
         ])
         self.assertEqual(tables[0]["metadata"]["table_extraction_method"], "tesseract.tsv_aligned_columns")
+        self.assertEqual(tables[0]["metadata"]["row_cell_bboxes"][0], {
+            "label": [10, 40, 85, 48],
+            "value_1": [110, 40, 140, 48],
+            "value_2": [210, 40, 240, 48],
+        })
+
+    def test_ocr_table_columns_ignore_account_codes_and_note_references(self):
+        words = [
+            (35, 20, 185, 28, "Period", 1, 0, 1),
+            (260, 20, 330, 28, "31122024", 1, 0, 2),
+            (400, 20, 470, 28, "31122023", 1, 0, 3),
+        ]
+        for row, (label, account, note, current, previous) in enumerate((
+            ("Revenue", "01", "23", "100000", "90000"),
+            ("Cash balance", "02", "24", "25000", "20000"),
+            ("Total assets", "03", "25", "500000", "450000"),
+        )):
+            y = 40 + row * 20
+            words.extend([
+                (10, y, 20, y + 8, account, 1, row, 1),
+                (35, y, 185, y + 8, label, 1, row, 2),
+                (150, y, 162, y + 8, note, 1, row, 3),
+                (260, y, 330, y + 8, current, 1, row, 4),
+                (400, y, 470, y + 8, previous, 1, row, 5),
+            ])
+
+        tables = PDFProcessor._tables_from_aligned_words(words, fitz.Rect(0, 0, 520, 200), 1)
+
+        self.assertEqual(len(tables), 1)
+        self.assertEqual(tables[0]["columns"], ["label", "31/12/2024", "31/12/2023"])
+        self.assertEqual(tables[0]["rows"], [
+            {"label": "Revenue", "31/12/2024": "100000", "31/12/2023": "90000"},
+            {"label": "Cash balance", "31/12/2024": "25000", "31/12/2023": "20000"},
+            {"label": "Total assets", "31/12/2024": "500000", "31/12/2023": "450000"},
+        ])
+
+    def test_ocr_table_columns_preserve_side_by_side_financial_tables(self):
+        words = []
+        for row, (left, right) in enumerate((
+            (("Cash", "100", "90"), ("Payables", "40", "30")),
+            (("Inventory", "50", "45"), ("Borrowings", "25", "20")),
+            (("Total assets", "500", "450"), ("Total liabilities", "200", "180")),
+        )):
+            y = 40 + row * 20
+            words.extend([
+                (30, y, 120, y + 8, left[0], 1, row, 1),
+                (200, y, 230, y + 8, left[1], 1, row, 2),
+                (300, y, 330, y + 8, left[2], 1, row, 3),
+                (500, y, 580, y + 8, right[0], 1, row, 4),
+                (650, y, 680, y + 8, right[1], 1, row, 5),
+                (750, y, 780, y + 8, right[2], 1, row, 6),
+            ])
+
+        tables = PDFProcessor._tables_from_aligned_words(words, fitz.Rect(0, 0, 850, 120), 1)
+
+        self.assertEqual(len(tables), 2)
+        self.assertEqual(tables[0]["rows"][0], {"label": "Cash", "value_1": "100", "value_2": "90"})
+        self.assertEqual(tables[1]["rows"][0], {"label": "Payables", "value_1": "40", "value_2": "30"})
 
     def test_tesseract_tsv_boxes_are_scaled_back_to_pdf_points(self):
         pdf = fitz.open()

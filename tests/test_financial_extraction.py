@@ -93,12 +93,50 @@ class FinancialPageSelectionTests(unittest.TestCase):
         self.assertEqual(len(llm.prompts), 1)
         self.assertEqual([page["page_number"] for page in selected], [3])
         self.assertEqual(candidates[0]["candidate_values"], ["55.049"])
+        self.assertEqual(candidates[0]["unit"], "tỷ đồng")
         self.assertEqual(candidates[0]["status"], "needs_review")
         self.assertEqual(candidates[0]["extraction_method"], "llm_selected_financial_page")
         self.assertEqual(candidates[0]["extractor_model"], "fake-finance-model")
         self.assertEqual(candidates[0]["fiscal_year"], 2024)
         self.assertEqual(candidates[0]["allowed_roles"], ["finance_analyst"])
         self.assertIn("ignore comparison years", llm.prompts[0])
+
+    def test_ocr_near_match_label_is_reviewable_but_native_and_ungrounded_values_fail(self):
+        quote = "Doanh thu bán hàng và cung cép dich vy | 22.070.557.490.766 | 16.081.466.183.586"
+        page_text = f"Đơn vị: VNĐ | 2011 | 2010\n{quote}"
+        response = json.dumps({"metrics": [{
+            "metric_name": "total_consolidated_revenue",
+            "metric_value": "22.070.557.490.766",
+            "unit": "VNĐ",
+            "fiscal_year": 2011,
+            "source_quote": quote,
+        }]}, ensure_ascii=False)
+        document = {
+            "company": "Công ty Cổ phần Sữa Việt Nam", "fiscal_year": 2011,
+            "document_id": "VNM-FS-2011", "rbac": {"allowed_roles": ["finance_analyst"]},
+        }
+
+        ocr_candidates, _ = extract_financial_candidates(
+            [{"text": page_text, "metadata": {"page_number": 10, "text_extraction_method": "tesseract"}}],
+            [], document, FakeLLM(response),
+        )
+        native_candidates, _ = extract_financial_candidates(
+            [{"text": page_text, "metadata": {"page_number": 10}}],
+            [], document, FakeLLM(response),
+        )
+        wrong_value = json.loads(response)
+        wrong_value["metrics"][0]["metric_value"] = "22.070.557.490.767"
+        wrong_value_response = json.dumps(wrong_value, ensure_ascii=False)
+        ungrounded_candidates, _ = extract_financial_candidates(
+            [{"text": page_text, "metadata": {"page_number": 10, "text_extraction_method": "tesseract"}}],
+            [], document, FakeLLM(wrong_value_response),
+        )
+
+        self.assertEqual(len(ocr_candidates), 1)
+        self.assertEqual(ocr_candidates[0]["status"], "needs_review")
+        self.assertEqual(ocr_candidates[0]["selection_evidence"]["source_label_match"], "ocr_near_match")
+        self.assertEqual(native_candidates, [])
+        self.assertEqual(ungrounded_candidates, [])
 
     def test_llm_cannot_publish_a_comparative_year_as_the_report_year_candidate(self):
         llm = FakeLLM(json.dumps({

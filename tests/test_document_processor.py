@@ -222,9 +222,18 @@ class DocumentProcessorTest(unittest.TestCase):
                 (110, y, 140, y + 8, current, 1, row, 2),
                 (210, y, 240, y + 8, previous, 1, row, 3),
             ])
+        table_scales = []
+
+        def read_table_words(processor, page, pixmap=None):
+            table_scales.append((processor.config["ocr_render_scale"], processor.config["ocr_table_render_scale"]))
+            return words
+
         with (
             patch.object(self.processor, "_ocr", return_value="Revenue 100 90\nCash 25 20\nTotal assets 500 450"),
-            patch("core.document_processing.processors.pdf_processor.PDFProcessor._ocr_page_words", return_value=words),
+            patch(
+                "core.document_processing.processors.pdf_processor.PDFProcessor._ocr_page_words",
+                autospec=True, side_effect=read_table_words,
+            ),
         ):
             result = self.processor.process("scan.png", image_bytes, {"document_id": "SCAN-TABLE"})
 
@@ -233,9 +242,10 @@ class DocumentProcessorTest(unittest.TestCase):
             "label": "Total assets", "value_1": "500", "value_2": "450",
         })
         self.assertEqual(result["tables"][0]["metadata"]["document_id"], "SCAN-TABLE")
+        self.assertEqual(table_scales, [(2.5, 2.5)])
         self.assertEqual(result["tables"][0]["metadata"]["ocr"], {
             "engine": "tesseract", "language": "vie+eng",
-            "table_psm": 6, "render_scale": 1.5,
+            "table_psm": 6, "render_scale": 2.5,
         })
 
     def test_word_box_table_recovers_left_aligned_values_with_variable_widths(self):

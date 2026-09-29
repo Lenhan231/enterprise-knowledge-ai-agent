@@ -96,6 +96,17 @@ def _financial_facts_match_cited_evidence(answer: str, evidence: list[Evidence])
     )
 
 
+def _report_validation_failure(
+    answer: str, evidence: list[Evidence], allowed: set[str], question: str,
+) -> str | None:
+    citations = set(_CITATION.findall(answer))
+    if not citations or citations - allowed:
+        return "missing_or_unknown_citations"
+    if _is_financial_summary(question) and not _financial_facts_match_cited_evidence(answer, evidence):
+        return "financial_values_or_units_do_not_match_cited_evidence"
+    return None
+
+
 class ReportAgent(BaseAgent):
     def __init__(
         self,
@@ -151,6 +162,10 @@ class ReportAgent(BaseAgent):
             "report-stated initiatives from actual alternatives considered by leadership. Do not invent options, "
             "recommendations, or risks. List a risk only when the cited evidence explicitly identifies it; if the "
             "reports describe initiatives but do not provide decision alternatives or risks, say so clearly. "
+            "Do not title a list of initiatives as 'options considered' or 'alternatives considered' unless the "
+            "evidence explicitly says leadership compared or considered those alternatives. Use 'Reported initiatives' "
+            "for described programs, policies, or strategies. Explicitly state when the sources do not provide "
+            "leadership decision alternatives. "
             "Label an implication as an inference only when the user asks for implications.\n\n"
             if any(term in request.question.casefold() for term in (
                 "leadership", "executive", "options", "risks", "lãnh đạo", "rủi ro",
@@ -163,27 +178,42 @@ class ReportAgent(BaseAgent):
             f"{financial_instruction}{executive_instruction}Request: {request.question}\n\n{priority_note}Evidence:\n{sources}"
         )
         answer = _normalize_numeric_citations(self.llm.generate(prompt).strip(), prompt_evidence)
-        citations = set(_CITATION.findall(answer))
-        invalid_citations = sorted(citations - allowed)
-        if not citations or invalid_citations:
-            logger.warning(
-                "Report answer citation validation failed (no_citations=%s, unknown_citation_ids=%s)",
-                not citations,
-                invalid_citations,
+        validation_failure = _report_validation_failure(
+            answer, prompt_evidence, allowed, request.question,
+        )
+        repaired = validation_failure is not None
+        if repaired:
+            correction = (
+                "\n\nYour previous draft failed validation: " + validation_failure + ". "
+                "Rewrite the answer using only the evidence above. End every factual sentence with exact supplied IDs "
+                "in [S1] format; copy values and units exactly when relevant. Do not add claims that are not supported."
             )
+            answer = _normalize_numeric_citations(
+                self.llm.generate(prompt + correction).strip(), prompt_evidence,
+            )
+            validation_failure = _report_validation_failure(
+                answer, prompt_evidence, allowed, request.question,
+            )
+        if validation_failure:
+            if validation_failure == "missing_or_unknown_citations":
+                citations = set(_CITATION.findall(answer))
+                logger.warning(
+                    "Report answer citation validation failed (no_citations=%s, unknown_citation_ids=%s)",
+                    not citations, sorted(citations - allowed),
+                )
+                failure_metadata = {"citation_validation_failed": True}
+            else:
+                logger.warning("Report financial answer did not preserve cited numeric values and magnitude units")
+                failure_metadata = {"financial_evidence_validation_failed": True}
             return source_data.model_copy(update={
                 "answer": _INVALID_REPORT,
                 "agent": "report",
-                "metadata": {**source_data.metadata, "citation_validation_failed": True},
+                "metadata": {**source_data.metadata, **failure_metadata},
             })
-        if _is_financial_summary(request.question) and not _financial_facts_match_cited_evidence(answer, prompt_evidence):
-            logger.warning("Report financial answer did not preserve cited numeric values and magnitude units")
-            return source_data.model_copy(update={
-                "answer": _INVALID_REPORT,
-                "agent": "report",
-                "metadata": {**source_data.metadata, "financial_evidence_validation_failed": True},
-            })
-        return source_data.model_copy(update={"answer": answer, "agent": "report"})
+        metadata = {**source_data.metadata}
+        if repaired:
+            metadata["citation_repair_attempted"] = True
+        return source_data.model_copy(update={"answer": answer, "agent": "report", "metadata": metadata})
 
     def close(self) -> None:
         if self._owns_knowledge:

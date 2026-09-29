@@ -102,6 +102,7 @@ class DocumentProcessor:
                 "tesseract_psm": self.config.get("tesseract_psm", 11),
                 "tesseract_table_psm": self.config.get("tesseract_table_psm", 3),
                 "ocr_render_scale": self.config.get("ocr_render_scale", 1.5),
+                "ocr_table_render_scale": self.config.get("ocr_table_render_scale", 2.5),
                 "extract_tables": True,
                 "chunking_strategy": self.chunking_strategy,
                 "chunk_size": self.chunk_size,
@@ -115,11 +116,13 @@ class DocumentProcessor:
             if PDFProcessor._looks_like_numeric_table(text):
                 import fitz
 
+                table_render_scale = self.config.get("ocr_table_render_scale", 2.5)
                 layout = PDFProcessor({
                     "ocr_fallback": True,
                     "ocr_language": self.config.get("ocr_language", "vie+eng"),
                     "tesseract_table_psm": self.config.get("tesseract_table_psm", 6),
-                    "ocr_render_scale": self.config.get("ocr_render_scale", 1.5),
+                    "ocr_render_scale": table_render_scale,
+                    "ocr_table_render_scale": table_render_scale,
                 })
                 image = fitz.open(stream=content, filetype=suffix[1:])
                 try:

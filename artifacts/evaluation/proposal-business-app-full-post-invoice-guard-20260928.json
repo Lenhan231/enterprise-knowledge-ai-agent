@@ -1,0 +1,45 @@
+{
+  "created_at_utc": "2026-09-28T01:40:12.553409+00:00",
+  "route": "POST /api/ask",
+  "corpus_id": "VNM-ENTERPRISE-RAG-DEMO",
+  "corpus_manifest_sha256": "d2aeb9e93936df9cb283ebb3ac1991b80b3407f9f9c1803450283c463c88cd34",
+  "route_dataset_sha256": "1ed8d581f3178d169aab73d07cab8d922a4fc6932992122165dafc9126de7f6f",
+  "coverage_dataset_sha256": "9898fcc895bda8f50bbb55570ddbd9b00b4ffca8ebcf2562981e4e036adbd964",
+  "actor_role": "admin",
+  "case_count": 12,
+  "attempted_count": 1,
+  "unrun_case_ids": [
+    "internal-document-search",
+    "hr-policy-consultation",
+    "contract-analysis",
+    "financial-report-analysis",
+    "invoice-information-retrieval",
+    "manufacturing-documentation",
+    "customer-service-knowledge",
+    "technical-documentation-assistant",
+    "compliance-management",
+    "executive-decision-support",
+    "business-intelligence-analytics"
+  ],
+  "stop_reason": "provider_rate_limit",
+  "passed": 0,
+  "failed": 1,
+  "mean_latency_seconds": 29.127,
+  "results": [
+    {
+      "id": "enterprise-knowledge-management",
+      "corpus_coverage": "unsupported",
+      "expected_route": "knowledge",
+      "passed": false,
+      "http_status": 429,
+      "error": "The model provider is temporarily rate-limited. Please retry later.",
+      "checks": {},
+      "latency_seconds": 29.127
+    }
+  ],
+  "limitations": [
+    "This is a single authenticated admin run over the public Vinamilk corpus; it is not a role-matrix test.",
+    "Supported and unsupported outcomes have deterministic route, source, value, abstention and result-shape checks.",
+    "Partial HR, compliance and executive cases still need blinded semantic review; these labels do not prove private-domain capability."
+  ]
+}

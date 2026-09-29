@@ -11,7 +11,7 @@ class KaggleNotebookTest(unittest.TestCase):
         return json.loads((ROOT / "notebooks" / name).read_text(encoding="utf-8"))
 
     def test_benchmark_notebooks_find_the_attached_dataset_by_mount_contents(self):
-        for name in ("kaggle_ocr_benchmark.ipynb", "kaggle_embedding_benchmark.ipynb"):
+        for name in ("kaggle_ocr_benchmark.ipynb", "kaggle_ocr_v9_cpu_paired.ipynb", "kaggle_ocr_scan_diagnostic.ipynb", "kaggle_charter_scan_page8/kaggle-charter-scan-page8.ipynb", "kaggle_vinamilk_2011_cafef_scan/kaggle-vinamilk-2011-cafef-scan.ipynb", "kaggle_embedding_benchmark.ipynb"):
             with self.subTest(notebook=name):
                 notebook = self.load(name)
                 code = ["".join(cell["source"]) for cell in notebook["cells"] if cell["cell_type"] == "code"]
@@ -46,19 +46,67 @@ class KaggleNotebookTest(unittest.TestCase):
         self.assertIn("REQUIRE_GPU = False", all_code)
         self.assertIn('ENGINE == "tesseract"', all_code)
 
-    def test_ocr_notebook_uses_reviewed_v7_dataset_and_psm_pairing(self):
+    def test_ocr_notebook_uses_reviewed_v8_dataset_and_psm_pairing(self):
         notebook = self.load("kaggle_ocr_benchmark.ipynb")
         source = "\n".join(
             "".join(cell["source"])
             for cell in notebook["cells"]
         )
-        self.assertIn("vinamilk_ocr_ground_truth_v7.json", source)
-        self.assertIn("four additional English physical-scan regions", source)
+        self.assertIn("vinamilk_ocr_ground_truth_v8.json", source)
+        self.assertIn("one complete page from the 2026 image-only governance scan", source)
+        self.assertIn('DATASET_TAG = "v8"', source)
         self.assertIn("ltrngnhn/vinamilk-ocr-v7-benchmark-assets", source)
         self.assertIn("TESSERACT_PSM = 3", source)
         self.assertIn("--tesseract-psm", source)
         self.assertIn("set `REQUIRE_GPU = False`", source)
         self.assertNotIn("vinamilk-proposal-benchmark-assets", source)
+
+    def test_v9_ocr_comparison_is_cpu_only_and_uses_all_reviewed_regions(self):
+        notebook = self.load("kaggle_ocr_v9_cpu_paired.ipynb")
+        source = "\n".join("".join(cell["source"]) for cell in notebook["cells"])
+        self.assertIn("vinamilk_ocr_ground_truth_v9.json", source)
+        self.assertIn("14 reviewed regions from six Vinamilk PDFs", source)
+        self.assertIn("ltrngnhn/vinamilk-ocr-v9-benchmark-assets", source)
+        self.assertIn("if cuda_available:", source)
+        self.assertIn('if paddle_device != "cpu":', source)
+        self.assertIn('"/tmp/ocr-model-cache/huggingface"', source)
+        self.assertIn('"/tmp/ocr-model-cache/torch"', source)
+        self.assertIn('DATASET_TAG = "v9"', source)
+        self.assertNotIn("REQUIRE_GPU = True", source)
+
+    def test_2011_scan_diagnostic_is_separate_and_labels_its_limitations(self):
+        notebook = self.load("kaggle_ocr_scan_diagnostic.ipynb")
+        source = "\n".join("".join(cell["source"]) for cell in notebook["cells"])
+        self.assertIn("vinamilk_ocr_ground_truth_2011_scan_diagnostic_v2.json", source)
+        self.assertIn("ltrngnhn/vinamilk-2011-vietnamese-scan-diagnostic-v2-assets", source)
+        self.assertIn("same three signed Vietnamese financial-statement pages", source)
+        self.assertIn("not independently click-annotated", source)
+        self.assertIn("Do not pool these results into v7", source)
+        self.assertIn('DATASET_TAG = "2011-scan-diagnostic-v2"', source)
+
+    def test_charter_scan_notebook_uses_private_single_page_diagnostic(self):
+        notebook = self.load("kaggle_charter_scan_page8/kaggle-charter-scan-page8.ipynb")
+        source = "\n".join("".join(cell["source"]) for cell in notebook["cells"])
+        metadata = json.loads(
+            (ROOT / "notebooks/kaggle_charter_scan_page8/kernel-metadata.json").read_text()
+        )
+        self.assertIn("vinamilk_ocr_charter_scan_en_v1.json", source)
+        self.assertIn("single-annotator visual transcription", source)
+        self.assertIn("not eligible for model selection", source)
+        self.assertIn("ltrngnhn/vinamilk-charter-scan-page8-assets", metadata["dataset_sources"])
+        self.assertEqual(metadata["is_private"], "true")
+
+    def test_cafef_scan_notebook_marks_duplicate_capture_and_third_party_provenance(self):
+        notebook = self.load("kaggle_vinamilk_2011_cafef_scan/kaggle-vinamilk-2011-cafef-scan.ipynb")
+        source = "\n".join("".join(cell["source"]) for cell in notebook["cells"])
+        metadata = json.loads(
+            (ROOT / "notebooks/kaggle_vinamilk_2011_cafef_scan/kernel-metadata.json").read_text()
+        )
+        self.assertIn("same 2011 filing", source)
+        self.assertIn("not independent double-entry annotation", source)
+        self.assertIn("vinamilk_ocr_2011_cafef_scan_v2.json", source)
+        self.assertIn('DATASET_TAG = "2011-cafef-scan-v2"', source)
+        self.assertIn("ltrngnhn/vinamilk-2011-cafef-scan-assets", metadata["dataset_sources"])
 
     def test_paddle_notebook_uses_official_cpu_wheel_with_retries(self):
         notebook = self.load("kaggle_ocr_benchmark.ipynb")
@@ -100,7 +148,7 @@ class KaggleNotebookTest(unittest.TestCase):
         self.assertNotIn("download_vietnam_enterprise_corpus.py", all_code)
 
     def test_code_cells_are_valid_python_after_removing_notebook_magics(self):
-        for name in ("kaggle_ocr_benchmark.ipynb", "kaggle_embedding_benchmark.ipynb"):
+        for name in ("kaggle_ocr_benchmark.ipynb", "kaggle_ocr_v9_cpu_paired.ipynb", "kaggle_ocr_scan_diagnostic.ipynb", "kaggle_charter_scan_page8/kaggle-charter-scan-page8.ipynb", "kaggle_vinamilk_2011_cafef_scan/kaggle-vinamilk-2011-cafef-scan.ipynb", "kaggle_embedding_benchmark.ipynb"):
             notebook = self.load(name)
             for index, cell in enumerate(notebook["cells"]):
                 if cell["cell_type"] != "code":

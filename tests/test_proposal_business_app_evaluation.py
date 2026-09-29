@@ -77,6 +77,11 @@ class ProposalBusinessAppEvaluationTest(unittest.TestCase):
         self.assertFalse(result["checks"]["answer_qualifies_document_type"])
         self.assertFalse(result["checks"]["dedicated_access_policy_absence_is_disclosed"])
 
+    def test_employee_access_business_case_uses_the_employee_demo_account(self):
+        case = self.case("internal-document-search")
+        self.assertEqual(case["actor_role"], "employee")
+        self.assertEqual(evaluation.DEMO_ACCOUNT_BY_ROLE[case["actor_role"]], "VIEWER")
+
     def test_financial_case_checks_both_values_unit_and_source(self):
         payload = {
             "answer": "Revenue was 61,824 and profit after tax was 9,453 billion VND [S1] [S2]",
@@ -96,6 +101,42 @@ class ProposalBusinessAppEvaluationTest(unittest.TestCase):
         payload["citations"][1]["excerpt"] = "Profit after tax 945 billion VND."
         result = evaluation.score_case(self.case("financial-report-analysis"), payload)
         self.assertFalse(result["checks"]["financial_values_in_cited_evidence"])
+
+    def test_executive_case_rejects_reported_initiatives_framed_as_decision_options(self):
+        case = self.case("executive-decision-support")
+        payload = {
+            "answer": (
+                "**Options for leadership considered by Vinamilk**\n"
+                "Leadership training and gender-equity programs were reported [S1]. "
+                "Water-related business risks are identified [S2]. "
+                "No other decision alternatives are reported."
+            ),
+            "agent": "report", "insufficient_context": False,
+            "citations": [
+                {"id": "S1", "document_id": "VNM-SR-2025-EN", "page_number": 104},
+                {"id": "S2", "document_id": "VNM-SR-2025-EN", "page_number": 81},
+            ],
+        }
+        result = evaluation.score_case(case, payload)
+        self.assertFalse(result["checks"]["does_not_claim_unreported_options_were_considered"])
+        self.assertTrue(result["checks"]["discloses_decision_options_are_not_reported"])
+        self.assertFalse(result["passed"])
+
+    def test_executive_case_accepts_reported_initiatives_and_discloses_missing_alternatives(self):
+        case = self.case("executive-decision-support")
+        payload = {
+            "answer": (
+                "Reported initiatives include leadership training [S1]. "
+                "The reports do not provide decision alternatives considered by leadership. "
+                "Water-related risks are identified [S2]."
+            ),
+            "agent": "report", "insufficient_context": False,
+            "citations": [
+                {"id": "S1", "document_id": "VNM-SR-2025-EN", "page_number": 104},
+                {"id": "S2", "document_id": "VNM-SR-2025-EN", "page_number": 81},
+            ],
+        }
+        self.assertTrue(evaluation.score_case(case, payload)["passed"])
 
     def test_citations_need_a_page_or_official_source_url(self):
         result = evaluation.score_case(self.case("hr-policy-consultation"), {

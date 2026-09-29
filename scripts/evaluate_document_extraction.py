@@ -23,7 +23,9 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from core.document_processing.processors.document_processor import DocumentProcessor  # noqa: E402
 from core.analytics.metric_candidates import candidates as extract_metric_candidates  # noqa: E402
-from core.analytics.financial_extraction import select_financial_pages  # noqa: E402
+from core.analytics.financial_extraction import (  # noqa: E402
+    extract_financial_candidates, select_financial_pages,
+)
 
 
 def normalized(value: str) -> str:
@@ -47,6 +49,38 @@ def normalized_anchor_present(text: str, label: str, values: list[str]) -> bool:
 
     expected_values = "".join(re.sub(r"\D", "", value) for value in values)
     return (compact(label) + expected_values) in compact(text)
+
+
+def normalize_financial_cell(value: str) -> str:
+    value = str(value or "").strip()
+    if value in {"-", "–", "—"}:
+        return "-"
+    digits = "".join(char for char in value if char.isdigit())
+    if not digits:
+        return ""
+    negative = value.startswith(("-", "−")) or (value.startswith("(") and value.endswith(")"))
+    return ("-" if negative else "") + digits
+
+
+def ordered_table_values_match(row: dict | list, columns: list[str], expected: list[str]) -> bool:
+    """Match reviewed values in one table row, allowing account/note cells between them."""
+    cells = (
+        [row.get(column) for column in columns if column != "label"]
+        if isinstance(row, dict)
+        else list(row[1:])
+    )
+    actual = [normalize_financial_cell(value) for value in cells]
+    actual = [value for value in actual if value]
+    wanted = [normalize_financial_cell(value) for value in expected]
+    if not wanted:
+        return False
+    matched = 0
+    for value in actual:
+        if value == wanted[matched]:
+            matched += 1
+            if matched == len(wanted):
+                return True
+    return False
 
 
 def table_page_text(tables: list[dict], page_number: int) -> str:
@@ -120,6 +154,11 @@ def score_parse(case: dict, parsed: dict, page_number: int | None, condition: st
         "text_anchor_normalized_match": normalized_anchor_present(page_text, field["label"], field["values"]),
         "table_anchor_exact_match": anchor_present(table_text, field["label"], field["values"]),
         "table_anchor_normalized_match": normalized_anchor_present(table_text, field["label"], field["values"]),
+        "table_values_ordered_match": any(
+            ordered_table_values_match(row, table.get("columns", []), field["values"])
+            for table in parsed["tables"] if table.get("page_number") == table_page_number
+            for row in table.get("rows", [])
+        ),
     } for field in case["fields"]]
     page_tables = [
         table for table in parsed["tables"]
@@ -134,6 +173,7 @@ def score_parse(case: dict, parsed: dict, page_number: int | None, condition: st
     text_normalized_matches = sum(field["text_anchor_normalized_match"] for field in field_results)
     table_matches = sum(field["table_anchor_exact_match"] for field in field_results)
     table_normalized_matches = sum(field["table_anchor_normalized_match"] for field in field_results)
+    table_value_matches = sum(field["table_values_ordered_match"] for field in field_results)
     expected_regions = case.get("expected_table_regions")
     return {
         "condition": condition,
@@ -156,6 +196,8 @@ def score_parse(case: dict, parsed: dict, page_number: int | None, condition: st
         "table_anchor_recall": round(table_matches / expected_fields, 4) if expected_fields else None,
         "table_anchor_normalized_match_count": table_normalized_matches,
         "table_anchor_normalized_recall": round(table_normalized_matches / expected_fields, 4) if expected_fields else None,
+        "table_values_ordered_match_count": table_value_matches,
+        "table_values_ordered_recall": round(table_value_matches / expected_fields, 4) if expected_fields else None,
         "fields": field_results,
     }
 
@@ -200,14 +242,112 @@ def evaluate_table_strategies(page: fitz.Page, case: dict) -> list[dict]:
     return results
 
 
+def _score_candidate_rows(case: dict, extracted: list[dict]) -> dict:
+    """Compare candidate metric/value pairs with the human-reviewed fields."""
+    fields = []
+    matched_ids = set()
+    for field in case["fields"]:
+        expected_digits = {re.sub(r"\D", "", value) for value in field["values"]}
+        matching = [
+            candidate for candidate in extracted
+            if candidate["metric_name"] in field.get("metric_names", [])
+            and expected_digits.intersection(
+                re.sub(r"\D", "", value) for value in candidate["candidate_values"]
+            )
+        ]
+        matched_ids.update(id(candidate) for candidate in matching)
+        fields.append({
+            "field_id": field["id"],
+            "candidate_found": bool(matching),
+            "candidate_count": sum(
+                candidate["metric_name"] in field.get("metric_names", []) for candidate in extracted
+            ),
+            "matched_candidate_count": len(matching),
+            "candidates": matching,
+        })
+    labeled = [
+        candidate for candidate in extracted
+        if any(candidate["metric_name"] in field.get("metric_names", []) for field in case["fields"])
+    ]
+    correct = sum(id(candidate) in matched_ids for candidate in labeled)
+    return {
+        "candidate_count": len(extracted),
+        "labeled_metric_candidate_count": len(labeled),
+        "correct_labeled_candidate_count": correct,
+        "anchor_precision": round(correct / len(labeled), 4) if labeled else None,
+        "expected_field_count": len(fields),
+        "matched_field_count": sum(field["candidate_found"] for field in fields),
+        "anchor_recall": round(sum(field["candidate_found"] for field in fields) / len(fields), 4) if fields else None,
+        "fields": fields,
+    }
+
+
+def score_metric_candidates(
+    case: dict, parsed: dict, official_url: str, visual_pages: list[dict] | None = None,
+) -> dict:
+    """Score rule-based review candidates against the same human-reviewed fields."""
+    chunks = [{"metadata": chunk["metadata"], "text": chunk["text"]}
+              for chunk in parsed["chunks"]]
+    selected_pages = select_financial_pages(chunks, parsed.get("tables", []))
+    text_evidence_pages = {
+        page["page_number"] for page in selected_pages
+        if page["selection_signals"]["summary_area_with_metric"]
+    }
+    document = {
+        "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+        "fiscal_year": int(case["document_id"].split("-")[2]),
+        "document_id": case["document_id"],
+        "official_url": official_url,
+        "rbac": {"allowed_roles": ["finance_analyst", "executive", "admin"]},
+    }
+    extracted = extract_metric_candidates(
+        chunks, document, parsed.get("tables", []), visual_pages=visual_pages,
+        text_evidence_page_numbers=text_evidence_pages,
+    )
+    return _score_candidate_rows(case, extracted)
+
+
+def score_llm_candidates(case: dict, parsed: dict, llm) -> dict:
+    """Run and score the upload's strict page-grounded LLM candidate stage."""
+    document = {
+        "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+        "fiscal_year": int(case["document_id"].split("-")[2]),
+        "document_id": case["document_id"],
+        "official_url": case["official_url"],
+        "rbac": {"allowed_roles": ["finance_analyst", "executive", "admin"]},
+    }
+    extracted, selected_pages = extract_financial_candidates(
+        [{"metadata": chunk["metadata"], "text": chunk["text"]}
+         for chunk in parsed["chunks"]],
+        parsed.get("tables", []), document, llm, max_pages=1,
+    )
+    return {
+        **_score_candidate_rows(case, extracted),
+        "page_extraction": [{
+            "page_number": page["page_number"],
+            "signals": page["selection_signals"],
+            "metrics_returned": page.get("llm_metrics_returned"),
+            "metrics_accepted": page.get("llm_metrics_accepted", 0),
+            "validation_rejections": page.get("validation_rejections", {}),
+            "status": page.get("extraction_status", "provider_error" if page.get("extraction_error") else "ok"),
+        } for page in selected_pages],
+    }
+
+
 def evaluate_case(
     case: dict,
     file_bytes: bytes,
     tesseract_psm: int = 11,
     render_scale: float = 1.5,
     tesseract_table_psm: int | None = None,
+    table_render_scale: float = 2.5,
+    llm=None,
 ) -> dict:
-    processor_config = {"tesseract_psm": tesseract_psm, "ocr_render_scale": render_scale}
+    processor_config = {
+        "tesseract_psm": tesseract_psm,
+        "ocr_render_scale": render_scale,
+        "ocr_table_render_scale": table_render_scale,
+    }
     if tesseract_table_psm is not None:
         processor_config["tesseract_table_psm"] = tesseract_table_psm
     processor = DocumentProcessor(processor_config)
@@ -240,50 +380,32 @@ def evaluate_case(
         ]
     finally:
         visual_pdf.close()
-    candidate_chunks = [{"metadata": chunk["metadata"], "text": chunk["text"]}
-                        for chunk in native["chunks"]]
-    selected_financial_pages = select_financial_pages(candidate_chunks, native.get("tables", []))
-    text_evidence_page_numbers = {
-        page["page_number"] for page in selected_financial_pages
-        if page["selection_signals"]["summary_area_with_metric"]
-    }
-
-    parser_candidates = extract_metric_candidates(
-        candidate_chunks,
-        {
-            "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
-            "fiscal_year": int(case["document_id"].split("-")[2]),
-            "document_id": case["document_id"],
-            "official_url": case["official_url"],
-            "rbac": {"allowed_roles": ["finance_analyst", "executive", "admin"]},
-        },
-        native.get("tables", []),
-        visual_pages=[{"page_number": 1, "spans": visual_spans}],
-        text_evidence_page_numbers=text_evidence_page_numbers,
+    native_kpi_score = score_metric_candidates(
+        case, native, case["official_url"], visual_pages=[{"page_number": 1, "spans": visual_spans}],
     )
-    candidate_results = []
-    candidate_metric_rows = [
-        candidate for candidate in parser_candidates
-        if any(candidate["metric_name"] in field.get("metric_names", []) for field in case["fields"])
+    source_condition = (
+        "real_scanned_source_pdf_upload" if case.get("physical_scan") else "born_digital_pdf"
+    )
+    conditions = [
+        {
+            **score_parse(case, native, 1, source_condition),
+            "rule_candidate_extraction": native_kpi_score,
+        },
+        {
+            **score_parse(case, raster, 1, "synthetic_raster_pdf_tesseract"),
+            "rule_candidate_extraction": score_metric_candidates(case, raster, case["official_url"]),
+        },
+        {
+            **score_parse(case, image, None, "synthetic_raster_image_upload_tesseract"),
+            "rule_candidate_extraction": score_metric_candidates(case, image, case["official_url"]),
+        },
     ]
-    correct_candidate_ids = set()
-    for field in case["fields"]:
-        expected_digits = {re.sub(r"\D", "", value) for value in field["values"]}
-        field_candidates = [
-            candidate for candidate in parser_candidates
-            if candidate["metric_name"] in field.get("metric_names", [])
-        ]
-        matching = [candidate for candidate in field_candidates
-                    if any(re.sub(r"\D", "", value) in expected_digits
-                           for value in candidate["candidate_values"])]
-        correct_candidate_ids.update(id(candidate) for candidate in matching)
-        candidate_results.append({
-            "field_id": field["id"],
-            "candidate_found": bool(matching),
-            "candidate_count": len(field_candidates),
-            "matched_candidate_count": len(matching),
-            "candidates": field_candidates,
-        })
+    if llm is not None:
+        llm_parse = native if case.get("physical_scan") else raster
+        llm_condition = 0 if case.get("physical_scan") else 1
+        conditions[llm_condition]["llm_candidate_extraction"] = score_llm_candidates(
+            case, llm_parse, llm,
+        )
     table_strategy_sweep = None
     if case.get("expected_table_regions"):
         source = fitz.open(stream=file_bytes, filetype="pdf")
@@ -305,29 +427,15 @@ def evaluate_case(
         "page_index": case["page_index"],
         "printed_pages": case.get("printed_pages", []),
         "synthetic_raster_dpi": case.get("raster_dpi", 180),
-        "table_strategy_sweep": table_strategy_sweep,
-        "rule_candidate_extraction": {
-            "candidate_count": len(parser_candidates),
-            "labeled_metric_candidate_count": len(candidate_metric_rows),
-            "correct_labeled_candidate_count": sum(
-                id(candidate) in correct_candidate_ids for candidate in candidate_metric_rows
-            ),
-            "anchor_precision": round(
-                sum(id(candidate) in correct_candidate_ids for candidate in candidate_metric_rows)
-                / len(candidate_metric_rows), 4
-            ) if candidate_metric_rows else None,
-            "expected_field_count": len(case["fields"]),
-            "matched_field_count": sum(result["candidate_found"] for result in candidate_results),
-            "anchor_recall": round(
-                sum(result["candidate_found"] for result in candidate_results) / len(case["fields"]), 4
-            ) if case["fields"] else None,
-            "fields": candidate_results,
+        "ocr_config": {
+            "tesseract_psm": tesseract_psm,
+            "tesseract_table_psm": tesseract_table_psm if tesseract_table_psm is not None else {"pdf": 3, "image": 6},
+            "render_scale": render_scale,
+            "table_render_scale": table_render_scale,
         },
-        "conditions": [
-            score_parse(case, native, 1, "born_digital_pdf"),
-            score_parse(case, raster, 1, "synthetic_raster_pdf_tesseract"),
-            score_parse(case, image, None, "synthetic_raster_image_upload_tesseract"),
-        ],
+        "table_strategy_sweep": table_strategy_sweep,
+        "rule_candidate_extraction": native_kpi_score,
+        "conditions": conditions,
     }
 
 
@@ -357,23 +465,48 @@ def main() -> int:
         "--compact", action="store_true",
         help="omit full extracted text/table dumps while preserving scores and provenance",
     )
+    parser.add_argument("--case-id", action="append", default=[], help="Evaluate only this case ID; repeat to select multiple.")
+    parser.add_argument("--llm", action="store_true", help="Run one strict LLM KPI extraction request on each selected synthetic PDF upload page.")
     parser.add_argument("--tesseract-psm", type=int, choices=(3, 6, 11, 12), default=11)
     parser.add_argument(
         "--tesseract-table-psm", type=int, choices=(3, 6, 11), default=None,
         help="Override the format defaults: PDF uses 3 and image uploads use 6.",
     )
     parser.add_argument("--render-scale", type=float, default=1.5)
+    parser.add_argument("--table-render-scale", type=float, choices=(1.5, 2.5), default=2.5)
     args = parser.parse_args()
     case_bytes = args.cases.read_bytes()
     dataset = json.loads(case_bytes)
+    cases_by_id = {case["id"]: case for case in dataset["cases"]}
+    missing_case_ids = sorted(set(args.case_id) - cases_by_id.keys())
+    if missing_case_ids:
+        parser.error(f"Unknown case ID(s): {', '.join(missing_case_ids)}")
+    selected_cases = (
+        [cases_by_id[case_id] for case_id in dict.fromkeys(args.case_id)]
+        if args.case_id else dataset["cases"]
+    )
+    llm = None
+    if args.llm:
+        from dotenv import load_dotenv
+
+        load_dotenv(REPO_ROOT / ".env")
+        from core.llm.groq_provider import GroqProvider
+
+        llm = GroqProvider()
     results = []
-    for case in dataset["cases"]:
-        source = (REPO_ROOT / case["file"]).read_bytes()
-        results.append(evaluate_case(
-            case, source, tesseract_psm=args.tesseract_psm,
-            render_scale=args.render_scale,
-            tesseract_table_psm=args.tesseract_table_psm,
-        ))
+    try:
+        for case in selected_cases:
+            source = (REPO_ROOT / case["file"]).read_bytes()
+            results.append(evaluate_case(
+                case, source, tesseract_psm=args.tesseract_psm,
+                render_scale=args.render_scale,
+                tesseract_table_psm=args.tesseract_table_psm,
+                table_render_scale=args.table_render_scale,
+                llm=llm,
+            ))
+    finally:
+        if llm is not None:
+            llm.close()
     tesseract_version = subprocess.run(
         ["tesseract", "--version"], capture_output=True, text=True,
         check=False, timeout=10,
@@ -409,7 +542,9 @@ def main() -> int:
                 else {"pdf": 3, "image": 6}
             ),
             "render_scale": args.render_scale,
+            "table_render_scale": args.table_render_scale,
         },
+        "llm_model": getattr(llm, "model_name", None) if llm is not None else None,
         "results": [compact_result(result) for result in results] if args.compact else results,
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -424,6 +559,16 @@ def main() -> int:
             "table_anchor_normalized_recall": condition["table_anchor_normalized_recall"],
             "detected_tables": condition["detected_tables"],
             "expected_table_regions": condition["expected_table_regions"],
+            "table_values_ordered_recall": condition["table_values_ordered_recall"],
+            **({"llm_candidate_extraction": {
+                key: condition["llm_candidate_extraction"][key]
+                for key in (
+                    "candidate_count", "labeled_metric_candidate_count",
+                    "correct_labeled_candidate_count", "anchor_precision",
+                    "expected_field_count", "matched_field_count", "anchor_recall",
+                    "page_extraction",
+                )
+            }} if "llm_candidate_extraction" in condition else {}),
         } for condition in result["conditions"]],
         "rule_candidate_extraction": {
             key: result["rule_candidate_extraction"][key]

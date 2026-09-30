@@ -1,0 +1,1567 @@
+{
+  "created_at_utc": "2026-09-26T22:27:57.400311+00:00",
+  "document_id": "VNM-AR-2024-VI",
+  "pdf": "data/raw/vietnam_enterprises/vnm/vnm-ar-2024-vi.pdf",
+  "pdf_sha256": "f0d99c9a6650e5f718f098784de037b342a5b9fff4184f5fd00ef7f8656c774a",
+  "page_count": 96,
+  "chunk_size_chars": 1100,
+  "fixed_overlap_chars": 120,
+  "reference": "PyMuPDF native text on born-digital PDF pages",
+  "limitations": "Boundary/size diagnostic only. It does not run OCR, embeddings, retrieval, QA, or represent PDF parser metadata. Rerun the same queries on both persisted chunk sets before choosing a strategy.",
+  "strategies": {
+    "fixed": {
+      "chunk_count": 428,
+      "mean_chars": 970.4,
+      "p95_chars": 1099,
+      "max_chars": 1099,
+      "sentence_boundary_fraction": 0.1054,
+      "pages": [
+        {
+          "page_number": 1,
+          "chunk_count": 1,
+          "mean_chars": 38,
+          "p95_chars": 38,
+          "max_chars": 38,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 2,
+          "chunk_count": 1,
+          "mean_chars": 871,
+          "p95_chars": 871,
+          "max_chars": 871,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 3,
+          "chunk_count": 1,
+          "mean_chars": 809,
+          "p95_chars": 809,
+          "max_chars": 809,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 4,
+          "chunk_count": 2,
+          "mean_chars": 997,
+          "p95_chars": 896,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 5,
+          "chunk_count": 5,
+          "mean_chars": 911.8,
+          "p95_chars": 1099,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.25
+        },
+        {
+          "page_number": 6,
+          "chunk_count": 5,
+          "mean_chars": 1004,
+          "p95_chars": 1098,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 7,
+          "chunk_count": 5,
+          "mean_chars": 1092.4,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 8,
+          "chunk_count": 1,
+          "mean_chars": 343,
+          "p95_chars": 343,
+          "max_chars": 343,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 9,
+          "chunk_count": 3,
+          "mean_chars": 818.3,
+          "p95_chars": 1096,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.5
+        },
+        {
+          "page_number": 10,
+          "chunk_count": 3,
+          "mean_chars": 851,
+          "p95_chars": 1095,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 11,
+          "chunk_count": 2,
+          "mean_chars": 935,
+          "p95_chars": 772,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 12,
+          "chunk_count": 2,
+          "mean_chars": 902.5,
+          "p95_chars": 710,
+          "max_chars": 1095,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 13,
+          "chunk_count": 5,
+          "mean_chars": 943,
+          "p95_chars": 1097,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 14,
+          "chunk_count": 2,
+          "mean_chars": 1083,
+          "p95_chars": 1067,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 15,
+          "chunk_count": 2,
+          "mean_chars": 914.5,
+          "p95_chars": 733,
+          "max_chars": 1096,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 16,
+          "chunk_count": 2,
+          "mean_chars": 725,
+          "p95_chars": 353,
+          "max_chars": 1097,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 17,
+          "chunk_count": 3,
+          "mean_chars": 854.7,
+          "p95_chars": 1097,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 18,
+          "chunk_count": 2,
+          "mean_chars": 966,
+          "p95_chars": 834,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 19,
+          "chunk_count": 1,
+          "mean_chars": 835,
+          "p95_chars": 835,
+          "max_chars": 835,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 20,
+          "chunk_count": 1,
+          "mean_chars": 339,
+          "p95_chars": 339,
+          "max_chars": 339,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 21,
+          "chunk_count": 4,
+          "mean_chars": 1044.8,
+          "p95_chars": 1098,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 22,
+          "chunk_count": 4,
+          "mean_chars": 1008,
+          "p95_chars": 1095,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 23,
+          "chunk_count": 4,
+          "mean_chars": 1018.2,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 24,
+          "chunk_count": 4,
+          "mean_chars": 855.2,
+          "p95_chars": 1096,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 25,
+          "chunk_count": 1,
+          "mean_chars": 840,
+          "p95_chars": 840,
+          "max_chars": 840,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 26,
+          "chunk_count": 4,
+          "mean_chars": 981.5,
+          "p95_chars": 1096,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 27,
+          "chunk_count": 4,
+          "mean_chars": 908,
+          "p95_chars": 1098,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 28,
+          "chunk_count": 5,
+          "mean_chars": 1018.4,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 29,
+          "chunk_count": 2,
+          "mean_chars": 639,
+          "p95_chars": 181,
+          "max_chars": 1097,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 30,
+          "chunk_count": 5,
+          "mean_chars": 1006.8,
+          "p95_chars": 1099,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 31,
+          "chunk_count": 6,
+          "mean_chars": 1084.8,
+          "p95_chars": 1098,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 32,
+          "chunk_count": 5,
+          "mean_chars": 999.6,
+          "p95_chars": 1097,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 33,
+          "chunk_count": 5,
+          "mean_chars": 968.6,
+          "p95_chars": 1096,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 34,
+          "chunk_count": 4,
+          "mean_chars": 1003,
+          "p95_chars": 1098,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.3333
+        },
+        {
+          "page_number": 35,
+          "chunk_count": 5,
+          "mean_chars": 996,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 36,
+          "chunk_count": 4,
+          "mean_chars": 883.8,
+          "p95_chars": 1099,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 37,
+          "chunk_count": 9,
+          "mean_chars": 1021.8,
+          "p95_chars": 1099,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 38,
+          "chunk_count": 5,
+          "mean_chars": 1077.2,
+          "p95_chars": 1098,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 39,
+          "chunk_count": 2,
+          "mean_chars": 887.5,
+          "p95_chars": 680,
+          "max_chars": 1095,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 40,
+          "chunk_count": 5,
+          "mean_chars": 920.2,
+          "p95_chars": 1097,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 41,
+          "chunk_count": 5,
+          "mean_chars": 991,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 42,
+          "chunk_count": 3,
+          "mean_chars": 1046.7,
+          "p95_chars": 1097,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 43,
+          "chunk_count": 7,
+          "mean_chars": 1071.9,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 44,
+          "chunk_count": 4,
+          "mean_chars": 973.8,
+          "p95_chars": 1096,
+          "max_chars": 1097,
+          "sentence_boundary_fraction": 0.3333
+        },
+        {
+          "page_number": 45,
+          "chunk_count": 5,
+          "mean_chars": 936.8,
+          "p95_chars": 1097,
+          "max_chars": 1097,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 46,
+          "chunk_count": 4,
+          "mean_chars": 974.8,
+          "p95_chars": 1097,
+          "max_chars": 1097,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 47,
+          "chunk_count": 4,
+          "mean_chars": 951.8,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.3333
+        },
+        {
+          "page_number": 48,
+          "chunk_count": 4,
+          "mean_chars": 978,
+          "p95_chars": 1097,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 49,
+          "chunk_count": 5,
+          "mean_chars": 907.6,
+          "p95_chars": 1097,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 50,
+          "chunk_count": 4,
+          "mean_chars": 976.5,
+          "p95_chars": 1095,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 51,
+          "chunk_count": 8,
+          "mean_chars": 1037.9,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 52,
+          "chunk_count": 5,
+          "mean_chars": 910.8,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 53,
+          "chunk_count": 2,
+          "mean_chars": 896,
+          "p95_chars": 693,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 54,
+          "chunk_count": 4,
+          "mean_chars": 858,
+          "p95_chars": 1096,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 55,
+          "chunk_count": 3,
+          "mean_chars": 921,
+          "p95_chars": 1094,
+          "max_chars": 1097,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 56,
+          "chunk_count": 2,
+          "mean_chars": 803.5,
+          "p95_chars": 510,
+          "max_chars": 1097,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 57,
+          "chunk_count": 3,
+          "mean_chars": 778.3,
+          "p95_chars": 1096,
+          "max_chars": 1097,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 58,
+          "chunk_count": 2,
+          "mean_chars": 816,
+          "p95_chars": 534,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 59,
+          "chunk_count": 4,
+          "mean_chars": 1002,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 60,
+          "chunk_count": 1,
+          "mean_chars": 133,
+          "p95_chars": 133,
+          "max_chars": 133,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 61,
+          "chunk_count": 6,
+          "mean_chars": 998.2,
+          "p95_chars": 1097,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 62,
+          "chunk_count": 11,
+          "mean_chars": 1031.7,
+          "p95_chars": 1099,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 63,
+          "chunk_count": 10,
+          "mean_chars": 1038.3,
+          "p95_chars": 1099,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 64,
+          "chunk_count": 11,
+          "mean_chars": 1039.4,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.1
+        },
+        {
+          "page_number": 65,
+          "chunk_count": 8,
+          "mean_chars": 977.2,
+          "p95_chars": 1099,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.1429
+        },
+        {
+          "page_number": 66,
+          "chunk_count": 8,
+          "mean_chars": 1045.8,
+          "p95_chars": 1097,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 67,
+          "chunk_count": 9,
+          "mean_chars": 1005.8,
+          "p95_chars": 1097,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 68,
+          "chunk_count": 6,
+          "mean_chars": 974.3,
+          "p95_chars": 1099,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 69,
+          "chunk_count": 6,
+          "mean_chars": 998.2,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 70,
+          "chunk_count": 7,
+          "mean_chars": 1023.9,
+          "p95_chars": 1099,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 71,
+          "chunk_count": 9,
+          "mean_chars": 1038.1,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 72,
+          "chunk_count": 7,
+          "mean_chars": 1055.9,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 73,
+          "chunk_count": 6,
+          "mean_chars": 1074.2,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 74,
+          "chunk_count": 7,
+          "mean_chars": 977,
+          "p95_chars": 1097,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 75,
+          "chunk_count": 7,
+          "mean_chars": 1023.4,
+          "p95_chars": 1097,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 76,
+          "chunk_count": 9,
+          "mean_chars": 991.6,
+          "p95_chars": 1099,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 77,
+          "chunk_count": 10,
+          "mean_chars": 1075,
+          "p95_chars": 1099,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.1111
+        },
+        {
+          "page_number": 78,
+          "chunk_count": 6,
+          "mean_chars": 1026,
+          "p95_chars": 1099,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 79,
+          "chunk_count": 5,
+          "mean_chars": 977.8,
+          "p95_chars": 1097,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 80,
+          "chunk_count": 5,
+          "mean_chars": 1067.6,
+          "p95_chars": 1097,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.25
+        },
+        {
+          "page_number": 81,
+          "chunk_count": 6,
+          "mean_chars": 958.7,
+          "p95_chars": 1098,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.2
+        },
+        {
+          "page_number": 82,
+          "chunk_count": 4,
+          "mean_chars": 954.2,
+          "p95_chars": 1096,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 83,
+          "chunk_count": 7,
+          "mean_chars": 973,
+          "p95_chars": 1099,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 84,
+          "chunk_count": 1,
+          "mean_chars": 98,
+          "p95_chars": 98,
+          "max_chars": 98,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 85,
+          "chunk_count": 6,
+          "mean_chars": 997,
+          "p95_chars": 1097,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 86,
+          "chunk_count": 5,
+          "mean_chars": 966.6,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 87,
+          "chunk_count": 5,
+          "mean_chars": 979,
+          "p95_chars": 1095,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 88,
+          "chunk_count": 1,
+          "mean_chars": 157,
+          "p95_chars": 157,
+          "max_chars": 157,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 89,
+          "chunk_count": 4,
+          "mean_chars": 1009.5,
+          "p95_chars": 1096,
+          "max_chars": 1096,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 90,
+          "chunk_count": 5,
+          "mean_chars": 912.8,
+          "p95_chars": 1098,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 91,
+          "chunk_count": 3,
+          "mean_chars": 846.3,
+          "p95_chars": 1096,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 92,
+          "chunk_count": 2,
+          "mean_chars": 1015.5,
+          "p95_chars": 933,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 93,
+          "chunk_count": 3,
+          "mean_chars": 1037.7,
+          "p95_chars": 1091,
+          "max_chars": 1096,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 94,
+          "chunk_count": 4,
+          "mean_chars": 916,
+          "p95_chars": 1096,
+          "max_chars": 1096,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 95,
+          "chunk_count": 3,
+          "mean_chars": 818,
+          "p95_chars": 1085,
+          "max_chars": 1097,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 96,
+          "chunk_count": 1,
+          "mean_chars": 185,
+          "p95_chars": 185,
+          "max_chars": 185,
+          "sentence_boundary_fraction": null
+        }
+      ]
+    },
+    "sentence": {
+      "chunk_count": 438,
+      "mean_chars": 856.6,
+      "p95_chars": 1095,
+      "max_chars": 1099,
+      "sentence_boundary_fraction": 0.8169,
+      "pages": [
+        {
+          "page_number": 1,
+          "chunk_count": 1,
+          "mean_chars": 38,
+          "p95_chars": 38,
+          "max_chars": 38,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 2,
+          "chunk_count": 1,
+          "mean_chars": 871,
+          "p95_chars": 871,
+          "max_chars": 871,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 3,
+          "chunk_count": 1,
+          "mean_chars": 809,
+          "p95_chars": 809,
+          "max_chars": 809,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 4,
+          "chunk_count": 2,
+          "mean_chars": 936.5,
+          "p95_chars": 775,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 5,
+          "chunk_count": 4,
+          "mean_chars": 1019,
+          "p95_chars": 1039,
+          "max_chars": 1076,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 6,
+          "chunk_count": 5,
+          "mean_chars": 907.6,
+          "p95_chars": 994,
+          "max_chars": 1028,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 7,
+          "chunk_count": 6,
+          "mean_chars": 829.7,
+          "p95_chars": 995,
+          "max_chars": 1087,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 8,
+          "chunk_count": 1,
+          "mean_chars": 343,
+          "p95_chars": 343,
+          "max_chars": 343,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 9,
+          "chunk_count": 3,
+          "mean_chars": 737.7,
+          "p95_chars": 1029,
+          "max_chars": 1091,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 10,
+          "chunk_count": 3,
+          "mean_chars": 770.3,
+          "p95_chars": 1018,
+          "max_chars": 1060,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 11,
+          "chunk_count": 2,
+          "mean_chars": 874.5,
+          "p95_chars": 680,
+          "max_chars": 1069,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 12,
+          "chunk_count": 2,
+          "mean_chars": 842,
+          "p95_chars": 739,
+          "max_chars": 945,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 13,
+          "chunk_count": 5,
+          "mean_chars": 846.4,
+          "p95_chars": 1038,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 14,
+          "chunk_count": 2,
+          "mean_chars": 1022.5,
+          "p95_chars": 1014,
+          "max_chars": 1031,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 15,
+          "chunk_count": 2,
+          "mean_chars": 854,
+          "p95_chars": 707,
+          "max_chars": 1001,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 16,
+          "chunk_count": 2,
+          "mean_chars": 664.5,
+          "p95_chars": 509,
+          "max_chars": 820,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 17,
+          "chunk_count": 3,
+          "mean_chars": 774.3,
+          "p95_chars": 933,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.5
+        },
+        {
+          "page_number": 18,
+          "chunk_count": 2,
+          "mean_chars": 906,
+          "p95_chars": 714,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 19,
+          "chunk_count": 1,
+          "mean_chars": 835,
+          "p95_chars": 835,
+          "max_chars": 835,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 20,
+          "chunk_count": 1,
+          "mean_chars": 339,
+          "p95_chars": 339,
+          "max_chars": 339,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 21,
+          "chunk_count": 4,
+          "mean_chars": 954,
+          "p95_chars": 1023,
+          "max_chars": 1082,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 22,
+          "chunk_count": 4,
+          "mean_chars": 917.2,
+          "p95_chars": 1080,
+          "max_chars": 1097,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 23,
+          "chunk_count": 4,
+          "mean_chars": 928.2,
+          "p95_chars": 1075,
+          "max_chars": 1079,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 24,
+          "chunk_count": 3,
+          "mean_chars": 1019.7,
+          "p95_chars": 1030,
+          "max_chars": 1054,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 25,
+          "chunk_count": 1,
+          "mean_chars": 840,
+          "p95_chars": 840,
+          "max_chars": 840,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 26,
+          "chunk_count": 4,
+          "mean_chars": 890.8,
+          "p95_chars": 1088,
+          "max_chars": 1089,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 27,
+          "chunk_count": 4,
+          "mean_chars": 817.8,
+          "p95_chars": 995,
+          "max_chars": 1041,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 28,
+          "chunk_count": 5,
+          "mean_chars": 921.8,
+          "p95_chars": 1085,
+          "max_chars": 1086,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 29,
+          "chunk_count": 2,
+          "mean_chars": 578.5,
+          "p95_chars": 60,
+          "max_chars": 1097,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 30,
+          "chunk_count": 5,
+          "mean_chars": 910,
+          "p95_chars": 1017,
+          "max_chars": 1046,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 31,
+          "chunk_count": 6,
+          "mean_chars": 984.3,
+          "p95_chars": 1015,
+          "max_chars": 1076,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 32,
+          "chunk_count": 5,
+          "mean_chars": 903,
+          "p95_chars": 1021,
+          "max_chars": 1048,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 33,
+          "chunk_count": 5,
+          "mean_chars": 871.8,
+          "p95_chars": 1032,
+          "max_chars": 1095,
+          "sentence_boundary_fraction": 0.75
+        },
+        {
+          "page_number": 34,
+          "chunk_count": 4,
+          "mean_chars": 912.5,
+          "p95_chars": 1022,
+          "max_chars": 1035,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 35,
+          "chunk_count": 5,
+          "mean_chars": 899.2,
+          "p95_chars": 1048,
+          "max_chars": 1069,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 36,
+          "chunk_count": 3,
+          "mean_chars": 1057.7,
+          "p95_chars": 1065,
+          "max_chars": 1093,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 37,
+          "chunk_count": 9,
+          "mean_chars": 914.4,
+          "p95_chars": 1093,
+          "max_chars": 1094,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 38,
+          "chunk_count": 5,
+          "mean_chars": 980.6,
+          "p95_chars": 1027,
+          "max_chars": 1031,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 39,
+          "chunk_count": 2,
+          "mean_chars": 827,
+          "p95_chars": 795,
+          "max_chars": 859,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 40,
+          "chunk_count": 6,
+          "mean_chars": 686.2,
+          "p95_chars": 1063,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.8
+        },
+        {
+          "page_number": 41,
+          "chunk_count": 5,
+          "mean_chars": 894.6,
+          "p95_chars": 994,
+          "max_chars": 1083,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 42,
+          "chunk_count": 3,
+          "mean_chars": 966.3,
+          "p95_chars": 971,
+          "max_chars": 1052,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 43,
+          "chunk_count": 7,
+          "mean_chars": 968.6,
+          "p95_chars": 1035,
+          "max_chars": 1048,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 44,
+          "chunk_count": 4,
+          "mean_chars": 883.2,
+          "p95_chars": 1035,
+          "max_chars": 1080,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 45,
+          "chunk_count": 5,
+          "mean_chars": 840.6,
+          "p95_chars": 921,
+          "max_chars": 1042,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 46,
+          "chunk_count": 4,
+          "mean_chars": 884.2,
+          "p95_chars": 988,
+          "max_chars": 1029,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 47,
+          "chunk_count": 4,
+          "mean_chars": 861,
+          "p95_chars": 1040,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 48,
+          "chunk_count": 5,
+          "mean_chars": 709.8,
+          "p95_chars": 1016,
+          "max_chars": 1072,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 49,
+          "chunk_count": 4,
+          "mean_chars": 1014.2,
+          "p95_chars": 1070,
+          "max_chars": 1070,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 50,
+          "chunk_count": 4,
+          "mean_chars": 886,
+          "p95_chars": 970,
+          "max_chars": 1076,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 51,
+          "chunk_count": 9,
+          "mean_chars": 828.3,
+          "p95_chars": 1029,
+          "max_chars": 1095,
+          "sentence_boundary_fraction": 0.875
+        },
+        {
+          "page_number": 52,
+          "chunk_count": 5,
+          "mean_chars": 814,
+          "p95_chars": 1036,
+          "max_chars": 1046,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 53,
+          "chunk_count": 3,
+          "mean_chars": 556.7,
+          "p95_chars": 397,
+          "max_chars": 1005,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 54,
+          "chunk_count": 3,
+          "mean_chars": 1023.3,
+          "p95_chars": 1030,
+          "max_chars": 1055,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 55,
+          "chunk_count": 3,
+          "mean_chars": 840.7,
+          "p95_chars": 1026,
+          "max_chars": 1026,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 56,
+          "chunk_count": 2,
+          "mean_chars": 743,
+          "p95_chars": 450,
+          "max_chars": 1036,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 57,
+          "chunk_count": 3,
+          "mean_chars": 698,
+          "p95_chars": 737,
+          "max_chars": 1033,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 58,
+          "chunk_count": 2,
+          "mean_chars": 756,
+          "p95_chars": 467,
+          "max_chars": 1045,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 59,
+          "chunk_count": 4,
+          "mean_chars": 911.2,
+          "p95_chars": 1042,
+          "max_chars": 1091,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 60,
+          "chunk_count": 1,
+          "mean_chars": 133,
+          "p95_chars": 133,
+          "max_chars": 133,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 61,
+          "chunk_count": 6,
+          "mean_chars": 897.5,
+          "p95_chars": 1056,
+          "max_chars": 1080,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 62,
+          "chunk_count": 11,
+          "mean_chars": 922.1,
+          "p95_chars": 1072,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 63,
+          "chunk_count": 10,
+          "mean_chars": 929.7,
+          "p95_chars": 1087,
+          "max_chars": 1089,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 64,
+          "chunk_count": 13,
+          "mean_chars": 786.4,
+          "p95_chars": 1052,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.9167
+        },
+        {
+          "page_number": 65,
+          "chunk_count": 8,
+          "mean_chars": 871.5,
+          "p95_chars": 1077,
+          "max_chars": 1083,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 66,
+          "chunk_count": 10,
+          "mean_chars": 751.9,
+          "p95_chars": 1057,
+          "max_chars": 1096,
+          "sentence_boundary_fraction": 0.8889
+        },
+        {
+          "page_number": 67,
+          "chunk_count": 9,
+          "mean_chars": 898.4,
+          "p95_chars": 1083,
+          "max_chars": 1083,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 68,
+          "chunk_count": 6,
+          "mean_chars": 873.5,
+          "p95_chars": 1088,
+          "max_chars": 1095,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 69,
+          "chunk_count": 6,
+          "mean_chars": 897.5,
+          "p95_chars": 996,
+          "max_chars": 1074,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 70,
+          "chunk_count": 8,
+          "mean_chars": 805,
+          "p95_chars": 1004,
+          "max_chars": 1084,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 71,
+          "chunk_count": 10,
+          "mean_chars": 837.8,
+          "p95_chars": 1058,
+          "max_chars": 1087,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 72,
+          "chunk_count": 8,
+          "mean_chars": 833,
+          "p95_chars": 1040,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 73,
+          "chunk_count": 7,
+          "mean_chars": 834.1,
+          "p95_chars": 1094,
+          "max_chars": 1095,
+          "sentence_boundary_fraction": 0.6667
+        },
+        {
+          "page_number": 74,
+          "chunk_count": 9,
+          "mean_chars": 679.1,
+          "p95_chars": 1067,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 0.875
+        },
+        {
+          "page_number": 75,
+          "chunk_count": 7,
+          "mean_chars": 919.9,
+          "p95_chars": 1067,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 76,
+          "chunk_count": 8,
+          "mean_chars": 995.1,
+          "p95_chars": 1029,
+          "max_chars": 1093,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 77,
+          "chunk_count": 10,
+          "mean_chars": 966.5,
+          "p95_chars": 1072,
+          "max_chars": 1099,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 78,
+          "chunk_count": 7,
+          "mean_chars": 792.9,
+          "p95_chars": 1036,
+          "max_chars": 1098,
+          "sentence_boundary_fraction": 0.8333
+        },
+        {
+          "page_number": 79,
+          "chunk_count": 5,
+          "mean_chars": 881.4,
+          "p95_chars": 1070,
+          "max_chars": 1071,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 80,
+          "chunk_count": 5,
+          "mean_chars": 970.8,
+          "p95_chars": 1016,
+          "max_chars": 1093,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 81,
+          "chunk_count": 5,
+          "mean_chars": 1029.8,
+          "p95_chars": 1059,
+          "max_chars": 1069,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 82,
+          "chunk_count": 4,
+          "mean_chars": 864,
+          "p95_chars": 996,
+          "max_chars": 1021,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 83,
+          "chunk_count": 7,
+          "mean_chars": 869.4,
+          "p95_chars": 1016,
+          "max_chars": 1084,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 84,
+          "chunk_count": 1,
+          "mean_chars": 98,
+          "p95_chars": 98,
+          "max_chars": 98,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 85,
+          "chunk_count": 6,
+          "mean_chars": 896.3,
+          "p95_chars": 1047,
+          "max_chars": 1092,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 86,
+          "chunk_count": 5,
+          "mean_chars": 870,
+          "p95_chars": 1080,
+          "max_chars": 1082,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 87,
+          "chunk_count": 5,
+          "mean_chars": 882.6,
+          "p95_chars": 1066,
+          "max_chars": 1081,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 88,
+          "chunk_count": 1,
+          "mean_chars": 157,
+          "p95_chars": 157,
+          "max_chars": 157,
+          "sentence_boundary_fraction": null
+        },
+        {
+          "page_number": 89,
+          "chunk_count": 5,
+          "mean_chars": 735.2,
+          "p95_chars": 961,
+          "max_chars": 1096,
+          "sentence_boundary_fraction": 0.75
+        },
+        {
+          "page_number": 90,
+          "chunk_count": 4,
+          "mean_chars": 1020.2,
+          "p95_chars": 1021,
+          "max_chars": 1080,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 91,
+          "chunk_count": 3,
+          "mean_chars": 765.7,
+          "p95_chars": 1096,
+          "max_chars": 1097,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 92,
+          "chunk_count": 3,
+          "mean_chars": 636.3,
+          "p95_chars": 709,
+          "max_chars": 930,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 93,
+          "chunk_count": 3,
+          "mean_chars": 957,
+          "p95_chars": 1091,
+          "max_chars": 1097,
+          "sentence_boundary_fraction": 0.0
+        },
+        {
+          "page_number": 94,
+          "chunk_count": 4,
+          "mean_chars": 825.5,
+          "p95_chars": 1051,
+          "max_chars": 1091,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 95,
+          "chunk_count": 3,
+          "mean_chars": 737.3,
+          "p95_chars": 1037,
+          "max_chars": 1085,
+          "sentence_boundary_fraction": 1.0
+        },
+        {
+          "page_number": 96,
+          "chunk_count": 1,
+          "mean_chars": 185,
+          "p95_chars": 185,
+          "max_chars": 185,
+          "sentence_boundary_fraction": null
+        }
+      ]
+    }
+  }
+}

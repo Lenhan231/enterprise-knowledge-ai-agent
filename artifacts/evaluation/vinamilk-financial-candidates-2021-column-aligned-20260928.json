@@ -1,0 +1,229 @@
+[
+  {
+    "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+    "fiscal_year": 2021,
+    "metric_name": "total_consolidated_revenue",
+    "metric_label": "Total consolidated revenue",
+    "candidate_values": [
+      "61,012"
+    ],
+    "unit": "billion VND",
+    "document_id": "VNM-AR-2021-VI",
+    "page_number": 10,
+    "source_quote": "column_1: Total revenue | 2017: 51,135 | 2018: 52,629 | 2019: 56,400 | 2020: 59,723 | 2021: 61,012",
+    "source_quote_hash": "55a6d68602c70a25a628955fc0d51a668e52df00b11371a8f306a70431edbde5",
+    "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1650451537_6f22ffdd6ecd4ea5cc133b0046bc3085a10648db1369033c5dfe1daed93f04a7_1372ac1845.pdf",
+    "allowed_roles": [
+      "finance_analyst",
+      "executive",
+      "admin"
+    ],
+    "status": "needs_review",
+    "extraction_method": "rule_based_page_evidence",
+    "extractor_model": null,
+    "prompt_version": null,
+    "selection_evidence": {}
+  },
+  {
+    "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+    "fiscal_year": 2021,
+    "metric_name": "profit_before_tax",
+    "metric_label": "Profit before tax",
+    "candidate_values": [
+      "12,922"
+    ],
+    "unit": "billion VND",
+    "document_id": "VNM-AR-2021-VI",
+    "page_number": 10,
+    "source_quote": "column_1: Profit before tax | 2017: 12,229 | 2018: 12,052 | 2019: 12,796 | 2020: 13,519 | 2021: 12,922",
+    "source_quote_hash": "97dcb637de87ca2228f4249e71976f86878d56197401b204cc46b32e7440452a",
+    "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1650451537_6f22ffdd6ecd4ea5cc133b0046bc3085a10648db1369033c5dfe1daed93f04a7_1372ac1845.pdf",
+    "allowed_roles": [
+      "finance_analyst",
+      "executive",
+      "admin"
+    ],
+    "status": "needs_review",
+    "extraction_method": "rule_based_page_evidence",
+    "extractor_model": null,
+    "prompt_version": null,
+    "selection_evidence": {}
+  },
+  {
+    "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+    "fiscal_year": 2021,
+    "metric_name": "profit_after_tax",
+    "metric_label": "Profit after tax",
+    "candidate_values": [
+      "10,633"
+    ],
+    "unit": "billion VND",
+    "document_id": "VNM-AR-2021-VI",
+    "page_number": 10,
+    "source_quote": "column_1: Profit after tax | 2017: 10,278 | 2018: 10,206 | 2019: 10,554 | 2020: 11,236 | 2021: 10,633",
+    "source_quote_hash": "ecfd6f68e142f3892cac78e4a5d5d0f7ae2a651ac70afcef2b9ff3f228872155",
+    "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1650451537_6f22ffdd6ecd4ea5cc133b0046bc3085a10648db1369033c5dfe1daed93f04a7_1372ac1845.pdf",
+    "allowed_roles": [
+      "finance_analyst",
+      "executive",
+      "admin"
+    ],
+    "status": "needs_review",
+    "extraction_method": "rule_based_page_evidence",
+    "extractor_model": null,
+    "prompt_version": null,
+    "selection_evidence": {}
+  },
+  {
+    "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+    "fiscal_year": 2021,
+    "metric_name": "total_assets",
+    "metric_label": "Total assets",
+    "candidate_values": [
+      "53,332"
+    ],
+    "unit": "billion VND",
+    "document_id": "VNM-AR-2021-VI",
+    "page_number": 10,
+    "source_quote": "column_1: Total assets | 2017: 34,667 | 2018: 37,366 | 2019: 44,700 | 2020: 48,432 | 2021: 53,332",
+    "source_quote_hash": "23eb53bcd6cdf82a4127f36ae38d12b96aae84030f68935fdef981b710c17ff4",
+    "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1650451537_6f22ffdd6ecd4ea5cc133b0046bc3085a10648db1369033c5dfe1daed93f04a7_1372ac1845.pdf",
+    "allowed_roles": [
+      "finance_analyst",
+      "executive",
+      "admin"
+    ],
+    "status": "needs_review",
+    "extraction_method": "rule_based_page_evidence",
+    "extractor_model": null,
+    "prompt_version": null,
+    "selection_evidence": {}
+  },
+  {
+    "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+    "fiscal_year": 2021,
+    "metric_name": "cash_and_equivalents",
+    "metric_label": "Cash and cash equivalents",
+    "candidate_values": [
+      "2,348,551,874,348",
+      "2,111,242,815,581"
+    ],
+    "unit": "VND",
+    "document_id": "VNM-AR-2021-VI",
+    "page_number": 86,
+    "source_quote": "column_1: Cash and cash equivalents | Code: 110 | Note: V.1 | 31/12/2021\nVND: 2,348,551,874,348 | 1/1/2021\nVND: 2,111,242,815,581",
+    "source_quote_hash": "ab74f68a7245794588edbec074263e0460066a8ad016dc6110748093aa68aef7",
+    "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1650451537_6f22ffdd6ecd4ea5cc133b0046bc3085a10648db1369033c5dfe1daed93f04a7_1372ac1845.pdf",
+    "allowed_roles": [
+      "finance_analyst",
+      "executive",
+      "admin"
+    ],
+    "status": "needs_review",
+    "extraction_method": "rule_based_page_evidence",
+    "extractor_model": null,
+    "prompt_version": null,
+    "selection_evidence": {}
+  },
+  {
+    "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+    "fiscal_year": 2021,
+    "metric_name": "inventory",
+    "metric_label": "Inventory",
+    "candidate_values": [
+      "6,773,071,634,017",
+      "4,905,068,613,616"
+    ],
+    "unit": "VND",
+    "document_id": "VNM-AR-2021-VI",
+    "page_number": 86,
+    "source_quote": "column_1: Inventories | Code: 140 | Note: V.5 | 31/12/2021\nVND: 6,773,071,634,017 | 1/1/2021\nVND: 4,905,068,613,616",
+    "source_quote_hash": "1fb0ed0cb747a65634ed4eba80534f488a8c4b991768fa72a97a18683b5a9646",
+    "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1650451537_6f22ffdd6ecd4ea5cc133b0046bc3085a10648db1369033c5dfe1daed93f04a7_1372ac1845.pdf",
+    "allowed_roles": [
+      "finance_analyst",
+      "executive",
+      "admin"
+    ],
+    "status": "needs_review",
+    "extraction_method": "rule_based_page_evidence",
+    "extractor_model": null,
+    "prompt_version": null,
+    "selection_evidence": {}
+  },
+  {
+    "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+    "fiscal_year": 2021,
+    "metric_name": "net_revenue",
+    "metric_label": "Net revenue",
+    "candidate_values": [
+      "60,919,164,846,146"
+    ],
+    "unit": "VND",
+    "document_id": "VNM-AR-2021-VI",
+    "page_number": 88,
+    "source_quote": "column_1: Net revenue (10 = 01 - 02) | Code: 10 | Note: VI.1 | 2021\nVND: 60,919,164,846,146 | 2020\nVND: 59,636,286,225,547",
+    "source_quote_hash": "f5457dbeecc6de959049bfffd9862afeeac6b34d4dcbafcd4a06f6ebe988afef",
+    "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1650451537_6f22ffdd6ecd4ea5cc133b0046bc3085a10648db1369033c5dfe1daed93f04a7_1372ac1845.pdf",
+    "allowed_roles": [
+      "finance_analyst",
+      "executive",
+      "admin"
+    ],
+    "status": "needs_review",
+    "extraction_method": "rule_based_page_evidence",
+    "extractor_model": null,
+    "prompt_version": null,
+    "selection_evidence": {}
+  },
+  {
+    "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+    "fiscal_year": 2021,
+    "metric_name": "cost_of_goods_sold",
+    "metric_label": "Cost of goods sold",
+    "candidate_values": [
+      "34,640,863,353,839"
+    ],
+    "unit": "VND",
+    "document_id": "VNM-AR-2021-VI",
+    "page_number": 88,
+    "source_quote": "column_1: Cost of sales | Code: 11 | Note: VI.2 | 2021\nVND: 34,640,863,353,839 | 2020\nVND: 31,967,662,837,839",
+    "source_quote_hash": "7994a88439de2d7f3915d02de265daa4593216b4919347843db66b63dacaf742",
+    "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1650451537_6f22ffdd6ecd4ea5cc133b0046bc3085a10648db1369033c5dfe1daed93f04a7_1372ac1845.pdf",
+    "allowed_roles": [
+      "finance_analyst",
+      "executive",
+      "admin"
+    ],
+    "status": "needs_review",
+    "extraction_method": "rule_based_page_evidence",
+    "extractor_model": null,
+    "prompt_version": null,
+    "selection_evidence": {}
+  },
+  {
+    "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+    "fiscal_year": 2021,
+    "metric_name": "gross_profit",
+    "metric_label": "Gross profit",
+    "candidate_values": [
+      "26,278,301,492,307"
+    ],
+    "unit": "VND",
+    "document_id": "VNM-AR-2021-VI",
+    "page_number": 88,
+    "source_quote": "column_1: Gross profit (20 = 10 - 11) | Code: 20 | Note:  | 2021\nVND: 26,278,301,492,307 | 2020\nVND: 27,668,623,387,708",
+    "source_quote_hash": "4508c4d5f7c4ee8d86d097a271442adb7800f0891867e2997776aadeec4d68ef",
+    "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/1650451537_6f22ffdd6ecd4ea5cc133b0046bc3085a10648db1369033c5dfe1daed93f04a7_1372ac1845.pdf",
+    "allowed_roles": [
+      "finance_analyst",
+      "executive",
+      "admin"
+    ],
+    "status": "needs_review",
+    "extraction_method": "rule_based_page_evidence",
+    "extractor_model": null,
+    "prompt_version": null,
+    "selection_evidence": {}
+  }
+]

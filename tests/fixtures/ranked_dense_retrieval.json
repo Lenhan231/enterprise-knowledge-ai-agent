@@ -21,7 +21,7 @@
         "parent_id": null,
         "token_count": 48,
         "title": "Demonstration Supplier Policy",
-        "official_url": "https://example.com/demo_supplier_policy.pdf",
+        "source_url": "https://example.com/demo_supplier_policy.pdf",
         "domain": "supply_chain",
         "year_or_version": "demo-v1",
         "fixture": true
@@ -44,7 +44,7 @@
         "page_number": null,
         "section_title": null,
         "title": "Demonstration Conduct Policy",
-        "official_url": null,
+        "source_url": null,
         "fixture": true
       },
       "retrieval_method": "dense"

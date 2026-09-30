@@ -1,0 +1,44 @@
+{
+  "created_at_utc": "2026-09-28T02:37:59.146368+00:00",
+  "route": "POST /api/ask",
+  "corpus_id": "VNM-ENTERPRISE-RAG-DEMO",
+  "corpus_manifest_sha256": "ff2c4262d23ef1a073e30ca6200b35842e4451f8dd5725de240789a338dad812",
+  "route_dataset_sha256": "1ed8d581f3178d169aab73d07cab8d922a4fc6932992122165dafc9126de7f6f",
+  "coverage_dataset_sha256": "228794de63ccdf04cb8e9c2f45b586784fe1546d8f59082cecbe8fd908f3ca11",
+  "actor_role": "admin",
+  "case_count": 1,
+  "attempted_count": 1,
+  "unrun_case_ids": [],
+  "stop_reason": null,
+  "passed": 1,
+  "failed": 0,
+  "mean_latency_seconds": 30.15,
+  "results": [
+    {
+      "id": "customer-service-knowledge",
+      "corpus_coverage": "partial",
+      "expected_outcome": "answer_only_vinamilk_store_return_steps_and_qualify_channel_scope",
+      "expected_route": "knowledge",
+      "actual_route": "knowledge",
+      "passed": true,
+      "checks": {
+        "expected_route": true,
+        "citation_integrity": true,
+        "no_citation_validation_failure": true,
+        "citations_have_source_locations": true,
+        "partial_case_abstains_or_uses_labeled_source": true
+      },
+      "insufficient_context": true,
+      "cited_document_ids": [],
+      "citation_pages": [],
+      "answer": "Insufficient information in the retrieved documents.",
+      "data_result_count": 0,
+      "latency_seconds": 30.15
+    }
+  ],
+  "limitations": [
+    "This is a single authenticated admin run over the public Vinamilk corpus; it is not a role-matrix test.",
+    "Supported and unsupported outcomes have deterministic route, source, value, abstention and result-shape checks.",
+    "Partial HR, compliance and executive cases still need blinded semantic review; these labels do not prove private-domain capability."
+  ]
+}

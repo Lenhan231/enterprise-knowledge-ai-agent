@@ -59,7 +59,7 @@ class RetrievedChunk(ContractModel):
     chunk_index: int = Field(ge=0, strict=True)
     content: str
     metadata: dict[str, Any]
-    similarity_score: float = Field(allow_inf_nan=False)
+    retrieval_score: float = Field(allow_inf_nan=False)
 
     @field_validator("metadata")
     @classmethod
@@ -87,7 +87,7 @@ class RankedChunk(ContractModel):
     source: str
     location: SourceLocation
     metadata: dict[str, Any]
-    retrieval_method: Literal["dense"] = "dense"
+    retrieval_method: Literal["dense", "bm25", "hybrid", "parent"] = "hybrid"
 
     _validate_document_id = field_validator("document_id")(_nonblank)
 
@@ -108,7 +108,7 @@ class RankedChunk(ContractModel):
 
 class RetrievalResponse(ContractModel):
     query: str
-    method: Literal["dense"] = "dense"
+    method: Literal["dense", "bm25", "hybrid", "parent"] = "hybrid"
     latency_ms: float = Field(ge=0, allow_inf_nan=False)
     results: list[RankedChunk]
 

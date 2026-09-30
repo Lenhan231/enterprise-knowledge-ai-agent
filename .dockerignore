@@ -1,0 +1,17 @@
+.git
+.venv
+env
+__pycache__
+*.py[cod]
+.env
+.pytest_cache
+.mypy_cache
+.ruff_cache
+artifacts
+data/*
+!data/vietnam_enterprises/
+data/vietnam_enterprises/*
+!data/vietnam_enterprises/manifest.json
+tests
+docs
+scripts

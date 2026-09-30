@@ -1,0 +1,709 @@
+{
+  "created_at_utc": "2026-09-26T18:10:41.504878+00:00",
+  "model_key": "qwen3-reranker-0.6b",
+  "model_id": "Qwen/Qwen3-Reranker-0.6B",
+  "model_revision": "e61197ed45024b0ed8a2d74b80b4d909f1255473",
+  "case_count": 9,
+  "case_file": "vinamilk_retrieval_cases.json",
+  "case_file_sha256": "5bbd71991f06382b9c3eb7c89be267b4a4bca7551d218731e6843932de4f9c3d",
+  "candidate_sha256": "6db8d6984d1587311270074b29c0bdae53167f968bd908f5e4e15a89132aebc8",
+  "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+  "candidate_method": "dense",
+  "candidate_k": 2,
+  "max_sequence_length": 256,
+  "environment": {
+    "python": "3.11.16",
+    "platform": "Linux-7.2.6-arch2-1-x86_64-with-glibc2.44",
+    "device": "cpu",
+    "gpu_available": false,
+    "peak_rss_mb": 2760.0
+  },
+  "timing_seconds": {
+    "model_load": 8.0,
+    "mean_dense_retrieval": 1.7506,
+    "mean_rerank": 15.7357
+  },
+  "aggregate": {
+    "dense": {
+      "precision@1": 1.0,
+      "precision@3": 0.3333,
+      "precision@5": 0.2,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "mrr": 1.0,
+      "ndcg@1": 1.0,
+      "ndcg@3": 1.0,
+      "ndcg@5": 1.0
+    },
+    "reranked": {
+      "precision@1": 1.0,
+      "precision@3": 0.3333,
+      "precision@5": 0.2,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "mrr": 1.0,
+      "ndcg@1": 1.0,
+      "ndcg@3": 1.0,
+      "ndcg@5": 1.0
+    }
+  },
+  "passage_case_count": 9,
+  "passage_aggregate": {
+    "dense": {
+      "precision@1": 0.3333,
+      "precision@2": 0.2222,
+      "recall@1": 0.1852,
+      "recall@2": 0.2407,
+      "mrr": 0.3889,
+      "ndcg@1": 0.3333,
+      "ndcg@2": 0.2903
+    },
+    "reranked": {
+      "precision@1": 0.4444,
+      "precision@2": 0.2222,
+      "recall@1": 0.2407,
+      "recall@2": 0.2407,
+      "mrr": 0.4444,
+      "ndcg@1": 0.4444,
+      "ndcg@2": 0.3155
+    }
+  },
+  "results": [
+    {
+      "id": "finance-revenue-profit-2020-vi",
+      "role": "finance_analyst",
+      "candidate_count": 2,
+      "relevant_document_ids": [
+        "VNM-AR-2020-VI"
+      ],
+      "dense_ranked_document_ids": [
+        "VNM-AR-2020-VI"
+      ],
+      "reranked_document_ids": [
+        "VNM-AR-2020-VI"
+      ],
+      "dense_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "reranked_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "retrieval_latency_ms": 11184.24,
+      "rerank_latency_ms": 12661.19,
+      "relevant_passage_ids": [
+        "VNM-AR-2020-VI::chunk::1",
+        "VNM-AR-2020-VI::chunk::14"
+      ],
+      "dense_ranked_passage_ids": [
+        "VNM-AR-2020-VI::chunk::14",
+        "VNM-AR-2020-VI::chunk::323"
+      ],
+      "reranked_passage_ids": [
+        "VNM-AR-2020-VI::chunk::14",
+        "VNM-AR-2020-VI::chunk::323"
+      ],
+      "dense_passage_metrics": {
+        "precision@1": 1.0,
+        "precision@2": 0.5,
+        "recall@1": 0.5,
+        "recall@2": 0.5,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@2": 0.6131471927654584
+      },
+      "reranked_passage_metrics": {
+        "precision@1": 1.0,
+        "precision@2": 0.5,
+        "recall@1": 0.5,
+        "recall@2": 0.5,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@2": 0.6131471927654584
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2021-vi",
+      "role": "finance_analyst",
+      "candidate_count": 2,
+      "relevant_document_ids": [
+        "VNM-AR-2021-VI"
+      ],
+      "dense_ranked_document_ids": [
+        "VNM-AR-2021-VI"
+      ],
+      "reranked_document_ids": [
+        "VNM-AR-2021-VI"
+      ],
+      "dense_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "reranked_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "retrieval_latency_ms": 372.83,
+      "rerank_latency_ms": 15772.09,
+      "relevant_passage_ids": [
+        "VNM-AR-2021-VI::chunk::2",
+        "VNM-AR-2021-VI::chunk::21"
+      ],
+      "dense_ranked_passage_ids": [
+        "VNM-AR-2021-VI::chunk::129",
+        "VNM-AR-2021-VI::chunk::137"
+      ],
+      "reranked_passage_ids": [
+        "VNM-AR-2021-VI::chunk::137",
+        "VNM-AR-2021-VI::chunk::129"
+      ],
+      "dense_passage_metrics": {
+        "precision@1": 0.0,
+        "precision@2": 0.0,
+        "recall@1": 0.0,
+        "recall@2": 0.0,
+        "mrr": 0.0,
+        "ndcg@1": 0.0,
+        "ndcg@2": 0.0
+      },
+      "reranked_passage_metrics": {
+        "precision@1": 0.0,
+        "precision@2": 0.0,
+        "recall@1": 0.0,
+        "recall@2": 0.0,
+        "mrr": 0.0,
+        "ndcg@1": 0.0,
+        "ndcg@2": 0.0
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2022-vi",
+      "role": "finance_analyst",
+      "candidate_count": 2,
+      "relevant_document_ids": [
+        "VNM-AR-2022-VI"
+      ],
+      "dense_ranked_document_ids": [
+        "VNM-AR-2022-VI"
+      ],
+      "reranked_document_ids": [
+        "VNM-AR-2022-VI"
+      ],
+      "dense_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "reranked_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "retrieval_latency_ms": 409.62,
+      "rerank_latency_ms": 15762.36,
+      "relevant_passage_ids": [
+        "VNM-AR-2022-VI::chunk::31",
+        "VNM-AR-2022-VI::chunk::32"
+      ],
+      "dense_ranked_passage_ids": [
+        "VNM-AR-2022-VI::chunk::202",
+        "VNM-AR-2022-VI::chunk::10"
+      ],
+      "reranked_passage_ids": [
+        "VNM-AR-2022-VI::chunk::202",
+        "VNM-AR-2022-VI::chunk::10"
+      ],
+      "dense_passage_metrics": {
+        "precision@1": 0.0,
+        "precision@2": 0.0,
+        "recall@1": 0.0,
+        "recall@2": 0.0,
+        "mrr": 0.0,
+        "ndcg@1": 0.0,
+        "ndcg@2": 0.0
+      },
+      "reranked_passage_metrics": {
+        "precision@1": 0.0,
+        "precision@2": 0.0,
+        "recall@1": 0.0,
+        "recall@2": 0.0,
+        "mrr": 0.0,
+        "ndcg@1": 0.0,
+        "ndcg@2": 0.0
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2023-en",
+      "role": "finance_analyst",
+      "candidate_count": 2,
+      "relevant_document_ids": [
+        "VNM-AR-2023-EN"
+      ],
+      "dense_ranked_document_ids": [
+        "VNM-AR-2023-EN"
+      ],
+      "reranked_document_ids": [
+        "VNM-AR-2023-EN"
+      ],
+      "dense_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "reranked_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "retrieval_latency_ms": 409.66,
+      "rerank_latency_ms": 16103.9,
+      "relevant_passage_ids": [
+        "VNM-AR-2023-EN::chunk::262",
+        "VNM-AR-2023-EN::chunk::263",
+        "VNM-AR-2023-EN::chunk::264"
+      ],
+      "dense_ranked_passage_ids": [
+        "VNM-AR-2023-EN::chunk::149",
+        "VNM-AR-2023-EN::chunk::17"
+      ],
+      "reranked_passage_ids": [
+        "VNM-AR-2023-EN::chunk::149",
+        "VNM-AR-2023-EN::chunk::17"
+      ],
+      "dense_passage_metrics": {
+        "precision@1": 0.0,
+        "precision@2": 0.0,
+        "recall@1": 0.0,
+        "recall@2": 0.0,
+        "mrr": 0.0,
+        "ndcg@1": 0.0,
+        "ndcg@2": 0.0
+      },
+      "reranked_passage_metrics": {
+        "precision@1": 0.0,
+        "precision@2": 0.0,
+        "recall@1": 0.0,
+        "recall@2": 0.0,
+        "mrr": 0.0,
+        "ndcg@1": 0.0,
+        "ndcg@2": 0.0
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2024-en",
+      "role": "finance_analyst",
+      "candidate_count": 2,
+      "relevant_document_ids": [
+        "VNM-AR-2024-VI"
+      ],
+      "dense_ranked_document_ids": [
+        "VNM-AR-2024-VI"
+      ],
+      "reranked_document_ids": [
+        "VNM-AR-2024-VI"
+      ],
+      "dense_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "reranked_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "retrieval_latency_ms": 409.4,
+      "rerank_latency_ms": 16108.16,
+      "relevant_passage_ids": [
+        "VNM-AR-2024-VI::chunk::27",
+        "VNM-AR-2024-VI::chunk::9"
+      ],
+      "dense_ranked_passage_ids": [
+        "VNM-AR-2024-VI::chunk::35",
+        "VNM-AR-2024-VI::chunk::154"
+      ],
+      "reranked_passage_ids": [
+        "VNM-AR-2024-VI::chunk::35",
+        "VNM-AR-2024-VI::chunk::154"
+      ],
+      "dense_passage_metrics": {
+        "precision@1": 0.0,
+        "precision@2": 0.0,
+        "recall@1": 0.0,
+        "recall@2": 0.0,
+        "mrr": 0.0,
+        "ndcg@1": 0.0,
+        "ndcg@2": 0.0
+      },
+      "reranked_passage_metrics": {
+        "precision@1": 0.0,
+        "precision@2": 0.0,
+        "recall@1": 0.0,
+        "recall@2": 0.0,
+        "mrr": 0.0,
+        "ndcg@1": 0.0,
+        "ndcg@2": 0.0
+      }
+    },
+    {
+      "id": "sustainability-ghg-reporting-scopes-2020-en",
+      "role": "sustainability_analyst",
+      "candidate_count": 2,
+      "relevant_document_ids": [
+        "VNM-SR-2020-EN"
+      ],
+      "dense_ranked_document_ids": [
+        "VNM-SR-2020-EN"
+      ],
+      "reranked_document_ids": [
+        "VNM-SR-2020-EN"
+      ],
+      "dense_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "reranked_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "retrieval_latency_ms": 1758.52,
+      "rerank_latency_ms": 16037.32,
+      "relevant_passage_ids": [
+        "VNM-SR-2020-EN::chunk::292"
+      ],
+      "dense_ranked_passage_ids": [
+        "VNM-SR-2020-EN::chunk::250",
+        "VNM-SR-2020-EN::chunk::61"
+      ],
+      "reranked_passage_ids": [
+        "VNM-SR-2020-EN::chunk::250",
+        "VNM-SR-2020-EN::chunk::61"
+      ],
+      "dense_passage_metrics": {
+        "precision@1": 0.0,
+        "precision@2": 0.0,
+        "recall@1": 0.0,
+        "recall@2": 0.0,
+        "mrr": 0.0,
+        "ndcg@1": 0.0,
+        "ndcg@2": 0.0
+      },
+      "reranked_passage_metrics": {
+        "precision@1": 0.0,
+        "precision@2": 0.0,
+        "recall@1": 0.0,
+        "recall@2": 0.0,
+        "mrr": 0.0,
+        "ndcg@1": 0.0,
+        "ndcg@2": 0.0
+      }
+    },
+    {
+      "id": "sustainability-ghg-inventory-2024-en",
+      "role": "sustainability_analyst",
+      "candidate_count": 2,
+      "relevant_document_ids": [
+        "VNM-SR-2024-EN"
+      ],
+      "dense_ranked_document_ids": [
+        "VNM-SR-2024-EN"
+      ],
+      "reranked_document_ids": [
+        "VNM-SR-2024-EN"
+      ],
+      "dense_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "reranked_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "retrieval_latency_ms": 391.54,
+      "rerank_latency_ms": 16128.66,
+      "relevant_passage_ids": [
+        "VNM-SR-2024-EN::chunk::2",
+        "VNM-SR-2024-EN::chunk::94"
+      ],
+      "dense_ranked_passage_ids": [
+        "VNM-SR-2024-EN::chunk::96",
+        "VNM-SR-2024-EN::chunk::94"
+      ],
+      "reranked_passage_ids": [
+        "VNM-SR-2024-EN::chunk::94",
+        "VNM-SR-2024-EN::chunk::96"
+      ],
+      "dense_passage_metrics": {
+        "precision@1": 0.0,
+        "precision@2": 0.5,
+        "recall@1": 0.0,
+        "recall@2": 0.5,
+        "mrr": 0.5,
+        "ndcg@1": 0.0,
+        "ndcg@2": 0.38685280723454163
+      },
+      "reranked_passage_metrics": {
+        "precision@1": 1.0,
+        "precision@2": 0.5,
+        "recall@1": 0.5,
+        "recall@2": 0.5,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@2": 0.6131471927654584
+      }
+    },
+    {
+      "id": "sustainability-ghg-inventory-2025-en",
+      "role": "sustainability_analyst",
+      "candidate_count": 2,
+      "relevant_document_ids": [
+        "VNM-SR-2025-EN"
+      ],
+      "dense_ranked_document_ids": [
+        "VNM-SR-2025-EN"
+      ],
+      "reranked_document_ids": [
+        "VNM-SR-2025-EN"
+      ],
+      "dense_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "reranked_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "retrieval_latency_ms": 409.62,
+      "rerank_latency_ms": 16470.35,
+      "relevant_passage_ids": [
+        "VNM-SR-2025-EN::chunk::11",
+        "VNM-SR-2025-EN::chunk::147",
+        "VNM-SR-2025-EN::chunk::157",
+        "VNM-SR-2025-EN::chunk::158",
+        "VNM-SR-2025-EN::chunk::416",
+        "VNM-SR-2025-EN::chunk::67"
+      ],
+      "dense_ranked_passage_ids": [
+        "VNM-SR-2025-EN::chunk::416",
+        "VNM-SR-2025-EN::chunk::145"
+      ],
+      "reranked_passage_ids": [
+        "VNM-SR-2025-EN::chunk::416",
+        "VNM-SR-2025-EN::chunk::145"
+      ],
+      "dense_passage_metrics": {
+        "precision@1": 1.0,
+        "precision@2": 0.5,
+        "recall@1": 0.16666666666666666,
+        "recall@2": 0.16666666666666666,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@2": 0.6131471927654584
+      },
+      "reranked_passage_metrics": {
+        "precision@1": 1.0,
+        "precision@2": 0.5,
+        "recall@1": 0.16666666666666666,
+        "recall@2": 0.16666666666666666,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@2": 0.6131471927654584
+      }
+    },
+    {
+      "id": "product-nutrition-adm-low-sugar-vi",
+      "role": "employee",
+      "candidate_count": 2,
+      "relevant_document_ids": [
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "dense_ranked_document_ids": [
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "reranked_document_ids": [
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "dense_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "reranked_metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "retrieval_latency_ms": 409.58,
+      "rerank_latency_ms": 16577.24,
+      "relevant_passage_ids": [
+        "VNM-PROD-ADM-LOW-SUGAR-VI::chunk::1"
+      ],
+      "dense_ranked_passage_ids": [
+        "VNM-PROD-ADM-LOW-SUGAR-VI::chunk::1",
+        "VNM-PROD-ADM-LOW-SUGAR-VI::chunk::0"
+      ],
+      "reranked_passage_ids": [
+        "VNM-PROD-ADM-LOW-SUGAR-VI::chunk::1",
+        "VNM-PROD-ADM-LOW-SUGAR-VI::chunk::0"
+      ],
+      "dense_passage_metrics": {
+        "precision@1": 1.0,
+        "precision@2": 0.5,
+        "recall@1": 1.0,
+        "recall@2": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@2": 1.0
+      },
+      "reranked_passage_metrics": {
+        "precision@1": 1.0,
+        "precision@2": 0.5,
+        "recall@1": 1.0,
+        "recall@2": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@2": 1.0
+      }
+    }
+  ],
+  "limitations": "Small nine-query Vinamilk smoke set with selected, non-exhaustive passage judgments. Every model reranks the same dense top-k passages per case. Metrics measure ranking only, not answer quality, faithfulness, or user-perceived benefit. Full candidate and case hashes and model revision are recorded for comparability."
+}

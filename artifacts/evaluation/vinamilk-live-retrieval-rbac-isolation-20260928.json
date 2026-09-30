@@ -1,0 +1,32 @@
+{
+  "checked_at_utc": "2026-09-28T06:08:57.186275+00:00",
+  "method": "live read-only BM25 retrieval",
+  "question": "Vinamilk consolidated revenue and profit 2024",
+  "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+  "top_k": 20,
+  "role_results": {
+    "employee": {
+      "returned_document_ids": [],
+      "retrieved_chunk_count": 0,
+      "all_results_match_acl": true,
+      "acl_mismatch_ids": []
+    },
+    "finance_analyst": {
+      "returned_document_ids": [
+        "VNM-AR-2024-VI"
+      ],
+      "retrieved_chunk_count": 20,
+      "all_results_match_acl": true,
+      "acl_mismatch_ids": []
+    }
+  },
+  "checks": {
+    "finance_report_denied_to_employee": true,
+    "finance_report_visible_to_analyst": true
+  },
+  "limitations": [
+    "single finance-specific query",
+    "public Vinamilk demo corpus with synthetic ACL labels",
+    "does not substitute for private-document or full-query-set testing"
+  ]
+}

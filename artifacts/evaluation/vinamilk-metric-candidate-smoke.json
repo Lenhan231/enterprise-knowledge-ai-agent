@@ -1,0 +1,69 @@
+{
+  "evaluation": "rule_based_metric_candidate_smoke",
+  "generated_at": "2026-09-26T09:45:33.608255+00:00",
+  "command": "uv run python scripts/process_vinamilk_financial_reports.py --dry-run",
+  "source_documents": [
+    "VNM-AR-2020",
+    "VNM-AR-2021",
+    "VNM-AR-2022",
+    "VNM-AR-2023",
+    "VNM-AR-2024"
+  ],
+  "candidate_count": 35,
+  "candidates_with_source_quote": 35,
+  "status": "needs_review",
+  "database_writes": 0,
+  "verified_or_published_metrics": 0,
+  "by_year": {
+    "2020": [
+      "cash_and_equivalents",
+      "cost_of_goods_sold",
+      "gross_profit",
+      "inventory",
+      "net_revenue",
+      "profit_after_tax",
+      "total_assets"
+    ],
+    "2021": [
+      "cash_and_equivalents",
+      "cost_of_goods_sold",
+      "gross_profit",
+      "inventory",
+      "net_revenue",
+      "profit_after_tax",
+      "total_assets"
+    ],
+    "2022": [
+      "cash_and_equivalents",
+      "cost_of_goods_sold",
+      "gross_profit",
+      "inventory",
+      "net_revenue",
+      "profit_after_tax",
+      "total_assets"
+    ],
+    "2023": [
+      "cash_and_equivalents",
+      "cost_of_goods_sold",
+      "employees",
+      "gross_profit",
+      "inventory",
+      "net_revenue",
+      "profit_after_tax",
+      "state_budget_contribution",
+      "total_assets",
+      "total_consolidated_revenue"
+    ],
+    "2024": [
+      "cash_and_equivalents",
+      "gross_profit",
+      "inventory",
+      "total_assets"
+    ]
+  },
+  "limitations": [
+    "Coverage measures source-located candidates, not extraction accuracy.",
+    "Raw figures may include comparative years and report-specific units; admin verification is required.",
+    "Layout-heavy 2024 report pages yielded fewer candidates; image/table extraction is not complete."
+  ]
+}

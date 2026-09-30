@@ -1,0 +1,52 @@
+{
+  "created_at_utc": "2026-09-28T09:11:19.600815+00:00",
+  "route": "POST /api/ask",
+  "corpus_id": "VNM-ENTERPRISE-RAG-DEMO",
+  "corpus_manifest_sha256": "236010d3c0973b27fed8ffc5f70099496931251e3160fb088ddc74353d244031",
+  "route_dataset_sha256": "1ed8d581f3178d169aab73d07cab8d922a4fc6932992122165dafc9126de7f6f",
+  "coverage_dataset_sha256": "8109f0c0158111a1b196afdc76bae45d4a39cd9d238c597efd6b0275ab1835fb",
+  "model": "openai/gpt-oss-20b",
+  "actor_role": "admin",
+  "case_count": 1,
+  "attempted_count": 1,
+  "unrun_case_ids": [],
+  "stop_reason": null,
+  "passed": 0,
+  "failed": 1,
+  "mean_latency_seconds": 24.844,
+  "results": [
+    {
+      "id": "financial-report-analysis",
+      "corpus_coverage": "supported",
+      "expected_outcome": "answer_2024_revenue_and_profit_with_source_citations",
+      "expected_route": "hybrid",
+      "actual_route": "hybrid",
+      "passed": false,
+      "checks": {
+        "expected_route": true,
+        "citation_integrity": true,
+        "no_citation_validation_failure": true,
+        "citations_have_source_locations": true,
+        "source_document": true,
+        "revenue_and_profit_values": false,
+        "financial_values_in_cited_evidence": false,
+        "reported_magnitude_unit": false
+      },
+      "insufficient_context": false,
+      "cited_document_ids": [
+        "VNM-AR-2024-VI"
+      ],
+      "citation_pages": [
+        92
+      ],
+      "answer": "Revenue in 2024 was VND 52,576,991 million, and profit after tax was VND 8,686,245 million【S6】.",
+      "data_result_count": 0,
+      "latency_seconds": 24.844
+    }
+  ],
+  "limitations": [
+    "This is a single authenticated admin run over the public Vinamilk corpus; it is not a role-matrix test.",
+    "Supported and unsupported outcomes have deterministic route, source, value, abstention and result-shape checks.",
+    "Partial HR, compliance and executive cases still need blinded semantic review; these labels do not prove private-domain capability."
+  ]
+}

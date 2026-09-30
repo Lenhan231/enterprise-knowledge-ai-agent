@@ -1,0 +1,43 @@
+{
+  "created_at_utc": "2026-09-28T02:56:49.764736+00:00",
+  "route": "POST /api/ask",
+  "dataset": "data/evaluation/vinamilk_qa_cases.json",
+  "dataset_sha256": "11b0efc1ad44a83384666241fc5cfe0298c5d78130c7c04bb6960c1d785a0e27",
+  "model": "qwen/qwen3.8-27b",
+  "case_count": 1,
+  "attempted_count": 1,
+  "unrun_case_ids": [],
+  "stop_reason": null,
+  "passed": 1,
+  "failed": 0,
+  "mean_latency_seconds": 32.13,
+  "limitations": "Live authenticated app-route evaluation for the labeled public finance, sustainability, product and denial cases only. Automated exact-fact/source/route checks do not measure semantic faithfulness or human usefulness; private HR, contracts, invoices, manufacturing and customer-service documents are not in this corpus.",
+  "results": [
+    {
+      "id": "finance-2024-revenue-profit",
+      "role": "finance_analyst",
+      "question": "Tóm tắt doanh thu hợp nhất và lợi nhuận sau thuế của Vinamilk năm 2024.",
+      "passed": true,
+      "checks": {
+        "expected_agent": true,
+        "expected_abstention": true,
+        "expected_facts": true,
+        "expected_source_document": true,
+        "citation_integrity": true,
+        "denial_has_no_sources": true
+      },
+      "missing_facts": [],
+      "failed_fact_groups": [],
+      "cited_document_ids": [
+        "VNM-AR-2024-VI"
+      ],
+      "citation_pages": [
+        12
+      ],
+      "agent": "report",
+      "insufficient_context": false,
+      "answer": "* Tổng doanh thu hợp nhất năm 2024 là 61.824 tỷ đồng [S3]\n* Lợi nhuận sau thuế hợp nhất năm 2024 là 9.453 tỷ đồng [S3]",
+      "latency_seconds": 32.13
+    }
+  ]
+}

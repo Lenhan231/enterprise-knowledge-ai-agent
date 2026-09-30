@@ -7,20 +7,27 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts import check_vector_repository_integration as check
+from scripts.retrieval import check_vector_repository_integration as check
 
 
 class IntegrationCheckTest(unittest.TestCase):
-    def connection(self, missing_ids=0, metadata=None, empty=False):
+    def connection(self, missing_ids=0, metadata=None, empty=False, remote_migrations=None):
         conn = MagicMock()
         cur = conn.cursor.return_value.__enter__.return_value
         rows = [("doc.pdf", 0, " full text\n" * 3000,
                  {"document_id": "DOC"} if metadata is None else metadata, 1.0)]
+        if remote_migrations is None:
+            remote_migrations = sorted(
+                path.name.split("_", 1)[0]
+                for path in (check.REPO_ROOT / "supabase/migrations").glob("*.sql")
+            )
         cur.fetchall.side_effect = [
+            [(version,) for version in remote_migrations],
             [("embedding", "vector", 384, True, None),
              ("metadata", "jsonb", -1, True, "'{}'::jsonb")],
-            [("btree", True, 2, "document_name", "chunk_index", "text_ops"),
-             ("hnsw", False, 1, "embedding", None, "vector_cosine_ops")],
+            [("btree", True, 2, None, "chunk_index", "text_ops",
+              "(metadata ->> 'document_id'::text)"),
+             ("hnsw", False, 1, "embedding", None, "vector_cosine_ops", None)],
             rows, rows,
         ]
         vector = "[" + ",".join(["1.0"] + ["0.0"] * 383) + "]"
@@ -41,7 +48,20 @@ class IntegrationCheckTest(unittest.TestCase):
         self.assertTrue(check.passed(report))
         self.assertIn("REPEATABLE READ, READ ONLY", events[0])
         self.assertEqual(events[1], "register_vector")
+        executed_sql = " ".join(
+            " ".join(call.args[0].split())
+            for call in conn.cursor.return_value.__enter__.return_value.execute.call_args_list
+        )
+        self.assertIn("vector_candidates AS", executed_sql)
+        self.assertNotIn("bm25_scores AS", executed_sql)
         conn.commit.assert_not_called()
+
+    @patch.object(check, "register_vector")
+    def test_migration_drift_blocks_pass(self, register):
+        report = check.check_connection(self.connection(remote_migrations=[]))
+        self.assertFalse(report["migrations"]["matches"])
+        self.assertTrue(report["migrations"]["unapplied"])
+        self.assertFalse(check.passed(report))
 
     @patch.object(check, "register_vector")
     def test_legacy_rows_block_pass_even_when_sample_succeeds(self, register):

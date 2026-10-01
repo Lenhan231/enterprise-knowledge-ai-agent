@@ -7,6 +7,7 @@ import math
 import re
 import time
 import secrets
+import uuid
 from typing import Literal
 import jwt
 from jwt import InvalidTokenError
@@ -34,6 +35,11 @@ from core.agents.sql_analytics_agent import SQLAnalyticsAgent
 from core.models.agents import AgentRequest
 from core.rag.rag_service import extract_source_ids
 from core.analytics.metric_ontology import METRIC_ONTOLOGY
+from core.analytics.business_metric_catalog import (
+    BUSINESS_DECISION_PROFILES,
+    BUSINESS_METRIC_CATALOG,
+    BUSINESS_METRIC_DECISION_PROFILE,
+)
 from supabase import create_client
 
 logger = logging.getLogger(__name__)
@@ -42,9 +48,10 @@ app = FastAPI(title="Vietnam Enterprise Knowledge AI")
 APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"
 REPO_ROOT = APP_DIR.parents[1]
-CORPUS_COMPANY = json.loads(
+CORPUS_MANIFEST = json.loads(
     (REPO_ROOT / "data/vietnam_enterprises/manifest.json").read_text(encoding="utf-8")
-)["company"]
+)
+CORPUS_COMPANY = CORPUS_MANIFEST["company"]
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 auth_scheme = HTTPBearer(auto_error=False)
 DOCUMENT_ROLES = {"employee", "finance_analyst", "sustainability_analyst", "procurement", "operations", "legal_compliance", "executive", "admin"}
@@ -56,8 +63,9 @@ ROLE_PERMISSIONS = {
     "operations": {"view_corpus", "ask_documents"},
     "legal_compliance": {"view_corpus", "ask_documents"},
     "executive": {"view_corpus", "ask_documents", "view_analytics"},
-    "admin": {"view_corpus", "ask_documents", "view_analytics", "upload_documents", "classify_documents", "review_metrics", "manage_metrics", "manage_access", "view_agent_monitoring"},
+    "admin": {"view_corpus", "ask_documents", "view_analytics", "upload_documents", "classify_documents", "review_metrics", "manage_metrics", "manage_access", "view_agent_monitoring", "run_ocr_tests", "review_ocr_tests"},
     "document_uploader": {"view_corpus", "upload_documents", "classify_documents"},
+    "tester": {"run_ocr_tests", "review_ocr_tests"},
 }
 
 
@@ -88,7 +96,7 @@ def _storage_client():
 
 def _role_accounts() -> dict[str, tuple[str, str]]:
     accounts = {}
-    for role in ("admin", "analyst", "viewer", "sustainability_analyst"):
+    for role in ("admin", "analyst", "viewer", "sustainability_analyst", "tester"):
         username = os.getenv(f"DEMO_{role.upper()}_USERNAME")
         password = os.getenv(f"DEMO_{role.upper()}_PASSWORD")
         if username and password:
@@ -121,7 +129,7 @@ def _current_user(request: Request | WebSocket, credentials: HTTPAuthorizationCr
         payload = jwt.decode(token, secret, algorithms=["HS256"])
     except InvalidTokenError:
         raise HTTPException(401, "Invalid or expired session") from None
-    if payload.get("role") not in DOCUMENT_ROLES | {"document_uploader"}:
+    if payload.get("role") not in DOCUMENT_ROLES | {"document_uploader", "tester"}:
         raise HTTPException(401, "Invalid or expired session")
     return payload
 
@@ -145,6 +153,14 @@ class AskRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     question: str = Field(min_length=3, max_length=1000)
     retrieval_method: Literal["dense", "bm25", "hybrid", "parent"] = "hybrid"
+    business_decision_domain: str | None = None
+
+    @field_validator("business_decision_domain")
+    @classmethod
+    def known_business_decision_domain(cls, value: str | None) -> str | None:
+        if value is not None and value not in BUSINESS_DECISION_PROFILES:
+            raise ValueError("Choose a configured business decision domain")
+        return value
 
 
 class LoginRequest(BaseModel):
@@ -258,6 +274,57 @@ class ManualMetricRequest(BaseModel):
         return str(parsed)
 
 
+class BusinessMetricCandidateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    metric_name: str
+    fiscal_year: int = Field(ge=1900, le=2100)
+    metric_value: str = Field(min_length=1, max_length=40)
+    unit: str = Field(min_length=1, max_length=40)
+    scope: str = Field(min_length=8, max_length=500)
+    source_document_id: str = Field(min_length=3, max_length=120)
+    page_number: int = Field(gt=0, le=10000)
+    source_quote: str = Field(min_length=12, max_length=3000)
+    source_url: str = Field(min_length=8, max_length=1000)
+    allowed_roles: list[str] = Field(min_length=1)
+
+    @field_validator("metric_name")
+    @classmethod
+    def known_business_metric(cls, value: str) -> str:
+        if value not in BUSINESS_METRIC_CATALOG:
+            raise ValueError("Choose a metric from the business metric catalog")
+        return value
+
+    @field_validator("metric_value")
+    @classmethod
+    def valid_metric_value(cls, value: str) -> str:
+        parsed = CandidateReviewRequest(status="verified", normalized_value=value, unit="validation").normalized_value
+        return str(parsed)
+
+    @field_validator("unit", "scope", "source_document_id", "source_quote", "source_url")
+    @classmethod
+    def trim_required_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("This field cannot be blank")
+        return value
+
+    @field_validator("source_url")
+    @classmethod
+    def https_source_url(cls, value: str) -> str:
+        parsed = urlsplit(value)
+        if parsed.scheme != "https" or not parsed.netloc:
+            raise ValueError("Source URL must use HTTPS")
+        return value
+
+    @field_validator("allowed_roles")
+    @classmethod
+    def known_business_roles(cls, value: list[str]) -> list[str]:
+        roles = sorted(set(value))
+        if not roles or set(roles) - DOCUMENT_ROLES:
+            raise ValueError("Select one or more known roles")
+        return roles
+
+
 @app.get("/", include_in_schema=False)
 def home():
     return FileResponse(STATIC_DIR / "index.html")
@@ -280,7 +347,7 @@ def login(request: LoginRequest):
 
 
 @app.get("/api/auth/me")
-def who_am_i(user: dict = Depends(require_permission("view_corpus"))):
+def who_am_i(user: dict = Depends(require_roles(*ROLE_PERMISSIONS.keys()))):
     return {"username": user["sub"], "role": user["role"]}
 
 
@@ -328,6 +395,8 @@ async def upload_document(
     document_type: str = Form(...),
     domain: str = Form(...),
     fiscal_year: int | None = Form(default=None),
+    source_url: str | None = Form(default=None),
+    business_decision_domain: str = Form(default=""),
     allowed_roles: list[str] = Form(default=[]),
     user: dict = Depends(require_permission("upload_documents")),
 ):
@@ -340,6 +409,18 @@ async def upload_document(
         raise HTTPException(415, "Supported formats: PDF, DOCX, PPTX, XLSX, TXT, MD, PNG, JPG, TIF")
     if not title.strip() or not document_type.strip() or not domain.strip():
         raise HTTPException(422, "Title, document type, and domain are required")
+    business_decision_domain = business_decision_domain.strip() if business_decision_domain else None
+    if not business_decision_domain:
+        business_decision_domain = None
+    if business_decision_domain and business_decision_domain not in BUSINESS_DECISION_PROFILES:
+        raise HTTPException(422, "Select a configured business decision domain")
+    if not isinstance(source_url, str):
+        source_url = None
+    if source_url:
+        parsed_source_url = urlsplit(source_url.strip())
+        if parsed_source_url.scheme != "https" or not parsed_source_url.netloc:
+            raise HTTPException(422, "Source URL must use HTTPS")
+        source_url = source_url.strip()
     if not allowed_roles or set(allowed_roles) - DOCUMENT_ROLES:
         raise HTTPException(422, "Select one or more valid access roles")
     content = await file.read(50 * 1024 * 1024 + 1)
@@ -350,8 +431,6 @@ async def upload_document(
                   ".tif": content.startswith((b"II*\x00", b"MM\x00*")), ".tiff": content.startswith((b"II*\x00", b"MM\x00*"))}
     if extension in signatures and not signatures[extension]:
         raise HTTPException(415, "File content does not match its extension")
-
-    import uuid
 
     document_id = f"UPLOAD-{uuid.uuid4().hex}"
     storage_path = f"{document_id}/{filename}"
@@ -366,6 +445,7 @@ async def upload_document(
     uploaded = False
     registered = False
     parsed_chunks_saved = False
+    business_metric_candidates_saved = 0
     try:
         storage.storage.from_(bucket).upload(
             storage_path, content,
@@ -386,7 +466,7 @@ async def upload_document(
             "title": title.strip(),
             "year_or_version": str(fiscal_year) if fiscal_year else None,
             "format": extension[1:].upper(),
-            "source_url": None,
+            "source_url": source_url,
             "verification": f"User upload SHA-256 {source_hash}",
             "document_type": document_type,
             "fiscal_year": str(fiscal_year) if fiscal_year else None,
@@ -413,7 +493,7 @@ async def upload_document(
             "title": title.strip(),
             "document_type": document_type,
             "fiscal_year": fiscal_year,
-            "source_url": None,
+            "source_url": source_url,
             "source_type": "user_upload",
             "allowed_roles": allowed_roles,
         }
@@ -461,9 +541,11 @@ async def upload_document(
                 chunk_metadata.update({
                     "chunk_index": len(bounded_chunks),
                     "token_count": token_counter.count(text),
+                    "actual_char_count": len(text),
                 })
                 bounded_chunks.append({"text": text, "metadata": chunk_metadata})
         chunks = bounded_chunks
+        business_metric_candidates = []
         parsed_repository = ProcessedChunksRepository()
         try:
             parsed_repository.replace_document(document_id, chunks)
@@ -471,6 +553,7 @@ async def upload_document(
             parsed_repository.close()
         candidate_chunks = chunks
         candidate_tables = processed.get("tables", [])
+        text_evidence_page_numbers = set()
         if fiscal_year and extension == ".pdf":
             from core.analytics.financial_extraction import select_financial_pages
 
@@ -490,46 +573,62 @@ async def upload_document(
             ]
         metric_candidates = extract_metric_candidates(
             [{"metadata": chunk["metadata"], "text": chunk["text"]} for chunk in candidate_chunks],
-            {
-                **metadata,
-                "rbac": {"allowed_roles": allowed_roles},
-            },
-            candidate_tables,
-            text_evidence_page_numbers=(
-                text_evidence_page_numbers if fiscal_year and extension == ".pdf" else None
-            ),
+            {**metadata, "rbac": {"allowed_roles": allowed_roles}}, candidate_tables,
+            text_evidence_page_numbers=text_evidence_page_numbers or None,
         ) if fiscal_year else []
-        if fiscal_year and extension == ".pdf":
+        if extension == ".pdf":
             llm_provider = None
-            try:
-                from core.analytics.financial_extraction import (
-                    extract_financial_candidates, merge_candidate_sources,
-                )
-                from core.llm.groq_provider import GroqProvider
+            if business_decision_domain or fiscal_year:
+                try:
+                    from core.llm.groq_provider import GroqProvider
 
-                llm_provider = GroqProvider()
-                llm_candidates, selected_pages = extract_financial_candidates(
-                    chunks, processed.get("tables", []),
-                    {**metadata, "rbac": {"allowed_roles": allowed_roles}},
-                    llm_provider,
-                )
-                metric_candidates = merge_candidate_sources(metric_candidates, llm_candidates)
-                logger.info(
-                    "Financial page extraction document=%s selected_pages=%s candidates=%s method=%s",
-                    document_id, [page["page_number"] for page in selected_pages],
-                    len(llm_candidates), "llm" if llm_candidates else "rule_fallback",
-                )
-            except Exception:
-                logger.exception(
-                    "Financial LLM extraction failed for %s; retaining parser candidates",
-                    document_id,
-                )
-            finally:
-                if llm_provider is not None:
-                    try:
-                        llm_provider.close()
-                    except Exception:
-                        logger.exception("Failed to close financial extraction provider for %s", document_id)
+                    llm_provider = GroqProvider()
+                except Exception:
+                    logger.exception("Could not initialize extraction provider for %s", document_id)
+            if business_decision_domain and llm_provider is not None:
+                try:
+                    from core.analytics.business_metric_extraction import extract_business_metric_candidates
+
+                    business_metric_candidates, business_chunks = extract_business_metric_candidates(
+                        chunks, processed.get("tables", []),
+                        {**metadata, "document_id": document_id,
+                         "business_decision_domain": business_decision_domain,
+                         "rbac": {"allowed_roles": allowed_roles}},
+                        llm_provider,
+                    )
+                    logger.info(
+                        "Business metric extraction document=%s decision_domain=%s selected_evidence_chunks=%s candidates=%s",
+                        document_id, business_decision_domain,
+                        [(page.get("page_number"), [chunk.get("chunk_index") for chunk in page.get("chunks", [])])
+                         for page in business_chunks],
+                        len(business_metric_candidates),
+                    )
+                except Exception:
+                    logger.exception("Business metric extraction failed for %s", document_id)
+            if fiscal_year:
+                try:
+                    from core.analytics.financial_extraction import (
+                        extract_financial_candidates, merge_candidate_sources,
+                    )
+
+                    llm_candidates, selected_pages = extract_financial_candidates(
+                        chunks, processed.get("tables", []),
+                        {**metadata, "rbac": {"allowed_roles": allowed_roles}},
+                        llm_provider,
+                    )
+                    metric_candidates = merge_candidate_sources(metric_candidates, llm_candidates)
+                    logger.info(
+                        "Financial page extraction document=%s selected_pages=%s candidates=%s",
+                        document_id, [page["page_number"] for page in selected_pages],
+                        len(llm_candidates),
+                    )
+                except Exception:
+                    logger.exception("Financial LLM extraction failed for %s; retaining parser candidates", document_id)
+            if llm_provider is not None:
+                try:
+                    llm_provider.close()
+                except Exception:
+                    logger.exception("Failed to close extraction provider for %s", document_id)
         repository.save_metric_candidates(document_id, metric_candidates)
         parsed_repository = ProcessedChunksRepository()
         parsed_repository.set_status(document_id, "embedding")
@@ -546,6 +645,10 @@ async def upload_document(
             ])
         finally:
             chunk_repository.close()
+        if business_metric_candidates:
+            business_metric_candidates_saved = repository.save_business_metric_candidates(
+                business_metric_candidates, entered_by="parser",
+            )
         parsed_repository = ProcessedChunksRepository()
         try:
             parsed_repository.replace_document(document_id, chunks)
@@ -553,7 +656,11 @@ async def upload_document(
         finally:
             parsed_repository.close()
         repository.update_processing_status(document_id, "ready")
-        return {"document_id": document_id, "storage_path": storage_path, "processing_status": "ready", "searchable": True, "sha256": source_hash}
+        return {
+            "document_id": document_id, "storage_path": storage_path,
+            "processing_status": "ready", "searchable": True, "sha256": source_hash,
+            "business_metric_candidates": business_metric_candidates_saved,
+        }
     except HTTPException:
         if registered and repository is not None:
             try:
@@ -595,6 +702,148 @@ async def upload_document(
             repository.close()
 
 
+@app.post("/api/ocr-tests")
+async def create_ocr_test(
+    request: Request,
+    file: UploadFile = File(...),
+    tesseract_psm: int = Form(default=11),
+    tesseract_table_psm: int = Form(default=3),
+    render_scale: float = Form(default=1.5),
+    table_render_scale: float = Form(default=2.5),
+    user: dict = Depends(require_permission("run_ocr_tests")),
+):
+    """Run the upload PDF parser and save inspectable output outside the corpus."""
+    _require_same_origin(request)
+    filename = Path((file.filename or "").replace("\\", "/")).name
+    if Path(filename).suffix.lower() != ".pdf":
+        raise HTTPException(415, "OCR Lab accepts PDF files only")
+    if tesseract_psm not in {3, 6, 11, 12} or tesseract_table_psm not in {3, 4, 6, 11, 12}:
+        raise HTTPException(422, "Unsupported Tesseract page segmentation mode")
+    if render_scale not in {1.5, 2.5} or table_render_scale not in {1.5, 2.5}:
+        raise HTTPException(422, "Render scale must be 1.5 or 2.5")
+    content = await file.read(20 * 1024 * 1024 + 1)
+    if len(content) > 20 * 1024 * 1024:
+        raise HTTPException(413, "OCR test PDF exceeds the 20 MiB limit")
+    if b"%PDF-" not in content[:1024]:
+        raise HTTPException(415, "The uploaded file is not a PDF")
+
+    import fitz
+    import hashlib
+    import subprocess
+    import uuid
+
+    try:
+        source = fitz.open(stream=content, filetype="pdf")
+        page_count = len(source)
+        if not 1 <= page_count <= 50:
+            source.close()
+            raise HTTPException(422, "OCR Lab accepts PDFs with 1-50 pages")
+        page_previews = []
+        for page in source:
+            scale = min(120 / 72, 1800 / page.rect.width, 2400 / page.rect.height)
+            page_previews.append(page.get_pixmap(
+                matrix=fitz.Matrix(scale, scale), alpha=False,
+            ).tobytes("png"))
+        source.close()
+    except HTTPException:
+        raise
+    except Exception as error:
+        raise HTTPException(422, "Could not open the uploaded PDF") from error
+
+    config = {
+        "chunking_strategy": os.getenv("DOCUMENT_CHUNKING_STRATEGY", "sentence"),
+        "paddle_layout": os.getenv("DOCUMENT_PADDLE_LAYOUT", "false").strip().lower() == "true",
+        "paddle_formula_recognition": os.getenv("DOCUMENT_PADDLE_FORMULA_RECOGNITION", "false").strip().lower() == "true",
+        "vision_captioning": False,
+        "tesseract_psm": tesseract_psm,
+        "tesseract_table_psm": tesseract_table_psm,
+        "ocr_render_scale": render_scale,
+        "ocr_table_render_scale": table_render_scale,
+    }
+    run_id = uuid.uuid4()
+    source_sha256 = hashlib.sha256(content).hexdigest()
+    from core.document_processing.processors.document_processor import DocumentProcessor
+    try:
+        parsed = DocumentProcessor(config).process(
+            filename, content, {"source_type": "ocr_test", "source_sha256": source_sha256},
+        )
+    except (ValueError, RuntimeError) as error:
+        raise HTTPException(422, f"OCR processing failed: {error}") from error
+    try:
+        tesseract_version = subprocess.run(
+            ["tesseract", "--version"], capture_output=True, check=True,
+            text=True, timeout=10,
+        ).stdout.splitlines()[0]
+    except (OSError, subprocess.SubprocessError, IndexError):
+        tesseract_version = None
+    runtime_info = {"pymupdf": fitz.VersionBind, "tesseract": tesseract_version}
+
+    from core.database.ocr_test_repository import OcrTestRepository
+    repository = OcrTestRepository()
+    try:
+        repository.save_run(
+            run_id, source_filename=filename, source_sha256=source_sha256,
+            uploaded_by=user["sub"], processor_config=config, runtime_info=runtime_info,
+            page_previews=page_previews, chunks=parsed["chunks"], tables=parsed["tables"],
+        )
+    except Exception as error:
+        logger.exception("Could not persist OCR test run %s", run_id)
+        raise HTTPException(503, "OCR completed, but its test output could not be saved") from error
+    finally:
+        repository.close()
+    return {
+        "run_id": str(run_id), "source_filename": filename,
+        "source_sha256": source_sha256, "page_count": page_count,
+        "chunk_count": len(parsed["chunks"]), "table_count": len(parsed["tables"]),
+        "processor_config": config, "runtime_info": runtime_info,
+    }
+
+
+@app.get("/api/ocr-tests")
+def list_ocr_tests(user: dict = Depends(require_permission("review_ocr_tests"))):
+    from core.database.ocr_test_repository import OcrTestRepository
+
+    repository = OcrTestRepository()
+    try:
+        return {"runs": repository.list_runs()}
+    finally:
+        repository.close()
+
+
+@app.get("/api/ocr-tests/{run_id}")
+def inspect_ocr_test(
+    run_id: uuid.UUID,
+    user: dict = Depends(require_permission("review_ocr_tests")),
+):
+    from core.database.ocr_test_repository import OcrTestRepository
+
+    repository = OcrTestRepository()
+    try:
+        run = repository.get_run(run_id)
+        if run is None:
+            raise HTTPException(404, "OCR test run not found")
+        return run
+    finally:
+        repository.close()
+
+
+@app.get("/api/ocr-tests/{run_id}/pages/{page_number}/preview")
+def get_ocr_test_preview(
+    run_id: uuid.UUID, page_number: int,
+    user: dict = Depends(require_permission("review_ocr_tests")),
+):
+    from core.database.ocr_test_repository import OcrTestRepository
+
+    repository = OcrTestRepository()
+    try:
+        preview = repository.get_page_preview(run_id, page_number)
+        if preview is None:
+            raise HTTPException(404, "OCR test page preview not found")
+        return Response(content=preview, media_type="image/png")
+    finally:
+        repository.close()
+
+
 @app.get("/api/analytics")
 def analytics_data(user: dict = Depends(require_permission("view_analytics"))):
     repository = None
@@ -617,6 +866,75 @@ def analytics_data(user: dict = Depends(require_permission("view_analytics"))):
 def metric_catalog(user: dict = Depends(require_permission("view_analytics"))):
     return [{"metric_name": name, **definition}
             for name, definition in METRIC_ONTOLOGY.items()]
+
+
+@app.get("/api/business-metrics/catalog")
+def business_metric_catalog(user: dict = Depends(require_permission("view_analytics"))):
+    return [{
+        "metric_name": name,
+        **definition,
+        "decision_priority": "primary" if name in BUSINESS_METRIC_DECISION_PROFILE else "supporting",
+        "decision_profile": BUSINESS_METRIC_DECISION_PROFILE.get(name),
+        "decision_profile_label": BUSINESS_DECISION_PROFILES[
+            BUSINESS_METRIC_DECISION_PROFILE[name]
+        ]["label"] if name in BUSINESS_METRIC_DECISION_PROFILE else None,
+    } for name, definition in BUSINESS_METRIC_CATALOG.items()]
+
+
+@app.post("/api/business-metrics/candidates")
+def create_business_metric_candidate(
+    request: BusinessMetricCandidateRequest,
+    user: dict = Depends(require_permission("manage_metrics")),
+):
+    repository = None
+    try:
+        repository = DocumentRepository()
+        candidate_id = repository.create_business_metric_candidate(
+            company=CORPUS_COMPANY,
+            metric={"name": request.metric_name, **BUSINESS_METRIC_CATALOG[request.metric_name]},
+            fiscal_year=request.fiscal_year,
+            metric_value=float(request.metric_value), unit=request.unit, scope=request.scope,
+            source_document_id=request.source_document_id, page_number=request.page_number,
+            source_quote=request.source_quote, source_url=request.source_url,
+            allowed_roles=request.allowed_roles, entered_by=user["sub"],
+            extraction_method="manual", extractor_version="manual-v1",
+        )
+        return {"id": candidate_id, "status": "needs_review"}
+    except (TypeError, ValueError) as error:
+        raise HTTPException(422, str(error)) from error
+    except Exception as error:
+        logger.exception("Could not save business metric evidence")
+        raise HTTPException(503, "Could not save business metric evidence") from error
+    finally:
+        if repository is not None:
+            repository.close()
+
+
+@app.post("/api/business-metrics/{metric_id}/review")
+def review_business_metric(
+    metric_id: int, request: CandidateReviewRequest,
+    user: dict = Depends(require_permission("review_metrics")),
+):
+    repository = None
+    try:
+        repository = DocumentRepository()
+        updated = repository.review_business_metric(
+            metric_id, request.status, request.normalized_value, request.unit,
+            user["sub"], CORPUS_COMPANY,
+        )
+        if not updated:
+            raise HTTPException(404, "Business metric not found or already reviewed")
+        return {"id": metric_id, "status": request.status}
+    except HTTPException:
+        raise
+    except (TypeError, ValueError) as error:
+        raise HTTPException(422, str(error)) from error
+    except Exception as error:
+        logger.exception("Could not review business metric %s", metric_id)
+        raise HTTPException(503, "Could not save business metric review") from error
+    finally:
+        if repository is not None:
+            repository.close()
 
 
 @app.post("/api/metrics/manual")
@@ -713,15 +1031,13 @@ def inspect_extracted_tables(
         store.close()
 
 
-@app.get("/api/admin/processing/{document_id}/source")
-def open_uploaded_source(
-    document_id: str,
-    user: dict = Depends(require_permission("review_metrics")),
-):
-    """Stream a ready upload to an authorized reviewer without exposing Storage credentials."""
+def _uploaded_source_response(document_id: str, user: dict) -> Response:
     repository = DocumentRepository()
     try:
-        source = repository.uploaded_source(document_id, company=CORPUS_COMPANY)
+        source = repository.uploaded_source(
+            document_id, company=CORPUS_COMPANY,
+            role=user["role"], username=user["sub"],
+        )
     finally:
         repository.close()
     if source is None:
@@ -759,6 +1075,24 @@ def open_uploaded_source(
             "X-Content-Type-Options": "nosniff",
         },
     )
+
+
+@app.get("/api/documents/{document_id}/source")
+def open_authorized_uploaded_source(
+    document_id: str,
+    user: dict = Depends(require_permission("view_corpus")),
+):
+    """Stream an uploaded source only when its document RBAC allows the caller."""
+    return _uploaded_source_response(document_id, user)
+
+
+@app.get("/api/admin/processing/{document_id}/source")
+def open_uploaded_source(
+    document_id: str,
+    user: dict = Depends(require_permission("review_metrics")),
+):
+    """Admin review route retained for the processing inspector."""
+    return _uploaded_source_response(document_id, user)
 
 
 @app.post("/api/analytics/candidates/{candidate_id}/review")
@@ -844,6 +1178,7 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
                 "role": user["role"],
                 "company": CORPUS_COMPANY,
                 "retrieval_method": request.retrieval_method,
+                "business_decision_domain": request.business_decision_domain,
             },
         ))
         cited_ids = _referenced_citation_ids(agent_result.answer)
@@ -854,6 +1189,8 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
                 "title": evidence.metadata.get("title", evidence.source),
                 "document_id": evidence.metadata.get("document_id"),
                 "chunk_index": evidence.metadata.get("chunk_index"),
+                "source_chunk_id": evidence.metadata.get("source_chunk_id", evidence.metadata.get("chunk_id")),
+                "source_content_hash": evidence.metadata.get("source_content_hash"),
                 "page_number": evidence.metadata.get("page_number"),
                 "source_url": evidence.metadata.get("source_url"),
                 "excerpt": evidence.content[:700] if evidence.content else "",

@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=enterprise-dashboard-en-5">
+  <link rel="stylesheet" href="/static/styles.css?v=decision-metrics-13">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -42,7 +42,7 @@
       <p class="eyebrow">SECURE ENTERPRISE ACCESS</p>
       <h1>Sign in to your knowledge workspace</h1>
       <label for="username">Username</label>
-      <input id="username" name="username" autocomplete="username" placeholder="e.g. admin, analyst, viewer" required>
+      <input id="username" name="username" autocomplete="username" placeholder="e.g. admin, analyst, viewer, tester" required>
       <label for="password">Password</label>
       <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
       <p id="login-error" class="error-message" hidden></p>
@@ -104,6 +104,9 @@
       </button>
       <button id="tab-button-processing" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-processing" data-tab-target="processing" hidden>
         Document Processing
+      </button>
+      <button id="tab-button-ocr-lab" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-ocr-lab" data-tab-target="ocr-lab" hidden>
+        OCR Lab
       </button>
       <button id="tab-button-metrics" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-metrics" data-tab-target="metrics" hidden>
         Metric Management
@@ -197,6 +200,15 @@
         </div>
         <div id="analysis-summary" class="analysis-summary" aria-label="Analysis coverage"></div>
 
+        <div class="analytics-subtabs" role="tablist" aria-label="Analytics views">
+          <button id="analytics-tab-financial" class="analytics-subtab active" type="button" role="tab"
+            aria-selected="true" aria-controls="analytics-panel-financial" data-analytics-tab="financial">Financial Results &amp; YoY Variance</button>
+          <button id="analytics-tab-business" class="analytics-subtab" type="button" role="tab"
+            aria-selected="false" aria-controls="analytics-panel-business" data-analytics-tab="business" tabindex="-1">Markets, Operations &amp; Sustainability</button>
+        </div>
+
+        <div id="analytics-panel-financial" class="analytics-subpanel" role="tabpanel" aria-labelledby="analytics-tab-financial">
+
         <section class="analysis-section" aria-labelledby="financial-title">
           <div class="analysis-section-heading">
             <div>
@@ -210,23 +222,75 @@
           <div id="financial-trends" class="financial-trends"></div>
         </section>
 
+        <section class="analysis-section" aria-labelledby="segment-margin-title">
+          <div class="analysis-section-heading">
+            <div>
+              <p class="eyebrow">DERIVED FROM VERIFIED OBSERVATIONS</p>
+              <h3 id="segment-margin-title">Gross margin by customer geography</h3>
+            </div>
+            <span>Gross profit ÷ net revenue · before selling and administration costs</span>
+          </div>
+          <div id="segment-gross-margin-kpis" class="financial-kpis"></div>
+        </section>
+
+        </div>
+
+        <div id="analytics-panel-business" class="analytics-subpanel" role="tabpanel" aria-labelledby="analytics-tab-business" hidden>
+
+        <section class="analysis-section" aria-labelledby="milk-supply-title">
+          <div class="analysis-section-heading">
+            <div>
+              <p class="eyebrow">VERIFIED BUSINESS DECISION DOMAINS</p>
+              <h3 id="milk-supply-title">Business performance by decision domain</h3>
+            </div>
+            <div class="analytics-tools">
+              <label>Decision domain:
+                <select id="analytics-domain" aria-label="Filter business metrics by decision domain">
+                  <option value="">All domains</option>
+                </select>
+              </label>
+              <label>Business metrics:
+                <select id="analytics-metric-scope" aria-label="Choose primary or all verified business metrics">
+                  <option value="primary">Primary decision KPIs</option>
+                  <option value="all">All verified metrics</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div id="business-metric-kpis" class="financial-kpis"></div>
+          <div id="business-metric-trends" class="financial-trends"></div>
+          <p class="analysis-caveat">Report figures describe public annual snapshots. They do not include live purchase price, quality, rejection, factory demand or regional data.</p>
+        </section>
+
         <section class="analysis-section" aria-labelledby="business-question-title">
           <div class="analysis-section-heading">
             <div>
               <p class="eyebrow">DOCUMENT-GROUNDED SYNTHESIS</p>
               <h3 id="business-question-title">Ask an analytical business question</h3>
             </div>
-            <span>Answers synthesize role-authorized documents; filters above apply to metrics and charts.</span>
+            <span>Decision answers combine verified KPIs with role-authorized source passages; filters above apply to charts.</span>
           </div>
           <form id="business-question-form" class="business-question-form">
             <label class="visually-hidden" for="business-question">Analytical question</label>
-            <textarea id="business-question" minlength="3" maxlength="1000" required placeholder="Example: Summarize Vinamilk's 2024 revenue growth drivers and domestic vs export performance."></textarea>
+            <textarea id="business-question" minlength="3" maxlength="1000" required placeholder="Example: Should Vinamilk prioritize overseas or domestic investment? Compare FY2025 growth and FY2024–FY2025 revenue changes, then identify missing margin, cost, capacity and return evidence."></textarea>
             <button id="business-question-button" type="submit" class="submit-query-btn">
-              <span>Analyze sources</span>
+              <span>Analyze decision evidence</span>
             </button>
           </form>
+          <div class="decision-question-prompts" aria-label="Decision-support question examples">
+            <span>Decision questions</span>
+            <button type="button" data-required-metrics="domestic_consolidated_net_revenue,domestic_segment_gross_profit,overseas_market_net_revenue,overseas_segment_gross_profit" data-decision-question="Compare Vinamilk's domestic and overseas segment net revenue and segment gross profit in 2022 and 2023. Which market improved more, and what additional evidence is needed before reallocating investment?"><strong>Market allocation</strong><small>Compare domestic and overseas results · 2022–2023</small></button>
+            <button type="button" data-required-metrics="domestic_consolidated_net_revenue,overseas_market_net_revenue,domestic_consolidated_net_revenue_growth,overseas_market_net_revenue_growth" data-decision-question="Should Vinamilk prioritize overseas or domestic investment based on FY2025 revenue growth? Compare each market's FY2024–FY2025 revenue scale and absolute change as well as reported growth, then identify missing margins, distribution costs, capacity, working capital and expected returns before allocating capital."><strong>Market investment diligence</strong><small>FY2025 growth + FY2024–FY2025 revenue change · cite verified metrics</small></button>
+            <button type="button" data-required-metrics="guinea_export_revenue_growth,hong_kong_export_revenue_growth,japan_export_revenue_growth" data-decision-question="Which export markets should Vinamilk prioritize for a commercial diligence review or limited pilot? Compare Guinea, Hong Kong and Japan using the FY2025 reported growth rates, then explain why the figures are not enough to approve a capital shift and list the market-level revenue, margin, cost and capacity data still needed."><strong>Export market shortlist</strong><small>Guinea · Hong Kong · Japan · diligence signal, not ROI</small></button>
+            <button type="button" data-required-metrics="farmer_raw_milk_purchased" data-decision-question="Compare Vinamilk's raw fresh milk purchased from farming households in 2023, 2024 and 2025. How large is the reported change, what sourcing or supplier-support actions should leadership investigate next, and what operating evidence is needed before changing procurement?"><strong>Milk sourcing</strong><small>Farmer purchase trend · 2023–2025 · decision limits</small></button>
+            <button type="button" data-required-metrics="production_lines_meeting_oee_target,production_cost_savings,purchasing_cost_savings" data-decision-question="Given Vinamilk's FY2024 report of more than 96% of production lines meeting their OEE targets, estimated production cost savings of VND 100.8 billion, and nearly VND 550 billion savings from purchasing activities, which factory and procurement reviews should management prioritize next? Preserve the reported qualifiers, do not infer causes, and list the plant-level OEE, baseline, spend-category and cost data required before approving investment or savings targets."><strong>Factory and procurement priorities</strong><small>FY2024 OEE and reported savings · identify next diligence</small></button>
+            <button type="button" data-required-metrics="total_raw_water_intake,recycled_reused_water,total_water_consumption,wastewater_discharge,scope_1_ghg_emissions,scope_2_ghg_emissions,scope_1_2_ghg_emissions,dairy_product_ghg_intensity,sugar_product_ghg_intensity,total_waste_generated,waste_recovered_recycled,waste_treated_disposed" data-decision-question="Across the reported 2023–2025 water, emissions and waste indicators, which environmental priorities appear to be improving? Account for changes in reporting scope and identify what is not comparable."><strong>Environmental priorities</strong><small>Water, emissions and waste · 2023–2025</small></button>
+            <button type="button" data-required-metrics="plant_based_milk_sales_growth,green_farm_sales_growth,green_farm_brand_awareness,green_farm_urban_purchase_consideration,green_farm_customer_loyalty,new_or_relaunched_products" data-decision-question="Which Vinamilk product portfolio initiatives should management investigate for retention or expansion? Compare reported plant-based milk sales growth, Green Farm sales growth, Green Farm brand awareness, purchase consideration, Green Farm loyalty and new or relaunched products; identify the profitability evidence needed before scaling."><strong>Product portfolio</strong><small>Growth, consideration, loyalty · evidence limits</small></button>
+          </div>
           <div id="business-answer-panel" class="answer-panel" hidden aria-live="polite"></div>
         </section>
+
+        </div>
 
         <section class="analysis-section" aria-labelledby="operations-title">
           <div class="analysis-section-heading">
@@ -276,8 +340,26 @@
           <label for="upload-domain">Domain</label>
           <input id="upload-domain" name="domain" required maxlength="80" placeholder="finance_and_operations">
 
+          <label for="upload-business-decision-domain">Business decision domain (optional)</label>
+          <select id="upload-business-decision-domain" name="business_decision_domain">
+            <option value="">Do not extract business KPIs</option>
+            <option value="market_performance">Market performance — revenue scale and growth</option>
+            <option value="milk_supply">Milk supply resilience</option>
+            <option value="product_portfolio">Product portfolio investment signals</option>
+            <option value="manufacturing_efficiency">Factory productivity and cost control</option>
+            <option value="human_resources">Workforce capacity and capability</option>
+            <option value="environmental_performance">Environmental performance</option>
+            <option value="farm_operations">Farm capacity and operations</option>
+            <option value="distribution_reach">Distribution reach</option>
+            <option value="manufacturing_quality">Manufacturing quality reliability</option>
+          </select>
+
           <label for="upload-year">Fiscal year</label>
           <input id="upload-year" name="fiscal_year" type="number" min="1900" max="2100" placeholder="2024">
+
+          <label for="upload-source-url">Official source URL (optional)</label>
+          <input id="upload-source-url" name="source_url" type="url" pattern="https://.*" placeholder="https://…">
+          <p class="corpus-note">Choose one decision domain to extract only its primary KPIs. Unselected domains are not sent to the extraction model; all parsed content is still retained for search and QA. Candidates stay pending for admin review.</p>
 
           <fieldset>
             <legend>Roles authorized to retrieve this document</legend>
@@ -310,6 +392,32 @@
 
     </section>
 
+    <section id="tab-ocr-lab" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-ocr-lab" hidden>
+      <section class="candidate-review">
+        <div class="section-heading">
+          <div><p class="eyebrow">ISOLATED OCR TESTING</p><h2>Review parser output against each page</h2></div>
+        </div>
+        <p>Runs the same PDF parser configuration used by app uploads. Test files, page previews, chunks, and extracted tables stay outside the production corpus and are not embedded.</p>
+        <form id="ocr-test-form" class="upload-form">
+          <label for="ocr-test-file">PDF to test (up to 20 MiB, 50 pages)</label>
+          <input id="ocr-test-file" name="file" type="file" accept="application/pdf,.pdf" required>
+          <label for="ocr-test-psm">Tesseract page segmentation (text)</label>
+          <select id="ocr-test-psm" name="tesseract_psm"><option value="11" selected>11 · sparse text (current upload default)</option><option value="3">3 · automatic page segmentation</option><option value="6">6 · uniform text block</option><option value="12">12 · sparse text with OSD</option></select>
+          <label for="ocr-test-table-psm">Tesseract page segmentation (table)</label>
+          <select id="ocr-test-table-psm" name="tesseract_table_psm"><option value="3" selected>3 · automatic (current upload default)</option><option value="4">4 · single column</option><option value="6">6 · uniform text block</option><option value="11">11 · sparse text</option><option value="12">12 · sparse text with OSD</option></select>
+          <label for="ocr-test-render-scale">Page OCR render scale</label>
+          <select id="ocr-test-render-scale" name="render_scale"><option value="1.5" selected>1.5 · current upload default (108 DPI)</option><option value="2.5">2.5 (180 DPI)</option></select>
+          <label for="ocr-test-table-scale">Table OCR render scale</label>
+          <select id="ocr-test-table-scale" name="table_render_scale"><option value="2.5" selected>2.5 · current upload default (180 DPI)</option><option value="1.5">1.5 (108 DPI)</option></select>
+          <button id="ocr-test-button" type="submit" class="primary-button">Run OCR test</button>
+          <p id="ocr-test-status" class="corpus-note" aria-live="polite"></p>
+        </form>
+        <h3 class="subheading-margin">Recent test runs</h3>
+        <div id="ocr-test-runs"></div>
+        <div id="ocr-test-results"></div>
+      </section>
+    </section>
+
     <section id="tab-metrics" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-metrics" hidden>
       <section id="metric-management-section" class="candidate-review" hidden>
         <div class="section-heading">
@@ -339,6 +447,42 @@
           </fieldset>
           <button id="manual-metric-button" type="submit" class="primary-button">Save for admin verification</button>
           <p id="manual-metric-status" class="corpus-note" aria-live="polite"></p>
+        </form>
+      </section>
+      <section id="business-metric-management-section" class="candidate-review" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">SOURCE-BACKED OPERATIONS METRICS</p>
+            <h2>Add a source-backed business metric</h2>
+          </div>
+        </div>
+        <p>Enter a report observation with its exact page, quote, scope and public source. It remains pending until an admin verifies it.</p>
+        <div id="business-metric-definition" class="analysis-summary" aria-live="polite"></div>
+        <form id="business-metric-form" class="upload-form">
+          <label for="business-metric-name">Metric</label>
+          <select id="business-metric-name" name="metric_name" required></select>
+          <label for="business-metric-year">Fiscal year</label>
+          <input id="business-metric-year" name="fiscal_year" type="number" min="1900" max="2100" required>
+          <label for="business-metric-value">Proposed value</label>
+          <input id="business-metric-value" name="metric_value" type="text" inputmode="decimal" pattern="[+-]?[0-9.,]+" required placeholder="e.g. 239254">
+          <label for="business-metric-unit">Unit</label>
+          <input id="business-metric-unit" name="unit" maxlength="40" required placeholder="tonnes">
+          <label for="business-metric-scope">Reporting scope / qualifiers</label>
+          <input id="business-metric-scope" name="scope" minlength="8" maxlength="500" required placeholder="Group; farmer purchases; approximate or exact">
+          <label for="business-metric-document">Source document ID</label>
+          <input id="business-metric-document" name="source_document_id" minlength="3" maxlength="120" required placeholder="VNM-SR-2025-EN">
+          <label for="business-metric-page">PDF page number (physical page)</label>
+          <input id="business-metric-page" name="page_number" type="number" min="1" max="10000" required>
+          <label for="business-metric-quote">Exact source quote</label>
+          <textarea id="business-metric-quote" name="source_quote" minlength="12" maxlength="3000" required></textarea>
+          <label for="business-metric-url">Official source URL (HTTPS)</label>
+          <input id="business-metric-url" name="source_url" type="url" pattern="https://.*" maxlength="1000" required>
+          <fieldset>
+            <legend>Roles allowed to view this metric</legend>
+            <div id="business-metric-role-options" class="upload-role-options"></div>
+          </fieldset>
+          <button id="business-metric-button" type="submit" class="primary-button">Save for admin verification</button>
+          <p id="business-metric-status" class="corpus-note" aria-live="polite"></p>
         </form>
       </section>
       <section id="candidate-review" class="candidate-review" hidden>
@@ -401,6 +545,6 @@
       </section>
     </section>
   </main>
-  <script src="/static/app.js?v=enterprise-dashboard-financial-format-6" defer></script>
+  <script src="/static/app.js?v=business-upload-metrics-18" defer></script>
 </body>
 </html>

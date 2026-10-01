@@ -38,6 +38,7 @@
 .monitoring-table td{color:#33475b}
 .monitoring-table td small{display:block;margin-top:3px;color:#a3443e}
 .run-status{display:inline-flex;padding:3px 7px;border-radius:12px;background:#e7f5ee;color:#24734c;font-weight:700}
+.ocr-run-button{display:flex;width:100%;flex-direction:column;gap:4px;margin:7px 0;padding:12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);text-align:left;cursor:pointer}.ocr-run-button:hover{border-color:#6c9be0;background:#f5f9ff}.ocr-run-button span{color:var(--muted);font-size:11px}.ocr-test-run{display:block;padding:14px;border:1px solid var(--line);border-radius:9px;background:#fff}.ocr-test-pages{display:block;width:100%;min-width:0}.ocr-test-page{display:block;width:100%;box-sizing:border-box;margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:9px;background:#f8fafd}.ocr-test-page>summary{color:var(--navy);font-weight:700;cursor:pointer}.ocr-test-raw,.ocr-test-extracted{display:block;min-width:0;margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:8px;background:#fff}.ocr-test-raw h4,.ocr-test-extracted h4{margin:0 0 10px;color:var(--navy)}.ocr-test-raw img{display:block;width:auto;max-width:100%;max-height:850px;margin:0 auto;border:1px solid var(--line);object-fit:contain}.ocr-test-table-heading{margin-top:18px!important;padding-top:14px;border-top:1px solid var(--line)}.ocr-test-table{min-width:0;margin-bottom:12px}.ocr-test-table h5{display:flex;justify-content:space-between;gap:10px;margin:0 0 8px;color:var(--navy);font-size:12px}.ocr-test-table h5 span{color:var(--muted);font-size:10px;font-weight:400}.ocr-test-table-wrap{max-width:100%;overflow:auto;border:1px solid var(--line);border-radius:7px}.ocr-test-table .extracted-table{min-width:460px}.ocr-test-extracted pre,.ocr-test-chunks pre{max-height:440px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}.ocr-test-chunks{margin:0 0 12px;padding:10px;border:1px solid var(--line);border-radius:7px;background:#f8fafd}.ocr-test-chunks>summary{color:var(--blue);font-weight:700;cursor:pointer}.ocr-test-empty{margin:0;padding:10px 12px;border:1px dashed var(--line);border-radius:7px;color:var(--muted);font-size:11px;line-height:1.5}.ocr-test-chunk{padding:10px 0;border-top:1px solid var(--line)}
 .run-status.failed,.run-status.rate_limited{background:#fff0ed;color:#a3443e}
 .secondary-button{height:36px;padding:0 12px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);font:600 11px "DM Sans",sans-serif;cursor:pointer}
 .secondary-button:disabled{opacity:.55;cursor:wait}
@@ -219,3 +220,13 @@
 .trend-bars{padding:10px 0 0}
 .trend-point i{transition:height .4s cubic-bezier(.16,1,.3,1)}
 .trend-point:hover i{filter:brightness(1.15);box-shadow:0 0 10px rgba(57,118,212,.4)}
+.ocr-context-list{display:grid;grid-template-columns:130px minmax(0,1fr);gap:5px 12px;margin:10px 0;font-size:11px}.ocr-context-list dt{color:var(--muted)}.ocr-context-list dd{margin:0;color:var(--ink);overflow-wrap:anywhere}
+.decision-question-prompts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}.decision-question-prompts>span{grid-column:1/-1;color:var(--muted);font-size:11px;font-weight:700}.decision-question-prompts button{display:grid;gap:5px;text-align:left;padding:12px;border:1px solid var(--line);border-radius:9px;background:var(--surface,#fff);color:var(--ink);cursor:pointer}.decision-question-prompts button:hover{border-color:var(--blue,#2867bd);background:var(--blue-soft,#f2f7ff)}.decision-question-prompts small{font-size:10px;color:var(--muted)}@media(max-width:740px){.decision-question-prompts{grid-template-columns:1fr}}
+
+.analytics-subtabs{display:flex;gap:6px;margin:14px 0 16px;padding:5px;border:1px solid var(--line);border-radius:9px;background:#eef3fa}
+.analytics-subtab{min-height:36px;padding:0 13px;border:0;border-radius:6px;background:transparent;color:var(--muted);font:600 11px "DM Sans",sans-serif;cursor:pointer}
+.analytics-subtab:hover{background:#f8fafd;color:var(--ink)}
+.analytics-subtab.active{background:#fff;color:#1b56ad;box-shadow:0 1px 4px rgba(24,43,62,.1)}
+.analytics-subtab:focus-visible{outline:2px solid #78a4e5;outline-offset:2px}
+.analytics-subpanel[hidden]{display:none}
+@media(max-width:520px){.analytics-subtabs{overflow-x:auto}.analytics-subtab{flex:0 0 auto}}

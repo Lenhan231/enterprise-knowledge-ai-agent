@@ -34,7 +34,8 @@
       "2021",
       "2022",
       "2023",
-      "2024"
+      "2024",
+      "2025"
     ],
     "sustainability_years_in_manifest": [
       "2020",
@@ -238,6 +239,47 @@
         "note": "Vinamilk source is publicly available; this restriction is synthetic and exists only to test enterprise RBAC."
       },
       "source_url": "https://www.vinamilk.com.vn/bao-cao-thuong-nien/bao-cao/2024/doc/vi/full-bao-cao.pdf"
+    },
+    {
+      "document_id": "VNM-AR-2025-EN",
+      "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+      "ticker": "VNM",
+      "domain": "finance_and_operations",
+      "title": "Vinamilk Annual Report 2025",
+      "year_or_version": "2025",
+      "format": "PDF",
+      "document_type": "annual_report",
+      "fiscal_year": "2025",
+      "language": "en",
+      "source_locator": "Annual Report 2025, listed 19 March 2026",
+      "publication_date": "2026-03-19",
+      "verification": "PDF linked from Vinamilk's official Annual Reports index.",
+      "analytics_targets": [
+        "net_revenue",
+        "cost_of_goods_sold",
+        "gross_profit",
+        "profit_after_tax",
+        "total_assets",
+        "cash_and_equivalents",
+        "inventory",
+        "employees",
+        "domestic_and_overseas_revenue",
+        "export_revenue"
+      ],
+      "rbac": {
+        "mode": "synthetic_demo",
+        "source_visibility": "public",
+        "policy_profile": "finance_restricted",
+        "allowed_roles": [
+          "finance_analyst",
+          "executive",
+          "admin"
+        ],
+        "enforce_at_retrieval": true,
+        "inherit_to_chunks": true,
+        "note": "Vinamilk source is publicly available; this restriction is synthetic and exists only to test enterprise RBAC."
+      },
+      "source_url": "https://d8um25gjecm9v.cloudfront.net/cms/20260319_VNM_Bao_cao_thuong_nien_2025_EN_08b4412765.pdf"
     },
     {
       "document_id": "VNM-SR-2020-EN",

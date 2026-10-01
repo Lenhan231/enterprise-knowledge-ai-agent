@@ -15,7 +15,7 @@ still requires admin review before any KPI is published. The upload closes the
 provider on both success and provider-error paths; regressions are in
 `tests/test_upload_processing_flow.py` and `tests/test_llm_provider.py`.
 
-`data/evaluation/vinamilk_qa_cases.json` and
+`data/evaluation/archive/qa/vinamilk_qa_cases.json` and
 `scripts/agents/run_review1_grounded_qa.py --cases ... --company ...` exercise answers,
 source-document citation, expected financial/product facts and an employee
 access-denial control. The reports are

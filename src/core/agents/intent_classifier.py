@@ -2,6 +2,7 @@ import json
 import re
 
 from core.analytics.metric_ontology import resolve_metric_names
+from core.analytics.business_metric_catalog import resolve_business_metric_names
 from core.llm.groq_provider import GroqProvider
 from core.models.intent import IntentResult
 from core.prompts.intent import INTENT_CLASSIFIER_PROMPT
@@ -49,6 +50,9 @@ class IntentClassifier:
     def fallback(question: str) -> IntentResult:
         text = question.casefold()
         financial_metrics = resolve_metric_names(text)
+        business_metrics = resolve_business_metric_names(text)
+        years_found = [int(year) for year in re.findall(r"\b((?:19|20)\d{2})\b", text)]
+        multi_year_span = len(years_found) >= 2 and max(years_found) - min(years_found) >= 2
         metadata_counts = _is_document_count_request(text)
         financial_summary = (
             any(term in text for term in ("revenue", "sales", "doanh thu"))
@@ -66,18 +70,24 @@ class IntentClassifier:
             and len(financial_metrics) >= 1
             and len(set(re.findall(r"\b(?:19|20)\d{2}\b", text))) >= 2
         )
-        analytics = metadata_counts or bool(financial_metrics) or any(term in text for term in (
+        analytics = metadata_counts or bool(financial_metrics) or bool(business_metrics) or any(term in text for term in (
             "trend", "compare", "growth", "tăng trưởng", "so sánh", "thống kê"
         ))
         dashboard = any(term in text for term in ("dashboard", "chart", "visualize", "biểu đồ", "đồ thị"))
-        report = not metadata_counts and (financial_summary or why_financial_change or any(term in text for term in (
+        report = not metadata_counts and (financial_summary or why_financial_change or
+            (bool(business_metrics) and multi_year_span and any(term in text for term in (
+                "summarize", "summarise", "summary", "trend", "performance", "compare", "across",
+                "tóm tắt", "xu hướng", "so sánh", "hiệu quả",
+            ))) or any(term in text for term in (
             "summarize", "summarise", "summary of", "tóm tắt", "write a report",
             "draft a report", "generate a report", "prepare a report", "create a report",
             "viết báo cáo", "lập báo cáo", "tạo báo cáo",
         )))
         financial_metric = bool(financial_metrics) or any(term in text for term in ("financial", "tài chính", "biên lợi nhuận"))
-        intent = "dashboard" if dashboard else "report" if report else "hybrid" if analytics and financial_metric else "analytics" if analytics else "knowledge"
-        return IntentResult(intent=intent, needs_knowledge=intent in {"knowledge", "hybrid", "report"} or financial_metric,
+        asks_decision = any(term in text for term in ("should we", "recommend", "decision", "decide", "strategy", "what should", "nên", "đề xuất", "quyết định", "chiến lược", "có nên"))
+        needs_source_context = financial_metric or bool(business_metrics)
+        intent = "dashboard" if dashboard else "report" if report else "hybrid" if analytics and (needs_source_context or asks_decision) else "analytics" if analytics else "knowledge"
+        return IntentResult(intent=intent, needs_knowledge=intent in {"knowledge", "hybrid", "report"} or needs_source_context,
                             needs_sql=intent in {"analytics", "hybrid", "report"},
                             output_mode="dashboard" if dashboard else "answer", confidence=0.35)
 
@@ -94,7 +104,7 @@ class IntentClassifier:
         fallback = cls.fallback(question)
         if fallback.intent == "report" and result.output_mode != "dashboard":
             return fallback
-        if fallback.needs_knowledge and fallback.needs_sql and result.output_mode != "dashboard":
+        if fallback.needs_sql and (fallback.needs_knowledge or fallback.intent == "hybrid") and result.output_mode != "dashboard":
             return result.model_copy(update={"intent": "hybrid", "needs_knowledge": True, "needs_sql": True})
         return result
 

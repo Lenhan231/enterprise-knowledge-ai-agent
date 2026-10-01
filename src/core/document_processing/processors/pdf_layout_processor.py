@@ -139,6 +139,7 @@ class PaddleLayoutProcessor:
                                         "text": table_text,
                                         "bbox": bbox,
                                         "section_path": [],
+                                        "table_index": table_index,
                                     }
                                 )
                         continue
@@ -216,12 +217,15 @@ class PaddleLayoutProcessor:
 
         text_processor = TextProcessor(self.config)
         chunks = []
-        grouped: Dict[Tuple[int, Tuple[str, ...], str], List[Dict[str, Any]]] = {}
+        grouped: Dict[Tuple[int, Tuple[str, ...], str, Optional[int]], List[Dict[str, Any]]] = {}
         for block in page_blocks:
-            key = (block["page_number"], tuple(block["section_path"]), block["type"])
+            key = (
+                block["page_number"], tuple(block["section_path"]), block["type"],
+                block.get("table_index") if block["type"] == "table" else None,
+            )
             grouped.setdefault(key, []).append(block)
 
-        for (page_number, section_path, element_type), blocks in grouped.items():
+        for (page_number, section_path, element_type, table_index), blocks in grouped.items():
             text = "\n".join(block["text"] for block in blocks)
             context_path = section_path[:-1] if element_type == "title" else section_path
             context_prefix = " > ".join(context_path)
@@ -246,6 +250,7 @@ class PaddleLayoutProcessor:
                         "section_title": section_path[-1] if section_path else None,
                         "element_type": element_type,
                         "layout_type": element_type,
+                        **({"table_index": table_index} if table_index is not None else {}),
                         "bbox": bbox,
                         "bbox_coordinate_system": "rendered_page_pixel",
                                     "render_scale": render_scale,

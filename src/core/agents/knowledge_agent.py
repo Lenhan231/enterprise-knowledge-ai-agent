@@ -40,7 +40,7 @@ class KnowledgeAgent(BaseAgent):
         if request.metadata.get("evidence_only"):
             # Report synthesis uses one generation over its evidence; keep its
             # ranked context small enough for the configured model's TPM cap.
-            rag_options["limit"] = 5
+            rag_options["limit"] = 3 if request.metadata.get("decision_support") else 5
             retrieval_query = _financial_retrieval_query(
                 request.question,
                 request.metadata.get("company"),

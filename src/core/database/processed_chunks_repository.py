@@ -30,7 +30,15 @@ class ProcessedChunksRepository:
                    (document_id, chunk_index, content, metadata, processing_status)
                    VALUES (%s, %s, %s, %s, 'extracted')""",
                 [
-                    (document_id, index, chunk["text"], Jsonb(chunk["metadata"]))
+                    (
+                        document_id,
+                        index,
+                        chunk["text"],
+                        Jsonb({
+                            key: value for key, value in chunk["metadata"].items()
+                            if key not in {"embedding_model", "token_count"}
+                        }),
+                    )
                     for index, chunk in enumerate(chunks)
                 ],
             )

@@ -2,6 +2,7 @@ from typing import TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
+from core.agents.report_agent import _is_decision_support_request
 from core.models.agents import AgentRequest, AgentResult
 
 
@@ -63,6 +64,9 @@ class AgentRouter:
             destination = "report"
         elif intent.output_mode == "dashboard":
             destination = "dashboard"
+        elif (self.report_agent and intent.intent == "hybrid"
+              and _is_decision_support_request(request.question)):
+            destination = "report"
         elif intent.needs_knowledge and intent.needs_sql:
             destination = "hybrid"
         elif intent.needs_sql:

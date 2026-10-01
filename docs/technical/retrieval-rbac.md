@@ -101,7 +101,7 @@ ranks, settings and the exact live snapshot are in
 `artifacts/evaluation/vinamilk-retrieval-12cases-expanded-corpus-20260927.json`;
 the earlier pre-ingestion run remains
 `artifacts/evaluation/vinamilk-retrieval-current-passage-comparison.json`;
-the case file is `data/evaluation/vinamilk_retrieval_cases.json`. Labels must be
+the case file is `data/evaluation/archive/retrieval/vinamilk_retrieval_cases.json`. Labels must be
 independently reviewed and expanded before selecting a retrieval method. Hybrid
 has the highest passage MRR in this snapshot, while dense leads document MRR;
 the selected judgments are too limited to select a winner. See

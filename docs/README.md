@@ -17,9 +17,9 @@ mix manual transcription with visually checked PDF-text-layer assistance, and
 row/cell text scores do not measure spatial reconstruction. All runs used
 Kaggle CPU kernels with four logical CPUs; the CPU model was not exposed, so
 throughput is exploratory. The set is diagnostic, not model-selection evidence.
-See the [CPU-paired comparison](../artifacts/evaluation/vinamilk-ocr-v9-cpu-four-engine-comparison-20260929.json),
-[raw reports](../artifacts/evaluation/ocr-kaggle-v9-cpu/), [v9 labels](../data/evaluation/vinamilk_ocr_ground_truth_v9.json),
-and the earlier [cached cross-layout rescore](../artifacts/evaluation/vinamilk-ocr-v9-four-engine-comparison-20260929.json).
+See the [CPU-paired comparison](../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v9-cpu-four-engine-comparison-20260929.json),
+[raw reports](../artifacts/evaluation/ocr/comparisons/ocr-kaggle-v9-cpu/), [v9 labels](../data/evaluation/ocr/vinamilk_ocr_ground_truth_v9.json),
+and the earlier [cached cross-layout rescore](../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v9-four-engine-comparison-20260929.json).
 **Supplemental real Vietnamese scan (2011 CafeF capture, v2):** a corrected
 bounded income-statement crop was run through all four engines on identical
 dataset/source/render hashes. Tesseract/PaddleOCR/EasyOCR/Surya CER is
@@ -31,14 +31,14 @@ is not directly comparable. These labels were adapted from a duplicate capture
 and visually checked, not independently double-entered; this remains one
 third-party scan of one filing and cannot select a production engine. The v1
 full-page scores are superseded: its reference covered only part of the page
-and contained mismatched prior-year figures. See the [v2 comparison](../artifacts/evaluation/vinamilk-ocr-2011-cafef-scan-v2-four-engine-comparison-20260929.json),
-[labels](../data/evaluation/vinamilk_ocr_2011_cafef_scan_v2.json), and
-[raw reports](../artifacts/evaluation/ocr-kaggle-vinamilk-2011-cafef-scan-v2/).
+and contained mismatched prior-year figures. See the [v2 comparison](../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-2011-cafef-scan-v2-four-engine-comparison-20260929.json),
+[labels](../data/evaluation/ocr/vinamilk_ocr_2011_cafef_scan_v2.json), and
+[raw reports](../artifacts/evaluation/ocr/comparisons/ocr-kaggle-vinamilk-2011-cafef-scan-v2/).
 The row metric now requires label and value strings in sequence while
 permitting intervening code/note columns; it does not measure spatial row or
 column assignment, and historical counts use the older contiguous-text rule.
 The separate [upload-parser
-replay](../artifacts/evaluation/vinamilk-upload-document-processor-v9-14regions-20260929.json)
+replay](../artifacts/evaluation/ocr/pipeline/vinamilk-upload-document-processor-v9-14regions-20260929.json)
 measures table reconstruction and OCR-only behavior; its 2024 born-digital
 table was rasterized and missed, so it does not measure native-PDF extraction.
 A follow-up v4 scan check adds 14 raster-derived value-cell boxes for seven
@@ -47,8 +47,8 @@ visually checked, text-layer-derived labels. Across all three pages, the upload
 parser matched 17/17 rows and 34/34 values, with 33/34 cell boxes at IoU >= 0.3.
 The one miss is the small 2011 dash, for which the parser returned no useful
 location. This is still a single-reviewer, one-source diagnostic. See the
-[v4 labels](../data/evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v4.json)
-and [full processor report](../artifacts/evaluation/vinamilk-scan-document-processor-2011-v4-coordinate-evaluation-20260929.json).
+[v4 labels](../data/evaluation/ocr/tuning/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v4.json)
+and [full processor report](../artifacts/evaluation/ocr/pipeline/vinamilk-scan-document-processor-2011-v4-coordinate-evaluation-20260929.json).
 
 The v8 labels were also replayed through the local upload parser (PSM 11,
 108 DPI): micro-CER/WER 0.055009/0.175768. This is a separate parser-path
@@ -60,17 +60,17 @@ The annual-report diagnostic also carries parser outputs through KPI candidate
 extraction: 11/11 reviewed fields matched on native PDF text, versus 3/11 on
 synthetic raster-PDF OCR and 2/11 on raster-image OCR. These are born-digital
 pages rendered as synthetic scans, not real scanned reports. See the
-[OCR-to-KPI artifact](../artifacts/evaluation/vinamilk-document-extraction-ocr-to-kpi-20260929.json).
+[OCR-to-KPI artifact](../artifacts/evaluation/ocr/pipeline/vinamilk-document-extraction-ocr-to-kpi-20260929.json).
 A no-write OCR-to-LLM run on the reviewed 2023 income statement had four
 suggested metrics, two accepted by verbatim-source validation, and one of two
 reviewed targets matched. Revenue remained unrecovered because OCR corrupted
 its label. Reproduce with the documented `--llm --case-id` command; its result
-is in the [LLM artifact](../artifacts/evaluation/vinamilk-document-extraction-ocr-to-kpi-llm-20260929.json).
+is in the [LLM artifact](../artifacts/evaluation/ocr/pipeline/vinamilk-document-extraction-ocr-to-kpi-llm-20260929.json).
 On the original real 2011 Vietnamese scan PDF, the LLM returned four
 suggestions, two passed verbatim quote validation, and one matched a reviewed
 target (profit after tax, with unit); revenue was not recovered. This is one
 third-party source page and does not establish representative scan accuracy.
-The run is in the [real-scan artifact](../artifacts/evaluation/vinamilk-ocr-2011-real-scan-kpi-llm-20260929.json), reproducible with the documented `--cases ... --llm` command.
+The run is in the [real-scan artifact](../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-2011-real-scan-kpi-llm-20260929.json), reproducible with the documented `--cases ... --llm` command.
 
 **Earlier OCR result (v7):** v7 pairs five settings on ten source/render-hash-matched
 regions at 180 DPI. Micro-CER/WER for Tesseract PSM 3/11, EasyOCR, PaddleOCR
@@ -93,25 +93,25 @@ transcriptions for all three pages. Surya has the best WER and matched 51/51
 selected cell strings; PaddleOCR has the best CER and EasyOCR matched the most
 complete rows (9/17). The two balance-sheet transcriptions used PDF text as an
 aid and were visually reviewed; this third-party packet still cannot select a
-production engine. See the [rescored paired scan comparison](../artifacts/evaluation/vinamilk-ocr-2011-v3-four-engine-comparison-20260929.json),
-the [raw reports](../artifacts/evaluation/ocr-kaggle-v2/), the
-[v7 comparison](../artifacts/evaluation/vinamilk-ocr-v7-five-configuration-comparison-20260928.json)
+production engine. See the [rescored paired scan comparison](../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-2011-v3-four-engine-comparison-20260929.json),
+the [raw reports](../artifacts/evaluation/ocr/comparisons/ocr-kaggle-v2/), the
+[v7 comparison](../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v7-five-configuration-comparison-20260928.json)
 and [processing protocol](technical/document-processing.md#current-boundaries).
 
 | Proposal requirement | Status | Evidence / remaining work |
 | --- | --- | --- |
-| Regression suite | Verified locally | `uv run python -m unittest discover -s tests -q` passed 467 tests on 2026-09-29. This is repository regression coverage only; it does not close proposal rows whose live/provider or human-review evidence is still pending. |
+| Regression suite | Verified locally | `PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -q` passed 535 tests on 2026-10-01. This is repository regression coverage only; provider, visual, human-review and proposal evaluation gaps remain. |
 | Enterprise document Q&A with grounded citations | Partial | [RAG and agents](technical/agents-and-evaluation.md); small live corpus and retrieval checks exist. Expand QA cases and evaluate answer quality. |
-| PDF, Word, Excel, PowerPoint, scans and images | Partial | [Processing](technical/document-processing.md); PDF/DOCX/XLSX/PPTX/TXT/MD/images parse; DOCX table chunks keep column labels and row relationships for RAG while preserving structured review tables. Live DOCX upload/Storage/table readback and a real three-page Vietnamese scanned-PDF upload both reached `ready`; the latter persisted 9 OCR chunks and 3 tables/58 rows, verified private-source SHA-256, allowed finance-analyst visibility and denied employee visibility, then cleaned up all rows and the Storage object ([scan upload artifact](../artifacts/evaluation/vinamilk-scan-upload-live-e2e-20260929.json)). Office ZIP expansion is bounded. Legacy XLS, broader real-file/layout coverage and user verification remain. |
-| Layout, tables, figures, invoices, formulas, metadata | Partial | XLSX formulas and DOCX Office Math text runs are included in retrieval chunks with parser metadata; PDF tables persist as structured rows. Optional Paddle parsing now supports chart and formula recognition (`DOCUMENT_PADDLE_FORMULA_RECOGNITION=true` also enables layout) and retains returned text/LaTeX, page coordinates and labels. It remains off by default and has adapter-mock coverage only; real formula extraction and chart accuracy are unmeasured. Standalone image uploads and prominent embedded PDF raster figures now support opt-in Groq vision captions (up to three PDF figures per document), with generated-content provenance; source images are sent to Groq and no human quality review exists. PPTX figures, vector-only charts, paired real-scan/layout labels, formula accuracy/equation evaluation, invoices and representative multi-format quality evaluation remain. The latest [manifest metadata audit](../artifacts/evaluation/vinamilk-corpus-metadata-audit-access-policy-20260928.json) checks 26 ready sources (4,753 chunks, 52,283 chunk-field checks) with no metadata mismatches. The [multi-year extraction diagnostic](../artifacts/evaluation/vinamilk-document-extraction-multiyear-v3-20260928.json) visually checks 11 financial anchors on five report pages: born-digital rule candidates match 11/11 with 1.00 precision; synthetic Tesseract raster conditions match exact text anchors 1/11 and normalized text/table anchors 3/11 each. It is a small diagnostic, not broad OCR accuracy evidence. |
+| PDF, Word, Excel, PowerPoint, scans and images | Partial | [Processing](technical/document-processing.md); PDF/DOCX/XLSX/PPTX/TXT/MD/images parse; DOCX tables and high-overlap PyMuPDF/Tesseract PDF tables become key/value retrieval chunks while structured review tables stay separately persisted. Low-overlap PDF tables are added without deleting source text. Live DOCX upload/Storage/table readback and a real three-page Vietnamese scanned-PDF upload both reached `ready`; the latter persisted 9 OCR chunks and 3 tables/58 rows, verified private-source SHA-256, allowed finance-analyst visibility and denied employee visibility, then cleaned up all rows and the Storage object ([scan upload artifact](../artifacts/evaluation/vinamilk-scan-upload-live-e2e-20260929.json)). Office ZIP expansion is bounded. Legacy XLS, broader real-file/layout coverage and user verification remain. |
+| Layout, tables, figures, invoices, formulas, metadata | Partial | XLSX formulas and DOCX Office Math text runs are included in retrieval chunks with parser metadata; PDF tables persist as structured rows. Optional Paddle parsing now supports chart and formula recognition (`DOCUMENT_PADDLE_FORMULA_RECOGNITION=true` also enables layout) and retains returned text/LaTeX, page coordinates and labels. It remains off by default and has adapter-mock coverage only; real formula extraction and chart accuracy are unmeasured. Standalone image uploads and prominent embedded PDF raster figures now support opt-in Groq vision captions (up to three PDF figures per document), with generated-content provenance; source images are sent to Groq and no human quality review exists. PPTX figures, vector-only charts, paired real-scan/layout labels, formula accuracy/equation evaluation, invoices and representative multi-format quality evaluation remain. The latest [manifest metadata audit](../artifacts/evaluation/vinamilk-corpus-metadata-audit-access-policy-20260928.json) checks 26 ready sources (4,753 chunks, 52,283 chunk-field checks) with no metadata mismatches. The [multi-year extraction diagnostic](../artifacts/evaluation/ocr/pipeline/vinamilk-document-extraction-multiyear-v3-20260928.json) visually checks 11 financial anchors on five report pages: born-digital rule candidates match 11/11 with 1.00 precision; synthetic Tesseract raster conditions match exact text anchors 1/11 and normalized text/table anchors 3/11 each. It is a small diagnostic, not broad OCR accuracy evidence. |
 | Semantic/context-aware chunking and parent-child retrieval | Partial | [Chunking](technical/chunking.md); seed-PDF and upload paths share configurable sentence/paragraph-aware chunks with a fixed-overlap baseline and tokenizer bound. Numbered OCR headings now produce `section_title`; exact-content metadata-only backfills updated 388 chunks across eight governance reports without changing vectors/ACL. The 25-document corpus now has 4,666/4,750 titled chunks; 84 remain null, while persisted section hierarchy and paired answer-quality evaluation remain open. After correcting the 2022 net-revenue reference to audited income-statement chunks, a five-year diagnostic has 1,912 fixed vectors and 1,979 alternate chunks: passage MRR 0.2615/0.2626. The case hash differs from older runs, and sentence labels remain heuristic, so this is not evidence of improvement. Seven annual/sustainability PDFs could not be safely backfilled because reparsed chunk counts differed. See the [corrected-label diagnostic](../artifacts/evaluation/vinamilk-chunking-retrieval-source-reviewed-20260928.json), [corpus coverage audit](../artifacts/evaluation/section-title-corpus-coverage-post-backfill-20260928.json), [2020–2024 governance apply audit](../artifacts/evaluation/section-title-backfill-governance-2020-2024-applied.json), [earlier scan audit](../artifacts/evaluation/section-title-backfill-governance-scans-applied.json), [native report audit](../artifacts/evaluation/section-title-backfill-cgr-2025-applied.json), and [annual/sustainability dry-run](../artifacts/evaluation/section-title-backfill-annual-sustainability-dry-run-20260928.json). |
-| Five proposal benchmark groups | Partial | OCR has a same-CPU v9 four-engine run on 14 regions/six PDFs with matched dataset/render hashes; its mixed labels and CPU-only profile remain diagnostic, not model-selection evidence. A paired Kaggle run now covers one issuer-hosted, image-only Charter scan page: Tesseract/Paddle/Easy/Surya CER 0.0111/0.0029/0.0043/0.0180 and WER 0.0309/0.0077/0.0193/0.0521 on identical hashes. The single-annotator English reference is not independently reviewed, and CPU/GPU runtime is uncontrolled; Vietnamese physical-scan coverage remains limited to the 2011 packet. The prior v8/v7 results and scan labels remain linked in the technical matrix. A hash replay verifies the three Tesla T4 embedding reports covered all 4,750 chunks; BGE-M3/Qwen3/e5 document MRR is 0.7759/0.8028/0.7583. A paired Tesla T4 top-30 reranker run covers 12 identical cases/candidates. Exact proposal LLM checkpoints and blinded human answer-quality review remain incomplete. See [benchmark acceptance](technical/agents-and-evaluation.md#proposal-acceptance-checklist), [Charter scan comparison](../artifacts/evaluation/vinamilk-ocr-charter-scan-page8-four-engine-comparison-20260929.json), [Charter scan labels](../data/evaluation/vinamilk_ocr_charter_scan_en_v1.json), [v9 CPU-paired OCR comparison](../artifacts/evaluation/vinamilk-ocr-v9-cpu-four-engine-comparison-20260929.json), [v8 OCR comparison](../artifacts/evaluation/vinamilk-ocr-v8-four-engine-comparison-20260929.json), [embedding audit](../artifacts/evaluation/vinamilk-embedding-three-model-full-corpus-hash-verified-20260928.json) and [paired reranker report](../artifacts/evaluation/vinamilk-reranker-kaggle-top30-paired-20260928.json). |
+| Five proposal benchmark groups | Partial | OCR has a same-CPU v9 four-engine run on 14 regions/six PDFs with matched dataset/render hashes; its mixed labels and CPU-only profile remain diagnostic, not model-selection evidence. A paired Kaggle run now covers one issuer-hosted, image-only Charter scan page: Tesseract/Paddle/Easy/Surya CER 0.0111/0.0029/0.0043/0.0180 and WER 0.0309/0.0077/0.0193/0.0521 on identical hashes. The single-annotator English reference is not independently reviewed, and CPU/GPU runtime is uncontrolled; Vietnamese physical-scan coverage remains limited to the 2011 packet. The prior v8/v7 results and scan labels remain linked in the technical matrix. A hash replay verifies the three Tesla T4 embedding reports covered all 4,750 chunks; BGE-M3/Qwen3/e5 document MRR is 0.7759/0.8028/0.7583. A paired Tesla T4 top-30 reranker run covers 12 identical cases/candidates. Exact proposal LLM checkpoints and blinded human answer-quality review remain incomplete. See [benchmark acceptance](technical/agents-and-evaluation.md#proposal-acceptance-checklist), [Charter scan comparison](../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-charter-scan-page8-four-engine-comparison-20260929.json), [Charter scan labels](../data/evaluation/ocr/vinamilk_ocr_charter_scan_en_v1.json), [v9 CPU-paired OCR comparison](../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v9-cpu-four-engine-comparison-20260929.json), [v8 OCR comparison](../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v8-four-engine-comparison-20260929.json), [embedding audit](../artifacts/evaluation/vinamilk-embedding-three-model-full-corpus-hash-verified-20260928.json) and [paired reranker report](../artifacts/evaluation/vinamilk-reranker-kaggle-top30-paired-20260928.json). |
 | Other proposal evaluation requirements | Partial | See the [acceptance checklist](technical/agents-and-evaluation.md#proposal-acceptance-checklist) for extraction, retrieval/generation quality, system performance, optimization and all 12 business cases. The authenticated app evaluator checks routes, citations, unsupported-case abstention, financial facts and dynamic BI result shape. Selected earlier business-case batches pass invoice/manufacturing (2/2), customer-service/technical (2/2), compliance (1/1), HR and abstention cases, but those artifacts omit the model ID and are not model-specific benchmark evidence. A current model-provenanced GPT-OSS-20B BI run passes 1/1 ([artifact](../artifacts/evaluation/proposal-business-app-gptoss20b-bi-provenance-20260928.json)). The role-aware proposal evaluator now logs in as the employee for `internal-document-search`; its authenticated rerun passes 1/1 after the Knowledge path quotes Code of Conduct access clauses and discloses that the retrieved text does not include the separately referenced Information System Policy ([employee run](../artifacts/evaluation/proposal-business-app-employee-access-rbac-rerun-20260929.json)). The full 12-case run is still incomplete: an earlier pre-fix pass stopped after 3 cases, and the role-aware full rerun was rate-limited on its first case ([latest attempt](../artifacts/evaluation/proposal-business-app-role-aware-full-rerun-20260929.json)). Earlier focused employee access, customer-service and finance QA artifacts record Qwen3.8 explicitly. The 2024 headline financial summary is routed through the guarded Report agent, with English retrieval augmented by the report's Vietnamese KPI labels. The authenticated GPT-OSS-20B rerun passed 1/1 with expected values, annual-report page 12, correct route and citation integrity ([financial QA](../artifacts/evaluation/proposal-business-app-financial-report-guarded-rerun3-20260929.json)). The executive case now passes a stricter check that rejects framing reported initiatives as options leadership considered; the answer cited 2024/2025 reports and disclosed that no decision alternatives were provided ([executive QA](../artifacts/evaluation/proposal-business-app-executive-report-guarded-rerun5-20260929.json)). Human QA, private-domain evidence and representative local performance measurements remain incomplete. |
 | Retrieval baseline on refreshed corpus | Evaluated, preliminary | All four proposal methods were rerun twice on the live snapshot of 25 ready Vinamilk documents/4,750 chunks with 12 cases and 24 selected passage labels, including three governance cases. A third run after section-title backfills reproduced the exact per-case rankings and document/passage/context metrics. Hybrid passage MRR is 0.464; dense 0.412 and BM25 0.403; parent context MRR is 0.469. Latency varied between runs, and sparse labels preclude a winner claim. See the [post-backfill run](../artifacts/evaluation/vinamilk-retrieval-post-section-title-backfill-12cases-20260928.json), [first run](../artifacts/evaluation/vinamilk-retrieval-live-12cases-20260928.json), and [repeat](../artifacts/evaluation/vinamilk-retrieval-live-12cases-repeat2-20260928.json). |
-| Proposal business cases and corpus diversity | Partial | Current corpus contains 26 public Vinamilk sources, including the official Vinamilk Shop returns policy and the Code of Conduct's employee access clauses. The 12-case source-coverage audit classifies 2 tasks supported, 6 partial and 4 unsupported; selected routed tasks have authenticated end-to-end runs, but full case completion is not established. The dedicated Information System Policy, general invoice policy, private HR details, executed contracts, manufacturing and server instructions remain absent. RBAC labels are synthetic demo controls over public documents. |
+| Proposal business cases and corpus diversity | Partial | Current corpus contains 27 public Vinamilk sources, including the official Vinamilk Shop returns policy and the Code of Conduct's employee access clauses. The 12-case source-coverage audit classifies 2 tasks supported, 6 partial and 4 unsupported; selected routed tasks have authenticated end-to-end runs, but full case completion is not established. The dedicated Information System Policy, general invoice policy, private HR details, executed contracts, manufacturing and server instructions remain absent. RBAC labels are synthetic demo controls over public documents. |
 | Enterprise prompt, metadata-aware reasoning and knowledge ontology | Partial | Metadata-aware role filtering, grounded prompts, bounded parent-context retrieval and a bilingual finance KPI ontology exist. Full enterprise entities/domains, persistent hierarchy, query rewriting and context compression need implementation and evaluation. Instruction tuning is optional in the proposal. |
 | Secure PostgreSQL/pgvector knowledge base | Partial | [Retrieval and RBAC](technical/retrieval-rbac.md); role filtering is applied before candidate ranking. The active company is read from `data/vietnam_enterprises/manifest.json` and scopes dashboard, analytics, upload, QA and KPI review writes; existing out-of-manifest FPT rows remain stored but are excluded from this Vinamilk demo. The 2026-09-28 read-only integration check verifies exact local/remote migration history (13/13) and vector schema/repository mapping across 5,052 rows. A fresh full manifest audit after employee access ACL re-index finds 26/26 ready documents and 0 metadata mismatches over 4,753 chunks/52,283 fields ([artifact](../artifacts/evaluation/vinamilk-corpus-metadata-audit-access-policy-20260928.json)). A five-account live API matrix confirms employee 3 docs/analytics denied, finance 7, sustainability 11, admin 26, and uploader 0 visible docs/upload allowed ([artifact](../artifacts/evaluation/vinamilk-dashboard-rbac-live-api-20260928.json)). A live finance-query BM25 probe confirms no employee candidates and finance-only annual-report passages, all matching stored ACLs ([artifact](../artifacts/evaluation/vinamilk-live-retrieval-rbac-isolation-20260928.json)). It does not establish private-document isolation or rendered-browser behavior; those checks remain. |
-| Multi-agent QA, analytics/SQL, report, dashboard | Partial | [Agents and evaluation](technical/agents-and-evaluation.md); LangGraph routes current intents. Analytics generates bounded SELECT SQL over role-filtered CTEs, with AST validation, read-only execution and source citations. Financial chart requests now render role-filtered verified observations as a year trend only when periods and units are unambiguous. A fresh authenticated read-only audit on 2026-09-28 found 7 verified observations and 29 pending candidates; all seven published observations matched the cited official PDF page on metric label, year, amount, and unit ([source audit](../artifacts/evaluation/verified-financial-metric-source-audit.json)). Parser-only reruns added nine FY2021 and 18 FY2022–24 candidates. The FY2021 total consolidated revenue of 61,012 billion VND and the FY2022–24 comparison-table values remain pending review. See the [FY2021 parser artifact](../artifacts/evaluation/vinamilk-financial-candidates-2021-column-aligned-20260928.json), the [FY2022–24 parser artifact](../artifacts/evaluation/vinamilk-financial-candidates-2022-2024-column-aligned-20260928.json) and the earlier [analytics/RBAC smoke](../artifacts/evaluation/vinamilk-live-analytics-rbac-smoke-20260928.json), whose metric counts are superseded by the fresh audit. One FY2020 profit value was corrected against the cited annual-report page after a thousands-separator input error. Selected source-grounded invoice and BI app cases now pass; domain-wide multi-source BI analysis and admin review of pending KPI candidates remain. Admin monitoring reads privacy-minimized Supabase traces. |
+| Multi-agent QA, analytics/SQL, report, dashboard | Partial | [Agents and evaluation](technical/agents-and-evaluation.md); LangGraph routes current intents. SQL analytics reads verified, role-filtered CTEs, validates SELECTs, executes read-only, and returns source citations. Live `/api/analytics` on 2026-10-01 returned 12 verified financial observations, 139 verified business observations across 89 metric codes/9 domains, and 7 pending business candidates. A live authenticated report question comparing FY2024–25 domestic/overseas revenue returned 8 source citations and the verified scales and absolute changes; it recommended diligence and disclosed missing margin, selling-cost, working-capital, capacity and return data. Admin review of all pending candidates and broader decision-question evaluation remain open. |
 | Web chatbot, upload portal, search and interactive dashboard | Partial | QA UI uses authenticated `/ws/ask` with a processing event and REST fallback; Nginx forwards WebSocket upgrades. Local browser checks verified analyst login, Business analysis filters/database coverage/live cited answer, and admin processing, access and monitoring screens. Live authenticated XLSX upload reached `ready` and its parsed table/formula/chunk data and private Storage bytes were read back. An injected embedding failure on newline-terminated TXT then verified saved-output retry and role-filtered retrieval (analyst sees it, employee does not). Both test fixtures were cleaned and absence verified. Local authenticated WebSocket and hosted Docker/Nginx reverse-proxy runtime checks passed in CI; broader browser QA remains; Render/Vercel hosting is out of scope. |
 | Retrieval, generation and system evaluation | Partial | The last complete finance/product/sustainability/RBAC QA suite passed 5/5; focused employee return-policy and FY2024 financial cases separately passed 1/1 each with Qwen3.8 ([customer-service artifact](../artifacts/evaluation/customer-service-employee-qwen38-20260928.json), [finance artifact](../artifacts/evaluation/finance-2024-qwen38-20260928.json)). A repeated 70-request in-process API load run exists. OCR v7 has hash-matched reports for five settings on ten regions, including six English physical-scan regions (four added in v7). A separate four-engine diagnostic compares Tesseract, PaddleOCR, EasyOCR and Surya on three pages from one Vietnamese financial scan packet; full-text CER/WER is now available for all three after image-checked transcriptions, while 20 value-cell boxes remain visually checked labels derived from the PDF text layer. This improves evidence for Vietnamese scans but does not establish broad representative accuracy or controlled engine runtime. Semantic human QA review, larger local workload measurements and broader business-case evaluation remain incomplete. See the [evaluation master matrix](technical/agents-and-evaluation.md#proposal-evaluation-master-matrix); higher-concurrency and corpus-scale behavior remain unmeasured. |
 | Local prototype runtime, monitoring, manuals and research report | Partial | Local Compose and the FastAPI/Nginx path are documented. Hosted [CI run 36423572195](https://github.com/Lenhan231/enterprise-knowledge-ai-agent/actions/runs/36423572195) passed the full test suite, Compose validation, image build, `nginx -t`, and authenticated HTTP/WebSocket smoke through Docker Nginx. Render/Vercel deployment is explicitly out of scope. Monitoring decisions, an operator walkthrough, representative local performance measurements and final evidence-complete report remain. |
@@ -232,7 +232,7 @@ every named package by default.
   sustainability, product and employee-denial cases through `/api/ask`; the
   runner verifies expected agent, fact anchors, source document, citation
   consistency and abstention. The artifact's hash matches the preserved
-  [`v1 case snapshot`](../data/evaluation/vinamilk_qa_cases-app-qa-v1.json),
+  [`v1 case snapshot`](../data/evaluation/archive/qa/vinamilk_qa_cases-app-qa-v1.json),
   not the subsequently strengthened current case labels. The refreshed run
   averaged 26.405 s. A rerun against stronger case labels plus retention
   abstention was rate-limited on its first three requests and produced no full
@@ -243,7 +243,7 @@ every named package by default.
 - A separate live authenticated `/api/ask` smoke for the unsupported document
   retention-standard case correctly routed to Knowledge, abstained, and cited
   no source. Its case label and result are recorded in
-  `data/evaluation/vinamilk_unsupported_abstention_case.json` and
+  `data/evaluation/archive/qa/vinamilk_unsupported_abstention_case.json` and
   `artifacts/evaluation/vinamilk-unsupported-retention-abstention-smoke.json`.
 - Current route rerun [`proposal-business-route-current-12-20260928.json`](../artifacts/evaluation/proposal-business-route-current-12-20260928.json)
   scored all 12 manually mapped cases through the effective router (12/12):
@@ -317,10 +317,10 @@ every named package by default.
   and top-30 candidate bundle. See
   [paired report](../artifacts/evaluation/vinamilk-reranker-kaggle-top30-paired-20260928.json).
   Labels remain selected and non-exhaustive; neither model is selected.
-- OCR paired text pilot: reports under `artifacts/evaluation/ocr-kaggle-{easy,paddle,surya}/` plus `artifacts/evaluation/ocr-tesseract-v2-current-labels.json`; same three-crop dataset hash, not eligible for model selection.
+- OCR paired text pilot: reports under `artifacts/evaluation/ocr/ocr-kaggle-{easy,paddle,surya}/` plus `artifacts/evaluation/ocr/pipeline/ocr-tesseract-v2-current-labels.json`; same three-crop dataset hash, not eligible for model selection.
   records per-page edit counts and macro/micro CER/WER, but uses an unreviewed
   PDF text reference. Manual-label pilots are
-  `artifacts/evaluation/vinamilk-ocr-human-reviewed-tesseract.json` (v1, two
+  `artifacts/evaluation/ocr/comparisons/vinamilk-ocr-human-reviewed-tesseract.json` (v1, two
   crops), v2 (three crops), and v4 (three non-scan crops plus two image-only
   scanned governance regions). Tesseract v4 initially provided a scan-only pilot, and the paired EasyOCR run
   now covers all five v4 regions; neither has cell/layout scoring; the Tesseract v4 run measured 31.085 pages/minute
@@ -345,7 +345,7 @@ every named package by default.
   EasyOCR v5 completed on the same six hashes: micro-CER/WER 0.175882/0.348442
   and exact table row recall 2/16 (0.125). Its output grouped numeric columns
   apart from row labels. The hash-paired Tesseract/EasyOCR comparison is
-  `artifacts/evaluation/vinamilk-ocr-easy-tesseract-v5-comparison.json`.
+  `artifacts/evaluation/ocr/comparisons/vinamilk-ocr-easy-tesseract-v5-comparison.json`.
   Surya v5 completed on the same hashes with micro-CER/WER 0.075829/0.151558,
   exact table row recall 14/16 (0.875), 3.962 s mean inference/page and
   4,395.629 MiB peak process RSS; GPU allocation/reservation was
@@ -353,7 +353,7 @@ every named package by default.
   0/16 exact rows and 32/48 cell-text matches. Cell-text recall is Tesseract
   40/48, EasyOCR 47/48, Surya 47/48, and PaddleOCR 32/48; it ignores row/column
   association. The hash-paired four-engine artifact is
-  `artifacts/evaluation/vinamilk-ocr-paddle-easy-surya-tesseract-v5-comparison.json`.
+  `artifacts/evaluation/ocr/comparisons/vinamilk-ocr-paddle-easy-surya-tesseract-v5-comparison.json`.
   These v5 all-page CER/WER aggregates are superseded by corrected v6 labels;
   the table-only metrics remain historical. Surya v6 is complete, while the
   older v4 kernel is no longer a pending run. The corrected v6 six-page
@@ -361,13 +361,13 @@ every named package by default.
   see `vinamilk-ocr-four-engine-v6-cpu-comparison.json`. The one-table pilot
   does not select a production engine. Dataset and
   baseline report:
-  `data/evaluation/vinamilk_ocr_ground_truth_v5.json` and
-  `artifacts/evaluation/vinamilk-ocr-human-reviewed-tesseract-v5.json`.
+  `data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v5.json` and
+  `artifacts/evaluation/ocr/comparisons/vinamilk-ocr-human-reviewed-tesseract-v5.json`.
   See [document processing](technical/document-processing.md) and the
   hash-verified pair `vinamilk-ocr-governance-scans-v4-comparison.json`.
-- OCR scan expansion v7 provides ten visually reviewed regions, including four image-only English scans. PaddleOCR 3.7.0, EasyOCR 1.7.2, Surya 0.17.1, and Tesseract 5.5.3 PSM 3/11 now have results on identical source/render hashes at 180 DPI. In engine order Paddle/Easy/Surya/Tesseract PSM 3/11, micro-CER is 0.043609/0.110025/0.043233/0.272556/0.127318 and micro-WER is 0.108484/0.248261/0.090403/0.263561/0.197497. Paddle ran CPU; EasyOCR and Surya ran on a Tesla T4. Surya has the best CER/WER and 14/16 exact financial-table rows, while EasyOCR/Surya report 47/48 cell strings; those cell counts do not measure row/column association. A supplemental Vietnamese scan comparison now covers three pages from a third-party 2011 packet with full text labels on every page, rescored from cached OCR output on exact source/render hashes: Tesseract/Paddle/Easy/Surya micro-CER 0.6932/0.1626/0.4494/0.1667 and micro-WER 0.9128/0.3303/0.5404/0.1826. Paddle has the lowest CER, Surya the lowest WER; neither is selected because the packet is small and from one source. The two balance-sheet transcriptions use PDF text as an aid and were visually reviewed. The 20 coordinate boxes derive from the PDF text layer, not independent click annotations. See the [v7 comparison](../artifacts/evaluation/vinamilk-ocr-v7-five-configuration-comparison-20260928.json), the [three-page scan labels](../data/evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v3.json), the [rescored comparison](../artifacts/evaluation/vinamilk-ocr-2011-v3-four-engine-comparison-20260929.json) and [production-parser report](../artifacts/evaluation/vinamilk-scan-document-processor-2011-three-pages-v2-20260929.json). Kaggle results are linked from the [processing protocol](technical/document-processing.md#current-boundaries).
+- OCR scan expansion v7 provides ten visually reviewed regions, including four image-only English scans. PaddleOCR 3.7.0, EasyOCR 1.7.2, Surya 0.17.1, and Tesseract 5.5.3 PSM 3/11 now have results on identical source/render hashes at 180 DPI. In engine order Paddle/Easy/Surya/Tesseract PSM 3/11, micro-CER is 0.043609/0.110025/0.043233/0.272556/0.127318 and micro-WER is 0.108484/0.248261/0.090403/0.263561/0.197497. Paddle ran CPU; EasyOCR and Surya ran on a Tesla T4. Surya has the best CER/WER and 14/16 exact financial-table rows, while EasyOCR/Surya report 47/48 cell strings; those cell counts do not measure row/column association. A supplemental Vietnamese scan comparison now covers three pages from a third-party 2011 packet with full text labels on every page, rescored from cached OCR output on exact source/render hashes: Tesseract/Paddle/Easy/Surya micro-CER 0.6932/0.1626/0.4494/0.1667 and micro-WER 0.9128/0.3303/0.5404/0.1826. Paddle has the lowest CER, Surya the lowest WER; neither is selected because the packet is small and from one source. The two balance-sheet transcriptions use PDF text as an aid and were visually reviewed. The 20 coordinate boxes derive from the PDF text layer, not independent click annotations. See the [v7 comparison](../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v7-five-configuration-comparison-20260928.json), the [three-page scan labels](../data/evaluation/ocr/archive/2011-scan/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v3.json), the [rescored comparison](../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-2011-v3-four-engine-comparison-20260929.json) and [production-parser report](../artifacts/evaluation/ocr/pipeline/vinamilk-scan-document-processor-2011-three-pages-v2-20260929.json). Kaggle results are linked from the [processing protocol](technical/document-processing.md#current-boundaries).
 - Extraction anchor report
-  `artifacts/evaluation/vinamilk-document-extraction-scan-table-v9.json` uses five
+  `artifacts/evaluation/ocr/pipeline/vinamilk-document-extraction-scan-table-v9.json` uses five
   manually checked financial fields on two official annual-report pages
   (2020 infographic and 2024 balance sheet). It compares native PDF, PDF OCR,
   and the actual image-upload OCR path. It remains a small synthetic-raster
@@ -380,7 +380,7 @@ every named package by default.
   no PDF page number. On the 2024 page, raster-PDF OCR matches 3/3 normalized
   table anchors; image-upload OCR with table PSM 3 matches 2/3 normalized table
   anchors and 3/3 normalized text anchors. The follow-up [table PSM 6 report]
-  (`artifacts/evaluation/vinamilk-document-extraction-compact-table-psm6-20260928.json`)
+  (`artifacts/evaluation/ocr/tuning/vinamilk-document-extraction-compact-table-psm6-20260928.json`)
   raises normalized table-anchor recall to 3/3 on both raster-PDF and
   image-upload routes; exact table-anchor recall remains 1/3 and 0/3,
   respectively. Production defaults now use PSM 3 for PDF table word boxes and
@@ -388,7 +388,7 @@ every named package by default.
   uses two born-digital source pages rasterized synthetically, so it does not
   replace review on real scanned reports.
 - Expanded multi-year extraction report
-  `artifacts/evaluation/vinamilk-document-extraction-multiyear-v3-20260928.json`
+  `artifacts/evaluation/ocr/pipeline/vinamilk-document-extraction-multiyear-v3-20260928.json`
   supersedes the narrow five-field candidate count below for native financial
   statement coverage. It contains 11 visually checked fields over five report
   pages (2020–2024); born-digital candidate extraction matched 11/11 with
@@ -396,13 +396,13 @@ every named package by default.
   anchors and 3/11 after normalization. These are not real-scan or
   document-wide accuracy estimates.
 - Financial candidate extraction report
-  `artifacts/evaluation/vinamilk-document-extraction-candidates-20260927.json`
+  `artifacts/evaluation/ocr/pipeline/vinamilk-document-extraction-candidates-20260927.json`
   adds candidate-level scoring on those same five labeled fields. The rule-based
   extractor produced 5 candidates, with 5/5 labeled-value precision and 5/5
   field recall across two pages (2/2 infographic fields; 3/3 balance-sheet
   fields). These results cover only those selected, born-digital pages and do
   not establish corpus-wide accuracy or LLM extraction quality.
-- Table strategy sweep `artifacts/evaluation/vinamilk-document-extraction-table-strategy-v4.json`
+- Table strategy sweep `artifacts/evaluation/ocr/tuning/vinamilk-document-extraction-table-strategy-v4.json`
   reran the two-page extraction fixture on 2026-09-27. On the manually labeled
   2024 balance sheet, PyMuPDF default found 0/2 expected table regions;
   text/text found one fragmented 75x15 table and matched 3/3 financial anchors
@@ -419,6 +419,18 @@ every named package by default.
   page 2 states `11,236` VND billion. Both the verified metric and its reviewed
   candidate were corrected in Supabase, and the authenticated analytics API
   now returns profit `11236` and consolidated revenue `59723` billion VND.
+- Business-analysis evidence refresh (2026-10-01): the locally held official
+  2024 Vietnamese annual-report PDF was re-ingested after detecting a source-version
+  mismatch with the old chunks. All 438 new chunks carry its SHA-256; parser v8
+  now yields review candidates for domestic/export growth, product portfolio,
+  raw-milk supply, customer satisfaction, purchasing/production savings, OEE
+  and headcount. Live evidence is 129 observations (91 verified, 38 pending),
+  80 metric types across 9 domains. Exact quote/page matches were relinked without changing
+  verified values; 2 old source-research rows remain unlinked and pending. The
+  [decision-metrics note](technical/vinamilk-milk-supply-metrics.md) maps these
+  sources to business questions and states which internal data is still needed.
+  A CLI re-download of Vinamilk’s PDF URL returned 403, so the local SHA is not a
+  hash check against the live HTTP response.
 - HTTP/browser runtime smoke: local `/` and `/static/app.js` returned 200,
   `/health` returned `{"status":"ok"}`, and Chrome verified analyst sign-in,
   workspace rendering, the Knowledge/Business analysis tabs, and the 2024
@@ -433,54 +445,20 @@ every named package by default.
   browser flows, and Nginx proxy rendering remain unverified.
 - See [`data/README.md`](../data/README.md) for corpus provenance, ingestion,
   and database data flow.
-## Financial dashboard extraction progress
+## Metric extraction and decision analytics
 
-Implemented parser/keyword-based financial-page selection (maximum 10 pages
-per report), one strict-JSON Groq request per selected page, quote/value/unit/
-year validation, provenance columns, and the existing admin review gate. LLM
-candidates remain `needs_review`; analytics reads only verified metrics. LLM
-candidates replace parser candidates only for the same document/metric/year/
-page, preserving parser evidence for metrics the LLM did not return. Provider
-errors keep parser candidates from the shortlisted finance pages.
+The dashboard reads verified values from PostgreSQL; it does not calculate from a local JSON fixture. Financial observations use `extracted_financial_metrics`; business observations use `business_metric_evidence`. Pending candidates stay out of analytics until an admin checks the source, period, value, unit and scope.
 
-Run `.venv/bin/python scripts/processing/process_vinamilk_financial_reports.py
---page-selection-only --ids VNM-AR-2020-VI VNM-AR-2024-VI` to inspect selection
-without model calls, or add `--llm --dry-run` to inspect extraction output
-without saving. `--save-candidates` saves review-only candidates.
+Business metric extraction in `src/core/analytics/business_metric_extraction.py` sends parser-produced table and narrative chunks to the configured Groq model only when upload or batch processing explicitly selects one `BUSINESS_DECISION_PROFILES` domain. The full catalog (89 metric types) remains available to dashboard analytics and admin entry; the LLM prompt receives only the selected domain's primary metrics and management question. Server validation rejects every metric outside that selected profile, and each accepted value must match an exact source quote, unit and period. Without a selected business decision domain, upload skips business KPI extraction while retaining parsed/searchable content and its separate financial pipeline. Provenance stores selected profile, model, prompt version, parser selection signals, token usage and source chunk. Reproduce a no-write run with:
 
-The current live admin analytics API returns seven verified KPI observations and
-29 pending review candidates; only verified rows affect analytics. An admin must
-check each candidate's source page, fiscal year, unit, and reported value
-before it can be published. Historical pending rows are retained as
-superseded evidence rather than deleted.
+```bash
+PYTHONPATH=src .venv/bin/python scripts/processing/process_vinamilk_business_metrics.py --ids VNM-AR-2025-EN --decision-domain milk_supply --max-chunks 3
+```
 
-Rule-based candidates now prefer structured rows and prominent KPI cards;
-free-text fallback is limited to high-confidence summary pages to avoid
-turning unrelated narrative figures into dashboard values. Unit hints come
-from the selected page and table headers and remain admin-review suggestions.
+This parses the whole PDF with the same layout-parser setting as upload, then caps model calls at three selected chunks. Output is JSON on stdout; add `--save-candidates` only when you intend to write review-only candidates. The domain profiles are first-pass, management-question-oriented scopes and still need review with domain owners; they are not proof that every chosen KPI is decision-useful. The chunk-based path has not yet been benchmarked across all reports, and a real Groq smoke request on 2026-10-01 returned HTTP 429 before producing candidates. Unit and upload-flow tests use a fake provider. Conflicting values for one metric/year are withheld rather than silently choosing one; source-specific scope still needs admin review.
 
-The first selection diagnostic chose 10/100 pages in the 2020 report and
-10/95 in 2024 (90% and 89.5% fewer pages sent). Both currently labeled anchor
-pages (2020 p.8, 2024 p.91) were selected (2/2); this two-page check is too
-small to establish recall. Rule-based candidate coverage is evaluated against
-the five manually labeled fields in
-`data/evaluation/vinamilk_document_extraction_cases.json`. A no-write 2024 LLM
-run accepted three values from PDF page 48 and two from page 92 after returning
-no values on page 15; one output per later page failed quote validation. The
-repeat run hit provider rate limits, so those accepted values still require
-manual value/unit/year scoring before use. Do not use unreviewed candidates as
-KPIs.
+Financial extraction remains separate: `scripts/processing/process_vinamilk_financial_reports.py` ranks financial pages, requests strict JSON and stores candidates for review. Both pipelines preserve source pages and chunks; only verified rows enter the SQL agent's authorized views.
 
-### Current extraction limits and next validation
+The authenticated SQL/report path was exercised against the live local app on 2026-10-01. `/api/analytics` returned 29 documents, 5,464 chunks, 12 verified financial observations, 139 verified business observations across 89 metrics/9 domains and 7 pending business candidates. The dashboard's business view now defaults to primary decision KPIs within one selected domain (Market performance where available), with an explicit option to show all verified supporting metrics. The domain filter narrows displayed series and decision shortcuts; it does not remove supporting observations from SQL query availability. The question “Should Vinamilk prioritize overseas or domestic investment …?” returned FY2024–25 growth, revenue scale (domestic VND 50,799 → 50,964 billion; overseas VND 10,983 → 12,682 billion), absolute changes (+165 and +1,699 billion), and eight source citations. The answer frames overseas growth as a reason for diligence, not a capital-allocation instruction, and names the missing economics to check.
 
-The staged path is implemented: parser/layout and finance keywords shortlist
-pages, the LLM returns source-quoted candidates with provenance, and an admin
-must verify the value, unit, fiscal year, and cited source before publication.
-Candidates are stored separately from verified `extracted_financial_metrics`;
-export to XLSX is optional and is not the system of record.
-
-The suggested 5–10 pages and 98% request reduction are hypotheses, not measured
-results. Current selection caps at 10 pages; the 2020/2024 diagnostic selected
-10/100 and 10/95 pages. Measure page recall across available report years,
-request/token counts, latency, field/value/unit exact match, invalid-candidate
-rate, and admin review effort. Provider quota currently limits repeat runs.
+A bug found during that live check had added revenue-scale metrics to the decision-answer expectation but omitted them from the generated SQL metric filter. `SQLAnalyticsAgent` now includes both revenue series and prior-year values; an exact-code regression assertion and a report-agent test cover scales, deltas and citations. The remaining work is to benchmark the new business extractor across the report set, review its candidates against source pages, resolve ambiguous metric scopes, and finish the proposal's human/provider/browser evaluation. See [the metric evidence and domain note](technical/vinamilk-milk-supply-metrics.md) and [the proposal evaluation matrix](technical/agents-and-evaluation.md#proposal-evaluation-master-matrix).

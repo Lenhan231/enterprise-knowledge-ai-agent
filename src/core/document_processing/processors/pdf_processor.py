@@ -9,6 +9,8 @@ import statistics
 import shutil
 import subprocess
 import csv
+import unicodedata
+from collections import Counter, defaultdict
 from typing import Dict, List, Optional, Any, Tuple
 import fitz  # PyMuPDF
 from .pdf_layout_processor import PaddleLayoutProcessor, _HEADING_PATTERNS
@@ -45,6 +47,13 @@ class PDFProcessor:
         self.config.setdefault("ocr_table_render_scale", 2.5)
         self.config.setdefault("vision_captioning", False)
         self.config.setdefault("vision_caption_max_images", 3)
+        self.config.setdefault("table_chunk_replacement_threshold", 0.8)
+        page_numbers = self.config.get("page_numbers")
+        self.page_numbers = None if page_numbers is None else {int(number) for number in page_numbers}
+        if self.page_numbers is not None and (not self.page_numbers or min(self.page_numbers) < 1):
+            raise ValueError("page_numbers must contain positive PDF page numbers")
+        if not 0.5 <= float(self.config["table_chunk_replacement_threshold"]) <= 1.0:
+            raise ValueError("table_chunk_replacement_threshold must be between 0.5 and 1")
 
         # Initialize OCR if needed
         if self.config.get("ocr_fallback", False):
@@ -155,7 +164,239 @@ class PDFProcessor:
                             "parser": "pymupdf",
                         },
                     })
+        chunks = self._replace_flat_table_chunks(chunks, tables)
         return self._caption_pdf_images({"chunks": chunks, "tables": tables}, pdf_source, document)
+
+    def _replace_flat_table_chunks(self, chunks: List[Dict[str, Any]], tables: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Use row/column-aware table text when it safely matches a same-page chunk.
+
+        Unmatched table fragments are added without deleting source text. This
+        keeps uncertain parser output searchable while avoiding a lossy swap.
+        """
+        threshold = float(self.config["table_chunk_replacement_threshold"])
+        replacements: Dict[int, Dict[str, Any]] = {}
+        additions: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+        claimed_chunks = set()
+
+        for table in tables:
+            page_number = int(table.get("page_number") or 0)
+            fragments = self._structured_table_fragments(
+                table, int(self.config.get("chunk_size", 800)),
+            )
+            for fragment_index, fragment in enumerate(fragments):
+                best = None
+                for chunk_index, chunk in enumerate(chunks):
+                    if chunk_index in claimed_chunks:
+                        continue
+                    if int(chunk.get("metadata", {}).get("page_number") or 0) != page_number:
+                        continue
+                    chunk_coverage, table_coverage = self._table_match_coverage(
+                        chunk.get("text", ""), fragment["match_text"],
+                    )
+                    score = min(chunk_coverage, table_coverage)
+                    if best is None or score > best[0]:
+                        best = (score, chunk_coverage, table_coverage, chunk_index)
+
+                matched_chunk_index = None
+                chunk_coverage = table_coverage = 0.0
+                best_chunk_index = None
+                if best:
+                    _, chunk_coverage, table_coverage, best_chunk_index = best
+                if best and chunk_coverage >= threshold and table_coverage >= threshold:
+                    matched_chunk_index = best_chunk_index
+                    claimed_chunks.add(matched_chunk_index)
+
+                context_chunk_index = matched_chunk_index if matched_chunk_index is not None else best_chunk_index
+                source_metadata = (
+                    chunks[context_chunk_index].get("metadata", {})
+                    if context_chunk_index is not None
+                    else next((
+                        chunk.get("metadata", {}) for chunk in chunks
+                        if int(chunk.get("metadata", {}).get("page_number") or 0) == page_number
+                    ), chunks[0].get("metadata", {}) if chunks else {})
+                )
+                metadata = {
+                    **source_metadata,
+                    **table.get("metadata", {}),
+                    "page_number": page_number,
+                    "chunk_strategy": source_metadata.get("chunk_strategy", "sentence"),
+                    "layout_type": "table",
+                    "element_type": "table",
+                    "table_index": table.get("table_index"),
+                    "table_fragment_index": fragment_index,
+                    "table_fragment_count": len(fragments),
+                    "table_extraction_method": table.get("metadata", {}).get("table_extraction_method"),
+                    "parser": "pymupdf.structured_table_chunk",
+                    "table_chunk_match_threshold": threshold,
+                    "table_chunk_match": {
+                        "matched_source_chunk": matched_chunk_index is not None,
+                        "chunk_token_coverage": round(chunk_coverage, 4),
+                        "table_token_coverage": round(table_coverage, 4),
+                        "best_candidate_chunk_index": (
+                            chunks[best_chunk_index].get("metadata", {}).get("chunk_index")
+                            if best_chunk_index is not None else None
+                        ),
+                        "matched_source_chunk_index": (
+                            chunks[matched_chunk_index].get("metadata", {}).get("chunk_index")
+                            if matched_chunk_index is not None else None
+                        ),
+                    },
+                }
+                table_chunk = {"text": fragment["text"], "metadata": metadata}
+                if matched_chunk_index is not None:
+                    replacements[matched_chunk_index] = table_chunk
+                else:
+                    additions[page_number].append(table_chunk)
+
+        by_page: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+        unpaged = []
+        for index, chunk in enumerate(chunks):
+            page_number = int(chunk.get("metadata", {}).get("page_number") or 0)
+            if page_number:
+                by_page[page_number].append(replacements.get(index, chunk))
+            else:
+                unpaged.append(replacements.get(index, chunk))
+
+        result = []
+        for page_number in sorted(set(by_page) | set(additions)):
+            result.extend(by_page.get(page_number, []))
+            result.extend(additions.get(page_number, []))
+        result.extend(unpaged)
+        for index, chunk in enumerate(result):
+            chunk["metadata"]["chunk_index"] = index
+        return result
+
+    @staticmethod
+    def _structured_table_fragments(table: Dict[str, Any], max_chars: int) -> List[Dict[str, str]]:
+        columns = [str(column or f"column_{index + 1}").strip() for index, column in enumerate(table.get("columns", []))]
+        rows = table.get("rows", [])
+        if not columns and rows:
+            columns = list(dict.fromkeys(str(key) for row in rows for key in row))
+        if not columns:
+            return []
+
+        column_line = "Columns: " + " | ".join(columns)
+        row_lines = []
+        for row_index, row in enumerate(rows, start=1):
+            cells = [str(row.get(column) if row.get(column) is not None else "").strip() for column in columns]
+            if any(cells):
+                row_lines.append((f"Row {row_index}: " + " | ".join(
+                    f"{column}: {value}" for column, value in zip(columns, cells)
+                ), cells))
+        if not row_lines:
+            return []
+
+        groups = []
+        current = []
+        current_length = len(column_line)
+        for line, cells in row_lines:
+            if current and current_length + len(line) + 1 > max_chars:
+                groups.append(current)
+                current = []
+                current_length = len(column_line)
+            current.append((line, cells))
+            current_length += len(line) + 1
+        if current:
+            groups.append(current)
+
+        return [
+            {
+                "text": column_line + "\n" + "\n".join(line for line, _ in group),
+                "match_text": " ".join([
+                    *columns, *(value for _, cells in group for value in cells),
+                ]),
+            }
+            for group in groups
+        ]
+
+    @staticmethod
+    def _logical_table_fragments(
+        table: Dict[str, Any], *, table_title: str, unit: str,
+        column_labels: Dict[str, str],
+    ) -> List[Dict[str, Any]]:
+        """Serialize account-code row groups while retaining each group's structured rows."""
+        source_columns = [str(column) for column in table.get("columns", [])]
+        rows = table.get("rows", [])
+        columns = [column_labels.get(column, column) for column in source_columns]
+        groups: List[List[Dict[str, Any]]] = []
+        roots: List[Dict[str, Any]] = []
+        current: List[Dict[str, Any]] = []
+
+        def flush() -> None:
+            if current:
+                groups.append(current.copy())
+                current.clear()
+
+        for row in rows:
+            label = str(row.get("label") or "").strip()
+            code_match = re.match(r"^(\d{3})\b", label)
+            if not code_match:
+                # Repeated OCR column headers (for example "Mã Thuyết huyết 2011")
+                # are not account rows and must not leak into retrieval text.
+                continue
+            code = int(code_match.group(1))
+            if code % 100 == 0:
+                flush()
+                roots = [row]
+            elif code % 10 == 0:
+                flush()
+                current.append(row)
+            else:
+                current.append(row)
+        flush()
+
+        fragments = []
+        for index, group in enumerate(groups):
+            structured_rows = [*roots, *group]
+            lines = [
+                f"Bảng: {table_title}", f"Đơn vị: {unit}",
+                "Cột: " + " | ".join(columns),
+            ]
+            lines.extend(
+                " | ".join(
+                    f"{column_labels.get(source_column, source_column)}: "
+                    f"{str(row.get(source_column) or '').strip()}"
+                    for source_column in source_columns
+                )
+                for row in structured_rows
+            )
+            fragments.append({
+                "retrieval_text": "\n".join(lines),
+                "structured_data": {
+                    "columns": columns,
+                    "rows": [
+                        {
+                            column_labels.get(source_column, source_column): row.get(source_column)
+                            for source_column in source_columns
+                        }
+                        for row in structured_rows
+                    ],
+                },
+                "metadata": {
+                    "page_number": table.get("page_number"),
+                    "table_index": table.get("table_index"),
+                    "table_chunk_index": index,
+                    "table_chunk_count": len(groups),
+                    "table_extraction_method": table.get("metadata", {}).get(
+                        "table_extraction_method"
+                    ),
+                },
+            })
+        return fragments
+
+    @staticmethod
+    def _table_match_coverage(chunk_text: str, table_text: str) -> Tuple[float, float]:
+        def tokens(value: str) -> Counter:
+            normalized = unicodedata.normalize("NFKD", value).casefold()
+            normalized = "".join(char for char in normalized if unicodedata.category(char) != "Mn")
+            return Counter(re.findall(r"[\w]+", normalized, flags=re.UNICODE))
+
+        chunk_tokens = tokens(chunk_text)
+        table_tokens = tokens(table_text)
+        if not chunk_tokens or not table_tokens:
+            return 0.0, 0.0
+        matched = sum((chunk_tokens & table_tokens).values())
+        return matched / sum(chunk_tokens.values()), matched / sum(table_tokens.values())
 
     def _caption_pdf_images(self, result: Dict[str, Any], source: Any, document: Dict[str, Any]) -> Dict[str, Any]:
         if not self.config["vision_captioning"]:
@@ -290,16 +531,20 @@ class PDFProcessor:
             metadata["file_size_bytes"] = os.path.getsize(file_path)
 
         try:
+            if self.page_numbers is not None:
+                invalid_pages = self.page_numbers - set(range(1, len(pdf_document) + 1))
+                if invalid_pages:
+                    raise ValueError(f"PDF page numbers out of range: {sorted(invalid_pages)}")
             for page_num, page in enumerate(pdf_document):
+                if self.page_numbers is not None and page_num + 1 not in self.page_numbers:
+                    continue
                 page_text = (
                     page.get_text("text")
                     if self.config.get("preserve_layout", True)
                     else page.get_text()
                 )
-                headings = self._extract_page_headings(page)
-                if headings:
-                    page_headings[page_num + 1] = headings
                 native_text = page_text.strip()
+                ocr_headings = []
                 if (
                     self.ocr_available
                     and self.config.get("ocr_fallback", False)
@@ -329,10 +574,6 @@ class PDFProcessor:
                             page_text = f"{page_text}\n{ocr_text}"
                             ocr_pages[page_num + 1] = "pymupdf+tesseract"
                         ocr_headings = self._extract_ocr_page_headings(ocr_text)
-                        if ocr_headings:
-                            page_headings[page_num + 1] = [
-                                *page_headings.get(page_num + 1, []), *ocr_headings,
-                            ]
 
                 extracted_text.append(f"\n--- Page {page_num + 1} ---\n{page_text}")
 
@@ -341,6 +582,21 @@ class PDFProcessor:
                         page, page_num + 1, ocr_table_words.get(page_num + 1),
                         ocr_metadata=self._ocr_table_metadata(),
                     ))
+
+                table_bboxes = [
+                    table["metadata"]["bbox"] for table in tables
+                    if table.get("page_number") == page_num + 1
+                    and table.get("metadata", {}).get("bbox")
+                ]
+                headings = self._extract_page_headings(page, table_bboxes)
+                headings.extend(heading for heading in ocr_headings if heading not in headings)
+                if headings:
+                    page_headings[page_num + 1] = headings
+                for table in tables:
+                    if table.get("page_number") == page_num + 1:
+                        table_title = self._extract_table_title(page, table)
+                        if table_title:
+                            table.setdefault("context", {})["table_title"] = table_title
 
                 if self.config.get("extract_images", False) and file_path:
                     self._extract_images(page, page_num, file_path)
@@ -353,7 +609,7 @@ class PDFProcessor:
         return "\n".join(extracted_text), metadata, tables, ocr_pages, page_headings
 
     @staticmethod
-    def _extract_page_headings(page) -> List[str]:
+    def _extract_page_headings(page, excluded_bboxes=()) -> List[str]:
         """Return only short, visibly larger heading lines from native PDF text."""
         text_blocks = [block for block in page.get_text("dict").get("blocks", []) if block.get("type") == 0]
         lines = []
@@ -363,6 +619,9 @@ class PDFProcessor:
                 spans = [span for span in line.get("spans", []) if span.get("text", "").strip()]
                 text = " ".join("".join(span["text"] for span in spans).split())
                 if not text:
+                    continue
+                bbox = fitz.Rect(line.get("bbox", [0, 0, 0, 0]))
+                if any(bbox.intersects(fitz.Rect(table_bbox)) for table_bbox in excluded_bboxes):
                     continue
                 size = max(float(span.get("size", 0)) for span in spans)
                 font_sizes.extend(float(span.get("size", 0)) for span in spans)
@@ -375,11 +634,17 @@ class PDFProcessor:
         for _, text, size in sorted(lines):
             numbered_heading = any(pattern.match(text) for pattern in _HEADING_PATTERNS.values())
             visually_prominent = size >= body_size * 1.2
+            uppercase_title = (
+                text == text.upper()
+                and any(char.isalpha() for char in text)
+                and len(text.split()) >= 2
+                and not re.match(r"^\d{3}\b", text)
+            )
             sentence_like = text.endswith((".", ";", ","))
             if (
                 2 <= len(text) <= 140
                 and not sentence_like
-                and (numbered_heading or visually_prominent)
+                and (numbered_heading or visually_prominent or uppercase_title)
                 and not re.fullmatch(r"[\d\W]+", text)
             ):
                 if not headings or headings[-1] != text:
@@ -398,6 +663,33 @@ class PDFProcessor:
                 if line not in headings:
                     headings.append(line)
         return headings
+
+    @staticmethod
+    def _extract_table_title(page, table: Dict[str, Any]) -> Optional[str]:
+        """Find an explicit table/report caption immediately above its detected bounds."""
+        bbox = table.get("metadata", {}).get("bbox")
+        if not bbox:
+            return None
+        table_top = fitz.Rect(bbox).y0
+        caption_terms = (
+            "bảng", "báo cáo", "balance sheet", "financial position",
+            "income statement", "statement of", "results of operations",
+        )
+        candidates = []
+        for block in page.get_text("dict").get("blocks", []):
+            if block.get("type") != 0:
+                continue
+            for line in block.get("lines", []):
+                text = " ".join("".join(
+                    span.get("text", "") for span in line.get("spans", [])
+                ).split())
+                if not text or len(text) > 140:
+                    continue
+                line_rect = fitz.Rect(line.get("bbox", [0, 0, 0, 0]))
+                gap = table_top - line_rect.y1
+                if 0 <= gap <= 100 and any(term in text.casefold() for term in caption_terms):
+                    candidates.append((gap, text))
+        return min(candidates, default=(None, None), key=lambda candidate: candidate[0])[1]
 
     @staticmethod
     def _needs_ocr(page, native_text: str) -> bool:

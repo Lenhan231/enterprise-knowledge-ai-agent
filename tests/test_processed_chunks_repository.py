@@ -9,6 +9,22 @@ from core.database.processed_chunks_repository import ProcessedChunksRepository
 
 
 class ProcessedChunksRepositoryTest(unittest.TestCase):
+    def test_replace_document_keeps_model_specific_fields_out_of_parsed_chunks(self):
+        repository = ProcessedChunksRepository.__new__(ProcessedChunksRepository)
+        repository.connection = MagicMock()
+
+        repository.replace_document("UP-1", [{
+            "text": "Revenue was 100 VND.",
+            "metadata": {
+                "page_number": 2,
+                "embedding_model": "model-a",
+                "token_count": 12,
+            },
+        }])
+
+        rows = repository.connection.cursor.return_value.__enter__.return_value.executemany.call_args.args[1]
+        self.assertEqual(rows[0][3].obj, {"page_number": 2})
+
     def test_get_document_is_paginated_and_company_scoped(self):
         repository = ProcessedChunksRepository.__new__(ProcessedChunksRepository)
         repository.connection = MagicMock()

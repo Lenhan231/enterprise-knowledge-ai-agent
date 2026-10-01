@@ -54,7 +54,13 @@ browser. The demo has no user-registration or password-reset flow.
 
 - Viewer: corpus overview and document questions.
 - Analyst: viewer access plus the source-backed analytics dashboard.
+- Tester: isolated OCR Lab only; test PDFs and parser output are not added to the corpus.
 - Admin: analyst access plus the role permission matrix.
+
+Configure `DEMO_TESTER_USERNAME` / `DEMO_TESTER_PASSWORD` to enable the Tester
+login. Tester can run OCR tests and inspect saved test runs, but cannot browse
+documents or use production upload. The OCR Lab tab compares rendered source
+pages with parser chunks and extracted tables.
 
 Run `PYTHONPATH=src uv run uvicorn app.main:app --reload --env-file .env --port 8000` and open
 `http://localhost:8000`. Corpus coverage and passage quality are computed
@@ -66,10 +72,19 @@ production identity-management system.
 Original user-uploaded PDF, Office, text and image documents are stored in a
 private Supabase Storage bucket;
 PostgreSQL stores document metadata, processing state, and role assignments.
-Processing outputs go to `document_chunks` and reviewable financial metrics go
-to `extracted_financial_metrics`; only metrics marked `verified` appear in the
-analytics endpoint. The manifest is the source registry for public seed data,
-not a dashboard data source. User uploads go through `/api/documents/upload`.
+Parser output is retained in `processed_document_chunks` before embeddings;
+embedded passages in `document_chunks` support retrieval and source-linked
+metric evidence. Financial and business candidates live in
+`extracted_financial_metrics` and `business_metric_evidence`; only verified
+rows feed analytics and the SQL decision-support agent. Verified financial and
+business evidence keeps its source page, quote/scope, indexed `source_chunk_id`,
+chunk index, and a hash of the exact source chunk. The manifest is
+the source registry for public seed data, not a dashboard data source. User
+uploads go through `/api/documents/upload`; PDF parser output is chunked and
+indexed, then the business-metric extractor proposes only decision-domain
+primary KPIs for admin review. Admins can inspect each source chunk before
+verification.
+Vinamilk's source-backed business metric extraction, provenance and decision-question coverage are documented in [`docs/technical/vinamilk-milk-supply-metrics.md`](docs/technical/vinamilk-milk-supply-metrics.md).
 
 The upload route requires `SUPABASE_SECRET_KEY` on the server (legacy
 `SUPABASE_SERVICE_ROLE_KEY` is also accepted), an

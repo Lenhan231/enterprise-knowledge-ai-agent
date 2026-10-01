@@ -19,6 +19,22 @@ class PDFTableExtractor:
         page, page_number: int, ocr_words=None, ocr_metadata=None,
     ) -> List[Dict[str, Any]]:
         """Return detected page tables as column names and row dictionaries."""
+        words = page.get_text("words")
+        numeric_rows: Dict[float, List[Tuple[float, float]]] = {}
+        for word in words:
+            x0, y0, x1, y1, value = word[:5]
+            value = str(value).strip().replace("−", "-")
+            if re.fullmatch(r"(?:\(?[-+]?\d[\d.,]*\)?|[-–—])%?", value):
+                numeric_rows.setdefault(round((y0 + y1) / 2, 1), []).append((x0, x1))
+        aligned_rows = sum(
+            any(right[0] - left[1] >= 40 for left, right in zip(sorted(row), sorted(row)[1:]))
+            for row in numeric_rows.values()
+        )
+        # find_tables is costly on long born-digital reports. Only run it on
+        # pages with repeated aligned numeric columns; scanned-page OCR has its
+        # own word-box path below.
+        if aligned_rows < 3 and not ocr_words:
+            return []
         try:
             found_tables = page.find_tables().tables
         except Exception as e:
@@ -66,18 +82,6 @@ class PDFTableExtractor:
                 }
             )
         if not extracted:
-            words = page.get_text("words")
-            numeric_rows: Dict[float, List[Tuple[float, float]]] = {}
-            for word in words:
-                x0, y0, x1, _, value = word[:5]
-                value = str(value).strip().replace("−", "-")
-                if re.fullmatch(r"(?:\(?[-+]?\d[\d.,]*\)?|[-–—])%?", value):
-                    numeric_rows.setdefault(round((y0 + word[3]) / 2, 1), []).append((x0, x1))
-            aligned_rows = 0
-            for row in numeric_rows.values():
-                positions = sorted(row)
-                if any(right[0] - left[1] >= 40 for left, right in zip(positions, positions[1:])):
-                    aligned_rows += 1
             if aligned_rows >= 3:
                 try:
                     text_tables = page.find_tables(strategy="text").tables

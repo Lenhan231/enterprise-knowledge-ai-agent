@@ -8,16 +8,32 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.agents.intent_classifier import IntentClassifier
 from core.analytics.metric_ontology import resolve_metric_names
+from core.analytics.business_metric_catalog import resolve_business_metric_names
 from core.agents.knowledge_agent import KnowledgeAgent, _financial_retrieval_query
-from core.agents.report_agent import ReportAgent, _financial_facts_match_cited_evidence
+from core.agents.report_agent import ReportAgent, _financial_facts_match_cited_evidence, _format_prompt_evidence
 from core.agents.router import AgentRouter
 from core.agents.sql_analytics_agent import SQLAnalyticsAgent
-from core.agents.report_agent import _normalize_numeric_citations
+from core.agents.report_agent import _normalize_numeric_citations, _is_business_metric_trend_question
 from core.models.agents import AgentRequest, AgentResult, Evidence
 from core.rag.rag_service import RAGResult
 
 
 class AgentFlowTest(unittest.TestCase):
+    def test_report_prompt_formats_verified_metrics_compactly(self):
+        item = Evidence(
+            citation_id="M1", source_type="verified_metric", source="Vinamilk 2025 · OEE target",
+            content="x" * 10000,
+            metadata={"metric_label": "OEE target", "fiscal_year": 2025,
+                      "metric_value": 99, "unit": "%", "page_number": 86,
+                      "value_qualifier": "more_than", "reporting_period": "H1",
+                      "source_url": "https://example.test/long-url"},
+        )
+        formatted = _format_prompt_evidence(item)
+        self.assertIn("H1 2025 = more than 99 %", formatted)
+        self.assertIn("page 86", formatted)
+        self.assertNotIn("source_url", formatted)
+        self.assertLess(len(formatted), 200)
+
     def test_knowledge_agent_fails_closed_without_authenticated_role(self):
         rag = Mock()
 
@@ -35,10 +51,79 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(resolve_metric_names("Tổng doanh thu hợp nhất năm 2024"), {"total_consolidated_revenue"})
         self.assertEqual(resolve_metric_names("Doanh thu 2024 là 52.576.991"), {"net_revenue"})
 
+    def test_business_metric_resolver_unions_multi_domain_terms_with_exact_metric_matches(self):
+        metrics = resolve_business_metric_names(
+            "Across 2023–2025 water, emissions and waste, summarize the annual performance"
+        )
+        self.assertTrue({
+            "total_raw_water_intake", "total_water_consumption", "scope_1_2_ghg_emissions",
+            "dairy_product_ghg_intensity", "sugar_product_ghg_intensity",
+            "total_waste_generated", "waste_recovered_recycled",
+        }.issubset(metrics))
+        environmental_question = (
+            "Across the reported 2023–2025 water, emissions and waste indicators, which environmental priorities "
+            "appear to be improving? Account for changes in reporting scope and identify what is not comparable."
+        )
+        self.assertTrue(_is_business_metric_trend_question(environmental_question))
+        focused = resolve_business_metric_names(
+            "Compare Scope 1 and 2 emissions per tonne of dairy products and sugar products from 2023 to 2025"
+        )
+        self.assertEqual(focused, {
+            "scope_1_2_ghg_emissions", "dairy_product_ghg_intensity", "sugar_product_ghg_intensity",
+        })
+        intent = IntentClassifier.fallback(
+            "Across the reported 2023–2025 water, emissions and waste indicators, summarize the trend"
+        )
+        self.assertEqual(intent.intent, "report")
+        self.assertTrue(intent.needs_sql)
+        self.assertTrue(intent.needs_knowledge)
+
+        factory = resolve_business_metric_names(
+            "Given OEE, estimated production cost savings and purchasing savings in FY2024, what should management review?"
+        )
+        self.assertTrue({
+            "production_lines_meeting_oee_target", "production_cost_savings", "purchasing_cost_savings",
+        }.issubset(factory))
+
+    def test_business_metric_trend_summary_uses_analytics_and_prohibits_unsupported_causes(self):
+        knowledge = Mock()
+        knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[
+            Evidence(citation_id="S1", source_type="document", source="SR25 p.139",
+                     content="Total water consumption m³ 4,130,388 4,122,231 3,785,482. "
+                             "Waste assurance scope expanded in 2025.")
+        ])
+        analytics = Mock()
+        analytics.run.return_value = AgentResult(
+            answer="", agent="analytics", evidence=[
+                Evidence(citation_id="S2", source_type="metric", source="SR25 p.139",
+                         content="FY2023 4,130,388 m³; FY2024 4,122,231 m³; FY2025 3,785,482 m³")
+            ], data={"business_metrics": [{"metric_name": "total_water_consumption"}]},
+        )
+        llm = Mock()
+        llm.generate.return_value = "Water use fell. The source does not state why. [S1] [S2]"
+        question = "Summarize Vinamilk water consumption trend from 2023 to 2025"
+
+        self.assertTrue(_is_business_metric_trend_question(question))
+        ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
+            AgentRequest(question=question)
+        )
+
+        analytics.run.assert_called_once()
+        prompt = llm.generate.call_args.args[0]
+        self.assertIn("Do not infer operational causes", prompt)
+        self.assertIn("label possible causes as unverified hypotheses", prompt)
+        self.assertIn("reporting-boundary change", prompt)
+
     def test_generic_how_many_question_stays_document_qa(self):
         intent = IntentClassifier.fallback("Trong 100 ml sữa có bao nhiêu năng lượng và protein?")
         self.assertEqual(intent.intent, "knowledge")
         self.assertFalse(intent.needs_sql)
+
+    def test_business_metric_decision_question_routes_to_hybrid_without_llm(self):
+        intent = IntentClassifier.fallback("Should we scale Green Farm given sales growth and consumer loyalty?")
+        self.assertEqual(intent.intent, "hybrid")
+        self.assertTrue(intent.needs_sql)
+        self.assertTrue(intent.needs_knowledge)
 
     def test_sql_analytics_agent_filters_using_canonical_vietnamese_metric(self):
         repository = Mock()
@@ -86,6 +171,113 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("return individual observations only", prompt.lower())
         self.assertIn("metric_value, unit, and document_id directly", prompt)
         self.assertIn("without summing or averaging values", prompt)
+
+    def test_catalog_matched_business_query_uses_validated_sql_for_all_metrics_and_years(self):
+        repository = Mock()
+        repository.execute_authorized_analytics.return_value = {
+            "results": [{"metric_name": "domestic_consolidated_net_revenue", "fiscal_year": 2022,
+                         "metric_value": 50704.403447753, "unit": "VND billion",
+                         "evidence_business_metric_ids": [1]}],
+            "evidence": [],
+            "business_evidence": [{"business_metric_id": 1, "company": "Vinamilk", "metric_domain": "market_performance",
+                                   "metric_name": "domestic_consolidated_net_revenue", "metric_label": "Domestic net revenue",
+                                   "fiscal_year": 2022, "metric_value": 50704.403447753, "unit": "VND billion",
+                                   "scope": "Domestic segment", "document_id": "VNM-AR-2023-EN", "page_number": 170,
+                                   "source_url": "https://example.test/ar23", "source_quote": "Net revenue 50,704",
+                                   "source_chunk_id": 21605, "source_chunk_index": 385,
+                                   "source_content_hash": "hash", "extraction_method": "parser_rule",
+                                   "extractor_version": "vinamilk-page-anchors-v3"}],
+            "documents": [],
+        }
+        llm = Mock()
+        question = "Compare domestic and overseas segment net revenue and gross profit in 2022 and 2023. What decision could this inform?"
+
+        result = SQLAnalyticsAgent(repository, llm).run(AgentRequest(question=question, metadata={"role": "admin"}))
+
+        query = repository.execute_authorized_analytics.call_args.args[0]
+        for metric in ("domestic_consolidated_net_revenue", "overseas_market_net_revenue",
+                       "domestic_segment_gross_profit", "overseas_segment_gross_profit"):
+            self.assertIn(metric, query)
+        self.assertIn("fiscal_year IN (2022, 2023)", query)
+        self.assertIn("authorized_business_metrics", query)
+        llm.generate.assert_not_called()
+        self.assertEqual(result.evidence[0].metadata["chunk_id"], 21605)
+        self.assertEqual(result.evidence[0].metadata["chunk_index"], 385)
+
+    def test_market_growth_query_also_fetches_revenue_scale_for_prior_year(self):
+        repository = Mock()
+        repository.execute_authorized_analytics.return_value = {
+            "results": [], "evidence": [], "business_evidence": [], "documents": [],
+        }
+        llm = Mock()
+
+        SQLAnalyticsAgent(repository, llm).run(AgentRequest(
+            question="Should we prioritize overseas or domestic investment based on 2025 revenue growth?",
+            metadata={"role": "admin"},
+        ))
+
+        query = repository.execute_authorized_analytics.call_args.args[0]
+        for metric in ("domestic_consolidated_net_revenue_growth", "overseas_market_net_revenue_growth",
+                       "domestic_consolidated_net_revenue", "overseas_market_net_revenue"):
+            self.assertIn(f"'{metric}'", query)
+        self.assertIn("fiscal_year IN (2024, 2025)", query)
+
+    def test_export_market_question_requests_country_growth_metrics_from_sql(self):
+        repository = Mock()
+        repository.execute_authorized_analytics.return_value = {
+            "results": [], "evidence": [], "business_evidence": [], "documents": [],
+        }
+        llm = Mock()
+
+        SQLAnalyticsAgent(repository, llm).run(AgentRequest(
+            question="Which export markets should Vinamilk prioritize for investment based on growth?",
+            metadata={"role": "admin"},
+        ))
+
+        query = repository.execute_authorized_analytics.call_args.args[0]
+        for metric in ("guinea_export_revenue_growth", "hong_kong_export_revenue_growth",
+                       "japan_export_revenue_growth"):
+            self.assertIn(metric, query)
+        self.assertIn("FROM authorized_business_metrics", query)
+
+    def test_business_summary_query_includes_contiguous_year_span_and_all_domain_metrics(self):
+        repository = Mock()
+        repository.execute_authorized_analytics.return_value = {
+            "results": [], "evidence": [], "business_evidence": [], "documents": [],
+        }
+        llm = Mock()
+        question = "Across the reported 2023–2025 water, emissions and waste indicators, summarize the trend"
+
+        SQLAnalyticsAgent(repository, llm).run(AgentRequest(question=question, metadata={"role": "admin"}))
+
+        query = repository.execute_authorized_analytics.call_args.args[0]
+        self.assertIn("fiscal_year IN (2023, 2024, 2025)", query)
+        for metric in ("total_raw_water_intake", "total_water_consumption", "scope_1_2_ghg_emissions",
+                       "total_waste_generated", "waste_recovered_recycled"):
+            self.assertIn(metric, query)
+        llm.generate.assert_not_called()
+
+    def test_focused_business_question_does_not_expand_to_every_environmental_metric(self):
+        repository = Mock()
+        repository.execute_authorized_analytics.return_value = {
+            "results": [], "evidence": [], "business_evidence": [], "documents": [],
+        }
+        llm = Mock()
+        question = (
+            "Compare Scope 1 and 2 emissions per tonne of dairy products and sugar products "
+            "from 2023 to 2025. What operational review should these trends inform?"
+        )
+
+        SQLAnalyticsAgent(repository, llm).run(AgentRequest(question=question, metadata={"role": "admin"}))
+
+        query = repository.execute_authorized_analytics.call_args.args[0]
+        self.assertIn("reporting_period", query)
+        self.assertIn("value_qualifier", query)
+        for metric in ("scope_1_2_ghg_emissions", "dairy_product_ghg_intensity", "sugar_product_ghg_intensity"):
+            self.assertIn(metric, query)
+        for unrelated in ("total_raw_water_intake", "total_waste_generated", "electricity_saved"):
+            self.assertNotIn(unrelated, query)
+        self.assertIn("fiscal_year IN (2023, 2024, 2025)", query)
 
     def test_classifier_fallback_routes_summary_request_to_report_agent(self):
         intent = IntentClassifier.fallback("Summarize Vinamilk revenue and profit for 2024")
@@ -262,6 +454,17 @@ class AgentFlowTest(unittest.TestCase):
         rag.generate_answer.assert_not_called()
         self.assertEqual(result.evidence[0].citation_id, "S1")
 
+    def test_decision_support_report_limits_retrieved_passages_for_provider_tpm(self):
+        rag = Mock()
+        rag.retrieve_contexts.return_value = []
+
+        KnowledgeAgent(rag).run(AgentRequest(
+            question="Should Vinamilk allocate more capital to overseas markets?",
+            metadata={"role": "admin", "evidence_only": True, "decision_support": True},
+        ))
+
+        self.assertEqual(rag.retrieve_contexts.call_args.kwargs["limit"], 3)
+
     def test_knowledge_agent_routes_explicit_parent_retrieval(self):
         rag = Mock()
         rag.generate_answer.return_value = RAGResult(answer="answer", source_ids=[])
@@ -285,6 +488,430 @@ class AgentFlowTest(unittest.TestCase):
                 self.assertEqual(result.agent, "report")
                 report.run.assert_called_once()
                 unused.run.assert_not_called()
+
+    def test_business_decision_hybrid_uses_report_agent_to_synthesize_evidence(self):
+        question = "Compare domestic and overseas segment net revenue and gross profit. What decision could this inform?"
+        report = Mock()
+        report.run.return_value = AgentResult(answer="decision synthesis", agent="report")
+        unused = Mock()
+        classifier = Mock()
+        classifier.classify.return_value = IntentClassifier.fallback(question)
+        router = AgentRouter(classifier, unused, unused, unused, unused, report)
+
+        result = router.route(AgentRequest(question=question))
+
+        self.assertEqual(result.agent, "report")
+        report.run.assert_called_once()
+        unused.run.assert_not_called()
+
+    def test_decision_report_abstains_when_requested_segment_metrics_are_incomplete(self):
+        question = "Compare domestic and overseas segment net revenue and gross profit. What decision could this inform?"
+        knowledge = Mock()
+        analytics = Mock()
+        analytics.run.return_value = AgentResult(answer="metrics", agent="analytics", evidence=[
+            Evidence(citation_id="M1", source_type="verified_metric", source="FY2023 segment gross profit",
+                     content="Audited segment gross profit was reported.")
+        ], data={"business_metrics": [{"metric_name": "domestic_segment_gross_profit"}]})
+        llm = Mock()
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
+            AgentRequest(question=question)
+        )
+
+        analytics.run.assert_called_once()
+        self.assertTrue(result.metadata["insufficient_context"])
+        self.assertEqual(result.metadata["decision_analysis"], "missing_role_visible_verified_metrics")
+        self.assertIn("Domestic consolidated net revenue", result.answer)
+        self.assertIn("Overseas segment gross profit", result.answer)
+        knowledge.run.assert_not_called()
+        llm.generate.assert_not_called()
+
+    def test_complete_segment_economics_answer_uses_verified_sql_without_llm(self):
+        question = (
+            "Compare domestic and overseas segment net revenue and gross profit in 2022 and 2023. "
+            "Which market improved more, what decision could this inform?"
+        )
+        observations = {
+            ("domestic_consolidated_net_revenue", 2022): (50704.403447753, 208),
+            ("domestic_consolidated_net_revenue", 2023): (50617.453566955, 207),
+            ("domestic_segment_gross_profit", 2022): (20555.544882296, 212),
+            ("domestic_segment_gross_profit", 2023): (20893.809625798, 211),
+            ("overseas_market_net_revenue", 2022): (9251.843749665, 210),
+            ("overseas_market_net_revenue", 2023): (9751.46194455, 209),
+            ("overseas_segment_gross_profit", 2022): (3341.686624411, 214),
+            ("overseas_segment_gross_profit", 2023): (3650.921989612, 213),
+        }
+        rows = []
+        evidence = []
+        for index, ((name, year), (value, metric_id)) in enumerate(observations.items(), 1):
+            rows.append({"metric_name": name, "fiscal_year": year, "metric_value": value,
+                         "unit": "VND billion", "business_metric_id": metric_id})
+            evidence.append(Evidence(
+                citation_id=f"M{index}", source_type="verified_metric", source=f"Annual Report p. 170 · {name}",
+                content=f"{year}: {value} VND billion", metadata={"business_metric_id": metric_id,
+                    "chunk_id": 21605, "chunk_index": 385, "page_number": 170},
+            ))
+        analytics = Mock()
+        analytics.run.return_value = AgentResult(answer="", agent="analytics", evidence=evidence,
+                                                  data={"business_metrics": rows})
+        knowledge, llm = Mock(), Mock()
+        knowledge.run.return_value = AgentResult(answer="", agent="knowledge")
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
+            AgentRequest(question=question, metadata={"role": "admin"})
+        )
+
+        self.assertIn("40.54%", result.answer)
+        self.assertIn("41.28%", result.answer)
+        self.assertIn("36.12%", result.answer)
+        self.assertIn("37.44%", result.answer)
+        self.assertIn("+1.32 pp", result.answer)
+        self.assertIn("further diligence", result.answer)
+        self.assertIn("[M1]", result.answer)
+        self.assertEqual(result.metadata["decision_analysis"], "verified_segment_economics")
+        knowledge.run.assert_not_called()
+        llm.generate.assert_not_called()
+
+    def test_market_growth_decision_uses_verified_sql_instead_of_irrelevant_rag(self):
+        question = "Should we prioritize overseas or domestic market investment based on 2024 revenue growth?"
+        rows = [
+            {"metric_name": "domestic_consolidated_net_revenue_growth", "fiscal_year": 2024,
+             "metric_value": 0.4, "unit": "%", "business_metric_id": 101},
+            {"metric_name": "overseas_market_net_revenue_growth", "fiscal_year": 2024,
+             "metric_value": 12.6, "unit": "%", "business_metric_id": 102},
+        ]
+        evidence = [
+            Evidence(citation_id="M1", source_type="verified_metric", source="Domestic revenue growth",
+                     content="0.4%", metadata={"business_metric_id": 101}),
+            Evidence(citation_id="M2", source_type="verified_metric", source="Overseas revenue growth",
+                     content="12.6%", metadata={"business_metric_id": 102}),
+        ]
+        knowledge, analytics, llm = Mock(), Mock(), Mock()
+        analytics.run.return_value = AgentResult(answer="", agent="analytics", evidence=evidence,
+                                                 data={"business_metrics": rows})
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
+            AgentRequest(question=question, metadata={"role": "admin"})
+        )
+
+        self.assertIn("0.4%", result.answer)
+        self.assertIn("12.6%", result.answer)
+        self.assertIn("diligence review", result.answer)
+        self.assertEqual(result.metadata["decision_analysis"], "verified_market_growth")
+        knowledge.run.assert_not_called()
+        llm.generate.assert_not_called()
+
+    def test_export_country_decision_ranks_source_metrics_and_limits_recommendation(self):
+        question = "Which export markets should Vinamilk prioritize for investment based on growth?"
+        values = [
+            ("guinea_export_revenue_growth", 108),
+            ("hong_kong_export_revenue_growth", 94),
+            ("japan_export_revenue_growth", 28),
+        ]
+        rows, evidence = [], []
+        for index, (name, value) in enumerate(values, 1):
+            rows.append({"metric_name": name, "metric_label": name, "fiscal_year": 2025,
+                         "metric_value": value, "unit": "%", "business_metric_id": index})
+            evidence.append(Evidence(citation_id=f"M{index}", source_type="verified_metric",
+                                     source=f"Annual Report p. 47 · {name}", content=f"{value}%",
+                                     metadata={"business_metric_id": index}))
+        context_values = [
+            ("export_net_revenue", 7105, "VND billion"),
+            ("export_net_revenue_growth", 25.4, "%"),
+            ("commercial_export_revenue", 6546, "VND billion"),
+            ("commercial_export_revenue_growth", 16.5, "%"),
+            ("export_volume_teu", 4200, "TEUs"),
+        ]
+        for index, (name, value, unit) in enumerate(context_values, 4):
+            rows.append({"metric_name": name, "metric_label": name, "fiscal_year": 2025,
+                         "metric_value": value, "unit": unit, "business_metric_id": index})
+            evidence.append(Evidence(citation_id=f"M{index}", source_type="verified_metric",
+                                     source=f"Annual Report p. 29 · {name}", content=str(value),
+                                     metadata={"business_metric_id": index}))
+        knowledge, analytics, llm = Mock(), Mock(), Mock()
+        analytics.run.return_value = AgentResult(answer="", agent="analytics", evidence=evidence,
+                                                 data={"business_metrics": rows})
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
+            AgentRequest(question=question, metadata={"role": "admin"})
+        )
+
+        self.assertLess(result.answer.index("108%"), result.answer.index("94%"))
+        self.assertLess(result.answer.index("94%"), result.answer.index("28%"))
+        self.assertIn("does not disclose", result.answer)
+        self.assertIn("Do not approve a capital shift", result.answer)
+        self.assertIn("VND 7,105 billion [M4]", result.answer)
+        self.assertIn("VND 6,546 billion [M6]", result.answer)
+        self.assertIn("included in total export net revenue", result.answer)
+        self.assertEqual(result.metadata["decision_analysis"], "verified_export_country_priorities")
+        knowledge.run.assert_not_called()
+        llm.generate.assert_not_called()
+
+        analytics.run.return_value.data["business_metrics"] = rows[:3]
+        country_only = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
+            AgentRequest(question=question, metadata={"role": "admin"})
+        )
+        self.assertIn("108%", country_only.answer)
+
+    def test_market_growth_decision_uses_revenue_scale_and_absolute_change(self):
+        question = "Should we prioritize overseas or domestic investment based on 2025 revenue growth?"
+        values = [
+            (2024, "domestic_consolidated_net_revenue", 50799, "VND billion"),
+            (2025, "domestic_consolidated_net_revenue", 50964, "VND billion"),
+            (2024, "overseas_market_net_revenue", 10983, "VND billion"),
+            (2025, "overseas_market_net_revenue", 12682, "VND billion"),
+            (2025, "domestic_consolidated_net_revenue_growth", 0.3, "%"),
+            (2025, "overseas_market_net_revenue_growth", 15.5, "%"),
+        ]
+        rows, evidence = [], []
+        for index, (year, name, value, unit) in enumerate(values, 1):
+            rows.append({"metric_name": name, "fiscal_year": year, "metric_value": value,
+                         "unit": unit, "business_metric_id": index})
+            evidence.append(Evidence(citation_id=f"M{index}", source_type="verified_metric",
+                                     source=f"FY{year} {name}", content=str(value),
+                                     metadata={"business_metric_id": index}))
+        knowledge, analytics, llm = Mock(), Mock(), Mock()
+        analytics.run.return_value = AgentResult(answer="", agent="analytics", evidence=evidence,
+                                                 data={"business_metrics": rows})
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
+            AgentRequest(question=question, metadata={"role": "admin"})
+        )
+
+        self.assertIn("VND 50,964 billion", result.answer)
+        self.assertIn("VND 12,682 billion", result.answer)
+        self.assertIn("VND 165 billion", result.answer)
+        self.assertIn("VND 1,699 billion", result.answer)
+        self.assertEqual(result.metadata["decision_analysis"], "verified_market_growth")
+        knowledge.run.assert_not_called()
+        llm.generate.assert_not_called()
+
+    def test_factory_efficiency_decision_uses_verified_metrics_without_rag_or_llm(self):
+        question = (
+            "Given OEE, estimated production cost savings and purchasing savings in FY2024, "
+            "what should management review next?"
+        )
+        values = [
+            ("production_lines_meeting_oee_target", 96, "%", "more_than"),
+            ("production_cost_savings", 100.8, "VND billion", "approximately"),
+            ("purchasing_cost_savings", 550, "VND billion", "approximately"),
+        ]
+        rows, evidence = [], []
+        for index, (name, value, unit, qualifier) in enumerate(values, 1):
+            rows.append({"metric_name": name, "metric_label": name.replace("_", " "),
+                         "fiscal_year": 2024, "metric_value": value, "unit": unit,
+                         "value_qualifier": qualifier, "business_metric_id": index})
+            evidence.append(Evidence(
+                citation_id=f"M{index}", source_type="verified_metric", source=f"Annual Report · {name}",
+                content=f"FY2024 {value} {unit}", metadata={"business_metric_id": index},
+            ))
+        knowledge, llm, analytics = Mock(), Mock(), Mock()
+        analytics.run.return_value = AgentResult(
+            answer="metrics", agent="analytics", evidence=evidence, data={"business_metrics": rows},
+        )
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
+            AgentRequest(question=question, metadata={"role": "admin"})
+        )
+
+        self.assertIn("more than 96%", result.answer)
+        self.assertIn("approximately VND 100.8 billion", result.answer)
+        self.assertIn("approximately VND 550 billion", result.answer)
+        self.assertIn("do not identify which factory", result.answer)
+        self.assertEqual(result.metadata["decision_analysis"], "verified_factory_efficiency")
+        knowledge.run.assert_not_called()
+        llm.generate.assert_not_called()
+
+    def test_milk_sourcing_decision_compares_household_purchase_not_total_supply(self):
+        question = (
+            "Compare raw fresh milk purchased from farming households in 2023, 2024 and 2025. "
+            "What should leadership investigate before changing procurement?"
+        )
+        values = [(2023, 239254, "exact"), (2024, 227000, "approximately"),
+                  (2025, 225778.211, "exact")]
+        rows, evidence = [], []
+        for index, (year, value, qualifier) in enumerate(values, 1):
+            rows.append({"metric_name": "farmer_raw_milk_purchased", "metric_label": "Milk purchased from farmers",
+                         "fiscal_year": year, "metric_value": value, "unit": "tonnes",
+                         "value_qualifier": qualifier, "business_metric_id": index})
+            evidence.append(Evidence(citation_id=f"M{index}", source_type="verified_metric",
+                                     source=f"FY{year} farmer milk purchases", content=str(value),
+                                     metadata={"business_metric_id": index}))
+        rows.append({"metric_name": "partner_farm_households", "fiscal_year": 2023,
+                     "metric_value": 4180, "unit": "households", "business_metric_id": 4})
+        evidence.append(Evidence(citation_id="M4", source_type="verified_metric",
+                                 source="FY2023 partner households", content="4,180",
+                                 metadata={"business_metric_id": 4}))
+        knowledge, analytics, llm = Mock(), Mock(), Mock()
+        analytics.run.return_value = AgentResult(answer="metrics", agent="analytics", evidence=evidence,
+                                                 data={"business_metrics": rows})
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
+            AgentRequest(question=question, metadata={"role": "admin"})
+        )
+
+        self.assertIn("225,778.211 tonnes", result.answer)
+        self.assertIn("fell by 13,475.789 tonnes (5.63%)", result.answer)
+        self.assertIn("not proof of supplier attrition", result.answer)
+        self.assertIn("[M1]", result.answer)
+        self.assertIn("[M3]", result.answer)
+        self.assertEqual(result.metadata["decision_analysis"], "verified_milk_sourcing")
+        knowledge.run.assert_not_called()
+        llm.generate.assert_not_called()
+
+    def test_product_portfolio_decision_uses_cited_funnel_and_profitability_limits(self):
+        question = (
+            "Which product portfolio initiatives should management investigate before scaling? Compare plant-based "
+            "milk sales growth, Green Farm sales growth, brand awareness, purchase consideration, loyalty and "
+            "new or relaunched products; identify profitability evidence needed."
+        )
+        values = [
+            ("plant_based_milk_sales_growth", 2024, 50, "approximately"),
+            ("green_farm_sales_growth", 2024, 20, "more_than"),
+            ("green_farm_brand_awareness", 2024, 59, "exact"),
+            ("green_farm_customer_loyalty", 2024, 96, "exact"),
+            ("green_farm_urban_purchase_consideration", 2022, 9, "exact"),
+            ("green_farm_urban_purchase_consideration", 2024, 16, "exact"),
+            ("new_or_relaunched_products", 2024, 125, "exact"),
+        ]
+        rows, evidence = [], []
+        for index, (name, year, value, qualifier) in enumerate(values, 1):
+            rows.append({"metric_name": name, "metric_label": name.replace("_", " "), "fiscal_year": year,
+                         "metric_value": value, "unit": "products" if name == "new_or_relaunched_products" else "%",
+                         "value_qualifier": qualifier, "business_metric_id": index})
+            evidence.append(Evidence(citation_id=f"M{index}", source_type="verified_metric",
+                                     source=f"FY{year} {name}", content=str(value),
+                                     metadata={"business_metric_id": index}))
+        knowledge, analytics, llm = Mock(), Mock(), Mock()
+        analytics.run.return_value = AgentResult(answer="metrics", agent="analytics", evidence=evidence,
+                                                 data={"business_metrics": rows})
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
+            AgentRequest(question=question, metadata={"role": "admin"})
+        )
+
+        self.assertIn("approximately 50%", result.answer)
+        self.assertIn("more than 20%", result.answer)
+        self.assertIn("+7 percentage points", result.answer)
+        self.assertIn("not sufficient to rank them for expansion", result.answer)
+        self.assertIn("contribution margin by SKU/channel", result.answer)
+        self.assertTrue(all(f"[M{i}]" in result.answer for i in range(1, 8)))
+        self.assertEqual(result.metadata["decision_analysis"], "verified_product_portfolio")
+        knowledge.run.assert_not_called()
+        llm.generate.assert_not_called()
+
+    def test_report_does_not_substitute_document_passages_when_role_cannot_see_metrics(self):
+        question = (
+            "Compare raw fresh milk purchased from farming households in 2023, 2024 and 2025. "
+            "What should leadership investigate before changing procurement?"
+        )
+        knowledge, analytics, llm = Mock(), Mock(), Mock()
+        analytics.run.return_value = AgentResult(answer="No verified rows", agent="analytics", evidence=[],
+                                                 data={"business_metrics": []})
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
+            AgentRequest(question=question, metadata={"role": "finance_analyst"})
+        )
+
+        self.assertTrue(result.metadata["insufficient_context"])
+        self.assertEqual(result.metadata["decision_analysis"], "missing_role_visible_verified_metrics")
+        self.assertIn("I will not substitute a similar figure", result.answer)
+        knowledge.run.assert_not_called()
+        llm.generate.assert_not_called()
+
+    def test_environmental_trend_decision_uses_verified_metrics_and_respects_boundary_change(self):
+        question = (
+            "Across the reported 2023–2025 water, emissions and waste indicators, which environmental priorities "
+            "appear to be improving? Account for changes in reporting scope and identify what is not comparable."
+        )
+        series = {
+            "total_water_consumption": ("m³", [4130388, 4122231, 3785482]),
+            "scope_1_2_ghg_emissions": ("kg CO₂e", [277730014, 252175374, 253353363]),
+            "dairy_product_ghg_intensity": ("kg CO₂e/tonne product", [226, 213, 217]),
+            "sugar_product_ghg_intensity": ("kg CO₂e/tonne product", [85, 36, 61]),
+            "total_waste_generated": ("kg", [17383908, 17884507, 86903275]),
+        }
+        extras = {
+            "total_raw_water_intake": ("m³", 7961404), "recycled_reused_water": ("m³", 221556),
+            "wastewater_discharge": ("m³", 4175921), "scope_1_ghg_emissions": ("kg CO₂e", 122558524),
+            "scope_2_ghg_emissions": ("kg CO₂e", 130794838),
+            "waste_recovered_recycled": ("kg", 66664726), "waste_treated_disposed": ("kg", 20238549),
+        }
+        rows, evidence, metric_id = [], [], 0
+        for name, (unit, values) in series.items():
+            for year, value in zip((2023, 2024, 2025), values):
+                metric_id += 1
+                scope = ("The report notes a changed assurance boundary in 2025 and revised historical comparisons."
+                         if name == "total_waste_generated" and year == 2025 else "Company-wide annual total.")
+                rows.append({"metric_name": name, "metric_label": name.replace("_", " "),
+                             "fiscal_year": year, "metric_value": value, "unit": unit,
+                             "scope": scope, "business_metric_id": metric_id})
+                evidence.append(Evidence(citation_id=f"M{metric_id}", source_type="verified_metric",
+                                         source=f"FY{year} {name}", content=f"{value} {unit}",
+                                         metadata={"business_metric_id": metric_id}))
+        for name, (unit, value) in extras.items():
+            metric_id += 1
+            rows.append({"metric_name": name, "metric_label": name.replace("_", " "), "fiscal_year": 2025,
+                         "metric_value": value, "unit": unit, "business_metric_id": metric_id})
+            evidence.append(Evidence(citation_id=f"M{metric_id}", source_type="verified_metric",
+                                     source=f"FY2025 {name}", content=f"{value} {unit}",
+                                     metadata={"business_metric_id": metric_id}))
+        knowledge, analytics, llm = Mock(), Mock(), Mock()
+        analytics.run.return_value = AgentResult(answer="metrics", agent="analytics", evidence=evidence,
+                                                 data={"business_metrics": rows})
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
+            AgentRequest(question=question, metadata={"role": "sustainability_analyst"})
+        )
+
+        self.assertIn("fell by 344,906 m³ (8.35%)", result.answer)
+        self.assertIn("rose by 1,177,989 kg CO₂e (0.47%)", result.answer)
+        self.assertIn("rose by 25 kg CO₂e/tonne product (69.44%)", result.answer)
+        self.assertIn("changed assurance boundary in 2025", result.answer)
+        self.assertEqual(result.metadata["decision_analysis"], "verified_environmental_trends")
+        knowledge.run.assert_not_called()
+        llm.generate.assert_not_called()
+
+    def test_market_growth_decision_compares_each_requested_year(self):
+        question = "Compare domestic and overseas revenue growth in 2024 and 2025. What should management investigate?"
+        rows = []
+        evidence = []
+        values = [
+            (2024, "domestic_consolidated_net_revenue_growth", 0.4, "%"),
+            (2024, "overseas_market_net_revenue_growth", 12.6, "%"),
+            (2025, "domestic_consolidated_net_revenue_growth", 0.3, "%"),
+            (2025, "overseas_market_net_revenue_growth", 15.5, "%"),
+            (2024, "domestic_consolidated_net_revenue", 50799, "VND billion"),
+            (2024, "overseas_market_net_revenue", 10983, "VND billion"),
+            (2025, "domestic_consolidated_net_revenue", 50964, "VND billion"),
+            (2025, "overseas_market_net_revenue", 12682, "VND billion"),
+        ]
+        for index, (year, name, value, unit) in enumerate(values, 1):
+            rows.append({"metric_name": name, "fiscal_year": year, "metric_value": value,
+                         "unit": unit, "business_metric_id": index})
+            evidence.append(Evidence(citation_id=f"M{index}", source_type="verified_metric",
+                                     source=f"FY{year} {name}", content=f"{value} {unit}",
+                                     metadata={"business_metric_id": index}))
+        knowledge, analytics, llm = Mock(), Mock(), Mock()
+        analytics.run.return_value = AgentResult(answer="", agent="analytics", evidence=evidence,
+                                                 data={"business_metrics": rows})
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
+            AgentRequest(question=question, metadata={"role": "admin"})
+        )
+
+        self.assertIn("FY2024", result.answer)
+        self.assertIn("FY2025", result.answer)
+        self.assertIn("[M3]", result.answer)
+        self.assertIn("[M4]", result.answer)
+        self.assertIn("VND 50,964 billion", result.answer)
+        self.assertIn("VND 12,682 billion", result.answer)
+        self.assertIn("VND 165 billion domestically and VND 1,699 billion overseas", result.answer)
+        for citation in ("[M5]", "[M6]", "[M7]", "[M8]"):
+            self.assertIn(citation, result.answer)
+        self.assertEqual(result.metadata["decision_analysis"], "verified_market_growth")
+        knowledge.run.assert_not_called()
+        llm.generate.assert_not_called()
 
     def test_mentioning_an_annual_report_does_not_force_report_generation(self):
         question = "What does the annual report say about governance?"
@@ -342,7 +969,7 @@ class AgentFlowTest(unittest.TestCase):
                         agent.run.assert_not_called()
 
     def test_all_twelve_proposal_business_cases_reach_the_expected_route(self):
-        dataset = json.loads((Path(__file__).resolve().parents[1] / "data/evaluation/proposal_business_route_cases.json").read_text())
+        dataset = json.loads((Path(__file__).resolve().parents[1] / "data/evaluation/archive/agents/proposal_business_route_cases.json").read_text())
         for case in dataset["cases"]:
             business_case, question, expected_route = case["id"], case["question"], case["expected_route"]
             with self.subTest(business_case=business_case):

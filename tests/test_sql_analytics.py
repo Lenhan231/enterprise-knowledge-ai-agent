@@ -71,6 +71,81 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         with self.assertRaisesRegex(UnsafeAnalyticsQuery, "metric_name and fiscal_year"):
             validate_analytics_sql(sql)
 
+    def test_business_metric_analytics_requires_exact_business_metric_citations(self):
+        sql = """SELECT metric_name, fiscal_year, SUM(metric_value) AS total,
+                         ARRAY_AGG(DISTINCT business_metric_id) AS evidence_business_metric_ids
+                  FROM authorized_business_metrics
+                  GROUP BY metric_name, fiscal_year"""
+        self.assertIn("authorized_business_metrics", validate_analytics_sql(sql))
+        with self.assertRaises(UnsafeAnalyticsQuery):
+            validate_analytics_sql(
+                "SELECT metric_name, fiscal_year, SUM(metric_value) AS total, "
+                "ARRAY_AGG(DISTINCT business_metric_id) AS evidence_metric_ids "
+                "FROM authorized_business_metrics GROUP BY metric_name, fiscal_year"
+            )
+
+    def test_export_market_question_fetches_optional_company_level_context(self):
+        repository = Mock()
+        repository.execute_authorized_analytics.return_value = {
+            "results": [], "evidence": [], "business_evidence": [], "documents": [],
+        }
+        agent = SQLAnalyticsAgent(repository, Mock())
+
+        agent.run(AgentRequest(
+            question="Which export markets should Vinamilk prioritize for investment based on growth?",
+            user_id="analyst", metadata={"role": "finance_analyst", "company": "Vinamilk"},
+        ))
+
+        query = repository.execute_authorized_analytics.call_args.args[0]
+        for name in (
+            "guinea_export_revenue_growth", "hong_kong_export_revenue_growth",
+            "japan_export_revenue_growth", "export_net_revenue",
+            "export_net_revenue_growth", "commercial_export_revenue",
+            "commercial_export_revenue_growth", "export_volume_teu",
+        ):
+            self.assertIn(f"'{name}'", query)
+
+    def test_selected_decision_domain_scopes_query_and_prompt_to_that_domain(self):
+        repository = Mock()
+        repository.execute_authorized_analytics.return_value = {
+            "results": [], "evidence": [], "business_evidence": [], "documents": [],
+        }
+        llm = Mock()
+        agent = SQLAnalyticsAgent(repository, llm)
+
+        agent.run(AgentRequest(
+            question="Which measures should management review before prioritizing market investment?",
+            user_id="analyst",
+            metadata={"role": "finance_analyst", "company": "Vinamilk",
+                      "business_decision_domain": "market_performance"},
+        ))
+
+        query = repository.execute_authorized_analytics.call_args.args[0]
+        self.assertIn("FROM authorized_business_metrics", query)
+        self.assertIn("'domestic_consolidated_net_revenue'", query)
+        self.assertIn("'overseas_market_net_revenue'", query)
+        self.assertNotIn("'employee_headcount'", query)
+        self.assertNotIn("'total_water_consumption'", query)
+        self.assertFalse(llm.generate.called)
+
+    def test_domain_question_keeps_supporting_market_metrics_in_scope(self):
+        repository = Mock()
+        repository.execute_authorized_analytics.return_value = {
+            "results": [], "evidence": [], "business_evidence": [], "documents": [],
+        }
+        agent = SQLAnalyticsAgent(repository, Mock())
+
+        agent.run(AgentRequest(
+            question="Compare domestic and overseas segment gross profit for 2023.",
+            user_id="analyst",
+            metadata={"role": "finance_analyst", "company": "Vinamilk",
+                      "business_decision_domain": "market_performance"},
+        ))
+
+        query = repository.execute_authorized_analytics.call_args.args[0]
+        self.assertIn("'domestic_segment_gross_profit'", query)
+        self.assertIn("'overseas_segment_gross_profit'", query)
+
     def test_rejects_duplicate_result_names_that_could_hide_citation_array(self):
         sql = (
             "SELECT ARRAY_AGG(document_id) AS evidence_document_ids, "
@@ -88,7 +163,8 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
                           "metric_name": "net_revenue", "metric_label": "Net revenue",
                           "metric_value": 61824, "unit": "billion VND", "document_id": "AR24",
                           "metric_id": 1, "page_number": 12, "source_url": "https://example.test/ar24",
-                          "source_quote": "Total revenue 61,824 billion VND"}],
+                          "source_quote": "Total revenue 61,824 billion VND", "source_chunk_id": 90,
+                          "source_chunk_index": 4, "source_content_hash": "chunk-sha256"}],
             "documents": [],
         }
         llm = Mock()
@@ -106,6 +182,9 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         self.assertIn("total: 61824", result.answer)
         self.assertIn("[M1]", result.answer)
         self.assertEqual(result.evidence[0].metadata["document_id"], "AR24")
+        self.assertEqual(result.evidence[0].metadata["source_chunk_id"], 90)
+        self.assertEqual(result.evidence[0].metadata["chunk_index"], 4)
+        self.assertEqual(result.evidence[0].metadata["source_content_hash"], "chunk-sha256")
         repository.execute_authorized_analytics.assert_called_once()
         self.assertEqual(repository.execute_authorized_analytics.call_args.args[1:],
                          ("finance_analyst", "analyst", "Vinamilk"))
@@ -158,6 +237,7 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         self.assertIn("case when d.fiscal_year ~ '^[0-9]{4}$' then d.fiscal_year::integer end as fiscal_year", " ".join(cte_call.args[0].lower().split()))
         self.assertIn("company = %s", cte_call.args[0])
         self.assertEqual(cte_call.args[1], (
+            ["employee"], "employee", "Vinamilk", "Vinamilk",
             ["employee"], "employee", "Vinamilk", "Vinamilk",
             ["employee"], "employee", "employee", "viewer", "Vinamilk", "Vinamilk",
         ))

@@ -14,7 +14,7 @@ class HybridAgent(BaseAgent):
     def run(self, request: AgentRequest) -> AgentResult:
         knowledge = self.knowledge.run(request)
         analytics = self.analytics.run(request)
-        metrics = analytics.data.get("financial", [])
+        metrics = analytics.data.get("financial", []) or analytics.data.get("business_metrics", [])
         answer = knowledge.answer
         if metrics:
             answer += "\n\n" + analytics.answer

@@ -41,6 +41,37 @@ class DocumentProcessorTest(unittest.TestCase):
         self.assertNotIn("title", metadata)
         self.assertNotIn("uploaded_by", metadata)
         self.assertEqual(metadata["filename"], "report.pdf")
+        self.assertEqual(metadata["actual_char_count"], len(result["chunks"][0]["text"]))
+        self.assertEqual(metadata["chunk_size_chars"], 1100)
+
+    def test_pdf_page_filter_keeps_physical_page_numbers_and_total_page_count(self):
+        pdf = fitz.open()
+        for text in ("Cover page text.", "Revenue evidence on the second page.", "Appendix text."):
+            page = pdf.new_page()
+            page.insert_text((40, 50), text)
+        source = pdf.tobytes()
+        pdf.close()
+
+        with patch.object(PDFProcessor, "_extract_page_tables", side_effect=AssertionError):
+            result = DocumentProcessor({
+                "page_numbers": [2], "extract_tables": False,
+            }).process("report.pdf", source, {"document_id": "PDF-PAGE-SLICE"})
+
+        self.assertEqual({chunk["metadata"]["page_number"] for chunk in result["chunks"]}, {2})
+        self.assertEqual(result["chunks"][0]["metadata"]["page_count"], 3)
+        self.assertIn("Revenue evidence", result["chunks"][0]["text"])
+        self.assertNotIn("Cover page", result["chunks"][0]["text"])
+
+    def test_pdf_page_filter_rejects_page_numbers_outside_the_document(self):
+        pdf = fitz.open()
+        pdf.new_page()
+        source = pdf.tobytes()
+        pdf.close()
+
+        with self.assertRaisesRegex(ValueError, "out of range"):
+            DocumentProcessor({"page_numbers": [2]}).process(
+                "report.pdf", source, {"document_id": "PDF-PAGE-SLICE"},
+            )
 
     def test_docx_extracts_paragraphs_and_structured_table(self):
         source = archive({"word/document.xml": """<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>

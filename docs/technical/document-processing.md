@@ -18,6 +18,26 @@ replaces its chunks and tables. The chunks, structured tables, and document
 status use separate database transactions, so this status gate is the recovery
 boundary rather than one cross-table transaction.
 
+The isolated OCR Lab accepts PDF test files through `tester` accounts and runs
+the upload `DocumentProcessor` configuration with adjustable Tesseract PSM and
+render scales. It stores rendered page previews, parser chunks, extracted
+tables, source SHA-256, and runtime configuration in `ocr_test_*` tables. Test
+tables keep `structured_data` (columns/rows), `context` (source file, page and
+available section title), and parser `metadata` in separate fields; report
+title, unit, and period remain absent until extraction identifies them. The
+OCR Lab does not register a corpus document, upload the source file to Storage, or
+create embeddings. Admins can also inspect these runs. The `tester` role is an
+application role only and is intentionally excluded from document ACL roles.
+The tables are service-role-only under RLS; migrations
+`20260930003151_create_ocr_test_runs.sql` and
+`20260930021016_normalize_ocr_test_table_payload.sql` create and normalize them.
+Set `DEMO_TESTER_USERNAME` and `DEMO_TESTER_PASSWORD` to enable the separate
+Tester login; the default local username is `tester`. The test form starts with
+the app-upload Tesseract defaults (text PSM 11, table PSM 3, text render scale
+1.5, table render scale 2.5), and records the selected settings plus installed
+PyMuPDF/Tesseract versions with each run. This makes visual OCR checks
+reproducible without changing ingestion or embedding behavior.
+
 ## Module boundaries
 
 - `processors/document_processor.py` is the upload dispatcher. It selects a
@@ -170,10 +190,24 @@ mode remains independent of this table setting. The separate six-region,
 table cell text (27/48 vs 21/48), supporting it for PDF word-box extraction.
 The pilot is small and mixes scans, artwork and a born-digital table; it is not
 a universal optimal setting. Reproduce via `scripts/processing/evaluate_ocr.py` with
-`--tesseract-psm 3` or `11`; see the [PSM 3 baseline](../../artifacts/evaluation/vinamilk-tesseract-psm3-v6-108dpi.json), [PSM 6 comparison](../../artifacts/evaluation/vinamilk-tesseract-psm6-v6-108dpi.json), and [PSM 11 result](../../artifacts/evaluation/vinamilk-tesseract-psm11-v6-108dpi.json).
+`--tesseract-psm 3` or `11`; see the [PSM 3 baseline](../../artifacts/evaluation/ocr/tuning/vinamilk-tesseract-psm3-v6-108dpi.json), [PSM 6 comparison](../../artifacts/evaluation/ocr/tuning/vinamilk-tesseract-psm6-v6-108dpi.json), and [PSM 11 result](../../artifacts/evaluation/ocr/tuning/vinamilk-tesseract-psm11-v6-108dpi.json).
 OCR-derived structured tables carry their Tesseract engine, language, table
 PSM and render scale in the persisted `metadata.ocr` object so the review UI
 and later audits can identify the extraction configuration.
+
+For the PyMuPDF/Tesseract PDF path, extracted tables are now also converted
+into retrieval chunks with explicit `column: value` pairs. The processor
+compares each table fragment only with chunks from the same page, using
+accent-insensitive token coverage in both directions. At the default 0.8
+threshold, a high-overlap flat chunk is replaced by the structured version;
+otherwise the original remains and the structured table chunk is added. The
+chunk metadata records the extraction method and both overlap scores. These
+chunks pass through the existing parsed-chunk persistence and embedding path,
+so there is no schema change. The optional Paddle layout path already emits
+table chunks directly. This overlap check identifies duplicate text; it does
+not validate OCR spelling, key/value correctness, or join tables that continue
+across pages. When overlap is low, retaining both forms can create duplicate
+retrieval evidence by design rather than silently deleting source text.
 
 The v8 end-to-end replay of the upload `DocumentProcessor` on 11 labeled
 regions scored micro-CER/WER 0.055009/0.175768 at 108 DPI with local Tesseract
@@ -188,7 +222,7 @@ checks the audited `Tổng tài sản` values for 2024 and 2023. The 2020 produc
 poster remains difficult at CER/WER 0.662500/0.906250 on this fixture; it is
 complex artwork and does not justify changing global OCR defaults. Reproduce
 the parser replay with `uv run python scripts/processing/evaluate_scan_document_processing.py
---dataset data/evaluation/vinamilk_ocr_ground_truth_v8.json --output
+--dataset data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v8.json --output
 artifacts/evaluation/vinamilk-upload-processor-v8-20260929.json`.
 
 The five-year financial extraction evaluator now also runs the same
@@ -203,7 +237,7 @@ evidence reaches the admin review queue. Keep OCR-derived metrics pending and
 require source verification; do not treat the score as financial accuracy.
 Reproduce with
 `uv run python scripts/processing/evaluate_document_extraction.py --compact --output
-artifacts/evaluation/vinamilk-document-extraction-ocr-to-kpi-20260929.json`.
+artifacts/evaluation/ocr/pipeline/vinamilk-document-extraction-ocr-to-kpi-20260929.json`.
 
 An optional one-request LLM mode exercises the same PDF-upload shortlist and
 verbatim-evidence validator without persisting candidates. On the reviewed
@@ -215,7 +249,7 @@ review gate rejects unsupported suggestions, but does not close OCR accuracy
 or model-quality evaluation. Reproduce with
 `uv run python scripts/processing/evaluate_document_extraction.py --compact --case-id
 ar2023-consolidated-income-p115 --llm --output
-artifacts/evaluation/vinamilk-document-extraction-ocr-to-kpi-llm-20260929.json`;
+artifacts/evaluation/ocr/pipeline/vinamilk-document-extraction-ocr-to-kpi-llm-20260929.json`;
 the command reads `GROQ_API_KEY` from the environment or local `.env` and makes
 one LLM request for the selected case.
 
@@ -233,16 +267,16 @@ shows an OCR-label warning and asks reviewers to verify the printed label, value
 and year in the source. The source page's OCR table contains the reviewed
 revenue amount, but its Vietnamese label has
 recognition errors. This is one source page, not representative OCR/model
-evidence. The latest [run artifact](../../artifacts/evaluation/vinamilk-ocr-2011-real-scan-kpi-llm-20260929.json)
+evidence. The latest [run artifact](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-2011-real-scan-kpi-llm-20260929.json)
 records the provider error and must not be interpreted as a successful rerun.
 During the earlier trace, a handoff defect was also fixed: accepted LLM units
 were validated but omitted from the pending candidate before database save. The
 unit now travels through that handoff; extractor and upload boundary tests
 assert it. No database write was made. Reproduce against the original source scan with
 `uv run python scripts/processing/evaluate_document_extraction.py --cases
-data/evaluation/vinamilk_2011_real_scan_kpi_cases.json --case-id
+data/evaluation/ocr/vinamilk_2011_real_scan_kpi_cases.json --case-id
 real-scan-2011-income-statement-vi --compact --llm --output
-artifacts/evaluation/vinamilk-ocr-2011-real-scan-kpi-llm-20260929.json`.
+artifacts/evaluation/ocr/comparisons/vinamilk-ocr-2011-real-scan-kpi-llm-20260929.json`.
 
 The actual PDF upload parser was also measured on the manually labeled
 Vietnamese product poster. At its nominal 108 DPI, PSM 11 scored CER/WER
@@ -251,13 +285,13 @@ Vietnamese product poster. At its nominal 108 DPI, PSM 11 scored CER/WER
 the absolute error remains high for complex artwork. These are single-region
 results, not a Vietnamese scan benchmark. The PSM runs share the same
 deterministic cropped-PDF SHA-256 (`74b3b66d250bbfa60c44d8934e120e8d2f4a10457a376622b1e860362c960ffd`). Reproduce with
-`scripts/processing/evaluate_scan_document_processing.py --dataset data/evaluation/vinamilk_ocr_ground_truth_v6.json --case-id annual-2020-product-poster-vi --tesseract-psm 11`; the [PSM 11](../../artifacts/evaluation/vinamilk-upload-ocr-vietnamese-poster-psm11-v6-20260928.json), [PSM 3](../../artifacts/evaluation/vinamilk-upload-ocr-vietnamese-poster-psm3-v6-20260928.json), and [PSM 6](../../artifacts/evaluation/vinamilk-upload-ocr-vietnamese-poster-psm6-v6-20260928.json) artifacts preserve upload-path outputs and input hashes.
+`scripts/processing/evaluate_scan_document_processing.py --dataset data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v6.json --case-id annual-2020-product-poster-vi --tesseract-psm 11`; the [PSM 11](../../artifacts/evaluation/ocr/tuning/vinamilk-upload-ocr-vietnamese-poster-psm11-v6-20260928.json), [PSM 3](../../artifacts/evaluation/ocr/tuning/vinamilk-upload-ocr-vietnamese-poster-psm3-v6-20260928.json), and [PSM 6](../../artifacts/evaluation/ocr/tuning/vinamilk-upload-ocr-vietnamese-poster-psm6-v6-20260928.json) artifacts preserve upload-path outputs and input hashes.
 Raising the actual parser render scale from 1.5 (108 DPI) to 2.5 (180 DPI)
 made this same poster worse: PSM 11 CER/WER rose to 0.631250/1.218750 and
 latency to 1.721 seconds, so the default remains 1.5. Set the
 `DocumentProcessor` config key `ocr_render_scale` to change the scale; it is
 recorded per evaluation. See the
-[180-DPI run](../../artifacts/evaluation/vinamilk-upload-ocr-vietnamese-poster-psm11-180dpi-v6-20260928.json).
+[180-DPI run](../../artifacts/evaluation/ocr/tuning/vinamilk-upload-ocr-vietnamese-poster-psm11-180dpi-v6-20260928.json).
 A generated TIFF smoke verified both OCR and transactional
 readback through `extracted_tables`; this validates the path, not image/table
 accuracy on representative source documents. The optional Paddle path enables
@@ -286,6 +320,20 @@ document's retrieval vectors atomically, and only then restores `ready` status.
 Migration `20260926213836_processed_document_chunks.sql` enables RLS and denies
 direct `anon`/`authenticated` access; the server-side database role owns writes.
 
+For persistent embedding comparisons, `document_chunk_embeddings` stores one
+vector per processed chunk and model, with the vector dimension recorded per row;
+`document_embedding_runs` tracks per-document/per-model progress and failures.
+Migration `20260929152311_model_specific_chunk_embeddings.sql` backfills the
+currently matching single-model vectors. Migration
+`20260929152613_make_processed_chunks_model_neutral.sql` removes
+`embedding_model` and tokenizer-specific `token_count` from parsed-chunk
+metadata, and repository writes keep those fields out. The app's existing
+`document_chunks` table remains the active retrieval index. The current
+upload/retry path has not yet been switched to write the comparison tables. The
+legacy `processing_status` column remains temporarily because upload/retry code
+still uses it. Do not interpret that legacy status as completion for every
+benchmark model; use `document_embedding_runs` for model-specific results.
+
 ## Current boundaries
 
 - Seed parsing: `src/core/document_processing/ingest_documents.py`.
@@ -293,10 +341,10 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
 - PDF/OCR/layout: `src/core/document_processing/processors/pdf_processor.py`.
 - Table persistence: `src/core/database/structured_store.py`.
 - OCR smoke benchmark runner: `scripts/processing/evaluate_ocr.py`; common page list:
-  `data/evaluation/ocr_pages.json`; rendered inputs and run reports live under
+  `data/evaluation/ocr/ocr_pages.json`; rendered inputs and run reports live under
   `artifacts/evaluation/`; selected hash-verified comparison artifacts are tracked.
 - Human-reviewed OCR pilot: run
-  `uv run python scripts/processing/evaluate_ocr.py --dataset data/evaluation/vinamilk_ocr_ground_truth.json --engines tesseract --dpi 180 --output artifacts/evaluation/vinamilk-ocr-human-reviewed-tesseract.json`.
+  `uv run python scripts/processing/evaluate_ocr.py --dataset data/evaluation/ocr/archive/vinamilk_ocr_ground_truth.json --engines tesseract --dpi 180 --output artifacts/evaluation/ocr/comparisons/vinamilk-ocr-human-reviewed-tesseract.json`.
   Two manually transcribed real-report crops are scored: a Vietnamese 2024
   financial infographic and an English 2024 sustainability passage. Tesseract
   micro CER/WER were 0.0665/0.2553; the Vietnamese crop was substantially
@@ -304,7 +352,7 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   a small, born-digital, Tesseract-only v1 baseline; the paired v2 comparison
   across four engines is recorded below and is still not a model-selection result.
 - Expanded manual-label OCR pilot: run
-  `uv run python scripts/processing/evaluate_ocr.py --dataset data/evaluation/vinamilk_ocr_ground_truth_v2.json --engines tesseract --dpi 180 --output artifacts/evaluation/vinamilk-ocr-human-reviewed-tesseract-v2.json`.
+  `uv run python scripts/processing/evaluate_ocr.py --dataset data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v2.json --engines tesseract --dpi 180 --output artifacts/evaluation/ocr/comparisons/vinamilk-ocr-human-reviewed-tesseract-v2.json`.
   This adds a Vietnamese raster-embedded product poster to the two v1 crops.
   Tesseract 5.5.3 scored micro CER/WER 0.1627/0.3815 and macro CER/WER
   0.3124/0.5415. The poster scored 0.6688/0.9375; it is raster-embedded
@@ -321,13 +369,13 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   micro-CER while Surya has the lowest micro-WER; three selected crops do not
   justify selecting a production engine. All reports share dataset SHA-256
   `3a7c747104689ceea630d41891e11cd2ba5ebf34e96688b6fcfe86d0a8f83846`.
-  See the linked raw [EasyOCR](../../artifacts/evaluation/ocr-kaggle-easy/vinamilk-ocr-easyocr.json),
-  [PaddleOCR](../../artifacts/evaluation/ocr-kaggle-paddle/vinamilk-ocr-paddleocr.json),
-  [Surya](../../artifacts/evaluation/ocr-kaggle-surya/vinamilk-ocr-surya.json)
-  and [Tesseract](../../artifacts/evaluation/ocr-tesseract-v2-current-labels.json)
+  See the linked raw [EasyOCR](../../artifacts/evaluation/ocr/comparisons/ocr-kaggle-easy/vinamilk-ocr-easyocr.json),
+  [PaddleOCR](../../artifacts/evaluation/ocr/comparisons/ocr-kaggle-paddle/vinamilk-ocr-paddleocr.json),
+  [Surya](../../artifacts/evaluation/ocr/comparisons/ocr-kaggle-surya/vinamilk-ocr-surya.json)
+  and [Tesseract](../../artifacts/evaluation/ocr/pipeline/ocr-tesseract-v2-current-labels.json)
   reports. A hash-checking comparator verifies the dataset, PDF/page and
   rendered-image hashes before pairing them; its result is
-  `artifacts/evaluation/vinamilk-ocr-three-engine-v2-comparison.json`. Rebuild
+  `artifacts/evaluation/ocr/comparisons/vinamilk-ocr-three-engine-v2-comparison.json`. Rebuild
   it with `uv run python scripts/processing/compare_ocr_reports.py <report> <report> ...
   --output <comparison.json>`. These are text-transcription scores only, not
   table/layout accuracy.
@@ -339,8 +387,8 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   On the governance table-of-contents crop (270 words; dotted leaders and page
   numbers), it scored CER 0.654140/WER 0.300000 (~4.11 s). The sharp difference
   illustrates the layout difficulty. Dataset v4 is
-  `data/evaluation/vinamilk_ocr_ground_truth_v4.json`; its result is
-  `artifacts/evaluation/vinamilk-ocr-human-reviewed-tesseract-v4.json`.
+  `data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v4.json`; its result is
+  `artifacts/evaluation/ocr/comparisons/vinamilk-ocr-human-reviewed-tesseract-v4.json`.
   Dataset v3 preserves the earlier single-scan baseline. EasyOCR 1.7.2 now has
   hash-verified scores on all five v4 regions, including both scans; paired
   v4 comparison is in `vinamilk-ocr-governance-scans-v4-comparison.json`.
@@ -349,7 +397,7 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   initialization and 3,937.254 MiB process peak RSS. The Kaggle T4 runtime had
   CUDA, but this run used Paddle's CPU wheel/device; do not compare throughput
   directly with EasyOCR's T4 run. Hash-paired EasyOCR/PaddleOCR/Tesseract scores
-  are in [the v4 comparison](../../artifacts/evaluation/vinamilk-ocr-paddle-easy-tesseract-v4-comparison.json).
+  are in [the v4 comparison](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-paddle-easy-tesseract-v4-comparison.json).
   These v3-v5 scan scores and any all-page aggregates containing those scans
   are superseded by v6 below; the unchanged v5 balance-sheet table diagnostics
   remain historical table-only results. The earlier note that Surya v4 was
@@ -375,21 +423,21 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   Kaggle CPU; Tesseract used local CPU. Quality metrics are paired to the same
   images and references, but runtime/memory comparisons are not controlled
   across hosts. Do not select a production engine from these six pages. Raw
-  reports: [Tesseract v6](../../artifacts/evaluation/vinamilk-ocr-human-reviewed-tesseract-v6.json),
-  [EasyOCR v6 CPU](../../artifacts/evaluation/ocr-kaggle-easy/vinamilk-ocr-easyocr-v6-cpu.json),
-  [Surya v6 CPU](../../artifacts/evaluation/ocr-kaggle-surya/vinamilk-ocr-surya-v6-cpu.json),
-  [PaddleOCR v6 CPU](../../artifacts/evaluation/ocr-kaggle-paddle/vinamilk-ocr-paddleocr-v6-cpu.json).
-  Reproducible hash-checked comparison: [four-engine v6](../../artifacts/evaluation/vinamilk-ocr-four-engine-v6-cpu-comparison.json).
+  reports: [Tesseract v6](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-human-reviewed-tesseract-v6.json),
+  [EasyOCR v6 CPU](../../artifacts/evaluation/ocr/comparisons/ocr-kaggle-easy/vinamilk-ocr-easyocr-v6-cpu.json),
+  [Surya v6 CPU](../../artifacts/evaluation/ocr/comparisons/ocr-kaggle-surya/vinamilk-ocr-surya-v6-cpu.json),
+  [PaddleOCR v6 CPU](../../artifacts/evaluation/ocr/comparisons/ocr-kaggle-paddle/vinamilk-ocr-paddleocr-v6-cpu.json).
+  Reproducible hash-checked comparison: [four-engine v6](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-four-engine-v6-cpu-comparison.json).
   Recompute it with the matching v6 baseline; the older
   `ocr-tesseract-v2-current-labels.json` has a different dataset hash:
 
   ```bash
   uv run python scripts/processing/compare_ocr_reports.py \
-    artifacts/evaluation/vinamilk-ocr-human-reviewed-tesseract-v6.json \
-    artifacts/evaluation/ocr-kaggle-easy/vinamilk-ocr-easyocr-v6-cpu.json \
-    artifacts/evaluation/ocr-kaggle-surya/vinamilk-ocr-surya-v6-cpu.json \
-    artifacts/evaluation/ocr-kaggle-paddle/vinamilk-ocr-paddleocr-v6-cpu.json \
-    --dataset data/evaluation/vinamilk_ocr_ground_truth_v6.json \
+    artifacts/evaluation/ocr/comparisons/vinamilk-ocr-human-reviewed-tesseract-v6.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-easy/vinamilk-ocr-easyocr-v6-cpu.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-surya/vinamilk-ocr-surya-v6-cpu.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-paddle/vinamilk-ocr-paddleocr-v6-cpu.json \
+    --dataset data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v6.json \
     --output /tmp/vinamilk-ocr-four-engine-v6-cpu-comparison.json
   ```
   **Expanded cross-engine run (v7):** five settings now share the same ten
@@ -405,12 +453,12 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   with the EasyOCR/Surya GPU runs. Tesseract is also CPU-only. This is a
   ten-region diagnostic, not model selection: six regions are English physical
   scans, the only labeled financial table is born-digital, and Vietnamese
-  physical scans/cell-coordinate labels remain absent. See the [five-setting report](../../artifacts/evaluation/vinamilk-ocr-v7-five-configuration-comparison-20260928.json),
-  raw [EasyOCR](../../artifacts/evaluation/vinamilk-ocr-v7/easyocr.json),
-  [PaddleOCR](../../artifacts/evaluation/vinamilk-ocr-v7/paddleocr.json),
-  [Surya](../../artifacts/evaluation/vinamilk-ocr-v7/surya.json), the
-  Tesseract [PSM 3](../../artifacts/evaluation/vinamilk-ocr-tesseract-scan-expansion-v7-180dpi-psm3-20260928.json)/[PSM 11](../../artifacts/evaluation/vinamilk-ocr-tesseract-scan-expansion-v7-180dpi-20260928.json)
-  reports, and the [reviewed references](../../data/evaluation/vinamilk_ocr_ground_truth_v7.json).
+  physical scans/cell-coordinate labels remain absent. See the [five-setting report](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v7-five-configuration-comparison-20260928.json),
+  raw [EasyOCR](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v7/easyocr.json),
+  [PaddleOCR](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v7/paddleocr.json),
+  [Surya](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v7/surya.json), the
+  Tesseract [PSM 3](../../artifacts/evaluation/ocr/tuning/vinamilk-ocr-tesseract-scan-expansion-v7-180dpi-psm3-20260928.json)/[PSM 11](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-tesseract-scan-expansion-v7-180dpi-20260928.json)
+  reports, and the [reviewed references](../../data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v7.json).
   Tesseract reports in the `vinamilk-ocr-v7/` folder are copies with distinct
   `tesseract_psm3`/`tesseract_psm11` keys so the general comparator can accept
   both configurations in one paired run.
@@ -418,12 +466,12 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
 
   ```bash
   uv run python scripts/processing/compare_ocr_reports.py \
-    artifacts/evaluation/vinamilk-ocr-v7/tesseract-psm3.json \
-    artifacts/evaluation/vinamilk-ocr-v7/tesseract-psm11.json \
-    artifacts/evaluation/vinamilk-ocr-v7/easyocr.json \
-    artifacts/evaluation/vinamilk-ocr-v7/paddleocr.json \
-    artifacts/evaluation/vinamilk-ocr-v7/surya.json \
-    --dataset data/evaluation/vinamilk_ocr_ground_truth_v7.json \
+    artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v7/tesseract-psm3.json \
+    artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v7/tesseract-psm11.json \
+    artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v7/easyocr.json \
+    artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v7/paddleocr.json \
+    artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v7/surya.json \
+    --dataset data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v7.json \
     --output /tmp/vinamilk-ocr-v7-five-configuration-comparison.json
   ```
   The comparison artifact labels the Tesseract settings separately as PSM 3
@@ -462,18 +510,18 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
 
   ```bash
   uv run python scripts/processing/compare_ocr_reports.py \
-    --dataset data/evaluation/vinamilk_ocr_ground_truth_v8.json \
+    --dataset data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v8.json \
     --rescore-references \
-    artifacts/evaluation/ocr-kaggle-v8/tesseract.json \
-    artifacts/evaluation/ocr-kaggle-v8/paddleocr.json \
-    artifacts/evaluation/ocr-kaggle-v8/easyocr.json \
-    artifacts/evaluation/ocr-kaggle-v8/surya.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-v8/tesseract.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-v8/paddleocr.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-v8/easyocr.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-v8/surya.json \
     --output /tmp/vinamilk-ocr-v8-reproduction.json
   ```
 
-  The [v8 labels](../../data/evaluation/vinamilk_ocr_ground_truth_v8.json),
-  [paired comparison](../../artifacts/evaluation/vinamilk-ocr-v8-four-engine-comparison-20260929.json),
-  and [raw reports](../../artifacts/evaluation/ocr-kaggle-v8/) preserve both
+  The [v8 labels](../../data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v8.json),
+  [paired comparison](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v8-four-engine-comparison-20260929.json),
+  and [raw reports](../../artifacts/evaluation/ocr/comparisons/ocr-kaggle-v8/) preserve both
   hashes and run provenance.
 
   **Cross-layout v9 rescore:** the v8 labels are paired with all three pages
@@ -496,25 +544,25 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   The Vietnamese slice is still only six pages from three sources, with two
   text-layer-assisted references; it is diagnostic, not representative or
   model-selection evidence. Cell-string recall remains text-presence only.
-  The [v9 labels](../../data/evaluation/vinamilk_ocr_ground_truth_v9.json),
-  [merged engine reports](../../artifacts/evaluation/ocr-kaggle-v9/), and
-  [four-engine comparison](../../artifacts/evaluation/vinamilk-ocr-v9-four-engine-comparison-20260929.json)
+  The [v9 labels](../../data/evaluation/ocr/vinamilk_ocr_ground_truth_v9.json),
+  [merged engine reports](../../artifacts/evaluation/ocr/comparisons/ocr-kaggle-v9/), and
+  [four-engine comparison](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v9-four-engine-comparison-20260929.json)
   record source reports and hashes. Rebuild the merged reports, then rescore:
 
   ```bash
   uv run python scripts/processing/merge_ocr_reports.py \
-    --dataset data/evaluation/vinamilk_ocr_ground_truth_v9.json \
+    --dataset data/evaluation/ocr/vinamilk_ocr_ground_truth_v9.json \
     --output-dir /tmp/ocr-kaggle-v9 \
-    artifacts/evaluation/ocr-kaggle-v8/tesseract.json \
-    artifacts/evaluation/ocr-kaggle-v2/tesseract-psm3.json \
-    artifacts/evaluation/ocr-kaggle-v8/paddleocr.json \
-    artifacts/evaluation/ocr-kaggle-v2/paddleocr.json \
-    artifacts/evaluation/ocr-kaggle-v8/easyocr.json \
-    artifacts/evaluation/ocr-kaggle-v2/easyocr.json \
-    artifacts/evaluation/ocr-kaggle-v8/surya.json \
-    artifacts/evaluation/ocr-kaggle-v2/surya.json
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-v8/tesseract.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-v2/tesseract-psm3.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-v8/paddleocr.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-v2/paddleocr.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-v8/easyocr.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-v2/easyocr.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-v8/surya.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-v2/surya.json
   uv run python scripts/processing/compare_ocr_reports.py \
-    --dataset data/evaluation/vinamilk_ocr_ground_truth_v9.json \
+    --dataset data/evaluation/ocr/vinamilk_ocr_ground_truth_v9.json \
     --rescore-references \
     /tmp/ocr-kaggle-v9/tesseract_psm3.json \
     /tmp/ocr-kaggle-v9/paddleocr.json \
@@ -546,15 +594,15 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   [PaddleOCR](https://www.kaggle.com/code/ltrngnhn/vinamilk-ocr-v9-cpu-paddleocr),
   [EasyOCR](https://www.kaggle.com/code/ltrngnhn/vinamilk-ocr-v9-cpu-easyocr) and
   [Surya](https://www.kaggle.com/code/ltrngnhn/vinamilk-ocr-v9-cpu-surya). The
-  [paired comparison](../../artifacts/evaluation/vinamilk-ocr-v9-cpu-four-engine-comparison-20260929.json)
-  and [raw reports](../../artifacts/evaluation/ocr-kaggle-v9-cpu/) preserve
+  [paired comparison](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v9-cpu-four-engine-comparison-20260929.json)
+  and [raw reports](../../artifacts/evaluation/ocr/comparisons/ocr-kaggle-v9-cpu/) preserve
   scores, run versions and per-page hashes.
 
   **Supplemental Vietnamese scan diagnostic (v1; separate from v7):** one signed
   2011 consolidated income-statement page from the third-party preview was
   transcribed and visually checked; its financial values were cross-checked
   against Vinamilk's official annual report. The scan PDF is pinned by SHA-256
-  in the [diagnostic labels](../../data/evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic.json);
+  in the [diagnostic labels](../../data/evaluation/ocr/archive/2011-scan/vinamilk_ocr_ground_truth_2011_scan_diagnostic.json);
   the package builder downloads a missing copy only after HTTPS, PDF-magic and
   checksum checks. At 180 DPI, Tesseract PSM 3/6/11, EasyOCR 1.7.2, PaddleOCR
   3.7.0 and Surya 0.17.1 scored micro-CER 0.858586/0.359751/0.369852/
@@ -565,8 +613,8 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   on CPU, so runtime/resource figures are not comparable. This single
   third-party-hosted page is diagnostic only: do not pool it into v7 or use it
   for model selection. Cell-text presence and linearized row recall do not
-  evaluate cell coordinates or table structure. See the [paired report](../../artifacts/evaluation/vinamilk-ocr-2011-scan-diagnostic/paired-comparison.json),
-  [raw engine reports](../../artifacts/evaluation/vinamilk-ocr-2011-scan-diagnostic/),
+  evaluate cell coordinates or table structure. See the [paired report](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-2011-scan-diagnostic/paired-comparison.json),
+  [raw engine reports](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-2011-scan-diagnostic/),
   and the reusable [Kaggle diagnostic notebook](../../notebooks/kaggle_ocr_scan_diagnostic.ipynb).
 
   **Production-parser follow-up (v2; three pages):** the existing
@@ -606,12 +654,12 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   presence still ignores row/column assignment. These
   scores are diagnostic for this third-party sample, not engine selection. The
   original paired artifact is
-  [`vinamilk-ocr-2011-v2-four-engine-comparison-20260929.json`](../../artifacts/evaluation/vinamilk-ocr-2011-v2-four-engine-comparison-20260929.json);
+  [`vinamilk-ocr-2011-v2-four-engine-comparison-20260929.json`](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-2011-v2-four-engine-comparison-20260929.json);
   its reference-updated rescore is
-  [`vinamilk-ocr-2011-v3-four-engine-comparison-20260929.json`](../../artifacts/evaluation/vinamilk-ocr-2011-v3-four-engine-comparison-20260929.json),
-  using [v3 labels](../../data/evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v3.json).
+  [`vinamilk-ocr-2011-v3-four-engine-comparison-20260929.json`](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-2011-v3-four-engine-comparison-20260929.json),
+  using [v3 labels](../../data/evaluation/ocr/archive/2011-scan/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v3.json).
   Reports
-  are in [`ocr-kaggle-v2`](../../artifacts/evaluation/ocr-kaggle-v2/); rebuild
+  are in [`ocr-kaggle-v2`](../../artifacts/evaluation/ocr/comparisons/ocr-kaggle-v2/); rebuild
   the refreshed scores with `scripts/processing/compare_ocr_reports.py --rescore-references`
   and the v3 labels. The tool verifies exact page identity and source/render
   hashes before rescoring cached predictions.
@@ -627,9 +675,9 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   its record is
   [`vinamilk-scan-upload-live-e2e-20260929.json`](../../artifacts/evaluation/vinamilk-scan-upload-live-e2e-20260929.json).
   Reproduce with
-  `uv run python scripts/processing/evaluate_scan_document_processing.py --dataset data/evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v2.json --tesseract-psm 11 --tesseract-table-psm 3 --render-scale 1.5 --table-render-scale 2.5 --output artifacts/evaluation/vinamilk-scan-document-processor-2011-three-pages-v2-20260929.json`.
-  See the [labels](../../data/evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v2.json)
-  and [run artifact](../../artifacts/evaluation/vinamilk-scan-document-processor-2011-three-pages-v2-20260929.json).
+  `uv run python scripts/processing/evaluate_scan_document_processing.py --dataset data/evaluation/ocr/archive/2011-scan/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v2.json --tesseract-psm 11 --tesseract-table-psm 3 --render-scale 1.5 --table-render-scale 2.5 --output artifacts/evaluation/ocr/pipeline/vinamilk-scan-document-processor-2011-three-pages-v2-20260929.json`.
+  See the [labels](../../data/evaluation/ocr/archive/2011-scan/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v2.json)
+  and [run artifact](../../artifacts/evaluation/ocr/pipeline/vinamilk-scan-document-processor-2011-three-pages-v2-20260929.json).
 
   **Historical table-only run (v5):** a manually checked Vietnamese 2024
   balance-sheet table has 16
@@ -643,17 +691,17 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   misses can be audited. This one-table result is diagnostic, not a general
   table-accuracy estimate.
   Reproduce it with `uv run python scripts/processing/evaluate_ocr.py --dataset
-  data/evaluation/vinamilk_ocr_ground_truth_v5.json --engines tesseract --dpi
-  180 --output artifacts/evaluation/vinamilk-ocr-human-reviewed-tesseract-v5.json`.
-  [Dataset](../../data/evaluation/vinamilk_ocr_ground_truth_v5.json) and
-  [Tesseract report](../../artifacts/evaluation/vinamilk-ocr-human-reviewed-tesseract-v5.json).
+  data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v5.json --engines tesseract --dpi
+  180 --output artifacts/evaluation/ocr/comparisons/vinamilk-ocr-human-reviewed-tesseract-v5.json`.
+  [Dataset](../../data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v5.json) and
+  [Tesseract report](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-human-reviewed-tesseract-v5.json).
   EasyOCR 1.7.2/T4 has completed on the identical v5 hashes: micro-CER/WER
   0.175882/0.348442 and exact table row recall 2/16. Its recognition output
   groups labels and numeric columns separately, which explains why it can
   recognize the cell text but fails this row-preserving score. Paired with
   local-CPU Tesseract, hash verification passed; see the
-  [v5 comparison](../../artifacts/evaluation/vinamilk-ocr-easy-tesseract-v5-comparison.json)
-  and [EasyOCR report](../../artifacts/evaluation/ocr-kaggle-easy/vinamilk-ocr-easyocr-v5.json).
+  [v5 comparison](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-easy-tesseract-v5-comparison.json)
+  and [EasyOCR report](../../artifacts/evaluation/ocr/comparisons/ocr-kaggle-easy/vinamilk-ocr-easyocr-v5.json).
   Surya 0.17.1/T4 has completed on the same v5 hashes: micro-CER/WER
   0.075829/0.151558 and exact table row recall 14/16 (0.875). Initialization
   took 156.223 s; mean inference was 3.962 s/page (15.144 pages/minute), peak
@@ -668,7 +716,7 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   row/column association; the stricter row score checks each label and both
   year values contiguously. The difference shows why neither score alone
   measures table reconstruction. Use the hash-checked
-  [four-engine comparison](../../artifacts/evaluation/vinamilk-ocr-paddle-easy-surya-tesseract-v5-comparison.json)
+  [four-engine comparison](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-paddle-easy-surya-tesseract-v5-comparison.json)
   to inspect per-page hypotheses. These are small-pilot diagnostic results,
   not a production model selection. This v5 all-page accuracy run is
   superseded by corrected v6 labels; table-only metrics remain valid. The
@@ -678,22 +726,22 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   with:
 
   ```bash
-  uv run python scripts/processing/compare_ocr_reports.py --dataset data/evaluation/vinamilk_ocr_ground_truth_v5.json \
-    artifacts/evaluation/vinamilk-ocr-human-reviewed-tesseract-v5.json \
-    artifacts/evaluation/ocr-kaggle-easy/vinamilk-ocr-easyocr-v5.json \
-    artifacts/evaluation/ocr-kaggle-surya/vinamilk-ocr-surya-v5.json \
-    artifacts/evaluation/ocr-kaggle-paddle/vinamilk-ocr-paddleocr-v5.json \
-    --output artifacts/evaluation/vinamilk-ocr-paddle-easy-surya-tesseract-v5-comparison.json
+  uv run python scripts/processing/compare_ocr_reports.py --dataset data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v5.json \
+    artifacts/evaluation/ocr/comparisons/vinamilk-ocr-human-reviewed-tesseract-v5.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-easy/vinamilk-ocr-easyocr-v5.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-surya/vinamilk-ocr-surya-v5.json \
+    artifacts/evaluation/ocr/comparisons/ocr-kaggle-paddle/vinamilk-ocr-paddleocr-v5.json \
+    --output artifacts/evaluation/ocr/comparisons/vinamilk-ocr-paddle-easy-surya-tesseract-v5-comparison.json
   ```
 - **Production upload-parser protocol (v6; not paired with the earlier v4 run):**
   the current upload parser used PSM 11 on the two physical scans. It measured
   micro-CER/WER 0.038557/0.155425; per-page CER/WER were 0.008830/0.042254 and
-  0.047134/0.185185. The [v6 PSM 11 artifact](../../artifacts/evaluation/vinamilk-scan-document-processor-psm11-v6-20260928.json)
+  0.047134/0.185185. The [v6 PSM 11 artifact](../../artifacts/evaluation/ocr/tuning/vinamilk-scan-document-processor-psm11-v6-20260928.json)
   was paired against PSM 3 on the exact same v6 dataset, source-PDF and
   cropped-PDF hashes. PSM 3 scored micro-CER/WER 0.065744/0.167155; on the
   Charter introduction both modes scored 0.008830/0.042254, while on the
   governance contents page PSM 11 scored 0.047134/0.185185 vs PSM 3
-  0.082166/0.200000. The [paired PSM 3 artifact](../../artifacts/evaluation/vinamilk-scan-document-processor-psm3-v6-20260928.json)
+  0.082166/0.200000. The [paired PSM 3 artifact](../../artifacts/evaluation/ocr/tuning/vinamilk-scan-document-processor-psm3-v6-20260928.json)
   supports retaining PSM 11 for this two-page English scan sample. One-run
   mean latency was 1.174 s for PSM 11 and 2.004 s for PSM 3, but this is not a
   controlled speed comparison. This small scan set does not establish a
@@ -717,8 +765,8 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   2023 PDF/image 0/2; label-plus-value anchors still fail on these 2021–23
   cases. The 2024 scan-like input is generated from a born-digital report, not
   a physical scan. See the
-  paired [108 DPI table render](../../artifacts/evaluation/vinamilk-document-extraction-table-render-sweep-108dpi-20260929.json)
-  and [180 DPI table render](../../artifacts/evaluation/vinamilk-document-extraction-table-render-sweep-180dpi-20260929.json).
+  paired [108 DPI table render](../../artifacts/evaluation/ocr/tuning/vinamilk-document-extraction-table-render-sweep-108dpi-20260929.json)
+  and [180 DPI table render](../../artifacts/evaluation/ocr/tuning/vinamilk-document-extraction-table-render-sweep-180dpi-20260929.json).
   The evaluation report includes extracted rows for review. A separate live
   database roundtrip persisted and independently read back the exact 17 rows,
   then verified temporary-row cleanup; it did not exercise HTTP upload or
@@ -734,16 +782,16 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   across layouts or safe automatic financial publication. Reproduce the
   split-resolution production path with `uv run python
   scripts/processing/evaluate_scan_document_processing.py --dataset
-  data/evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic.json
+  data/evaluation/ocr/archive/2011-scan/vinamilk_ocr_ground_truth_2011_scan_diagnostic.json
   --tesseract-psm 11 --tesseract-table-psm 3 --render-scale 1.5
-  --table-render-scale 2.5`; PSM 4 gives the same reviewed score. See the [PSM 3 report](../../artifacts/evaluation/vinamilk-scan-document-processor-2011-table-psm3-20260929.json),
-  [PSM 4 report](../../artifacts/evaluation/vinamilk-scan-document-processor-2011-table-psm4-20260929.json),
-  [PSM 6 report](../../artifacts/evaluation/vinamilk-scan-document-processor-2011-table-psm6-20260929.json),
-  [PSM 11 report](../../artifacts/evaluation/vinamilk-scan-document-processor-2011-table-psm11-20260929.json),
-  [PSM 12 report](../../artifacts/evaluation/vinamilk-scan-document-processor-2011-table-psm12-20260929.json),
-  [split-resolution PSM 3 report](../../artifacts/evaluation/vinamilk-scan-document-processor-2011-separated-scales-psm3-20260929.json),
-  [split-resolution PSM 4 report](../../artifacts/evaluation/vinamilk-scan-document-processor-2011-separated-scales-psm4-20260929.json),
-  and [live database readback](../../artifacts/evaluation/vinamilk-scan-table-live-database-readback-20260929.json).
+  --table-render-scale 2.5`; PSM 4 gives the same reviewed score. See the [PSM 3 report](../../artifacts/evaluation/ocr/tuning/vinamilk-scan-document-processor-2011-table-psm3-20260929.json),
+  [PSM 4 report](../../artifacts/evaluation/ocr/tuning/vinamilk-scan-document-processor-2011-table-psm4-20260929.json),
+  [PSM 6 report](../../artifacts/evaluation/ocr/tuning/vinamilk-scan-document-processor-2011-table-psm6-20260929.json),
+  [PSM 11 report](../../artifacts/evaluation/ocr/tuning/vinamilk-scan-document-processor-2011-table-psm11-20260929.json),
+  [PSM 12 report](../../artifacts/evaluation/ocr/tuning/vinamilk-scan-document-processor-2011-table-psm12-20260929.json),
+  [split-resolution PSM 3 report](../../artifacts/evaluation/ocr/tuning/vinamilk-scan-document-processor-2011-separated-scales-psm3-20260929.json),
+  [split-resolution PSM 4 report](../../artifacts/evaluation/ocr/tuning/vinamilk-scan-document-processor-2011-separated-scales-psm4-20260929.json),
+  and [live database readback](../../artifacts/evaluation/ocr/pipeline/vinamilk-scan-table-live-database-readback-20260929.json).
 - A completed Kaggle EasyOCR 1.7.2/Tesla T4 run on v3 adds a paired-engine
   result for the Charter scan introduction: CER/WER 0.039735/0.112676 at
   180 DPI. Across all four v3 regions its micro-CER/WER is 0.066667/0.233607;
@@ -752,10 +800,10 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   used the older evaluator without memory/throughput telemetry, so it is not
   comparable to the current five-region protocol for resources. Its dataset
   hash is `31944ac8864b4ba9b59c78500ce0656a24989846b9ff4c80e3552df2b9ac824e`;
-  report: `artifacts/evaluation/ocr-kaggle-easy/vinamilk-ocr-easyocr-v3.json`.
+  report: `artifacts/evaluation/ocr/comparisons/ocr-kaggle-easy/vinamilk-ocr-easyocr-v3.json`.
   A hash-verified v3 comparison against Tesseract on the same four rendered
   pages scored micro-CER/WER 0.066667/0.233607 vs 0.124399/0.295082;
-  artifact: `artifacts/evaluation/vinamilk-ocr-charter-scan-v3-comparison.json`.
+  artifact: `artifacts/evaluation/ocr/comparisons/vinamilk-ocr-charter-scan-v3-comparison.json`.
 - EasyOCR 1.7.2 completed on Kaggle Tesla T4 against the full v4 set: the same
   five manually reviewed 180-DPI regions, including both image-only governance
   scans, as the Tesseract v4 report. Hash-verified micro-CER/WER is
@@ -767,9 +815,9 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   reserved PyTorch CUDA memory. This is a small text-only pilot with no
   table/layout labels and does not establish a model winner. PaddleOCR and
   Surya have not been run against these v4 pages. Report:
-  `artifacts/evaluation/ocr-kaggle-easy/vinamilk-ocr-easyocr-v4.json`; paired
+  `artifacts/evaluation/ocr/comparisons/ocr-kaggle-easy/vinamilk-ocr-easyocr-v4.json`; paired
   hashes and metrics:
-  `artifacts/evaluation/vinamilk-ocr-governance-scans-v4-comparison.json`.
+  `artifacts/evaluation/ocr/comparisons/vinamilk-ocr-governance-scans-v4-comparison.json`.
 - A separate protocol now evaluates the actual PDF upload parser on those same
   two preserved source-page regions. The `DocumentProcessor` path (PyMuPDF
   plus Tesseract fallback, nominal 108 DPI) scored aggregate micro-CER 0.070687
@@ -782,11 +830,11 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   engine settings. This remains a two-page, English-only Tesseract pilot with
   no table-cell/layout labels or paired engines. Reproduce it with
   `uv run python scripts/processing/evaluate_scan_document_processing.py`; artifact:
-  `artifacts/evaluation/vinamilk-scan-document-processor-v1.json`.
+  `artifacts/evaluation/ocr/pipeline/vinamilk-scan-document-processor-v1.json`.
 - Sampled real-document extraction evaluation uses the manually transcribed,
-  visually checked fixture `data/evaluation/vinamilk_document_extraction_cases.json`.
+  visually checked fixture `data/evaluation/ocr/vinamilk_document_extraction_cases.json`.
   Re-run compactly with
-  `uv run python scripts/processing/evaluate_document_extraction.py --compact --output artifacts/evaluation/vinamilk-document-extraction-compact-20260928.json`.
+  `uv run python scripts/processing/evaluate_document_extraction.py --compact --output artifacts/evaluation/ocr/pipeline/vinamilk-document-extraction-compact-20260928.json`.
   The compact report preserves source/render hashes, scores, Tesseract version
   and traineddata hashes while omitting raw parser dumps. Native 2020
   financial-infographic parsing and rule-based KPI extraction each match 2/2
@@ -809,9 +857,9 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   CER/WER comparison favored it; these two financial pages are not enough to
   change that global text setting. PDF table OCR remains PSM 3; image table
   OCR now defaults to PSM 6. Reproduce the latter comparison with
-  `uv run python scripts/processing/evaluate_document_extraction.py --compact --tesseract-psm 3 --tesseract-table-psm 6 --output artifacts/evaluation/vinamilk-document-extraction-compact-table-psm6-20260928.json`.
-  The [table PSM 6 report](../../artifacts/evaluation/vinamilk-document-extraction-compact-table-psm6-20260928.json), [PSM 11 compact report](../../artifacts/evaluation/vinamilk-document-extraction-compact-20260928.json)
-  and [paired PSM 3 report](../../artifacts/evaluation/vinamilk-document-extraction-compact-psm3-20260928.json)
+  `uv run python scripts/processing/evaluate_document_extraction.py --compact --tesseract-psm 3 --tesseract-table-psm 6 --output artifacts/evaluation/ocr/tuning/vinamilk-document-extraction-compact-table-psm6-20260928.json`.
+  The [table PSM 6 report](../../artifacts/evaluation/ocr/tuning/vinamilk-document-extraction-compact-table-psm6-20260928.json), [PSM 11 compact report](../../artifacts/evaluation/ocr/pipeline/vinamilk-document-extraction-compact-20260928.json)
+  and [paired PSM 3 report](../../artifacts/evaluation/ocr/tuning/vinamilk-document-extraction-compact-psm3-20260928.json)
   preserve comparable hashes and scores. The table strategy sweep records the
   per-strategy shapes and anchor scores. The evaluation fixture contains two
   born-digital source pages and five fields; raster copies are synthetic, not
@@ -832,8 +880,8 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   on a born-digital source page; it does not evaluate the normal native-PDF
   extraction path, which is covered by the separate document-extraction
   fixture above. Reproduce with
-  `uv run python scripts/processing/evaluate_scan_document_processing.py --dataset data/evaluation/vinamilk_ocr_ground_truth_v9.json --all-pages --output artifacts/evaluation/vinamilk-upload-document-processor-v9-14regions-20260929.json`.
-  See the [14-region parser report](../../artifacts/evaluation/vinamilk-upload-document-processor-v9-14regions-20260929.json).
+  `uv run python scripts/processing/evaluate_scan_document_processing.py --dataset data/evaluation/ocr/vinamilk_ocr_ground_truth_v9.json --all-pages --output artifacts/evaluation/ocr/pipeline/vinamilk-upload-document-processor-v9-14regions-20260929.json`.
+  See the [14-region parser report](../../artifacts/evaluation/ocr/pipeline/vinamilk-upload-document-processor-v9-14regions-20260929.json).
 - A paired CPU-only v9 OCR benchmark reran Tesseract 4.1.1, PaddleOCR 3.7.0,
   EasyOCR 1.7.2 and Surya 0.17.1 against the same 14 reviewed English/Vietnamese
   regions at 180 DPI. All four reports have the same dataset SHA-256
@@ -846,8 +894,8 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   generalizations. Six pages are Vietnamese; references combine manual review
   with visually checked PDF text-layer assistance, and cell-string presence
   does not measure spatial reconstruction. The result is diagnostic, not a
-  production-engine selection. See the [comparison](../../artifacts/evaluation/vinamilk-ocr-v9-cpu-four-engine-comparison-20260929.json),
-  [raw reports](../../artifacts/evaluation/ocr-kaggle-v9-cpu/) and
+  production-engine selection. See the [comparison](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-v9-cpu-four-engine-comparison-20260929.json),
+  [raw reports](../../artifacts/evaluation/ocr/comparisons/ocr-kaggle-v9-cpu/) and
   [CPU notebook](../../notebooks/kaggle_ocr_v9_cpu_paired.ipynb).
 - **Corrected 2011 Vietnamese scan crop (v2):** the CafeF-hosted PDF is a
   second scanner capture of the same signed 2011 filing as the earlier
@@ -869,9 +917,9 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   evidence. The corrected row metric requires label/value strings in order
   while allowing intervening table-column text; it does not establish spatial
   row/column association. Historical artifacts retain the former contiguous
-  string rule. See the [comparison](../../artifacts/evaluation/vinamilk-ocr-2011-cafef-scan-v2-four-engine-comparison-20260929.json),
-  [labels](../../data/evaluation/vinamilk_ocr_2011_cafef_scan_v2.json),
-  [raw reports](../../artifacts/evaluation/ocr-kaggle-vinamilk-2011-cafef-scan-v2/)
+  string rule. See the [comparison](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-2011-cafef-scan-v2-four-engine-comparison-20260929.json),
+  [labels](../../data/evaluation/ocr/vinamilk_ocr_2011_cafef_scan_v2.json),
+  [raw reports](../../artifacts/evaluation/ocr/comparisons/ocr-kaggle-vinamilk-2011-cafef-scan-v2/)
   and [notebook](../../notebooks/kaggle_vinamilk_2011_cafef_scan/kaggle-vinamilk-2011-cafef-scan.ipynb).
 - The issuer-hosted 2026 Company Charter is image-only across all 46 pages.
   A single-annotator visual transcription of page 8 adds a paired English
@@ -884,9 +932,9 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   the dataset, source-PDF and rendered-page hashes. Reproduce one engine per
   kernel using [`kaggle-charter-scan-page8.ipynb`](../../notebooks/kaggle_charter_scan_page8/kaggle-charter-scan-page8.ipynb)
   and private dataset `ltrngnhn/vinamilk-charter-scan-page8-assets` (version 2).
-  See the [paired comparison](../../artifacts/evaluation/vinamilk-ocr-charter-scan-page8-four-engine-comparison-20260929.json),
-  [labels](../../data/evaluation/vinamilk_ocr_charter_scan_en_v1.json), and
-  [raw reports](../../artifacts/evaluation/ocr-kaggle-charter-scan-page8/).
+  See the [paired comparison](../../artifacts/evaluation/ocr/comparisons/vinamilk-ocr-charter-scan-page8-four-engine-comparison-20260929.json),
+  [labels](../../data/evaluation/ocr/vinamilk_ocr_charter_scan_en_v1.json), and
+  [raw reports](../../artifacts/evaluation/ocr/comparisons/ocr-kaggle-charter-scan-page8/).
   This does not improve Vietnamese physical-scan coverage.
 - A separate v4 label set adds raster-derived boxes for 14 value cells across
   seven manually transcribed rows on the 2011 Vietnamese income-statement scan.
@@ -897,7 +945,7 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   minority-interest row: its value is correct but the parser does not emit a
   usable box for that small dash. This is a single-page, single-source diagnostic,
   not independent multi-reviewer gold or paired engine evidence. Run
-  `uv run python scripts/processing/evaluate_scan_document_processing.py --dataset data/evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v4.json --case-id income-statement-scan-2011-vi --output artifacts/evaluation/vinamilk-scan-document-processor-2011-raster-cell-labels-20260929.json`.
+  `uv run python scripts/processing/evaluate_scan_document_processing.py --dataset data/evaluation/ocr/tuning/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v4.json --case-id income-statement-scan-2011-vi --output artifacts/evaluation/ocr/pipeline/vinamilk-scan-document-processor-2011-raster-cell-labels-20260929.json`.
   The evaluator now maps short year keys to extracted full-date columns, which
   fixes the prior false-zero coordinate score when expected box keys were
   `2011`/`2010` and parser columns were `31/12/2011`/`31/12/2010`.
@@ -912,7 +960,7 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   model initialization remains an explicit unscored engine and does not produce
   empty-text CER/WER values. On a higher-memory/GPU host, run all proposal
   engines against the same manually reviewed crops with:
-  `uv run python scripts/processing/evaluate_ocr.py --dataset data/evaluation/vinamilk_ocr_ground_truth_v2.json --engines paddleocr easyocr surya tesseract --dpi 180 --output artifacts/evaluation/vinamilk-ocr-proposal-comparison.json`.
+  `uv run python scripts/processing/evaluate_ocr.py --dataset data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v2.json --engines paddleocr easyocr surya tesseract --dpi 180 --output artifacts/evaluation/ocr/vinamilk-ocr-proposal-comparison.json`.
   Add physical scanned pages and manually labeled table/layout regions before
   using this comparison to select a production OCR engine.
 - The evaluator renders the selected PDF crops once, then initializes, runs,
@@ -1009,8 +1057,8 @@ rendered pages and checked against period and unit. Run it with:
 
 ```sh
 uv run python scripts/processing/evaluate_document_extraction.py \\
-  --cases data/evaluation/vinamilk_document_extraction_cases.json --compact \\
-  --output artifacts/evaluation/vinamilk-document-extraction-multiyear-v3-20260928.json
+  --cases data/evaluation/ocr/vinamilk_document_extraction_cases.json --compact \\
+  --output artifacts/evaluation/ocr/pipeline/vinamilk-document-extraction-multiyear-v3-20260928.json
 ```
 
 The 2020 highlight and 2024 balance-sheet figures are in VND billion and VND
@@ -1028,7 +1076,7 @@ period-column selection, not OCR quality.
 
 The current Tesseract diagnostic uses ten born-digital report pages and the
 native PDF text layer as an unreviewed reference. The 2026-09-26 report is
-`artifacts/evaluation/vinamilk-ocr-tesseract-diagnostic-v3.json`: macro page
+`artifacts/evaluation/ocr/tuning/vinamilk-ocr-tesseract-diagnostic-v3.json`: macro page
 CER/WER are 0.2281/0.2923; reference-length-weighted CER/WER are
 0.1509/0.2140. Visual review corrected the page-language labels for the 2020
 and 2021 annual reports: those selected pages are English despite the `VI`
@@ -1041,7 +1089,7 @@ and micro scores, per-page edit counts, language, and separate language
 aggregates.
 
 The separate manually transcribed pilot is defined in
-`data/evaluation/vinamilk_ocr_ground_truth.json`; each engine receives the same
+`data/evaluation/ocr/archive/vinamilk_ocr_ground_truth.json`; each engine receives the same
 PDF-point crop rendered at the configured DPI. Its report records whether each
 reference came from manual transcription or the unreviewed PDF text layer so
 the two protocols cannot be confused.
@@ -1055,3 +1103,11 @@ does not satisfy scanned-document or layout/table evaluation. See
 
 See [chunking](chunking.md) for per-path size settings and [proposal coverage](../README.md)
 for remaining extraction requirements.
+
+For born-digital PDFs, PyMuPDF table detection is gated to pages with at least
+three rows containing separated, aligned numeric columns. This avoids running
+its expensive detector across every page of long reports. OCR-derived pages
+with word boxes keep their separate alignment-based table extraction path.
+This gate is tuned for financial/operational numeric tables; an all-text table
+may stay in ordinary page text and should be reported as a known limitation if
+such a source needs structured table storage.

@@ -48,7 +48,8 @@ class DocumentProcessor:
                 "tesseract_table_psm": self.config.get("tesseract_table_psm", 3),
                 "ocr_render_scale": self.config.get("ocr_render_scale", 1.5),
                 "ocr_table_render_scale": self.config.get("ocr_table_render_scale", 2.5),
-                "extract_tables": True,
+                "extract_tables": self.config.get("extract_tables", True),
+                "page_numbers": self.config.get("page_numbers"),
                 "chunking_strategy": self.chunking_strategy,
                 "chunk_size": self.chunk_size,
                 "chunk_overlap": self.chunk_overlap,
@@ -65,6 +66,7 @@ class DocumentProcessor:
                 if key not in chunk["metadata"] and key not in {"title", "uploaded_by"}
             })
             chunk["metadata"]["chunk_index"] = index
+            chunk["metadata"]["actual_char_count"] = len(chunk["text"])
         for table in result["tables"]:
             table.setdefault("metadata", {}).update({key: value for key, value in common.items() if key not in table["metadata"]})
         return result

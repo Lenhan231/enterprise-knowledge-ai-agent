@@ -1,5 +1,7 @@
 const $ = (selector) => document.querySelector(selector);
 let analyticsSnapshot = null;
+let financialMetricDefinitions = new Map();
+let businessMetricDefinitions = new Map();
 let activeTab = "knowledge";
 let currentUser = null;
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -26,6 +28,12 @@ function sourcePageUrl(value, pageNumber) {
   return url.href;
 }
 
+function uploadedSourcePageUrl(documentId, pageNumber) {
+  if (!String(documentId || "").startsWith("UPLOAD-")) return "";
+  const page = Number(pageNumber);
+  return `/api/documents/${encodeURIComponent(documentId)}/source${Number.isInteger(page) && page > 0 ? `#page=${page}` : ""}`;
+}
+
 function selectWorkspaceTab(name) {
   const button = $(`[data-tab-target="${name}"]`);
   if (!button || button.hidden) return;
@@ -41,14 +49,47 @@ function selectWorkspaceTab(name) {
   });
 }
 
+function selectAnalyticsTab(name) {
+  const button = $(`[data-analytics-tab="${name}"]`);
+  if (!button) return;
+  document.querySelectorAll("[data-analytics-tab]").forEach((tab) => {
+    const selected = tab === button;
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    tab.classList.toggle("active", selected);
+  });
+  document.querySelectorAll(".analytics-subpanel").forEach((panel) => {
+    panel.hidden = panel.id !== button.getAttribute("aria-controls");
+  });
+}
+
+document.querySelector(".analytics-subtabs").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-analytics-tab]");
+  if (button) selectAnalyticsTab(button.dataset.analyticsTab);
+});
+
+document.querySelector(".analytics-subtabs").addEventListener("keydown", (event) => {
+  const tabs = [...document.querySelectorAll("[data-analytics-tab]")];
+  const current = tabs.indexOf(event.target);
+  if (current < 0) return;
+  const next = {ArrowRight: (current + 1) % tabs.length, ArrowLeft: (current - 1 + tabs.length) % tabs.length,
+    Home: 0, End: tabs.length - 1}[event.key];
+  if (next === undefined) return;
+  event.preventDefault();
+  tabs[next].focus();
+  selectAnalyticsTab(tabs[next].dataset.analyticsTab);
+});
+
 function syncWorkspaceTabs(user = currentUser) {
   const isAdmin = user?.role === "admin";
+  const isTester = user?.role === "tester";
   const canViewAnalytics = ["finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user?.role);
   const canUpload = ["document_uploader", "admin"].includes(user?.role);
   const available = {
-    knowledge: true,
+    knowledge: !isTester,
     analytics: canViewAnalytics,
     processing: canUpload,
+    "ocr-lab": isTester || isAdmin,
     metrics: isAdmin,
     access: isAdmin,
     monitoring: isAdmin,
@@ -56,7 +97,7 @@ function syncWorkspaceTabs(user = currentUser) {
   document.querySelectorAll(".workspace-tab").forEach((button) => {
     button.hidden = !available[button.dataset.tabTarget];
   });
-  if (!available[activeTab]) activeTab = "knowledge";
+  if (!available[activeTab]) activeTab = isTester ? "ocr-lab" : "knowledge";
   selectWorkspaceTab(activeTab);
 }
 
@@ -105,6 +146,7 @@ function renderParsedChunkInspector(data) {
 }
 
 function renderMetricCatalog(metrics) {
+  financialMetricDefinitions = new Map(metrics.map((metric) => [metric.metric_name, metric]));
   const select = $("#manual-metric-name");
   select.innerHTML = metrics.map((metric) =>
     `<option value="${escapeHtml(metric.metric_name)}">${escapeHtml(metric.label)}</option>`
@@ -119,6 +161,24 @@ function renderMetricCatalog(metrics) {
   };
   select.onchange = showDefinition;
   showDefinition();
+}
+
+function renderBusinessMetricCatalog(metrics) {
+  businessMetricDefinitions = new Map(metrics.map((metric) => [metric.metric_name, metric]));
+  const select = $("#business-metric-name");
+  select.innerHTML = metrics.map((metric) =>
+    `<option value="${escapeHtml(metric.metric_name)}">${escapeHtml(metric.label)}</option>`
+  ).join("");
+  const update = () => {
+    const metric = metrics.find((item) => item.metric_name === select.value);
+    $("#business-metric-definition").innerHTML = metric
+      ? `<article class="analysis-stat"><span>${escapeHtml(metric.domain.replaceAll("_", " "))}</span><strong>${escapeHtml(metric.definition)}</strong><small>Typical unit: ${escapeHtml(metric.unit_guidance)}</small></article>`
+      : "";
+    const unit = $("#business-metric-unit");
+    if (metric) unit.placeholder = metric.unit_guidance;
+  };
+  select.onchange = update;
+  update();
 }
 
 function renderParsedChunks(chunks) {
@@ -144,6 +204,79 @@ function renderExtractedTables(tables) {
   }).join("") || '<p class="loading-card">No structured tables were extracted from this document.</p>';
 }
 
+async function loadOcrTestRuns() {
+  const result = await api("/api/ocr-tests");
+  $("#ocr-test-runs").innerHTML = result.runs.map((run) =>
+    `<button type="button" class="ocr-run-button" data-ocr-run-id="${escapeHtml(run.run_id)}"><strong>${escapeHtml(run.source_filename)}</strong><span>${escapeHtml(new Date(run.created_at).toLocaleString())} · ${formatNumber(run.page_count)} pages · ${formatNumber(run.chunk_count)} chunks · ${formatNumber(run.table_count)} tables</span></button>`
+  ).join("") || '<p class="loading-card">No OCR tests yet. Upload a PDF above to create one.</p>';
+}
+
+function renderOcrTestDetails(run) {
+  const allPages = [...new Set([
+    ...run.pages,
+    ...run.chunks.map((chunk) => Number(chunk.metadata?.page_number)).filter(Number.isFinite),
+    ...run.tables.map((table) => Number(table.page_number)).filter(Number.isFinite),
+  ])].sort((a, b) => a - b);
+  const pageContent = allPages.map((pageNumber, pageIndex) => {
+    const chunks = run.chunks.filter((chunk) => Number(chunk.metadata?.page_number) === pageNumber);
+    const tables = run.tables.filter((table) => Number(table.page_number) === pageNumber);
+    const tablesHtml = tables.map((table) => {
+      const data = table.structured_data || {};
+      const context = table.context || {};
+      const columns = Array.isArray(data.columns) ? data.columns : [];
+      const rows = Array.isArray(data.rows) ? data.rows : [];
+      const headers = columns.length ? columns : [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
+      const metadata = table.metadata || {};
+      const ocr = metadata.ocr || {};
+      const bbox = Array.isArray(metadata.bbox)
+        ? metadata.bbox.map((value) => Number(value).toFixed(1)).join(" · ")
+        : "Not available";
+      const parserDetails = [
+        ["OCR", [ocr.engine, ocr.language && `language ${ocr.language}`, ocr.table_psm && `PSM ${ocr.table_psm}`, ocr.render_scale && `scale ${ocr.render_scale}×`].filter(Boolean).join(" · ") || "Not available"],
+        ["Extraction", metadata.table_extraction_method || "Not available"],
+        ["Detection", metadata.table_detection_strategy || "Not available"],
+        ["Table region", `${bbox}${metadata.bbox_coordinate_system ? ` (${metadata.bbox_coordinate_system})` : ""}`],
+        ["Structure", `${formatNumber(rows.length)} rows · ${formatNumber(headers.length)} columns`],
+      ];
+      return `<article class="ocr-test-table"><h5>Table ${formatNumber(table.table_index + 1)} <span>${formatNumber(rows.length)} rows</span></h5>
+        ${headers.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table"><thead><tr>${headers.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${headers.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
+        <details class="candidate-source"><summary>Table context</summary><dl class="ocr-context-list">
+          <dt>Source</dt><dd>${escapeHtml(context.source_filename || run.source_filename)}</dd>
+          <dt>Section</dt><dd>${escapeHtml(context.section_title || "Not extracted")}</dd>
+          <dt>Table title</dt><dd>${escapeHtml(context.table_title || "Not extracted")}</dd>
+          <dt>Unit</dt><dd>${escapeHtml(context.unit || "Not extracted")}</dd>
+          <dt>Reporting periods</dt><dd>${escapeHtml((context.reporting_periods || []).join(", ") || "Not extracted")}</dd>
+        </dl></details>
+        <dl class="ocr-context-list">${parserDetails.map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`).join("")}</dl>
+        <details class="candidate-source"><summary>Detailed parser metadata</summary><pre>${escapeHtml(JSON.stringify(metadata, null, 2))}</pre></details></article>`;
+    }).join("");
+    return `<details class="ocr-test-page" ${pageIndex === 0 ? "open" : ""}>
+      <summary>Page ${formatNumber(pageNumber)} · ${formatNumber(chunks.length)} chunks · ${formatNumber(tables.length)} tables</summary>
+      <section class="ocr-test-raw"><h4>Raw page</h4><img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/ocr-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview"></section>
+      <section class="ocr-test-extracted"><h4>Extracted output</h4>
+        <details class="ocr-test-chunks"><summary>View ${formatNumber(chunks.length)} text chunks for this page</summary>${chunks.map((chunk) => `<article class="ocr-test-chunk"><div class="candidate-heading"><strong>Chunk ${formatNumber(chunk.chunk_index + 1)}</strong><span>${formatNumber(chunk.metadata?.actual_char_count ?? chunk.content.length)} chars actual · ${formatNumber(chunk.metadata?.chunk_size_chars ?? 0)} char limit · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")} · ${escapeHtml(chunk.metadata?.layout_type || "text")}</span></div><pre>${escapeHtml(chunk.content)}</pre><details class="candidate-source"><summary>Chunk metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No text chunks on this page.</p>'}</details>
+        <h4 class="ocr-test-table-heading">Extracted tables</h4>
+        ${tablesHtml || '<p class="ocr-test-empty">No structured table detected on this page.</p>'}
+      </section>
+    </details>`;
+  }).join("");
+  $("#ocr-test-results").innerHTML = `<article class="ocr-test-run">
+    <div class="candidate-heading"><strong>${escapeHtml(run.source_filename)}</strong><span>${formatNumber(run.page_count)} pages · ${formatNumber(run.chunks.length)} chunks · ${formatNumber(run.tables.length)} tables</span></div>
+    <p class="corpus-note">SHA-256: <code>${escapeHtml(run.source_sha256)}</code></p>
+    <details class="candidate-source"><summary>Parser configuration and versions</summary><pre>${escapeHtml(JSON.stringify({processor_config:run.processor_config,runtime_info:run.runtime_info},null,2))}</pre></details>
+    <div class="ocr-test-pages">${pageContent}</div>
+  </article>`;
+}
+
+async function openOcrTestRun(runId) {
+  $("#ocr-test-results").innerHTML = '<p class="loading-card">Loading test pages and parser output…</p>';
+  try {
+    renderOcrTestDetails(await api(`/api/ocr-tests/${encodeURIComponent(runId)}`));
+  } catch (error) {
+    $("#ocr-test-results").innerHTML = `<p class="loading-card">${escapeHtml(error.message)}</p>`;
+  }
+}
+
 function formatNumber(value) {
   return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 3 }).format(value);
 }
@@ -153,6 +286,21 @@ function formatFinancialValue(value) {
   return Number.isFinite(parsed)
     ? new Intl.NumberFormat("vi-VN", { useGrouping: true, maximumFractionDigits: 3 }).format(parsed)
     : "—";
+}
+
+function formatBusinessMetricValue(item) {
+  const prefix = {
+    approximately: "≈",
+    more_than: ">",
+    at_least: "≥",
+    less_than: "<",
+    at_most: "≤",
+  }[item.value_qualifier] || "";
+  return `${prefix}${formatFinancialValue(item.metric_value)}`;
+}
+
+function formatBusinessMetricPeriod(item) {
+  return `${item.reporting_period && item.reporting_period !== "FY" ? `${item.reporting_period} ` : "FY "}${item.fiscal_year}`;
 }
 
 function parseVietnameseFinancialInput(value) {
@@ -182,15 +330,30 @@ function renderAnalytics(data) {
   analyticsSnapshot = data;
   const companySelect = $("#analytics-company");
   const yearSelect = $("#analytics-year");
+  const domainSelect = $("#analytics-domain");
+  const metricScopeSelect = $("#analytics-metric-scope");
   const selectedCompany = companySelect.value;
   const selectedYear = yearSelect.value;
+  const selectedDomain = domainSelect.value;
   const companies = [...new Set(data.documents.map((item) => item.company).filter(Boolean))].sort();
-  const years = [...new Set(data.documents.map((item) => item.fiscal_year).filter(Boolean).map(String))].sort();
+  const years = [...new Set([
+    ...data.documents.map((item) => item.fiscal_year),
+    ...(data.financial || []).map((item) => item.fiscal_year),
+    ...(data.business_metrics || []).map((item) => item.fiscal_year),
+    ...(data.business_candidates || []).map((item) => item.fiscal_year),
+  ].filter(Boolean).map(String))].sort();
   companySelect.innerHTML = '<option value="">All companies</option>' + companies.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");
   yearSelect.innerHTML = '<option value="">All years</option>' + years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`).join("");
+  const domains = [...new Set((data.business_metrics || []).map((item) => item.domain).filter(Boolean))].sort();
+  domainSelect.innerHTML = '<option value="">All domains</option>' + domains.map((domain) =>
+    `<option value="${escapeHtml(domain)}">${escapeHtml(domain.replaceAll("_", " "))}</option>`
+  ).join("");
   companySelect.value = companies.includes(selectedCompany) ? selectedCompany : "";
   yearSelect.value = years.includes(selectedYear) ? selectedYear : "";
-  companySelect.onchange = yearSelect.onchange = applyAnalyticsFilters;
+  domainSelect.value = domains.includes(selectedDomain) ? selectedDomain
+    : domains.includes("market_performance") ? "market_performance" : "";
+  metricScopeSelect.value = metricScopeSelect.value || "primary";
+  companySelect.onchange = yearSelect.onchange = domainSelect.onchange = metricScopeSelect.onchange = applyAnalyticsFilters;
   applyAnalyticsFilters();
 }
 
@@ -198,7 +361,12 @@ function applyAnalyticsFilters() {
   if (!analyticsSnapshot) return;
   const company = $("#analytics-company").value;
   const year = $("#analytics-year").value;
+  const domain = $("#analytics-domain").value;
+  const metricScope = $("#analytics-metric-scope").value;
   const matches = (item) => (!company || item.company === company) && (!year || String(item.fiscal_year ?? "") === year);
+  const businessMatches = (item) => matches(item) && (!domain || item.domain === domain);
+  const companyYearBusinessMetrics = (analyticsSnapshot.business_metrics || []).filter(matches);
+  const scopedBusinessMetrics = companyYearBusinessMetrics.filter((item) => !domain || item.domain === domain);
   const data = {
     ...analyticsSnapshot,
     documents: analyticsSnapshot.documents.filter(matches),
@@ -206,8 +374,20 @@ function applyAnalyticsFilters() {
     processing: analyticsSnapshot.processing.filter(matches),
     financial: analyticsSnapshot.financial.filter(matches),
     candidates: analyticsSnapshot.candidates.filter(matches),
+    business_metrics: companyYearBusinessMetrics,
+    business_candidates: (analyticsSnapshot.business_candidates || []).filter(businessMatches),
     quality: analyticsSnapshot.quality.filter(matches),
   };
+  const roleVisibleMetricNames = new Set([
+    ...data.financial.map((item) => item.metric_name),
+    ...scopedBusinessMetrics.map((item) => item.metric_name),
+  ]);
+  document.querySelectorAll("[data-required-metrics]").forEach((button) => {
+    const required = button.dataset.requiredMetrics.split(",").filter(Boolean);
+    const requiredDomains = [...new Set(required.map((name) => businessMetricDefinitions.get(name)?.domain).filter(Boolean))];
+    button.hidden = required.some((name) => !roleVisibleMetricNames.has(name))
+      || (Boolean(domain) && requiredDomains.some((requiredDomain) => requiredDomain !== domain));
+  });
   const metricGroups = data.financial.reduce((groups, item) => {
     const key = `${item.company}:${item.metric_name}`;
     (groups[key] ??= []).push(item);
@@ -216,12 +396,18 @@ function applyAnalyticsFilters() {
   const metrics = Object.values(metricGroups).map((series) =>
     series.sort((a, b) => Number(a.fiscal_year) - Number(b.fiscal_year))
   );
+  const businessDisplayMetrics = metricScope === "all" || !businessMetricDefinitions.size ? scopedBusinessMetrics
+    : scopedBusinessMetrics.filter((item) => businessMetricDefinitions.get(item.metric_name)?.decision_priority === "primary");
   const reports = data.documents.filter((item) => item.document_type === "annual_report");
   const reportYears = [...new Set(reports.map((item) => String(item.fiscal_year || "")).filter(Boolean))].sort();
-  const verifiedYears = [...new Set(data.financial.map((item) => String(item.fiscal_year)))].sort();
+  const verifiedMetrics = [...data.financial, ...businessDisplayMetrics];
+  const verifiedSeries = new Set(verifiedMetrics.map((item) =>
+    `${item.company}:${item.domain || "financial"}:${item.metric_name}`
+  ));
+  const verifiedYears = [...new Set(verifiedMetrics.map((item) => String(item.fiscal_year)))].sort();
   $("#analysis-summary").innerHTML = [
     ["Annual reports in scope", reports.length, reportYears.join(" · ") || "No fiscal year recorded"],
-    ["Verified indicators", metrics.length, data.financial.length ? `${formatNumber(data.financial.length)} source-backed observations` : "No published values for this selection"],
+    ["Verified metric series shown", verifiedSeries.size, `${formatNumber(data.financial.length)} financial · ${formatNumber(businessDisplayMetrics.length)} business observations; supporting metrics remain available`],
     ["Verified reporting periods", verifiedYears.length, verifiedYears.join(" · ") || "Admin review required before comparison"],
   ].map(([label, value, note]) => `<article class="analysis-stat"><span>${escapeHtml(label)}</span><strong>${formatNumber(value)}</strong><small>${escapeHtml(note)}</small></article>`).join("");
   $("#analysis-coverage-note").textContent = `${formatNumber(data.documents.length)} source documents · ${formatNumber(data.documents.reduce((sum, item) => sum + item.chunks, 0))} indexed passages`;
@@ -238,7 +424,11 @@ function applyAnalyticsFilters() {
     const provenance = latest.entry_method === "manual"
       ? `<span class="metric-provenance">Manual entry · admin verified${latest.verified_by ? ` by ${escapeHtml(latest.verified_by)}` : ""}</span>${latest.source_reference ? (validSourceUrl(latest.source_reference) ? `<a href="${escapeHtml(validSourceUrl(latest.source_reference))}" target="_blank" rel="noopener noreferrer">${escapeHtml(latest.source_reference)}</a>` : `<span>${escapeHtml(latest.source_reference)}</span>`) : ""}${latest.source_note ? `<details class="candidate-source"><summary>Verification context</summary><p>${escapeHtml(latest.source_note)}</p></details>` : ""}`
       : href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Source · page ${escapeHtml(latest.page_number)}</a>` : `<span>Source · page ${escapeHtml(latest.page_number ?? "not recorded")}</span>`;
-    return `<article class="financial-card"><span>${escapeHtml(latest.metric_label)}</span><strong>${formatFinancialValue(latest.metric_value)} <small>${escapeHtml(latest.unit)}</small></strong><em class="${isNegative ? "negative" : ""}">FY ${escapeHtml(latest.fiscal_year)} · ${comparison}</em>${provenance}</article>`;
+    const definition = financialMetricDefinitions.get(latest.metric_name);
+    const definitionDetails = definition?.definition
+      ? `<details class="candidate-source"><summary>Metric definition</summary><p>${escapeHtml(definition.definition)}</p><small>${escapeHtml(definition.unit_guidance || "Use the reported source unit")}</small></details>`
+      : "";
+    return `<article class="financial-card"><span>${escapeHtml(latest.metric_label)}</span><strong>${formatFinancialValue(latest.metric_value)} <small>${escapeHtml(latest.unit)}</small></strong><em class="${isNegative ? "negative" : ""}">FY ${escapeHtml(latest.fiscal_year)} · ${comparison}</em>${definitionDetails}${provenance}</article>`;
   }).join("") : '<p class="analysis-empty"><strong>No verified financial results for this selection</strong><span>Unreviewed extraction candidates are excluded. Admins can validate source evidence in Document processing.</span></p>';
 
   const comparisons = metrics.flatMap((series) => {
@@ -264,6 +454,98 @@ function applyAnalyticsFilters() {
     const max = Math.max(1, ...series.map((item) => Math.abs(Number(item.metric_value))));
     return `<article class="trend-card"><h4>${escapeHtml(series[0].metric_label)} · ${escapeHtml(series[0].unit)}</h4><div class="trend-bars">${series.map((item) => { const href = validSourceUrl(item.source_url); const source = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" aria-label="Open source page ${item.page_number}">Source</a>` : ""; const ratio = Math.abs(Number(item.metric_value)) / max; return `<div class="trend-point"><strong>${formatFinancialValue(item.metric_value)}</strong><i style="--bar-ratio:${ratio}" role="img" aria-label="FY ${escapeHtml(item.fiscal_year)} value ${formatFinancialValue(item.metric_value)} ${escapeHtml(item.unit)}"></i><span>FY ${escapeHtml(item.fiscal_year)}</span>${source}</div>`; }).join("")}</div></article>`;
   }).join("");
+  const businessGroups = businessDisplayMetrics.reduce((groups, item) => {
+    const key = `${item.company}:${item.domain}:${item.metric_name}`;
+    (groups[key] ??= []).push(item);
+    return groups;
+  }, {});
+  const businessSeries = Object.values(businessGroups).map((series) =>
+    series.sort((a, b) => Number(a.fiscal_year) - Number(b.fiscal_year)
+      || (a.reporting_period === "H1" ? -1 : b.reporting_period === "H1" ? 1 : 0))
+  );
+  $("#business-metric-kpis").innerHTML = businessSeries.length
+    ? businessSeries.map((series) => {
+      const latest = series.at(-1);
+      const previous = series.length > 1 ? series.at(-2) : null;
+      const scope = escapeHtml(latest.scope);
+      const source = uploadedSourcePageUrl(latest.source_document_id, latest.page_number)
+        || sourcePageUrl(latest.source_url, latest.page_number);
+      const comparable = previous && previous.unit === latest.unit
+        && previous.value_qualifier === "exact" && latest.value_qualifier === "exact"
+        && (previous.reporting_period || "FY") === (latest.reporting_period || "FY");
+      const change = comparable
+        ? latest.unit === "%"
+          ? ` · ${formatFinancialValue(Number(latest.metric_value) - Number(previous.metric_value))} percentage points vs ${escapeHtml(formatBusinessMetricPeriod(previous))}`
+          : ` · ${formatFinancialValue((Number(latest.metric_value) - Number(previous.metric_value)) / Math.abs(Number(previous.metric_value) || 1) * 100)}% vs ${escapeHtml(formatBusinessMetricPeriod(previous))}`
+        : " · one verified reporting period";
+      const parserProvenance = latest.extraction_method ? `${latest.extraction_method}${latest.extractor_version ? ` · ${latest.extractor_version}` : ""}${Number.isInteger(latest.source_chunk_index) ? ` · indexed chunk ${latest.source_chunk_index}` : ""}` : "Manual/source-research entry";
+      const visualEvidence = latest.extraction_config?.visual_label
+        ? `<p>Visual source label: ${escapeHtml(latest.extraction_config.visual_label)}${latest.extraction_config.source_scope ? ` · ${escapeHtml(latest.extraction_config.source_scope)}` : ""}</p>`
+        : "";
+      const definition = businessMetricDefinitions.get(latest.metric_name);
+      const definitionDetails = definition?.definition
+        ? `<details class="candidate-source"><summary>Metric definition</summary><p>${escapeHtml(definition.definition)}</p><small>Typical unit: ${escapeHtml(definition.unit_guidance || latest.unit)}</small></details>`
+        : "";
+      return `<article class="financial-card"><span>${escapeHtml(latest.domain.replaceAll("_", " "))} · ${escapeHtml(latest.metric_label)}</span><strong>${formatBusinessMetricValue(latest)} <small>${escapeHtml(latest.unit)}</small></strong><em>${escapeHtml(formatBusinessMetricPeriod(latest))}${change}</em><small>${scope}</small>${definitionDetails}${source ? `<a href="${escapeHtml(source)}" target="_blank" rel="noopener noreferrer">Source · page ${escapeHtml(latest.page_number)}</a>` : ""}<details class="candidate-source"><summary>Source excerpt</summary>${visualEvidence}<blockquote>${escapeHtml(latest.source_quote)}</blockquote><small>Verified by ${escapeHtml(latest.verified_by || "administrator")} · ${escapeHtml(parserProvenance)}</small></details></article>`;
+    }).join("")
+    : '<p class="analysis-empty"><strong>No verified business metrics for this selection yet</strong><span>Source-backed observations remain in the admin review queue and appear here only after verification.</span></p>';
+  $("#business-metric-trends").innerHTML = businessSeries.filter((series) =>
+    scopedBusinessMetrics.some((item) => item.metric_name === series[0].metric_name && item.company === series[0].company)
+      && (metricScope === "all" || !businessMetricDefinitions.size
+        || businessMetricDefinitions.get(series[0].metric_name)?.decision_priority === "primary")
+  ).map((series) => {
+    const max = Math.max(1, ...series.map((item) => Math.abs(Number(item.metric_value))));
+    return `<article class="trend-card"><h4>${escapeHtml(series[0].domain.replaceAll("_", " "))} · ${escapeHtml(series[0].metric_label)} · ${escapeHtml(series[0].unit)}</h4><div class="trend-bars">${series.map((item) => {
+      const source = uploadedSourcePageUrl(item.source_document_id, item.page_number)
+        || sourcePageUrl(item.source_url, item.page_number);
+      const ratio = Math.abs(Number(item.metric_value)) / max;
+      return `<div class="trend-point"><strong>${formatBusinessMetricValue(item)}</strong><i style="--bar-ratio:${ratio}" role="img" aria-label="${escapeHtml(formatBusinessMetricPeriod(item))} value ${formatBusinessMetricValue(item)} ${escapeHtml(item.unit)}"></i><span>${escapeHtml(formatBusinessMetricPeriod(item))}</span>${source ? `<a href="${escapeHtml(source)}" target="_blank" rel="noopener noreferrer">Source p. ${escapeHtml(item.page_number)}</a>` : ""}</div>`;
+    }).join("")}</div></article>`;
+  }).join("");
+  const segmentDefinitions = {
+    domestic: {label: "Domestic", revenue: "domestic_consolidated_net_revenue", profit: "domestic_segment_gross_profit"},
+    overseas: {label: "Overseas", revenue: "overseas_market_net_revenue", profit: "overseas_segment_gross_profit"},
+  };
+  const segmentYearRows = new Map();
+  for (const metric of data.business_metrics || []) {
+    const segment = Object.entries(segmentDefinitions).find(([, definition]) =>
+      metric.metric_name === definition.revenue || metric.metric_name === definition.profit
+    );
+    if (!segment) continue;
+    const key = `${metric.company}:${metric.fiscal_year}:${segment[0]}`;
+    const row = segmentYearRows.get(key) || {company: metric.company, fiscal_year: metric.fiscal_year, segment: segment[0]};
+    row[metric.metric_name === segment[1].revenue ? "revenue" : "profit"] = metric;
+    segmentYearRows.set(key, row);
+  }
+  const marginSeries = new Map();
+  for (const row of segmentYearRows.values()) {
+    if (!row.revenue || !row.profit) continue;
+    const revenue = Number(row.revenue.metric_value);
+    const grossProfit = Number(row.profit.metric_value);
+    if (!Number.isFinite(revenue) || revenue <= 0 || !Number.isFinite(grossProfit)) continue;
+    const key = `${row.company}:${row.segment}`;
+    const series = marginSeries.get(key) || [];
+    series.push({...row, margin: grossProfit / revenue * 100});
+    marginSeries.set(key, series);
+  }
+  const marginFormat = (value) => new Intl.NumberFormat("vi-VN", {
+    minimumFractionDigits: 2, maximumFractionDigits: 2,
+  }).format(value);
+  const marginCards = [...marginSeries.values()].flatMap((series) => {
+    series.sort((a, b) => Number(a.fiscal_year) - Number(b.fiscal_year));
+    return series.map((row, index) => {
+      const previous = series[index - 1];
+      const change = previous
+        ? ` · ${marginFormat(row.margin - previous.margin)} percentage points vs FY ${escapeHtml(previous.fiscal_year)}`
+        : "";
+      const revenueSource = sourcePageUrl(row.revenue.source_url, row.revenue.page_number);
+      const profitSource = sourcePageUrl(row.profit.source_url, row.profit.page_number);
+      return `<article class="financial-card"><span>${escapeHtml(segmentDefinitions[row.segment].label)} segment · ${escapeHtml(row.company)}</span><strong>${marginFormat(row.margin)}<small>% gross margin</small></strong><em>FY ${escapeHtml(row.fiscal_year)}${change}</em><small>Derived from verified segment gross profit and net revenue; excludes selling and administration costs.</small>${revenueSource ? `<a href="${escapeHtml(revenueSource)}" target="_blank" rel="noopener noreferrer">Net revenue source · p. ${escapeHtml(row.revenue.page_number)}</a>` : ""}${profitSource ? `<a href="${escapeHtml(profitSource)}" target="_blank" rel="noopener noreferrer">Gross profit source · p. ${escapeHtml(row.profit.page_number)}</a>` : ""}<details class="candidate-source"><summary>Calculation inputs</summary><blockquote>Net revenue: ${escapeHtml(formatFinancialValue(row.revenue.metric_value))} ${escapeHtml(row.revenue.unit)} — ${escapeHtml(row.revenue.source_quote)}<br>Segment gross profit: ${escapeHtml(formatFinancialValue(row.profit.metric_value))} ${escapeHtml(row.profit.unit)} — ${escapeHtml(row.profit.source_quote)}</blockquote></details></article>`;
+    });
+  });
+  $("#segment-gross-margin-kpis").innerHTML = marginCards.length
+    ? marginCards.join("")
+    : '<p class="analysis-empty"><strong>No verified segment revenue and gross-profit pair for this selection</strong><span>Both observations must be verified for the same segment, company and year before gross margin is calculated.</span></p>';
   const maxDocs = Math.max(1, ...(data.domains || []).map((item) => item.documents));
   $("#domain-chart").innerHTML = (data.domains || []).map((item) => `
     <div class="bar-row"><div><span>${escapeHtml(item.company)} · ${escapeHtml(item.domain.replaceAll("_", " "))} · FY ${escapeHtml(item.fiscal_year || "No year")}</span><strong>${formatNumber(item.documents)} docs · ${formatNumber(item.chunks)} passages</strong></div><span class="bar-track"><i style="width:${Math.max(5, item.documents / maxDocs * 100)}%"></i></span></div>
@@ -277,20 +559,28 @@ function applyAnalyticsFilters() {
 }
 
 function renderCandidates(data) {
-  const candidates = data.candidates || [];
+  const candidates = [
+    ...(data.candidates || []),
+    ...(data.business_candidates || []).map((item) => ({
+      ...item, document_id: item.source_document_id,
+      candidate_kind: "business", title: item.source_document_id,
+      source_note: item.scope, candidate_values: [item.normalized_value],
+    })),
+  ];
   $("#candidate-review").hidden = !candidates.length;
   $("#candidate-list").innerHTML = candidates.map((item) => {
     const href = sourcePageUrl(item.source_url, item.page_number);
-    const uploadedSourceHref = String(item.document_id || "").startsWith("UPLOAD-")
-      ? `/api/admin/processing/${encodeURIComponent(item.document_id)}/source#page=${encodeURIComponent(item.page_number)}`
-      : "";
-    const sourceHref = href || uploadedSourceHref;
-    const sourceLabel = href ? "Open official original" : "Open uploaded source";
+    const uploadedSourceHref = uploadedSourcePageUrl(item.document_id, item.page_number);
+    const sourceHref = uploadedSourceHref || href;
+    const sourceLabel = uploadedSourceHref ? "Open uploaded source" : "Open official original";
     const figures = Array.isArray(item.candidate_values)
       ? item.candidate_values.map(String).filter(Boolean)
       : [];
+    const businessKind = item.candidate_kind === "business";
   const isManual = item.entry_method === "manual";
-  const extraction = isManual ? "Manual entry · user supplied" : item.extraction_method === "llm_selected_financial_page"
+    const extraction = businessKind ? item.extraction_method === "parser_rule"
+      ? `Parser rule · ${item.extractor_version || "version unknown"}`
+      : "Source report · research candidate" : isManual ? "Manual entry · user supplied" : item.extraction_method === "llm_selected_financial_page"
       ? `LLM · ${item.extractor_model || "configured model"}`
       : item.text_extraction_method || "Rule-based evidence";
     const signals = item.selection_evidence || {};
@@ -305,15 +595,23 @@ function renderCandidates(data) {
     const evidenceCount = Math.max(1, Number(item.evidence_count) || 1);
     const extractionLabel = extraction.includes("tesseract") ? "OCR assisted" : extraction;
     const figuresMarkup = renderCandidateFigures(figures);
+    const periodLabel = businessKind
+      ? formatBusinessMetricPeriod({fiscal_year: item.fiscal_year, reporting_period: item.reporting_period})
+      : item.fiscal_year || "Needs review";
+    const qualifierLabel = businessKind && item.value_qualifier && item.value_qualifier !== "exact"
+      ? ` · Report qualifier: ${item.value_qualifier.replaceAll("_", " ")}` : "";
+    const visualEvidence = businessKind && item.extraction_config?.visual_label
+      ? `<p>Visual source label: ${escapeHtml(item.extraction_config.visual_label)}${item.extraction_config.source_scope ? ` · ${escapeHtml(item.extraction_config.source_scope)}` : ""}</p>`
+      : "";
     return `<article class="candidate-row">
       <div class="candidate-evidence">
         <div class="candidate-heading"><div><strong>${escapeHtml(item.metric_label)}</strong><span>${escapeHtml(item.company)} · ${escapeHtml(item.title)}</span></div><span class="candidate-status">Admin review${evidenceCount > 1 ? ` · ${formatNumber(evidenceCount)} excerpts` : ""}</span></div>
-        <div class="candidate-facts"><span><small>Reporting year</small><strong>${escapeHtml(item.fiscal_year || "Needs review")}</strong></span><span><small>Source page</small><strong>${escapeHtml(item.page_number ?? (isManual ? "Manual reference" : "—"))}</strong></span><span><small>Document</small><strong>${escapeHtml(item.document_id || (isManual ? "Manual entry" : "—"))}</strong></span><span><small>Entry method</small><strong>${escapeHtml(extractionLabel)}</strong></span></div>
-        <div class="candidate-value"><small>${isManual ? "User-supplied value · confirm its provenance and reporting basis" : figures.length > 1 ? "Figures in excerpt · select a value, then confirm its reporting year in the source" : "Figure found in excerpt · select it only after checking the source"}</small><div class="candidate-figures">${figuresMarkup}</div><small>Confirm the reporting year and scale. Use one consistent dashboard unit across periods.${evidenceCount > 1 ? " Rejecting this excerpt will show the next pending source excerpt." : ""}</small></div>
-        <details class="candidate-source"><summary>${isManual ? "Review manual source context" : `Check source excerpt${sourceHref ? ` · <a href="${escapeHtml(sourceHref)}" target="_blank" rel="noopener noreferrer">${sourceLabel} · page ${escapeHtml(item.page_number)}</a>` : ""}`}</summary>${isManual ? `${item.source_reference ? `<p>Source reference: ${escapeHtml(item.source_reference)}</p>` : "<p>No external source URL supplied.</p>"}<p>${escapeHtml(item.source_note)}</p>` : `${labelMatchNotice}<blockquote>${escapeHtml(item.source_quote)}</blockquote>${selectionSummary ? `<small>Page-selection signals · ${escapeHtml(selectionSummary)}</small>` : ""}${item.prompt_version ? `<small>Extraction prompt · ${escapeHtml(item.prompt_version)}</small>` : ""}`}</details>
+        <div class="candidate-facts"><span><small>Reporting period</small><strong>${escapeHtml(periodLabel)}</strong></span><span><small>Source page</small><strong>${escapeHtml(item.page_number ?? (isManual ? "Manual reference" : "—"))}</strong></span><span><small>Document</small><strong>${escapeHtml(item.document_id || (isManual ? "Manual entry" : "—"))}</strong></span><span><small>Entry method</small><strong>${escapeHtml(extractionLabel)}</strong></span></div>
+        <div class="candidate-value"><small>${businessKind ? `Report value proposed · verify unit, scope, and report wording${qualifierLabel}` : isManual ? "User-supplied value · confirm its provenance and reporting basis" : figures.length > 1 ? "Figures in excerpt · select a value, then confirm its reporting year in the source" : "Figure found in excerpt · select it only after checking the source"}</small><div class="candidate-figures">${figuresMarkup}</div><small>Confirm the reporting year and scale. Use one consistent dashboard unit across periods.${evidenceCount > 1 ? " Rejecting this excerpt will show the next pending source excerpt." : ""}</small></div>
+        <details class="candidate-source"><summary>${isManual ? "Review manual source context" : `Check source excerpt${sourceHref ? ` · <a href="${escapeHtml(sourceHref)}" target="_blank" rel="noopener noreferrer">${sourceLabel} · page ${escapeHtml(item.page_number)}</a>` : ""}`}</summary>${isManual ? `${item.source_reference ? `<p>Source reference: ${escapeHtml(item.source_reference)}</p>` : "<p>No external source URL supplied.</p>"}<p>${escapeHtml(item.source_note)}</p>` : `${businessKind ? `<p>Scope: ${escapeHtml(item.scope)}</p><p>Extraction provenance: ${escapeHtml(item.extraction_method || "source research")}${item.extractor_version ? ` · ${escapeHtml(item.extractor_version)}` : ""}${item.source_chunk_index !== null && item.source_chunk_index !== undefined ? ` · source chunk ${escapeHtml(item.source_chunk_index)}` : ""}</p>${visualEvidence}` : `${labelMatchNotice}${item.source_chunk_index !== null && item.source_chunk_index !== undefined ? `<p>Indexed source chunk ${escapeHtml(item.source_chunk_index)}</p>` : ""}`}<blockquote>${escapeHtml(item.source_quote)}</blockquote>${selectionSummary ? `<small>Page-selection signals · ${escapeHtml(selectionSummary)}</small>` : ""}${item.prompt_version ? `<small>Extraction prompt · ${escapeHtml(item.prompt_version)}</small>` : ""}`}</details>
       </div>
-      <form data-candidate-id="${item.id}" class="review-form">
-        <label>Verified value<input name="normalized_value" type="text" inputmode="decimal" pattern="[+-]?[0-9.,]+" value="${isManual ? escapeHtml(figures[0] || "") : ""}" required placeholder="e.g. 59723 or 59.723" aria-describedby="metric-value-help"></label><small id="metric-value-help">Nhập chữ số liền nhau (59723) hoặc theo cách viết Việt Nam (59.723; phần thập phân: 59.723,5). Dashboard cũng hiển thị theo cách viết Việt Nam: 59.723.</small><output class="review-value-preview" aria-live="polite"></output>
+      <form data-candidate-id="${item.id}" data-candidate-kind="${businessKind ? "business" : "financial"}" class="review-form">
+        <label>Verified value<input name="normalized_value" type="text" inputmode="decimal" pattern="[+-]?[0-9.,]+" value="${isManual || businessKind ? escapeHtml(figures[0] || "") : ""}" required placeholder="e.g. 59723 or 59.723" aria-describedby="metric-value-help"></label><small id="metric-value-help">Nhập chữ số liền nhau (59723) hoặc theo cách viết Việt Nam (59.723; phần thập phân: 59.723,5). Dashboard cũng hiển thị theo cách viết Việt Nam: 59.723.</small><output class="review-value-preview" aria-live="polite"></output>
         <label>Dashboard unit (verify)<input name="unit" value="${escapeHtml(item.unit || "")}" required placeholder="e.g. billion VND"></label>
         <div class="review-actions"><button type="submit">Verify and publish</button><button type="button" data-reject>Reject</button></div>
       </form>
@@ -389,9 +687,11 @@ function renderAnswer(data, panel = $("#answer-panel")) {
           <span class="citation-count-badge">${citations.length} source${citations.length === 1 ? "" : "s"}</span>
         </div>
         ${citations.map((source) => {
-          const href = validSourceUrl(source.source_url);
+          const href = uploadedSourcePageUrl(source.document_id, source.page_number)
+            || validSourceUrl(source.source_url);
           const link = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View original</a>` : "";
-          const location = source.page_number ? `Page ${source.page_number}` : `Passage ${source.chunk_index + 1}`;
+          const chunk = Number.isInteger(source.chunk_index) ? ` · Indexed chunk ${source.chunk_index}` : "";
+          const location = source.page_number ? `Page ${source.page_number}${chunk}` : `Passage ${source.chunk_index + 1}`;
           const relevanceScore = Number.isFinite(source.score) ? source.score * 100 : null;
           const scoreClass = relevanceScore && relevanceScore >= 80 ? "high" : relevanceScore && relevanceScore >= 60 ? "med" : "low";
           const relevanceBadge = relevanceScore !== null
@@ -534,6 +834,7 @@ async function loadWorkspace(user) {
   $("#admin-section").hidden = true;
   $("#monitoring-section").hidden = true;
   $("#metric-management-section").hidden = user.role !== "admin";
+  $("#business-metric-management-section").hidden = user.role !== "admin";
   $("#candidate-review").hidden = true;
   syncWorkspaceTabs();
   $("#access-matrix").replaceChildren();
@@ -541,6 +842,17 @@ async function loadWorkspace(user) {
   $("#user-badge").textContent = `${user.username} · ${user.role}`;
   $("#user-badge").hidden = false;
   $("#logout-button").hidden = false;
+  $(".intro").hidden = user.role === "tester";
+  $(".stats").hidden = user.role === "tester";
+  if (user.role === "tester") {
+    try {
+      await loadOcrTestRuns();
+      $("#login-error").hidden = true;
+    } catch (error) {
+      $("#ocr-test-runs").innerHTML = `<p class="loading-card">${escapeHtml(error.message)}</p>`;
+    }
+    return;
+  }
   try {
     const data = await api("/api/dashboard");
     renderCorpus(data);
@@ -552,6 +864,11 @@ async function loadWorkspace(user) {
         `<label><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}" ${["admin", "executive", "finance_analyst"].includes(role) ? "checked" : ""}> ${escapeHtml(role.replaceAll("_", " "))}</label>`
       ).join("");
       renderMetricCatalog(await api("/api/metrics/catalog"));
+      renderBusinessMetricCatalog(await api("/api/business-metrics/catalog"));
+      $("#business-metric-role-options").innerHTML = roles.roles.map((role) =>
+        `<label><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}" ${["admin", "executive", "sustainability_analyst"].includes(role) ? "checked" : ""}> ${escapeHtml(role.replaceAll("_", " "))}</label>`
+      ).join("");
+      $("#business-metric-management-section").hidden = false;
     }
     try {
       const capability = await api("/api/documents/upload-capability");
@@ -564,6 +881,14 @@ async function loadWorkspace(user) {
       $("#upload-section").hidden = true;
     }
     if (["finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user.role)) {
+      if (!financialMetricDefinitions.size || !businessMetricDefinitions.size) {
+        const [financialCatalog, businessCatalog] = await Promise.all([
+          api("/api/metrics/catalog").catch(() => []),
+          api("/api/business-metrics/catalog").catch(() => []),
+        ]);
+        financialMetricDefinitions = new Map(financialCatalog.map((metric) => [metric.metric_name, metric]));
+        businessMetricDefinitions = new Map(businessCatalog.map((metric) => [metric.metric_name, metric]));
+      }
       const analytics = await api("/api/analytics");
       renderAnalytics(analytics);
       $("#analytics-section").hidden = false;
@@ -575,6 +900,7 @@ async function loadWorkspace(user) {
       $("#monitoring-section").hidden = false;
       await refreshAgentMonitoring();
     }
+    if (user.role === "admin") await loadOcrTestRuns();
     syncWorkspaceTabs(user);
     $("#login-error").hidden = true;
   } catch (error) {
@@ -624,6 +950,29 @@ $("#parsed-chunk-form").addEventListener("submit", async (event) => {
       ? '<p class="loading-card">No structured tables were extracted from this document.</p>'
       : `<p class="loading-card">${escapeHtml(error.message)}</p>`;
   }
+});
+
+$("#ocr-test-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const button = $("#ocr-test-button");
+  button.disabled = true;
+  $("#ocr-test-status").textContent = "Running OCR and saving page previews, chunks, and tables…";
+  try {
+    const result = await api("/api/ocr-tests", {method:"POST", body:new FormData(event.currentTarget)});
+    $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.chunk_count} chunks, ${result.table_count} tables. No embeddings or production document were created.`;
+    await loadOcrTestRuns();
+    await openOcrTestRun(result.run_id);
+    event.currentTarget.reset();
+  } catch (error) {
+    $("#ocr-test-status").textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+
+$("#ocr-test-runs").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-ocr-run-id]");
+  if (button) openOcrTestRun(button.dataset.ocrRunId);
 });
 
 $("#login-form").addEventListener("submit", async (event) => {
@@ -724,20 +1073,31 @@ $("#business-question-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const button = $("#business-question-button");
   const question = $("#business-question").value.trim();
+  const businessDecisionDomain = $("#analytics-domain").value;
   const panel = $("#business-answer-panel");
   if (!question) return;
   button.disabled = true;
   button.innerHTML = '<span>Analyzing sources…</span>';
-  renderSkeletonAnswer(panel, "Analyzing financial metrics from authorized sources…");
+  renderSkeletonAnswer(panel, "Combining verified metrics and source passages within your access scope…");
   try {
-    const result = await api("/api/ask", { method: "POST", body: JSON.stringify({ question }) });
+    const result = await api("/api/ask", { method: "POST", body: JSON.stringify({
+      question,
+      business_decision_domain: businessDecisionDomain || null,
+    }) });
     renderAnswer(result, panel);
   } catch (error) {
     panel.innerHTML = `<p class="error-message">${escapeHtml(error.message)}</p>`;
   } finally {
     button.disabled = false;
-    button.innerHTML = '<span>Analyze metrics</span>';
+    button.innerHTML = '<span>Analyze decision evidence</span>';
   }
+});
+
+$(".decision-question-prompts").addEventListener("click", (event) => {
+  const prompt = event.target.closest("[data-decision-question]");
+  if (!prompt) return;
+  $("#business-question").value = prompt.dataset.decisionQuestion;
+  $("#business-question").focus();
 });
 
 $("#analytics-section").addEventListener("click", (event) => {
@@ -759,7 +1119,7 @@ $("#upload-form").addEventListener("submit", async (event) => {
   }
   const body = new FormData();
   body.append("file", file);
-  for (const name of ["title", "document_type", "domain", "fiscal_year"]) {
+  for (const name of ["title", "document_type", "domain", "business_decision_domain", "fiscal_year", "source_url"]) {
     const value = form.elements[name].value.trim();
     if (value) body.append(name, value);
   }
@@ -768,7 +1128,10 @@ $("#upload-form").addEventListener("submit", async (event) => {
   $("#upload-status").textContent = "Uploading and processing the document…";
   try {
     const result = await api("/api/documents/upload", { method: "POST", body, headers: {} });
-    $("#upload-status").textContent = `Processed ${result.document_id}; status: ${result.processing_status}; passages indexed: ${result.searchable}.`;
+    const metricStatus = body.get("business_decision_domain")
+      ? ` ${result.business_metric_candidates} ${body.get("business_decision_domain")} candidates await admin review.`
+      : " Business KPI extraction was not requested; parsed content remains searchable.";
+    $("#upload-status").textContent = `Processed ${result.document_id}; status: ${result.processing_status}; passages indexed: ${result.searchable}.${metricStatus}`;
     form.reset();
     await loadWorkspace(await api("/api/auth/me"));
   } catch (error) {
@@ -802,13 +1165,40 @@ $("#manual-metric-form").addEventListener("submit", async (event) => {
   }
 });
 
+$("#business-metric-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const values = Object.fromEntries(new FormData(form));
+  values.allowed_roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
+  if (!values.allowed_roles.length) {
+    $("#business-metric-status").textContent = "Select at least one role allowed to view this metric.";
+    return;
+  }
+  const button = $("#business-metric-button");
+  button.disabled = true;
+  $("#business-metric-status").textContent = "Saving source observation for verification…";
+  try {
+    await api("/api/business-metrics/candidates", {method: "POST", body: JSON.stringify(values)});
+    form.reset();
+    $("#business-metric-status").textContent = "Saved in the review queue. It will appear in Business Analysis only after admin verification.";
+    await loadWorkspace(await api("/api/auth/me"));
+  } catch (error) {
+    $("#business-metric-status").textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+
 $("#candidate-list").addEventListener("submit", async (event) => {
   const form = event.target.closest("form[data-candidate-id]");
   if (!form) return;
   event.preventDefault();
   const values = Object.fromEntries(new FormData(form));
   try {
-    await api(`/api/analytics/candidates/${form.dataset.candidateId}/review`, {method:"POST", body:JSON.stringify({status:"verified", normalized_value:values.normalized_value, unit:values.unit})});
+    const path = form.dataset.candidateKind === "business"
+      ? `/api/business-metrics/${form.dataset.candidateId}/review`
+      : `/api/analytics/candidates/${form.dataset.candidateId}/review`;
+    await api(path, {method:"POST", body:JSON.stringify({status:"verified", normalized_value:values.normalized_value, unit:values.unit})});
     await handleCandidateProcessed(form);
   } catch (error) { alert(error.message); }
 });
@@ -827,7 +1217,10 @@ $("#candidate-list").addEventListener("click", async (event) => {
   if (!event.target.matches("[data-reject]")) return;
   const form = event.target.closest("form[data-candidate-id]");
   try {
-    await api(`/api/analytics/candidates/${form.dataset.candidateId}/review`, {method:"POST", body:JSON.stringify({status:"rejected"})});
+    const path = form.dataset.candidateKind === "business"
+      ? `/api/business-metrics/${form.dataset.candidateId}/review`
+      : `/api/analytics/candidates/${form.dataset.candidateId}/review`;
+    await api(path, {method:"POST", body:JSON.stringify({status:"rejected"})});
     await handleCandidateProcessed(form);
   } catch (error) { alert(error.message); }
 });

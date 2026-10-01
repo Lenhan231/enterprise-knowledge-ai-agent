@@ -90,6 +90,116 @@ def blank_table_image() -> bytes:
 
 
 class UploadProcessingFlowTest(unittest.TestCase):
+    def test_upload_extracts_only_requested_decision_domain_after_indexing(self):
+        source = financial_summary_pdf()
+        events = []
+        document_repo = MagicMock()
+        document_repo.save_business_metric_candidates.side_effect = lambda rows, **kwargs: events.append("business_metrics_saved") or len(rows)
+        structured_store = MagicMock()
+        storage = MagicMock()
+        storage.storage.from_.return_value.upload.return_value = None
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
+        embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
+        chunk_repository = MagicMock()
+        chunk_repository.replace_document.side_effect = lambda document_id, rows: events.append("indexed_chunks_saved")
+        llm = MagicMock(model_name="test-financial-model")
+        extracted = []
+
+        def business_candidates(chunks, tables, document, provider):
+            self.assertEqual(document["document_id"].split("-")[0], "UPLOAD")
+            self.assertEqual(document["fiscal_year"], 2025)
+            self.assertEqual(document["business_decision_domain"], "market_performance")
+            self.assertIs(provider, llm)
+            row = {
+                "company": document["company"], "domain": "market_performance",
+                "metric_name": "domestic_consolidated_net_revenue_growth",
+                "metric_label": "Domestic consolidated net revenue growth",
+                "fiscal_year": 2025, "metric_value": 0.3, "unit": "%",
+                "scope": "Consolidated domestic market, year-over-year",
+                "source_document_id": document["document_id"], "page_number": 1,
+                "source_quote": "Domestic net revenue increased 0.3% YoY.",
+                "source_url": document["source_url"],
+                "allowed_roles": document["rbac"]["allowed_roles"],
+                "extraction_method": "llm_parser", "extractor_version": "test-catalog-v1",
+                "extraction_config": {},
+            }
+            extracted.append(row)
+            return [row], [{"page_number": 1, "selection_signals": {"metric_labels": ["domestic_revenue_growth"]}}]
+
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository", return_value=chunk_repository),
+            patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
+            patch("core.database.processed_chunks_repository.ProcessedChunksRepository"),
+            patch("core.analytics.metric_candidates.candidates", return_value=[]),
+            patch("core.analytics.business_metric_extraction.extract_business_metric_candidates", side_effect=business_candidates),
+            patch("core.analytics.financial_extraction.extract_financial_candidates", return_value=([], [])),
+            patch("core.llm.groq_provider.GroqProvider", return_value=llm),
+        ):
+            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+            counter_cls.return_value.count.return_value = 4
+            response = asyncio.run(app_main.upload_document(
+                request=None,
+                file=UploadFile(filename="annual-report-final.pdf", file=io.BytesIO(source)),
+                title="Vinamilk Annual Report 2025", document_type="annual_report",
+                domain="finance_and_operations", fiscal_year=2025,
+                business_decision_domain="market_performance",
+                allowed_roles=["finance_analyst", "admin"], user={"sub": "uploader-1"},
+            ))
+
+        self.assertEqual(response["business_metric_candidates"], 1)
+        self.assertEqual(events, ["indexed_chunks_saved", "business_metrics_saved"])
+        self.assertEqual(extracted[0]["source_document_id"], response["document_id"])
+        document_repo.save_business_metric_candidates.assert_called_once_with(extracted, entered_by="parser")
+
+    def test_upload_without_decision_domain_skips_business_metric_llm(self):
+        source = financial_summary_pdf()
+        document_repo = MagicMock()
+        storage = MagicMock()
+        storage.storage.from_.return_value.upload.return_value = None
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
+        embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository"),
+            patch("core.database.structured_store.StructuredDataStore"),
+            patch("core.database.processed_chunks_repository.ProcessedChunksRepository"),
+            patch("core.analytics.metric_candidates.candidates", return_value=[]),
+            patch("core.analytics.financial_extraction.extract_financial_candidates", return_value=([], [])),
+            patch("core.llm.groq_provider.GroqProvider") as provider_cls,
+            patch("core.analytics.business_metric_extraction.extract_business_metric_candidates") as business_extractor,
+        ):
+            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+            counter_cls.return_value.count.return_value = 4
+            response = asyncio.run(app_main.upload_document(
+                request=None,
+                file=UploadFile(filename="annual-report.pdf", file=io.BytesIO(source)),
+                title="Annual report", document_type="annual_report", domain="finance",
+                fiscal_year=None, business_decision_domain="",
+                allowed_roles=["finance_analyst"],
+                user={"sub": "uploader-1"},
+            ))
+
+        self.assertEqual(response["business_metric_candidates"], 0)
+        provider_cls.assert_not_called()
+        business_extractor.assert_not_called()
+
+    def test_upload_no_longer_exposes_report_specific_metric_profile(self):
+        from inspect import signature
+
+        self.assertNotIn("metric_parser_profile", signature(app_main.upload_document).parameters)
+        self.assertNotIn("/api/business-metrics/parser-profiles", {
+            route.path for route in app_main.app.routes
+        })
+
     def test_pdf_upload_retains_rule_candidates_when_financial_llm_generation_is_rate_limited(self):
         source = borderless_financial_pdf()
         document_repo = MagicMock()
@@ -97,7 +207,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         storage = MagicMock()
         storage.storage.from_.return_value.upload.return_value = None
         embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
-        embedding.embed_documents.return_value = [[0.1, 0.2]]
+        embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
         rule_candidate = {"metric_name": "net_revenue", "status": "needs_review"}
         llm = MagicMock(model_name="test-financial-model")
         llm.generate.side_effect = RuntimeError("rate limited")
@@ -120,14 +230,15 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 request=None,
                 file=UploadFile(filename="balance.pdf", file=io.BytesIO(source)),
                 title="Balance sheet", document_type="annual_report", domain="finance",
-                fiscal_year=2024, allowed_roles=["finance_analyst"], user={"sub": "uploader-1"},
+                fiscal_year=2024, business_decision_domain="",
+                allowed_roles=["finance_analyst"], user={"sub": "uploader-1"},
             ))
 
         self.assertEqual(response["processing_status"], "ready")
         document_repo.save_metric_candidates.assert_called_once_with(
             response["document_id"], [rule_candidate],
         )
-        llm.generate.assert_called_once()
+        self.assertEqual(llm.generate.call_count, 1)
         llm.close.assert_called_once()
 
     def test_pdf_upload_saves_selected_page_llm_metric_as_pending_review_candidate(self):
@@ -139,12 +250,6 @@ class UploadProcessingFlowTest(unittest.TestCase):
         embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
         embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
         llm = MagicMock(model_name="test-financial-model")
-        llm.generate.return_value = (
-            '{"metrics":[{"metric_name":"net_revenue",'
-            '"metric_value":"100","unit":"billion VND",'
-            '"fiscal_year":2024,'
-            '"source_quote":"Net revenue 2024 was 100 billion VND."}]}'
-        )
 
         with (
             patch.object(app_main, "_require_same_origin"),
@@ -156,6 +261,12 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository"),
             patch("core.analytics.metric_candidates.candidates", return_value=[]),
+            patch("core.analytics.financial_extraction.extract_financial_candidates", return_value=([{
+                "metric_name": "net_revenue", "candidate_values": ["100"],
+                "unit": "billion VND", "extraction_method": "llm_selected_financial_page",
+                "extractor_model": "test-financial-model", "fiscal_year": 2024,
+                "status": "needs_review", "page_number": 1,
+            }], [])),
             patch("core.llm.groq_provider.GroqProvider", return_value=llm),
         ):
             counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
@@ -164,11 +275,12 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 request=None,
                 file=UploadFile(filename="annual-report.pdf", file=io.BytesIO(source)),
                 title="Annual report", document_type="annual_report", domain="finance",
-                fiscal_year=2024, allowed_roles=["finance_analyst"], user={"sub": "uploader-1"},
+                fiscal_year=2024, business_decision_domain="",
+                allowed_roles=["finance_analyst"], user={"sub": "uploader-1"},
             ))
 
         self.assertEqual(response["processing_status"], "ready")
-        llm.generate.assert_called_once()
+        self.assertEqual(llm.generate.call_count, 0)
         document_id, candidates = document_repo.save_metric_candidates.call_args.args
         self.assertEqual(document_id, response["document_id"])
         self.assertEqual(len(candidates), 1)
@@ -237,6 +349,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 document_type="annual_report",
                 domain="finance",
                 fiscal_year=2024,
+                business_decision_domain="",
                 allowed_roles=["finance_analyst"],
                 user={"sub": "uploader-1"},
             ))
@@ -249,6 +362,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         self.assertEqual(persisted[0][0], "finance.docx")
         self.assertEqual(persisted[0][3]["section_title"], "Financial performance")
         self.assertEqual(persisted[0][3]["embedding_model"], "test-embedding")
+        self.assertEqual(persisted[0][3]["actual_char_count"], len(persisted[0][2]))
         table_chunk = next((row for row in persisted if row[3].get("layout_type") == "table"), None)
         self.assertIsNotNone(table_chunk)
         self.assertIn("Metric: Revenue | Amount: 100 billion VND", table_chunk[2])
@@ -287,7 +401,8 @@ class UploadProcessingFlowTest(unittest.TestCase):
                     document_type="internal_report",
                     domain="finance",
                     fiscal_year=None,
-                    allowed_roles=["finance_analyst"],
+                    business_decision_domain="",
+                allowed_roles=["finance_analyst"],
                     user={"sub": "uploader-1"},
                 ))
 
@@ -347,6 +462,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 document_type="annual_report",
                 domain="finance",
                 fiscal_year=2024,
+                business_decision_domain="",
                 allowed_roles=["finance_analyst"],
                 user={"sub": "uploader-1"},
             ))
@@ -408,6 +524,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 document_type="annual_report",
                 domain="finance",
                 fiscal_year=2024,
+                business_decision_domain="",
                 allowed_roles=["finance_analyst"],
                 user={"sub": "uploader-1"},
             ))
@@ -451,7 +568,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         storage = MagicMock()
         storage.storage.from_.return_value.upload.return_value = None
         embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
-        embedding.embed_documents.return_value = [[0.1, 0.2]]
+        embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
         with (
             patch.object(app_main, "_require_same_origin"),
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
@@ -479,6 +596,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 document_type="annual_report",
                 domain="finance",
                 fiscal_year=None,
+                business_decision_domain="",
                 allowed_roles=["finance_analyst"],
                 user={"sub": "uploader-1"},
             ))
@@ -491,6 +609,15 @@ class UploadProcessingFlowTest(unittest.TestCase):
             {"label": "Cash balance", "31/12/2024": "25000", "31/12/2023": "20000"},
             {"label": "Total assets", "31/12/2024": "500000", "31/12/2023": "450000"},
         ])
+        embedding_inputs = embedding.embed_documents.call_args.args[0]
+        self.assertTrue(any("label: Revenue" in text for text in embedding_inputs))
+        persisted_chunks = chunks_cls.return_value.replace_document.call_args.args[1]
+        table_chunk = next(row for row in persisted_chunks if row[3].get("layout_type") == "table")
+        self.assertIn("31/12/2024: 100000", table_chunk[2])
+        self.assertTrue(any("Revenue 100000 90000" in text for text in embedding_inputs))
+        self.assertFalse(table_chunk[3]["table_chunk_match"]["matched_source_chunk"])
+        parsed_chunks = parsed_cls.return_value.replace_document.call_args.args[1]
+        self.assertTrue(any(chunk["metadata"].get("layout_type") == "table" for chunk in parsed_chunks))
         chunks_cls.return_value.replace_document.assert_called_once()
 
     def test_pptx_table_flows_from_upload_to_structured_store(self):
@@ -522,6 +649,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 document_type="annual_report",
                 domain="finance",
                 fiscal_year=None,
+                business_decision_domain="",
                 allowed_roles=["finance_analyst"],
                 user={"sub": "uploader-1"},
             ))
@@ -564,6 +692,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 document_type="annual_report",
                 domain="finance",
                 fiscal_year=None,
+                business_decision_domain="",
                 allowed_roles=["finance_analyst"],
                 user={"sub": "uploader-1"},
             ))

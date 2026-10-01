@@ -14,6 +14,122 @@ from core.document_processing.processors.pdf_processor import PDFProcessor
 
 
 class PDFUploadProcessingTest(unittest.TestCase):
+    def test_logical_account_table_fragments_keep_hierarchy_and_structured_rows(self):
+        table = {
+            "page_number": 7, "table_index": 0,
+            "columns": ["label", "value_1", "value_2", "value_3"],
+            "rows": [
+                {"label": "Mã", "value_1": "huyết", "value_2": "2011", "value_3": "2010"},
+                {"label": "100 TÀI SẢN NGẮN HẠN", "value_1": "", "value_2": "9.467", "value_3": "5.919"},
+                {"label": "110 Tiền và các khoản tương đương tiền", "value_1": "3", "value_2": "3.156", "value_3": "613"},
+                {"label": "111 Tiền", "value_1": "", "value_2": "790", "value_3": "249"},
+                {"label": "112 Các khoản tương đương tiền", "value_1": "", "value_2": "2.366", "value_3": "364"},
+                {"label": "120 Các khoản đầu tư tài chính ngắn hạn", "value_1": "4(a)", "value_2": "736", "value_3": "1.742"},
+                {"label": "121 Đầu tư ngắn hạn", "value_1": "", "value_2": "815", "value_3": "1.812"},
+                {"label": "129 Dự phòng giảm giá đầu tư ngắn hạn", "value_1": "", "value_2": "(79)", "value_3": "(70"},
+                {"label": "130 Các khoản phải thu ngắn hạn", "value_1": "", "value_2": "2.169", "value_3": "1.124"},
+                {"label": "131 Phải thu khách hàng", "value_1": "5", "value_2": "1.143", "value_3": "587"},
+                {"label": "132 Trả trước cho người bán", "value_1": "", "value_2": "795", "value_3": "354"},
+                {"label": "135 Các khoản phải thu khác", "value_1": "6", "value_2": "232", "value_3": "183"},
+                {"label": "139 Dự phòng phải thu ngắn hạn khó đòi", "value_1": "", "value_2": "(1)", "value_3": "(596"},
+                {"label": "140 Hàng tồn kho", "value_1": "7", "value_2": "3.272", "value_3": "2.351"},
+                {"label": "141 Hàng tồn kho", "value_1": "", "value_2": "3.277", "value_3": "2.355"},
+                {"label": "149 Dự phòng giảm giá hàng tồn kho", "value_1": "", "value_2": "(4)", "value_3": "(4"},
+                {"label": "150 Tài sản ngắn hạn khác", "value_1": "", "value_2": "133", "value_3": "87"},
+                {"label": "151 Chi phí trả trước ngắn hạn", "value_1": "8(a)", "value_2": "56", "value_3": "38"},
+                {"label": "152 Thuế Giá trị Gia tăng được khấu trừ", "value_1": "", "value_2": "74", "value_3": "16"},
+                {"label": "158 Tài sản ngắn hạn khác", "value_1": "", "value_2": "1", "value_3": "32"},
+            ],
+            "metadata": {"table_extraction_method": "tesseract.tsv_aligned_columns", "numeric_columns": [8, 9, 10]},
+        }
+
+        fragments = PDFProcessor._logical_table_fragments(
+            table, table_title="BẢNG CÂN ĐỐI KẾ TOÁN HỢP NHẤT",
+            unit="VNĐ", column_labels={
+                "label": "Mã | Tài sản", "value_1": "Thuyết minh",
+                "value_2": "2011", "value_3": "2010",
+            },
+        )
+
+        self.assertEqual(len(fragments), 5)
+        self.assertIn("Đơn vị: VNĐ", fragments[0]["retrieval_text"])
+        self.assertIn("2011", fragments[0]["retrieval_text"])
+        self.assertIn("100 TÀI SẢN NGẮN HẠN", fragments[0]["retrieval_text"])
+        self.assertIn("112 Các khoản tương đương tiền", fragments[0]["retrieval_text"])
+        self.assertEqual(fragments[2]["structured_data"]["rows"][-1]["Mã | Tài sản"], "139 Dự phòng phải thu ngắn hạn khó đòi")
+        self.assertEqual(fragments[2]["structured_data"]["rows"][-1]["2010"], "(596")
+        self.assertNotIn("numeric_columns", fragments[0]["metadata"])
+        self.assertNotIn('"rows"', fragments[0]["retrieval_text"])
+
+    def test_high_overlap_replaces_same_page_flat_chunk_with_key_value_table_chunk(self):
+        processor = PDFProcessor({"paddle_layout": False})
+        chunks = [{
+            "text": "Metric 2024 2023 Revenue 100 90 Profit 25 20",
+            "metadata": {"page_number": 7, "chunk_index": 3, "section_title": "Financial results"},
+        }]
+        tables = [{
+            "page_number": 7,
+            "table_index": 2,
+            "columns": ["Metric", "2024", "2023"],
+            "rows": [
+                {"Metric": "Revenue", "2024": "100", "2023": "90"},
+                {"Metric": "Profit", "2024": "25", "2023": "20"},
+            ],
+            "metadata": {"table_extraction_method": "test.extractor"},
+        }]
+
+        result = processor._replace_flat_table_chunks(chunks, tables)
+
+        self.assertEqual(len(result), 1)
+        self.assertIn("Metric: Revenue | 2024: 100 | 2023: 90", result[0]["text"])
+        self.assertEqual(result[0]["metadata"]["layout_type"], "table")
+        self.assertEqual(result[0]["metadata"]["section_title"], "Financial results")
+        self.assertTrue(result[0]["metadata"]["table_chunk_match"]["matched_source_chunk"])
+        self.assertEqual(result[0]["metadata"]["chunk_index"], 0)
+
+    def test_low_overlap_keeps_original_and_adds_structured_table_chunk(self):
+        processor = PDFProcessor({"paddle_layout": False})
+        chunks = [{
+            "text": "Management discussion explains annual performance and market conditions.",
+            "metadata": {"page_number": 4, "chunk_index": 0, "section_title": "Overview"},
+        }]
+        tables = [{
+            "page_number": 4,
+            "table_index": 0,
+            "columns": ["Metric", "2024", "2023"],
+            "rows": [{"Metric": "Revenue", "2024": "100", "2023": "90"}],
+            "metadata": {"table_extraction_method": "test.extractor"},
+        }]
+
+        result = processor._replace_flat_table_chunks(chunks, tables)
+
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]["text"], chunks[0]["text"])
+        self.assertNotEqual(result[0]["metadata"].get("layout_type"), "table")
+        self.assertEqual(result[1]["metadata"]["layout_type"], "table")
+        self.assertFalse(result[1]["metadata"]["table_chunk_match"]["matched_source_chunk"])
+
+    def test_page_number_is_required_before_replacing_flat_chunk(self):
+        processor = PDFProcessor({"paddle_layout": False})
+        chunks = [{
+            "text": "Metric 2024 2023 Revenue 100 90",
+            "metadata": {"page_number": 1, "chunk_index": 0},
+        }]
+        tables = [{
+            "page_number": 2,
+            "table_index": 0,
+            "columns": ["Metric", "2024", "2023"],
+            "rows": [{"Metric": "Revenue", "2024": "100", "2023": "90"}],
+            "metadata": {},
+        }]
+
+        result = processor._replace_flat_table_chunks(chunks, tables)
+
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]["metadata"]["page_number"], 1)
+        self.assertEqual(result[1]["metadata"]["page_number"], 2)
+        self.assertNotEqual(result[0]["metadata"].get("layout_type"), "table")
+
     def test_pdf_file_properties_are_not_repeated_in_each_chunk(self):
         pdf = fitz.open()
         page = pdf.new_page()
@@ -38,7 +154,7 @@ class PDFUploadProcessingTest(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         source = (root / "data/raw/vietnam_enterprises/vnm/vnm-ar-2024-vi.pdf").read_bytes()
         ground_truth = json.loads(
-            (root / "data/evaluation/vinamilk_ocr_ground_truth_v8.json").read_text()
+            (root / "data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v8.json").read_text()
         )
         case = next(page for page in ground_truth["pages"] if page["id"] == "annual-2024-balance-sheet-table-vi")
         source_doc = fitz.open(stream=source, filetype="pdf")
@@ -196,7 +312,10 @@ class PDFUploadProcessingTest(unittest.TestCase):
             header=SimpleNamespace(names=["Metric"], external=False),
             extract=lambda: [["Metric"], ["Revenue"]],
         )
-        page = SimpleNamespace(find_tables=lambda: SimpleNamespace(tables=[table]))
+        page = SimpleNamespace(
+            get_text=lambda kind: [(0, 0, 10, 10, "123"), (60, 0, 70, 10, "456"), (0, 20, 10, 30, "234"), (60, 20, 70, 30, "567"), (0, 40, 10, 50, "345"), (60, 40, 70, 50, "678")],
+            find_tables=lambda: SimpleNamespace(tables=[table]),
+        )
 
         tables = PDFProcessor._extract_page_tables(page, 4)
 
@@ -237,6 +356,41 @@ class PDFUploadProcessingTest(unittest.TestCase):
         self.assertEqual(chart_chunk["metadata"]["layout_type"], "chart")
         self.assertEqual(chart_chunk["metadata"]["bbox"], [10, 20, 200, 120])
         self.assertTrue(chart_chunk["metadata"]["visual_content_extracted"])
+
+    def test_optional_paddle_path_keeps_each_detected_table_as_a_linkable_chunk(self):
+        pdf = fitz.open()
+        pdf.new_page()
+        source = pdf.tobytes()
+        pdf.close()
+        table_html = (
+            "<table><tr><th>Metric</th><th>2024</th></tr>"
+            "<tr><td>Revenue</td><td>100</td></tr></table>"
+        )
+        output = SimpleNamespace(json={"res": {"parsing_res_list": [
+            {"block_label": "table", "block_content": table_html, "block_bbox": [10, 20, 200, 100]},
+            {"block_label": "table", "block_content": table_html.replace("100", "90"), "block_bbox": [10, 120, 200, 200]},
+        ]}})
+        pipeline = Mock()
+        pipeline.predict.return_value = [output]
+        paddle = SimpleNamespace(PPStructureV3=Mock(return_value=pipeline))
+
+        original_import = builtins.__import__
+
+        def import_paddleocr(name, *args, **kwargs):
+            if name == "paddleocr":
+                return paddle
+            return original_import(name, *args, **kwargs)
+
+        with patch("builtins.__import__", side_effect=import_paddleocr):
+            result = PDFProcessor({"chunk_size": 500})._process_with_paddle(
+                source, None, {"metadata": {"document_id": "TABLES-1"}},
+            )
+
+        table_chunks = [chunk for chunk in result["chunks"] if chunk["metadata"]["layout_type"] == "table"]
+        self.assertEqual(len(result["tables"]), 2)
+        self.assertEqual([chunk["metadata"]["table_index"] for chunk in table_chunks], [0, 1])
+        self.assertIn("100", table_chunks[0]["text"])
+        self.assertIn("90", table_chunks[1]["text"])
 
     def test_optional_paddle_formula_path_keeps_latex_and_source_geometry(self):
         pdf = fitz.open()
@@ -493,6 +647,67 @@ class PDFUploadProcessingTest(unittest.TestCase):
         self.assertTrue(page_two)
         self.assertTrue(all(chunk["metadata"]["section_title"] == "Financial Performance" for chunk in page_one))
         self.assertTrue(all(chunk["metadata"]["section_title"] == "Financial Performance" for chunk in page_two))
+
+    def test_uppercase_heading_sets_section_without_mistaking_table_text_for_heading(self):
+        pdf = fitz.open()
+        page = pdf.new_page()
+        page.insert_text((40, 55), "FINANCIAL PERFORMANCE", fontsize=10)
+        page.insert_text((40, 100), "CURRENT ASSETS", fontsize=10)
+        page.insert_textbox(
+            fitz.Rect(40, 130, 550, 760),
+            "Doanh thu và chi phí được trình bày trong báo cáo. " * 12,
+            fontsize=10,
+        )
+        source = pdf.tobytes()
+        table_bbox = fitz.Rect(30, 80, 300, 115)
+        headings = PDFProcessor._extract_page_headings(page, [table_bbox])
+        pdf.close()
+
+        self.assertEqual(headings, ["FINANCIAL PERFORMANCE"])
+
+        with patch.object(
+            PDFProcessor,
+            "_extract_page_tables",
+            return_value=[{
+                "page_number": 1, "table_index": 0, "columns": [], "rows": [],
+                "metadata": {"bbox": list(table_bbox)},
+            }],
+        ):
+            result = PDFProcessor({
+                "paddle_layout": False, "ocr_fallback": False,
+            }).process({"content": source, "metadata": {"document_id": "VI-SECTION"}})
+        self.assertTrue(result["chunks"])
+        self.assertEqual(
+            result["chunks"][0]["metadata"]["section_title"],
+            "FINANCIAL PERFORMANCE",
+        )
+
+    def test_explicit_table_caption_is_saved_separately_from_section(self):
+        pdf = fitz.open()
+        page = pdf.new_page()
+        page.insert_text((40, 55), "CONSOLIDATED BALANCE SHEET", fontsize=10)
+        page.insert_text((40, 120), "Current assets and cash equivalents", fontsize=10)
+        source = pdf.tobytes()
+        pdf.close()
+
+        with patch.object(
+            PDFProcessor,
+            "_extract_page_tables",
+            return_value=[{
+                "page_number": 1, "table_index": 0,
+                "columns": ["label", "2024"],
+                "rows": [{"label": "Total assets", "2024": "100"}],
+                "metadata": {"bbox": [30, 90, 550, 150]},
+            }],
+        ):
+            result = PDFProcessor({
+                "paddle_layout": False, "ocr_fallback": False,
+            }).process({"content": source, "metadata": {"document_id": "TABLE-CAPTION"}})
+
+        self.assertEqual(
+            result["tables"][0]["context"]["table_title"],
+            "CONSOLIDATED BALANCE SHEET",
+        )
 
     def test_ocr_numbered_headings_set_section_title_for_scanned_pdf_chunks(self):
         pdf = fitz.open()

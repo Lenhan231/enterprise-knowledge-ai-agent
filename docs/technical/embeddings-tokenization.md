@@ -136,3 +136,11 @@ database check found no stored report chunk above the configured sequence limit.
 Useful source: `src/core/embeddings/embedding_service.py`,
 `src/core/utils/token_counter.py`, `.env.example`, and
 `supabase/migrations/20260922000000_initial_knowledge_schema.sql`.
+
+Hosted document embedding sends at most 16 chunk texts per Inference API call
+(`HUGGINGFACE_EMBEDDING_BATCH_SIZE` in `src/core/embeddings/embedding_service.py`).
+The limit bounds request payload size and avoids large-corpus gateway timeouts;
+results are appended in input order. It is a request-batching setting, separate
+from chunk length and the model's 512-token input cap. If the hosted provider
+returns 429/5xx responses, ingestion currently fails rather than silently
+switching models; retrying sends the same texts in bounded batches.

@@ -6,11 +6,18 @@ from unittest.mock import MagicMock, Mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.database.document_repository import DocumentRepository
+from core.analytics.business_metric_catalog import BUSINESS_VALUE_QUALIFIER_SQL
 from core.agents.dashboard_agent import DashboardAgent, _financial_time_series
 from core.models.agents import AgentRequest, AgentResult, Evidence
 
 
 class DocumentDashboardTest(unittest.TestCase):
+    def test_estimated_savings_are_not_exposed_as_exact_metrics(self):
+        self.assertRegex(BUSINESS_VALUE_QUALIFIER_SQL, r"estimated\?|ước tính")
+        self.assertIn("THEN 'approximately'", BUSINESS_VALUE_QUALIFIER_SQL)
+        self.assertIn("[[:space:]])over[[:space:]]", BUSINESS_VALUE_QUALIFIER_SQL)
+        self.assertNotIn("|over|", BUSINESS_VALUE_QUALIFIER_SQL)
+
     def test_uploaded_source_lookup_requires_ready_upload_in_company_scope(self):
         repository = DocumentRepository.__new__(DocumentRepository)
         repository.conn = MagicMock()
@@ -19,7 +26,7 @@ class DocumentDashboardTest(unittest.TestCase):
             "title": "Annual report", "format": "PDF", "storage_path": "UPLOAD-1/report.pdf",
         }
 
-        result = repository.uploaded_source("UPLOAD-1", "Vinamilk")
+        result = repository.uploaded_source("UPLOAD-1", "Vinamilk", "admin", "reviewer")
 
         self.assertEqual(result["storage_path"], "UPLOAD-1/report.pdf")
         query, params = cursor.execute.call_args.args
@@ -27,7 +34,8 @@ class DocumentDashboardTest(unittest.TestCase):
         self.assertIn("source_type = 'user_upload'", normalized)
         self.assertIn("processing_status = 'ready'", normalized)
         self.assertIn("storage_path is not null", normalized)
-        self.assertEqual(params, ("UPLOAD-1", "Vinamilk"))
+        self.assertIn("allowed_roles && array[%s]::text[]", normalized)
+        self.assertEqual(params, ("UPLOAD-1", "Vinamilk", "admin", "admin", "admin", "reviewer"))
 
     def test_manifest_upsert_persists_processing_status(self):
         repository = DocumentRepository.__new__(DocumentRepository)
@@ -42,6 +50,41 @@ class DocumentDashboardTest(unittest.TestCase):
         self.assertIn("processing_status = excluded.processing_status", query)
         self.assertEqual(cursor.execute.call_args.args[1], document)
         repository.conn.commit.assert_called_once()
+
+    def test_parser_candidate_enriches_one_matching_pending_research_record(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        cursor.fetchall.return_value = [{
+            "id": 42, "chunk_index": 31, "content": "Source quote: milk supplied 402,000 tonnes",
+        }]
+        cursor.fetchone.side_effect = [None, {"id": 18}]
+        candidate = {
+            "company": "Vinamilk", "domain": "milk_supply", "metric_name": "total_raw_milk_supply",
+            "metric_label": "Total raw milk supply", "fiscal_year": 2024, "metric_value": 402000,
+            "unit": "tonnes", "scope": "Annual reported supply", "source_document_id": "VNM-AR-2024-VI",
+            "page_number": 31, "source_quote": "milk supplied 402,000 tonnes", "source_url": "https://example.test/report.pdf",
+            "allowed_roles": ["admin"], "extraction_method": "llm_parser", "extractor_version": "v4",
+            "extraction_config": {"pdf_page_number": 31}, "source_content_hash": "page-hash",
+        }
+
+        saved = repository.save_business_metric_candidates([candidate])
+
+        self.assertEqual(saved, 1)
+        self.assertEqual(cursor.execute.call_count, 3)
+        refresh_query = " ".join(cursor.execute.call_args_list[1].args[0].lower().split())
+        self.assertIn("candidate.entered_by = 'source_research'", refresh_query)
+        self.assertIn("candidate.source_chunk_id is null", refresh_query)
+        self.assertIn("candidate.status = 'needs_review'", refresh_query)
+        query, params = cursor.execute.call_args_list[2].args
+        normalized = " ".join(query.lower().split())
+        self.assertIn("having count(*) = 1", normalized)
+        self.assertIn("candidate.status = 'needs_review'", normalized)
+        self.assertIn("candidate.entered_by = 'source_research'", normalized)
+        self.assertIn("candidate.metric_value = %s", normalized)
+        self.assertIn("not exists", normalized)
+        self.assertEqual(params[:3], (31, "milk supplied 402,000 tonnes", "https://example.test/report.pdf"))
+        self.assertEqual(params[-5:], (2024, "VNM-AR-2024-VI", 402000, "tonnes", 31))
 
     def test_dashboard_aggregates_database_rows_without_company_constants(self):
         repository = DocumentRepository.__new__(DocumentRepository)
@@ -74,15 +117,20 @@ class DocumentDashboardTest(unittest.TestCase):
         repository = DocumentRepository.__new__(DocumentRepository)
         repository.conn = MagicMock()
         cursor = repository.conn.cursor.return_value.__enter__.return_value
-        cursor.fetchall.side_effect = [[], [], [], [], [], []]
+        cursor.fetchall.side_effect = [[], [], [], [], [], [], [], []]
 
         repository.corpus_dashboard(
             "admin", "admin-user", include_analytics=True, company="Vinamilk Ltd."
         )
 
-        self.assertEqual(cursor.execute.call_count, 6)
+        self.assertEqual(cursor.execute.call_count, 8)
         for query, parameters in (call.args for call in cursor.execute.call_args_list):
-            self.assertTrue("d.company = %s::text" in query or "m.company = %s::text" in query or "coalesce(candidate.company, d.company) = %s::text" in query)
+            query = query.lower()
+            self.assertTrue(any(scope in query for scope in (
+                "d.company = %s::text", "m.company = %s::text",
+                "coalesce(candidate.company, d.company) = %s::text",
+                "(%s::text is null or company = %s::text)",
+            )))
             self.assertEqual(parameters[-1], "Vinamilk Ltd.")
 
     def test_dashboard_agent_passes_trusted_company_scope(self):
@@ -168,14 +216,14 @@ class DocumentDashboardTest(unittest.TestCase):
     def test_unreviewed_metric_candidates_are_only_returned_to_admins(self):
         candidate = {"id": 7, "status": "needs_review"}
         for role, expected_queries, candidates in (
-            ("finance_analyst", 5, []),
-            ("admin", 6, [candidate]),
+            ("finance_analyst", 6, []),
+            ("admin", 8, [candidate]),
         ):
             with self.subTest(role=role):
                 repository = DocumentRepository.__new__(DocumentRepository)
                 repository.conn = MagicMock()
                 cursor = repository.conn.cursor.return_value.__enter__.return_value
-                cursor.fetchall.side_effect = [[], [], [], [], [], [candidate]][:expected_queries]
+                cursor.fetchall.side_effect = [[], [], [], [], [], [], [], [candidate]][:expected_queries]
 
                 result = repository.corpus_dashboard(role, "reviewer", include_analytics=True)
 
@@ -249,6 +297,30 @@ class DocumentDashboardTest(unittest.TestCase):
         self.assertIn("old.status = 'needs_review'", supersede)
         self.assertIn("from unnest(%s::text[], %s::text[])", supersede)
         self.assertEqual(params, ("VNM-AR-2023-EN", ["net_revenue"], ["hash"]))
+
+    def test_financial_candidate_links_to_unique_source_chunk_and_hash(self):
+        import hashlib
+
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        content = "Total revenue 63,724 billion VND"
+        cursor.fetchall.return_value = [{
+            "id": 991, "chunk_index": 7, "content": content, "page_number": "48",
+        }]
+        row = {
+            "metric_name": "total_consolidated_revenue",
+            "metric_label": "Total consolidated revenue",
+            "candidate_values": ["63,724"], "fiscal_year": 2025,
+            "page_number": 48, "source_quote": "In 2025, consolidated total revenue | 63,724",
+            "source_quote_hash": "quote-hash", "unit": "billion VND",
+        }
+
+        repository.save_metric_candidates("VNM-AR-2025-EN", [row])
+
+        values = cursor.executemany.call_args.args[1][0]
+        self.assertEqual(values[13:15], (991, 7))
+        self.assertEqual(values[15], hashlib.sha256(content.encode()).hexdigest())
 
     def test_empty_reprocess_supersedes_pending_rows_without_deleting_history(self):
         repository = DocumentRepository.__new__(DocumentRepository)

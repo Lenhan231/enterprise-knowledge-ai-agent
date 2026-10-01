@@ -1,5 +1,7 @@
 # src/core/database/documents_repository.py
+import hashlib
 import os
+import re
 
 import psycopg
 from dotenv import load_dotenv
@@ -7,6 +9,8 @@ from psycopg.rows import dict_row
 
 from core.database.connection_limit import close_database_connection, connect_database
 from core.analytics.sql_safety import validate_analytics_sql
+from core.analytics.metric_ontology import METRIC_ONTOLOGY
+from core.analytics.business_metric_catalog import BUSINESS_REPORTING_PERIOD_SQL, BUSINESS_VALUE_QUALIFIER_SQL
 
 load_dotenv()
 
@@ -166,6 +170,7 @@ class DocumentRepository:
                     f"""SELECT m.company, m.metric_name, m.metric_label, m.fiscal_year,
                               m.metric_value, m.unit, m.document_id, m.page_number,
                               m.source_url, m.entry_method, m.source_reference, m.source_note,
+                              m.source_chunk_id, m.source_chunk_index, m.source_content_hash,
                               m.allowed_roles
                        FROM extracted_financial_metrics m
                        WHERE m.status = 'verified'
@@ -175,7 +180,40 @@ class DocumentRepository:
                     ([role], role, company, company),
                 )
                 financial = cursor.fetchall()
+                cursor.execute(
+                    f"""SELECT id, company, domain, metric_name, metric_label, fiscal_year,
+                              metric_value, unit, scope, source_document_id, page_number,
+                              source_quote, source_url, allowed_roles, verified_by,
+                              source_chunk_id, source_chunk_index, source_content_hash,
+                              extraction_method, extractor_version, extraction_config,
+                              {BUSINESS_VALUE_QUALIFIER_SQL} AS value_qualifier,
+                              {BUSINESS_REPORTING_PERIOD_SQL} AS reporting_period
+                       FROM public.business_metric_evidence
+                       WHERE status = 'verified'
+                         AND (allowed_roles @> %s::text[] OR %s = 'admin')
+                         AND (%s::text IS NULL OR company = %s::text)
+                       ORDER BY company, domain, metric_name, fiscal_year""",
+                    ([role], role, company, company),
+                )
+                business_metrics = cursor.fetchall()
                 if role == "admin":
+                    cursor.execute(
+                        f"""SELECT id, company, domain, metric_name, metric_label, fiscal_year,
+                              metric_value AS normalized_value, unit, scope, source_document_id,
+                              source_document_id AS document_id, page_number, source_quote,
+                              source_url, status, allowed_roles, entered_by AS entry_method,
+                              extraction_method, extractor_version, extraction_config,
+                              {BUSINESS_VALUE_QUALIFIER_SQL} AS value_qualifier,
+                              {BUSINESS_REPORTING_PERIOD_SQL} AS reporting_period,
+                              source_chunk_id, source_chunk_index, source_content_hash,
+                              ARRAY[metric_value::text] AS candidate_values
+                           FROM public.business_metric_evidence
+                           WHERE status = 'needs_review'
+                             AND (%s::text IS NULL OR company = %s::text)
+                           ORDER BY fiscal_year, metric_name, source_document_id, page_number""",
+                        (company, company),
+                    )
+                    business_candidates = cursor.fetchall()
                     cursor.execute(
                         f"""SELECT c.id, c.document_id, coalesce(c.company, d.company) AS company,
                                    coalesce(d.title, c.source_reference, 'Manual entry') AS title,
@@ -186,6 +224,7 @@ class DocumentRepository:
                                    c.source_reference, c.source_note, c.allowed_roles,
                                    c.extraction_method, c.extractor_model,
                                    c.prompt_version, c.selection_evidence,
+                                   c.source_chunk_id, c.source_chunk_index, c.source_content_hash,
                                    (SELECT max(ch.metadata->>'text_extraction_method')
                                     FROM document_chunks ch
                                     WHERE ch.metadata->>'document_id' = c.document_id
@@ -202,6 +241,8 @@ class DocumentRepository:
                                        candidate.source_note,
                                        candidate.extraction_method, candidate.extractor_model,
                                        candidate.prompt_version, candidate.selection_evidence,
+                                       candidate.source_chunk_id, candidate.source_chunk_index,
+                                       candidate.source_content_hash,
                                        candidate.created_at,
                                        coalesce(candidate.fiscal_year,
                                            CASE WHEN d.fiscal_year ~ '^[0-9]{{4}}$'
@@ -234,12 +275,12 @@ class DocumentRepository:
                             ORDER BY coalesce(c.company, d.company), c.fiscal_year NULLS LAST,
                                      coalesce(d.title, c.source_reference), c.page_number""",
                         (company, company) + visible_params,
-                    )
+                        )
                     candidates = cursor.fetchall()
                 else:
-                    candidates = []
+                    candidates, business_candidates = [], []
             else:
-                financial, candidates = [], []
+                financial, candidates, business_metrics, business_candidates = [], [], [], []
         return {
             "documents": documents,
             "domains": domains,
@@ -247,6 +288,8 @@ class DocumentRepository:
             "processing": processing,
             "financial": financial,
             "candidates": candidates,
+            "business_metrics": business_metrics,
+            "business_candidates": business_candidates,
             "document_count": len(documents),
             "chunk_count": sum(row["chunks"] for row in documents),
         }
@@ -259,8 +302,22 @@ class DocumentRepository:
         metric_cte = """authorized_financial_metrics AS (
             SELECT id AS metric_id, company, fiscal_year, metric_name, metric_label, metric_value, unit,
                    document_id, page_number, source_url, source_quote, source_reference,
+                   source_chunk_id, source_chunk_index, source_content_hash,
                    source_note, entry_method
             FROM public.extracted_financial_metrics
+            WHERE status = 'verified'
+              AND (allowed_roles @> %s::text[] OR %s = 'admin')
+              AND (%s::text IS NULL OR company = %s)
+        )"""
+        business_metric_cte = f"""authorized_business_metrics AS (
+            SELECT id AS business_metric_id, company, domain AS metric_domain, fiscal_year,
+                   metric_name, metric_label, metric_value, unit, scope,
+                   {BUSINESS_VALUE_QUALIFIER_SQL} AS value_qualifier,
+                   {BUSINESS_REPORTING_PERIOD_SQL} AS reporting_period,
+                   source_document_id AS document_id, page_number, source_url,
+                   source_quote, source_chunk_id, source_chunk_index,
+                   source_content_hash, extraction_method, extractor_version, extraction_config
+            FROM public.business_metric_evidence
             WHERE status = 'verified'
               AND (allowed_roles @> %s::text[] OR %s = 'admin')
               AND (%s::text IS NULL OR company = %s)
@@ -276,6 +333,7 @@ class DocumentRepository:
               AND (%s::text IS NULL OR company = %s)
         )"""
         metric_ids: set[int] = set()
+        business_metric_ids: set[int] = set()
         document_ids: set[str] = set()
         evidence = []
         documents = []
@@ -285,8 +343,9 @@ class DocumentRepository:
                 cursor.execute("SET TRANSACTION READ ONLY")
                 cursor.execute("SET LOCAL statement_timeout = '3s'")
                 cursor.execute(
-                    f"WITH {metric_cte}, {document_cte} {query}",
-                    ([role], role, company, company, [role], role, role, username, company, company),
+                    f"WITH {metric_cte}, {business_metric_cte}, {document_cte} {query}",
+                    ([role], role, company, company, [role], role, company, company,
+                     [role], role, role, username, company, company),
                 )
                 columns = [item.name for item in cursor.description]
                 results = [dict(row) if isinstance(row, dict) else dict(zip(columns, row))
@@ -295,17 +354,21 @@ class DocumentRepository:
                     ids = row.get("evidence_metric_ids")
                     if isinstance(ids, (list, tuple)):
                         metric_ids.update(value for value in ids if isinstance(value, int))
+                    ids = row.get("evidence_business_metric_ids")
+                    if isinstance(ids, (list, tuple)):
+                        business_metric_ids.update(value for value in ids if isinstance(value, int))
                     document_evidence_ids = row.get("evidence_document_ids")
                     if isinstance(document_evidence_ids, (list, tuple)):
                         document_ids.update(value for value in document_evidence_ids if isinstance(value, str))
-                if len(metric_ids) > 500 or len(document_ids) > 250:
+                if len(metric_ids) > 500 or len(business_metric_ids) > 500 or len(document_ids) > 250:
                     raise ValueError("Analytics matched too many source documents; narrow the request")
                 if metric_ids:
                     ids = sorted(metric_ids)
                     cursor.execute(
                         """SELECT id AS metric_id, company, fiscal_year, metric_name, metric_label,
                                   metric_value, unit, document_id, page_number, source_url, source_quote,
-                                  source_reference, source_note, entry_method
+                                  source_reference, source_note, entry_method, source_chunk_id,
+                                  source_chunk_index, source_content_hash
                            FROM public.extracted_financial_metrics
                            WHERE status='verified' AND id = ANY(%s)
                              AND (allowed_roles @> %s::text[] OR %s = 'admin')
@@ -328,6 +391,36 @@ class DocumentRepository:
                             (source_document_ids, [role], role, role, username),
                         )
                         documents = cursor.fetchall()
+                if business_metric_ids:
+                    cursor.execute(
+                        f"""SELECT id AS business_metric_id, company, domain AS metric_domain,
+                                  fiscal_year, metric_name, metric_label, metric_value, unit, scope,
+                                  {BUSINESS_VALUE_QUALIFIER_SQL} AS value_qualifier,
+                                  {BUSINESS_REPORTING_PERIOD_SQL} AS reporting_period,
+                                  source_document_id AS document_id, page_number, source_url, source_quote,
+                                  source_chunk_id, source_chunk_index, source_content_hash,
+                                  extraction_method, extractor_version, extraction_config
+                           FROM public.business_metric_evidence
+                           WHERE status = 'verified' AND id = ANY(%s)
+                             AND (allowed_roles @> %s::text[] OR %s = 'admin')
+                             AND (%s::text IS NULL OR company = %s)
+                           ORDER BY company, fiscal_year, domain, metric_name LIMIT 501""",
+                        (sorted(business_metric_ids), [role], role, company, company),
+                    )
+                    business_evidence = cursor.fetchall()
+                    if len(business_evidence) > 500:
+                        raise ValueError("Analytics returned too many business metric sources; narrow the request")
+                    source_document_ids = sorted({row["document_id"] for row in business_evidence if row["document_id"]})
+                    if source_document_ids:
+                        cursor.execute(
+                            """SELECT document_id, company, domain, title, source_url
+                               FROM public.documents WHERE document_id = ANY(%s)
+                                 AND (allowed_roles && %s::text[] OR %s = 'admin'
+                                      OR (%s = 'document_uploader' AND uploaded_by = %s))
+                               ORDER BY title""",
+                            (source_document_ids, [role], role, role, username),
+                        )
+                        documents.extend(cursor.fetchall())
                 if document_ids:
                     ids = sorted(document_ids)
                     cursor.execute(
@@ -341,16 +434,61 @@ class DocumentRepository:
                         (ids, [role], role, role, username),
                     )
                     documents.extend(cursor.fetchall())
-        return {"results": results, "evidence": evidence, "documents": documents}
+        return {"results": results, "evidence": evidence,
+                "business_evidence": locals().get("business_evidence", []), "documents": documents}
 
     def save_metric_candidates(self, document_id: str, candidates: list[dict]) -> None:
         with self.conn.transaction(), self.conn.cursor() as cursor:
+            cursor.execute(
+                """SELECT id, chunk_index, content, metadata->>'page_number' AS page_number
+                   FROM public.document_chunks
+                   WHERE metadata->>'document_id' = %s
+                   ORDER BY chunk_index""",
+                (document_id,),
+            )
+            source_chunks = cursor.fetchall()
+
+            def link_source_chunk(row: dict) -> tuple[int | None, int | None, str | None]:
+                quote = " ".join(str(row.get("source_quote") or "").casefold().split())
+                page = str(row.get("page_number") or "")
+                on_page = [chunk for chunk in source_chunks if chunk["page_number"] == page]
+                page_chunks = on_page or source_chunks
+                exact = [chunk for chunk in page_chunks
+                         if quote and quote in " ".join(chunk["content"].casefold().split())]
+                if len(exact) == 1:
+                    match = exact[0]
+                else:
+                    definition = METRIC_ONTOLOGY.get(row["metric_name"], {})
+                    labels = {str(row.get("metric_label") or ""), *definition.get("source_labels", ())}
+                    labels.update(definition.get("aliases", ()))
+                    labels = {" ".join(label.casefold().split()) for label in labels if label}
+                    values = [re.sub(r"\D", "", str(value)) for value in row.get("candidate_values", ())]
+                    values = [value for value in values if len(value) >= 2]
+                    quote_tokens = set(re.findall(r"[a-z]+|\d+", quote))
+                    matched = []
+                    for chunk in page_chunks:
+                        content = " ".join(chunk["content"].casefold().split())
+                        digits = re.sub(r"\D", "", content)
+                        if values and all(value in digits for value in values):
+                            label_score = max((len(label) for label in labels if label in content), default=0)
+                            if label_score:
+                                content_tokens = set(re.findall(r"[a-z]+|\d+", content))
+                                quote_score = len(quote_tokens & content_tokens)
+                                matched.append((label_score, quote_score, chunk))
+                    matched.sort(key=lambda item: (item[0], item[1]), reverse=True)
+                    if not matched or (len(matched) > 1 and matched[0][:2] == matched[1][:2]):
+                        return None, None, None
+                    match = matched[0][2]
+                return (match["id"], match["chunk_index"],
+                        hashlib.sha256(match["content"].encode()).hexdigest())
+
             cursor.executemany(
                 """INSERT INTO extracted_metric_candidates (
                        document_id, metric_name, metric_label, candidate_values,
                        fiscal_year, page_number, source_quote, source_quote_hash, unit,
-                       extraction_method, extractor_model, prompt_version, selection_evidence
-                   ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                       extraction_method, extractor_model, prompt_version, selection_evidence,
+                       source_chunk_id, source_chunk_index, source_content_hash
+                   ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                    ON CONFLICT (document_id, metric_name, page_number, source_quote_hash)
                    DO UPDATE SET candidate_values = EXCLUDED.candidate_values,
                                  metric_label = EXCLUDED.metric_label,
@@ -361,6 +499,9 @@ class DocumentRepository:
                                  extractor_model = EXCLUDED.extractor_model,
                                  prompt_version = EXCLUDED.prompt_version,
                                  selection_evidence = EXCLUDED.selection_evidence,
+                                 source_chunk_id = EXCLUDED.source_chunk_id,
+                                 source_chunk_index = EXCLUDED.source_chunk_index,
+                                 source_content_hash = EXCLUDED.source_content_hash,
                                  status = 'needs_review', normalized_value = NULL,
                                  reviewed_by = NULL, reviewed_at = NULL, created_at = now()
                    WHERE extracted_metric_candidates.status IN ('needs_review', 'superseded')""",
@@ -370,7 +511,8 @@ class DocumentRepository:
                   row.get("unit"),
                   row.get("extraction_method", "rule_based_page_evidence"),
                   row.get("extractor_model"), row.get("prompt_version"),
-                  psycopg.types.json.Jsonb(row.get("selection_evidence", {})))
+                  psycopg.types.json.Jsonb(row.get("selection_evidence", {})),
+                  *link_source_chunk(row))
                  for row in candidates],
             )
             cursor.execute(
@@ -409,6 +551,205 @@ class DocumentRepository:
             )
             return cursor.fetchone()[0]
 
+    def create_business_metric_candidate(self, *, company: str, metric: dict, fiscal_year: int,
+                                         metric_value: float, unit: str, scope: str,
+                                         source_document_id: str, page_number: int,
+                                         source_quote: str, source_url: str,
+                                         allowed_roles: list[str], entered_by: str,
+                                         extraction_method: str = "manual",
+                                         extractor_version: str = "manual-v1",
+                                         extraction_config: dict | None = None,
+                                         source_chunk_index: int | None = None,
+                                         source_content_hash: str | None = None) -> int:
+        with self.conn.transaction(), self.conn.cursor() as cursor:
+            cursor.execute(
+                """INSERT INTO public.business_metric_evidence (
+                       company, domain, metric_name, metric_label, fiscal_year, metric_value,
+                       unit, scope, source_document_id, page_number, source_quote, source_url,
+                       allowed_roles, entered_by, extraction_method, extractor_version,
+                       extraction_config, source_chunk_index, source_content_hash
+                   ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                             %s, %s, %s, %s, %s)
+                   RETURNING id""",
+                (company, metric["domain"], metric["name"], metric["label"], fiscal_year,
+                 metric_value, unit, scope, source_document_id, page_number,
+                 source_quote, source_url, allowed_roles, entered_by,
+                 extraction_method, extractor_version,
+                 psycopg.types.json.Jsonb(extraction_config or {}),
+                 source_chunk_index, source_content_hash),
+            )
+            return cursor.fetchone()[0]
+
+    def save_business_metric_candidates(self, candidates: list[dict], entered_by: str = "parser") -> int:
+        """Persist parser observations as pending; updates never replace reviewed data."""
+        if not candidates:
+            return 0
+        import hashlib
+        def normalized(value: str) -> str:
+            return " ".join(value.split()).casefold()
+
+        with self.conn.transaction(), self.conn.cursor() as cursor:
+            for row in candidates:
+                chunk_index = row.get("source_chunk_index")
+                chunk_id = None
+                content_hash = row.get("source_content_hash")
+                if row.get("extraction_method") in {"parser_rule", "llm_parser"}:
+                    cursor.execute(
+                        """SELECT id, chunk_index, content
+                           FROM public.document_chunks
+                           WHERE metadata->>'document_id' = %s
+                             AND metadata->>'page_number' = %s
+                           ORDER BY chunk_index""",
+                        (row["source_document_id"], str(row["page_number"])),
+                    )
+                    source_chunk = next((chunk for chunk in cursor.fetchall()
+                                         if normalized(row["source_quote"]) in normalized(chunk["content"])), None)
+                    if source_chunk is None:
+                        raise ValueError(
+                            f"No saved parser chunk contains metric evidence for "
+                            f"{row['source_document_id']} PDF page {row['page_number']}"
+                        )
+                    if isinstance(source_chunk, dict):
+                        chunk_id = source_chunk["id"]
+                        chunk_index = source_chunk["chunk_index"]
+                        chunk_content = source_chunk["content"]
+                    else:
+                        chunk_id, chunk_index, chunk_content = source_chunk
+                    content_hash = hashlib.sha256(chunk_content.encode()).hexdigest()
+                    # A refreshed official source may correct an older, unlinked
+                    # research candidate. Update only one unreviewed source_research
+                    # row for this metric/year; reviewed evidence is never eligible.
+                    cursor.execute(
+                        """UPDATE public.business_metric_evidence AS target
+                           SET domain = %s, metric_label = %s, metric_value = %s,
+                               unit = %s, scope = %s, page_number = %s,
+                               source_quote = %s, source_url = %s,
+                               extraction_method = %s, extractor_version = %s,
+                               extraction_config = %s, source_chunk_id = %s,
+                               source_chunk_index = %s, source_content_hash = %s,
+                               entered_by = 'parser'
+                           WHERE target.id = (
+                               SELECT min(candidate.id)
+                               FROM public.business_metric_evidence AS candidate
+                               WHERE candidate.company = %s
+                                 AND candidate.metric_name = %s
+                                 AND candidate.fiscal_year = %s
+                                 AND candidate.source_document_id = %s
+                                 AND candidate.status = 'needs_review'
+                                 AND candidate.entered_by = 'source_research'
+                                 AND candidate.source_chunk_id IS NULL
+                                 AND NOT EXISTS (
+                                     SELECT 1
+                                     FROM public.business_metric_evidence AS collision
+                                     WHERE collision.id <> candidate.id
+                                       AND collision.company = candidate.company
+                                       AND collision.metric_name = candidate.metric_name
+                                       AND collision.fiscal_year = candidate.fiscal_year
+                                       AND collision.source_document_id = candidate.source_document_id
+                                       AND collision.page_number = %s
+                                 )
+                               HAVING count(*) = 1
+                           )
+                           RETURNING target.id""",
+                        (row["domain"], row["metric_label"], row["metric_value"], row["unit"],
+                         row["scope"], row["page_number"], row["source_quote"], row["source_url"],
+                         row["extraction_method"], row["extractor_version"],
+                         psycopg.types.json.Jsonb(row["extraction_config"]), chunk_id,
+                         chunk_index, content_hash, row["company"], row["metric_name"],
+                         row["fiscal_year"], row["source_document_id"], row["page_number"]),
+                    )
+                    if cursor.fetchone():
+                        continue
+                    cursor.execute(
+                        """UPDATE public.business_metric_evidence AS target
+                           SET page_number = %s, source_quote = %s, source_url = %s,
+                               extraction_method = %s, extractor_version = %s,
+                               extraction_config = %s, source_chunk_id = %s,
+                               source_chunk_index = %s, source_content_hash = %s,
+                               entered_by = 'parser'
+                           WHERE target.id = (
+                               SELECT min(candidate.id)
+                               FROM public.business_metric_evidence AS candidate
+                               WHERE candidate.company = %s
+                                 AND candidate.metric_name = %s
+                                 AND candidate.fiscal_year = %s
+                                 AND candidate.source_document_id = %s
+                                 AND candidate.status = 'needs_review'
+                                 AND candidate.metric_value = %s
+                                 AND candidate.unit = %s
+                                 AND candidate.entered_by = 'source_research'
+                                 AND NOT EXISTS (
+                                     SELECT 1
+                                     FROM public.business_metric_evidence AS collision
+                                     WHERE collision.id <> candidate.id
+                                       AND collision.company = candidate.company
+                                       AND collision.metric_name = candidate.metric_name
+                                       AND collision.fiscal_year = candidate.fiscal_year
+                                       AND collision.source_document_id = candidate.source_document_id
+                                       AND collision.page_number = %s
+                                 )
+                               HAVING count(*) = 1
+                           )
+                           RETURNING target.id""",
+                        (row["page_number"], row["source_quote"], row["source_url"],
+                         row["extraction_method"], row["extractor_version"],
+                         psycopg.types.json.Jsonb(row["extraction_config"]), chunk_id,
+                         chunk_index, content_hash, row["company"], row["metric_name"],
+                         row["fiscal_year"], row["source_document_id"],
+                         row["metric_value"], row["unit"], row["page_number"]),
+                    )
+                    if cursor.fetchone():
+                        continue
+                cursor.execute(
+                    """INSERT INTO public.business_metric_evidence (
+                           company, domain, metric_name, metric_label, fiscal_year, metric_value,
+                           unit, scope, source_document_id, page_number, source_quote, source_url,
+                           allowed_roles, entered_by, extraction_method, extractor_version,
+                           extraction_config, source_chunk_id, source_chunk_index, source_content_hash
+                       ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                                 %s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (company, metric_name, fiscal_year, source_document_id, page_number)
+                       DO UPDATE SET source_quote = EXCLUDED.source_quote,
+                                     extraction_method = EXCLUDED.extraction_method,
+                                     extractor_version = EXCLUDED.extractor_version,
+                                     extraction_config = EXCLUDED.extraction_config,
+                                     source_chunk_id = EXCLUDED.source_chunk_id,
+                                     source_chunk_index = EXCLUDED.source_chunk_index,
+                                     source_content_hash = EXCLUDED.source_content_hash
+                       WHERE business_metric_evidence.status = 'needs_review'
+                         AND business_metric_evidence.metric_value = EXCLUDED.metric_value
+                         AND business_metric_evidence.unit = EXCLUDED.unit
+                         AND business_metric_evidence.entered_by IN ('parser', 'source_research')""",
+                    (row["company"], row["domain"], row["metric_name"], row["metric_label"],
+                     row["fiscal_year"], row["metric_value"], row["unit"], row["scope"],
+                     row["source_document_id"], row["page_number"], row["source_quote"],
+                     row["source_url"], row["allowed_roles"], entered_by,
+                     row["extraction_method"], row["extractor_version"],
+                     psycopg.types.json.Jsonb(row["extraction_config"]),
+                     chunk_id, chunk_index, content_hash),
+                )
+            return len(candidates)
+
+    def review_business_metric(self, metric_id: int, status: str, value: float | None,
+                               unit: str | None, reviewer: str, company: str) -> bool:
+        if status not in {"verified", "rejected"} or (status == "verified" and (value is None or not unit)):
+            raise ValueError("Verified business metrics require a value and unit")
+        try:
+            with self.conn.transaction(), self.conn.cursor() as cursor:
+                cursor.execute(
+                    """UPDATE public.business_metric_evidence
+                       SET status=%s,
+                           metric_value=CASE WHEN %s='verified' THEN %s ELSE metric_value END,
+                           unit=CASE WHEN %s='verified' THEN %s ELSE unit END,
+                           verified_by=CASE WHEN %s='verified' THEN %s ELSE NULL END,
+                           verified_at=CASE WHEN %s='verified' THEN now() ELSE NULL END
+                       WHERE id=%s AND company=%s AND status='needs_review'""",
+                    (status, status, value, status, unit, status, reviewer, status, metric_id, company),
+                )
+                return cursor.rowcount == 1
+        except psycopg.errors.UniqueViolation as error:
+            raise ValueError("A verified value already exists for this domain, year, and metric") from error
+
     def review_metric_candidate(
         self, candidate_id: int, status: str, value: float | None,
         unit: str | None, reviewer: str, company: str | None = None,
@@ -442,7 +783,8 @@ class DocumentRepository:
                            company, fiscal_year, metric_name, metric_label, metric_value,
                            unit, document_id, page_number, source_quote, source_quote_hash,
                            source_url, allowed_roles, status, entry_method,
-                           source_reference, source_note, verified_by, verified_at
+                           source_reference, source_note, verified_by, verified_at,
+                           source_chunk_id, source_chunk_index, source_content_hash
                        ) SELECT coalesce(c.company, d.company), coalesce(c.fiscal_year,
                                 CASE WHEN d.fiscal_year ~ '^[0-9]{4}$' THEN d.fiscal_year::integer END),
                                 c.metric_name, c.metric_label, c.normalized_value, c.unit,
@@ -450,7 +792,8 @@ class DocumentRepository:
                                 c.source_quote_hash, d.source_url,
                                 coalesce(nullif(c.allowed_roles, '{}'::text[]), d.allowed_roles),
                                 'verified', c.entry_method, c.source_reference, c.source_note,
-                                %s, now()
+                                %s, now(), c.source_chunk_id, c.source_chunk_index,
+                                c.source_content_hash
                          FROM extracted_metric_candidates c
                          LEFT JOIN documents d USING(document_id)
                    WHERE c.id=%s
@@ -472,8 +815,8 @@ class DocumentRepository:
             )
             self.conn.commit()
 
-    def uploaded_source(self, document_id: str, company: str) -> dict | None:
-        """Return private Storage coordinates for a ready upload in this corpus."""
+    def uploaded_source(self, document_id: str, company: str, role: str, username: str) -> dict | None:
+        """Return private Storage coordinates only to a role allowed on the upload."""
         with self.conn.cursor() as cursor:
             cursor.execute(
                 """SELECT title, format, storage_path
@@ -481,8 +824,10 @@ class DocumentRepository:
                    WHERE document_id = %s AND company = %s
                      AND source_type = 'user_upload'
                      AND processing_status = 'ready'
-                     AND storage_path IS NOT NULL""",
-                (document_id, company),
+                     AND storage_path IS NOT NULL
+                     AND (allowed_roles && ARRAY[%s]::text[] OR %s = 'admin'
+                          OR (%s = 'document_uploader' AND uploaded_by = %s))""",
+                (document_id, company, role, role, role, username),
             )
             return cursor.fetchone()
 

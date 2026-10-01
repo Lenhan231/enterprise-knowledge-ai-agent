@@ -546,6 +546,10 @@ async def upload_document(
                 bounded_chunks.append({"text": text, "metadata": chunk_metadata})
         chunks = bounded_chunks
         business_metric_candidates = []
+        business_chunks = []
+        business_extraction_run = None
+        business_extraction_error = None
+        business_extraction_run_id = None
         parsed_repository = ProcessedChunksRepository()
         try:
             parsed_repository.replace_document(document_id, chunks)
@@ -587,7 +591,10 @@ async def upload_document(
                     logger.exception("Could not initialize extraction provider for %s", document_id)
             if business_decision_domain and llm_provider is not None:
                 try:
-                    from core.analytics.business_metric_extraction import extract_business_metric_candidates
+                    from core.analytics.business_metric_extraction import (
+                        build_business_metric_extraction_run,
+                        extract_business_metric_candidates,
+                    )
 
                     business_metric_candidates, business_chunks = extract_business_metric_candidates(
                         chunks, processed.get("tables", []),
@@ -595,6 +602,10 @@ async def upload_document(
                          "business_decision_domain": business_decision_domain,
                          "rbac": {"allowed_roles": allowed_roles}},
                         llm_provider,
+                    )
+                    business_extraction_run = build_business_metric_extraction_run(
+                        chunks, business_chunks, business_metric_candidates,
+                        {**metadata, "business_decision_domain": business_decision_domain}, llm_provider,
                     )
                     logger.info(
                         "Business metric extraction document=%s decision_domain=%s selected_evidence_chunks=%s candidates=%s",
@@ -604,7 +615,10 @@ async def upload_document(
                         len(business_metric_candidates),
                     )
                 except Exception:
+                    business_extraction_error = "extraction_exception"
                     logger.exception("Business metric extraction failed for %s", document_id)
+            elif business_decision_domain:
+                business_extraction_error = "provider_unavailable"
             if fiscal_year:
                 try:
                     from core.analytics.financial_extraction import (
@@ -629,6 +643,8 @@ async def upload_document(
                     llm_provider.close()
                 except Exception:
                     logger.exception("Failed to close extraction provider for %s", document_id)
+        elif business_decision_domain:
+            business_extraction_error = "unsupported_format"
         repository.save_metric_candidates(document_id, metric_candidates)
         parsed_repository = ProcessedChunksRepository()
         parsed_repository.set_status(document_id, "embedding")
@@ -649,6 +665,19 @@ async def upload_document(
             business_metric_candidates_saved = repository.save_business_metric_candidates(
                 business_metric_candidates, entered_by="parser",
             )
+        if business_decision_domain:
+            from core.analytics.business_metric_extraction import build_business_metric_extraction_run
+
+            if business_extraction_run is None:
+                business_extraction_run = build_business_metric_extraction_run(
+                    chunks, business_chunks, business_metric_candidates,
+                    {**metadata, "business_decision_domain": business_decision_domain},
+                    llm_provider if extension == ".pdf" else None,
+                    execution_error=business_extraction_error or "extraction_exception",
+                )
+            business_extraction_run_id = repository.save_business_metric_extraction_run(
+                business_extraction_run,
+            )
         parsed_repository = ProcessedChunksRepository()
         try:
             parsed_repository.replace_document(document_id, chunks)
@@ -660,6 +689,7 @@ async def upload_document(
             "document_id": document_id, "storage_path": storage_path,
             "processing_status": "ready", "searchable": True, "sha256": source_hash,
             "business_metric_candidates": business_metric_candidates_saved,
+            "business_metric_extraction_run_id": business_extraction_run_id,
         }
     except HTTPException:
         if registered and repository is not None:
@@ -999,6 +1029,26 @@ def inspect_processed_chunks(
         raise HTTPException(422, str(error)) from error
     finally:
         repository.close()
+
+
+@app.get("/api/admin/processing/{document_id}/business-metric-extraction-runs")
+def inspect_business_metric_extraction_runs(
+    document_id: str,
+    user: dict = Depends(require_permission("review_metrics")),
+):
+    repository = None
+    try:
+        repository = DocumentRepository()
+        return {
+            "document_id": document_id,
+            "runs": repository.business_metric_extraction_runs(document_id, CORPUS_COMPANY),
+        }
+    except Exception as error:
+        logger.exception("Could not load business metric extraction runs for %s", document_id)
+        raise HTTPException(503, "Business metric extraction history is unavailable") from error
+    finally:
+        if repository is not None:
+            repository.close()
 
 
 @app.get("/api/admin/processing/{document_id}/tables")

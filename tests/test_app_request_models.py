@@ -366,6 +366,56 @@ class AskRequestTest(unittest.TestCase):
         )
         store.close.assert_called_once()
 
+    def test_admin_can_inspect_company_scoped_metric_extraction_history(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ADMIN_USERNAME": "admin-test",
+            "DEMO_ADMIN_PASSWORD": "admin-password",
+        }
+        repository = Mock()
+        repository.business_metric_extraction_runs.return_value = [{
+            "id": 1, "document_id": "UPLOAD-1", "decision_domain": "milk_supply",
+            "status": "completed", "audit": {"chunk_decisions": []},
+        }]
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main.DocumentRepository", return_value=repository), \
+             TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "admin-test", "password": "admin-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.get(
+                "/api/admin/processing/UPLOAD-1/business-metric-extraction-runs"
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["runs"][0]["status"], "completed")
+        repository.business_metric_extraction_runs.assert_called_once_with(
+            "UPLOAD-1", app_main.CORPUS_COMPANY,
+        )
+        repository.close.assert_called_once()
+
+    def test_employee_cannot_inspect_metric_extraction_history(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_VIEWER_USERNAME": "viewer-test",
+            "DEMO_VIEWER_PASSWORD": "viewer-password",
+        }
+        repository = Mock()
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main.DocumentRepository", return_value=repository), \
+             TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "viewer-test", "password": "viewer-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.get(
+                "/api/admin/processing/UPLOAD-1/business-metric-extraction-runs"
+            )
+
+        self.assertEqual(response.status_code, 403)
+        repository.business_metric_extraction_runs.assert_not_called()
+
     def test_employee_cannot_inspect_extracted_tables(self):
         environment = {
             "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",

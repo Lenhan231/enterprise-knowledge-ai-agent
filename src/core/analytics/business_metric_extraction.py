@@ -377,3 +377,93 @@ def extract_business_metric_candidates(
             "source_content_hash": metric["source_content_hash"],
         })
     return candidates, page_evidence
+
+
+def build_business_metric_extraction_run(
+    chunks: list[dict], page_results: list[dict], candidates: list[dict],
+    document: dict, llm, execution_error: str | None = None,
+) -> dict:
+    """Create a compact, source-text-free audit of every chunk considered."""
+    selected_by_index = {}
+    page_by_number = {}
+    for page in page_results:
+        page_by_number[page["page_number"]] = page
+        for selected in page.get("chunks", []):
+            selected_by_index[selected.get("chunk_index")] = selected
+    candidate_indices = {candidate.get("source_chunk_index") for candidate in candidates}
+    decisions = []
+    for chunk in chunks:
+        metadata = chunk.get("metadata", {})
+        index = metadata.get("chunk_index")
+        try:
+            page_number = int(metadata.get("page_number"))
+        except (TypeError, ValueError):
+            page_number = None
+        selected = selected_by_index.get(index)
+        page = page_by_number.get(page_number, {})
+        row_text = "\n".join(re.findall(r"(?m)^Row \d+:.*$", str(chunk.get("text") or "")))
+        row_text = re.sub(r"(?m)^Row \d+:\s*", "", row_text)
+        has_numeric_evidence = bool(re.search(
+            r"(?<!\w)[+-]?(?:\d[\d., ]*\d|\d)(?:\s*%|\s*(?:VND|tonnes?|tons?|cows|employees|stations))?",
+            row_text or str(chunk.get("text") or ""), re.I,
+        ))
+        if execution_error:
+            status = "not_evaluated"
+        elif selected is None:
+            status = "not_selected"
+        elif page.get("extraction_error"):
+            status = "llm_error"
+        elif index in candidate_indices:
+            status = "candidate_found"
+        else:
+            status = "checked_no_candidate"
+        decisions.append({
+            "chunk_index": index,
+            "page_number": page_number,
+            "content_hash": hashlib.sha256(str(chunk.get("text") or "").encode()).hexdigest(),
+            "section_title": metadata.get("section_title"),
+            "layout_type": metadata.get("layout_type") or metadata.get("element_type"),
+            "status": status,
+            "selection_reason": (
+                None if selected else "no_numeric_evidence" if not has_numeric_evidence
+                else "ranked_out_or_per_page_limit"
+            ),
+            "selection_signals": selected.get("selection_signals") if selected else None,
+        })
+
+    selected_count = len(selected_by_index)
+    errors = sum(bool(page.get("extraction_error")) for page in page_results)
+    if execution_error in {"provider_unavailable", "unsupported_format"}:
+        status = execution_error
+    elif execution_error:
+        status = "failed"
+    elif not selected_count:
+        status = "no_chunks_selected"
+    else:
+        status = "partial" if errors else "completed"
+    return {
+        "document_id": document["document_id"],
+        "company": document.get("company", "Unknown company"),
+        "decision_domain": document["business_decision_domain"],
+        "extractor_version": EXTRACTOR_VERSION,
+        "prompt_version": PROMPT_VERSION,
+        "model_name": getattr(llm, "model_name", llm.__class__.__name__) if llm else "unavailable",
+        "status": status,
+        "input_chunk_count": len(chunks),
+        "selected_chunk_count": selected_count,
+        "candidate_count": len(candidates),
+        "audit": {
+            "chunk_decisions": decisions,
+            "page_results": [{
+                "page_number": page["page_number"],
+                "selected_chunk_indices": [chunk.get("chunk_index") for chunk in page.get("chunks", [])],
+                "metrics_returned": page.get("llm_metrics_returned", 0),
+                "metrics_accepted": page.get("llm_metrics_accepted", 0),
+                "validation_rejections": page.get("validation_rejections", {}),
+                "ambiguous_metric_periods": page.get("ambiguous_metric_periods", 0),
+                "error": page.get("extraction_error"),
+                "llm_usage": page.get("llm_usage"),
+            } for page in page_results],
+            "execution_error": execution_error,
+        },
+    }

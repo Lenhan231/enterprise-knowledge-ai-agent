@@ -204,6 +204,25 @@ function renderExtractedTables(tables) {
   }).join("") || '<p class="loading-card">No structured tables were extracted from this document.</p>';
 }
 
+function renderBusinessMetricExtractionRuns(runs) {
+  const label = {
+    candidate_found: "Candidate found",
+    checked_no_candidate: "Checked · no candidate",
+    not_selected: "Not selected for LLM",
+    not_evaluated: "Not evaluated",
+    llm_error: "LLM error",
+  };
+  $("#business-metric-extraction-runs").innerHTML = runs.map((run) => {
+    const decisions = run.audit?.chunk_decisions || [];
+    return `<details class="candidate-row">
+      <summary class="candidate-heading"><strong>${escapeHtml(run.decision_domain)} · ${escapeHtml(run.status)}</strong><span>${formatNumber(run.selected_chunk_count)} / ${formatNumber(run.input_chunk_count)} chunks selected · ${formatNumber(run.candidate_count)} candidates · ${escapeHtml(run.model_name)}</span></summary>
+      <p class="corpus-note">Extractor ${escapeHtml(run.extractor_version)} · prompt ${escapeHtml(run.prompt_version)} · ${escapeHtml(new Date(run.created_at).toLocaleString())}</p>
+      <div class="extracted-table-wrap"><table class="extracted-table"><thead><tr><th>Chunk</th><th>Page</th><th>Decision</th><th>Selection reason</th><th>Selector signals</th></tr></thead><tbody>${decisions.map((item) => `<tr><td>${formatNumber(item.chunk_index)}</td><td>${formatNumber(item.page_number)}</td><td>${escapeHtml(label[item.status] || item.status)}</td><td>${escapeHtml(item.selection_reason || "selected")}</td><td>${escapeHtml(JSON.stringify(item.selection_signals || {}))}</td></tr>`).join("")}</tbody></table></div>
+      <details class="candidate-source"><summary>LLM page results and validation</summary><pre>${escapeHtml(JSON.stringify({pages: run.audit?.page_results || [], error: run.audit?.execution_error || null}, null, 2))}</pre></details>
+    </details>`;
+  }).join("") || '<p class="loading-card">No business metric extraction run is recorded for this document.</p>';
+}
+
 async function loadOcrTestRuns() {
   const result = await api("/api/ocr-tests");
   $("#ocr-test-runs").innerHTML = result.runs.map((run) =>
@@ -943,6 +962,12 @@ $("#parsed-chunk-form").addEventListener("submit", async (event) => {
     $("#parsed-chunk-list").innerHTML = `<p class="loading-card">${escapeHtml(error.message)}</p>`;
   }
   try {
+    const result = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/business-metric-extraction-runs`);
+    renderBusinessMetricExtractionRuns(result.runs);
+  } catch (error) {
+    $("#business-metric-extraction-runs").innerHTML = `<p class="loading-card">${escapeHtml(error.message)}</p>`;
+  }
+  try {
     const result = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/tables?row_limit=100`);
     renderExtractedTables(result.tables);
   } catch (error) {
@@ -1131,7 +1156,10 @@ $("#upload-form").addEventListener("submit", async (event) => {
     const metricStatus = body.get("business_decision_domain")
       ? ` ${result.business_metric_candidates} ${body.get("business_decision_domain")} candidates await admin review.`
       : " Business KPI extraction was not requested; parsed content remains searchable.";
-    $("#upload-status").textContent = `Processed ${result.document_id}; status: ${result.processing_status}; passages indexed: ${result.searchable}.${metricStatus}`;
+    const traceStatus = result.business_metric_extraction_run_id
+      ? ` Extraction trace ${result.business_metric_extraction_run_id} is available in Document processing.`
+      : "";
+    $("#upload-status").textContent = `Processed ${result.document_id}; status: ${result.processing_status}; passages indexed: ${result.searchable}.${metricStatus}${traceStatus}`;
     form.reset();
     await loadWorkspace(await api("/api/auth/me"));
   } catch (error) {

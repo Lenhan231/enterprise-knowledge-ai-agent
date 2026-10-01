@@ -334,6 +334,14 @@ document's retrieval vectors atomically, and only then restores `ready` status.
 Migration `20260926213836_processed_document_chunks.sql` enables RLS and denies
 direct `anon`/`authenticated` access; the server-side database role owns writes.
 
+Business metric PDF extraction also stores one audit run per document/domain in
+`business_metric_extraction_runs`. Its chunk trace distinguishes `candidate_found`,
+`checked_no_candidate`, `not_selected`, `not_evaluated`, and `llm_error`, and stores
+the source chunk hash, selector signals, model/prompt versions, and page validation
+counts without duplicating source text. Admins can inspect runs in the Document
+processing tab and open the corresponding parsed chunks there. Run records are
+server-only: RLS is enabled and direct `anon`/`authenticated` access is revoked.
+
 For persistent embedding comparisons, `document_chunk_embeddings` stores one
 vector per processed chunk and model, with the vector dimension recorded per row;
 `document_embedding_runs` tracks per-document/per-model progress and failures.

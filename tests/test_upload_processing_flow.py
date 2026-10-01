@@ -95,6 +95,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         events = []
         document_repo = MagicMock()
         document_repo.save_business_metric_candidates.side_effect = lambda rows, **kwargs: events.append("business_metrics_saved") or len(rows)
+        document_repo.save_business_metric_extraction_run.side_effect = lambda run: events.append("business_metric_run_saved") or 17
         structured_store = MagicMock()
         storage = MagicMock()
         storage.storage.from_.return_value.upload.return_value = None
@@ -117,6 +118,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 "fiscal_year": 2025, "metric_value": 0.3, "unit": "%",
                 "scope": "Consolidated domestic market, year-over-year",
                 "source_document_id": document["document_id"], "page_number": 1,
+                "source_chunk_index": 0,
                 "source_quote": "Domestic net revenue increased 0.3% YoY.",
                 "source_url": document["source_url"],
                 "allowed_roles": document["rbac"]["allowed_roles"],
@@ -124,7 +126,12 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 "extraction_config": {},
             }
             extracted.append(row)
-            return [row], [{"page_number": 1, "selection_signals": {"metric_labels": ["domestic_revenue_growth"]}}]
+            return [row], [{
+                "page_number": 1,
+                "chunks": [{"chunk_index": 0, "selection_signals": {"domain_relevance_score": 1}}],
+                "llm_metrics_returned": 1, "llm_metrics_accepted": 1,
+                "validation_rejections": {},
+            }]
 
         with (
             patch.object(app_main, "_require_same_origin"),
@@ -152,9 +159,13 @@ class UploadProcessingFlowTest(unittest.TestCase):
             ))
 
         self.assertEqual(response["business_metric_candidates"], 1)
-        self.assertEqual(events, ["indexed_chunks_saved", "business_metrics_saved"])
+        self.assertEqual(response["business_metric_extraction_run_id"], 17)
+        self.assertEqual(events, ["indexed_chunks_saved", "business_metrics_saved", "business_metric_run_saved"])
         self.assertEqual(extracted[0]["source_document_id"], response["document_id"])
         document_repo.save_business_metric_candidates.assert_called_once_with(extracted, entered_by="parser")
+        document_repo.save_business_metric_extraction_run.assert_called_once()
+        run = document_repo.save_business_metric_extraction_run.call_args.args[0]
+        self.assertEqual(run["audit"]["chunk_decisions"][0]["status"], "candidate_found")
 
     def test_upload_without_decision_domain_skips_business_metric_llm(self):
         source = financial_summary_pdf()

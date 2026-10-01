@@ -831,5 +831,36 @@ class DocumentRepository:
             )
             return cursor.fetchone()
 
+    def save_business_metric_extraction_run(self, run: dict) -> int:
+        """Persist the selector and model outcome without duplicating source text."""
+        with self.conn.transaction(), self.conn.cursor() as cursor:
+            cursor.execute(
+                """INSERT INTO public.business_metric_extraction_runs (
+                       document_id, company, decision_domain, extractor_version,
+                       prompt_version, model_name, status, input_chunk_count,
+                       selected_chunk_count, candidate_count, audit
+                   ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                   RETURNING id""",
+                (run["document_id"], run["company"], run["decision_domain"],
+                 run["extractor_version"], run["prompt_version"], run["model_name"],
+                 run["status"], run["input_chunk_count"], run["selected_chunk_count"],
+                 run["candidate_count"], psycopg.types.json.Jsonb(run["audit"])),
+            )
+            return cursor.fetchone()[0]
+
+    def business_metric_extraction_runs(self, document_id: str, company: str) -> list[dict]:
+        """Return recent admin audit traces for one source document."""
+        with self.conn.cursor() as cursor:
+            cursor.execute(
+                """SELECT id, document_id, decision_domain, extractor_version,
+                          prompt_version, model_name, status, input_chunk_count,
+                          selected_chunk_count, candidate_count, audit, created_at
+                   FROM public.business_metric_extraction_runs
+                   WHERE document_id = %s AND company = %s
+                   ORDER BY created_at DESC, id DESC LIMIT 20""",
+                (document_id, company),
+            )
+            return cursor.fetchall()
+
     def close(self) -> None:
         close_database_connection(self.conn)

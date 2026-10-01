@@ -6,6 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.analytics.business_metric_extraction import (
+    build_business_metric_extraction_run,
     extract_business_metric_candidates,
     select_business_metric_chunks,
 )
@@ -118,6 +119,32 @@ class BusinessMetricExtractionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "business_decision_domain"):
             extract_business_metric_candidates(self.chunks, [], self.document, llm)
         self.assertEqual(llm.prompts, [])
+
+    def test_extraction_audit_distinguishes_checked_empty_and_unselected_chunks(self):
+        chunks = [
+            {"text": "Dairy cattle managed reached 130,000 cows in 2024.",
+             "metadata": {"page_number": 6, "chunk_index": 3, "layout_type": "text"}},
+            {"text": "Operations overview with no numeric evidence.",
+             "metadata": {"page_number": 7, "chunk_index": 4, "layout_type": "text"}},
+        ]
+        llm = FakeLLM('{"metrics":[]}')
+        candidates, pages = extract_business_metric_candidates(chunks, [], self.document, llm)
+
+        run = build_business_metric_extraction_run(chunks, pages, candidates, self.document, llm)
+
+        decisions = {item["chunk_index"]: item for item in run["audit"]["chunk_decisions"]}
+        self.assertEqual(decisions[3]["status"], "checked_no_candidate")
+        self.assertEqual(decisions[4]["status"], "not_selected")
+        self.assertEqual(decisions[4]["selection_reason"], "no_numeric_evidence")
+        self.assertEqual(run["status"], "completed")
+        self.assertNotIn("text", decisions[3])
+
+    def test_provider_unavailable_audit_does_not_claim_chunks_were_checked(self):
+        run = build_business_metric_extraction_run(
+            self.chunks, [], [], self.document, None, execution_error="provider_unavailable",
+        )
+        self.assertEqual(run["status"], "provider_unavailable")
+        self.assertEqual(run["audit"]["chunk_decisions"][0]["status"], "not_evaluated")
 
     def test_accepts_string_fiscal_year_from_manifest(self):
         self.document["fiscal_year"] = "2024"

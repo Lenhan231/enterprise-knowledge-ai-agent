@@ -380,6 +380,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         self.assertEqual(table_chunk[3]["section_title"], "Financial performance")
         parsed = parsed_cls.return_value.replace_document.call_args.args[1]
         self.assertEqual(parsed[0]["metadata"]["section_title"], "Financial performance")
+        self.assertNotIn("embedding_model", parsed[0]["metadata"])
         parsed_table_chunk = next(chunk for chunk in parsed if chunk["metadata"].get("layout_type") == "table")
         self.assertIn("Metric: Revenue | Amount: 100 billion VND", parsed_table_chunk["text"])
         saved_table = structured_store.save_document_tables.call_args.args[2][0]
@@ -427,6 +428,43 @@ class UploadProcessingFlowTest(unittest.TestCase):
         chunks_cls.return_value.replace_document.assert_not_called()
         structured_cls.return_value.save_document_tables.assert_called_once()
         storage.storage.from_.return_value.remove.assert_not_called()
+
+    def test_parser_output_remains_model_independent_when_embedding_chunks_are_split(self):
+        document_repo = MagicMock()
+        storage = MagicMock()
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=8)
+        embedding.embed_documents.return_value = [[0.1], [0.2]]
+        parsed_repo = MagicMock()
+        extracted_text = "Revenue 100; cash 20; total assets 500"
+        processed = {"chunks": [{
+            "text": extracted_text,
+            "metadata": {"chunk_index": 0, "page_number": 1, "layout_type": "text"},
+        }], "tables": []}
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch.object(DocumentProcessor, "process", return_value=processed),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
+            patch("core.database.structured_store.StructuredDataStore"),
+            patch("core.database.processed_chunks_repository.ProcessedChunksRepository", return_value=parsed_repo),
+        ):
+            counter_cls.return_value.split_text.return_value = [extracted_text[:18], extracted_text[18:]]
+            counter_cls.return_value.count.return_value = 4
+            result = asyncio.run(app_main.upload_document(
+                request=None, file=UploadFile(filename="report.pdf", file=io.BytesIO(b"%PDF-1.7 test")),
+                title="Report", document_type="annual_report", domain="finance",
+                fiscal_year=None, business_decision_domain="", allowed_roles=["finance_analyst"],
+                user={"sub": "uploader-1"},
+            ))
+
+        self.assertEqual(result["processing_status"], "ready")
+        parsed_repo.replace_document.assert_called_once()
+        self.assertEqual(parsed_repo.replace_document.call_args.args[1][0]["text"], extracted_text)
+        self.assertNotIn("embedding_model", parsed_repo.replace_document.call_args.args[1][0]["metadata"])
+        self.assertEqual(len(chunks_cls.return_value.replace_document.call_args.args[1]), 2)
 
     def test_image_ocr_caption_and_table_flow_through_upload_to_persistence(self):
         source = blank_table_image()
@@ -482,7 +520,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         parsed_chunks = parsed_cls.return_value.replace_document.call_args.args[1]
         self.assertTrue(parsed_chunks)
         self.assertIn("Revenue", parsed_chunks[0]["text"])
-        self.assertEqual(parsed_chunks[0]["metadata"]["embedding_model"], "test-embedding")
+        self.assertNotIn("embedding_model", parsed_chunks[0]["metadata"])
         caption_chunk = next(chunk for chunk in parsed_chunks if chunk["metadata"].get("layout_type") == "figure_caption")
         self.assertEqual(caption_chunk["text"], "AI-generated image caption (unverified): A financial table lists revenue, cash, and assets.")
         self.assertEqual(caption_chunk["metadata"]["caption_model"], "qwen/qwen3.8-27b")

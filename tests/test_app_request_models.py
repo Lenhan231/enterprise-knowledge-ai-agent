@@ -22,9 +22,15 @@ class AskRequestTest(unittest.TestCase):
 
         self.assertEqual(by_name["domestic_consolidated_net_revenue_growth"]["decision_priority"], "primary")
         self.assertEqual(by_name["domestic_consolidated_net_revenue_growth"]["decision_profile"], "market_performance")
-        self.assertEqual(by_name["domestic_consolidated_net_revenue_growth"]["decision_profile_label"], "Market allocation and competitive position")
+        self.assertEqual(by_name["domestic_consolidated_net_revenue_growth"]["decision_profile_label"], "Market performance and route-to-market reach")
         self.assertEqual(by_name["market_share_lead_over_runner_up"]["decision_priority"], "primary")
         self.assertEqual(by_name["foreign_subsidiary_revenue"]["decision_priority"], "supporting")
+        self.assertEqual(by_name["retail_points_of_sale"]["domain"], "market_performance")
+        self.assertEqual(by_name["vinamilk_stores"]["decision_profile"], "market_performance")
+        self.assertEqual(by_name["tpm_defect_free_streak_years"]["domain"], "manufacturing_efficiency")
+        domains = {item["domain"] for item in catalog}
+        self.assertNotIn("distribution_reach", domains)
+        self.assertNotIn("manufacturing_quality", domains)
 
     def test_report_route_uses_knowledge_agent_without_running_hybrid_sql(self):
         evidence = Evidence(
@@ -402,7 +408,7 @@ class AskRequestTest(unittest.TestCase):
             "DEMO_ADMIN_PASSWORD": "admin-password",
         }
         repository = Mock()
-        repository.uploaded_pdf_for_metric_extraction.return_value = {
+        repository.pdf_for_metric_extraction.return_value = {
             "document_id": "UPLOAD-1", "company": CORPUS_COMPANY,
             "title": "Annual report", "domain": "finance_and_operations",
             "document_type": "annual_report", "fiscal_year": "2024",
@@ -440,6 +446,7 @@ class AskRequestTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["run_id"], 42)
         self.assertEqual(response.json()["candidate_count"], 1)
+        repository.pdf_for_metric_extraction.assert_called_once_with("UPLOAD-1", CORPUS_COMPANY)
         parsed.get_document.assert_called_once_with("UPLOAD-1", company=CORPUS_COMPANY)
         repository.save_business_metric_candidates.assert_called_once_with([candidate], entered_by="parser")
         repository.save_business_metric_extraction_run.assert_called_once()
@@ -483,7 +490,7 @@ class AskRequestTest(unittest.TestCase):
             )
 
         self.assertEqual(response.status_code, 403)
-        repository.uploaded_pdf_for_metric_extraction.assert_not_called()
+        repository.pdf_for_metric_extraction.assert_not_called()
 
     def test_employee_cannot_inspect_metric_extraction_history(self):
         environment = {

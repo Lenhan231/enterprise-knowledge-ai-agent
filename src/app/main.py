@@ -570,11 +570,6 @@ async def upload_document(
         business_extraction_run = None
         business_extraction_error = None
         business_extraction_run_id = None
-        parsed_repository = ProcessedChunksRepository()
-        try:
-            parsed_repository.replace_document(document_id, chunks)
-        finally:
-            parsed_repository.close()
         candidate_chunks = chunks
         candidate_tables = processed.get("tables", [])
         text_evidence_page_numbers = set()
@@ -700,7 +695,6 @@ async def upload_document(
             )
         parsed_repository = ProcessedChunksRepository()
         try:
-            parsed_repository.replace_document(document_id, chunks)
             parsed_repository.set_status(document_id, "embedded")
         finally:
             parsed_repository.close()
@@ -1083,9 +1077,9 @@ def rerun_business_metric_extraction(
     provider = None
     try:
         repository = DocumentRepository()
-        document = repository.uploaded_pdf_for_metric_extraction(document_id, CORPUS_COMPANY)
+        document = repository.pdf_for_metric_extraction(document_id, CORPUS_COMPANY)
         if document is None:
-            raise HTTPException(404, "Ready uploaded PDF not found in the active company")
+            raise HTTPException(404, "Ready stored PDF not found in the active company")
 
         from core.database.processed_chunks_repository import ProcessedChunksRepository
 

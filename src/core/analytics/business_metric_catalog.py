@@ -492,7 +492,7 @@ BUSINESS_METRIC_CATALOG = {
     },
     "tpm_defect_free_streak_years": {
         "label": "Consecutive years without product defects",
-        "domain": "manufacturing_quality",
+        "domain": "manufacturing_efficiency",
         "definition": "Consecutive years with no reported product defect occurrences in the five-year TPM results.",
         "unit_guidance": "years",
         "aliases": ("product defects no occurrences", "defect-free years"),
@@ -639,15 +639,15 @@ BUSINESS_METRIC_CATALOG = {
     },
     "retail_points_of_sale": {
         "label": "Supermarket and convenience-store points of sale",
-        "domain": "distribution_reach",
-        "definition": "Approximate number of supermarket and convenience-store points of sale stated in the 2024 sustainability report.",
+        "domain": "market_performance",
+        "definition": "Reported supermarket and convenience-store point-of-sale network; retain each report's estimate and scope.",
         "unit_guidance": "points of sale",
         "aliases": ("points of sale", "retail distribution points"),
     },
     "vinamilk_stores": {
         "label": "Vinamilk stores",
-        "domain": "distribution_reach",
-        "definition": "Approximate number of Vinamilk stores stated in the 2024 sustainability report.",
+        "domain": "market_performance",
+        "definition": "Reported count of Vinamilk-branded stores; retain each report's estimate and scope.",
         "unit_guidance": "stores",
         "aliases": ("vinamilk stores",),
     },
@@ -668,12 +668,12 @@ BUSINESS_DECISION_PROFILES = {
         ),
     },
     "market_performance": {
-        "label": "Market allocation and competitive position",
-        "management_question": "Which market merits commercial diligence based on revenue scale and growth, and what reported competitive-position signals should be monitored?",
+        "label": "Market performance and route-to-market reach",
+        "management_question": "Which markets merit commercial diligence based on revenue scale, growth and reported route-to-market reach, and what evidence is still needed before reallocating investment?",
         "primary_metrics": (
             "domestic_consolidated_net_revenue", "domestic_consolidated_net_revenue_growth",
             "overseas_market_net_revenue", "overseas_market_net_revenue_growth",
-            "market_share_lead_over_runner_up",
+            "market_share_lead_over_runner_up", "retail_points_of_sale", "vinamilk_stores",
         ),
     },
     "product_portfolio": {
@@ -686,12 +686,12 @@ BUSINESS_DECISION_PROFILES = {
         ),
     },
     "manufacturing_efficiency": {
-        "label": "Factory productivity and cost control",
-        "management_question": "Are production efficiency and controllable costs improving enough to prioritize factory improvement?",
+        "label": "Factory productivity, cost and quality",
+        "management_question": "Are production efficiency, controllable costs and reported product-quality signals improving enough to prioritize factory improvement?",
         "primary_metrics": (
             "production_lines_meeting_oee_target", "production_overhead_budget_utilization",
             "raw_material_cost_savings", "production_cost_savings",
-            "tpm_productivity_increase",
+            "tpm_productivity_increase", "tpm_defect_free_streak_years",
         ),
     },
     "human_resources": {
@@ -717,16 +717,6 @@ BUSINESS_DECISION_PROFILES = {
             "farm_count", "managed_milk_cow_count", "raw_milk_collection_station_count",
             "farms_using_biogas",
         ),
-    },
-    "distribution_reach": {
-        "label": "Route-to-market reach",
-        "management_question": "How broad is the reported retail and direct-store network?",
-        "primary_metrics": ("retail_points_of_sale", "vinamilk_stores"),
-    },
-    "manufacturing_quality": {
-        "label": "Manufacturing quality reliability",
-        "management_question": "What reported product-quality reliability signal is available?",
-        "primary_metrics": ("tpm_defect_free_streak_years",),
     },
 }
 BUSINESS_METRIC_DECISION_PROFILE = {
@@ -773,13 +763,11 @@ def resolve_business_metric_names(question: str) -> set[str]:
         return matches
     domain_terms = {
         "milk_supply": ("raw milk", "fresh milk", "farmer", "supply chain", "milk sourcing", "sữa tươi", "nông hộ", "nguồn sữa", "milk collection", "globalgap", "fertilizer", "biomass corn"),
-        "manufacturing_efficiency": ("oee", "production line", "purchasing savings", "production cost", "hiệu suất dây chuyền", "tiết kiệm chi phí", "customer satisfaction", "satisfaction"),
+        "manufacturing_efficiency": ("oee", "production line", "purchasing savings", "production cost", "hiệu suất dây chuyền", "tiết kiệm chi phí", "customer satisfaction", "satisfaction", "product defect", "defect-free", "quality index", "lỗi sản phẩm", "chất lượng sản phẩm"),
         "product_portfolio": ("green farm", "plant-based", "plant based", "độ nhận biết", "mức độ cân nhắc", "sữa thực vật", "new products", "brand innovation"),
-        "market_performance": ("domestic revenue", "export revenue", "overseas revenue", "market share", "international market", "xuất khẩu", "tăng trưởng nội địa", "doanh thu nội địa", "thị trường nước ngoài"),
+        "market_performance": ("domestic revenue", "export revenue", "overseas revenue", "market share", "international market", "xuất khẩu", "tăng trưởng nội địa", "doanh thu nội địa", "thị trường nước ngoài", "points of sale", "vinamilk stores", "retail", "distribution reach", "điểm bán", "cửa hàng"),
         "environmental_performance": ("water", "waste", "emission", "greenhouse gas", "carbon", "energy", "nước", "chất thải", "phát thải", "khí nhà kính", "năng lượng xanh"),
         "farm_operations": ("dairy farm", "milk cow", "herd", "biogas", "global s.l.p", "trang trại", "đàn bò", "trạm thu gom sữa"),
-        "distribution_reach": ("points of sale", "vinamilk stores", "retail", "distribution reach", "điểm bán", "cửa hàng"),
-        "manufacturing_quality": ("product defect", "defect-free", "quality index", "lỗi sản phẩm", "chất lượng sản phẩm"),
         "human_resources": ("headcount", "staffing", "workforce", "nhân viên", "nhân sự", "lao động", "tuyển dụng"),
     }
     mentioned_domains = {

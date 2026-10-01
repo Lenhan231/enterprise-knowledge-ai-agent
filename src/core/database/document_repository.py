@@ -49,13 +49,13 @@ class DocumentRepository:
                     document_id, domain, title, year_or_version, format,
                     source_url, verification,
                     document_type, fiscal_year, company, source_type,
-                    allowed_roles, processing_status
+                    allowed_roles, storage_path, processing_status
                 ) VALUES (
                     %(document_id)s, %(domain)s, %(title)s, %(year_or_version)s,
                     %(format)s, %(source_url)s,
                     %(verification)s, %(document_type)s,
                     %(fiscal_year)s, %(company)s, %(source_type)s,
-                    %(allowed_roles)s, %(processing_status)s
+                    %(allowed_roles)s, %(storage_path)s, %(processing_status)s
                 )
                 ON CONFLICT (document_id) DO UPDATE SET
                     domain = EXCLUDED.domain,
@@ -69,9 +69,10 @@ class DocumentRepository:
                     company = EXCLUDED.company,
                     source_type = EXCLUDED.source_type,
                     allowed_roles = EXCLUDED.allowed_roles,
+                    storage_path = COALESCE(EXCLUDED.storage_path, documents.storage_path),
                     processing_status = EXCLUDED.processing_status
                 """,
-                document,
+                {**document, "storage_path": document.get("storage_path")},
             )
             self.conn.commit()
 
@@ -99,15 +100,16 @@ class DocumentRepository:
             )
             self.conn.commit()
 
-    def uploaded_pdf_for_metric_extraction(self, document_id: str, company: str) -> dict | None:
-        """Only allow replay against ready uploaded PDFs in the active company."""
+    def pdf_for_metric_extraction(self, document_id: str, company: str) -> dict | None:
+        """Return ready stored PDFs in the active company for admin extraction replay."""
         with self.conn.transaction(), self.conn.cursor() as cursor:
             cursor.execute(
                 """SELECT document_id, company, title, domain, document_type,
                           fiscal_year, source_url, allowed_roles, processing_status
                    FROM public.documents
                    WHERE document_id = %s AND company = %s
-                     AND source_type = 'user_upload' AND format = 'PDF'
+                     AND source_type IN ('user_upload', 'public_enterprise_document')
+                     AND format = 'PDF' AND storage_path IS NOT NULL
                      AND processing_status = 'ready'""",
                 (document_id, company),
             )

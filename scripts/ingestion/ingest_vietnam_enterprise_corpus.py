@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -14,6 +16,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from core.database.document_chunks_repository import DocumentChunkRepository  # noqa: E402
 from core.database.document_repository import DocumentRepository  # noqa: E402
+from core.database.processed_chunks_repository import ProcessedChunksRepository  # noqa: E402
 from core.document_processing.ingest_documents import Ingestion  # noqa: E402
 from core.database.structured_store import StructuredDataStore  # noqa: E402
 from core.embeddings import EmbeddingService  # noqa: E402
@@ -28,14 +31,26 @@ def ingest_one_document(
     embedding_service: EmbeddingService,
     documents: DocumentRepository,
     chunks_repository: DocumentChunkRepository,
+    parsed_chunks_repository: ProcessedChunksRepository,
+    storage,
+    bucket: str,
 ) -> tuple[int, int, int]:
     """Keep a seed document out of retrieval until chunks and tables are ready."""
     document_id = item["document_id"]
+    source_sha256 = hashlib.sha256(input_path.read_bytes()).hexdigest()
+    storage_path = None
+    if input_path.suffix.lower() == ".pdf":
+        storage_path = f"{document_id}/{input_path.name}"
+        storage.storage.from_(bucket).upload(
+            storage_path, input_path.read_bytes(),
+            {"content-type": "application/pdf", "upsert": "true"},
+        )
     documents.upsert_document({
         **item,
         "company": item["company"],
         "source_type": "public_enterprise_document",
         "allowed_roles": item["rbac"]["allowed_roles"],
+        "storage_path": storage_path,
         "processing_status": "processing",
     })
     try:
@@ -54,12 +69,21 @@ def ingest_one_document(
                 "source_type": "public_enterprise_document",
                 "year_or_version": item["year_or_version"],
                 "source_url": item["source_url"],
+                "source_sha256": source_sha256,
                 "rbac": item["rbac"],
             },
             include_tables=True,
         )
         if not chunks:
             raise ValueError("No text chunks extracted from source")
+        parsed_chunks_repository.replace_document(document_id, [
+            {
+                "text": chunk.page_content,
+                "metadata": {**chunk.metadata, "source_sha256": source_sha256},
+            }
+            for chunk in chunks
+        ])
+        parsed_chunks_repository.set_status(document_id, "embedding")
         vectors = embedding_service.embed_documents([chunk.page_content for chunk in chunks])
         for chunk in chunks:
             chunk.metadata["allowed_roles"] = item["rbac"]["allowed_roles"]
@@ -69,6 +93,7 @@ def ingest_one_document(
             for chunk, vector in zip(chunks, vectors, strict=True)
         ]
         chunks_repository.replace_document(document_id, rows)
+        parsed_chunks_repository.set_status(document_id, "embedded")
         structured_store = StructuredDataStore()
         try:
             table_count, record_count = structured_store.save_document_tables(
@@ -80,6 +105,7 @@ def ingest_one_document(
         return len(rows), table_count, record_count
     except Exception:
         documents.update_processing_status(document_id, "failed")
+        parsed_chunks_repository.set_status(document_id, "failed", "Seed ingestion did not complete")
         raise
 
 
@@ -109,8 +135,19 @@ def main() -> int:
         manifest["documents"] = [by_id[document_id] for document_id in args.ids]
     embedding_service = EmbeddingService()
     ingestor = Ingestion(embedding_service, chunking_strategy=args.chunking_strategy)
+    bucket = os.getenv("SUPABASE_DOCUMENT_BUCKET", "enterprise-documents")
+    storage = None
+    if any(item.get("format", "").upper() == "PDF" for item in manifest["documents"]):
+        from supabase import create_client
+
+        supabase_url = os.getenv("SUPABASE_URL")
+        supabase_key = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+        if not supabase_url or not supabase_key:
+            parser.error("SUPABASE_URL and SUPABASE_SECRET_KEY are required to archive source PDFs")
+        storage = create_client(supabase_url, supabase_key)
     documents = DocumentRepository()
     chunks_repository = DocumentChunkRepository()
+    parsed_chunks_repository = ProcessedChunksRepository()
     failures = 0
 
     try:
@@ -133,6 +170,9 @@ def main() -> int:
                     embedding_service,
                     documents,
                     chunks_repository,
+                    parsed_chunks_repository,
+                    storage,
+                    bucket,
                 )
                 print(
                     f"ingested   {item['document_id']}: {chunk_count} chunks, "
@@ -143,6 +183,7 @@ def main() -> int:
                 failures += 1
     finally:
         chunks_repository.close()
+        parsed_chunks_repository.close()
         documents.close()
 
     return 1 if failures else 0

@@ -99,6 +99,20 @@ class DocumentRepository:
             )
             self.conn.commit()
 
+    def uploaded_pdf_for_metric_extraction(self, document_id: str, company: str) -> dict | None:
+        """Only allow replay against ready uploaded PDFs in the active company."""
+        with self.conn.transaction(), self.conn.cursor() as cursor:
+            cursor.execute(
+                """SELECT document_id, company, title, domain, document_type,
+                          fiscal_year, source_url, allowed_roles, processing_status
+                   FROM public.documents
+                   WHERE document_id = %s AND company = %s
+                     AND source_type = 'user_upload' AND format = 'PDF'
+                     AND processing_status = 'ready'""",
+                (document_id, company),
+            )
+            return cursor.fetchone()
+
     def corpus_dashboard(
         self, role: str, username: str = "", include_analytics: bool = False,
         company: str | None = None,

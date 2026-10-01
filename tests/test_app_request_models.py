@@ -395,6 +395,96 @@ class AskRequestTest(unittest.TestCase):
         )
         repository.close.assert_called_once()
 
+    def test_admin_can_replay_saved_chunks_for_a_selected_decision_domain(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ADMIN_USERNAME": "admin-test",
+            "DEMO_ADMIN_PASSWORD": "admin-password",
+        }
+        repository = Mock()
+        repository.uploaded_pdf_for_metric_extraction.return_value = {
+            "document_id": "UPLOAD-1", "company": CORPUS_COMPANY,
+            "title": "Annual report", "domain": "finance_and_operations",
+            "document_type": "annual_report", "fiscal_year": "2024",
+            "source_url": None, "allowed_roles": ["admin"],
+        }
+        repository.save_business_metric_extraction_run.return_value = 42
+        parsed = Mock()
+        parsed.get_document.return_value = [{
+            "chunk_index": 0, "content": "Revenue reached 100 VND in 2024.",
+            "metadata": {"page_number": 1, "layout_type": "text"},
+        }]
+        store = Mock()
+        store.get_document_tables.return_value = []
+        provider = Mock(model_name="test-provider")
+        candidate = {"source_chunk_index": 0, "metric_name": "domestic_consolidated_net_revenue_growth"}
+        page = {"page_number": 1, "chunks": [{
+            "chunk_index": 0, "selection_signals": {"domain_relevance_score": 1},
+        }], "llm_metrics_returned": 1, "llm_metrics_accepted": 1}
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main.DocumentRepository", return_value=repository), \
+             patch("core.database.processed_chunks_repository.ProcessedChunksRepository", return_value=parsed), \
+             patch("core.database.structured_store.StructuredDataStore", return_value=store), \
+             patch("core.llm.groq_provider.GroqProvider", return_value=provider), \
+             patch("core.analytics.business_metric_extraction.extract_business_metric_candidates", return_value=([candidate], [page])) as extractor, \
+             TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "admin-test", "password": "admin-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.post(
+                "/api/admin/processing/UPLOAD-1/business-metric-extraction-runs",
+                json={"decision_domain": "market_performance", "metric_name": "domestic_consolidated_net_revenue_growth"},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["run_id"], 42)
+        self.assertEqual(response.json()["candidate_count"], 1)
+        parsed.get_document.assert_called_once_with("UPLOAD-1", company=CORPUS_COMPANY)
+        repository.save_business_metric_candidates.assert_called_once_with([candidate], entered_by="parser")
+        repository.save_business_metric_extraction_run.assert_called_once()
+        self.assertEqual(extractor.call_args.kwargs["metric_names"], ["domestic_consolidated_net_revenue_growth"])
+        repository.close.assert_called_once()
+
+    def test_replay_rejects_metric_that_does_not_belong_to_selected_domain(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ADMIN_USERNAME": "admin-test",
+            "DEMO_ADMIN_PASSWORD": "admin-password",
+        }
+        with patch.dict("os.environ", environment, clear=False), TestClient(app) as client:
+            client.post("/api/auth/login", json={
+                "username": "admin-test", "password": "admin-password",
+            })
+            response = client.post(
+                "/api/admin/processing/UPLOAD-1/business-metric-extraction-runs",
+                json={"decision_domain": "market_performance", "metric_name": "dairy_cattle_herd_size"},
+            )
+
+        self.assertEqual(response.status_code, 422)
+
+    def test_employee_cannot_replay_saved_chunks(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_VIEWER_USERNAME": "viewer-test",
+            "DEMO_VIEWER_PASSWORD": "viewer-password",
+        }
+        repository = Mock()
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main.DocumentRepository", return_value=repository), \
+             TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "viewer-test", "password": "viewer-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.post(
+                "/api/admin/processing/UPLOAD-1/business-metric-extraction-runs",
+                json={"decision_domain": "market_performance", "metric_name": "domestic_consolidated_net_revenue_growth"},
+            )
+
+        self.assertEqual(response.status_code, 403)
+        repository.uploaded_pdf_for_metric_extraction.assert_not_called()
+
     def test_employee_cannot_inspect_metric_extraction_history(self):
         environment = {
             "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",

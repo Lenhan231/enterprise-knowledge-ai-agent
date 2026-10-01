@@ -342,6 +342,15 @@ counts without duplicating source text. Admins can inspect runs in the Document
 processing tab and open the corresponding parsed chunks there. Run records are
 server-only: RLS is enabled and direct `anon`/`authenticated` access is revoked.
 
+Admins choose a decision domain and one primary metric to re-run against a ready
+uploaded PDF's saved `processed_document_chunks` from the Document processing
+panel. This uses the current parser output and table metadata, creates a new
+auditable run scoped to that metric, and sends candidates through the existing
+review queue; it does not re-read the PDF, run OCR, or rebuild retrieval
+embeddings. Seed documents without saved parser chunks are not eligible for
+this replay route. The manual business-metric form also filters metrics by the
+chosen domain, and Administrative Review can be filtered by domain.
+
 For persistent embedding comparisons, `document_chunk_embeddings` stores one
 vector per processed chunk and model, with the vector dimension recorded per row;
 `document_embedding_runs` tracks per-document/per-model progress and failures.

@@ -163,6 +163,26 @@ class AskRequest(BaseModel):
         return value
 
 
+class BusinessMetricExtractionReplayRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    decision_domain: str
+    metric_name: str
+
+    @field_validator("decision_domain")
+    @classmethod
+    def known_business_decision_domain(cls, value: str) -> str:
+        if value not in BUSINESS_DECISION_PROFILES:
+            raise ValueError("Choose a configured business decision domain")
+        return value
+
+    @model_validator(mode="after")
+    def metric_belongs_to_decision_domain(self):
+        if (self.metric_name not in BUSINESS_DECISION_PROFILES[self.decision_domain]["primary_metrics"]
+                or BUSINESS_METRIC_DECISION_PROFILE.get(self.metric_name) != self.decision_domain):
+            raise ValueError("Choose a primary metric that belongs to the selected domain")
+        return self
+
+
 class LoginRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     username: str = Field(min_length=1, max_length=100)
@@ -1047,6 +1067,126 @@ def inspect_business_metric_extraction_runs(
         logger.exception("Could not load business metric extraction runs for %s", document_id)
         raise HTTPException(503, "Business metric extraction history is unavailable") from error
     finally:
+        if repository is not None:
+            repository.close()
+
+
+@app.post("/api/admin/processing/{document_id}/business-metric-extraction-runs")
+def rerun_business_metric_extraction(
+    document_id: str,
+    request: BusinessMetricExtractionReplayRequest,
+    http_request: Request,
+    user: dict = Depends(require_permission("manage_metrics")),
+):
+    _require_same_origin(http_request)
+    repository = None
+    provider = None
+    try:
+        repository = DocumentRepository()
+        document = repository.uploaded_pdf_for_metric_extraction(document_id, CORPUS_COMPANY)
+        if document is None:
+            raise HTTPException(404, "Ready uploaded PDF not found in the active company")
+
+        from core.database.processed_chunks_repository import ProcessedChunksRepository
+
+        parsed_repository = ProcessedChunksRepository()
+        try:
+            stored_chunks = parsed_repository.get_document(document_id, company=CORPUS_COMPANY)
+        finally:
+            parsed_repository.close()
+        if not stored_chunks:
+            raise HTTPException(422, "No saved parser chunks are available to replay")
+        chunks = [{
+            "text": row["content"],
+            "metadata": {**(row.get("metadata") or {}), "chunk_index": row["chunk_index"]},
+        } for row in stored_chunks]
+
+        from core.database.structured_store import StructuredDataStore
+
+        store = StructuredDataStore()
+        tables = []
+        try:
+            table_offset = 0
+            while True:
+                page = store.get_document_tables(
+                    document_id, company=CORPUS_COMPANY, table_offset=table_offset,
+                    table_limit=50, row_offset=0, row_limit=1,
+                )
+                tables.extend({
+                    "page_number": table["page_number"],
+                    "table_index": table["table_index"],
+                    "context": (table.get("metadata") or {}).get("table_context", {}),
+                } for table in page)
+                if len(page) < 50:
+                    break
+                table_offset += len(page)
+        finally:
+            store.close()
+
+        extraction_document = {
+            **document,
+            "business_decision_domain": request.decision_domain,
+            "selected_metric_names": [request.metric_name],
+            "fiscal_year": document.get("fiscal_year"),
+            "rbac": {"allowed_roles": document.get("allowed_roles") or ["admin"]},
+        }
+        from core.analytics.business_metric_extraction import (
+            build_business_metric_extraction_run,
+            extract_business_metric_candidates,
+        )
+
+        try:
+            from core.llm.groq_provider import GroqProvider
+
+            provider = GroqProvider()
+        except Exception:
+            run = build_business_metric_extraction_run(
+                chunks, [], [], extraction_document, None,
+                execution_error="provider_unavailable",
+            )
+            run_id = repository.save_business_metric_extraction_run(run)
+            return {
+                "run_id": run_id, "status": run["status"], "candidate_count": 0,
+                "metric_name": request.metric_name,
+                "selected_chunk_count": 0, "input_chunk_count": len(chunks),
+            }
+
+        try:
+            candidates, page_results = extract_business_metric_candidates(
+                chunks, tables, extraction_document, provider,
+                metric_names=[request.metric_name],
+            )
+            if candidates:
+                repository.save_business_metric_candidates(candidates, entered_by="parser")
+            run = build_business_metric_extraction_run(
+                chunks, page_results, candidates, extraction_document, provider,
+            )
+        except Exception:
+            logger.exception("Business metric replay failed for %s", document_id)
+            run = build_business_metric_extraction_run(
+                chunks, [], [], extraction_document, provider,
+                execution_error="extraction_exception",
+            )
+        run_id = repository.save_business_metric_extraction_run(run)
+        return {
+            "run_id": run_id,
+            "status": run["status"],
+            "metric_name": request.metric_name,
+            "candidate_count": run["candidate_count"],
+            "selected_chunk_count": run["selected_chunk_count"],
+            "input_chunk_count": run["input_chunk_count"],
+        }
+    except HTTPException:
+        raise
+    except Exception as error:
+        logger.exception("Could not replay business metric extraction for %s", document_id)
+        raise HTTPException(503, "Could not replay extraction from saved parser chunks") from error
+    finally:
+        if provider is not None:
+            try:
+                provider.close()
+            except Exception:
+                logger.exception("Could not close business metric replay provider")
         if repository is not None:
             repository.close()
 

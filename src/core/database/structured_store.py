@@ -29,12 +29,15 @@ class StructuredDataStore:
                 page_number = int(table["page_number"])
                 table_index = int(table["table_index"])
                 table_id = f"{document_id}:page:{page_number}:table:{table_index}"
+                metadata = dict(table.get("metadata") or {})
+                if table.get("context"):
+                    metadata["table_context"] = table["context"]
                 cursor.execute(
                     """INSERT INTO public.extracted_tables
                        (id, document_id, document_name, page_number, table_index, columns, metadata)
                        VALUES (%s, %s, %s, %s, %s, %s, %s)""",
                     (table_id, document_id, document_name, page_number, table_index,
-                     Jsonb(table.get("columns", [])), Jsonb(table.get("metadata", {}))),
+                     Jsonb(table.get("columns", [])), Jsonb(metadata)),
                 )
                 rows = table.get("rows", [])
                 if rows:

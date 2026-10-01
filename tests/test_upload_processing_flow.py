@@ -727,12 +727,14 @@ class UploadProcessingFlowTest(unittest.TestCase):
             "page_number": 1, "table_index": 0, "columns": ["Value"],
             "rows": [{"Value": "100"}],
             "metadata": {"formulas": formulas, "row_cell_bboxes": row_cell_bboxes},
+            "context": {"table_title": "Revenue summary", "unit": "VND"},
         }])
 
         cursor = connection.cursor.return_value.__enter__.return_value
         insert_params = cursor.execute.call_args.args[1]
         self.assertEqual(insert_params[-1].obj["formulas"], formulas)
         self.assertEqual(insert_params[-1].obj["row_cell_bboxes"], row_cell_bboxes)
+        self.assertEqual(insert_params[-1].obj["table_context"]["table_title"], "Revenue summary")
         record_params = cursor.executemany.call_args.args[1]
         self.assertEqual(record_params[0][3].obj, {"Value": "100"})
 

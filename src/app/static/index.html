@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=decision-metrics-13">
+  <link rel="stylesheet" href="/static/styles.css?v=domain-metric-review-14">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -387,6 +387,14 @@
           <button type="submit" class="secondary-button">Load parsed passages</button>
         </form>
         <h3 class="subheading-margin">Business metric extraction history</h3>
+        <form id="business-metric-replay-form" class="review-form">
+          <label for="business-metric-replay-domain">Decision domain</label>
+          <select id="business-metric-replay-domain" name="decision_domain" required></select>
+          <label for="business-metric-replay-metric">Metric to extract</label>
+          <select id="business-metric-replay-metric" name="metric_name" required></select>
+          <button id="business-metric-replay-button" type="submit" class="secondary-button">Re-run on saved parser chunks</button>
+          <p id="business-metric-replay-status" class="corpus-note" aria-live="polite">Reuses saved PDF parser chunks; does not rerun OCR or embeddings.</p>
+        </form>
         <p>Each run records which parsed chunks were checked, skipped, or produced review candidates, with the selector signals and model/prompt versions.</p>
         <div id="business-metric-extraction-runs"></div>
         <div id="parsed-chunk-list"></div>
@@ -463,6 +471,8 @@
         <p>Enter a report observation with its exact page, quote, scope and public source. It remains pending until an admin verifies it.</p>
         <div id="business-metric-definition" class="analysis-summary" aria-live="polite"></div>
         <form id="business-metric-form" class="upload-form">
+          <label for="business-metric-entry-domain">Domain</label>
+          <select id="business-metric-entry-domain" required></select>
           <label for="business-metric-name">Metric</label>
           <select id="business-metric-name" name="metric_name" required></select>
           <label for="business-metric-year">Fiscal year</label>
@@ -497,6 +507,8 @@
           </div>
         </div>
         <p>Check the source evidence and reporting basis. Only verified values appear in Business Analysis.</p>
+        <label for="candidate-domain-filter">Domain</label>
+        <select id="candidate-domain-filter"><option value="all">All domains</option></select>
         <div id="candidate-list"></div>
       </section>
     </section>
@@ -549,6 +561,6 @@
       </section>
     </section>
   </main>
-  <script src="/static/app.js?v=business-upload-metrics-18" defer></script>
+  <script src="/static/app.js?v=domain-metric-review-20" defer></script>
 </body>
 </html>

@@ -15,8 +15,8 @@ from core.analytics.business_metric_catalog import (
 )
 
 logger = logging.getLogger(__name__)
-PROMPT_VERSION = "business-metric-scoped-domain-json-v4"
-EXTRACTOR_VERSION = "parser-chunk-scoped-domain-v4"
+PROMPT_VERSION = "business-metric-scoped-domain-metric-json-v5"
+EXTRACTOR_VERSION = "parser-chunk-scoped-domain-metric-v5"
 MAX_BUSINESS_METRIC_CHUNKS = 10
 MAX_PRIMARY_METRICS_PER_PAGE = 5
 
@@ -39,6 +39,7 @@ def select_business_metric_chunks(
     chunks: list[dict], tables: list[dict] | None = None,
     max_chunks: int = MAX_BUSINESS_METRIC_CHUNKS,
     decision_domain: str | None = None,
+    metric_names: list[str] | None = None,
 ) -> list[dict]:
     """Select metric-relevant parser chunks, then rank their numeric/layout evidence."""
     if decision_domain is not None and decision_domain not in BUSINESS_DECISION_PROFILES:
@@ -47,6 +48,10 @@ def select_business_metric_chunks(
         BUSINESS_DECISION_PROFILES[decision_domain]["primary_metrics"]
         if decision_domain else ()
     )
+    if metric_names is not None:
+        if decision_domain is None or not set(metric_names) <= profile_metrics:
+            raise ValueError("metric_names must belong to the selected decision domain")
+        profile_metrics.intersection_update(metric_names)
     table_context = {}
     for table in tables or []:
         metadata = table.get("metadata", {})
@@ -151,7 +156,7 @@ def select_business_metric_chunks(
 
 
 def _prompt(company: str, document_year: int | str | None, evidence: dict,
-            decision_domain: str) -> str:
+            decision_domain: str, metric_names: list[str] | None = None) -> str:
     profile = BUSINESS_DECISION_PROFILES[decision_domain]
     primary_metrics = {
         name: {
@@ -159,7 +164,7 @@ def _prompt(company: str, document_year: int | str | None, evidence: dict,
             "definition": BUSINESS_METRIC_CATALOG[name]["definition"],
             "unit_guidance": BUSINESS_METRIC_CATALOG[name]["unit_guidance"],
         }
-        for name in profile["primary_metrics"]
+        for name in (metric_names or profile["primary_metrics"])
     }
     input_chunks = []
     for chunk in evidence["chunks"]:
@@ -179,7 +184,7 @@ Return only JSON with this shape:
 
 Decision domain: {decision_domain} — {profile['label']}
 Management question: {profile['management_question']}
-Choose metric_name only from this domain's primary metrics: {json.dumps(primary_metrics, ensure_ascii=False, separators=(',', ':'))}
+Choose metric_name only from the selected metric set in this domain: {json.dumps(primary_metrics, ensure_ascii=False, separators=(',', ':'))}
 Extract only directly supported primary metrics for this decision question, up to {MAX_PRIMARY_METRICS_PER_PAGE} metrics. Ignore every other catalog metric, supporting indicator, and unrelated number even when present. Explicitly labeled comparison periods are allowed when they belong to a primary metric.
 The metric label, value, unit, and year must be supported by this chunk. Use an empty metrics array when no catalog metric is supported.
 Never calculate, normalize units, infer a missing value/year, invent a quote, or use outside knowledge.
@@ -202,7 +207,9 @@ def _validated_metrics(
     decision_domain = evidence["decision_domain"]
     if decision_domain not in BUSINESS_DECISION_PROFILES:
         raise ValueError("A valid business decision domain is required")
-    allowed_metrics = set(BUSINESS_DECISION_PROFILES[decision_domain]["primary_metrics"])
+    allowed_metrics = set(evidence.get(
+        "allowed_metric_names", BUSINESS_DECISION_PROFILES[decision_domain]["primary_metrics"],
+    ))
     source = "\n".join(chunk["text"] for chunk in evidence["chunks"])
     valid, rejected = [], defaultdict(int)
     if len(payload["metrics"]) > MAX_PRIMARY_METRICS_PER_PAGE:
@@ -282,13 +289,19 @@ def _validated_metrics(
 def extract_business_metric_candidates(
     chunks: list[dict], tables: list[dict], document: dict, llm,
     max_chunks: int = MAX_BUSINESS_METRIC_CHUNKS,
+    metric_names: list[str] | None = None,
 ) -> tuple[list[dict], list[dict]]:
     """Extract only the primary KPIs for the explicitly selected decision domain."""
     decision_domain = document.get("business_decision_domain")
     if decision_domain not in BUSINESS_DECISION_PROFILES:
         raise ValueError("business_decision_domain must name a configured decision profile")
+    primary_metrics = set(BUSINESS_DECISION_PROFILES[decision_domain]["primary_metrics"])
+    if metric_names is not None and (not metric_names or not set(metric_names) <= primary_metrics):
+        raise ValueError("metric_names must select at least one primary metric in this domain")
+    selected_metric_names = list(metric_names) if metric_names is not None else None
     selected = select_business_metric_chunks(
         chunks, tables, max_chunks, decision_domain=decision_domain,
+        metric_names=selected_metric_names,
     )
     chunks_by_page = defaultdict(list)
     for source_chunk in selected:
@@ -305,6 +318,7 @@ def extract_business_metric_candidates(
         page_evidence.append({
             "page_number": page_number,
             "decision_domain": decision_domain,
+            "allowed_metric_names": selected_metric_names or list(primary_metrics),
             "chunks": source_chunks,
             "page_context": "\n".join(page_context_chunks)[:2500],
             "layout_type": "mixed" if len({chunk["layout_type"] for chunk in source_chunks}) > 1
@@ -320,7 +334,8 @@ def extract_business_metric_candidates(
     for evidence in page_evidence:
         try:
             response = llm.generate(_prompt(document.get("company", "Unknown company"),
-                                            document.get("fiscal_year"), evidence, decision_domain))
+                                            document.get("fiscal_year"), evidence, decision_domain,
+                                            selected_metric_names))
             evidence["llm_usage"] = getattr(llm, "last_usage", None)
             found, rejected, decision_domain = _validated_metrics(
                 response, evidence, document.get("fiscal_year"),
@@ -453,6 +468,8 @@ def build_business_metric_extraction_run(
         "selected_chunk_count": selected_count,
         "candidate_count": len(candidates),
         "audit": {
+            "selected_metric_names": document.get("selected_metric_names")
+            or list(BUSINESS_DECISION_PROFILES[document["business_decision_domain"]]["primary_metrics"]),
             "chunk_decisions": decisions,
             "page_results": [{
                 "page_number": page["page_number"],

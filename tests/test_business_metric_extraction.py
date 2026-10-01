@@ -113,6 +113,37 @@ class BusinessMetricExtractionTests(unittest.TestCase):
             selected[0]["validation_rejections"]["metric_outside_decision_profile_or_empty_field"], 1,
         )
 
+    def test_selected_metric_scopes_prompt_and_rejects_other_metrics_in_same_domain(self):
+        self.chunks[0]["text"] = (
+            "Dairy cattle managed by Vinamilk reached 130,000 cows in 2024; "
+            "milk volume purchased from farmers was 1,000 tonnes."
+        )
+        self.document["business_decision_domain"] = "milk_supply"
+        llm = FakeLLM(json.dumps({"metrics": [
+            {"metric_name": "dairy_cattle_herd_size", "metric_value": "130,000",
+             "unit": "cows", "fiscal_year": 2024,
+             "source_quote": "Dairy cattle managed by Vinamilk reached 130,000 cows in 2024"},
+            {"metric_name": "raw_milk_purchases_from_farmers", "metric_value": "1,000",
+             "unit": "tonnes", "fiscal_year": 2024,
+             "source_quote": "milk volume purchased from farmers was 1,000 tonnes"},
+        ]}))
+
+        candidates, pages = extract_business_metric_candidates(
+            self.chunks, [], self.document, llm,
+            metric_names=["dairy_cattle_herd_size"],
+        )
+
+        self.assertEqual([item["metric_name"] for item in candidates], ["dairy_cattle_herd_size"])
+        self.assertIn('"dairy_cattle_herd_size"', llm.prompts[0])
+        self.assertNotIn('"raw_milk_purchases_from_farmers"', llm.prompts[0])
+        self.assertEqual(pages[0]["validation_rejections"][
+            "metric_outside_decision_profile_or_empty_field"], 1)
+        run = build_business_metric_extraction_run(
+            self.chunks, pages, candidates,
+            {**self.document, "selected_metric_names": ["dairy_cattle_herd_size"]}, llm,
+        )
+        self.assertEqual(run["audit"]["selected_metric_names"], ["dairy_cattle_herd_size"])
+
     def test_requires_one_configured_business_decision_domain(self):
         llm = FakeLLM('{"metrics":[]}')
         self.document.pop("business_decision_domain")

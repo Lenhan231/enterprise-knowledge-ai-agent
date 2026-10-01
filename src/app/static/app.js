@@ -2,6 +2,7 @@ const $ = (selector) => document.querySelector(selector);
 let analyticsSnapshot = null;
 let financialMetricDefinitions = new Map();
 let businessMetricDefinitions = new Map();
+let pendingMetricCandidates = [];
 let activeTab = "knowledge";
 let currentUser = null;
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -165,20 +166,49 @@ function renderMetricCatalog(metrics) {
 
 function renderBusinessMetricCatalog(metrics) {
   businessMetricDefinitions = new Map(metrics.map((metric) => [metric.metric_name, metric]));
-  const select = $("#business-metric-name");
-  select.innerHTML = metrics.map((metric) =>
-    `<option value="${escapeHtml(metric.metric_name)}">${escapeHtml(metric.label)}</option>`
-  ).join("");
+  const domains = [...new Set(metrics.map((metric) => metric.domain).filter(Boolean))].sort();
+  const domainLabel = (domain) => metrics.find((metric) => metric.domain === domain)?.decision_profile_label
+    || domain.replaceAll("_", " ");
+  const populateDomains = (select, placeholder = "Choose a domain") => {
+    select.innerHTML = `<option value="">${placeholder}</option>` + domains.map((domain) =>
+      `<option value="${escapeHtml(domain)}">${escapeHtml(domainLabel(domain))}</option>`
+    ).join("");
+  };
+  const entryDomain = $("#business-metric-entry-domain");
+  const entryMetric = $("#business-metric-name");
+  populateDomains(entryDomain);
+  const updateEntryMetrics = () => {
+    const matching = metrics.filter((metric) => metric.domain === entryDomain.value);
+    entryMetric.innerHTML = matching.map((metric) =>
+      `<option value="${escapeHtml(metric.metric_name)}">${escapeHtml(metric.label)}</option>`
+    ).join("");
+    update();
+  };
   const update = () => {
-    const metric = metrics.find((item) => item.metric_name === select.value);
+    const metric = metrics.find((item) => item.metric_name === entryMetric.value);
     $("#business-metric-definition").innerHTML = metric
-      ? `<article class="analysis-stat"><span>${escapeHtml(metric.domain.replaceAll("_", " "))}</span><strong>${escapeHtml(metric.definition)}</strong><small>Typical unit: ${escapeHtml(metric.unit_guidance)}</small></article>`
+      ? `<article class="analysis-stat"><span>${escapeHtml(domainLabel(metric.domain))}</span><strong>${escapeHtml(metric.definition)}</strong><small>Typical unit: ${escapeHtml(metric.unit_guidance)}</small></article>`
       : "";
     const unit = $("#business-metric-unit");
     if (metric) unit.placeholder = metric.unit_guidance;
   };
-  select.onchange = update;
-  update();
+  entryDomain.onchange = updateEntryMetrics;
+  entryMetric.onchange = update;
+  updateEntryMetrics();
+
+  const replayDomain = $("#business-metric-replay-domain");
+  const replayMetric = $("#business-metric-replay-metric");
+  populateDomains(replayDomain);
+  const updateReplayMetrics = () => {
+    const matching = metrics.filter((metric) => metric.domain === replayDomain.value
+      && metric.decision_priority === "primary");
+    replayMetric.innerHTML = matching.map((metric) =>
+      `<option value="${escapeHtml(metric.metric_name)}">${escapeHtml(metric.label)}</option>`
+    ).join("");
+    replayMetric.disabled = matching.length === 0;
+  };
+  replayDomain.onchange = updateReplayMetrics;
+  updateReplayMetrics();
 }
 
 function renderParsedChunks(chunks) {
@@ -215,13 +245,16 @@ function renderBusinessMetricExtractionRuns(runs) {
   $("#business-metric-extraction-runs").innerHTML = runs.map((run) => {
     const decisions = run.audit?.chunk_decisions || [];
     return `<details class="candidate-row">
-      <summary class="candidate-heading"><strong>${escapeHtml(run.decision_domain)} · ${escapeHtml(run.status)}</strong><span>${formatNumber(run.selected_chunk_count)} / ${formatNumber(run.input_chunk_count)} chunks selected · ${formatNumber(run.candidate_count)} candidates · ${escapeHtml(run.model_name)}</span></summary>
+      <summary class="candidate-heading"><strong>${escapeHtml(run.decision_domain)} · ${(run.audit?.selected_metric_names || []).map(escapeHtml).join(", ")} · ${escapeHtml(run.status)}</strong><span>${formatNumber(run.selected_chunk_count)} / ${formatNumber(run.input_chunk_count)} chunks selected · ${formatNumber(run.candidate_count)} candidates · ${escapeHtml(run.model_name)}</span></summary>
       <p class="corpus-note">Extractor ${escapeHtml(run.extractor_version)} · prompt ${escapeHtml(run.prompt_version)} · ${escapeHtml(new Date(run.created_at).toLocaleString())}</p>
       <div class="extracted-table-wrap"><table class="extracted-table"><thead><tr><th>Chunk</th><th>Page</th><th>Decision</th><th>Selection reason</th><th>Selector signals</th></tr></thead><tbody>${decisions.map((item) => `<tr><td>${formatNumber(item.chunk_index)}</td><td>${formatNumber(item.page_number)}</td><td>${escapeHtml(label[item.status] || item.status)}</td><td>${escapeHtml(item.selection_reason || "selected")}</td><td>${escapeHtml(JSON.stringify(item.selection_signals || {}))}</td></tr>`).join("")}</tbody></table></div>
       <details class="candidate-source"><summary>LLM page results and validation</summary><pre>${escapeHtml(JSON.stringify({pages: run.audit?.page_results || [], error: run.audit?.execution_error || null}, null, 2))}</pre></details>
     </details>`;
   }).join("") || '<p class="loading-card">No business metric extraction run is recorded for this document.</p>';
 }
+
+const replayDomainSelect = $("#business-metric-replay-domain");
+const replayMetricSelect = $("#business-metric-replay-metric");
 
 async function loadOcrTestRuns() {
   const result = await api("/api/ocr-tests");
@@ -586,8 +619,24 @@ function renderCandidates(data) {
       source_note: item.scope, candidate_values: [item.normalized_value],
     })),
   ];
+  pendingMetricCandidates = candidates;
+  const domainFilter = $("#candidate-domain-filter");
+  const previousDomain = domainFilter.value || "all";
+  const candidateDomain = (item) => item.domain
+    || businessMetricDefinitions.get(item.metric_name)?.domain
+    || "finance_and_operations";
+  const domains = [...new Set(candidates.map(candidateDomain))].sort();
+  const labelForDomain = (domain) => businessMetricDefinitions.get(
+    candidates.find((item) => candidateDomain(item) === domain)?.metric_name
+  )?.decision_profile_label || domain.replaceAll("_", " ");
+  domainFilter.innerHTML = `<option value="all">All domains</option>${domains.map((domain) =>
+    `<option value="${escapeHtml(domain)}">${escapeHtml(labelForDomain(domain))}</option>`
+  ).join("")}`;
+  domainFilter.value = domains.includes(previousDomain) ? previousDomain : "all";
+  const visibleCandidates = domainFilter.value === "all" ? candidates
+    : candidates.filter((item) => candidateDomain(item) === domainFilter.value);
   $("#candidate-review").hidden = !candidates.length;
-  $("#candidate-list").innerHTML = candidates.map((item) => {
+  $("#candidate-list").innerHTML = visibleCandidates.map((item) => {
     const href = sourcePageUrl(item.source_url, item.page_number);
     const uploadedSourceHref = uploadedSourcePageUrl(item.document_id, item.page_number);
     const sourceHref = uploadedSourceHref || href;
@@ -637,6 +686,11 @@ function renderCandidates(data) {
     </article>`;
   }).join("");
 }
+
+$("#candidate-domain-filter").addEventListener("change", () => {
+  renderCandidates({candidates: pendingMetricCandidates.filter((item) => item.candidate_kind !== "business"),
+    business_candidates: pendingMetricCandidates.filter((item) => item.candidate_kind === "business")});
+});
 
 function renderDashboardVisualization(visualization) {
   if (visualization?.type !== "line" || !Array.isArray(visualization.categories) || visualization.categories.length < 2) return "";
@@ -974,6 +1028,28 @@ $("#parsed-chunk-form").addEventListener("submit", async (event) => {
     $("#parsed-table-list").innerHTML = error.status === 404
       ? '<p class="loading-card">No structured tables were extracted from this document.</p>'
       : `<p class="loading-card">${escapeHtml(error.message)}</p>`;
+  }
+});
+
+$("#business-metric-replay-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const documentId = $("#parsed-document").value;
+  if (!documentId) return;
+  const button = $("#business-metric-replay-button");
+  button.disabled = true;
+  $("#business-metric-replay-status").textContent = "Re-running extraction against saved parser chunks…";
+  try {
+    const result = await api(
+      `/api/admin/processing/${encodeURIComponent(documentId)}/business-metric-extraction-runs`,
+      {method: "POST", body: JSON.stringify({decision_domain: replayDomainSelect.value, metric_name: replayMetricSelect.value})},
+    );
+    $("#business-metric-replay-status").textContent = `Run ${result.run_id}: ${result.status}; ${formatNumber(result.selected_chunk_count || 0)} / ${formatNumber(result.input_chunk_count || 0)} chunks selected; ${formatNumber(result.candidate_count)} candidates await review.`;
+    const history = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/business-metric-extraction-runs`);
+    renderBusinessMetricExtractionRuns(history.runs);
+  } catch (error) {
+    $("#business-metric-replay-status").textContent = error.message;
+  } finally {
+    button.disabled = false;
   }
 });
 

@@ -22,7 +22,8 @@ class AskRequestTest(unittest.TestCase):
 
         self.assertEqual(by_name["domestic_consolidated_net_revenue_growth"]["decision_priority"], "primary")
         self.assertEqual(by_name["domestic_consolidated_net_revenue_growth"]["decision_profile"], "market_performance")
-        self.assertEqual(by_name["domestic_consolidated_net_revenue_growth"]["decision_profile_label"], "Domestic and overseas market allocation")
+        self.assertEqual(by_name["domestic_consolidated_net_revenue_growth"]["decision_profile_label"], "Market allocation and competitive position")
+        self.assertEqual(by_name["market_share_lead_over_runner_up"]["decision_priority"], "primary")
         self.assertEqual(by_name["foreign_subsidiary_revenue"]["decision_priority"], "supporting")
 
     def test_report_route_uses_knowledge_agent_without_running_hybrid_sql(self):

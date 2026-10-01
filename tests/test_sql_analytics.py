@@ -124,8 +124,28 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         self.assertIn("FROM authorized_business_metrics", query)
         self.assertIn("'domestic_consolidated_net_revenue'", query)
         self.assertIn("'overseas_market_net_revenue'", query)
+        self.assertIn("'market_share_lead_over_runner_up'", query)
         self.assertNotIn("'employee_headcount'", query)
         self.assertNotIn("'total_water_consumption'", query)
+        self.assertFalse(llm.generate.called)
+
+    def test_vietnamese_market_position_question_uses_verified_metric_sql_without_llm(self):
+        repository = Mock()
+        repository.execute_authorized_analytics.return_value = {
+            "results": [], "evidence": [], "business_evidence": [], "documents": [],
+        }
+        llm = Mock()
+
+        SQLAnalyticsAgent(repository, llm).run(AgentRequest(
+            question="Khoảng cách thị phần với đối thủ đứng thứ hai của Vinamilk năm 2024 là bao nhiêu?",
+            user_id="analyst",
+            metadata={"role": "finance_analyst", "company": "Vinamilk",
+                      "business_decision_domain": "market_performance"},
+        ))
+
+        query = repository.execute_authorized_analytics.call_args.args[0]
+        self.assertIn("'market_share_lead_over_runner_up'", query)
+        self.assertIn("fiscal_year IN (2024)", query)
         self.assertFalse(llm.generate.called)
 
     def test_domain_question_keeps_supporting_market_metrics_in_scope(self):

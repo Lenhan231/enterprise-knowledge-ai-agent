@@ -72,6 +72,15 @@ selectors filter the role-scoped analytics snapshot; the domain aggregate
 retains fiscal year so those filters remain meaningful. Indexed-passage counts
 include chunks only for ready documents, matching retrieval eligibility.
 
+Decision-domain report evidence follows a separate bounded path: authorized
+company/role retrieval first returns up to 15 ranked chunks, then the report
+agent scores catalog/domain phrase matches, question-matched metrics, numeric
+content and layout, and sends at most three passages to synthesis. This is a
+rerank over retrieval candidates, not a scan of every stored chunk; when no
+catalog phrase matches, the authorized retriever's candidates remain eligible.
+The business-metric upload extractor uses its own domain-aware top-10 selector
+and PDF-only dispatch, documented in [document processing](document-processing.md).
+
 When a dashboard request names a financial metric and asks for a chart/trend,
 `DashboardAgent` delegates to the bounded SQL analytics agent. The chart uses
 only cited rows from verified, role-visible metrics and keeps each source

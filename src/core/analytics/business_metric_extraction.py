@@ -38,8 +38,15 @@ def _source_quote(source: str, quote: str) -> str | None:
 def select_business_metric_chunks(
     chunks: list[dict], tables: list[dict] | None = None,
     max_chunks: int = MAX_BUSINESS_METRIC_CHUNKS,
+    decision_domain: str | None = None,
 ) -> list[dict]:
-    """Select numeric parser chunks, preferring tables without metric-name rules."""
+    """Select metric-relevant parser chunks, then rank their numeric/layout evidence."""
+    if decision_domain is not None and decision_domain not in BUSINESS_DECISION_PROFILES:
+        raise ValueError("decision_domain must name a configured decision profile")
+    profile_metrics = set(
+        BUSINESS_DECISION_PROFILES[decision_domain]["primary_metrics"]
+        if decision_domain else ()
+    )
     table_context = {}
     for table in tables or []:
         metadata = table.get("metadata", {})
@@ -65,6 +72,26 @@ def select_business_metric_chunks(
         if not text:
             continue
         is_table = (metadata.get("layout_type") or metadata.get("element_type")) == "table"
+        try:
+            page_number = int(metadata.get("page_number"))
+        except (TypeError, ValueError):
+            page_number = None
+        table_index = metadata.get("table_index")
+        context = table_context.get((page_number, table_index), {})
+        page_context = "\n".join(page_contexts.get(page_number, []))
+        domain_text = " ".join((
+            text,
+            str(metadata.get("section_title") or ""),
+            str(context.get("table_title") or "") if isinstance(context, dict) else "",
+            page_context,
+        )).casefold()
+        matched_metrics = []
+        if decision_domain:
+            for name in profile_metrics:
+                definition = BUSINESS_METRIC_CATALOG[name]
+                phrases = {name.replace("_", " "), definition["label"], *definition.get("aliases", ())}
+                if any(" ".join(phrase.casefold().split()) in domain_text for phrase in phrases):
+                    matched_metrics.append(name)
         row_text = "\n".join(re.findall(r"(?m)^Row \d+:.*$", text))
         row_text = re.sub(r"(?m)^Row \d+:\s*", "", row_text)
         numeric_tokens = re.findall(
@@ -77,16 +104,11 @@ def select_business_metric_chunks(
         if not numeric_tokens:
             continue
         score = (
-            min(len(numeric_tokens), 30)
+            len(matched_metrics) * 100
+            + min(len(numeric_tokens), 30)
             + min(len(text) // 500, 10)
             + (5 if is_table else 0)
         )
-        try:
-            page_number = int(metadata.get("page_number"))
-        except (TypeError, ValueError):
-            page_number = None
-        table_index = metadata.get("table_index")
-        context = table_context.get((page_number, table_index), {})
         selected.append({
             "text": text,
             "page_context_chunks": [
@@ -101,8 +123,10 @@ def select_business_metric_chunks(
             "is_ocr_page": any("ocr" in str(metadata.get(key, "")).casefold()
                                 for key in ("parser", "text_extraction_method", "table_extraction_method")),
             "selection_signals": {
+                "domain_relevance_score": len(matched_metrics),
                 "parser_layout": "table" if is_table else "text",
                 "numeric_token_count": len(numeric_tokens),
+                "matched_primary_metrics": sorted(matched_metrics),
                 "score": score,
             },
         })
@@ -263,7 +287,9 @@ def extract_business_metric_candidates(
     decision_domain = document.get("business_decision_domain")
     if decision_domain not in BUSINESS_DECISION_PROFILES:
         raise ValueError("business_decision_domain must name a configured decision profile")
-    selected = select_business_metric_chunks(chunks, tables, max_chunks)
+    selected = select_business_metric_chunks(
+        chunks, tables, max_chunks, decision_domain=decision_domain,
+    )
     chunks_by_page = defaultdict(list)
     for source_chunk in selected:
         chunks_by_page[source_chunk["page_number"]].append(source_chunk)

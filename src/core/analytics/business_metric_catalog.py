@@ -132,7 +132,7 @@ BUSINESS_METRIC_CATALOG = {
         "domain": "market_performance",
         "definition": "Year-over-year growth rate of domestic business revenue.",
         "unit_guidance": "%",
-        "aliases": ("domestic revenue", "domestic business growth", "doanh thu nội địa"),
+        "aliases": ("domestic business revenue growth", "domestic business growth", "tăng trưởng doanh thu nội địa"),
     },
     "domestic_segment_gross_profit": {
         "label": "Domestic segment gross profit",
@@ -232,7 +232,11 @@ BUSINESS_METRIC_CATALOG = {
         "domain": "market_performance",
         "definition": "Reported lead over the second-largest manufacturer in the cited sector; preserve approximate wording and sector scope.",
         "unit_guidance": "percentage points",
-        "aliases": ("market share lead", "market share gap", "market leader gap", "điểm phần trăm so với nhà sản xuất thứ 2"),
+        "aliases": (
+            "market share lead", "market share gap", "market leader gap",
+            "điểm phần trăm so với nhà sản xuất thứ 2", "khoảng cách thị phần",
+            "chênh lệch thị phần với đối thủ đứng thứ hai",
+        ),
     },
     "domestic_consolidated_net_revenue": {
         "label": "Domestic consolidated net revenue",
@@ -240,7 +244,8 @@ BUSINESS_METRIC_CATALOG = {
         "definition": "Consolidated net revenue generated in the domestic market.",
         "unit_guidance": "VND billion",
         "aliases": ("domestic consolidated net revenue", "domestic and overseas segment net revenue",
-                    "domestic net revenue", "doanh thu thuần hợp nhất trong nước"),
+                    "domestic net revenue", "domestic revenue", "doanh thu nội địa",
+                    "doanh thu thuần hợp nhất trong nước"),
     },
     "parent_domestic_net_revenue": {
         "label": "Parent-company domestic net revenue",
@@ -256,7 +261,7 @@ BUSINESS_METRIC_CATALOG = {
         "unit_guidance": "%",
         "aliases": ("domestic consolidated revenue growth", "domestic market revenue growth",
                     "domestic and overseas market revenue growth",
-                    "domestic revenue growth", "tăng trưởng doanh thu hợp nhất trong nước"),
+                    "tăng trưởng doanh thu hợp nhất trong nước"),
     },
     "parent_domestic_net_revenue_growth": {
         "label": "Parent-company domestic net revenue growth",
@@ -663,11 +668,12 @@ BUSINESS_DECISION_PROFILES = {
         ),
     },
     "market_performance": {
-        "label": "Domestic and overseas market allocation",
-        "management_question": "Which market merits commercial diligence, based on revenue scale and growth?",
+        "label": "Market allocation and competitive position",
+        "management_question": "Which market merits commercial diligence based on revenue scale and growth, and what reported competitive-position signals should be monitored?",
         "primary_metrics": (
             "domestic_consolidated_net_revenue", "domestic_consolidated_net_revenue_growth",
             "overseas_market_net_revenue", "overseas_market_net_revenue_growth",
+            "market_share_lead_over_runner_up",
         ),
     },
     "product_portfolio": {

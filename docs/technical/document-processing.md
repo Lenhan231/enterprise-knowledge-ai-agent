@@ -83,6 +83,20 @@ reproducible without changing ingestion or embedding behavior.
   links to PDFs open at their cited page; links to non-PDF sources remain
   unchanged.
 
+Business metric extraction is a separate PDF-only upload path. The uploader
+may select one decision domain; the extractor scores parser chunks by matches
+to that domain's primary metric names/aliases and section/table context, then
+by numeric density and table layout. It sends at most 10 chunks (2 per page)
+to the LLM, which may return no metrics. The selector is a recall heuristic,
+not a claim that a chunk contains a KPI: numeric chunks without a recognized
+alias remain eligible when the top-10 budget allows. The LLM output is limited
+to the selected profile's primary metrics and is accepted only when the quote,
+value, unit and year are grounded in the selected parser chunk/page. Candidates
+retain source chunk ID/index/hash and remain pending for admin review. XLSX is
+parsed and indexed for document QA but is not sent through business metric
+extraction; uploaded HTML is not supported (the seed-corpus HTML path is
+separate).
+
 The batch runner supports `--page-selection-only` for zero-cost selection
 inspection, `--llm --dry-run` to inspect model extraction without persistence,
 and `--llm --save-candidates` for review-only candidate persistence. Selected

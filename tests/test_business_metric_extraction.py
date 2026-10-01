@@ -46,6 +46,10 @@ class BusinessMetricExtractionTests(unittest.TestCase):
             for metric_name in profile["primary_metrics"]:
                 self.assertIn(metric_name, BUSINESS_METRIC_CATALOG)
                 self.assertEqual(BUSINESS_METRIC_CATALOG[metric_name]["domain"], domain)
+        self.assertIn(
+            "market_share_lead_over_runner_up",
+            BUSINESS_DECISION_PROFILES["market_performance"]["primary_metrics"],
+        )
 
     def test_sends_parser_table_chunk_to_model_and_keeps_catalog_key(self):
         tables = [{
@@ -156,6 +160,39 @@ class BusinessMetricExtractionTests(unittest.TestCase):
         }]
         selected = select_business_metric_chunks(chunks)
         self.assertEqual(len(selected), 1)
+        self.assertEqual(selected[0]["selection_signals"]["parser_layout"], "table")
+
+    def test_domain_selection_filters_unrelated_numeric_tables_before_numeric_layout_ranking(self):
+        chunks = [
+            {"text": "Columns: Employees | 2024\nRow 1: Employees: 8,000",
+             "metadata": {"page_number": 2, "chunk_index": 1, "layout_type": "table"}},
+            {"text": "Columns: Metric | 2024\nRow 1: Dairy cattle managed: 130,000 cows",
+             "metadata": {"page_number": 8, "chunk_index": 2, "layout_type": "table"}},
+            {"text": "Dairy cattle managed by Vinamilk reached 130,000 cows in 2024.",
+             "metadata": {"page_number": 9, "chunk_index": 3, "layout_type": "text"}},
+        ]
+
+        selected = select_business_metric_chunks(
+            chunks, max_chunks=2, decision_domain="milk_supply",
+        )
+
+        self.assertEqual([chunk["page_number"] for chunk in selected], [8, 9])
+        self.assertEqual(selected[0]["layout_type"], "table")
+        self.assertEqual(
+            selected[0]["selection_signals"]["matched_primary_metrics"],
+            ["dairy_cattle_herd_size"],
+        )
+
+    def test_domain_selector_keeps_numeric_table_candidates_without_alias_match_for_llm_review(self):
+        chunks = [{
+            "text": "Columns: K | 2024\nRow 1: K: 402,000 tonnes",
+            "metadata": {"page_number": 10, "chunk_index": 7, "layout_type": "table"},
+        }]
+
+        selected = select_business_metric_chunks(chunks, decision_domain="milk_supply")
+
+        self.assertEqual(len(selected), 1)
+        self.assertEqual(selected[0]["selection_signals"]["domain_relevance_score"], 0)
         self.assertEqual(selected[0]["selection_signals"]["parser_layout"], "table")
 
     def test_selects_numeric_narrative_chunk_for_non_table_kpis(self):

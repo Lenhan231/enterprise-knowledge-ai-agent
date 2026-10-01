@@ -9,7 +9,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from core.agents.intent_classifier import IntentClassifier
 from core.analytics.metric_ontology import resolve_metric_names
 from core.analytics.business_metric_catalog import resolve_business_metric_names
-from core.agents.knowledge_agent import KnowledgeAgent, _financial_retrieval_query
+from core.agents.knowledge_agent import (
+    KnowledgeAgent,
+    _financial_retrieval_query,
+    _rank_business_decision_evidence,
+)
 from core.agents.report_agent import ReportAgent, _financial_facts_match_cited_evidence, _format_prompt_evidence
 from core.agents.router import AgentRouter
 from core.agents.sql_analytics_agent import SQLAnalyticsAgent
@@ -84,6 +88,18 @@ class AgentFlowTest(unittest.TestCase):
         self.assertTrue({
             "production_lines_meeting_oee_target", "production_cost_savings", "purchasing_cost_savings",
         }.issubset(factory))
+
+    def test_business_metric_resolver_understands_vietnamese_market_position_questions(self):
+        self.assertEqual(
+            resolve_business_metric_names(
+                "Vinamilk có khoảng cách thị phần với đối thủ đứng thứ hai bao nhiêu?"
+            ),
+            {"market_share_lead_over_runner_up"},
+        )
+        self.assertEqual(
+            resolve_business_metric_names("Compare domestic consolidated net revenue growth with domestic consolidated net revenue"),
+            {"domestic_consolidated_net_revenue", "domestic_consolidated_net_revenue_growth"},
+        )
 
     def test_business_metric_trend_summary_uses_analytics_and_prohibits_unsupported_causes(self):
         knowledge = Mock()
@@ -464,6 +480,55 @@ class AgentFlowTest(unittest.TestCase):
         ))
 
         self.assertEqual(rag.retrieve_contexts.call_args.kwargs["limit"], 3)
+
+    def test_decision_domain_reranking_filters_other_domains_and_prefers_numeric_tables(self):
+        contexts = [
+            {"source_id": "S1", "content": "Employee headcount: 8,000.",
+             "metadata": {"layout_type": "table"}},
+            {"source_id": "S2", "content": "Approximate market share lead over the second player: 30 percentage points.",
+             "metadata": {"layout_type": "text"}},
+            {"source_id": "S3", "content": "Domestic consolidated net revenue 2024: VND 25,000 billion.",
+             "metadata": {"layout_type": "table"}},
+            {"source_id": "S4", "content": "Market share and domestic revenue are discussed without values.",
+             "metadata": {"layout_type": "text"}},
+        ]
+
+        ranked = _rank_business_decision_evidence(
+            contexts,
+            "Compare market share lead and domestic revenue in 2024",
+            "market_performance",
+            3,
+        )
+
+        self.assertEqual(len(ranked), 3)
+        self.assertNotIn("Employee headcount", " ".join(item["content"] for item in ranked))
+        self.assertEqual(ranked[0]["content"], contexts[2]["content"])
+        self.assertEqual(ranked[1]["content"], contexts[1]["content"])
+        self.assertEqual([item["source_id"] for item in ranked], ["S1", "S2", "S3"])
+
+    def test_decision_domain_fetches_authorized_candidate_pool_then_limits_prompt_context(self):
+        rag = Mock()
+        rag.retrieve_contexts.return_value = [
+            {"source_id": "S1", "document_name": "HR report", "chunk_index": 1,
+             "content": "Employee headcount: 8,000.", "metadata": {"layout_type": "table"},
+             "retrieval_score": 0.99, "retrieval_method": "hybrid"},
+            {"source_id": "S2", "document_name": "Annual report", "chunk_index": 2,
+             "content": "Domestic consolidated net revenue 2024: VND 25,000 billion.",
+             "metadata": {"layout_type": "table"}, "retrieval_score": 0.7, "retrieval_method": "hybrid"},
+        ]
+
+        result = KnowledgeAgent(rag).run(AgentRequest(
+            question="Compare domestic consolidated net revenue in 2024",
+            user_id="analyst",
+            metadata={"role": "finance_analyst", "company": "Vinamilk",
+                      "evidence_only": True, "decision_support": True,
+                      "business_decision_domain": "market_performance"},
+        ))
+
+        self.assertEqual(rag.retrieve_contexts.call_args.kwargs["limit"], 15)
+        self.assertEqual(rag.retrieve_contexts.call_args.kwargs["roles"], ["finance_analyst"])
+        self.assertEqual(len(result.evidence), 1)
+        self.assertIn("Domestic consolidated net revenue", result.evidence[0].content)
 
     def test_knowledge_agent_routes_explicit_parent_retrieval(self):
         rag = Mock()

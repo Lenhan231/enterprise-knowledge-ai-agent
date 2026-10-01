@@ -200,7 +200,10 @@ class OCREvaluationTest(unittest.TestCase):
         memory = evaluate_ocr.peak_memory_mb()
         self.assertIn("process_peak_rss_mb", memory)
         self.assertIn("child_peak_rss_mb", memory)
-        self.assertGreater(memory["process_peak_rss_mb"], 0)
+        if memory["process_peak_rss_mb"] is None:
+            self.assertIsNone(memory["child_peak_rss_mb"])
+        else:
+            self.assertGreater(memory["process_peak_rss_mb"], 0)
 
     def test_paddle_v2_output_is_adapted(self):
         class PaddleV2:

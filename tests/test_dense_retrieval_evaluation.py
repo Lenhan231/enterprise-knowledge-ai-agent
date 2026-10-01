@@ -7,7 +7,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from scripts.check_apple_retrieval import (  # noqa: E402
+from scripts.retrieval.check_apple_retrieval import (  # noqa: E402
     TOP_K,
     build_artifact,
     evaluate_cases,
@@ -60,7 +60,9 @@ class FakeRetrieval:
         self.responses = responses
         self.requests = []
 
-    def retrieve(self, request):
+    def retrieve(self, request, method="hybrid"):
+        if method != "dense":
+            raise AssertionError("The dense evaluator must select dense retrieval")
         self.requests.append(request)
         return self.responses[request.query]
 

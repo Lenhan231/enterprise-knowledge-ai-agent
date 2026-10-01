@@ -11,7 +11,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from core.retrieval.retrieval import (  # noqa: E402
@@ -125,7 +125,7 @@ def evaluate_cases(retrieval, cases: list[dict]) -> tuple[list[dict], dict]:
     rows = []
     for case in validate_cases(cases):
         response = retrieval.retrieve(
-            RetrievalRequest(query=case["question"], top_k=TOP_K)
+            RetrievalRequest(query=case["question"], top_k=TOP_K), method="dense"
         )
         rows.append(evaluate_response(response, case["expected_document_ids"]))
 
@@ -184,7 +184,7 @@ def build_artifact(
         ).strip(),
         "embedding_model": embedding_model,
         "top_k": TOP_K,
-        "fixture": str(fixture),
+        "fixture": fixture.as_posix(),
         "summary": {
             "queries": summary["queries"],
             **{f"hit_at_{k}": summary["hit"][k] for k in K_VALUES},

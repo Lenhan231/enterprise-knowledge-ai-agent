@@ -15,12 +15,7 @@ from core.rag.rag_service import (
     _cache_response,
     _get_cached_response,
 )
-from core.retrieval.retrieval import (
-    RankedChunk,
-    RetrievalResponse,
-    SourceLocation,
-    make_chunk_id,
-)
+from core.retrieval.retrieval import RankedChunk, RetrievalResponse, SourceLocation, make_chunk_id
 
 
 class FakeRetrieval:
@@ -28,12 +23,24 @@ class FakeRetrieval:
         self.contexts = contexts
         self.calls = []
 
-    def retrieve(self, request):
-        return RetrievalResponse(
-            query=request.query,
-            latency_ms=1,
-            results=self.contexts[:request.top_k],
-        )
+    def retrieve(self, request, company=None, roles=None, method="hybrid"):
+        self.calls.append((request, company, roles, method))
+        results = []
+        for rank, item in enumerate(self.contexts[:request.top_k], 1):
+            document_id = item["metadata"]["document_id"]
+            chunk_index = item["chunk_index"]
+            results.append(RankedChunk(
+                rank=rank,
+                chunk_id=make_chunk_id(document_id, chunk_index),
+                document_id=document_id,
+                text=item["content"],
+                score=item["retrieval_score"],
+                source=item["document_name"],
+                location=SourceLocation(chunk_index=chunk_index, page_number=item["metadata"].get("page_number"), section_title=item["metadata"].get("section_title")),
+                metadata=item["metadata"],
+                retrieval_method=item["retrieval_method"],
+            ))
+        return RetrievalResponse(query=request.query, latency_ms=0, results=results)
 
     def close(self):
         pass
@@ -50,25 +57,19 @@ class FakeLLM:
 
 
 def context(document_id="DOC-1"):
-    return RankedChunk(
-        rank=1,
-        chunk_id=make_chunk_id(document_id, 7),
-        document_id=document_id,
-        text="Employees may report policy concerns.",
-        score=0.81,
-        source="policy.pdf",
-        location=SourceLocation(
-            chunk_index=7,
-            page_number=12,
-            section_title="Reporting Concerns",
-        ),
-        metadata={
+    return {
+        "document_name": "policy.pdf",
+        "chunk_index": 7,
+        "content": "Employees may report policy concerns.",
+        "metadata": {
             "document_id": document_id,
             "source_document": "policy.pdf",
             "page_number": 12,
             "section_title": "Reporting Concerns",
         },
-    )
+        "retrieval_score": 0.81,
+        "retrieval_method": "hybrid",
+    }
 
 
 class RAGServiceTest(unittest.TestCase):
@@ -293,9 +294,8 @@ class RAGServiceTest(unittest.TestCase):
         self.assertEqual(first.prompt_sha256, second.prompt_sha256)
 
     def test_multiple_sources(self):
-        second = context("DOC-2").model_copy(update={"rank": 2})
         result = RAGService(
-            FakeRetrieval([context("DOC-1"), second]),
+            FakeRetrieval([context("DOC-1"), context("DOC-2")]),
             FakeLLM("The requirements are described in [S1] and [S2]."),
         ).generate_answer("What are the requirements?", roles=["employee"])
 

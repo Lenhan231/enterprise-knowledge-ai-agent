@@ -36,7 +36,10 @@ class PDFUploadProcessingTest(unittest.TestCase):
 
     def test_real_vinamilk_balance_sheet_upload_extracts_native_text_table(self):
         root = Path(__file__).resolve().parents[1]
-        source = (root / "data/raw/vietnam_enterprises/vnm/vnm-ar-2024-vi.pdf").read_bytes()
+        source_path = root / "data/raw/vietnam_enterprises/vnm/vnm-ar-2024-vi.pdf"
+        if not source_path.exists():
+            self.skipTest("Optional source PDF is not available in this checkout")
+        source = source_path.read_bytes()
         ground_truth = json.loads(
             (root / "data/evaluation/vinamilk_ocr_ground_truth_v8.json").read_text()
         )

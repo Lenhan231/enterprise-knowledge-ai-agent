@@ -1,0 +1,4 @@
+# Keep the frozen benchmark bytes identical in Windows and WSL checkouts.
+data/evaluation/embedding_benchmark_20261001/corpus.jsonl -text
+data/evaluation/embedding_benchmark_20261001/cases.json -text
+scripts/retrieval/evaluate_embeddings.py -text

@@ -9,7 +9,10 @@ import importlib.metadata
 import hashlib
 import json
 import platform
-import resource
+try:
+    import resource
+except ImportError:
+    resource = None
 import re
 import shutil
 import subprocess
@@ -140,6 +143,8 @@ def summarize_pages(rows: list[dict]) -> dict:
 
 def peak_memory_mb() -> dict[str, float | None]:
     """Return process and child-process high-water RSS in MiB."""
+    if resource is None:
+        return {"process_peak_rss_mb": None, "child_peak_rss_mb": None}
     scale = 1024 if platform.system() == "Linux" else 1024 * 1024
     result = {}
     for label, scope in (("process_peak_rss_mb", resource.RUSAGE_SELF), ("child_peak_rss_mb", resource.RUSAGE_CHILDREN)):

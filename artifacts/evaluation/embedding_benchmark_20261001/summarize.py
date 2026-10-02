@@ -62,7 +62,7 @@ for model in models:
     a = model["vietnamese_aggregate"]
     lines.append(f"| {model['key']} | {a['recall@1']:.4f} | {a['recall@5']:.4f} | {a['mrr']:.4f} | {a['ndcg@5']:.4f} |")
 lines += ["", "## Verification and limits", "",
-          "Regression suite: 487 tests, exit code 0, 10 skips. See `regression.log`.",
+          "Prior handoff regression suite: 487 tests, exit code 0, 10 skips. See `regression.log`.",
           "The initial merged checkout failed; corrections restore main's RAG test mock,",
           "update the moved Apple evaluator import/root and explicit dense selection, and",
           "handle Windows resource telemetry, permissions and optional source fixtures.",
@@ -72,8 +72,8 @@ lines += ["", "## Verification and limits", "",
           "or generated answers. The labels are inherited from a small demo set, not independent review.", "",
           "The baseline retains its native 256-token limit; the other runs cap their limits at 512.",
           "All receive identical saved text, but model tokenizers, truncation and recommended prefixes",
-          "differ. CPU timings use four compute threads and batch size eight. Qwen3/e5 are planned",
-          "for a separate GPU PC: accuracy can be compared on the frozen inputs, but CPU/GPU",
+          "differ. All runs use four compute threads and batch size eight. Qwen3/e5 completed",
+          "on an RTX 2060 in WSL: accuracy can be compared on the frozen inputs, but CPU/GPU",
           "timings are not a controlled speed comparison. Model loading may include downloads",
           "and differs with cache state. No database embeddings were modified.", "",
           "Input provenance and reproduction commands: `data/evaluation/embedding_benchmark_20261001/README.md`."]

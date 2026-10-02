@@ -24,8 +24,10 @@ the laptop's Windows `.venv` is not portable.
 - Baseline and BGE-M3 CPU runs are complete, with committed JSON reports.
   Overall Recall@1 / Recall@5 / MRR: baseline 0.6667 / 0.9167 / 0.7597;
   BGE-M3 0.7500 / 0.9167 / 0.8176.
-- Remaining work: run Qwen3-Embedding-0.6B and e5-large-v2 on the RTX 2060,
-  then generate the four-model comparison. Neither remaining run is complete.
+- Completed on 2026-10-01: Qwen3-Embedding-0.6B and e5-large-v2 on the RTX 2060
+  in WSL. All four reports passed `summarize.py`; see `comparison.json` and `report.md`.
+  Qwen3 Recall@1 / Recall@5 / MRR: 0.7500 / 0.9167 / 0.8028;
+  e5-large-v2: 0.6667 / 0.9167 / 0.7583.
 - Reuse all 4,750 frozen chunks and 12 labeled questions (five Vietnamese).
   Do not parse or chunk documents again, change labels, or write to the database.
 - Baseline uses its native 256-token limit; other models are capped at 512.
@@ -91,3 +93,22 @@ Compare document retrieval scores across all four runs. CPU and GPU timings
 must remain hardware-specific; these runs do not establish relative speed on
 identical hardware. The benchmark does not modify a database or evaluate
 hybrid retrieval, reranking, or generated answers.
+
+## GPU completion notes — 2026-10-01
+
+- Used clean local `Huy` commit `72f3991`; remote fetch required unavailable
+  GitHub authentication. The evaluator and both frozen input hashes matched
+  the manifest before running.
+- Reused the existing Linux environment: Python 3.11.15, torch 2.14.0,
+  sentence-transformers 6.0.1, transformers 5.17.0, numpy 2.4.6,
+  huggingface-hub 1.31.0. CUDA exposed the RTX 2060.
+- Installed WSL `gcc` and `libc6-dev` after the first Qwen3 attempt failed
+  because PyTorch/Triton could not find a C compiler. The retry completed.
+- Both runs used `OMP_NUM_THREADS=4`, `MKL_NUM_THREADS=4`, CUDA, batch eight,
+  top-k 30 and the full-corpus cap of 100000; model limits stayed at 512.
+- Existing evaluator and comparison checks passed: 12 tests. All-four-report
+  verification passed, including input hashes, model revisions, labels and
+  role-visible chunk counts. The 487-test regression result above is prior
+  handoff evidence, not a new full-suite run on this PC.
+- Run logs and verification output are saved alongside the reports as ignored
+  `.log` files. Frozen inputs, evaluator, `.env` and database data were unchanged.

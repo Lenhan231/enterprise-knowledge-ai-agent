@@ -27,7 +27,7 @@ from core.rag.rag_service import extract_source_ids  # noqa: E402
 BENCHMARK = ROOT / "data/evaluation/commerce_decision_benchmark.json"
 MANIFEST = ROOT / "data/commerce_knowledge/manifest.json"
 DEFAULT_OUTPUT = ROOT / "artifacts/evaluation/commerce-decision-support-live.json"
-_NUMBER_TOKEN = re.compile(r"(?<!\d)\d+(?:[.,]\d+)*(?!\d)")
+_NUMBER_TOKEN = re.compile(r"(?<!\d)\d+(?:[.,\u00a0\u202f]\d+)*(?!\d)")
 _GOLD_FIELD_ALIASES = {
     "snapshots": ("sku_snapshots",),
     "overstock_products": ("overstock_count",),
@@ -46,7 +46,7 @@ _PRIMARY_DIMENSIONS = ("category", "region", "campaign", "used_promotion", "tagg
 
 def _decimal_interpretations(token: str) -> set[Decimal]:
     """Handle decimal and thousands separators used in English and Vietnamese answers."""
-    value = token.replace(" ", "")
+    value = re.sub(r"[\s\u00a0\u202f]", "", token)
     interpretations = {value}
     if "," in value and "." in value:
         decimal_separator = "," if value.rfind(",") > value.rfind(".") else "."

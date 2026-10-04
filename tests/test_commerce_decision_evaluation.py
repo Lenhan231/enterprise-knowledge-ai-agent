@@ -261,6 +261,14 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
             [],
         )
 
+    def test_gold_numeric_coverage_accepts_thin_space_grouping(self):
+        case = {"required_numeric_facts": ["90345105.91"]}
+
+        self.assertEqual(
+            missing_gold_numeric_facts(case, "90\u202f345\u202f105.91 USD"),
+            [],
+        )
+
     def test_gold_numeric_coverage_reports_omitted_required_measure(self):
         case = {"required_numeric_facts": [10305, 235597280.59, 39488236.4]}
 

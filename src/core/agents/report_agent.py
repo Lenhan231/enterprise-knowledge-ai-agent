@@ -24,7 +24,10 @@ from core.analytics.commerce_decision_support import (
 )
 from core.analytics.sql_safety import UnsafeAnalyticsQuery
 from core.llm.groq_provider import GroqProvider
-from core.llm.provider_fallback import generate_with_provider_fallback, is_retryable_provider_error
+from core.llm.provider_fallback import (
+    accumulate_token_usage, generate_with_provider_fallback, is_retryable_provider_error,
+    sum_token_usage,
+)
 from core.models.agents import AgentRequest, AgentResult, Evidence
 from core.rag.rag_service import INSUFFICIENT_ANSWER
 
@@ -2154,6 +2157,7 @@ class ReportAgent(BaseAgent):
                 "recommendation limited to a diagnostic/data-gathering next step grounded in SQL and schema limits."
             )
         provider_rate_limited = False
+        answer_token_usage = None
 
         def safe_fallback() -> str:
             if snapshot.get("sql_query"):
@@ -2164,6 +2168,7 @@ class ReportAgent(BaseAgent):
 
         try:
             answer, provider = _generate_conditional_draft(self.llm, prompt, system_instructions)
+            answer_token_usage = accumulate_token_usage(answer_token_usage, self.llm)
         except Exception as error:
             if not is_retryable_provider_error(error):
                 raise
@@ -2331,6 +2336,7 @@ class ReportAgent(BaseAgent):
                 )
             try:
                 answer, provider = _generate_conditional_draft(self.llm, prompt + correction, system_instructions)
+                answer_token_usage = accumulate_token_usage(answer_token_usage, self.llm)
                 answer = _normalize_numeric_citations(answer, evidence)
             except Exception as error:
                 if not is_retryable_provider_error(error):
@@ -2350,6 +2356,8 @@ class ReportAgent(BaseAgent):
                 failure, fallback_used, domain,
             )
             answer = _INVALID_REPORT
+        sql_token_usage = snapshot.get("sql_generation_usage")
+        total_token_usage = sum_token_usage(sql_token_usage, answer_token_usage)
         return AgentResult(
             answer=answer,
             agent="report",
@@ -2365,6 +2373,11 @@ class ReportAgent(BaseAgent):
                 "decision_fallback_used": fallback_used,
                 "generation_provider": provider,
                 "question_sql_fallback": question_sql_fallback,
+                **({"token_usage": {
+                    "sql_generation": sql_token_usage,
+                    "answer_generation": answer_token_usage,
+                    "total": total_token_usage,
+                }} if total_token_usage else {}),
             },
         )
 

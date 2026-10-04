@@ -1627,6 +1627,8 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
                if agent_result.metadata.get("question_sql_fallback") else {}),
             **({"generation_provider": agent_result.metadata["generation_provider"]}
                if agent_result.metadata.get("generation_provider") else {}),
+            **({"token_usage": agent_result.metadata["token_usage"]}
+               if user.get("role") == "admin" and agent_result.metadata.get("token_usage") else {}),
         }
     except RateLimitError as error:
         agent_name = getattr(router, "last_destination", agent_name)

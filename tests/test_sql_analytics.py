@@ -69,6 +69,7 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         repository.latest_commerce_inventory_snapshot.return_value = "2022-12-31"
         repository.execute_commerce_analytics.return_value = [{"category": "Shoes", "units_sold": 42}]
         llm = Mock()
+        llm.last_usage = {"input_tokens": 80, "output_tokens": 14, "total_tokens": 94}
         llm.generate.return_value = (
             '{"sql":"SELECT i.category, SUM(i.units_sold) AS units_sold '
             'FROM commerce.inventory i GROUP BY i.category LIMIT 10"}'
@@ -82,6 +83,7 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
 
         self.assertEqual(result["observations"], [{"category": "Shoes", "units_sold": 42}])
         self.assertEqual(result["source_tables"], ["commerce.inventory"])
+        self.assertEqual(result["sql_generation_usage"], llm.last_usage)
         self.assertIn("Which product groups are moving fastest", llm.generate.call_args.args[0])
         self.assertIn("Select an aggregate for every measure explicitly requested", llm.generate.call_args.args[0])
         self.assertIn("no CTEs, nested queries, scalar subqueries", llm.generate.call_args.args[0])

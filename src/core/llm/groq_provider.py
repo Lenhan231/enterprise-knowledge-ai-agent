@@ -24,6 +24,7 @@ class GroqProvider(LLMInterface):
                 )
         
     def generate(self, prompt: str, *, instructions: str | None = None) -> str:
+        self.last_usage = None
         request = {
             "model": self.model_name,
             "input": prompt,

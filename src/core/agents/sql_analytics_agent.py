@@ -19,7 +19,7 @@ from core.agents.base import BaseAgent
 from core.analytics.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql, validate_commerce_sql
 from core.database.document_repository import DocumentRepository
 from core.llm.groq_provider import GroqProvider
-from core.llm.provider_fallback import generate_with_provider_fallback
+from core.llm.provider_fallback import accumulate_token_usage, generate_with_provider_fallback
 from core.models.agents import AgentRequest, AgentResult, Evidence
 
 
@@ -294,6 +294,7 @@ class SQLAnalyticsAgent(BaseAgent):
         )
         text = ""
         rejected_sql = ""
+        token_usage = None
 
         def validated_query(raw: str) -> str:
             query = _validate_comparison_groups(question, _commerce_sql_from_model(raw))
@@ -313,6 +314,7 @@ class SQLAnalyticsAgent(BaseAgent):
 
         try:
             raw, generation_provider = generate_with_provider_fallback(self.llm, prompt)
+            token_usage = accumulate_token_usage(token_usage, self.llm)
             rejected_sql = _commerce_sql_from_model(raw)
             text = validated_query(raw)
             observations = self.repository.execute_commerce_analytics(text, domain)
@@ -327,6 +329,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 f"Rejected SQL: {rejected_sql}"
             )
             raw, generation_provider = generate_with_provider_fallback(self.llm, prompt + correction)
+            token_usage = accumulate_token_usage(token_usage, self.llm)
             text = validated_query(raw)
             observations = self.repository.execute_commerce_analytics(text, domain)
         used_tables = list(dict.fromkeys(re.findall(
@@ -337,6 +340,7 @@ class SQLAnalyticsAgent(BaseAgent):
             "source_tables": [f"commerce.{name}" for name in used_tables],
             "sql_query": text,
             "sql_generation_provider": generation_provider,
+            "sql_generation_usage": token_usage,
             "observations": observations,
             "limitations": list(COMMERCE_DECISION_PROFILES[domain]["limitations"]),
             "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer.",

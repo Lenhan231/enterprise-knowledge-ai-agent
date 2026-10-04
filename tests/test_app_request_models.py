@@ -217,6 +217,11 @@ class AskRequestTest(unittest.TestCase):
         report.run.return_value = AgentResult(
             answer="The annual report discusses its strategy and risks [S1].",
             agent="report", evidence=[evidence],
+            metadata={"token_usage": {
+                "sql_generation": {"input_tokens": 80, "output_tokens": 14, "total_tokens": 94},
+                "answer_generation": {"input_tokens": 140, "output_tokens": 30, "total_tokens": 170},
+                "total": {"input_tokens": 220, "output_tokens": 44, "total_tokens": 264},
+            }},
         )
         classifier = Mock()
         classifier.classify.return_value = IntentClassifier.fallback(
@@ -245,6 +250,7 @@ class AskRequestTest(unittest.TestCase):
         self.assertEqual(payload["citations"][0]["source_publisher"], "Example Publisher")
         self.assertEqual(payload["citations"][0]["evidence_class"], "company_practice_reference")
         self.assertEqual(payload["citations"][0]["reference_applicability"], "External example only.")
+        self.assertEqual(payload["token_usage"]["total"]["total_tokens"], 264)
 
     def test_action_suggestion_api_mode_builds_internal_question_and_domain_metadata(self):
         report, classifier = Mock(), Mock()
@@ -273,6 +279,7 @@ class AskRequestTest(unittest.TestCase):
     def test_ask_api_preserves_dashboard_visualization_and_verified_citations(self):
         answer = AgentResult(
             answer="Revenue trend [M1] [M2]", agent="dashboard",
+            metadata={"token_usage": {"total": {"total_tokens": 1}}},
             evidence=[Evidence(
                 citation_id="M1", source_type="verified_metric", source="FY2023 net revenue",
                 content="Audited source quote", metadata={"document_id": "AR23", "page_number": 12,
@@ -314,6 +321,7 @@ class AskRequestTest(unittest.TestCase):
         self.assertEqual(citation["source_chunk_id"], 90)
         self.assertEqual(citation["chunk_index"], 4)
         self.assertEqual(citation["source_content_hash"], "sha256:abc")
+        self.assertNotIn("token_usage", payload)
 
     def test_metric_review_accepts_vietnamese_grouping_and_decimal_separators(self):
         for entered, expected in (("59723", 59723), ("59.723", 59723), ("59.723,5", 59723.5),

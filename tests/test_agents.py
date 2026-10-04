@@ -348,11 +348,14 @@ class AgentFlowTest(unittest.TestCase):
                 "SELECT i.category, SUM(i.units_received) AS units_received "
                 "FROM commerce.inventory i WHERE i.year = 2022 GROUP BY i.category LIMIT 10"
             ),
+            "sql_generation_usage": {"input_tokens": 80, "output_tokens": 14, "total_tokens": 94},
             "observations": [{"snapshot_date": date(2022, 12, 31), "category": "Streetwear", "units_received": 35844}],
             "limitations": ["Category receipts do not establish a stock transfer opportunity."],
             "dataset_note": "Synthetic Commerce data.",
         })
-        knowledge, llm = Mock(), Mock()
+        knowledge, llm = Mock(), Mock(last_usage={
+            "input_tokens": 120, "output_tokens": 26, "total_tokens": 146,
+        })
         knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[])
         llm.generate.return_value = (
             "Streetwear has the highest received-unit total in this requested category comparison [C1]. "
@@ -375,6 +378,9 @@ class AgentFlowTest(unittest.TestCase):
         ])
         self.assertIn("[C1]", result.answer)
         self.assertFalse(result.metadata["citation_validation_failed"])
+        self.assertEqual(result.metadata["token_usage"]["total"], {
+            "input_tokens": 200, "output_tokens": 40, "total_tokens": 240,
+        })
 
     def test_question_specific_inventory_answer_includes_vetted_flag_overlap_aggregate(self):
         analytics = SQLAnalyticsAgent(repository=Mock(), llm=Mock())

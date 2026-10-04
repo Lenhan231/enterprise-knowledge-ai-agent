@@ -10,7 +10,7 @@ from openai import APIConnectionError, APIStatusError
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from core.llm.groq_provider import GroqProvider
 from core.llm.huggingface_provider import HuggingFaceProvider
-from core.llm.provider_fallback import generate_with_provider_fallback
+from core.llm.provider_fallback import accumulate_token_usage, generate_with_provider_fallback, sum_token_usage
 
 
 class ProviderFallbackTest(unittest.TestCase):
@@ -22,10 +22,25 @@ class ProviderFallbackTest(unittest.TestCase):
             "HUGGINGFACE_LLM_FALLBACK": "true", "HUGGINGFACE_API_KEY": "test-token",
         }), patch("core.llm.provider_fallback.HuggingFaceProvider") as fallback_factory:
             fallback_factory.return_value.generate.return_value = "  safe answer  "
+            fallback_factory.return_value.last_usage = {
+                "input_tokens": 20, "output_tokens": 4, "total_tokens": 24,
+            }
             result = generate_with_provider_fallback(llm, "prompt")
 
         self.assertEqual(result, ("safe answer", "huggingface_inference"))
+        self.assertEqual(llm.last_usage, fallback_factory.return_value.last_usage)
         fallback_factory.return_value.close.assert_called_once()
+
+    def test_token_usage_accumulates_retries_and_stages(self):
+        provider = MagicMock(last_usage={"input_tokens": 20, "output_tokens": 4, "total_tokens": 24})
+        first = accumulate_token_usage(None, provider)
+        provider.last_usage = {"input_tokens": 30, "output_tokens": 5, "total_tokens": 35}
+        second = accumulate_token_usage(first, provider)
+
+        self.assertEqual(second, {"input_tokens": 50, "output_tokens": 9, "total_tokens": 59})
+        self.assertEqual(sum_token_usage(first, second), {
+            "input_tokens": 70, "output_tokens": 13, "total_tokens": 83,
+        })
 
     def test_non_transient_provider_error_does_not_use_fallback(self):
         llm = MagicMock()

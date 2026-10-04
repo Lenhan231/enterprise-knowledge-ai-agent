@@ -724,6 +724,14 @@ function renderAnswer(data, panel = $("#answer-panel")) {
   const questionSqlFallbackNote = questionSqlFallbackNotes[data.question_sql_fallback]
     ? `<p class="analysis-caveat answer-provenance-note" role="note"><strong>Using bounded Commerce aggregates.</strong> ${questionSqlFallbackNotes[data.question_sql_fallback]} This answer may not reflect the exact filters or grouping in your question.</p>`
     : "";
+  const usage = data.token_usage;
+  const usageStages = usage ? [
+    ["SQL generation", usage.sql_generation],
+    ["Answer generation", usage.answer_generation],
+  ].filter(([, value]) => value && Number.isInteger(value.total_tokens)) : [];
+  const tokenUsage = usageStages.length
+    ? `<details class="token-usage"><summary>Generation tokens · ${Number(usage.total?.total_tokens || 0).toLocaleString()} total</summary><ul>${usageStages.map(([label, value]) => `<li>${escapeHtml(label)}: ${Number(value.input_tokens || 0).toLocaleString()} in · ${Number(value.output_tokens || 0).toLocaleString()} out · ${Number(value.total_tokens).toLocaleString()} total</li>`).join("")}</ul><small>SQL and answer model calls only; embeddings and routing are not included.</small></details>`
+    : "";
   panel.innerHTML = `
     <div class="answer-header-wrap">
       <div class="answer-heading">
@@ -737,6 +745,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
     ${decisionModeNote}
     ${referenceRetrievalNote}
     ${questionSqlFallbackNote}
+    ${tokenUsage}
     <div class="answer-text">${renderAnswerBody(data.answer)}</div>
     ${renderDashboardVisualization(data.data?.visualization)}
     ${data.citation_validation_failed ? '<p class="error-message">Relevant passages were found, but citation verification did not meet the strict confidence threshold.</p>' : citations.length ? `

@@ -57,6 +57,7 @@ function selectWorkspaceTab(name) {
 
 function syncWorkspaceTabs(user = currentUser) {
   const isTester = user?.role === "tester";
+  const isAdmin = user?.role === "admin";
   const canViewAnalytics = ["operations", "finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user?.role);
   const canUpload = ["document_uploader", "admin"].includes(user?.role);
   const available = {

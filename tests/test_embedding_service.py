@@ -63,6 +63,20 @@ class EmbeddingServiceTest(unittest.TestCase):
 
         client_type.assert_called_once_with(model="test-model", token="test-token")
 
+    def test_hosted_document_embeddings_are_sent_in_bounded_ordered_batches(self):
+        _load_backend.cache_clear()
+        with patch("core.embeddings.embedding_service.InferenceClient") as client_type, \
+             patch.dict("os.environ", {"HUGGINGFACE_API_KEY": "test-token"}):
+            client = client_type.return_value
+            client.feature_extraction.side_effect = lambda texts: [[float(len(text))] for text in texts]
+            service = EmbeddingService(model_name="test-model", backend_name="huggingface_inference")
+            texts = [f"chunk-{index}" for index in range(33)]
+
+            vectors = service.embed_documents(texts)
+
+        self.assertEqual(vectors, [[float(len(text))] for text in texts])
+        self.assertEqual([len(call.args[0]) for call in client.feature_extraction.call_args_list], [16, 16, 1])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,17 +2,480 @@ from pathlib import Path
 import sys
 import unittest
 from types import SimpleNamespace
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, Mock, patch
+import os
 
+import httpx
+from openai import RateLimitError
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent
-from core.analytics.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql
+from core.agents.sql_analytics_agent import (
+    SQLAnalyticsAgent, UnsupportedCommerceDimension, _validate_campaign_outcome_query,
+)
+from core.analytics.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql, validate_commerce_sql
+from core.analytics.commerce_decision_support import COMMERCE_QUERY_TABLES
+from core.analytics.business_metric_catalog import BUSINESS_DECISION_PROFILES
 from core.database.document_repository import DocumentRepository
 from core.models.agents import AgentRequest
 
 
 class AnalyticsSqlSafetyTest(unittest.TestCase):
+    def test_commerce_query_accepts_unseen_question_specific_grouped_select(self):
+        query = (
+            "SELECT i.category, SUM(i.units_sold) AS units_sold "
+            "FROM commerce.inventory i WHERE i.year = 2022 "
+            "GROUP BY i.category ORDER BY units_sold DESC LIMIT 12"
+        )
+        normalized = validate_commerce_sql(query, COMMERCE_QUERY_TABLES["inventory_allocation"])
+        self.assertIn("FROM commerce.inventory AS i", normalized)
+        self.assertIn("LIMIT 12", normalized)
+
+    def test_commerce_query_qualifies_unambiguous_source_columns(self):
+        query = (
+            "SELECT category, COUNT(*) AS product_count "
+            "FROM commerce.inventory i GROUP BY category ORDER BY product_count DESC LIMIT 10"
+        )
+
+        normalized = validate_commerce_sql(query, COMMERCE_QUERY_TABLES["inventory_allocation"])
+
+        self.assertIn("SELECT i.category", normalized)
+        self.assertIn("GROUP BY i.category", normalized)
+
+    def test_commerce_query_rejects_unqualified_ambiguous_columns(self):
+        query = (
+            "SELECT product_id, COUNT(*) AS product_count "
+            "FROM commerce.inventory i JOIN commerce.products p ON i.product_id = p.product_id "
+            "GROUP BY product_id LIMIT 10"
+        )
+
+        with self.assertRaisesRegex(UnsafeAnalyticsQuery, "product_id is ambiguous"):
+            validate_commerce_sql(query, COMMERCE_QUERY_TABLES["inventory_allocation"])
+
+    def test_commerce_query_allows_only_selected_domain_tables_columns_and_functions(self):
+        cases = (
+            ("SELECT o.order_id FROM public.orders o", "inventory_allocation"),
+            ("SELECT i.reorder_flag FROM commerce.inventory i JOIN commerce.promotions p ON TRUE", "inventory_allocation"),
+            ("SELECT pg_sleep(3) AS pause FROM commerce.inventory i", "inventory_allocation"),
+            ("SELECT category FROM commerce.inventory i", "inventory_allocation"),
+            ("SELECT i.product_name FROM commerce.inventory i LIMIT 10", "inventory_allocation"),
+            ("SELECT i.category FROM commerce.inventory i; SELECT 1", "inventory_allocation"),
+        )
+        for query, domain in cases:
+            with self.subTest(query=query), self.assertRaises(UnsafeAnalyticsQuery):
+                validate_commerce_sql(query, COMMERCE_QUERY_TABLES[domain])
+
+    def test_question_specific_commerce_query_preserves_novel_wording_and_limits_domain(self):
+        repository = Mock()
+        repository.latest_commerce_inventory_snapshot.return_value = "2022-12-31"
+        repository.execute_commerce_analytics.return_value = [{"category": "Shoes", "units_sold": 42}]
+        llm = Mock()
+        llm.generate.return_value = (
+            '{"sql":"SELECT i.category, SUM(i.units_sold) AS units_sold '
+            'FROM commerce.inventory i GROUP BY i.category LIMIT 10"}'
+        )
+        agent = SQLAnalyticsAgent(repository, llm)
+
+        result = agent.commerce_question_observations(
+            "Which product groups are moving fastest before a replenishment review?",
+            "inventory_allocation",
+        )
+
+        self.assertEqual(result["observations"], [{"category": "Shoes", "units_sold": 42}])
+        self.assertEqual(result["source_tables"], ["commerce.inventory"])
+        self.assertIn("Which product groups are moving fastest", llm.generate.call_args.args[0])
+        self.assertIn("Select an aggregate for every measure explicitly requested", llm.generate.call_args.args[0])
+        self.assertIn("no CTEs, nested queries, scalar subqueries", llm.generate.call_args.args[0])
+        self.assertIn("database's latest snapshot date", llm.generate.call_args.args[0])
+        repository.execute_commerce_analytics.assert_called_once()
+
+    def test_question_specific_commerce_query_normalizes_unambiguous_columns_before_execution(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = [{"region": "East", "zip_count": 4}]
+        llm = Mock()
+        llm.generate.return_value = (
+            '{"sql":"SELECT region, COUNT(*) AS zip_count FROM commerce.geography '
+            'GROUP BY region ORDER BY zip_count DESC LIMIT 10"}'
+        )
+
+        result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            "Which region has the most ZIP codes?", "nationwide_logistics",
+        )
+
+        self.assertIn("SELECT geography.region", result["sql_query"])
+        self.assertIn("GROUP BY geography.region", result["sql_query"])
+        self.assertEqual(result["observations"], [{"region": "East", "zip_count": 4}])
+        repository.execute_commerce_analytics.assert_called_once_with(
+            result["sql_query"], "nationwide_logistics",
+        )
+
+    def test_question_specific_query_rejects_dimension_missing_from_domain_schema_before_llm(self):
+        repository = Mock()
+        llm = Mock()
+
+        with self.assertRaises(UnsupportedCommerceDimension) as raised:
+            SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+                "Có đủ cơ sở để phân bổ lại hàng giữa các vùng nhằm giảm stockout?",
+                "inventory_allocation",
+            )
+
+        self.assertEqual(raised.exception.dimensions, ["region"])
+        self.assertNotIn("region", raised.exception.available_columns)
+        llm.generate.assert_not_called()
+        repository.execute_commerce_analytics.assert_not_called()
+
+    def test_question_specific_query_rejects_other_missing_domain_dimensions_before_llm(self):
+        cases = (
+            ("How should we rebalance inventory by warehouse?", "inventory_allocation", "warehouse/location"),
+            ("Which carrier has the most delayed deliveries?", "nationwide_logistics", "carrier"),
+        )
+        for question, domain, expected_dimension in cases:
+            with self.subTest(domain=domain, question=question):
+                repository = Mock()
+                llm = Mock()
+
+                with self.assertRaises(UnsupportedCommerceDimension) as raised:
+                    SQLAnalyticsAgent(repository, llm).commerce_question_observations(question, domain)
+
+                self.assertIn(expected_dimension, raised.exception.dimensions)
+                llm.generate.assert_not_called()
+                repository.execute_commerce_analytics.assert_not_called()
+
+    def test_question_specific_query_keeps_region_available_for_logistics_schema(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = [{"region": "East", "shipment_count": 4}]
+        llm = Mock()
+        llm.generate.return_value = (
+            '{"sql":"SELECT g.region, COUNT(*) AS shipment_count FROM commerce.geography g '
+            'GROUP BY g.region LIMIT 10"}'
+        )
+
+        result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            "Compare shipment counts by region", "nationwide_logistics",
+        )
+
+        self.assertEqual(result["observations"], [{"region": "East", "shipment_count": 4}])
+
+    def test_promotion_sql_prompt_defines_campaign_window_tagging_semantics(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = [{"campaign": "Spring Sale 2022", "net_item_sales": 42}]
+        llm = Mock()
+        llm.generate.return_value = (
+            '{"sql":"SELECT p.promo_name AS campaign, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_item_sales '
+            'FROM commerce.promotions p JOIN commerce.order_items oi ON (oi.promo_id = p.promo_id OR oi.promo_id_2 = p.promo_id) '
+            'JOIN commerce.orders o ON o.order_id = oi.order_id WHERE o.order_status = \'delivered\' '
+            'AND o.order_date BETWEEN p.start_date AND p.end_date AND EXTRACT(YEAR FROM p.start_date) = 2022 '
+            'GROUP BY p.promo_name LIMIT 10"}'
+        )
+
+        SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            "Which campaign had highest net item sales during its campaign window?", "promotion_planning",
+        )
+
+        prompt = llm.generate.call_args.args[0]
+        self.assertIn("promo_id_2", prompt)
+        self.assertIn("order_date falls between", prompt)
+        self.assertIn("delivered orders", prompt)
+        self.assertIn("requested campaign year to the campaign dates", prompt)
+        self.assertIn("filter every order-derived aggregate", prompt)
+
+    def test_promotion_query_repairs_incomplete_campaign_attribution(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = [{"campaign": "Spring Sale 2022", "net_sales": 90}]
+        llm = Mock()
+        llm.generate.side_effect = [
+            '{"sql":"SELECT p.promo_name, SUM(oi.quantity * oi.unit_price) AS net_sales '
+            'FROM commerce.promotions p LEFT JOIN commerce.order_items oi ON oi.promo_id = p.promo_id '
+            'LEFT JOIN commerce.orders o ON o.order_id = oi.order_id GROUP BY p.promo_name LIMIT 10"}',
+            '{"sql":"SELECT p.promo_name, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_sales '
+            'FROM commerce.promotions p JOIN commerce.order_items oi ON (oi.promo_id = p.promo_id OR oi.promo_id_2 = p.promo_id) '
+            'JOIN commerce.orders o ON o.order_id = oi.order_id WHERE o.order_status = \'delivered\' '
+            'AND o.order_date BETWEEN p.start_date AND p.end_date AND EXTRACT(YEAR FROM p.start_date) = 2022 '
+            'GROUP BY p.promo_name LIMIT 10"}',
+        ]
+
+        result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            "Which campaign had the highest net sales during its 2022 campaign window?", "promotion_planning",
+        )
+
+        repair_prompt = llm.generate.call_args_list[1].args[0]
+        self.assertIn("filter to delivered orders", repair_prompt)
+        self.assertIn("Campaign outcome SQL must", repair_prompt)
+        self.assertIn("promo_id_2", result["sql_query"])
+        repository.execute_commerce_analytics.assert_called_once()
+
+    def test_campaign_guard_rejects_recorded_left_join_query_that_sums_unmatched_orders(self):
+        recorded_query = (
+            "SELECT p.promo_id, p.promo_name, "
+            "SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_sales "
+            "FROM commerce.promotions AS p "
+            "JOIN commerce.order_items AS oi ON (oi.promo_id = p.promo_id OR oi.promo_id_2 = p.promo_id) "
+            "LEFT JOIN commerce.orders AS o ON o.order_id = oi.order_id "
+            "AND o.order_status = 'delivered' "
+            "AND o.order_date BETWEEN p.start_date AND p.end_date "
+            "WHERE o.order_date >= '2022-01-01' AND o.order_date <= '2022-12-31' "
+            "GROUP BY p.promo_id, p.promo_name ORDER BY net_sales DESC LIMIT 100"
+        )
+
+        with self.assertRaisesRegex(UnsafeAnalyticsQuery, "filter every LEFT JOIN aggregate"):
+            _validate_campaign_outcome_query(
+                "Trong campaign 2022, campaign nào có net sales cao nhất trong thời gian chạy?",
+                recorded_query,
+            )
+
+    def test_campaign_guard_accepts_date_range_for_requested_year(self):
+        query = (
+            "SELECT p.promo_name, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_sales "
+            "FROM commerce.promotions p JOIN commerce.order_items oi "
+            "ON (oi.promo_id = p.promo_id OR oi.promo_id_2 = p.promo_id) "
+            "JOIN commerce.orders o ON o.order_id = oi.order_id WHERE o.order_status = 'delivered' "
+            "AND o.order_date BETWEEN p.start_date AND p.end_date "
+            "AND p.start_date >= '2022-01-01' AND p.start_date < '2023-01-01' "
+            "GROUP BY p.promo_name LIMIT 100"
+        )
+
+        self.assertEqual(
+            _validate_campaign_outcome_query(
+                "Which 2022 campaign had the highest net sales during its campaign window?", query,
+            ),
+            query,
+        )
+
+    def test_campaign_guard_accepts_multi_year_date_range(self):
+        query = (
+            "SELECT p.promo_name, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_sales "
+            "FROM commerce.promotions p JOIN commerce.order_items oi "
+            "ON (oi.promo_id = p.promo_id OR oi.promo_id_2 = p.promo_id) "
+            "JOIN commerce.orders o ON o.order_id = oi.order_id WHERE o.order_status = 'delivered' "
+            "AND o.order_date BETWEEN p.start_date AND p.end_date "
+            "AND EXTRACT(YEAR FROM p.start_date) BETWEEN 2020 AND 2022 "
+            "GROUP BY p.promo_name LIMIT 100"
+        )
+
+        self.assertEqual(
+            _validate_campaign_outcome_query(
+                "Compare campaign sales from 2020 to 2022", query,
+            ),
+            query,
+        )
+
+    def test_inventory_sql_prompt_identifies_boolean_flag_columns(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = [{"category": "Shoes", "stockout_products": 2}]
+        llm = Mock()
+        llm.generate.return_value = (
+            '{"sql":"SELECT i.category, COUNT(*) FILTER (WHERE i.stockout_flag) AS stockout_products '
+            'FROM commerce.inventory i GROUP BY i.category LIMIT 10"}'
+        )
+
+        SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            "Which category has the most stockout products?", "inventory_allocation",
+        )
+
+        prompt = llm.generate.call_args.args[0]
+        self.assertIn("stockout_flag, overstock_flag and reorder_flag are BOOLEAN", prompt)
+        self.assertIn("do not compare these columns with integer 1/0", prompt)
+
+    def test_question_specific_commerce_query_repairs_one_rejected_select(self):
+        repository = Mock()
+        repository.latest_commerce_inventory_snapshot.return_value = "2022-12-31"
+        repository.execute_commerce_analytics.return_value = [{"category": "Streetwear", "stockout_count": 134}]
+        llm = Mock()
+        llm.generate.side_effect = [
+            '{"sql":"SELECT i.category, COUNT(*) AS stockout_count FROM commerce.inventory i '
+            'WHERE i.snapshot_date = (SELECT MAX(snapshot_date) FROM commerce.inventory) '
+            'GROUP BY i.category LIMIT 100"}',
+            '{"sql":"SELECT i.snapshot_date, i.category, COUNT(*) AS stockout_count '
+            'FROM commerce.inventory i GROUP BY i.snapshot_date, i.category '
+            'ORDER BY i.snapshot_date DESC LIMIT 100"}',
+        ]
+        agent = SQLAnalyticsAgent(repository, llm)
+
+        result = agent.commerce_question_observations(
+            "Which category had the most stockouts in the latest snapshot?",
+            "inventory_allocation",
+        )
+
+        self.assertEqual(result["observations"], [{"category": "Streetwear", "stockout_count": 134}])
+        self.assertIn("Rejected SQL:", llm.generate.call_args.args[0])
+        repository.execute_commerce_analytics.assert_called_once()
+
+    def test_sql_repair_prompt_contains_rejected_query_and_ambiguous_column(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = [{"category": "Shoes", "product_count": 4}]
+        llm = Mock()
+        llm.generate.side_effect = [
+            '{"sql":"SELECT category, COUNT(DISTINCT product_id) AS product_count '
+            'FROM commerce.inventory i JOIN commerce.products p ON i.product_id = p.product_id '
+            'GROUP BY category LIMIT 10"}',
+            '{"sql":"SELECT i.category, COUNT(DISTINCT i.product_id) AS product_count '
+            'FROM commerce.inventory i JOIN commerce.products p ON i.product_id = p.product_id '
+            'GROUP BY i.category LIMIT 10"}',
+        ]
+
+        result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            "Which inventory categories have the most products?", "inventory_allocation",
+        )
+
+        repair_prompt = llm.generate.call_args_list[1].args[0]
+        self.assertIn("Unqualified column category is ambiguous", repair_prompt)
+        self.assertIn("Rejected SQL: SELECT category, COUNT(DISTINCT product_id)", repair_prompt)
+        self.assertIn("i.category", result["sql_query"])
+        repository.execute_commerce_analytics.assert_called_once()
+
+    def test_database_error_category_is_included_in_commerce_query_repair_prompt(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.side_effect = [
+            UnsafeAnalyticsQuery("The Commerce SELECT could not be executed (UndefinedFunction, SQLSTATE 42883)"),
+            [{"region": "East", "shipment_count": 7}],
+        ]
+        llm = Mock()
+        sql = (
+            '{"sql":"SELECT g.region, COUNT(*) AS shipment_count '
+            'FROM commerce.shipments s JOIN commerce.orders o ON s.order_id = o.order_id '
+            'JOIN commerce.geography g ON o.zip = g.zip GROUP BY g.region LIMIT 100"}'
+        )
+        llm.generate.side_effect = [sql, sql]
+
+        result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            "Which region has the most delivered shipments?", "nationwide_logistics",
+        )
+
+        self.assertEqual(result["observations"], [{"region": "East", "shipment_count": 7}])
+        self.assertIn("UndefinedFunction, SQLSTATE 42883", llm.generate.call_args_list[1].args[0])
+
+    def test_logistics_sql_prompt_uses_date_subtraction_for_transit_days(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = [{"region": "East", "avg_transit_days": 4.5}]
+        llm = Mock()
+        llm.generate.return_value = (
+            '{"sql":"SELECT g.region, AVG(s.delivery_date - s.ship_date) AS avg_transit_days '
+            'FROM commerce.shipments s JOIN commerce.orders o ON s.order_id = o.order_id '
+            'JOIN commerce.geography g ON o.zip = g.zip GROUP BY g.region LIMIT 100"}'
+        )
+
+        result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            "Which region has the longest average transit time?", "nationwide_logistics",
+        )
+
+        prompt = llm.generate.call_args.args[0]
+        self.assertIn("ship_date and delivery_date are DATE columns", prompt)
+        self.assertIn("group by the completed delivery year", prompt)
+        self.assertIn("AVG(s.delivery_date - s.ship_date)", prompt)
+        self.assertNotIn("EXTRACT(EPOCH", result["sql_query"])
+        self.assertEqual(result["observations"], [{"region": "East", "avg_transit_days": 4.5}])
+
+    def test_commerce_sql_generation_uses_configured_huggingface_fallback(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = [{"region": "East", "shipment_count": 7}]
+        llm = Mock()
+        llm.generate.side_effect = RateLimitError(
+            "rate limited", response=httpx.Response(429, request=httpx.Request("POST", "https://llm.test")),
+            body=None,
+        )
+        fallback_sql = (
+            '{"sql":"SELECT g.region, COUNT(*) AS shipment_count '
+            'FROM commerce.shipments s JOIN commerce.orders o ON s.order_id = o.order_id '
+            'JOIN commerce.geography g ON o.zip = g.zip GROUP BY g.region LIMIT 100"}'
+        )
+
+        with patch.dict(os.environ, {
+            "HUGGINGFACE_LLM_FALLBACK": "true", "HUGGINGFACE_API_KEY": "test-token",
+        }), patch("core.llm.provider_fallback.HuggingFaceProvider") as fallback_factory:
+            fallback_factory.return_value.generate.return_value = fallback_sql
+            result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+                "Which region has the most delivered shipments?", "nationwide_logistics",
+            )
+
+        self.assertEqual(result["sql_generation_provider"], "huggingface_inference")
+        self.assertEqual(result["observations"], [{"region": "East", "shipment_count": 7}])
+        repository.execute_commerce_analytics.assert_called_once()
+        fallback_factory.return_value.close.assert_called_once()
+
+    def test_latest_inventory_snapshot_is_server_scoped_to_one_date(self):
+        repository = Mock()
+        repository.latest_commerce_inventory_snapshot.return_value = "2022-12-31"
+        repository.execute_commerce_analytics.return_value = [
+            {"snapshot_date": "2022-12-31", "category": "Streetwear", "stockouts": 134},
+            {"snapshot_date": "2022-12-31", "category": "Outdoor", "stockouts": 95},
+        ]
+        llm = Mock()
+        llm.generate.return_value = (
+            '{"sql":"SELECT i.snapshot_date, i.category, '
+            'COUNT(CASE WHEN i.stockout_flag = TRUE THEN 1 END) AS stockouts '
+            'FROM commerce.inventory i GROUP BY i.snapshot_date, i.category '
+            'ORDER BY i.snapshot_date DESC LIMIT 100"}'
+        )
+        agent = SQLAnalyticsAgent(repository, llm)
+
+        result = agent.commerce_question_observations(
+            "Trong snapshot tồn kho mới nhất, nhóm nào có nhiều stockout nhất?",
+            "inventory_allocation",
+        )
+
+        self.assertIn("WHERE i.snapshot_date = '2022-12-31'", result["sql_query"])
+        self.assertEqual({row["snapshot_date"] for row in result["observations"]}, {"2022-12-31"})
+        repository.latest_commerce_inventory_snapshot.assert_called_once_with()
+
+    def test_inventory_reallocation_by_region_is_rejected_when_schema_has_no_region(self):
+        repository = Mock()
+        llm = Mock()
+
+        with self.assertRaises(UnsupportedCommerceDimension):
+            SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+                "Có đủ cơ sở để phân bổ lại hàng giữa các vùng nhằm giảm stockout không?",
+                "inventory_allocation",
+            )
+
+        repository.latest_commerce_inventory_snapshot.assert_not_called()
+        repository.execute_commerce_analytics.assert_not_called()
+        llm.generate.assert_not_called()
+
+    def test_product_catalog_query_does_not_apply_inventory_snapshot_filter(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = [{"category": "Shoes", "avg_price": 42}]
+        llm = Mock()
+        llm.generate.return_value = (
+            '{"sql":"SELECT p.category, AVG(p.price) AS avg_price '
+            'FROM commerce.products p GROUP BY p.category LIMIT 100"}'
+        )
+
+        result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            "Which product categories have the highest catalog prices?",
+            "inventory_allocation",
+        )
+
+        self.assertNotIn("snapshot_date", result["sql_query"])
+        repository.latest_commerce_inventory_snapshot.assert_not_called()
+
+    def test_commerce_ranking_query_retries_when_having_hides_peer_groups(self):
+        repository = Mock()
+        repository.latest_commerce_inventory_snapshot.return_value = "2022-12-31"
+        repository.execute_commerce_analytics.return_value = [
+            {"snapshot_date": "2022-12-31", "category": "Streetwear", "stockouts": 134},
+            {"snapshot_date": "2022-12-31", "category": "Outdoor", "stockouts": 95},
+        ]
+        llm = Mock()
+        llm.generate.side_effect = [
+            '{"sql":"SELECT i.snapshot_date, i.category, '
+            'SUM(i.stockout_flag::int) AS stockouts FROM commerce.inventory i '
+            'GROUP BY i.snapshot_date, i.category HAVING SUM(i.overstock_flag::int) = 0 '
+            'ORDER BY i.snapshot_date DESC LIMIT 100"}',
+            '{"sql":"SELECT i.snapshot_date, i.category, '
+            'SUM(i.stockout_flag::int) AS stockouts FROM commerce.inventory i '
+            'GROUP BY i.snapshot_date, i.category ORDER BY i.snapshot_date DESC, stockouts DESC LIMIT 100"}',
+        ]
+        agent = SQLAnalyticsAgent(repository, llm)
+
+        result = agent.commerce_question_observations(
+            "Trong snapshot mới nhất, nhóm nào cần ưu tiên theo cờ stockout?",
+            "inventory_allocation",
+        )
+
+        self.assertEqual(len(result["observations"]), 2)
+        self.assertNotIn("HAVING", result["sql_query"].upper())
+        self.assertIn("include all peer groups", llm.generate.call_args.args[0])
+        self.assertEqual(repository.execute_commerce_analytics.call_count, 1)
+
     def test_accepts_aggregate_select_and_caps_limit(self):
         sql = """SELECT metric_name, fiscal_year, SUM(metric_value) AS total,
                          ARRAY_AGG(DISTINCT metric_id) AS evidence_metric_ids
@@ -165,6 +628,28 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         query = repository.execute_authorized_analytics.call_args.args[0]
         self.assertIn("'domestic_segment_gross_profit'", query)
         self.assertIn("'overseas_segment_gross_profit'", query)
+
+    def test_decision_suggestions_query_only_domain_primary_metrics(self):
+        repository = Mock()
+        llm = Mock()
+        repository.execute_authorized_analytics.return_value = {
+            "results": [], "evidence": [], "business_evidence": [], "documents": [],
+        }
+
+        SQLAnalyticsAgent(repository, llm).run(AgentRequest(
+            question="", user_id="admin",
+            metadata={"role": "admin", "business_decision_domain": "environmental_performance",
+                      "decision_suggestions": True},
+        ))
+
+        query = repository.execute_authorized_analytics.call_args.args[0]
+        expected_metrics = BUSINESS_DECISION_PROFILES["environmental_performance"]["primary_metrics"]
+        for metric_name in expected_metrics:
+            with self.subTest(metric_name=metric_name):
+                self.assertIn(f"'{metric_name}'", query)
+        self.assertNotIn("'green_energy_share_manufacturing'", query)
+        self.assertIn("FROM authorized_business_metrics", query)
+        llm.generate.assert_not_called()
 
     def test_rejects_duplicate_result_names_that_could_hide_citation_array(self):
         sql = (

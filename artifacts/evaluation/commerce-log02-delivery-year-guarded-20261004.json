@@ -1,0 +1,88 @@
+{
+  "benchmark_id": "commerce-decision-support-discovery-v1",
+  "dataset": "Synthetic Kaggle Datathon 2026 Round 1 Commerce dataset",
+  "created_at_utc": "2026-10-04T13:35:29.551026+00:00",
+  "route": "POST /api/ask",
+  "principal_role": "admin",
+  "benchmark_sha256": "56141e4bcccb06b486812005ac61bfd34e6229b4eddc8509c06719c9ecef5888",
+  "manifest_sha256": "51a6e25dd82e679f0ea40307ab713f84e91bf6e6ad2980fe475285c6986e9e7c",
+  "manifest_corpus_id": "commerce-operations-reference-v1",
+  "case_count": 1,
+  "attempted_count": 1,
+  "unrun_case_ids": [],
+  "stop_reason": null,
+  "mechanically_passed": 1,
+  "failed": 0,
+  "citation_domain_checks_passed": 1,
+  "question_specific_sql_passed": 1,
+  "gold_numeric_coverage_passed": 1,
+  "gold_numeric_coverage_applicable": 1,
+  "semantic_review_required": true,
+  "limitations": [
+    "Mechanical checks verify API success, domain SQL provenance and citation structure; they do not score factual correctness or recommendation quality.",
+    "Review each answer against gold_observations and expected_behavior before reporting semantic benchmark scores.",
+    "Commerce observations and synthetic policy rules are demo-only, not facts or policies of a real retailer."
+  ],
+  "results": [
+    {
+      "case_id": "LOG-02",
+      "domain": "nationwide_logistics",
+      "question": "Trong 2020–2022, shipping fee và transit time theo vùng thay đổi ra sao?",
+      "decision_analysis": "commerce_sql_and_operating_references",
+      "citation_validation_failed": false,
+      "passed": true,
+      "checks": {
+        "citation_integrity": true,
+        "citation_validation": true,
+        "domain_sql_evidence": true,
+        "question_specific_sql_available": true,
+        "sql_dataset_provenance": true,
+        "document_source_locations": true,
+        "document_scope_attribution": true,
+        "required_gold_numeric_facts_present": true
+      },
+      "citation_domain_checks_passed": true,
+      "question_specific_sql_passed": true,
+      "gold_numeric_coverage_passed": true,
+      "gold_numeric_coverage_applicable": true,
+      "missing_gold_numeric_facts": [],
+      "citations": [
+        {
+          "id": "C1",
+          "company": "Commerce Demo",
+          "title": "Commerce SQL aggregate: Nationwide logistics",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "source_url": null,
+          "excerpt": "question_specific_query question-specific SQL observations: [{\"avg_shipping_fee\": \"4.1747750257997936\", \"avg_transit_time_days\": \"4.5103199174406605\", \"region\": \"Central\", \"year\": \"2020\"}, {\"avg_shipping_fee\": \"4.1266457313178625\", \"avg_transit_time_days\": \"4.5159676389184586\", \"region\": \"Central\", \"year\": \"2021\"}, {\"avg_shipping_fee\": \"4.1009882205775044\", \"avg_transit_time_days\": \"4.5137079120191807\", \"region\": \"Central\", \"year\": \"2022\"}, {\"avg_shipping_fee\": \"4.2673338568063388\", \"avg_transit_time_days\": \"4.5038903561995860\", \"region\": \"East\", \"year\": \"2020\"}, {\"avg_shipping_fee\": \"4.0739447417908289\", \"avg_transit_time_days\": \"4.5099088673513670\", \"region\": \"East\", \"year\": \"2021\"}, {\"avg",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_sql",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "nationwide_logistics",
+          "source_tables": [
+            "commerce.shipments",
+            "commerce.orders",
+            "commerce.geography"
+          ],
+          "sql_query": "SELECT g.region, EXTRACT(YEAR FROM s.delivery_date) AS year, AVG(s.shipping_fee) AS avg_shipping_fee, AVG(s.delivery_date - s.ship_date) AS avg_transit_time_days FROM commerce.shipments AS s JOIN commerce.orders AS o ON s.order_id = o.order_id JOIN commerce.geography AS g ON o.zip = g.zip WHERE s.delivery_date BETWEEN '2020-01-01' AND '2022-12-31' GROUP BY g.region, EXTRACT(YEAR FROM s.delivery_date) ORDER BY g.region, year LIMIT 100",
+          "sql_generation_provider": "huggingface_inference",
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        }
+      ],
+      "question_specific_sql_used": true,
+      "sql_generation_provider": "huggingface_inference",
+      "answer": "Kết quả truy vấn SQL theo câu hỏi: [{\"avg_shipping_fee\": \"4.1747750257997936\", \"avg_transit_time_days\": \"4.5103199174406605\", \"region\": \"Central\", \"year\": \"2020\"}, {\"avg_shipping_fee\": \"4.1266457313178625\", \"avg_transit_time_days\": \"4.5159676389184586\", \"region\": \"Central\", \"year\": \"2021\"}, {\"avg_shipping_fee\": \"4.1009882205775044\", \"avg_transit_time_days\": \"4.5137079120191807\", \"region\": \"Central\", \"year\": \"2022\"}, {\"avg_shipping_fee\": \"4.2673338568063388\", \"avg_transit_time_days\": \"4.5038903561995860\", \"region\": \"East\", \"year\": \"2020\"}, {\"avg_shipping_fee\": \"4.0739447417908289\", \"avg_transit_time_days\": \"4.5099088673513670\", \"region\": \"East\", \"year\": \"2021\"}, {\"avg_shipping_fee\": \"3.9790736543909348\", \"avg_transit_time_days\": \"4.5200424929178470\", \"region\": \"East\", \"year\": \"2022\"}, {\"avg_shipping_fee\": \"4.1144616477272727\", \"avg_transit_time_days\": \"4.5066761363636364\", \"region\": \"West\", \"year\": \"2020\"}, {\"avg_shipping_fee\": \"4.3564401343921808\", \"avg_transit_time_days\": \"4.4980146609651802\", \"region\": \"West\", \"year\": \"2021\"}, {\"avg_shipping_fee\": \"3.8924595973915509\", \"avg_transit_time_days\": \"4.5099234476892543\", \"region\": \"West\", \"year\": \"2022\"}] [C1]",
+      "semantic_review_required": true,
+      "http_status": 200,
+      "latency_seconds": 30.075
+    }
+  ]
+}

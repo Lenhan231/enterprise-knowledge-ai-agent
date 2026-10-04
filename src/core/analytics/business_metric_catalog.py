@@ -719,6 +719,7 @@ BUSINESS_DECISION_PROFILES = {
         ),
     },
 }
+SUPPORTED_BUSINESS_DECISION_DOMAINS = tuple(BUSINESS_DECISION_PROFILES)
 BUSINESS_METRIC_DECISION_PROFILE = {
     metric_name: domain
     for domain, profile in BUSINESS_DECISION_PROFILES.items()
@@ -765,8 +766,8 @@ def resolve_business_metric_names(question: str) -> set[str]:
         "milk_supply": ("raw milk", "fresh milk", "farmer", "supply chain", "milk sourcing", "sữa tươi", "nông hộ", "nguồn sữa", "milk collection", "globalgap", "fertilizer", "biomass corn"),
         "manufacturing_efficiency": ("oee", "production line", "purchasing savings", "production cost", "hiệu suất dây chuyền", "tiết kiệm chi phí", "customer satisfaction", "satisfaction", "product defect", "defect-free", "quality index", "lỗi sản phẩm", "chất lượng sản phẩm"),
         "product_portfolio": ("green farm", "plant-based", "plant based", "độ nhận biết", "mức độ cân nhắc", "sữa thực vật", "new products", "brand innovation"),
-        "market_performance": ("domestic revenue", "export revenue", "overseas revenue", "market share", "international market", "xuất khẩu", "tăng trưởng nội địa", "doanh thu nội địa", "thị trường nước ngoài", "points of sale", "vinamilk stores", "retail", "distribution reach", "điểm bán", "cửa hàng"),
-        "environmental_performance": ("water", "waste", "emission", "greenhouse gas", "carbon", "energy", "nước", "chất thải", "phát thải", "khí nhà kính", "năng lượng xanh"),
+        "market_performance": ("domestic revenue", "export revenue", "overseas revenue", "market share", "international market", "xuất khẩu", "tăng trưởng nội địa", "doanh thu nội địa", "thị trường trong nước", "thị trường nước ngoài", "points of sale", "vinamilk stores", "retail", "distribution reach", "điểm bán", "cửa hàng"),
+        "environmental_performance": ("water", "waste", "emission", "greenhouse gas", "carbon", "energy", "nước thải", "nước sạch", "nước tiêu thụ", "nước đầu vào", "nước tái chế", "nước tái sử dụng", "nguồn nước", "chất thải", "phát thải", "khí nhà kính", "năng lượng xanh"),
         "farm_operations": ("dairy farm", "milk cow", "herd", "biogas", "global s.l.p", "trang trại", "đàn bò", "trạm thu gom sữa"),
         "human_resources": ("headcount", "staffing", "workforce", "nhân viên", "nhân sự", "lao động", "tuyển dụng"),
     }
@@ -783,7 +784,7 @@ def resolve_business_metric_names(question: str) -> set[str]:
             "energy": ("green_energy_share_manufacturing", "electricity_saved"),
         }
         topic_terms = {
-            "water": ("water", "nước"),
+            "water": ("water", "nước thải", "nước sạch", "nước tiêu thụ", "nước đầu vào", "nước tái chế", "nước tái sử dụng", "nguồn nước"),
             "waste": ("waste", "chất thải"),
             "emissions": ("emission", "greenhouse gas", "carbon", "phát thải", "khí nhà kính"),
             "energy": ("energy", "năng lượng"),
@@ -795,3 +796,17 @@ def resolve_business_metric_names(question: str) -> set[str]:
         if definition["domain"] in mentioned_domains and definition["domain"] != "environmental_performance":
             matches.add(name)
     return matches
+
+
+def resolve_business_metric_domain(question: str) -> str | None:
+    """Return a domain only when metric resolution points to one unambiguous domain."""
+    text = " ".join(question.casefold().split())
+    if (any(term in text for term in ("domestic", "local market", "overseas", "thị trường trong nước", "nước ngoài"))
+            and any(term in text for term in ("market", "thị trường", "đầu tư", "ưu tiên"))):
+        return "market_performance"
+    domains = {
+        BUSINESS_METRIC_CATALOG[name]["domain"]
+        for name in resolve_business_metric_names(question)
+        if name in BUSINESS_METRIC_CATALOG
+    }
+    return next(iter(domains)) if len(domains) == 1 else None

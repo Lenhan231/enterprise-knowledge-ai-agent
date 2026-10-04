@@ -118,10 +118,10 @@ def _load_public_corpus(path: Path, manifest_ids: set[str]) -> list[dict]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", required=True, choices=sorted(MODELS))
-    parser.add_argument("--cases", type=Path, default=REPO_ROOT / "data/evaluation/vinamilk_retrieval_cases.json")
+    parser.add_argument("--cases", type=Path, default=REPO_ROOT / "data/evaluation/commerce_retrieval_cases.json")
     parser.add_argument("--corpus", type=Path, help="Optional public-manifest JSONL; avoids live database credentials")
     parser.add_argument("--output", type=Path)
-    parser.add_argument("--company", default="Công ty Cổ phần Sữa Việt Nam (Vinamilk)")
+    parser.add_argument("--company", default="Commerce Demo")
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--top-k", type=int, default=30)
     parser.add_argument("--max-chunks-per-document", type=int, default=32)
@@ -135,10 +135,10 @@ def main() -> int:
     if not cases:
         parser.error("No labeled cases found")
     if args.corpus:
-        manifest_path = REPO_ROOT / "data/vietnam_enterprises/manifest.json"
+        manifest_path = REPO_ROOT / "data/commerce_knowledge/manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        documents = manifest["documents"] if isinstance(manifest, dict) else manifest
-        manifest_ids = {item["document_id"] for item in documents}
+        documents = manifest.get("sources", []) if isinstance(manifest, dict) else manifest
+        manifest_ids = {item.get("source_id", item.get("document_id")) for item in documents}
         try:
             full_corpus = _load_public_corpus(args.corpus, manifest_ids)
         except (ValueError, json.JSONDecodeError) as error:
@@ -288,12 +288,12 @@ def main() -> int:
         "aggregate": aggregate,
         "results": method_results,
         "limitations": (
-            "Small document-level Vinamilk smoke set using every available corpus passage. No database writes are made. Query-time includes query embedding and in-memory cosine scoring, but excludes model loading and corpus embedding. No human judgment or passage-level labels."
+            "Small document-level Commerce decision-support smoke set using every eligible corpus passage. No database writes are made. Query-time includes query embedding and in-memory cosine scoring, but excludes model loading and corpus embedding. Labels judge source-document relevance, not answer quality or policy applicability."
             if all_corpus_chunks_included else
-            f"Small document-level Vinamilk smoke set using an evenly spaced sample capped at {args.max_chunks_per_document} passages per source; this is not full-corpus retrieval. No database writes are made. Query-time includes query embedding and in-memory cosine scoring, but excludes model loading and corpus embedding. No human judgment or passage-level labels."
+            f"Small document-level Commerce decision-support smoke set using an evenly spaced sample capped at {args.max_chunks_per_document} passages per source; this is not full-corpus retrieval. No database writes are made. Query-time includes query embedding and in-memory cosine scoring, but excludes model loading and corpus embedding. Labels judge source-document relevance, not answer quality or policy applicability."
         ),
     }
-    output = args.output or REPO_ROOT / "artifacts/evaluation" / f"vinamilk-embedding-{args.model}.json"
+    output = args.output or REPO_ROOT / "artifacts/evaluation" / f"commerce-embedding-{args.model}.json"
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"output": str(output), "aggregate": aggregate}, ensure_ascii=False, indent=2))

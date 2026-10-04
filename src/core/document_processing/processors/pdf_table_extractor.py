@@ -125,7 +125,8 @@ class PDFTableExtractor:
         row_groups = []
         for word in ordered:
             center_y = (word[1] + word[3]) / 2
-            if not row_groups or abs(center_y - row_groups[-1][0]) > 4:
+            # Mild page skew shifts cells in one visual row by several PDF points.
+            if not row_groups or abs(center_y - row_groups[-1][0]) > 10:
                 row_groups.append([center_y, [word]])
             else:
                 center, row = row_groups[-1]
@@ -135,7 +136,8 @@ class PDFTableExtractor:
         for center_y, row in row_groups:
             numeric = [word for word in row if is_number(word[4])]
             numeric.sort(key=lambda word: word[0])
-            if len(numeric) >= 2 and any(
+            has_measured_value = any(any(character.isdigit() for character in word[4]) for word in numeric)
+            if has_measured_value and len(numeric) >= 2 and any(
                 right[0] - left[2] >= 40 for left, right in zip(numeric, numeric[1:])
             ):
                 candidates.append((center_y, sorted(row, key=lambda word: word[0]), numeric))
@@ -211,6 +213,44 @@ class PDFTableExtractor:
             previous_right = column_groups[group_index - 1][-1] if group_index else page_rect.x0
             rows, row_boxes, row_cell_boxes = [], [], []
             table_headers = None
+            aligned_candidates = []
+            for center_y, row, numeric in candidates:
+                aligned = [
+                    min(numeric, key=lambda word: abs(word[alignment_edge] - edge))
+                    for edge in column_group
+                ]
+                aligned = [
+                    word if abs(word[alignment_edge] - edge) <= 18 else None
+                    for word, edge in zip(aligned, column_group)
+                ]
+                if sum(word is not None for word in aligned) >= 2:
+                    aligned_candidates.append((center_y, aligned, row))
+            first_data_y = min((center_y for center_y, _, _ in aligned_candidates), default=0)
+            centers = [
+                statistics.mean(
+                    (word[0] + word[2]) / 2
+                    for _, aligned, _ in aligned_candidates
+                    if (word := aligned[index]) is not None
+                )
+                for index in range(len(column_group))
+            ]
+            label_centers = []
+            for _, aligned, row in aligned_candidates:
+                first_value = next((word for word in aligned if word is not None), None)
+                label_words = [
+                    word for word in row
+                    if first_value and word[2] <= first_value[0] and not is_number(word[4])
+                ]
+                if label_words:
+                    label_centers.append(
+                        (min(word[0] for word in label_words) + max(word[2] for word in label_words)) / 2
+                    )
+            label_center = statistics.median(label_centers) if label_centers else centers[0] - (
+                centers[1] - centers[0]
+            )
+            text_headers, text_header_bbox = PDFTableExtractor._ocr_text_column_headers(
+                row_groups, centers, first_data_y, label_center,
+            )
             for center_y, row, numeric in candidates:
                 aligned = []
                 for edge in column_group:
@@ -251,10 +291,13 @@ class PDFTableExtractor:
                 ])
             if len(rows) < 3:
                 continue
-            headers = table_headers or [
+            headers = table_headers or (text_headers[1:] if text_headers else None) or [
                 f"value_{index}" for index in range(1, len(column_group) + 1)
             ]
-            columns_out = ["label", *headers]
+            columns_out = [
+                text_headers[0] if text_headers and text_headers[0] else "label",
+                *headers,
+            ]
             cells_with_boxes = [
                 dict(zip(columns_out, [list(box) if box is not None else None for box in boxes]))
                 for boxes in row_cell_boxes
@@ -279,9 +322,56 @@ class PDFTableExtractor:
                     ),
                     "bbox_coordinate_system": "pdf_points",
                     "row_cell_bboxes": cells_with_boxes,
+                    **({"ocr_column_header_bbox": text_header_bbox} if text_header_bbox else {}),
                 },
             })
         return result
+
+    @staticmethod
+    def _ocr_text_column_headers(row_groups, column_centers, first_data_y, label_center):
+        """Map the nearest OCR text row above aligned values into table columns."""
+        if len(column_centers) < 2 or not first_data_y:
+            return None, None
+        boundaries = [(label_center + column_centers[0]) / 2]
+        boundaries.extend(
+            (left + right) / 2 for left, right in zip(column_centers, column_centers[1:])
+        )
+        candidates = []
+        for center_y, row in row_groups:
+            gap = first_data_y - center_y
+            if not 0 < gap <= 100:
+                continue
+            text_words = [
+                word for word in row
+                if not re.fullmatch(r"(?:\(?[-+]?\d[\d.,]*\)?|[-–—])%?", str(word[4]).strip())
+            ]
+            if len(text_words) < 2:
+                continue
+            cells = [[] for _ in range(len(column_centers) + 1)]
+            for word in sorted(text_words, key=lambda item: item[0]):
+                x_center = (word[0] + word[2]) / 2
+                column_index = sum(x_center >= boundary for boundary in boundaries)
+                cells[column_index].append(word[4])
+            populated_values = sum(bool(cell) for cell in cells[1:])
+            if populated_values >= 2:
+                candidates.append((gap, [" ".join(cell).strip() for cell in cells], row))
+        if not candidates:
+            return None, None
+        _, headers, header_words = min(candidates, key=lambda candidate: candidate[0])
+        headers = [re.sub(r"\s+", " ", header) for header in headers]
+        if len({header.casefold() for header in headers[1:] if header}) < 2:
+            return None, None
+        # Preserve the generic schema when OCR only recovers some headings.
+        return (
+            [header or ("label" if index == 0 else f"value_{index}")
+             for index, header in enumerate(headers)],
+            (
+                min(word[0] for word in header_words),
+                min(word[1] for word in header_words),
+                max(word[2] for word in header_words),
+                max(word[3] for word in header_words),
+            ),
+        )
 
     @staticmethod
     def _ocr_period_header(value: str) -> Optional[str]:

@@ -8,11 +8,57 @@ from dotenv import load_dotenv
 from psycopg.rows import dict_row
 
 from core.database.connection_limit import close_database_connection, connect_database
-from core.analytics.sql_safety import validate_analytics_sql
+from core.analytics.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql, validate_commerce_sql
 from core.analytics.metric_ontology import METRIC_ONTOLOGY
 from core.analytics.business_metric_catalog import BUSINESS_REPORTING_PERIOD_SQL, BUSINESS_VALUE_QUALIFIER_SQL
+from core.analytics.business_metric_extraction import source_quote_matches
+from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES, COMMERCE_QUERY_TABLES
 
 load_dotenv()
+
+
+def link_financial_metric_source_chunk(
+    row: dict, source_chunks: list[dict],
+) -> tuple[int | None, int | None, str | None]:
+    """Return one exact or uniquely best source chunk; prefer structured table chunks on ties."""
+    quote = " ".join(str(row.get("source_quote") or "").casefold().split())
+    page = str(row.get("page_number") or "")
+    page_chunks = [chunk for chunk in source_chunks if str(chunk.get("page_number") or "") == page]
+    if not page_chunks:
+        return None, None, None
+    exact = [chunk for chunk in page_chunks
+             if quote and quote in " ".join(chunk["content"].casefold().split())]
+    if len(exact) == 1:
+        match = exact[0]
+    else:
+        definition = METRIC_ONTOLOGY.get(row["metric_name"], {})
+        labels = {str(row.get("metric_label") or ""), *definition.get("source_labels", ())}
+        labels.update(definition.get("aliases", ()))
+        labels = {" ".join(label.casefold().split()) for label in labels if label}
+        values = [re.sub(r"\D", "", str(value)) for value in row.get("candidate_values", ())]
+        values = [value for value in values if len(value) >= 2]
+        quote_tokens = set(re.findall(r"[a-z]+|\d+", quote))
+        matched = []
+        for chunk in page_chunks:
+            content = " ".join(chunk["content"].casefold().split())
+            digits = re.sub(r"\D", "", content)
+            if values and all(value in digits for value in values):
+                label_score = max((len(label) for label in labels if label in content), default=0)
+                if label_score:
+                    content_tokens = set(re.findall(r"[a-z]+|\d+", content))
+                    quote_score = len(quote_tokens & content_tokens)
+                    metadata = chunk.get("metadata") or {}
+                    layout_score = int(
+                        metadata.get("element_type") == "table"
+                        or metadata.get("layout_type") == "table"
+                    )
+                    matched.append((label_score, quote_score, layout_score, chunk))
+        matched.sort(key=lambda item: (item[0], item[1], item[2]), reverse=True)
+        if not matched or (len(matched) > 1 and matched[0][:3] == matched[1][:3]):
+            return None, None, None
+        match = matched[0][3]
+    return (match["id"], match["chunk_index"],
+            hashlib.sha256(match["content"].encode()).hexdigest())
 
 
 class DocumentRepository:
@@ -41,6 +87,44 @@ class DocumentRepository:
                                     ORDER by document_id""")
             return cursor.fetchall()
 
+    def list_knowledge_documents(self) -> list[dict]:
+        """List indexed source documents and their retrieval status for Admin."""
+        with self.conn.cursor() as cursor:
+            cursor.execute("""SELECT d.document_id, d.title, d.company, d.domain,
+                                    d.document_type, d.format, d.source_url,
+                                    d.source_type, d.processing_status,
+                                    d.knowledge_base_active,
+                                    count(c.id)::int AS chunk_count,
+                                    max(c.metadata->>'source_publisher') AS source_publisher,
+                                    max(c.metadata->>'external_reference_type') AS reference_type,
+                                    max(c.metadata->>'evidence_class') AS evidence_class,
+                                    bool_or(c.metadata->>'synthetic_company_policy' = 'true') AS synthetic_company_policy,
+                                    ARRAY(
+                                        SELECT DISTINCT jsonb_array_elements_text(x.metadata->'knowledge_domains')
+                                        FROM public.document_chunks x
+                                        WHERE x.metadata->>'document_id' = d.document_id
+                                          AND jsonb_typeof(x.metadata->'knowledge_domains') = 'array'
+                                    ) AS knowledge_domains
+                               FROM public.documents d
+                               JOIN public.document_chunks c
+                                 ON c.metadata->>'document_id' = d.document_id
+                              GROUP BY d.document_id
+                              ORDER BY d.knowledge_base_active DESC, d.title""")
+            return cursor.fetchall()
+
+    def set_knowledge_base_active(self, document_id: str, active: bool) -> bool:
+        """Toggle retrieval eligibility without deleting source, chunks, or metrics."""
+        with self.conn.transaction(), self.conn.cursor() as cursor:
+            cursor.execute("""UPDATE public.documents
+                                SET knowledge_base_active = %s
+                              WHERE document_id = %s
+                                AND EXISTS (
+                                    SELECT 1 FROM public.document_chunks c
+                                    WHERE c.metadata->>'document_id' = documents.document_id
+                                )
+                          RETURNING document_id""", (active, document_id))
+            return cursor.fetchone() is not None
+
     def upsert_document(self, document: dict) -> None:
         with self.conn.cursor() as cursor:
             cursor.execute(
@@ -49,13 +133,15 @@ class DocumentRepository:
                     document_id, domain, title, year_or_version, format,
                     source_url, verification,
                     document_type, fiscal_year, company, source_type,
-                    allowed_roles, storage_path, processing_status
+                    allowed_roles, storage_path, processing_status,
+                    knowledge_base_active
                 ) VALUES (
                     %(document_id)s, %(domain)s, %(title)s, %(year_or_version)s,
                     %(format)s, %(source_url)s,
                     %(verification)s, %(document_type)s,
                     %(fiscal_year)s, %(company)s, %(source_type)s,
-                    %(allowed_roles)s, %(storage_path)s, %(processing_status)s
+                    %(allowed_roles)s, %(storage_path)s, %(processing_status)s,
+                    %(knowledge_base_active)s
                 )
                 ON CONFLICT (document_id) DO UPDATE SET
                     domain = EXCLUDED.domain,
@@ -72,7 +158,8 @@ class DocumentRepository:
                     storage_path = COALESCE(EXCLUDED.storage_path, documents.storage_path),
                     processing_status = EXCLUDED.processing_status
                 """,
-                {**document, "storage_path": document.get("storage_path")},
+                {**document, "storage_path": document.get("storage_path"),
+                 "knowledge_base_active": document.get("knowledge_base_active", True)},
             )
             self.conn.commit()
 
@@ -99,6 +186,37 @@ class DocumentRepository:
                 document,
             )
             self.conn.commit()
+
+    def archive_public_metric_source(
+        self, document_id: str, company: str, storage_path: str, source_sha256: str,
+    ) -> int:
+        """Attach a verified public PDF archive and fingerprint its indexed chunks."""
+        with self.conn.transaction(), self.conn.cursor() as cursor:
+            cursor.execute(
+                """UPDATE public.documents AS d
+                   SET storage_path = COALESCE(d.storage_path, %s)
+                   WHERE d.document_id = %s AND d.company = %s
+                     AND d.source_type = 'public_enterprise_document'
+                     AND d.format = 'PDF' AND d.processing_status = 'ready'
+                     AND (d.storage_path IS NULL OR d.storage_path = %s)
+                     AND EXISTS (
+                         SELECT 1 FROM public.business_metric_evidence e
+                         WHERE e.source_document_id = d.document_id
+                           AND e.status = 'verified'
+                     )
+                   RETURNING d.document_id""",
+                (storage_path, document_id, company, storage_path),
+            )
+            if cursor.fetchone() is None:
+                raise ValueError("Expected a ready public PDF with verified metrics and no conflicting archive path")
+            cursor.execute(
+                """UPDATE public.document_chunks
+                   SET metadata = COALESCE(metadata, '{}'::jsonb)
+                                 || jsonb_build_object('source_sha256', %s::text)
+                   WHERE metadata->>'document_id' = %s""",
+                (source_sha256, document_id),
+            )
+            return cursor.rowcount
 
     def pdf_for_metric_extraction(self, document_id: str, company: str) -> dict | None:
         """Return ready stored PDFs in the active company for admin extraction replay."""
@@ -130,12 +248,21 @@ class DocumentRepository:
                 f"""
                 SELECT d.document_id, d.company, d.domain, d.title, d.document_type,
                        d.format, d.fiscal_year, d.source_url, d.allowed_roles,
-                       d.processing_status, count(c.id)::int AS chunks
+                       d.processing_status, count(c.id)::int AS chunks,
+                       ARRAY(
+                           SELECT DISTINCT jsonb_array_elements_text(reference.metadata->'knowledge_domains')
+                           FROM document_chunks reference
+                           WHERE reference.metadata->>'document_id' = d.document_id
+                             AND jsonb_typeof(reference.metadata->'knowledge_domains') = 'array'
+                       ) AS knowledge_domains,
+                       max(c.metadata->>'source_publisher') AS source_publisher,
+                       max(c.metadata->>'external_reference_type') AS external_reference_type
                 FROM documents d
                 LEFT JOIN document_chunks c
                   ON c.metadata->>'document_id' = d.document_id
                  AND coalesce(d.processing_status, 'ready') = 'ready'
                 WHERE d.source_type IN ('public_enterprise_document', 'user_upload')
+                  AND d.knowledge_base_active IS TRUE
                   AND {visible_filter}
                 GROUP BY d.document_id
                 ORDER BY d.company, d.fiscal_year NULLS LAST, d.title
@@ -151,6 +278,7 @@ class DocumentRepository:
                       ON c.metadata->>'document_id' = d.document_id
                      AND coalesce(d.processing_status, 'ready') = 'ready'
                     WHERE d.source_type IN ('public_enterprise_document', 'user_upload')
+                      AND d.knowledge_base_active IS TRUE
                       AND {visible_filter}
                     GROUP BY d.company, d.domain, d.fiscal_year
                     ORDER BY d.company, d.domain, d.fiscal_year NULLS LAST""",
@@ -166,6 +294,7 @@ class DocumentRepository:
                       ON c.metadata->>'document_id' = d.document_id
                      AND coalesce(d.processing_status, 'ready') = 'ready'
                     WHERE d.source_type IN ('public_enterprise_document', 'user_upload')
+                      AND d.knowledge_base_active IS TRUE
                       AND {visible_filter}
                     GROUP BY d.document_id ORDER BY d.title""",
                 visible_params,
@@ -175,6 +304,7 @@ class DocumentRepository:
                 f"""SELECT d.company, d.fiscal_year, d.processing_status, count(*)::int AS documents
                     FROM documents d
                     WHERE d.source_type IN ('public_enterprise_document', 'user_upload')
+                      AND d.knowledge_base_active IS TRUE
                       AND {visible_filter}
                     GROUP BY d.company, d.fiscal_year, d.processing_status
                     ORDER BY d.company, d.fiscal_year NULLS LAST, d.processing_status""",
@@ -453,50 +583,221 @@ class DocumentRepository:
         return {"results": results, "evidence": evidence,
                 "business_evidence": locals().get("business_evidence", []), "documents": documents}
 
+    def commerce_dashboard(self, keys: tuple[str, ...] | None = None) -> dict:
+        """Return descriptive dashboard aggregates from the private synthetic Commerce schema."""
+        queries = {
+            "overview": """SELECT min(date)::text AS first_day, max(date)::text AS last_day,
+                       sum(revenue)::double precision AS revenue,
+                       sum(cogs)::double precision AS cogs,
+                       (sum(revenue) - sum(cogs))::double precision AS gross_profit,
+                       CASE WHEN sum(revenue) = 0 THEN NULL
+                            ELSE ((sum(revenue) - sum(cogs)) / sum(revenue))::double precision END AS gross_margin
+                    FROM commerce.sales""",
+            "sales_by_year": """SELECT extract(year FROM date)::int AS year,
+                       sum(revenue)::double precision AS revenue,
+                       sum(cogs)::double precision AS cogs,
+                       (sum(revenue) - sum(cogs))::double precision AS gross_profit,
+                       CASE WHEN sum(revenue) = 0 THEN NULL
+                            ELSE ((sum(revenue) - sum(cogs)) / sum(revenue))::double precision END AS gross_margin
+                    FROM commerce.sales GROUP BY 1 ORDER BY 1""",
+            "inventory_by_year": """SELECT year, count(*)::int AS sku_snapshots,
+                       count(DISTINCT product_id)::int AS products,
+                       round(avg(stock_on_hand)::numeric, 0)::bigint AS avg_stock_on_hand,
+                       count(*) FILTER (WHERE stockout_flag)::int AS stockout_snapshots,
+                       count(*) FILTER (WHERE overstock_flag)::int AS overstock_snapshots,
+                       round(avg(stockout_days)::numeric, 2)::double precision AS avg_stockout_days,
+                       round(avg(fill_rate)::numeric, 4)::double precision AS avg_fill_rate
+                    FROM commerce.inventory GROUP BY year ORDER BY year""",
+            "inventory_year_end_by_category": """WITH year_end AS (
+                       SELECT year, max(snapshot_date) AS snapshot_date
+                       FROM commerce.inventory GROUP BY year
+                    )
+                    SELECT i.year, i.snapshot_date::text AS snapshot_date, i.category,
+                       count(*)::int AS products, sum(i.stock_on_hand)::bigint AS stock_on_hand,
+                       count(*) FILTER (WHERE i.stockout_flag)::int AS stockout_products,
+                       count(*) FILTER (WHERE i.overstock_flag)::int AS overstock_products,
+                       count(*) FILTER (WHERE i.stockout_flag AND i.overstock_flag)::int AS both_flagged_products
+                    FROM commerce.inventory i JOIN year_end y USING (year, snapshot_date)
+                    GROUP BY i.year, i.snapshot_date, i.category ORDER BY i.year, i.category""",
+            "inventory_latest_by_category": """WITH latest AS (SELECT max(snapshot_date) AS snapshot_date FROM commerce.inventory)
+                    SELECT i.snapshot_date::text AS snapshot_date, i.category, count(*)::int AS products,
+                       sum(i.stock_on_hand)::bigint AS stock_on_hand,
+                       count(*) FILTER (WHERE i.stockout_flag)::int AS stockout_products,
+                       count(*) FILTER (WHERE i.overstock_flag)::int AS overstock_products,
+                       count(*) FILTER (WHERE i.stockout_flag AND i.overstock_flag)::int AS both_flagged_products
+                    FROM commerce.inventory i JOIN latest l USING (snapshot_date)
+                    GROUP BY i.snapshot_date, i.category ORDER BY i.category""",
+            "inventory_latest_flag_overlap": """WITH latest AS (SELECT max(snapshot_date) AS snapshot_date FROM commerce.inventory)
+                    SELECT i.snapshot_date::text AS snapshot_date, count(*)::int AS product_rows,
+                       count(*) FILTER (WHERE i.stockout_flag)::int AS stockout_flagged_rows,
+                       count(*) FILTER (WHERE i.overstock_flag)::int AS overstock_flagged_rows,
+                       count(*) FILTER (WHERE i.stockout_flag AND i.overstock_flag)::int AS both_flagged_rows
+                    FROM commerce.inventory i JOIN latest l USING (snapshot_date)
+                    GROUP BY i.snapshot_date""",
+            "promotions_by_year": """SELECT extract(year FROM o.order_date)::int AS year,
+                       (coalesce(oi.promo_id, oi.promo_id_2) IS NOT NULL) AS used_promotion,
+                       count(DISTINCT o.order_id)::int AS delivered_orders,
+                       sum(oi.quantity)::bigint AS units,
+                       sum(oi.quantity * oi.unit_price - oi.discount_amount)::double precision AS net_sales,
+                       sum(oi.quantity * p.cogs)::double precision AS catalog_cogs,
+                       sum(oi.quantity * oi.unit_price - oi.discount_amount - oi.quantity * p.cogs)::double precision AS merchandise_gross_profit_proxy,
+                       (sum(oi.quantity * oi.unit_price - oi.discount_amount - oi.quantity * p.cogs)
+                           / nullif(sum(oi.quantity * oi.unit_price - oi.discount_amount), 0))::double precision AS merchandise_gross_margin_proxy,
+                       sum(oi.discount_amount)::double precision AS discounts
+                    FROM commerce.orders o JOIN commerce.order_items oi USING (order_id)
+                    JOIN commerce.products p USING (product_id)
+                    WHERE o.order_status = 'delivered'
+                    GROUP BY 1, 2 ORDER BY 1, 2""",
+            "promotions_by_campaign": """WITH tagged_items AS (
+                       SELECT order_id, product_id, quantity, unit_price, discount_amount, promo_id
+                       FROM commerce.order_items WHERE promo_id IS NOT NULL
+                       UNION ALL
+                       SELECT order_id, product_id, quantity, unit_price, discount_amount, promo_id_2 AS promo_id
+                       FROM commerce.order_items
+                       WHERE promo_id_2 IS NOT NULL AND promo_id_2 IS DISTINCT FROM promo_id
+                    )
+                    SELECT extract(year FROM p.start_date)::int AS year,
+                       p.promo_id, p.promo_name AS campaign, p.promo_channel AS channel,
+                       p.start_date::text AS campaign_start, p.end_date::text AS campaign_end,
+                       count(DISTINCT o.order_id)::int AS delivered_orders,
+                       coalesce(sum(t.quantity) FILTER (WHERE o.order_id IS NOT NULL), 0)::bigint AS units,
+                       coalesce(sum(t.quantity * t.unit_price - t.discount_amount)
+                           FILTER (WHERE o.order_id IS NOT NULL), 0)::double precision AS net_item_sales,
+                       coalesce(sum(t.quantity * products.cogs)
+                           FILTER (WHERE o.order_id IS NOT NULL), 0)::double precision AS catalog_cogs,
+                       coalesce(sum(t.quantity * t.unit_price - t.discount_amount - t.quantity * products.cogs)
+                           FILTER (WHERE o.order_id IS NOT NULL), 0)::double precision AS merchandise_gross_profit_proxy,
+                       (sum(t.quantity * t.unit_price - t.discount_amount - t.quantity * products.cogs)
+                           FILTER (WHERE o.order_id IS NOT NULL)
+                           / nullif(sum(t.quantity * t.unit_price - t.discount_amount)
+                               FILTER (WHERE o.order_id IS NOT NULL), 0))::double precision AS merchandise_gross_margin_proxy,
+                       coalesce(sum(t.discount_amount) FILTER (WHERE o.order_id IS NOT NULL), 0)::double precision AS discounts
+                    FROM commerce.promotions p
+                    LEFT JOIN tagged_items t ON t.promo_id = p.promo_id
+                    LEFT JOIN commerce.products products ON products.product_id = t.product_id
+                    LEFT JOIN commerce.orders o ON o.order_id = t.order_id
+                       AND o.order_status = 'delivered'
+                       AND o.order_date BETWEEN p.start_date AND p.end_date
+                    GROUP BY p.promo_id, p.promo_name, p.promo_channel, p.start_date, p.end_date
+                    ORDER BY year DESC, net_item_sales DESC, p.promo_name""",
+            "logistics_by_year_region": """SELECT extract(year FROM s.delivery_date)::int AS year,
+                       coalesce(g.region, 'Unknown') AS region,
+                       count(*)::int AS deliveries,
+                       round(avg(s.delivery_date - s.ship_date)::numeric, 2)::double precision AS avg_transit_days,
+                       percentile_cont(0.5) WITHIN GROUP (ORDER BY s.delivery_date - s.ship_date)::double precision AS median_transit_days,
+                       round(avg(s.shipping_fee)::numeric, 2)::double precision AS avg_shipping_fee
+                    FROM commerce.shipments s JOIN commerce.orders o USING (order_id)
+                    LEFT JOIN commerce.geography g ON g.zip = o.zip
+                    WHERE s.ship_date IS NOT NULL AND s.delivery_date >= s.ship_date
+                    GROUP BY 1, 2 ORDER BY 1, 2""",
+        }
+        if keys is not None:
+            unknown = set(keys) - queries.keys()
+            if unknown:
+                raise ValueError(f"Unsupported Commerce dashboard aggregates: {', '.join(sorted(unknown))}")
+            queries = {key: queries[key] for key in keys}
+
+        result = {}
+        with self.conn.cursor() as cursor:
+            cursor.execute("SET TRANSACTION READ ONLY")
+            cursor.execute("SET LOCAL statement_timeout = '10s'")
+            for name, sql in queries.items():
+                cursor.execute(sql)
+                rows = cursor.fetchall()
+                result[name] = rows[0] if name == "overview" and rows else rows
+        return {
+            **result,
+            "data_notes": [
+                "Commerce records are synthetic competition data, not actual company operating results.",
+                "Promotion comparisons are descriptive; the data has no randomized holdout and does not establish causal uplift.",
+                "Promotion tables include merchandise gross-profit and margin proxies from transaction item prices, discounts, and catalog COGS. They are not contribution margin or campaign ROI; catalog cost assumptions and campaign costs are not validated.",
+                "The stored days_of_supply values are anomalously large, so they are excluded from decision summaries.",
+                "Geography is grouped into dataset regions; carrier, warehouse origin, route capacity and promised SLA are not available.",
+            ],
+        }
+
+    def commerce_decision_snapshot(self, domain: str) -> dict:
+        """Return a bounded, read-only SQL evidence slice for one Commerce decision domain."""
+        profile = COMMERCE_DECISION_PROFILES.get(domain)
+        if profile is None:
+            raise ValueError(f"Unsupported Commerce decision domain: {domain}")
+        dashboard = self.commerce_dashboard(profile["dashboard_keys"])
+        selected = {}
+        for key in profile["dashboard_keys"]:
+            rows = dashboard.get(key, [])
+            if key == "inventory_latest_flag_overlap":
+                selected[key] = rows
+                continue
+            if key == "inventory_latest_by_category":
+                ranked = sorted(
+                    rows,
+                    key=lambda row: row.get("stockout_products", 0) + row.get("overstock_products", 0),
+                    reverse=True,
+                )
+                selected[key] = ranked[:12]
+                continue
+            if key == "promotions_by_campaign":
+                rows_by_year = {}
+                for row in rows:
+                    rows_by_year.setdefault(int(row["year"]), []).append(row)
+                years = sorted(rows_by_year)[-3:]
+                selected[key] = [
+                    row for year in years
+                    for row in sorted(rows_by_year[year], key=lambda item: item.get("net_item_sales", 0), reverse=True)[:12]
+                ]
+                continue
+            years = sorted({int(row["year"]) for row in rows if row.get("year") is not None})
+            recent = set(years[-3:])
+            selected[key] = [row for row in rows if int(row["year"]) in recent]
+        return {
+            "domain": domain,
+            "domain_label": profile["label"],
+            "source_tables": list(profile["source_tables"]),
+            "observations": selected,
+            "limitations": list(profile["limitations"]),
+            "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer.",
+        }
+
+    def execute_commerce_analytics(self, query: str, domain: str) -> list[dict]:
+        """Run a domain-scoped, validated SELECT over synthetic Commerce data."""
+        table_columns = COMMERCE_QUERY_TABLES.get(domain)
+        if table_columns is None:
+            raise ValueError(f"Unsupported Commerce decision domain: {domain}")
+        query = validate_commerce_sql(query, table_columns)
+        with self.conn.transaction(), self.conn.cursor() as cursor:
+            cursor.execute("SET TRANSACTION READ ONLY")
+            cursor.execute("SET LOCAL statement_timeout = '5s'")
+            try:
+                cursor.execute(query)
+                columns = [item.name for item in cursor.description]
+                return [dict(row) if isinstance(row, dict) else dict(zip(columns, row))
+                        for row in cursor.fetchall()]
+            except psycopg.Error as error:
+                detail = f" ({type(error).__name__}, SQLSTATE {error.sqlstate})" if error.sqlstate else f" ({type(error).__name__})"
+                database_message = error.diag.message_primary
+                if database_message:
+                    database_message = re.sub(r"'[^']*'", "'<value>'", database_message)
+                    detail += f": {database_message[:180]}"
+                raise UnsafeAnalyticsQuery(f"The Commerce SELECT could not be executed{detail}") from error
+
+    def latest_commerce_inventory_snapshot(self) -> str | None:
+        """Return the latest inventory snapshot date for bounded latest-snapshot queries."""
+        with self.conn.cursor() as cursor:
+            cursor.execute("SELECT max(snapshot_date)::text AS snapshot_date FROM commerce.inventory")
+            row = cursor.fetchone()
+            return row["snapshot_date"] if row else None
+
     def save_metric_candidates(self, document_id: str, candidates: list[dict]) -> None:
         with self.conn.transaction(), self.conn.cursor() as cursor:
             cursor.execute(
-                """SELECT id, chunk_index, content, metadata->>'page_number' AS page_number
+                """SELECT id, chunk_index, content, metadata,
+                          metadata->>'page_number' AS page_number
                    FROM public.document_chunks
                    WHERE metadata->>'document_id' = %s
                    ORDER BY chunk_index""",
                 (document_id,),
             )
             source_chunks = cursor.fetchall()
-
-            def link_source_chunk(row: dict) -> tuple[int | None, int | None, str | None]:
-                quote = " ".join(str(row.get("source_quote") or "").casefold().split())
-                page = str(row.get("page_number") or "")
-                on_page = [chunk for chunk in source_chunks if chunk["page_number"] == page]
-                page_chunks = on_page or source_chunks
-                exact = [chunk for chunk in page_chunks
-                         if quote and quote in " ".join(chunk["content"].casefold().split())]
-                if len(exact) == 1:
-                    match = exact[0]
-                else:
-                    definition = METRIC_ONTOLOGY.get(row["metric_name"], {})
-                    labels = {str(row.get("metric_label") or ""), *definition.get("source_labels", ())}
-                    labels.update(definition.get("aliases", ()))
-                    labels = {" ".join(label.casefold().split()) for label in labels if label}
-                    values = [re.sub(r"\D", "", str(value)) for value in row.get("candidate_values", ())]
-                    values = [value for value in values if len(value) >= 2]
-                    quote_tokens = set(re.findall(r"[a-z]+|\d+", quote))
-                    matched = []
-                    for chunk in page_chunks:
-                        content = " ".join(chunk["content"].casefold().split())
-                        digits = re.sub(r"\D", "", content)
-                        if values and all(value in digits for value in values):
-                            label_score = max((len(label) for label in labels if label in content), default=0)
-                            if label_score:
-                                content_tokens = set(re.findall(r"[a-z]+|\d+", content))
-                                quote_score = len(quote_tokens & content_tokens)
-                                matched.append((label_score, quote_score, chunk))
-                    matched.sort(key=lambda item: (item[0], item[1]), reverse=True)
-                    if not matched or (len(matched) > 1 and matched[0][:2] == matched[1][:2]):
-                        return None, None, None
-                    match = matched[0][2]
-                return (match["id"], match["chunk_index"],
-                        hashlib.sha256(match["content"].encode()).hexdigest())
 
             cursor.executemany(
                 """INSERT INTO extracted_metric_candidates (
@@ -528,7 +829,7 @@ class DocumentRepository:
                   row.get("extraction_method", "rule_based_page_evidence"),
                   row.get("extractor_model"), row.get("prompt_version"),
                   psycopg.types.json.Jsonb(row.get("selection_evidence", {})),
-                  *link_source_chunk(row))
+                  *link_financial_metric_source_chunk(row, source_chunks))
                  for row in candidates],
             )
             cursor.execute(
@@ -601,9 +902,6 @@ class DocumentRepository:
         if not candidates:
             return 0
         import hashlib
-        def normalized(value: str) -> str:
-            return " ".join(value.split()).casefold()
-
         with self.conn.transaction(), self.conn.cursor() as cursor:
             for row in candidates:
                 chunk_index = row.get("source_chunk_index")
@@ -619,7 +917,7 @@ class DocumentRepository:
                         (row["source_document_id"], str(row["page_number"])),
                     )
                     source_chunk = next((chunk for chunk in cursor.fetchall()
-                                         if normalized(row["source_quote"]) in normalized(chunk["content"])), None)
+                                         if source_quote_matches(chunk["content"], row["source_quote"])), None)
                     if source_chunk is None:
                         raise ValueError(
                             f"No saved parser chunk contains metric evidence for "
@@ -862,7 +1160,7 @@ class DocumentRepository:
                  run["status"], run["input_chunk_count"], run["selected_chunk_count"],
                  run["candidate_count"], psycopg.types.json.Jsonb(run["audit"])),
             )
-            return cursor.fetchone()[0]
+            return cursor.fetchone()["id"]
 
     def business_metric_extraction_runs(self, document_id: str, company: str) -> list[dict]:
         """Return recent admin audit traces for one source document."""

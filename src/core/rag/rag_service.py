@@ -170,6 +170,17 @@ def _format_contexts(contexts: list[dict]) -> str:
         if metadata.get("section_title"):
             lines.append(f"Section: {metadata['section_title']}")
 
+        if metadata.get("evidence_class"):
+            lines.append(f"Evidence class: {metadata['evidence_class']}")
+        if metadata.get("source_publisher"):
+            lines.append(f"Publisher: {metadata['source_publisher']}")
+        if metadata.get("reference_applicability"):
+            lines.append(f"Applicability: {metadata['reference_applicability']}")
+        if metadata.get("synthetic_company_policy") is True:
+            lines.append("Status: synthetic demo policy; not issued by a real company")
+        if metadata.get("knowledge_domains"):
+            lines.append(f"Decision domains: {', '.join(metadata['knowledge_domains'])}")
+
         lines.append(f"Content: {context['content']}")
         blocks.append("\n".join(lines))
 
@@ -243,6 +254,7 @@ class RAGService:
         limit: int = 5,
         company: str | None = None,
         roles: list[str] | None = None,
+        metadata_filter: dict | None = None,
         retrieval_method: Literal["dense", "bm25", "hybrid", "parent"] = "hybrid",
         retrieval_query: str | None = None,
     ) -> RAGResult:
@@ -256,6 +268,7 @@ class RAGService:
             limit=limit,
             company=company,
             roles=roles,
+            metadata_filter=metadata_filter,
             retrieval_method=retrieval_method,
         )
         if not contexts:
@@ -374,6 +387,7 @@ class RAGService:
         limit: int = 5,
         company: str | None = None,
         roles: list[str] | None = None,
+        metadata_filter: dict | None = None,
         retrieval_method: Literal["dense", "bm25", "hybrid", "parent"] = "hybrid",
     ) -> list[dict]:
         """Return authorized ranked passages without invoking the language model."""
@@ -384,6 +398,8 @@ class RAGService:
         request = RetrievalRequest(query=question, top_k=limit)
         method = {} if retrieval_method == "hybrid" else {"method": retrieval_method}
         retrieval_filters = {"roles": roles}
+        if metadata_filter:
+            retrieval_filters["metadata_filter"] = metadata_filter
         if company is not None:
             retrieval_filters["company"] = company
         retrieval_filters.update(method)

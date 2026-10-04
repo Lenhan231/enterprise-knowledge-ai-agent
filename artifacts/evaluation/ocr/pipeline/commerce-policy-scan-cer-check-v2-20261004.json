@@ -1,0 +1,121 @@
+{
+  "evaluation_id": "commerce-synthetic-policy-scans-layout-ocr-v2-20261004",
+  "created_at_utc": "2026-10-04T10:21:23.853878+00:00",
+  "scope": "All nine pages of the three active image-only Commerce Demo policy PDFs, scored through the same DocumentProcessor used by PDF upload.",
+  "source_is_physical_scan": false,
+  "reference_method": "Text extracted from temporary native-text PDFs generated from the same policy HTML before rasterization; normalized by scripts/processing/evaluate_ocr.py::normalize.",
+  "reference_human_reviewed": false,
+  "configuration": {
+    "source_raster_scale": 4.0,
+    "source_jpeg_quality": 95,
+    "page_tesseract_psm": 11,
+    "upload_render_scale": 1.5,
+    "language": "vie+eng",
+    "tesseract_version": "tesseract 5.5.3"
+  },
+  "changes_from_v1": [
+    "Removed repeated title summary from pages 2-3; kept a running title.",
+    "Changed metadata key-value tables into paragraphs.",
+    "Raised source raster resolution from 2x JPEG quality 88 to 4x JPEG quality 95."
+  ],
+  "aggregate": {
+    "pages": 9,
+    "reference_characters": 8988,
+    "character_edits": 47,
+    "micro_cer": 0.005229
+  },
+  "pages": [
+    {
+      "document_id": "CD-POL-INV-001",
+      "page": 1,
+      "reference_characters": 1181,
+      "character_edits": 8,
+      "cer": 0.006774,
+      "chunk_count": 2,
+      "ocr_method": "tesseract"
+    },
+    {
+      "document_id": "CD-POL-INV-001",
+      "page": 2,
+      "reference_characters": 1203,
+      "character_edits": 2,
+      "cer": 0.001663,
+      "chunk_count": 2,
+      "ocr_method": "tesseract"
+    },
+    {
+      "document_id": "CD-POL-INV-001",
+      "page": 3,
+      "reference_characters": 707,
+      "character_edits": 1,
+      "cer": 0.001414,
+      "chunk_count": 1,
+      "ocr_method": "tesseract"
+    },
+    {
+      "document_id": "CD-POL-PROMO-001",
+      "page": 1,
+      "reference_characters": 1098,
+      "character_edits": 6,
+      "cer": 0.005464,
+      "chunk_count": 2,
+      "ocr_method": "tesseract"
+    },
+    {
+      "document_id": "CD-POL-PROMO-001",
+      "page": 2,
+      "reference_characters": 1144,
+      "character_edits": 10,
+      "cer": 0.008741,
+      "chunk_count": 2,
+      "ocr_method": "tesseract"
+    },
+    {
+      "document_id": "CD-POL-PROMO-001",
+      "page": 3,
+      "reference_characters": 698,
+      "character_edits": 8,
+      "cer": 0.011461,
+      "chunk_count": 1,
+      "ocr_method": "tesseract"
+    },
+    {
+      "document_id": "CD-POL-LOG-001",
+      "page": 1,
+      "reference_characters": 1069,
+      "character_edits": 7,
+      "cer": 0.006548,
+      "chunk_count": 2,
+      "ocr_method": "tesseract"
+    },
+    {
+      "document_id": "CD-POL-LOG-001",
+      "page": 2,
+      "reference_characters": 1180,
+      "character_edits": 3,
+      "cer": 0.002542,
+      "chunk_count": 2,
+      "ocr_method": "tesseract"
+    },
+    {
+      "document_id": "CD-POL-LOG-001",
+      "page": 3,
+      "reference_characters": 708,
+      "character_edits": 2,
+      "cer": 0.002825,
+      "chunk_count": 1,
+      "ocr_method": "tesseract"
+    }
+  ],
+  "source_pdf_sha256": {
+    "CD-POL-INV-001": "5747272a3274fa3a11df56472fa6fd7e91d733010285d4161741778c53fcdb7e",
+    "CD-POL-PROMO-001": "61d60583c017a5dc2f2933f018108eeffb7127c500acab5d471a1ddcebe5714f",
+    "CD-POL-LOG-001": "b991b179090556729d64c0740f8e3df811c6521c32b61c9dd3c9185cfdcc1f93"
+  },
+  "limitations": [
+    "Synthetic, digitally composed scans only; no physical scanner/camera noise, skew, blur or paper variation.",
+    "References come from the generator output and were not independently human-reviewed.",
+    "No structured tables occur in these policies; this does not evaluate table OCR.",
+    "CER is not an OCR benchmark across engines or a production accuracy claim."
+  ]
+}

@@ -16,10 +16,6 @@ SPEC.loader.exec_module(evaluate_ocr)
 
 
 class OCREvaluationTest(unittest.TestCase):
-    def require_source_pdf(self, root, relative_path):
-        if not (root / relative_path).is_file():
-            self.skipTest("requires the optional downloaded Vinamilk source PDF corpus")
-
     def test_paddleocr_3_selects_cuda_when_available(self):
         paddle = MagicMock()
         paddle.is_compiled_with_cuda.return_value = True
@@ -239,8 +235,15 @@ class OCREvaluationTest(unittest.TestCase):
     def test_model_initialization_failure_keeps_explicitly_unscored_engine(self):
         torch = MagicMock()
         torch.cuda.is_available.return_value = False
-        source_dataset = Path(__file__).resolve().parents[1] / "data/evaluation/vinamilk_ocr_ground_truth_v2.json"
-        dataset = json.loads(source_dataset.read_text(encoding="utf-8"))
+        dataset = {
+            "dataset_id": "model-initialization-fixture",
+            "reference_method": "test fixture",
+            "limitations": ["test only"],
+            "pages": [{
+                "document_id": "fixture", "file": "fixture.pdf", "page": 1,
+                "language": "en", "reference_text": "fixture page",
+            }],
+        }
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
             pdf_path = temp_root / "fixture.pdf"
@@ -330,134 +333,37 @@ class OCREvaluationTest(unittest.TestCase):
             self.assertEqual(report["engines"]["easyocr"]["aggregate"]["valid_pages"], 1)
             self.assertEqual(report["engines"]["paddleocr"]["pages"][0]["hypothesis_text"], "fixture text")
 
-    def test_selected_page_language_uses_visible_page_not_document_suffix(self):
-        dataset_path = Path(__file__).resolve().parents[1] / "data/evaluation/ocr_pages.json"
+    def test_default_dataset_is_the_commerce_image_only_scan_smoke_fixture(self):
+        dataset_path = Path(__file__).resolve().parents[1] / "data/evaluation/ocr/commerce_scan_ground_truth.json"
         dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
-        languages = {page["document_id"]: page["language"] for page in dataset["pages"]}
-        self.assertEqual(languages["VNM-AR-2020-VI"], "en")
-        self.assertEqual(languages["VNM-AR-2021-VI"], "en")
-        self.assertEqual(languages["VNM-AR-2022-VI"], "vi")
-        self.assertEqual(languages["VNM-AR-2023-EN"], "en")
-        self.assertEqual(languages["VNM-AR-2024-VI"], "vi")
-        self.assertIn("checked visually", dataset["language_label_method"])
-
-    def test_human_reviewed_ocr_regions_have_manual_references_and_same_crop_protocol(self):
-        dataset_path = Path(__file__).resolve().parents[1] / "data/evaluation/vinamilk_ocr_ground_truth.json"
-        dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
-        self.assertTrue(dataset["primary_metric_selection_eligible"])
-        self.assertEqual(dataset["reference_quality"], "human_transcribed_visual_review")
+        self.assertEqual(dataset["dataset_id"], "commerce-synthetic-image-only-scan-smoke-v1")
+        self.assertFalse(dataset["primary_metric_selection_eligible"])
         self.assertEqual(len(dataset["pages"]), 2)
-        for case in dataset["pages"]:
-            self.assertEqual(len(case["clip_rect"]), 4)
-            self.assertTrue(case["reference_text"].strip())
-            self.assertIn(case["language"], {"vi", "en"})
+        self.assertTrue(all(page["language"] == "en" for page in dataset["pages"]))
 
-    def test_v2_human_review_dataset_includes_raster_embedded_report_art(self):
-        dataset_path = Path(__file__).resolve().parents[1] / "data/evaluation/vinamilk_ocr_ground_truth_v2.json"
+    def test_commerce_smoke_fixture_pages_are_image_only_and_reference_text_is_present(self):
+        root = Path(__file__).resolve().parents[1]
+        dataset_path = root / "data/evaluation/ocr/commerce_scan_ground_truth.json"
         dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
-        self.assertEqual(dataset["reference_quality"], "human_transcribed_visual_review")
+        self.assertEqual(dataset["reference_quality"], "visual_transcription_review")
         self.assertFalse(dataset["primary_metric_selection_eligible"])
-        poster = next(page for page in dataset["pages"] if page["id"] == "annual-2020-product-poster-vi")
-        self.assertEqual(poster["document_id"], "VNM-AR-2020-VI")
-        self.assertEqual(poster["page"], 22)
-        self.assertIn("TĂNG CƯỜNG ĐỀ KHÁNG", poster["reference_text"])
-        self.assertIn("not a physical scan", dataset["limitations"])
-
-    def test_v3_adds_manually_reviewed_physical_scan_region(self):
-        root = Path(__file__).resolve().parents[1]
-        dataset = json.loads((root / "data/evaluation/vinamilk_ocr_ground_truth_v3.json").read_text(encoding="utf-8"))
-        scan = next(page for page in dataset["pages"] if page.get("physical_scan"))
-        self.assertFalse(dataset["primary_metric_selection_eligible"])
-        self.assertEqual((scan["document_id"], scan["page"], scan["language"]), ("VNM-CHARTER-2026-EN", 4, "en"))
-        self.require_source_pdf(root, scan["file"])
-        with fitz.open(root / scan["file"]) as pdf:
-            page = pdf[scan["page"] - 1]
-            self.assertEqual(page.get_text().strip(), "")
-            self.assertTrue(page.get_images(full=True))
-        self.assertIn("INTRODUCTION", scan["reference_text"])
-
-    def test_v4_has_two_image_only_scans_with_manual_text_labels(self):
-        root = Path(__file__).resolve().parents[1]
-        dataset = json.loads((root / "data/evaluation/vinamilk_ocr_ground_truth_v4.json").read_text(encoding="utf-8"))
-        scans = [page for page in dataset["pages"] if page.get("physical_scan")]
-        self.assertEqual({page["document_id"] for page in scans}, {"VNM-CHARTER-2026-EN", "VNM-CGRULES-2026-EN"})
-        self.assertTrue(all(page["reference_text"].strip() and len(page["clip_rect"]) == 4 for page in scans))
-        for scan in scans:
-            self.require_source_pdf(root, scan["file"])
-            with fitz.open(root / scan["file"]) as pdf:
-                page = pdf[scan["page"] - 1]
+        for page_spec in dataset["pages"]:
+            with fitz.open(root / page_spec["file"]) as pdf:
+                page = pdf[page_spec["page"] - 1]
                 self.assertEqual(page.get_text().strip(), "")
                 self.assertTrue(page.get_images(full=True))
+            self.assertTrue(page_spec["reference_text"].strip())
 
-    def test_v5_contains_visually_reviewed_vietnamese_table_rows(self):
+    def test_commerce_scan_table_ground_truth_covers_all_rows(self):
         root = Path(__file__).resolve().parents[1]
-        dataset = json.loads((root / "data/evaluation/vinamilk_ocr_ground_truth_v5.json").read_text(encoding="utf-8"))
-        table = next(page for page in dataset["pages"] if page.get("layout_type") == "financial_table")
-        self.assertFalse(table.get("physical_scan", False))
-        self.assertEqual(len(table["table_rows"]), 16)
-        self.require_source_pdf(root, table["file"])
-        with fitz.open(root / table["file"]) as pdf:
-            page = pdf[table["page"] - 1]
-            native_text = page.get_text("text", clip=fitz.Rect(table["clip_rect"]))
-        self.assertEqual(evaluate_ocr.exact_table_rows(table["table_rows"], native_text), 16)
-
-    def test_v6_scan_crops_preserve_full_printed_text_width(self):
-        root = Path(__file__).resolve().parents[1]
-        dataset = json.loads((root / "data/evaluation/vinamilk_ocr_ground_truth_v6.json").read_text(encoding="utf-8"))
-        scans = [page for page in dataset["pages"] if page.get("physical_scan")]
-        self.assertEqual(len(scans), 2)
-        for scan in scans:
-            self.require_source_pdf(root, scan["file"])
-            with fitz.open(root / scan["file"]) as pdf:
-                page = pdf[scan["page"] - 1]
-                clip = fitz.Rect(scan["clip_rect"])
-                self.assertLessEqual(clip.x0, 60)
-                self.assertLessEqual(page.rect.width - clip.x1, 31)
-                self.assertEqual(page.get_text().strip(), "")
-                self.assertTrue(page.get_images(full=True))
-            self.assertIn("clipped", scan["annotation"])
-
-    def test_v7_adds_four_manually_labeled_image_only_scan_regions(self):
-        root = Path(__file__).resolve().parents[1]
-        dataset = json.loads((root / "data/evaluation/vinamilk_ocr_ground_truth_v7.json").read_text(encoding="utf-8"))
-        additions = [
-            page for page in dataset["pages"]
-            if page["id"] in {
-                "charter-2026-board-duties-toc-scan-en",
-                "charter-2026-definitions-scan-en",
-                "governance-rules-2026-board-meeting-toc-scan-en",
-                "governance-rules-2026-ceo-toc-scan-en",
-            }
-        ]
-        self.assertEqual(len(dataset["pages"]), 10)
-        self.assertEqual(len(additions), 4)
-        self.assertTrue(all(page.get("physical_scan") and page["reference_text"].strip() for page in additions))
-        for scan in additions:
-            self.require_source_pdf(root, scan["file"])
-            with fitz.open(root / scan["file"]) as pdf:
-                page = pdf[scan["page"] - 1]
-                self.assertEqual(page.get_text().strip(), "")
-                self.assertTrue(page.get_images(full=True))
-                self.assertTrue(page.rect.contains(fitz.Rect(scan["clip_rect"])))
-
-
-    def test_cafef_2011_v2_reference_matches_bounded_scan_scope_and_corrected_values(self):
-        root = Path(__file__).resolve().parents[1]
-        dataset = json.loads((root / "data/evaluation/vinamilk_ocr_2011_cafef_scan_v2.json").read_text(encoding="utf-8"))
-        page_spec = dataset["pages"][0]
-        self.assertFalse(dataset["primary_metric_selection_eligible"])
-        self.assertEqual(page_spec["clip_rect"], [30, 80, 565, 645])
-        self.assertIn("3.615.492.938.971", page_spec["reference_text"])
-        self.assertIn("7.717 6.721", page_spec["reference_text"])
-        after_tax = page_spec["reference_text"].split("Lợi nhuận sau thuế", 1)[1].split("Phân bổ cho", 1)[0]
-        self.assertNotIn("3.616.185.949.180", after_tax)
-        self.assertEqual(len(page_spec["table_rows"]), 7)
-        self.require_source_pdf(root, page_spec["file"])
-        with fitz.open(root / page_spec["file"]) as pdf:
-            page = pdf[page_spec["page"] - 1]
-            clip = fitz.Rect(page_spec["clip_rect"])
-            self.assertTrue(page.rect.contains(clip))
-            self.assertEqual(page.get_text().strip(), "")
+        dataset = json.loads((root / "data/evaluation/ocr/commerce_scan_ground_truth.json").read_text(encoding="utf-8"))
+        table_page = next(page for page in dataset["pages"] if page.get("table_rows"))
+        rows = table_page["table_rows"]
+        self.assertEqual([row["label"] for row in rows], ["East", "Central", "West"])
+        self.assertEqual(rows[0]["values"], ["120", "3.0", "42.50"])
+        self.assertEqual(rows[-1]["values"], ["80", "5.0", "55.25"])
+        with fitz.open(root / table_page["file"]) as pdf:
+            self.assertEqual(pdf[table_page["page"] - 1].get_text().strip(), "")
 
 
 if __name__ == "__main__":

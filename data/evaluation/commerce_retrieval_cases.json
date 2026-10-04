@@ -1,0 +1,155 @@
+{
+  "benchmark_id": "commerce-decision-retrieval-v1",
+  "dataset": "Synthetic Kaggle Datathon 2026 Round 1 Commerce schema",
+  "purpose": "Document-level relevance labels for retrieving scoped operating references and explicitly synthetic policies that support SQL-based Commerce Demo decisions.",
+  "labeling_note": "Labels identify a source relevant to the question. External sources remain attributed examples and do not define Commerce Demo policy; synthetic policies apply only to the fictional demo. Retrieval labels do not validate answer quality.",
+  "cases": [
+    {
+      "id": "INV-01",
+      "role": "operations",
+      "allowed_roles": [
+        "operations"
+      ],
+      "question": "Which product categories show stockout and overstock signals, and what evidence is required before transferring inventory between locations?",
+      "relevant_document_ids": [
+        "CD-POL-INV-001"
+      ],
+      "domain": "inventory_allocation"
+    },
+    {
+      "id": "INV-02",
+      "role": "operations",
+      "allowed_roles": [
+        "operations"
+      ],
+      "question": "How should historical stock availability and low-stock signals be reviewed without treating them as an approved service target?",
+      "relevant_document_ids": [
+        "SAMS-SUPPLIER-HUB-USER-GUIDE-2022"
+      ],
+      "domain": "inventory_allocation"
+    },
+    {
+      "id": "INV-03",
+      "role": "operations",
+      "allowed_roles": [
+        "operations"
+      ],
+      "question": "What location-level inventory and demand evidence is needed before regional stock reallocation?",
+      "relevant_document_ids": [
+        "CD-POL-INV-001"
+      ],
+      "domain": "inventory_allocation"
+    },
+    {
+      "id": "PROMO-01",
+      "role": "operations",
+      "allowed_roles": [
+        "operations"
+      ],
+      "question": "Can tagged versus untagged promotion outcomes establish incremental sales, and how should a holdout be used?",
+      "relevant_document_ids": [
+        "DD-ADS-SALES-LIFT-MEASUREMENT-2026"
+      ],
+      "domain": "promotion_planning"
+    },
+    {
+      "id": "PROMO-02",
+      "role": "operations",
+      "allowed_roles": [
+        "operations"
+      ],
+      "question": "How should attributed campaign sales and advertising spend be interpreted when comparing campaigns?",
+      "relevant_document_ids": [
+        "AMAZON-ADS-CAMPAIGN-REPORTING",
+        "AUS-BUSINESS-MARKETING-PLAN"
+      ],
+      "domain": "promotion_planning"
+    },
+    {
+      "id": "PROMO-03",
+      "role": "operations",
+      "allowed_roles": [
+        "operations"
+      ],
+      "question": "What evidence should be checked before repeating or expanding a promotion when contribution margin and a counterfactual are missing?",
+      "relevant_document_ids": [
+        "DD-ADS-SALES-LIFT-MEASUREMENT-2026",
+        "AUS-BUSINESS-MARKETING-PLAN"
+      ],
+      "domain": "promotion_planning"
+    },
+    {
+      "id": "LOG-01",
+      "role": "operations",
+      "allowed_roles": [
+        "operations"
+      ],
+      "question": "What customer needs, service priorities, and cost evidence should guide a logistics-network comparison?",
+      "relevant_document_ids": [
+        "AMAZON-SCS-LOGISTICS-DECISIONS-2026"
+      ],
+      "domain": "nationwide_logistics"
+    },
+    {
+      "id": "LOG-02",
+      "role": "operations",
+      "allowed_roles": [
+        "operations"
+      ],
+      "question": "How can fulfillment location be evaluated against inventory availability, destination, speed, and shipping cost?",
+      "relevant_document_ids": [
+        "AMAZON-SCS-LOGISTICS-DECISIONS-2026"
+      ],
+      "domain": "nationwide_logistics"
+    },
+    {
+      "id": "LOG-03",
+      "role": "operations",
+      "allowed_roles": [
+        "operations"
+      ],
+      "question": "What route, capacity, service, and business-priority information should be gathered before choosing a carrier or logistics option?",
+      "relevant_document_ids": [
+        "AMAZON-SCS-LOGISTICS-DECISIONS-2026",
+        "AUS-BUSINESS-ECOMMERCE-SHIPPING"
+      ],
+      "domain": "nationwide_logistics"
+    },
+    {
+      "id": "INV-MAN-01",
+      "role": "operations",
+      "allowed_roles": [
+        "operations"
+      ],
+      "question": "What sales, supplier lead-time, seasonality, recordkeeping and stocktake inputs should a manager use to review a SKU reorder point?",
+      "relevant_document_ids": [
+        "AUS-BUSINESS-INVENTORY-MANAGEMENT"
+      ],
+      "domain": "inventory_allocation"
+    },
+    {
+      "id": "PROMO-MAN-01",
+      "role": "operations",
+      "allowed_roles": [
+        "operations"
+      ],
+      "question": "How should a small business structure a promotion plan so it specifies the target market, goals, channel activity, budget, success measure and review date?",
+      "relevant_document_ids": [
+        "AUS-BUSINESS-MARKETING-PLAN"
+      ],
+      "domain": "promotion_planning"
+    },
+    {
+      "id": "LOG-MAN-01",
+      "role": "operations",
+      "allowed_roles": [
+        "operations"
+      ],
+      "question": "What practical criteria should a small business compare when selecting an e-commerce parcel delivery provider, including speed, parcel size, pickup, coverage, loss and damage terms, and reporting?",
+      "relevant_document_ids": [
+        "AUS-BUSINESS-ECOMMERCE-SHIPPING"
+      ],
+      "domain": "nationwide_logistics"
+    }
+  ]
+}

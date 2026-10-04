@@ -78,7 +78,7 @@ class RerankerEvaluationTest(unittest.TestCase):
         }]
         cases_bytes = b'{"cases":["frozen labels"]}'
         bundle = {
-            "schema": "vinamilk-role-filtered-reranker-candidates-v1",
+            "schema": "commerce-role-filtered-reranker-candidates-v1",
             "case_file_sha256": hashlib.sha256(cases_bytes).hexdigest(),
             "candidate_sha256": _candidate_sha256(candidates),
             "cases": candidates,
@@ -97,7 +97,7 @@ class RerankerEvaluationTest(unittest.TestCase):
             "relevant_document_ids": ["report-2024"], "relevant_chunk_ids": [],
         }
         bundle = {
-            "schema": "vinamilk-role-filtered-reranker-candidates-v1",
+            "schema": "commerce-role-filtered-reranker-candidates-v1",
             "case_file_sha256": "wrong", "candidate_sha256": "wrong", "cases": [],
         }
         with TemporaryDirectory() as directory:

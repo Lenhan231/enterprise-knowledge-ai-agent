@@ -8,7 +8,7 @@ import re
 import time
 import secrets
 import uuid
-from typing import Literal
+from typing import Annotated, Literal
 import jwt
 from jwt import InvalidTokenError
 
@@ -39,19 +39,18 @@ from core.analytics.business_metric_catalog import (
     BUSINESS_DECISION_PROFILES,
     BUSINESS_METRIC_CATALOG,
     BUSINESS_METRIC_DECISION_PROFILE,
+    SUPPORTED_BUSINESS_DECISION_DOMAINS,
 )
+from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES
 from supabase import create_client
 
 logger = logging.getLogger(__name__)
-app = FastAPI(title="Vietnam Enterprise Knowledge AI")
+app = FastAPI(title="Commerce Decision Support")
 
 APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"
-REPO_ROOT = APP_DIR.parents[1]
-CORPUS_MANIFEST = json.loads(
-    (REPO_ROOT / "data/vietnam_enterprises/manifest.json").read_text(encoding="utf-8")
-)
-CORPUS_COMPANY = CORPUS_MANIFEST["company"]
+# The demo no longer depends on a seed-company manifest.
+CORPUS_COMPANY = os.getenv("COMMERCE_DEMO_COMPANY", "Commerce Demo")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 auth_scheme = HTTPBearer(auto_error=False)
 DOCUMENT_ROLES = {"employee", "finance_analyst", "sustainability_analyst", "procurement", "operations", "legal_compliance", "executive", "admin"}
@@ -60,10 +59,10 @@ ROLE_PERMISSIONS = {
     "finance_analyst": {"view_corpus", "ask_documents", "view_analytics"},
     "sustainability_analyst": {"view_corpus", "ask_documents", "view_analytics"},
     "procurement": {"view_corpus", "ask_documents"},
-    "operations": {"view_corpus", "ask_documents"},
+    "operations": {"view_corpus", "ask_documents", "view_analytics"},
     "legal_compliance": {"view_corpus", "ask_documents"},
     "executive": {"view_corpus", "ask_documents", "view_analytics"},
-    "admin": {"view_corpus", "ask_documents", "view_analytics", "upload_documents", "classify_documents", "review_metrics", "manage_metrics", "manage_access", "view_agent_monitoring", "run_ocr_tests", "review_ocr_tests"},
+    "admin": {"view_corpus", "ask_documents", "view_analytics", "upload_documents", "classify_documents", "review_metrics", "manage_metrics", "manage_access", "manage_knowledge", "view_agent_monitoring", "run_ocr_tests", "review_ocr_tests"},
     "document_uploader": {"view_corpus", "upload_documents", "classify_documents"},
     "tester": {"run_ocr_tests", "review_ocr_tests"},
 }
@@ -149,18 +148,74 @@ def _require_same_origin(request: Request) -> None:
         raise HTTPException(403, "Cross-origin uploads are not allowed")
 
 
+def _commerce_reference_metadata(
+    knowledge_domains: list[str], source_publisher: str | None, reference_type: str,
+    reference_applicability: str | None = None,
+    synthetic_company_policy: bool = False,
+) -> dict:
+    domains = list(dict.fromkeys(value.strip() for value in knowledge_domains if value.strip()))
+    known_domains = set(COMMERCE_DECISION_PROFILES)
+    if set(domains) - known_domains:
+        raise HTTPException(422, "Choose only supported Commerce decision domains")
+
+    reference_type = reference_type.strip()
+    supported_types = {
+        "company_practice_reference", "company_policy_reference", "platform_operating_rule",
+    }
+    if reference_type and reference_type not in supported_types:
+        raise HTTPException(422, "Choose a supported Commerce reference type")
+    publisher = source_publisher.strip() if source_publisher else ""
+    applicability = reference_applicability.strip() if reference_applicability else ""
+    if bool(domains) != bool(reference_type):
+        raise HTTPException(422, "Commerce references require both a type and at least one decision domain")
+    if reference_type and not publisher:
+        raise HTTPException(422, "Commerce references require the source publisher")
+    if reference_type and not applicability:
+        raise HTTPException(422, "Commerce references require an applicability scope")
+    if synthetic_company_policy:
+        if reference_type != "company_policy_reference":
+            raise HTTPException(422, "Synthetic Commerce Demo documents must be classified as company policies")
+        if publisher != "Commerce Demo (fictional organization)":
+            raise HTTPException(422, "Synthetic policies must use the Commerce Demo fictional publisher")
+        if not any(term in applicability.casefold() for term in ("fictional", "giả lập", "demo")):
+            raise HTTPException(422, "Synthetic policy scope must explicitly identify the fictional demo")
+
+    evidence_class = reference_type or None
+    return {
+        "knowledge_domains": domains,
+        "source_publisher": publisher or None,
+        "reference_applicability": applicability or None,
+        "evidence_class": evidence_class,
+        "external_reference_type": reference_type or None,
+        "external_policy_reference": reference_type == "platform_operating_rule",
+        "external_business_reference": reference_type == "company_practice_reference" or (
+            reference_type == "company_policy_reference" and not synthetic_company_policy
+        ),
+        "synthetic_company_policy": synthetic_company_policy,
+    }
+
+
 class AskRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    question: str = Field(min_length=3, max_length=1000)
+    question: str = Field(default="", min_length=3, max_length=1000)
     retrieval_method: Literal["dense", "bm25", "hybrid", "parent"] = "hybrid"
     business_decision_domain: str | None = None
+    decision_suggestions: bool = False
 
     @field_validator("business_decision_domain")
     @classmethod
     def known_business_decision_domain(cls, value: str | None) -> str | None:
-        if value is not None and value not in BUSINESS_DECISION_PROFILES:
-            raise ValueError("Choose a configured business decision domain")
+        if value is not None and value not in COMMERCE_DECISION_PROFILES:
+            raise ValueError("Choose one of the available business decision domains")
         return value
+
+    @model_validator(mode="after")
+    def require_question_or_decision_mode(self):
+        if not self.question.strip() and not self.decision_suggestions:
+            raise ValueError("Enter a question or request conditional decision suggestions")
+        if self.decision_suggestions and not self.business_decision_domain:
+            raise ValueError("Choose a decision domain before requesting suggestions")
+        return self
 
 
 class BusinessMetricExtractionReplayRequest(BaseModel):
@@ -171,8 +226,8 @@ class BusinessMetricExtractionReplayRequest(BaseModel):
     @field_validator("decision_domain")
     @classmethod
     def known_business_decision_domain(cls, value: str) -> str:
-        if value not in BUSINESS_DECISION_PROFILES:
-            raise ValueError("Choose a configured business decision domain")
+        if value not in SUPPORTED_BUSINESS_DECISION_DOMAINS:
+            raise ValueError("Choose a supported business decision domain")
         return value
 
     @model_validator(mode="after")
@@ -187,6 +242,11 @@ class LoginRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     username: str = Field(min_length=1, max_length=100)
     password: str = Field(min_length=1, max_length=200)
+
+
+class KnowledgeBaseStatusRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    active: bool
 
 
 class CandidateReviewRequest(BaseModel):
@@ -310,8 +370,9 @@ class BusinessMetricCandidateRequest(BaseModel):
     @field_validator("metric_name")
     @classmethod
     def known_business_metric(cls, value: str) -> str:
-        if value not in BUSINESS_METRIC_CATALOG:
-            raise ValueError("Choose a metric from the business metric catalog")
+        if (value not in BUSINESS_METRIC_CATALOG
+                or BUSINESS_METRIC_CATALOG[value]["domain"] not in SUPPORTED_BUSINESS_DECISION_DOMAINS):
+            raise ValueError("Choose a metric from a supported business decision domain")
         return value
 
     @field_validator("metric_value")
@@ -387,11 +448,39 @@ def dashboard_data(user: dict = Depends(require_permission("view_corpus"))):
             user["role"], user["sub"], company=CORPUS_COMPANY,
         )
     except Exception as error:
-        logger.exception("Could not load the Vietnam corpus overview")
+        logger.exception("Could not load the enterprise document overview")
         raise HTTPException(
             status_code=503,
             detail="The enterprise knowledge database is unavailable. Check DATABASE_URL and migrations.",
         ) from error
+    finally:
+        if repository is not None:
+            repository.close()
+
+
+_COMMERCE_DASHBOARD_KEYS_BY_DOMAIN = {
+    "inventory_allocation": ("inventory_by_year", "inventory_year_end_by_category"),
+    "promotion_planning": ("promotions_by_year",),
+    "nationwide_logistics": ("logistics_by_year_region",),
+}
+
+
+@app.get("/api/commerce/dashboard")
+def commerce_dashboard_data(
+    domain: Literal["inventory_allocation", "promotion_planning", "nationwide_logistics"] | None = None,
+    detail: Literal["campaigns"] | None = None,
+    user: dict = Depends(require_permission("view_analytics")),
+):
+    if detail and domain != "promotion_planning":
+        raise HTTPException(422, "Campaign details are only available for promotion planning.")
+    repository = None
+    try:
+        repository = DocumentRepository()
+        keys = ("promotions_by_campaign",) if detail == "campaigns" else _COMMERCE_DASHBOARD_KEYS_BY_DOMAIN.get(domain) if domain else None
+        return repository.commerce_dashboard(keys)
+    except Exception as error:
+        logger.exception("Could not load Commerce analytics")
+        raise HTTPException(503, "Commerce analytics are unavailable; check the Commerce schema migration.") from error
     finally:
         if repository is not None:
             repository.close()
@@ -407,6 +496,80 @@ def document_roles(user: dict = Depends(require_permission("classify_documents")
     return {"roles": sorted(DOCUMENT_ROLES)}
 
 
+@app.get("/api/admin/knowledge-documents")
+def admin_knowledge_documents(user: dict = Depends(require_permission("manage_knowledge"))):
+    repository = None
+    try:
+        repository = DocumentRepository()
+        return {"documents": repository.list_knowledge_documents()}
+    except Exception as error:
+        logger.exception("Could not list knowledge-base documents")
+        raise HTTPException(503, "Knowledge-base document management is unavailable") from error
+    finally:
+        if repository is not None:
+            repository.close()
+
+
+@app.get("/api/admin/knowledge-documents/{document_id}/source")
+def open_synthetic_policy_source(
+    document_id: str,
+    user: dict = Depends(require_permission("manage_knowledge")),
+):
+    """Open only synthetic policy PDFs explicitly registered by the local manifest."""
+    root = Path(__file__).resolve().parents[2]
+    manifest_path = root / "data/commerce_knowledge/manifest.json"
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        logger.exception("Could not read the Commerce knowledge manifest")
+        raise HTTPException(503, "Commerce policy sources are unavailable") from error
+
+    source = next((item for item in manifest.get("sources", [])
+                   if item.get("source_id") == document_id
+                   and item.get("synthetic_company_policy") is True), None)
+    if source is None or not source.get("local_path"):
+        raise HTTPException(404, "Synthetic policy PDF not found")
+
+    policy_root = (root / "data/commerce_knowledge/synthetic_policies").resolve()
+    file_path = (root / source["local_path"]).resolve()
+    if policy_root not in file_path.parents or file_path.suffix.lower() != ".pdf":
+        raise HTTPException(404, "Synthetic policy PDF not found")
+    if not file_path.is_file():
+        raise HTTPException(404, "Synthetic policy PDF not found")
+
+    return FileResponse(
+        file_path,
+        media_type="application/pdf",
+        filename=file_path.name,
+        content_disposition_type="inline",
+        headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"},
+    )
+
+
+@app.patch("/api/admin/knowledge-documents/{document_id}")
+def set_knowledge_document_status(
+    document_id: str,
+    request: KnowledgeBaseStatusRequest,
+    http_request: Request,
+    user: dict = Depends(require_permission("manage_knowledge")),
+):
+    _require_same_origin(http_request)
+    repository = None
+    try:
+        repository = DocumentRepository()
+        if not repository.set_knowledge_base_active(document_id, request.active):
+            raise HTTPException(404, "Knowledge document not found")
+        return {"document_id": document_id, "active": request.active}
+    except HTTPException:
+        raise
+    except Exception as error:
+        logger.exception("Could not update knowledge-base document %s", document_id)
+        raise HTTPException(503, "Knowledge-base document could not be updated") from error
+    finally:
+        if repository is not None:
+            repository.close()
+
+
 @app.post("/api/documents/upload")
 async def upload_document(
     request: Request,
@@ -417,6 +580,11 @@ async def upload_document(
     fiscal_year: int | None = Form(default=None),
     source_url: str | None = Form(default=None),
     business_decision_domain: str = Form(default=""),
+    knowledge_domains: Annotated[list[str], Form()] = [],
+    source_publisher: Annotated[str | None, Form(max_length=200)] = None,
+    reference_type: Annotated[str, Form(max_length=40)] = "",
+    reference_applicability: Annotated[str | None, Form(max_length=1000)] = None,
+    synthetic_company_policy: Annotated[bool, Form()] = False,
     allowed_roles: list[str] = Form(default=[]),
     user: dict = Depends(require_permission("upload_documents")),
 ):
@@ -432,8 +600,17 @@ async def upload_document(
     business_decision_domain = business_decision_domain.strip() if business_decision_domain else None
     if not business_decision_domain:
         business_decision_domain = None
-    if business_decision_domain and business_decision_domain not in BUSINESS_DECISION_PROFILES:
-        raise HTTPException(422, "Select a configured business decision domain")
+    if business_decision_domain and business_decision_domain not in SUPPORTED_BUSINESS_DECISION_DOMAINS:
+        raise HTTPException(422, "Choose a supported business decision domain")
+    # HTTP requests always receive a validated role from the auth dependency;
+    # direct handler calls in unit tests omit it because they bypass dependencies.
+    if synthetic_company_policy and user.get("role") not in (None, "admin"):
+        raise HTTPException(403, "Only an admin can register a synthetic Commerce Demo policy")
+    reference_metadata = _commerce_reference_metadata(
+        knowledge_domains, source_publisher, reference_type, reference_applicability,
+        synthetic_company_policy,
+    )
+    is_commerce_reference = bool(reference_metadata["knowledge_domains"])
     if not isinstance(source_url, str):
         source_url = None
     if source_url:
@@ -516,7 +693,10 @@ async def upload_document(
             "source_url": source_url,
             "source_type": "user_upload",
             "allowed_roles": allowed_roles,
+            **reference_metadata,
         }
+        if synthetic_company_policy:
+            metadata["source_type"] = "synthetic_demo_policy"
         processor = DocumentProcessor({
             "chunking_strategy": os.getenv("DOCUMENT_CHUNKING_STRATEGY", "sentence"),
             "paddle_layout": os.getenv("DOCUMENT_PADDLE_LAYOUT", "false").strip().lower() == "true",
@@ -529,9 +709,21 @@ async def upload_document(
             processed = processor.process(filename, content, metadata)
         except ValueError as error:
             raise HTTPException(422, str(error)) from error
-        chunks = processed["chunks"]
+        parser_chunks = processed["chunks"]
+        chunks = parser_chunks
         if not chunks:
             raise ValueError("No text could be extracted; check OCR availability or the source file")
+        page_count = next((
+            int(chunk["metadata"]["page_count"])
+            for chunk in parser_chunks
+            if chunk.get("metadata", {}).get("page_count") is not None
+        ), 1 if extension in {".png", ".jpg", ".jpeg", ".tif", ".tiff"} else None)
+        ocr_chunk_count = sum(
+            bool(chunk.get("metadata", {}).get("ocr"))
+            or bool(chunk.get("metadata", {}).get("ocr_model"))
+            or chunk.get("metadata", {}).get("text_extraction_method") in {"tesseract", "pymupdf+tesseract"}
+            for chunk in parser_chunks
+        )
         for chunk in chunks:
             chunk["metadata"].pop("title", None)
             chunk["metadata"].pop("author", None)
@@ -573,7 +765,7 @@ async def upload_document(
         candidate_chunks = chunks
         candidate_tables = processed.get("tables", [])
         text_evidence_page_numbers = set()
-        if fiscal_year and extension == ".pdf":
+        if fiscal_year and extension == ".pdf" and not is_commerce_reference:
             from core.analytics.financial_extraction import select_financial_pages
 
             selected = select_financial_pages(chunks, candidate_tables)
@@ -594,17 +786,17 @@ async def upload_document(
             [{"metadata": chunk["metadata"], "text": chunk["text"]} for chunk in candidate_chunks],
             {**metadata, "rbac": {"allowed_roles": allowed_roles}}, candidate_tables,
             text_evidence_page_numbers=text_evidence_page_numbers or None,
-        ) if fiscal_year else []
+        ) if fiscal_year and not is_commerce_reference else []
         if extension == ".pdf":
             llm_provider = None
-            if business_decision_domain or fiscal_year:
+            if not is_commerce_reference and (business_decision_domain or fiscal_year):
                 try:
                     from core.llm.groq_provider import GroqProvider
 
                     llm_provider = GroqProvider()
                 except Exception:
                     logger.exception("Could not initialize extraction provider for %s", document_id)
-            if business_decision_domain and llm_provider is not None:
+            if not is_commerce_reference and business_decision_domain and llm_provider is not None:
                 try:
                     from core.analytics.business_metric_extraction import (
                         build_business_metric_extraction_run,
@@ -632,9 +824,9 @@ async def upload_document(
                 except Exception:
                     business_extraction_error = "extraction_exception"
                     logger.exception("Business metric extraction failed for %s", document_id)
-            elif business_decision_domain:
+            elif not is_commerce_reference and business_decision_domain:
                 business_extraction_error = "provider_unavailable"
-            if fiscal_year:
+            if fiscal_year and not is_commerce_reference:
                 try:
                     from core.analytics.financial_extraction import (
                         extract_financial_candidates, merge_candidate_sources,
@@ -658,9 +850,10 @@ async def upload_document(
                     llm_provider.close()
                 except Exception:
                     logger.exception("Failed to close extraction provider for %s", document_id)
-        elif business_decision_domain:
+        elif business_decision_domain and not is_commerce_reference:
             business_extraction_error = "unsupported_format"
-        repository.save_metric_candidates(document_id, metric_candidates)
+        if not is_commerce_reference:
+            repository.save_metric_candidates(document_id, metric_candidates)
         parsed_repository = ProcessedChunksRepository()
         parsed_repository.set_status(document_id, "embedding")
         parsed_repository.close()
@@ -680,7 +873,7 @@ async def upload_document(
             business_metric_candidates_saved = repository.save_business_metric_candidates(
                 business_metric_candidates, entered_by="parser",
             )
-        if business_decision_domain:
+        if business_decision_domain and not is_commerce_reference:
             from core.analytics.business_metric_extraction import build_business_metric_extraction_run
 
             if business_extraction_run is None:
@@ -702,6 +895,9 @@ async def upload_document(
         return {
             "document_id": document_id, "storage_path": storage_path,
             "processing_status": "ready", "searchable": True, "sha256": source_hash,
+            "page_count": page_count, "parser_chunk_count": len(parser_chunks),
+            "indexed_chunk_count": len(chunks), "ocr_chunk_count": ocr_chunk_count,
+            "table_count": len(processed.get("tables", [])),
             "business_metric_candidates": business_metric_candidates_saved,
             "business_metric_extraction_run_id": business_extraction_run_id,
         }
@@ -763,8 +959,8 @@ async def create_ocr_test(
         raise HTTPException(415, "OCR Lab accepts PDF files only")
     if tesseract_psm not in {3, 6, 11, 12} or tesseract_table_psm not in {3, 4, 6, 11, 12}:
         raise HTTPException(422, "Unsupported Tesseract page segmentation mode")
-    if render_scale not in {1.5, 2.5} or table_render_scale not in {1.5, 2.5}:
-        raise HTTPException(422, "Render scale must be 1.5 or 2.5")
+    if render_scale not in {1.5, 2.5, 3.5} or table_render_scale not in {1.5, 2.5, 3.5}:
+        raise HTTPException(422, "Render scale must be 1.5, 2.5, or 3.5")
     content = await file.read(20 * 1024 * 1024 + 1)
     if len(content) > 20 * 1024 * 1024:
         raise HTTPException(413, "OCR test PDF exceeds the 20 MiB limit")
@@ -922,7 +1118,8 @@ def business_metric_catalog(user: dict = Depends(require_permission("view_analyt
         "decision_profile_label": BUSINESS_DECISION_PROFILES[
             BUSINESS_METRIC_DECISION_PROFILE[name]
         ]["label"] if name in BUSINESS_METRIC_DECISION_PROFILE else None,
-    } for name, definition in BUSINESS_METRIC_CATALOG.items()]
+    } for name, definition in BUSINESS_METRIC_CATALOG.items()
+            if definition["domain"] in SUPPORTED_BUSINESS_DECISION_DOMAINS]
 
 
 @app.post("/api/business-metrics/candidates")
@@ -1014,35 +1211,47 @@ def create_manual_metric(
 @app.get("/api/admin/processing/{document_id}/chunks")
 def inspect_processed_chunks(
     document_id: str, offset: int = 0, limit: int = 25,
+    stage: Literal["parser", "indexed"] = "parser",
+    source_chunk_id: int | None = None,
     user: dict = Depends(require_permission("review_metrics")),
 ):
     from core.database.processed_chunks_repository import ProcessedChunksRepository
 
-    repository = ProcessedChunksRepository()
+    repository = None
     try:
-        chunks = repository.get_document(
-            document_id, limit=limit, offset=offset, company=CORPUS_COMPANY,
-        )
-        stage = "parser"
+        chunks = []
+        if stage == "parser":
+            repository = ProcessedChunksRepository()
+            chunks = repository.get_document(
+                document_id, limit=limit, offset=offset, company=CORPUS_COMPANY,
+            )
+        actual_stage = stage
         if not chunks:
             from core.database.document_chunks_repository import DocumentChunkRepository
 
             indexed_repository = DocumentChunkRepository()
             try:
-                chunks = indexed_repository.get_document_chunks(
-                    document_id, limit=limit, offset=offset, company=CORPUS_COMPANY,
-                )
+                if source_chunk_id is not None:
+                    chunk = indexed_repository.get_document_chunk(
+                        source_chunk_id, document_id, company=CORPUS_COMPANY,
+                    )
+                    chunks = [chunk] if chunk else []
+                else:
+                    chunks = indexed_repository.get_document_chunks(
+                        document_id, limit=limit, offset=offset, company=CORPUS_COMPANY,
+                    )
             finally:
                 indexed_repository.close()
-            stage = "indexed"
+            actual_stage = "indexed"
         if not chunks:
             raise HTTPException(404, "No parsed or indexed chunks found for this corpus document")
         return {"document_id": document_id, "offset": offset, "limit": limit,
-                "stage": stage, "chunks": chunks}
+                "stage": actual_stage, "chunks": chunks}
     except ValueError as error:
         raise HTTPException(422, str(error)) from error
     finally:
-        repository.close()
+        if repository is not None:
+            repository.close()
 
 
 @app.get("/api/admin/processing/{document_id}/business-metric-extraction-runs")
@@ -1356,13 +1565,14 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
             report_agent=report,
         )
         agent_result = router.route(AgentRequest(
-            question=request.question,
+            question=request.question.strip() or "Generate conditional management actions from available Commerce observations.",
             user_id=user["sub"],
             metadata={
                 "role": user["role"],
                 "company": CORPUS_COMPANY,
                 "retrieval_method": request.retrieval_method,
                 "business_decision_domain": request.business_decision_domain,
+                "decision_suggestions": request.decision_suggestions,
             },
         ))
         cited_ids = _referenced_citation_ids(agent_result.answer)
@@ -1370,7 +1580,10 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
             {
                 "id": evidence.citation_id,
                 "company": evidence.metadata.get("company", "Unknown company"),
-                "title": evidence.metadata.get("title", evidence.source),
+                "title": evidence.metadata.get("source_title") or evidence.metadata.get("title") or evidence.source,
+                "source_publisher": evidence.metadata.get("source_publisher"),
+                "evidence_class": evidence.metadata.get("evidence_class"),
+                "reference_applicability": evidence.metadata.get("reference_applicability"),
                 "document_id": evidence.metadata.get("document_id"),
                 "chunk_index": evidence.metadata.get("chunk_index"),
                 "source_chunk_id": evidence.metadata.get("source_chunk_id", evidence.metadata.get("chunk_id")),
@@ -1381,6 +1594,16 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
                 "score": evidence.metadata.get("retrieval_score"),
                 "retrieval_method": evidence.metadata.get("retrieval_method"),
                 "source_type": evidence.source_type,
+                "metric_name": evidence.metadata.get("metric_name"),
+                "fiscal_year": evidence.metadata.get("fiscal_year"),
+                "commerce_domain": evidence.metadata.get("commerce_domain"),
+                "commerce_aggregate_key": evidence.metadata.get("commerce_aggregate_key"),
+                "commerce_observation_group": evidence.metadata.get("commerce_observation_group"),
+                "commerce_observations": evidence.metadata.get("commerce_observations"),
+                "source_tables": evidence.metadata.get("source_tables"),
+                "sql_query": evidence.metadata.get("sql_query"),
+                "sql_generation_provider": evidence.metadata.get("sql_generation_provider"),
+                "dataset_note": evidence.metadata.get("dataset_note"),
             }
             for evidence in agent_result.evidence
             if evidence.citation_id in cited_ids
@@ -1396,6 +1619,14 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
             "citations": citations,
             "agent": agent_result.agent,
             "data": jsonable_encoder(agent_result.data),
+            **({"decision_analysis": agent_result.metadata["decision_analysis"]}
+               if agent_result.metadata.get("decision_analysis") else {}),
+            **({"decision_reference_retrieval_limited": True}
+               if agent_result.metadata.get("decision_reference_retrieval_limited") else {}),
+            **({"question_sql_fallback": agent_result.metadata["question_sql_fallback"]}
+               if agent_result.metadata.get("question_sql_fallback") else {}),
+            **({"generation_provider": agent_result.metadata["generation_provider"]}
+               if agent_result.metadata.get("generation_provider") else {}),
         }
     except RateLimitError as error:
         agent_name = getattr(router, "last_destination", agent_name)

@@ -7,6 +7,18 @@ reasoning effort and a 1,000-token output limit. `GROQ_MODEL` selects the model;
 Changing the model requires confirming provider support for the endpoint and
 generation parameters.
 
+The dashboard's conditional action recommendations can use Hugging Face
+Inference Providers only after Groq returns HTTP 429. Set
+`HUGGINGFACE_LLM_FALLBACK=true` to enable this fallback;
+`HUGGINGFACE_LLM_MODEL` defaults to `openai/gpt-oss-20b:cheapest`. The same
+server-side `HUGGINGFACE_API_KEY` is used, and the system instruction remains a
+system message. This fallback is limited to the conditional recommendation
+path, preserves citation and numeric-gate validation, and does not change QA,
+OCR, metric extraction, or normal Groq selection. Hugging Face currently lists
+monthly routed inference credits for free accounts, subject to change; routed
+usage consumes those credits and additional usage requires purchased credits.
+See [Hugging Face Inference Providers pricing](https://huggingface.co/docs/inference-providers/pricing).
+
 Agent teardown closes the shared provider's HTTP client. PDF financial uploads
 extract parser candidates first, then request LLM candidates only for selected
 financial pages. If provider initialization or generation fails, the upload

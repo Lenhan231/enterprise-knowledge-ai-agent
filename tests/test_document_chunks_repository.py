@@ -41,6 +41,27 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
         self.assertIn("coalesce(d.processing_status, 'ready') = 'ready'", normalized)
         self.assertEqual(params, ("DOC-1", "Vinamilk", "Vinamilk", 10, 20))
 
+    def test_exact_metric_source_chunk_lookup_checks_document_and_company(self):
+        self.cursor.description = [
+            MagicMock(name="chunk_index"), MagicMock(name="content"),
+            MagicMock(name="metadata"), MagicMock(name="processing_status"),
+            MagicMock(name="processing_error"),
+        ]
+        for column, name in zip(self.cursor.description,
+                                ("chunk_index", "content", "metadata", "processing_status", "processing_error")):
+            column.name = name
+        self.cursor.fetchone.return_value = (413, "exact linked text", {"document_id": "DOC-1"}, "embedded", None)
+
+        row = self.repository.get_document_chunk(9021, "DOC-1", company="Vinamilk")
+
+        self.assertEqual(row["chunk_index"], 413)
+        self.assertEqual(row["content"], "exact linked text")
+        sql, params = self.cursor.execute.call_args.args
+        normalized = " ".join(sql.lower().split())
+        self.assertIn("where c.id = %s and d.document_id = %s", normalized)
+        self.assertIn("d.company = %s::text", normalized)
+        self.assertEqual(params, (9021, "DOC-1", "Vinamilk", "Vinamilk"))
+
     def test_replace_document_deletes_by_stable_id_and_keeps_source_filename(self):
         rows = [("report.pdf", 0, "content", {"document_id": "DOC-1"}, [0.1])]
 
@@ -82,7 +103,9 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
         normalized = " ".join(sql.split())
         self.assertIn("SELECT e.document_name, e.chunk_index, e.content, e.metadata,", normalized)
         self.assertIn("JOIN documents AS d ON d.document_id = c.metadata->>'document_id'", normalized)
-        self.assertIn("jsonb_build_object('document_type', d.document_type)", normalized)
+        self.assertIn("'document_type', d.document_type", normalized)
+        self.assertIn("'source_title', d.title", normalized)
+        self.assertIn("'source_url', d.source_url", normalized)
         self.assertIn("coalesce(d.processing_status, 'ready') = 'ready'", normalized)
         self.assertIn("d.fiscal_year = %s", normalized)
         self.assertIn("coalesce(%s::text IS NOT NULL AND d.fiscal_year = %s, false)", normalized)
@@ -143,6 +166,26 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
         self.assertEqual(parameters[4:7], ["Vinamilk", ["finance_analyst"], ["finance_analyst"]])
         self.assertEqual(parameters[7], "")
         self.repository.conn.commit.assert_not_called()
+
+    def test_json_metadata_filter_is_bound_before_candidate_ranking(self):
+        self.cursor.fetchall.return_value = []
+        metadata_filter = {
+            "commerce_reference_active": True,
+            "knowledge_domains": ["inventory_allocation"],
+        }
+        self.repository.similarity_search(
+            [0.1, 0.2], 3, roles=["analyst"], metadata_filter=metadata_filter,
+        )
+        sql, parameters = self.cursor.execute.call_args.args
+        normalized = " ".join(sql.split())
+        self.assertIn("c.metadata @> %s::jsonb", normalized)
+        self.assertLess(normalized.index("c.metadata @>"), normalized.index("vector_candidates AS"))
+        self.assertLess(normalized.index("c.metadata @>"), normalized.index("bm25_candidates AS"))
+        self.assertTrue(any(
+            isinstance(value, str)
+            and value == '{"commerce_reference_active": true, "knowledge_domains": ["inventory_allocation"]}'
+            for value in parameters
+        ))
 
     def test_method_selects_dense_bm25_or_hybrid_ranking(self):
         cases = {

@@ -1,0 +1,96 @@
+{
+  "dataset_id": "commerce-synthetic-degraded-image-only-scan-v1",
+  "purpose": "OCR flow robustness evaluation on a deliberately degraded synthetic scan; not production accuracy evidence.",
+  "reference_method": "visually transcribed from rendered source pages",
+  "reference_quality": "visually_transcribed_from_clean_source_pages",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "The source pages and all values are invented, digitally composed and must not be used as Commerce business evidence.",
+    "The scan appearance is simulated by grayscale, mild skew, blur, noise and JPEG artifacts; it is not a physical scan.",
+    "The fixture is deliberately more difficult than the clean smoke fixture but is not representative enough to rank OCR engines or claim production accuracy."
+  ],
+  "pages": [
+    {
+      "id": "commerce-synthetic-degraded-operations-note-en",
+      "document_id": "COMMERCE-SYNTHETIC-OCR-DEMO",
+      "file": "data/evaluation/ocr/commerce_synthetic_degraded_scan_demo.pdf",
+      "page": 1,
+      "language": "en",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "text",
+      "clip_rect": [
+        0,
+        0,
+        595,
+        842
+      ],
+      "reference_text": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY\nCommerce Operations Test Note\nThis synthetic page exists only to verify the PDF upload and OCR inspection workflow. The sample values and rules below are invented for testing and must never be treated as business evidence.\nInventory allocation: review sales velocity, stockout history, current units on hand, and supplier lead time before changing replenishment. This sample does not set a reorder threshold.\nPromotion planning: compare delivered orders and recorded discounts across comparable periods. Without a holdout group, a before-and-after difference is descriptive and does not prove promotion uplift.\nNationwide logistics: compare actual transit time by region. Carrier, warehouse origin, route capacity, and promised delivery SLA are required before proposing network changes.\nOCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX",
+      "simulated_scan_degradation": [
+        "grayscale",
+        "mild_skew",
+        "low_contrast",
+        "blur",
+        "sensor_noise",
+        "jpeg_artifacts"
+      ]
+    },
+    {
+      "id": "commerce-synthetic-degraded-region-table-en",
+      "document_id": "COMMERCE-SYNTHETIC-OCR-DEMO",
+      "file": "data/evaluation/ocr/commerce_synthetic_degraded_scan_demo.pdf",
+      "page": 2,
+      "language": "en",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "table",
+      "table_columns": [
+        "Region",
+        "Delivered sample orders",
+        "Median transit days",
+        "Avg fee units"
+      ],
+      "clip_rect": [
+        0,
+        0,
+        595,
+        842
+      ],
+      "reference_text": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY\nSynthetic regional logistics sample\nRegion\tDelivered sample orders\tMedian transit days\tAvg fee units\nEast\t120\t3.0\t42.50\nCentral\t95\t4.0\t48.75\nWest\t80\t5.0\t55.25\nEvery record on this page is invented for OCR testing. Values are not from the Commerce database.\nOCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX",
+      "table_rows": [
+        {
+          "label": "East",
+          "values": [
+            "120",
+            "3.0",
+            "42.50"
+          ]
+        },
+        {
+          "label": "Central",
+          "values": [
+            "95",
+            "4.0",
+            "48.75"
+          ]
+        },
+        {
+          "label": "West",
+          "values": [
+            "80",
+            "5.0",
+            "55.25"
+          ]
+        }
+      ],
+      "simulated_scan_degradation": [
+        "grayscale",
+        "mild_skew",
+        "low_contrast",
+        "blur",
+        "sensor_noise",
+        "jpeg_artifacts"
+      ]
+    }
+  ]
+}

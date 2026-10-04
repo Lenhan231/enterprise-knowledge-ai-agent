@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 PACKET = ROOT / "artifacts/evaluation/qa-review-packet-full-evidence.json"
-CASES = ROOT / "data/evaluation/vinamilk_qa_cases.json"
+CASES = ROOT / "data/evaluation/archive/qa/vinamilk_qa_cases.json"
 OUTPUT = ROOT / "artifacts/evaluation/vinamilk-context-compression-20260928.json"
 TOKEN_RE = re.compile(r"\w+", re.UNICODE)
 

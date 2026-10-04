@@ -3,15 +3,170 @@ from pathlib import Path
 import sys
 from unittest.mock import MagicMock, Mock
 
+import psycopg
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from core.database.document_repository import DocumentRepository
+from core.analytics.sql_safety import UnsafeAnalyticsQuery
+from core.database.document_repository import (
+    DocumentRepository,
+    link_financial_metric_source_chunk,
+)
 from core.analytics.business_metric_catalog import BUSINESS_VALUE_QUALIFIER_SQL
 from core.agents.dashboard_agent import DashboardAgent, _financial_time_series
 from core.models.agents import AgentRequest, AgentResult, Evidence
 
 
 class DocumentDashboardTest(unittest.TestCase):
+    def test_commerce_query_error_preserves_postgres_error_category_for_agent_repair(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        cursor.execute.side_effect = [None, None, psycopg.errors.UndefinedColumn("missing column")]
+
+        with self.assertRaisesRegex(UnsafeAnalyticsQuery, "UndefinedColumn, SQLSTATE 42703"):
+            repository.execute_commerce_analytics(
+                "SELECT i.category, COUNT(*) AS products FROM commerce.inventory i "
+                "GROUP BY i.category LIMIT 10", "inventory_allocation",
+            )
+
+    def test_knowledge_file_list_exposes_source_type_for_admin_ui(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        policy = {"document_id": "CD-POL-INV-001", "synthetic_company_policy": True,
+                  "evidence_class": "company_policy_reference"}
+        cursor.fetchall.return_value = [policy]
+
+        result = repository.list_knowledge_documents()
+
+        self.assertEqual(result, [policy])
+        query = " ".join(cursor.execute.call_args.args[0].lower().split())
+        self.assertIn("max(c.metadata->>'evidence_class') as evidence_class", query)
+        self.assertIn("bool_or(c.metadata->>'synthetic_company_policy' = 'true')", query)
+
+    def test_commerce_dashboard_runs_only_requested_aggregates(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+
+        result = repository.commerce_dashboard(("inventory_latest_flag_overlap",))
+
+        self.assertEqual(cursor.fetchall.call_count, 1)
+        self.assertEqual(set(result), {"inventory_latest_flag_overlap", "data_notes"})
+
+    def test_commerce_dashboard_rejects_unknown_aggregate_key(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+
+        with self.assertRaisesRegex(ValueError, "Unsupported Commerce dashboard aggregates"):
+            repository.commerce_dashboard(("typo",))
+
+    def test_commerce_dashboard_counts_latest_products_with_both_inventory_flags(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        overlap = [{
+            "snapshot_date": "2022-12-31", "product_rows": 424,
+            "stockout_flagged_rows": 232, "overstock_flagged_rows": 232,
+            "both_flagged_rows": 232,
+        }]
+        cursor.fetchall.side_effect = [[], [], [], [], [], overlap, [], [], []]
+
+        result = repository.commerce_dashboard()
+
+        self.assertEqual(result["inventory_latest_flag_overlap"], overlap)
+        query = next(
+            " ".join(call.args[0].lower().split())
+            for call in cursor.execute.call_args_list
+            if "both_flagged_rows" in call.args[0].lower()
+        )
+        self.assertIn("max(snapshot_date)", query)
+        self.assertIn("i.stockout_flag and i.overstock_flag", query)
+        self.assertIn("as both_flagged_rows", query)
+
+    def test_commerce_dashboard_returns_year_end_category_snapshots_for_the_year_filter(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        snapshots = [{
+            "year": 2021, "snapshot_date": "2021-12-31", "category": "Outdoor",
+            "products": 12, "stockout_products": 3, "overstock_products": 4,
+            "both_flagged_products": 2,
+        }]
+        cursor.fetchall.return_value = snapshots
+
+        result = repository.commerce_dashboard(("inventory_year_end_by_category",))
+
+        self.assertEqual(result["inventory_year_end_by_category"], snapshots)
+        query = cursor.execute.call_args.args[0].lower()
+        self.assertIn("max(snapshot_date)", query)
+        self.assertIn("group by year", query)
+        self.assertIn("using (year, snapshot_date)", query)
+
+    def test_commerce_decision_snapshot_limits_data_to_relevant_recent_observations(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.commerce_dashboard = Mock(return_value={
+            "inventory_by_year": [
+                {"year": year, "stockout_snapshots": year, "overstock_snapshots": 1}
+                for year in range(2018, 2024)
+            ],
+            "inventory_latest_by_category": [
+                {"category": "A", "stockout_products": 2, "overstock_products": 1, "both_flagged_products": 1},
+                {"category": "B", "stockout_products": 8, "overstock_products": 1, "both_flagged_products": 2},
+            ],
+            "inventory_latest_flag_overlap": [{
+                "snapshot_date": "2022-12-31", "product_rows": 424,
+                "stockout_flagged_rows": 232, "overstock_flagged_rows": 232,
+                "both_flagged_rows": 232,
+            }],
+            "data_notes": [],
+        })
+
+        result = repository.commerce_decision_snapshot("inventory_allocation")
+
+        repository.commerce_dashboard.assert_called_once_with((
+            "inventory_by_year", "inventory_latest_by_category", "inventory_latest_flag_overlap",
+        ))
+        self.assertEqual([row["year"] for row in result["observations"]["inventory_by_year"]], [2021, 2022, 2023])
+        self.assertEqual(result["observations"]["inventory_latest_by_category"][0]["category"], "B")
+        self.assertEqual(result["observations"]["inventory_latest_flag_overlap"][0]["both_flagged_rows"], 232)
+        self.assertEqual(result["source_tables"], ["commerce.inventory"])
+
+    def test_commerce_promotion_snapshot_keeps_recent_campaign_window_results(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.commerce_dashboard = Mock(return_value={
+            "promotions_by_year": [],
+            "promotions_by_campaign": [
+                {"year": year, "campaign": f"Campaign {year}-{index}", "net_item_sales": index}
+                for year in range(2018, 2024) for index in range(14)
+            ],
+            "data_notes": [],
+        })
+
+        result = repository.commerce_decision_snapshot("promotion_planning")
+
+        repository.commerce_dashboard.assert_called_once_with(("promotions_by_year", "promotions_by_campaign"))
+        campaigns = result["observations"]["promotions_by_campaign"]
+        self.assertEqual({row["year"] for row in campaigns}, {2021, 2022, 2023})
+        self.assertEqual(len(campaigns), 36)
+        self.assertTrue(all(row["net_item_sales"] >= 2 for row in campaigns))
+        self.assertEqual(result["source_tables"], ["commerce.orders", "commerce.order_items", "commerce.products", "commerce.promotions"])
+
+    def test_business_metric_extraction_run_reads_dict_row_id(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        cursor.fetchone.return_value = {"id": 73}
+        run = {
+            "document_id": "VNM-SR-2013-EN", "company": "Vinamilk",
+            "decision_domain": "human_resources", "extractor_version": "v5",
+            "prompt_version": "v5", "model_name": "test", "status": "completed",
+            "input_chunk_count": 175, "selected_chunk_count": 2,
+            "candidate_count": 1, "audit": {},
+        }
+
+        self.assertEqual(repository.save_business_metric_extraction_run(run), 73)
+
     def test_estimated_savings_are_not_exposed_as_exact_metrics(self):
         self.assertRegex(BUSINESS_VALUE_QUALIFIER_SQL, r"estimated\?|ước tính")
         self.assertIn("THEN 'approximately'", BUSINESS_VALUE_QUALIFIER_SQL)
@@ -40,16 +195,36 @@ class DocumentDashboardTest(unittest.TestCase):
     def test_manifest_upsert_persists_processing_status(self):
         repository = DocumentRepository.__new__(DocumentRepository)
         repository.conn = MagicMock()
-        document = {"document_id": "DOC-1", "processing_status": "processing"}
+        document = {"document_id": "DOC-1", "processing_status": "processing", "knowledge_base_active": False}
 
         repository.upsert_document(document)
 
         cursor = repository.conn.cursor.return_value.__enter__.return_value
         query = " ".join(cursor.execute.call_args.args[0].lower().split())
-        self.assertIn("allowed_roles, storage_path, processing_status", query)
+        self.assertIn("allowed_roles, storage_path, processing_status, knowledge_base_active", query)
         self.assertIn("processing_status = excluded.processing_status", query)
+        self.assertNotIn("knowledge_base_active = excluded.knowledge_base_active", query)
         self.assertEqual(cursor.execute.call_args.args[1], {**document, "storage_path": None})
         repository.conn.commit.assert_called_once()
+
+    def test_public_metric_source_archive_is_guarded_and_hashes_existing_chunks(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        cursor.fetchone.return_value = {"document_id": "VNM-SR-2023-EN"}
+        cursor.rowcount = 270
+
+        updated = repository.archive_public_metric_source(
+            "VNM-SR-2023-EN", "Vinamilk", "VNM-SR-2023-EN/report.pdf", "sha256",
+        )
+
+        statements = [" ".join(call.args[0].lower().split()) for call in cursor.execute.call_args_list]
+        self.assertEqual(updated, 270)
+        self.assertIn("source_type = 'public_enterprise_document'", statements[0])
+        self.assertIn("processing_status = 'ready'", statements[0])
+        self.assertIn("e.status = 'verified'", statements[0])
+        self.assertIn("jsonb_build_object('source_sha256', %s::text)", statements[1])
+        self.assertEqual(cursor.execute.call_args_list[1].args[1], ("sha256", "VNM-SR-2023-EN"))
 
     def test_parser_candidate_enriches_one_matching_pending_research_record(self):
         repository = DocumentRepository.__new__(DocumentRepository)
@@ -105,8 +280,11 @@ class DocumentDashboardTest(unittest.TestCase):
         for index in (0, 1, 2):
             query = " ".join(cursor.execute.call_args_list[index].args[0].lower().split())
             self.assertIn("coalesce(d.processing_status, 'ready') = 'ready'", query)
+            self.assertIn("d.knowledge_base_active is true", query)
         first_query, first_params = cursor.execute.call_args_list[0].args
         self.assertNotIn("Vinamilk", first_query)
+        self.assertIn("reference.metadata->'knowledge_domains'", first_query)
+        self.assertIn("source_publisher", first_query)
         self.assertEqual(first_params, (["employee"], "employee", "employee", "uploader"))
         domain_query = " ".join(cursor.execute.call_args_list[1].args[0].lower().split())
         self.assertIn("select d.company, d.domain, d.fiscal_year", domain_query)
@@ -321,6 +499,39 @@ class DocumentDashboardTest(unittest.TestCase):
         values = cursor.executemany.call_args.args[1][0]
         self.assertEqual(values[13:15], (991, 7))
         self.assertEqual(values[15], hashlib.sha256(content.encode()).hexdigest())
+
+    def test_financial_metric_link_prefers_structured_table_chunk_on_text_tie(self):
+        import hashlib
+
+        shared_content = "Gross profit 15,166,269 14,503,136"
+        row = {
+            "metric_name": "gross_profit", "metric_label": "Gross profit",
+            "candidate_values": ["15.166.269"], "page_number": 92,
+            "source_quote": "label: Lợi nhuận gộp | value_1: 15.166.269",
+        }
+        chunks = [
+            {"id": 11, "chunk_index": 4, "content": shared_content,
+             "page_number": "92", "metadata": {"layout_type": "text"}},
+            {"id": 12, "chunk_index": 5, "content": shared_content,
+             "page_number": "92", "metadata": {"layout_type": "table", "element_type": "table"}},
+        ]
+
+        self.assertEqual(
+            link_financial_metric_source_chunk(row, chunks),
+            (12, 5, hashlib.sha256(shared_content.encode()).hexdigest()),
+        )
+
+    def test_financial_metric_link_does_not_fallback_to_a_different_page(self):
+        row = {
+            "metric_name": "gross_profit", "metric_label": "Gross profit",
+            "candidate_values": ["15,166,269"], "page_number": 92,
+            "source_quote": "Gross profit 15,166,269",
+        }
+
+        self.assertEqual(link_financial_metric_source_chunk(row, [{
+            "id": 1, "chunk_index": 0, "content": "Gross profit 15,166,269",
+            "page_number": "91", "metadata": {"layout_type": "table"},
+        }]), (None, None, None))
 
     def test_empty_reprocess_supersedes_pending_rows_without_deleting_history(self):
         repository = DocumentRepository.__new__(DocumentRepository)

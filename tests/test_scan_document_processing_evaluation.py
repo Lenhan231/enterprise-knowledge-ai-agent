@@ -1,13 +1,62 @@
+import json
 import fitz
 from pathlib import Path
 import sys
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.processing.evaluate_scan_document_processing import crop_pdf_page, rasterize_for_ocr, score_table_anchors, select_cases
+from scripts.processing.evaluate_scan_document_processing import (
+    crop_pdf_page,
+    evaluate_region,
+    rasterize_for_ocr,
+    score_table_anchors,
+    select_cases,
+    source_text_for_scoring,
+)
 
 
 class ScanDocumentProcessingEvaluationTest(unittest.TestCase):
+    def test_structured_table_serialization_is_not_counted_as_ocr_errors(self):
+        chunks = [
+            {"text": "East 120", "metadata": {"parser": "pymupdf"}},
+            {"text": "Columns: label | value_1\\nRow 1: East | value_1: 120", "metadata": {
+                "parser": "pymupdf.structured_table_chunk", "element_type": "table",
+            }},
+        ]
+
+        self.assertEqual(source_text_for_scoring(chunks), "East 120")
+        chunks[1]["metadata"]["table_chunk_match"] = {"matched_source_chunk": True}
+        self.assertIsNone(source_text_for_scoring(chunks))
+
+    def test_commerce_scan_upload_path_scores_ocr_text_and_structured_table_separately(self):
+        root = Path(__file__).resolve().parents[1]
+        dataset = json.loads(
+            (root / "data/evaluation/ocr/commerce_scan_ground_truth.json").read_text(encoding="utf-8")
+        )
+        spec = next(page for page in dataset["pages"] if page.get("table_rows"))
+
+        result = evaluate_region(spec, (root / spec["file"]).read_bytes())
+
+        self.assertEqual(result["cer"], 0.0)
+        self.assertEqual(result["wer"], 0.0)
+        self.assertEqual(result["table_anchor_score"]["anchor_row_recall"], 1.0)
+        self.assertEqual(result["table_anchor_score"]["exact_numeric_cell_accuracy"], 1.0)
+        self.assertIn("generated table serialization excluded", result["text_score_scope"])
+
+    def test_degraded_image_only_scan_is_not_rasterized_a_second_time(self):
+        root = Path(__file__).resolve().parents[1]
+        dataset = json.loads(
+            (root / "data/evaluation/ocr/commerce_degraded_scan_ground_truth.json").read_text(encoding="utf-8")
+        )
+        spec = next(page for page in dataset["pages"] if page.get("table_rows"))
+
+        result = evaluate_region(spec, (root / spec["file"]).read_bytes())
+
+        self.assertLessEqual(result["cer"], 0.01)
+        self.assertLessEqual(result["wer"], 0.05)
+        self.assertEqual(result["table_anchor_score"]["anchor_row_recall"], 1.0)
+        self.assertEqual(result["table_anchor_score"]["exact_numeric_cell_accuracy"], 1.0)
+
     def test_case_selection_defaults_to_scans_and_allows_explicit_labeled_regions(self):
         pages = [
             {"id": "scan", "physical_scan": True},
@@ -168,6 +217,30 @@ class ScanDocumentProcessingEvaluationTest(unittest.TestCase):
 
         self.assertEqual(correct["cell_location_recall"], 1.0)
         self.assertEqual(swapped["cell_location_recall"], 0.0)
+
+    def test_table_score_supports_semantic_text_column_headers(self):
+        expected_headers = [
+            "Region", "Delivered sample orders", "Median transit days", "Avg fee units",
+        ]
+        expected_rows = [
+            {"label": "East", "values": ["120", "3.0", "42.50"]},
+            {"label": "Central", "values": ["95", "4.0", "48.75"]},
+            {"label": "West", "values": ["80", "5.0", "55.25"]},
+        ]
+        table = {
+            "columns": expected_headers,
+            "rows": [
+                {"Region": "East", "Delivered sample orders": "120", "Median transit days": "3.0", "Avg fee units": "42.50"},
+                {"Region": "Central", "Delivered sample orders": "95", "Median transit days": "4.0", "Avg fee units": "48.75"},
+                {"Region": "West", "Delivered sample orders": "80", "Median transit days": "5.0", "Avg fee units": "55.25"},
+            ],
+        }
+
+        score = score_table_anchors(expected_headers, expected_rows, [table])
+
+        self.assertEqual(score["exact_header_matches"], 3)
+        self.assertEqual(score["matched_anchor_rows"], 3)
+        self.assertEqual(score["exact_numeric_cells"], 9)
 
 
 if __name__ == "__main__":

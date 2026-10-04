@@ -21,7 +21,7 @@ from core.retrieval.retrieval import RetrievalRequest  # noqa: E402
 from core.retrieval.retrieval_service import RetrievalService  # noqa: E402
 from scripts.retrieval.evaluate_retrieval import gpu_metadata, ranked_passage_ids, validate_passage_labels  # noqa: E402
 
-CASES = ROOT / "data/evaluation/vinamilk_retrieval_cases.json"
+CASES = ROOT / "data/evaluation/archive/retrieval/vinamilk_retrieval_cases.json"
 COMPANY = "Công ty Cổ phần Sữa Việt Nam (Vinamilk)"
 FINANCIAL_METRICS = {
     "net_revenue", "total_consolidated_revenue", "profit_after_tax",

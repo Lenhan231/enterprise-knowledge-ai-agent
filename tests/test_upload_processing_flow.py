@@ -1,5 +1,6 @@
 import asyncio
 import io
+import shutil
 import sys
 import unittest
 import zipfile
@@ -90,6 +91,67 @@ def blank_table_image() -> bytes:
 
 
 class UploadProcessingFlowTest(unittest.TestCase):
+    @unittest.skipUnless(shutil.which("tesseract"), "Tesseract is required for the scanned-PDF upload integration fixture")
+    def test_scanned_pdf_upload_reports_ocr_and_persists_structured_output(self):
+        source = (ROOT / "data/evaluation/ocr/commerce_synthetic_policy_scan_demo.pdf").read_bytes()
+        document_repo = MagicMock()
+        storage = MagicMock()
+        storage.storage.from_.return_value.upload.return_value = None
+        structured_store = MagicMock()
+        chunk_repository = MagicMock()
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=2048)
+        embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
+
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository", return_value=chunk_repository),
+            patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
+            patch("core.database.processed_chunks_repository.ProcessedChunksRepository"),
+            patch("core.analytics.metric_candidates.candidates", return_value=[]) as metric_candidates,
+            patch.dict("os.environ", {
+                "DOCUMENT_PADDLE_LAYOUT": "false",
+                "DOCUMENT_VISION_CAPTIONS": "false",
+            }),
+        ):
+            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+            counter_cls.return_value.count.return_value = 20
+            response = asyncio.run(app_main.upload_document(
+                request=None,
+                file=UploadFile(filename="commerce_synthetic_policy_scan_demo.pdf", file=io.BytesIO(source)),
+                title="Synthetic Commerce OCR upload test",
+                document_type="ocr_demo", domain="commerce_ocr_quality",
+                fiscal_year=2026, source_url=None, business_decision_domain="",
+                knowledge_domains=["inventory_allocation"],
+                source_publisher="Test fixture publisher",
+                reference_type="company_practice_reference",
+                reference_applicability="Test-only OCR fixture; not Commerce Demo policy",
+                allowed_roles=["admin"], user={"sub": "admin"},
+            ))
+
+        self.assertEqual(response["processing_status"], "ready")
+        self.assertEqual(response["page_count"], 2)
+        self.assertEqual(response["ocr_chunk_count"], 3)
+        self.assertEqual(response["table_count"], 1)
+        self.assertEqual(response["indexed_chunk_count"], response["parser_chunk_count"])
+        metric_candidates.assert_not_called()
+        document_repo.save_metric_candidates.assert_not_called()
+        saved_tables = structured_store.save_document_tables.call_args.args[2]
+        self.assertEqual(saved_tables[0]["columns"], [
+            "Region", "Delivered sample orders", "Median transit days", "Avg fee units",
+        ])
+        self.assertEqual(saved_tables[0]["rows"], [
+            {"Region": "East", "Delivered sample orders": "120", "Median transit days": "3.0", "Avg fee units": "42.50"},
+            {"Region": "Central", "Delivered sample orders": "95", "Median transit days": "4.0", "Avg fee units": "48.75"},
+            {"Region": "West", "Delivered sample orders": "80", "Median transit days": "5.0", "Avg fee units": "55.25"},
+        ])
+        indexed = chunk_repository.replace_document.call_args.args[1]
+        self.assertEqual(len(indexed), response["indexed_chunk_count"])
+        self.assertEqual(sum(bool(row[3].get("ocr")) for row in indexed), response["ocr_chunk_count"])
+
     def test_upload_extracts_only_requested_decision_domain_after_indexing(self):
         source = financial_summary_pdf()
         events = []
@@ -109,7 +171,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         def business_candidates(chunks, tables, document, provider):
             self.assertEqual(document["document_id"].split("-")[0], "UPLOAD")
             self.assertEqual(document["fiscal_year"], 2025)
-            self.assertEqual(document["business_decision_domain"], "market_performance")
+            self.assertEqual(document["business_decision_domain"], "milk_supply")
             self.assertIs(provider, llm)
             row = {
                 "company": document["company"], "domain": "market_performance",
@@ -154,7 +216,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 file=UploadFile(filename="annual-report-final.pdf", file=io.BytesIO(source)),
                 title="Vinamilk Annual Report 2025", document_type="annual_report",
                 domain="finance_and_operations", fiscal_year=2025,
-                business_decision_domain="market_performance",
+                business_decision_domain="milk_supply",
                 allowed_roles=["finance_analyst", "admin"], user={"sub": "uploader-1"},
             ))
 
@@ -174,15 +236,27 @@ class UploadProcessingFlowTest(unittest.TestCase):
         storage.storage.from_.return_value.upload.return_value = None
         embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
         embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
+        parsed_document = {
+            "chunks": [{"text": "Walmart supplier logistics reference", "metadata": {"page_number": 1}}],
+            "tables": [],
+        }
+        chunk_repository = MagicMock()
         with (
             patch.object(app_main, "_require_same_origin"),
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
             patch("core.utils.token_counter.TokenCounter") as counter_cls,
-            patch("core.database.document_chunks_repository.DocumentChunkRepository"),
+            patch("core.database.document_chunks_repository.DocumentChunkRepository", return_value=chunk_repository),
             patch("core.database.structured_store.StructuredDataStore"),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository"),
+            patch(
+                "core.document_processing.processors.document_processor.DocumentProcessor.process",
+                side_effect=lambda filename, content, metadata: {
+                    **parsed_document,
+                    "chunks": [{"text": "Walmart supplier logistics reference", "metadata": {**metadata, "page_number": 1}}],
+                },
+            ) as parse_document,
             patch("core.analytics.metric_candidates.candidates", return_value=[]),
             patch("core.analytics.financial_extraction.extract_financial_candidates", return_value=([], [])),
             patch("core.llm.groq_provider.GroqProvider") as provider_cls,
@@ -195,6 +269,9 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 file=UploadFile(filename="annual-report.pdf", file=io.BytesIO(source)),
                 title="Annual report", document_type="annual_report", domain="finance",
                 fiscal_year=None, business_decision_domain="",
+                knowledge_domains=["inventory_allocation", "nationwide_logistics"],
+                source_publisher="Walmart Inc.", reference_type="company_policy_reference",
+                reference_applicability="Walmart suppliers only; not Commerce Demo policy",
                 allowed_roles=["finance_analyst"],
                 user={"sub": "uploader-1"},
             ))
@@ -202,6 +279,14 @@ class UploadProcessingFlowTest(unittest.TestCase):
         self.assertEqual(response["business_metric_candidates"], 0)
         provider_cls.assert_not_called()
         business_extractor.assert_not_called()
+        processor_metadata = parse_document.call_args.args[2]
+        self.assertEqual(processor_metadata["knowledge_domains"], ["inventory_allocation", "nationwide_logistics"])
+        self.assertEqual(processor_metadata["source_publisher"], "Walmart Inc.")
+        self.assertEqual(processor_metadata["reference_applicability"], "Walmart suppliers only; not Commerce Demo policy")
+        self.assertEqual(processor_metadata["evidence_class"], "company_policy_reference")
+        self.assertFalse(processor_metadata["external_policy_reference"])
+        saved_metadata = chunk_repository.replace_document.call_args.args[1][0][3]
+        self.assertEqual(saved_metadata["knowledge_domains"], ["inventory_allocation", "nationwide_logistics"])
 
     def test_upload_no_longer_exposes_report_specific_metric_profile(self):
         from inspect import signature
@@ -517,7 +602,12 @@ class UploadProcessingFlowTest(unittest.TestCase):
             ))
 
         self.assertEqual(response["processing_status"], "ready")
+        self.assertEqual(response["page_count"], 1)
+        self.assertEqual(response["ocr_chunk_count"], 1)
+        self.assertGreater(response["parser_chunk_count"], 0)
+        self.assertEqual(response["table_count"], 1)
         parsed_chunks = parsed_cls.return_value.replace_document.call_args.args[1]
+        self.assertEqual(response["indexed_chunk_count"], len(parsed_chunks))
         self.assertTrue(parsed_chunks)
         self.assertIn("Revenue", parsed_chunks[0]["text"])
         self.assertNotIn("embedding_model", parsed_chunks[0]["metadata"])

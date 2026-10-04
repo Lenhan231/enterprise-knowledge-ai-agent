@@ -23,14 +23,17 @@ class GroqProvider(LLMInterface):
                     base_url="https://api.groq.com/openai/v1",
                 )
         
-    def generate(self, prompt: str) -> str:
-        response = self.client.responses.create(
-            model=self.model_name,
-            input=prompt,
-            temperature=0,
-            reasoning={"effort": self.reasoning_effort},
-            max_output_tokens=1000,
-        )
+    def generate(self, prompt: str, *, instructions: str | None = None) -> str:
+        request = {
+            "model": self.model_name,
+            "input": prompt,
+            "temperature": 0,
+            "reasoning": {"effort": self.reasoning_effort},
+            "max_output_tokens": 1000,
+        }
+        if instructions is not None:
+            request["instructions"] = instructions
+        response = self.client.responses.create(**request)
 
         answer = response.output_text.strip()
         usage = getattr(response, "usage", None)

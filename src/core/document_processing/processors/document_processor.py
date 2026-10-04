@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -46,8 +47,12 @@ class DocumentProcessor:
                 "ocr_language": "vie+eng",
                 "tesseract_psm": self.config.get("tesseract_psm", 11),
                 "tesseract_table_psm": self.config.get("tesseract_table_psm", 3),
-                "ocr_render_scale": self.config.get("ocr_render_scale", 1.5),
-                "ocr_table_render_scale": self.config.get("ocr_table_render_scale", 2.5),
+                "ocr_render_scale": self.config.get(
+                    "ocr_render_scale", float(os.getenv("DOCUMENT_OCR_RENDER_SCALE", "1.5")),
+                ),
+                "ocr_table_render_scale": self.config.get(
+                    "ocr_table_render_scale", float(os.getenv("DOCUMENT_OCR_TABLE_RENDER_SCALE", "2.5")),
+                ),
                 "extract_tables": self.config.get("extract_tables", True),
                 "page_numbers": self.config.get("page_numbers"),
                 "chunking_strategy": self.chunking_strategy,

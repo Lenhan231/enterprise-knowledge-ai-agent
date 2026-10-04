@@ -1,0 +1,44 @@
+{
+  "dataset_id": "commerce-synthetic-image-only-scan-smoke-v1",
+  "purpose": "End-to-end OCR smoke evaluation for the Commerce Demo scanned-PDF fixture; not a representative accuracy benchmark.",
+  "reference_method": "visually transcribed from rendered source pages",
+  "reference_quality": "visual_transcription_review",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "Both pages are synthetic, clean, digitally composed raster pages, not authentic company documents.",
+    "Do not use this fixture to rank OCR engines for production or to support Commerce business decisions.",
+    "The reference text is a visual transcription of the fixture and is intended only to catch broken OCR, page rendering, and table extraction paths."
+  ],
+  "pages": [
+    {
+      "id": "commerce-synthetic-operations-note-en",
+      "document_id": "COMMERCE-SYNTHETIC-OCR-DEMO",
+      "file": "data/evaluation/ocr/commerce_synthetic_policy_scan_demo.pdf",
+      "page": 1,
+      "language": "en",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "text",
+      "clip_rect": [0, 0, 595, 842],
+      "reference_text": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY\nCommerce Operations Test Note\nThis synthetic page exists only to verify the PDF upload and OCR inspection workflow. The sample values and rules below are invented for testing and must never be treated as business evidence.\nInventory allocation: review sales velocity, stockout history, current units on hand, and supplier lead time before changing replenishment. This sample does not set a reorder threshold.\nPromotion planning: compare delivered orders and recorded discounts across comparable periods. Without a holdout group, a before-and-after difference is descriptive and does not prove promotion uplift.\nNationwide logistics: compare actual transit time by region. Carrier, warehouse origin, route capacity, and promised delivery SLA are required before proposing network changes.\nOCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX"
+    },
+    {
+      "id": "commerce-synthetic-region-table-en",
+      "document_id": "COMMERCE-SYNTHETIC-OCR-DEMO",
+      "file": "data/evaluation/ocr/commerce_synthetic_policy_scan_demo.pdf",
+      "page": 2,
+      "language": "en",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "table",
+      "table_columns": ["Region", "Delivered sample orders", "Median transit days", "Avg fee units"],
+      "clip_rect": [0, 0, 595, 842],
+      "reference_text": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY\nSynthetic regional logistics sample\nRegion\tDelivered sample orders\tMedian transit days\tAvg fee units\nEast\t120\t3.0\t42.50\nCentral\t95\t4.0\t48.75\nWest\t80\t5.0\t55.25\nEvery record on this page is invented for OCR testing. Values are not from the Commerce database.\nOCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX",
+      "table_rows": [
+        {"label": "East", "values": ["120", "3.0", "42.50"]},
+        {"label": "Central", "values": ["95", "4.0", "48.75"]},
+        {"label": "West", "values": ["80", "5.0", "55.25"]}
+      ]
+    }
+  ]
+}

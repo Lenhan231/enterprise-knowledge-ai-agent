@@ -5,6 +5,13 @@ let businessMetricDefinitions = new Map();
 let pendingMetricCandidates = [];
 let activeTab = "knowledge";
 let currentUser = null;
+let decisionSuggestionsPending = false;
+let commerceSnapshot = null;
+const commerceLoadedDomains = new Set();
+const commerceLoadingDomains = new Set();
+let commerceCampaignsLoaded = false;
+let commerceCampaignsLoading = false;
+let knowledgeDocuments = [];
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
 }[char]));
@@ -35,10 +42,17 @@ function uploadedSourcePageUrl(documentId, pageNumber) {
   return `/api/documents/${encodeURIComponent(documentId)}/source${Number.isInteger(page) && page > 0 ? `#page=${page}` : ""}`;
 }
 
+function metricSourceChunkInspectButton(documentId, chunkId, chunkIndex) {
+  if (currentUser?.role !== "admin" || !documentId || !Number.isInteger(chunkId) || chunkId < 1
+      || !Number.isInteger(chunkIndex) || chunkIndex < 0) return "";
+  return `<button type="button" class="inline-tab-link" data-inspect-indexed-chunk data-document-id="${escapeHtml(documentId)}" data-source-chunk-id="${chunkId}" data-chunk-index="${chunkIndex}">Inspect linked indexed chunk ${chunkIndex}</button>`;
+}
+
 function selectWorkspaceTab(name) {
   const button = $(`[data-tab-target="${name}"]`);
   if (!button || button.hidden) return;
   activeTab = name;
+  $(".intro").hidden = name === "analytics";
   document.querySelectorAll(".workspace-tab").forEach((tab) => {
     const selected = tab === button;
     tab.setAttribute("aria-selected", String(selected));
@@ -48,6 +62,7 @@ function selectWorkspaceTab(name) {
   document.querySelectorAll(".tab-panel").forEach((panel) => {
     panel.hidden = panel.id !== button.getAttribute("aria-controls");
   });
+  if (name === "analytics") loadCommerceDashboardForActiveView();
 }
 
 function selectAnalyticsTab(name) {
@@ -84,7 +99,7 @@ document.querySelector(".analytics-subtabs").addEventListener("keydown", (event)
 function syncWorkspaceTabs(user = currentUser) {
   const isAdmin = user?.role === "admin";
   const isTester = user?.role === "tester";
-  const canViewAnalytics = ["finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user?.role);
+  const canViewAnalytics = ["operations", "finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user?.role);
   const canUpload = ["document_uploader", "admin"].includes(user?.role);
   const available = {
     knowledge: !isTester,
@@ -92,6 +107,7 @@ function syncWorkspaceTabs(user = currentUser) {
     processing: canUpload,
     "ocr-lab": isTester || isAdmin,
     metrics: isAdmin,
+    "knowledge-management": isAdmin,
     access: isAdmin,
     monitoring: isAdmin,
   };
@@ -107,6 +123,16 @@ document.querySelectorAll("[data-open-tab]").forEach((button) => {
 });
 
 function renderCorpus(data) {
+  const commerceLabels = {
+    inventory_allocation: "Inventory allocation",
+    promotion_planning: "Promotion planning",
+    nationwide_logistics: "Nationwide logistics",
+  };
+  const referenceLabels = {
+    company_practice_reference: "Company practice",
+    company_policy_reference: "Company policy reference",
+    platform_operating_rule: "Platform operating rule",
+  };
   const companies = new Set(data.documents.map((doc) => doc.company).filter(Boolean));
   $("#company-name").textContent = companies.size || 0;
   $("#document-count").textContent = formatNumber(data.document_count);
@@ -125,14 +151,17 @@ function renderCorpus(data) {
     }, {});
   $("#company-grid").innerHTML = Object.entries(groups).map(([company, docs]) => `
     <article class="company-card">
-      <div class="company-card-head"><div><span class="company-kicker">${escapeHtml(docs[0].domain.replaceAll("_", " "))}</span><h3>${escapeHtml(company)}</h3></div><span class="doc-total">${formatNumber(docs.length)} doc${docs.length === 1 ? "" : "s"}</span></div>
+      <div class="company-card-head"><div><span class="company-kicker">${escapeHtml([...new Set(docs.flatMap((doc) => doc.knowledge_domains || []))].map((domain) => commerceLabels[domain] || domain).join(" · ") || docs[0].domain.replaceAll("_", " "))}</span><h3>${escapeHtml(company)}</h3></div><span class="doc-total">${formatNumber(docs.length)} doc${docs.length === 1 ? "" : "s"}</span></div>
       <div class="document-list">${docs.map((doc) => {
         const href = validSourceUrl(doc.source_url);
         const link = href
           ? `<a class="document-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Open official source</a>`
           : "";
         const status = doc.processing_status || (doc.chunks ? "ready" : "uploaded");
-        return `<article class="document-row"><div class="file-mark">${escapeHtml(doc.format)}</div><div class="document-info"><strong>${escapeHtml(doc.title)}</strong><span>${escapeHtml(doc.fiscal_year ? `FY ${doc.fiscal_year}` : "General")} · ${formatNumber(doc.chunks)} passages · ${escapeHtml(status)} · access: ${escapeHtml((doc.allowed_roles || []).join(", "))}</span>${link}</div></article>`;
+        const domains = (doc.knowledge_domains || []).map((domain) => commerceLabels[domain] || domain).join(", ");
+        const reference = referenceLabels[doc.external_reference_type] || "";
+        const attribution = [doc.source_publisher, reference, domains].filter(Boolean).join(" · ");
+        return `<article class="document-row"><div class="file-mark">${escapeHtml(doc.format)}</div><div class="document-info"><strong>${escapeHtml(doc.title)}</strong><span>${escapeHtml(doc.fiscal_year ? `FY ${doc.fiscal_year}` : attribution || "General")} · ${formatNumber(doc.chunks)} passages · ${escapeHtml(status)} · access: ${escapeHtml((doc.allowed_roles || []).join(", "))}</span>${attribution ? `<small>${escapeHtml(attribution)}</small>` : ""}${link}</div></article>`;
       }).join("")}</div>
     </article>`).join("") || '<div class="loading-card">No company documents are indexed yet.</div>';
 }
@@ -144,6 +173,42 @@ function renderParsedChunkInspector(data) {
   $("#parsed-document").innerHTML = documents.map((doc) =>
     `<option value="${escapeHtml(doc.document_id)}">${escapeHtml(doc.title)} · ${escapeHtml(doc.processing_status || "unknown")}</option>`
   ).join("");
+}
+
+function renderKnowledgeDocuments() {
+  const query = $("#knowledge-documents-search").value.trim().toLocaleLowerCase();
+  const matches = knowledgeDocuments.filter((doc) => [doc.title, doc.document_id, doc.source_publisher,
+    doc.domain, doc.evidence_class, doc.synthetic_company_policy ? "synthetic demo policy" : "",
+    ...(doc.knowledge_domains || [])].join(" ").toLocaleLowerCase().includes(query));
+  $("#knowledge-documents-status").textContent = `${formatNumber(knowledgeDocuments.filter((doc) => doc.knowledge_base_active).length)} active · ${formatNumber(knowledgeDocuments.length)} indexed sources`;
+  $("#knowledge-documents-list").innerHTML = matches.map((doc) => {
+    const domains = (doc.knowledge_domains || []).join(", ") || doc.domain || "General";
+    const href = validSourceUrl(doc.source_url);
+    const sourceKind = doc.synthetic_company_policy
+      ? "Synthetic demo policy · fictional Commerce Demo only"
+      : ({ management_cookbook_reference: "Management method · external reference",
+          company_practice_reference: "Company practice · attributed example",
+          platform_operating_rule: "Platform rule · scope-specific" }[doc.evidence_class] || "Knowledge source");
+    const sourceLink = doc.synthetic_company_policy
+      ? `<a href="/api/admin/knowledge-documents/${encodeURIComponent(doc.document_id)}/source" target="_blank" rel="noopener noreferrer">Open original PDF</a>`
+      : href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Open source</a>` : "";
+    return `<article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
+      <div class="knowledge-document-copy"><strong>${escapeHtml(doc.title)}</strong>
+        <span class="knowledge-source-kind ${doc.synthetic_company_policy ? "is-synthetic" : ""}">${escapeHtml(sourceKind)}</span>
+        <span>${escapeHtml(doc.source_publisher || doc.company || "Unknown publisher")} · ${escapeHtml(doc.format || "File")} · ${formatNumber(doc.chunk_count)} passages</span>
+        <small>${escapeHtml(domains)} · ${escapeHtml(doc.processing_status || "unknown")} · ${doc.knowledge_base_active ? "Available to AI" : "Removed from AI retrieval"}</small>
+        <code>${escapeHtml(doc.document_id)}</code>${sourceLink}
+      </div>
+      <button class="${doc.knowledge_base_active ? "danger-button" : "secondary-button"}" type="button" data-knowledge-toggle="${escapeHtml(doc.document_id)}" data-active="${doc.knowledge_base_active ? "true" : "false"}">${doc.knowledge_base_active ? "Remove from knowledge base" : "Restore to knowledge base"}</button>
+    </article>`;
+  }).join("") || '<p class="loading-card">No matching indexed sources.</p>';
+}
+
+async function refreshKnowledgeDocuments() {
+  $("#knowledge-documents-status").textContent = "Loading indexed sources…";
+  const result = await api("/api/admin/knowledge-documents");
+  knowledgeDocuments = result.documents;
+  renderKnowledgeDocuments();
 }
 
 function renderMetricCatalog(metrics) {
@@ -211,23 +276,38 @@ function renderBusinessMetricCatalog(metrics) {
   updateReplayMetrics();
 }
 
-function renderParsedChunks(chunks) {
-  $("#parsed-chunk-list").innerHTML = chunks.map((chunk) => `
-    <article class="candidate-row">
-        <div class="candidate-heading"><strong>Passage ${formatNumber(chunk.chunk_index + 1)}</strong><span>${escapeHtml(chunk.processing_status || "extracted")} · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")}</span></div>
+function renderParsedChunks(chunks, documentId) {
+  $("#parsed-chunk-list").innerHTML = chunks.map((chunk) => {
+    const pageNumber = chunk.metadata?.page_number;
+    const isPdf = String(chunk.metadata?.format || "").toLowerCase() === "pdf"
+      || /\.pdf(?:$|[?#])/i.test(String(chunk.metadata?.source_url || ""));
+    const sourceUrl = uploadedSourcePageUrl(documentId, isPdf ? pageNumber : null)
+      || sourcePageUrl(chunk.metadata?.source_url, isPdf ? pageNumber : null);
+    const sourceLabel = isPdf && pageNumber ? `Open original PDF · page ${formatNumber(pageNumber)}` : "Open original document";
+    return `
+    <article class="candidate-row" id="document-chunk-${chunk.chunk_index}">
+        <div class="candidate-heading"><strong>${pageNumber ? `Page ${formatNumber(pageNumber)} · ` : ""}Passage ${formatNumber(chunk.chunk_index + 1)}</strong><span>${escapeHtml(chunk.processing_status || "extracted")} · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")}</span></div>
+      ${sourceUrl ? `<a class="document-link" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(sourceLabel)}</a>` : ""}
       ${chunk.processing_error ? `<p class="corpus-note">Processing error: ${escapeHtml(chunk.processing_error)}</p>` : ""}
       <blockquote>${escapeHtml(chunk.content)}</blockquote>
       <details class="candidate-source"><summary>Parser metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details>
-    </article>`
-  ).join("") || '<p class="loading-card">No parsed passages at this offset.</p>';
+    </article>`;
+  }).join("") || '<p class="loading-card">No parsed passages at this offset.</p>';
 }
 
-function renderExtractedTables(tables) {
+function renderExtractedTables(tables, documentId) {
   $("#parsed-table-list").innerHTML = tables.map((table) => {
     const columns = Array.isArray(table.columns) ? table.columns : [];
     const rows = Array.isArray(table.rows) ? table.rows : [];
+    const pageNumber = table.page_number;
+    const isPdf = String(table.metadata?.format || "").toLowerCase() === "pdf"
+      || /\.pdf(?:$|[?#])/i.test(String(table.metadata?.source_url || ""));
+    const sourceUrl = uploadedSourcePageUrl(documentId, isPdf ? pageNumber : null)
+      || sourcePageUrl(table.metadata?.source_url, isPdf ? pageNumber : null);
+    const sourceLabel = isPdf && pageNumber ? `Open original PDF · page ${formatNumber(pageNumber)}` : "Open original document";
     return `<article class="candidate-row">
       <div class="candidate-heading"><strong>Page ${formatNumber(table.page_number)} · Table ${formatNumber(table.table_index + 1)}</strong><span>${formatNumber(table.row_count)} rows · showing ${formatNumber(rows.length)}</span></div>
+      ${sourceUrl ? `<a class="document-link" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(sourceLabel)}</a>` : ""}
       <div class="extracted-table-wrap"><table class="extracted-table"><thead><tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
       <details class="candidate-source"><summary>Table metadata</summary><pre>${escapeHtml(JSON.stringify(table.metadata, null, 2))}</pre></details>
     </article>`;
@@ -258,9 +338,13 @@ const replayMetricSelect = $("#business-metric-replay-metric");
 
 async function loadOcrTestRuns() {
   const result = await api("/api/ocr-tests");
-  $("#ocr-test-runs").innerHTML = result.runs.map((run) =>
-    `<button type="button" class="ocr-run-button" data-ocr-run-id="${escapeHtml(run.run_id)}"><strong>${escapeHtml(run.source_filename)}</strong><span>${escapeHtml(new Date(run.created_at).toLocaleString())} · ${formatNumber(run.page_count)} pages · ${formatNumber(run.chunk_count)} chunks · ${formatNumber(run.table_count)} tables</span></button>`
-  ).join("") || '<p class="loading-card">No OCR tests yet. Upload a PDF above to create one.</p>';
+  $("#ocr-test-runs").innerHTML = result.runs.map((run) => {
+    const config = run.processor_config || {};
+    const settings = config.tesseract_psm
+      ? `PSM ${config.tesseract_psm} · page ${config.ocr_render_scale || "?"}×`
+      : "OCR settings unavailable";
+    return `<button type="button" class="ocr-run-button" data-ocr-run-id="${escapeHtml(run.run_id)}"><strong>${escapeHtml(run.source_filename)}</strong><span>${escapeHtml(new Date(run.created_at).toLocaleString())} · ${formatNumber(run.page_count)} pages · ${formatNumber(run.chunk_count)} chunks · ${formatNumber(run.table_count)} tables · ${escapeHtml(settings)}</span></button>`;
+  }).join("") || '<p class="loading-card">No OCR tests yet. Upload a PDF above to create one.</p>';
 }
 
 function renderOcrTestDetails(run) {
@@ -340,6 +424,288 @@ function formatFinancialValue(value) {
     : "—";
 }
 
+function formatCommerceValue(value) {
+  const parsed = typeof value === "number" ? value : Number(String(value ?? "").trim());
+  return Number.isFinite(parsed)
+    ? new Intl.NumberFormat("en-US", { useGrouping: true, maximumFractionDigits: 2 }).format(parsed)
+    : "—";
+}
+
+function commerceTable(rows, columns) {
+  if (!rows.length) return '<p class="analysis-empty">No observations for this year.</p>';
+  const headings = columns.map(([, label]) => `<th>${escapeHtml(label)}</th>`).join("");
+  const body = rows.map((row) => `<tr>${columns.map(([key, , format]) => {
+    const value = row[key];
+    const rendered = format ? format(value, row)
+      : value == null ? "—"
+        : key === "year" ? String(value)
+          : typeof value === "number" ? formatCommerceValue(value) : value;
+    return `<td>${escapeHtml(rendered)}</td>`;
+  }).join("")}</tr>`).join("");
+  return `<table><thead><tr>${headings}</tr></thead><tbody>${body}</tbody></table>`;
+}
+
+function renderCommerceEvidence(rows, group) {
+  if (!Array.isArray(rows) || !rows.length) return "";
+  const columns = [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
+  if (!columns.length) return "";
+  const header = columns.map((key) => `<th>${escapeHtml(key.replaceAll("_", " "))}</th>`).join("");
+  const body = rows.map((row) => `<tr>${columns.map((key) => {
+    const value = row?.[key];
+    const text = typeof value === "number"
+      ? new Intl.NumberFormat("en-US", {maximumFractionDigits: 8}).format(value)
+      : value === true ? "Yes" : value === false ? "No" : value == null ? "—" : String(value);
+    return `<td>${escapeHtml(text)}</td>`;
+  }).join("")}</tr>`).join("");
+  return `<details class="citation-observations"><summary>Inspect structured SQL observations · ${rows.length} rows</summary><div class="commerce-table-wrap"><table aria-label="${escapeHtml(group || "Commerce SQL observations")}"><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div></details>`;
+}
+
+function renderCommerceCards(cards, note) {
+  $("#commerce-domain-cards").innerHTML = cards.map(([label, value, detail]) =>
+    `<article class="commerce-kpi-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><small>${escapeHtml(detail || note)}</small></article>`
+  ).join("");
+}
+
+function renderCommerceChart(selector, rows, series, unit, kind = "line", periodLabel = "All available years") {
+  const root = $(selector);
+  if (!rows.length) {
+    root.innerHTML = '<p class="analysis-empty">No observations available to chart.</p>';
+    return;
+  }
+  const years = [...new Set(rows.map((row) => Number(row.year)).filter(Number.isFinite))].sort((a, b) => a - b);
+  const values = rows.flatMap((row) => series.map((item) => Number(item.value(row)))).filter(Number.isFinite);
+  const max = Math.max(1, ...values) * 1.08;
+  const width = 760, height = 250, left = 60, right = 746, top = 15, bottom = 199;
+  const x = (index) => years.length < 2 ? (left + right) / 2 : left + index * (right - left) / (years.length - 1);
+  const y = (value) => bottom - (value / max) * (bottom - top);
+  const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
+  const grid = Array.from({ length: 4 }, (_, index) => {
+    const value = max * index / 3, yy = y(value);
+    return `<g><line x1="${left}" y1="${yy}" x2="${right}" y2="${yy}" class="commerce-chart-gridline"/><text x="${left - 8}" y="${yy + 4}" text-anchor="end" class="commerce-chart-axis-label">${compact.format(value)}</text></g>`;
+  }).join("");
+  const labels = years.map((year, index) => `<text x="${x(index)}" y="${height - 12}" text-anchor="middle" class="commerce-chart-axis-label">${year}</text>`).join("");
+  let marks = "";
+  if (kind === "bar") {
+    const groupWidth = Math.min(28, (right - left) / Math.max(years.length, 1) * 0.72);
+    const barWidth = groupWidth / series.length;
+    marks = years.map((year, yearIndex) => series.map((item, seriesIndex) => {
+      const row = rows.find((candidate) => Number(candidate.year) === year && item.matches(candidate));
+      const value = row ? Number(item.value(row)) : NaN;
+      if (!Number.isFinite(value)) return "";
+      const barX = x(yearIndex) - groupWidth / 2 + seriesIndex * barWidth;
+      return `<g><title>${escapeHtml(item.label)} · ${year}: ${formatCommerceValue(value)} ${escapeHtml(unit)}</title><rect x="${barX}" y="${y(value)}" width="${Math.max(2, barWidth - 1)}" height="${bottom - y(value)}" rx="2" fill="${item.color}"/></g>`;
+    }).join("")).join("");
+  } else {
+    marks = series.map((item) => {
+      const points = years.map((year, index) => {
+        const row = rows.find((candidate) => Number(candidate.year) === year && item.matches(candidate));
+        const value = row ? Number(item.value(row)) : NaN;
+        return Number.isFinite(value) ? { year, index, value } : null;
+      }).filter(Boolean);
+      const path = points.map((point, index) => `${index ? "L" : "M"}${x(point.index)},${y(point.value)}`).join(" ");
+      return `<path d="${path}" fill="none" stroke="${item.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${points.map((point) => `<g><title>${escapeHtml(item.label)} · ${point.year}: ${formatCommerceValue(point.value)} ${escapeHtml(unit)}</title><circle cx="${x(point.index)}" cy="${y(point.value)}" r="3.5" fill="${item.color}"/></g>`).join("")}`;
+    }).join("");
+  }
+  const legend = series.map((item) => `<span><i style="--commerce-series:${item.color}"></i>${escapeHtml(item.label)}</span>`).join("");
+  root.innerHTML = `<figure><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(series.map((item) => item.label).join(" and "))} by year"><title>${escapeHtml(series.map((item) => item.label).join(" and "))} by year</title>${grid}<line x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}" class="commerce-chart-axis"/>${marks}${labels}</svg><figcaption>${legend}<span class="commerce-chart-unit">${escapeHtml(unit)}</span></figcaption></figure><p class="commerce-chart-note">Showing ${escapeHtml(periodLabel)}.</p>`;
+}
+
+function renderCommerceDashboard(data = commerceSnapshot) {
+  if (!data) return;
+  commerceSnapshot = data;
+  const yearSelect = $("#commerce-year-filter");
+  const selectedYear = yearSelect.value;
+  const years = [...new Set([
+    ...(data.sales_by_year || []).map((row) => row.year),
+    ...(data.inventory_by_year || []).map((row) => row.year),
+    ...(data.promotions_by_year || []).map((row) => row.year),
+    ...(data.promotions_by_campaign || []).map((row) => row.year),
+    ...(data.logistics_by_year_region || []).map((row) => row.year),
+  ].filter(Number.isFinite))].sort((a, b) => a - b);
+  yearSelect.innerHTML = '<option value="">All available years</option>' + years.map((year) =>
+    `<option value="${year}">${year}</option>`).join("");
+  yearSelect.value = years.includes(Number(selectedYear)) ? selectedYear : "";
+  const year = yearSelect.value ? Number(yearSelect.value) : null;
+  const byYear = (rows) => rows.filter((row) => year == null || Number(row.year) === year);
+  const activeView = document.querySelector('[data-commerce-view][aria-selected="true"]')?.dataset.commerceView || "inventory";
+  const yearLabel = year == null ? "All available years" : `Year ${year}`;
+  if (activeView === "inventory") {
+    const rows = byYear(data.inventory_by_year || []);
+    const latest = rows.at(-1) || {};
+    const inventoryPeriod = year == null ? `Latest annual data: ${latest.year ?? "—"}` : yearLabel;
+    const annualCategoryRows = data.inventory_year_end_by_category || [];
+    const categoryYear = year ?? annualCategoryRows.at(-1)?.year ?? null;
+    const categoryRows = categoryYear == null ? [] : annualCategoryRows.filter((row) => Number(row.year) === Number(categoryYear));
+    const stockoutProducts = categoryRows.reduce((sum, row) => sum + Number(row.stockout_products || 0), 0);
+    const overstockProducts = categoryRows.reduce((sum, row) => sum + Number(row.overstock_products || 0), 0);
+    const bothFlaggedProducts = categoryRows.reduce((sum, row) => sum + Number(row.both_flagged_products || 0), 0);
+    const stockoutDays = Number(latest.avg_stockout_days);
+    renderCommerceCards([
+      ["SKU snapshots", formatCommerceValue(latest.sku_snapshots), inventoryPeriod],
+      ["Average units on hand", formatCommerceValue(latest.avg_stock_on_hand), inventoryPeriod],
+      ["Stockout snapshots", formatCommerceValue(latest.stockout_snapshots), `${inventoryPeriod}; not unique products`],
+      ["Overstock snapshots", formatCommerceValue(latest.overstock_snapshots), `${inventoryPeriod}; days-of-supply excluded`],
+      ["Average stockout days", Number.isFinite(stockoutDays) ? stockoutDays.toFixed(2) : "—", inventoryPeriod],
+      ["Selected snapshot · stockout / overstock / both flags", `${formatCommerceValue(stockoutProducts)} / ${formatCommerceValue(overstockProducts)} / ${formatCommerceValue(bothFlaggedProducts)}`, `Latest snapshot in ${categoryYear}; both flags can apply to one product`],
+    ], "Synthetic dataset observation");
+  } else if (activeView === "promotions") {
+    const rows = byYear(data.promotions_by_year || []);
+    const tagged = rows.filter((row) => row.used_promotion);
+    const plain = rows.filter((row) => !row.used_promotion);
+    const sum = (items, key) => items.reduce((total, row) => total + Number(row[key] || 0), 0);
+    const taggedOrders = sum(tagged, "delivered_orders");
+    const plainOrders = sum(plain, "delivered_orders");
+    const paired = (key) => `${formatCommerceValue(sum(tagged, key))} / ${formatCommerceValue(sum(plain, key))}`;
+    const marginProxy = (items) => {
+      const sales = sum(items, "net_sales");
+      return sales ? `${(sum(items, "merchandise_gross_profit_proxy") / sales * 100).toFixed(1)}%` : "—";
+    };
+    renderCommerceCards([
+      ["Delivered order groups · tagged / untagged", `${formatCommerceValue(taggedOrders)} / ${formatCommerceValue(plainOrders)}`, yearLabel],
+      ["Net sales · tagged / untagged items", paired("net_sales"), "Dataset units; currency not declared"],
+      ["Units · tagged / untagged items", paired("units"), yearLabel],
+      ["Recorded discounts · tagged / untagged", paired("discounts"), "Dataset units; currency not declared"],
+      ["Gross-profit proxy · tagged / untagged", paired("merchandise_gross_profit_proxy"), "Net item sales less catalog COGS; estimate only"],
+      ["Gross-margin proxy · tagged / untagged", `${marginProxy(tagged)} / ${marginProxy(plain)}`, "Catalog COGS assumption; not contribution margin or ROI"],
+    ], "Mixed orders may count in both groups; comparison is not causal. Validate catalog COGS before using the gross-profit proxy.");
+  } else {
+    const rows = byYear(data.logistics_by_year_region || []);
+    const deliveries = rows.reduce((sum, row) => sum + Number(row.deliveries || 0), 0);
+    const weighted = (key) => deliveries ? rows.reduce((sum, row) => sum + Number(row[key] || 0) * Number(row.deliveries || 0), 0) / deliveries : NaN;
+    const regionalMedians = rows.map((row) => Number(row.median_transit_days)).filter(Number.isFinite);
+    const medianRange = regionalMedians.length ? `${Math.min(...regionalMedians).toFixed(1)}–${Math.max(...regionalMedians).toFixed(1)} days` : "—";
+    renderCommerceCards([
+      ["Delivered shipments", formatCommerceValue(deliveries), yearLabel],
+      ["Weighted average transit", Number.isFinite(weighted("avg_transit_days")) ? `${weighted("avg_transit_days").toFixed(2)} days` : "—", "Weighted by delivered shipments"],
+      ["Regional median range", medianRange, "Range across displayed dataset regions"],
+      ["Weighted average shipping fee", formatCommerceValue(weighted("avg_shipping_fee")), "Dataset units; currency not declared"],
+    ], "Descriptive regional summary; no carrier or route-level data");
+  }
+  const inventoryRows = byYear(data.inventory_by_year || []);
+  renderCommerceChart("#commerce-inventory-chart", inventoryRows, [
+    { label: "Stockout snapshots", color: "#c54845", matches: () => true, value: (row) => row.stockout_snapshots },
+    { label: "Overstock snapshots", color: "#3972bd", matches: () => true, value: (row) => row.overstock_snapshots },
+  ], "snapshot count", "line", yearLabel);
+  const promotionRows = byYear(data.promotions_by_year || []);
+  renderCommerceChart("#commerce-promotion-chart", promotionRows, [
+    { label: "Items with promotion tag", color: "#3972bd", matches: (row) => row.used_promotion, value: (row) => row.net_sales },
+    { label: "Items without promotion tag", color: "#48a17c", matches: (row) => !row.used_promotion, value: (row) => row.net_sales },
+  ], "net sales · dataset units", "bar", yearLabel);
+  const logisticsRows = byYear(data.logistics_by_year_region || []);
+  const regionColors = ["#3972bd", "#48a17c", "#d58c35", "#8761bd"];
+  const regions = [...new Set(logisticsRows.map((row) => row.region))].sort();
+  renderCommerceChart("#commerce-logistics-chart", logisticsRows, regions.map((region, index) => ({
+    label: region, color: regionColors[index % regionColors.length],
+    matches: (row) => row.region === region, value: (row) => row.avg_transit_days,
+  })), "average transit days", "line", yearLabel);
+  $("#commerce-sales-table").innerHTML = commerceTable(byYear(data.sales_by_year || []), [
+    ["year", "Year"], ["revenue", "Revenue", formatCommerceValue], ["cogs", "COGS", formatCommerceValue], ["gross_profit", "Gross profit", formatCommerceValue],
+    ["gross_margin", "Gross margin", (value) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(1)}%` : "—"],
+  ]);
+  $("#commerce-inventory-table").innerHTML = commerceTable(byYear(data.inventory_by_year || []), [
+    ["year", "Year"], ["products", "Products"], ["sku_snapshots", "SKU snapshots"], ["avg_stock_on_hand", "Avg units on hand", formatCommerceValue],
+    ["stockout_snapshots", "Stockout snapshots"], ["overstock_snapshots", "Overstock snapshots"],
+    ["avg_stockout_days", "Avg stockout days"],
+  ]);
+  const annualCategoryRows = data.inventory_year_end_by_category || [];
+  const categoryYear = year ?? annualCategoryRows.at(-1)?.year ?? null;
+  const categoryRows = categoryYear == null ? [] : annualCategoryRows.filter((row) => Number(row.year) === Number(categoryYear));
+  $("#commerce-inventory-category").innerHTML = commerceTable(categoryRows, [
+    ["category", "Category"], ["products", "Products"], ["stock_on_hand", "Units on hand", formatCommerceValue],
+    ["stockout_products", "Stockout products"], ["overstock_products", "Overstock products"],
+    ["both_flagged_products", "Both flags"],
+  ]);
+  $("#commerce-inventory-latest-date").textContent = categoryRows[0]?.snapshot_date
+    ? `· Year ${categoryYear}: ${categoryRows[0].snapshot_date}` : "";
+  $("#commerce-promotion-table").innerHTML = commerceTable(byYear(data.promotions_by_year || []), [
+    ["year", "Year"], ["used_promotion", "Promotion tagged", (value) => value ? "Yes" : "No"],
+    ["delivered_orders", "Delivered orders"], ["units", "Units"], ["net_sales", "Net sales", formatCommerceValue],
+    ["discounts", "Recorded discounts", formatCommerceValue], ["catalog_cogs", "Catalog COGS", formatCommerceValue],
+    ["merchandise_gross_profit_proxy", "Gross-profit proxy", formatCommerceValue],
+    ["merchandise_gross_margin_proxy", "Gross-margin proxy", (value) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(1)}%` : "—"],
+  ]);
+  $("#commerce-campaign-table").innerHTML = commerceTable(byYear(data.promotions_by_campaign || []), [
+    ["campaign", "Campaign"], ["channel", "Channel"], ["campaign_start", "Window starts"],
+    ["campaign_end", "Window ends"], ["delivered_orders", "Delivered orders"], ["units", "Tagged units"],
+    ["net_item_sales", "Tagged net item sales", formatCommerceValue], ["discounts", "Recorded discounts", formatCommerceValue],
+    ["catalog_cogs", "Catalog COGS", formatCommerceValue],
+    ["merchandise_gross_profit_proxy", "Gross-profit proxy", formatCommerceValue],
+    ["merchandise_gross_margin_proxy", "Gross-margin proxy", (value) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(1)}%` : "—"],
+  ]);
+  $("#commerce-logistics-table").innerHTML = commerceTable(byYear(data.logistics_by_year_region || []), [
+    ["year", "Year"], ["region", "Dataset region"], ["deliveries", "Deliveries"],
+    ["avg_transit_days", "Avg transit days"], ["median_transit_days", "Median transit days"],
+    ["avg_shipping_fee", "Avg shipping fee · dataset units"],
+  ]);
+  $("#commerce-data-notes-list").innerHTML = (data.data_notes || []).map((note) => `<li>${escapeHtml(note)}</li>`).join("");
+}
+
+document.querySelectorAll("[data-commerce-view]").forEach((button) => {
+  button.addEventListener("click", () => {
+    $("#commerce-dashboard-status").hidden = true;
+    document.querySelectorAll("[data-commerce-view]").forEach((tab) => {
+      const selected = tab === button;
+      tab.setAttribute("aria-selected", String(selected));
+      $("#commerce-view-" + tab.dataset.commerceView).hidden = !selected;
+    });
+    const domainByView = {
+      inventory: "inventory_allocation",
+      promotions: "promotion_planning",
+      logistics: "nationwide_logistics",
+    };
+    $("#commerce-decision-domain").value = domainByView[button.dataset.commerceView];
+    renderDecisionDomainQuestions($("#commerce-decision-domain").value);
+    renderCommerceDashboard();
+    loadCommerceDashboardForActiveView();
+  });
+});
+$("#commerce-campaign-details").addEventListener("toggle", (event) => {
+  if (event.currentTarget.open) loadCommerceCampaigns();
+});
+$(".commerce-dashboard-tabs").addEventListener("keydown", (event) => {
+  const tabs = [...document.querySelectorAll("[data-commerce-view]")];
+  const current = tabs.indexOf(event.target);
+  const next = { ArrowRight: (current + 1) % tabs.length, ArrowLeft: (current - 1 + tabs.length) % tabs.length,
+    Home: 0, End: tabs.length - 1 }[event.key];
+  if (current < 0 || next === undefined) return;
+  event.preventDefault();
+  tabs[next].focus();
+  tabs[next].click();
+});
+$("#commerce-year-filter").addEventListener("change", () => renderCommerceDashboard());
+$("#commerce-decision-domain").addEventListener("change", () => {
+  renderDecisionDomainQuestions($("#commerce-decision-domain").value);
+  const viewByDomain = {
+    inventory_allocation: "inventory",
+    promotion_planning: "promotions",
+    nationwide_logistics: "logistics",
+  };
+  document.querySelector(`[data-commerce-view="${viewByDomain[$("#commerce-decision-domain").value]}"]`)?.click();
+});
+
+function financialDisplayItem(item) {
+  const sourceUnit = String(item.unit || "").trim().toLocaleLowerCase();
+  const scaleToBillionVnd = {
+    "vnd": 1e-9,
+    "million vnd": 1e-3,
+    "triệu vnd": 1e-3,
+    "billion vnd": 1,
+    "tỷ đồng": 1,
+  }[sourceUnit];
+  if (scaleToBillionVnd === undefined) return item;
+  return {
+    ...item,
+    metric_value: Number((Number(item.metric_value) * scaleToBillionVnd).toFixed(3)),
+    source_unit: item.unit,
+    unit: "billion VND",
+  };
+}
+
+function metricSeriesKey(item) {
+  return [item.company, item.domain || "financial", item.metric_name, item.unit || "unknown unit",
+    item.reporting_period || "FY"].join(":");
+}
+
 function formatBusinessMetricValue(item) {
   const prefix = {
     approximately: "≈",
@@ -378,11 +744,357 @@ function normalizeCandidateFigure(value) {
     : text;
 }
 
+function decisionReadyBusinessDomains(items) {
+  const byDomain = new Map();
+  for (const item of items || []) {
+    if (!item.domain || !item.metric_name || !item.unit || (item.reporting_period && item.reporting_period !== "FY")) continue;
+    const definition = businessMetricDefinitions.get(item.metric_name);
+    if (definition?.decision_priority !== "primary" || definition.domain !== item.domain) continue;
+    const year = Number(item.fiscal_year);
+    if (!Number.isInteger(year)) continue;
+    const key = `${item.metric_name}:${item.unit}`;
+    const series = byDomain.get(item.domain) || new Map();
+    const years = series.get(key) || new Set();
+    years.add(year);
+    series.set(key, years);
+    byDomain.set(item.domain, series);
+  }
+  return [...byDomain].filter(([, series]) => {
+    const years = [...new Set([...series.values()].flatMap((values) => [...values]))].sort((a, b) => a - b);
+    const recent = years.slice(-3);
+    if (recent.length < 3 || recent.some((year, index) => index > 0 && year !== recent[index - 1] + 1)) return false;
+    return [...series.values()].filter((values) => recent.every((year) => values.has(year))).length >= 2;
+  }).map(([domain]) => domain).filter((domain) => ["milk_supply", "market_performance"].includes(domain)).sort();
+}
+
+const marketMetricLabels = {
+  domestic_consolidated_net_revenue: "Domestic Revenue",
+  overseas_market_net_revenue: "Overseas Revenue",
+  domestic_consolidated_net_revenue_growth: "Domestic Revenue Growth",
+  overseas_market_net_revenue_growth: "Overseas Revenue Growth",
+  domestic_segment_gross_profit: "Domestic Segment Gross Profit",
+  overseas_segment_gross_profit: "Overseas Segment Gross Profit",
+  domestic_revenue_share: "Domestic Revenue Share",
+  overseas_revenue_share: "Overseas Revenue Share",
+  parent_domestic_net_revenue: "Parent-company Domestic Revenue",
+  parent_domestic_net_revenue_growth: "Parent-company Domestic Growth",
+  export_net_revenue: "Export Net Revenue",
+  foreign_subsidiary_revenue: "Foreign Subsidiaries' Revenue",
+  export_markets_count: "Export Markets Reached",
+  new_export_markets_entered: "New Export Markets",
+  export_volume_teu: "Export Volume",
+  export_trade_promotion_programs: "Trade-promotion Programs",
+  vinamilk_stores: "Vinamilk Stores",
+  retail_points_of_sale: "Retail Points of Sale",
+};
+
+function marketMetricLabel(name, item = {}) {
+  return marketMetricLabels[name] || businessMetricDefinitions.get(name)?.label || item.metric_label || name;
+}
+
+function marketYear(item) {
+  return Number(item.fiscal_year);
+}
+
+function marketPeriod(item) {
+  return item.reporting_period || "FY";
+}
+
+function marketScopeDimension(item) {
+  const scope = String(item.scope || "").toLocaleLowerCase();
+  const geography = /overseas|outside vietnam/.test(scope) ? "overseas"
+    : /domestic|in vietnam|located in vietnam/.test(scope) ? "domestic" : "";
+  const entity = /parent company|parent-company|standalone/.test(scope) ? "parent"
+    : /geographic segment|customers located/.test(scope) ? "geographic-segment"
+    : /consolidat/.test(scope) ? "consolidated"
+    : /market/.test(scope) ? "market" : "";
+  return geography && entity ? `${entity}:${geography}` : scope.replace(/\s+/g, " ").trim();
+}
+
+function marketComparableDimension(item) {
+  return [item.company, item.unit, marketScopeDimension(item), marketPeriod(item), item.value_qualifier || "exact"];
+}
+
+function marketComparableSeries(items) {
+  const ordered = [...items].sort((a, b) => marketYear(a) - marketYear(b));
+  if (ordered.length < 2 || ordered.some((item) => !String(item.scope || "").trim()
+      || (item.value_qualifier || "exact") !== "exact")) return [];
+  const dimension = JSON.stringify(marketComparableDimension(ordered[0]));
+  if (ordered.some((item) => JSON.stringify(marketComparableDimension(item)) !== dimension)) return [];
+  if (new Set(ordered.map(marketYear)).size !== ordered.length) return [];
+  return ordered;
+}
+
+function marketSourceLink(item) {
+  if (item.sourceRows?.length) {
+    return item.sourceRows.map((row) => `${escapeHtml(marketMetricLabel(row.metric_name, row))}: ${escapeHtml(formatBusinessMetricValue(row))} ${escapeHtml(row.unit)} · ${marketSourceLink(row)}`).join("<br>");
+  }
+  const href = uploadedSourcePageUrl(item.source_document_id, item.page_number)
+    || sourcePageUrl(item.source_url, item.page_number);
+  return href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Source · p. ${escapeHtml(item.page_number ?? "—")}</a>` : "Source link unavailable";
+}
+
+function marketMetricCard(item) {
+  const definition = businessMetricDefinitions.get(item.metric_name);
+  const definitionText = definition?.definition || "Definition is not recorded in the metric catalog.";
+  const unitGuidance = definition?.unit_guidance || item.unit || "Use the source-reported unit.";
+  const qualifier = {
+    approximately: "Approximate",
+    more_than: "Lower bound",
+    at_least: "At least",
+    less_than: "Upper bound",
+    at_most: "At most",
+  }[item.value_qualifier] || "Verified";
+  return `<article class="market-kpi-card">
+    <span class="market-kpi-label">${escapeHtml(marketMetricLabel(item.metric_name, item))}</span>
+    <strong>${formatBusinessMetricValue(item)} <small>${escapeHtml(item.unit || unitGuidance)}</small></strong>
+    <div class="market-kpi-meta"><span>FY ${escapeHtml(item.fiscal_year)}</span><span>${escapeHtml(qualifier)}</span></div>
+    ${marketSourceLink(item)}
+    <details><summary>Definition &amp; scope</summary><p>${escapeHtml(definitionText)}</p><small>${escapeHtml(item.scope || unitGuidance)}</small>${item.source_quote ? `<blockquote>${escapeHtml(item.source_quote)}</blockquote>` : ""}</details>
+  </article>`;
+}
+
+function latestMarketCards(items, metricNames) {
+  return metricNames.flatMap((metricName) => {
+    const byCompany = new Map();
+    for (const item of items.filter((row) => row.metric_name === metricName)) {
+      const companyRows = byCompany.get(item.company) || [];
+      companyRows.push(item);
+      byCompany.set(item.company, companyRows);
+    }
+    return [...byCompany.values()].flatMap((companyRows) => {
+      const latestYear = Math.max(...companyRows.map(marketYear));
+      return companyRows.filter((item) => marketYear(item) === latestYear)
+        .map((item) => marketMetricCard(item));
+    });
+  });
+}
+
+function pairedMarketMetric(revenueRows, profitRows) {
+  const profits = new Map();
+  for (const item of profitRows) {
+    const key = `${item.company}:${marketYear(item)}:${marketPeriod(item)}`;
+    const rows = profits.get(key) || [];
+    rows.push(item);
+    profits.set(key, rows);
+  }
+  return revenueRows.flatMap((revenue) => {
+    const matching = profits.get(`${revenue.company}:${marketYear(revenue)}:${marketPeriod(revenue)}`) || [];
+    if (matching.length !== 1) return [];
+    const profit = matching[0];
+    if (!profit || revenue.scope !== profit.scope || revenue.unit !== profit.unit
+        || (revenue.value_qualifier || "exact") !== "exact" || (profit.value_qualifier || "exact") !== "exact") return [];
+    const denominator = Number(revenue.metric_value);
+    const numerator = Number(profit.metric_value);
+    if (!Number.isFinite(denominator) || denominator <= 0 || !Number.isFinite(numerator)) return [];
+    return [{
+      metric_name: "segment_gross_margin", metric_label: `${revenue.metric_label} gross margin`,
+      company: revenue.company, fiscal_year: revenue.fiscal_year, reporting_period: marketPeriod(revenue),
+      unit: "%", scope: revenue.scope, value_qualifier: "exact", metric_value: numerator / denominator * 100,
+      sourceRows: [revenue, profit],
+    }];
+  }).sort((a, b) => marketYear(a) - marketYear(b));
+}
+
+function alignMarketSeries(items, metricNames) {
+  const series = metricNames.map((name) => marketComparableSeries(items.filter((item) => item.metric_name === name)));
+  if (series.some((rows) => rows.length < 2)) return [];
+  // Domestic and overseas are intentionally different scopes. Each series
+  // must keep a stable semantic scope over time; phrasing/year labels can vary.
+  const dimensionsMatch = series.every((rows) => {
+    const [first] = rows;
+    return rows.every((item) => item.company === first.company
+      && item.unit === first.unit && marketPeriod(item) === marketPeriod(first));
+  });
+  if (!dimensionsMatch || series.some((rows) => rows[0].company !== series[0][0].company
+      || rows[0].unit !== series[0][0].unit || marketPeriod(rows[0]) !== marketPeriod(series[0][0]))) return [];
+  const years = new Set(series[0].map(marketYear));
+  for (const rows of series.slice(1)) {
+    const available = new Set(rows.map(marketYear));
+    for (const year of years) if (!available.has(year)) years.delete(year);
+  }
+  if (years.size < 2) return [];
+  return series.map((rows) => rows.filter((item) => years.has(marketYear(item))));
+}
+
+function marketValuesTable(series) {
+  const rows = series.flatMap(({label, observations}) => observations.map((item) => `<tr>
+    <th scope="row">${escapeHtml(label)}</th><td>FY ${escapeHtml(item.fiscal_year)}</td>
+    <td>${escapeHtml(formatBusinessMetricValue(item))} ${escapeHtml(item.unit)}</td><td>${escapeHtml(item.scope || "Not stated")}</td>
+    <td>${marketSourceLink(item)}</td></tr>`)).join("");
+  return `<details class="market-source-values"><summary>Values, scope and sources</summary><div class="market-values-scroll"><table><thead><tr><th>Measure</th><th>Period</th><th>Value</th><th>Scope</th><th>Evidence</th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
+}
+
+function renderMarketSvg(series, kind = "line") {
+  const width = 760, height = 250, left = 58, right = 742, top = 16, bottom = 192;
+  const observations = series.flatMap((item) => item.observations);
+  const years = [...new Set(observations.map(marketYear))].sort((a, b) => a - b);
+  const values = observations.map((item) => Number(item.metric_value));
+  const rawMin = Math.min(0, ...values), rawMax = Math.max(1, ...values);
+  const padding = (rawMax - rawMin) * 0.08;
+  const min = rawMin < 0 ? rawMin - padding : 0;
+  const max = rawMax + padding;
+  const y = (value) => bottom - ((Number(value) - min) / (max - min)) * (bottom - top);
+  const x = (yearIndex) => years.length < 2 ? (left + right) / 2 : left + yearIndex * (right - left) / (years.length - 1);
+  const palette = ["#2868c7", "#2d9870", "#8761bd"];
+  const grids = Array.from({length: 4}, (_, index) => {
+    const value = min + (max - min) * index / 3;
+    const yy = y(value);
+    return `<g><line x1="${left}" y1="${yy}" x2="${right}" y2="${yy}" class="market-gridline"/><text x="${left - 9}" y="${yy + 4}" text-anchor="end" class="market-axis-label">${escapeHtml(formatFinancialValue(value))}</text></g>`;
+  }).join("");
+  const xLabels = years.map((year, index) => `<text x="${x(index)}" y="${bottom + 23}" text-anchor="middle" class="market-axis-label">FY ${year}</text>`).join("");
+  let marks = "";
+  if (kind === "grouped-bar") {
+    const clusterWidth = Math.min(48, (right - left) / Math.max(years.length, 1) * 0.48);
+    marks = series.map((entry, seriesIndex) => entry.observations.map((item) => {
+      const yearIndex = years.indexOf(marketYear(item));
+      const center = x(yearIndex);
+      const offset = (seriesIndex - (series.length - 1) / 2) * (clusterWidth / series.length);
+      const barWidth = clusterWidth / series.length - 3;
+      const zero = y(0), valueY = y(item.metric_value);
+      return `<rect x="${center + offset - barWidth / 2}" y="${Math.min(zero, valueY)}" width="${barWidth}" height="${Math.max(1, Math.abs(zero - valueY))}" rx="3" fill="${palette[seriesIndex % palette.length]}"><title>${escapeHtml(entry.label)} · FY ${escapeHtml(item.fiscal_year)}: ${escapeHtml(formatBusinessMetricValue(item))} ${escapeHtml(item.unit)}</title></rect>`;
+    }).join("")).join("");
+  } else {
+    marks = series.map((entry, seriesIndex) => {
+      const points = entry.observations.map((item) => `${x(years.indexOf(marketYear(item)))},${y(item.metric_value)}`).join(" ");
+      const line = `<polyline points="${points}" fill="none" stroke="${palette[seriesIndex % palette.length]}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+      const dots = entry.observations.map((item) => `<circle cx="${x(years.indexOf(marketYear(item)))}" cy="${y(item.metric_value)}" r="4.5" fill="${palette[seriesIndex % palette.length]}"><title>${escapeHtml(entry.label)} · FY ${escapeHtml(item.fiscal_year)}: ${escapeHtml(formatBusinessMetricValue(item))} ${escapeHtml(item.unit)}</title></circle>`).join("");
+      return line + dots;
+    }).join("");
+  }
+  const legends = series.map((entry, index) => `<span><i style="--legend-color:${palette[index % palette.length]}"></i>${escapeHtml(entry.label)}</span>`).join("");
+  const units = [...new Set(observations.map((item) => item.unit).filter(Boolean))];
+  return `<figure class="market-figure"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(series.map((entry) => entry.label).join(" and "))} by fiscal year">${grids}<line x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}" class="market-axis"/>${marks}${xLabels}</svg><figcaption class="market-legend">${legends}<span class="market-chart-unit">${escapeHtml(units.join(" / "))}</span></figcaption></figure>${marketValuesTable(series)}`;
+}
+
+function marketChartUnavailable(element, message) {
+  element.innerHTML = `<div class="market-chart-empty"><strong>Not charted</strong><p>${escapeHtml(message)}</p></div>`;
+}
+
+function renderMarketPerformanceDashboard(items) {
+  const itemByName = (name) => items.filter((item) => item.metric_name === name);
+  const chartOrEmpty = (selector, metricNames, kind) => {
+    const target = $(selector);
+    const aligned = alignMarketSeries(items, metricNames);
+    if (!aligned.length) {
+      marketChartUnavailable(target, "The visible observations do not provide at least two exact, like-for-like periods with matching company, scope, reporting period and unit.");
+      return;
+    }
+    const labeled = aligned.map((observations, index) => ({
+      label: marketMetricLabel(metricNames[index], observations[0]), observations,
+    }));
+    target.innerHTML = renderMarketSvg(labeled, kind);
+  };
+
+  const coreNames = [
+    "domestic_consolidated_net_revenue", "overseas_market_net_revenue", "overseas_revenue_share", "export_net_revenue",
+  ];
+  $("#market-core-cards").innerHTML = latestMarketCards(items, coreNames).join("")
+    || '<p class="analysis-empty">No verified core market-performance observations in this selection.</p>';
+  chartOrEmpty("#market-revenue-trend", ["domestic_consolidated_net_revenue", "overseas_market_net_revenue"], "line");
+  chartOrEmpty("#market-revenue-growth", ["domestic_consolidated_net_revenue_growth", "overseas_market_net_revenue_growth"], "grouped-bar");
+
+  const marginDefinitions = [
+    {label: "Domestic", revenue: "domestic_consolidated_net_revenue", profit: "domestic_segment_gross_profit"},
+    {label: "Overseas", revenue: "overseas_market_net_revenue", profit: "overseas_segment_gross_profit"},
+  ];
+  const marginSeries = marginDefinitions.map((segment) => ({
+    label: `${segment.label} gross margin`,
+    observations: marketComparableSeries(pairedMarketMetric(itemByName(segment.revenue), itemByName(segment.profit))),
+  }));
+  const commonMarginYears = marginSeries[0].observations.filter((row) =>
+    marginSeries[1].observations.some((other) => marketYear(other) === marketYear(row)
+      && other.company === row.company && other.unit === row.unit
+      && other.reporting_period === row.reporting_period)
+  );
+  const commonOverseas = marginSeries[1].observations.filter((row) => commonMarginYears.some((other) => marketYear(other) === marketYear(row)));
+  if (commonMarginYears.length < 2 || new Set([...commonMarginYears, ...commonOverseas].map((row) => row.unit)).size !== 1) {
+    marketChartUnavailable($("#market-profitability"), "Verified domestic and overseas gross-profit/revenue pairs do not yet share two comparable years, scope, period and unit.");
+  } else {
+    $("#market-profitability").innerHTML = renderMarketSvg([
+      {label: marginSeries[0].label, observations: commonMarginYears},
+      {label: marginSeries[1].label, observations: commonOverseas},
+    ]);
+  }
+
+  const channelCardNames = ["commercial_export_revenue", "foreign_subsidiary_revenue"];
+  $("#market-channel-cards").innerHTML = latestMarketCards(items, channelCardNames).join("")
+    || '<p class="analysis-empty">No verified international-channel observations in this selection.</p>';
+  chartOrEmpty("#market-channel-trend", ["export_net_revenue", "foreign_subsidiary_revenue"], "grouped-bar");
+  const highlightNames = ["guinea_export_revenue_growth", "hong_kong_export_revenue_growth", "japan_export_revenue_growth"];
+  const highlightCards = latestMarketCards(items, highlightNames);
+  $("#market-market-highlights").innerHTML = highlightCards.length
+    ? `<div class="market-section-heading"><div><p class="eyebrow">SELECTED DISCLOSED MARKETS</p><h4>Export market highlights</h4></div><p>These reported markets are examples, not a ranking of all export destinations.</p></div><div class="market-kpi-grid market-highlight-grid">${highlightCards.join("")}</div>`
+    : "";
+  const footprintNames = ["export_markets_count", "new_export_markets_entered", "export_volume_teu", "export_trade_promotion_programs", "vinamilk_stores", "retail_points_of_sale"];
+  const footprint = latestMarketCards(items, footprintNames);
+  $("#market-footprint").innerHTML = footprint.join("")
+    || '<p class="analysis-empty">No verified market-footprint observations in this selection.</p>';
+  const glossaryNames = ["export_net_revenue", "commercial_export_revenue", "overseas_market_net_revenue", "foreign_subsidiary_revenue"];
+  $("#market-glossary-content").innerHTML = `<p class="market-definition-note">Export net revenue and commercial export revenue are separate reported measures. They are not combined or compared until their source definitions and boundaries are confirmed.</p>` + glossaryNames.map((name) => {
+    const definition = businessMetricDefinitions.get(name);
+    return `<article><h5>${escapeHtml(marketMetricLabels[name] || definition?.label || name)}</h5><p>${escapeHtml(definition?.definition || "Definition not available in catalog.")}</p><small>${escapeHtml(definition?.unit_guidance || "Reported unit")}</small></article>`;
+  }).join("");
+}
+
+const DECISION_DOMAIN_QUESTIONS = {
+  inventory_allocation: [
+    {
+      title: "Where are stockouts and excess inventory concentrated?",
+      question: "Which product categories show the strongest combination of stockout and overstock signals in the latest snapshot, and how do the last three annual inventory summaries compare? Recommend a bounded investigation, not a stock transfer, because warehouse locations, lead times, demand forecasts, and transfer costs are unavailable.",
+    },
+    {
+      title: "What should be checked before reallocating stock?",
+      question: "Should inventory be reallocated toward products with repeated stockout signals? Use only the Commerce inventory aggregates and company references. State the warehouse-level stock, forecast demand, replenishment lead time, transfer cost, and target service level needed before moving stock.",
+    },
+    {
+      title: "Generate conditional inventory actions",
+      question: "Suggest up to three conditional next actions for inventory allocation from the available SQL observations and company practice references. Do not invent numeric thresholds or assume the synthetic dataset represents one company's live warehouse network.",
+    },
+  ],
+  promotion_planning: [
+    {
+      title: "How do promotion-tagged orders compare?",
+      question: "Compare delivered orders, units, net sales, discounts, and the catalog-COGS merchandise gross-profit/margin proxy for promotion-tagged and untagged items in the latest three years. Treat the comparison as descriptive, not causal uplift; explain why the proxy is not contribution margin or ROI and what COGS validation, campaign spend, and holdout data are needed before changing promotion spend.",
+    },
+    {
+      title: "Should we repeat a promotion?",
+      question: "Should the business repeat or expand a promotion based on the available order data? Separate the catalog-COGS gross-profit proxy from contribution margin, explain why causal lift and ROI cannot be established without a holdout and campaign spend, and use a cited company measurement method for the next step.",
+    },
+    {
+      title: "Generate conditional promotion actions",
+      question: "Suggest up to three conditional next actions for promotion planning. Do not call tagged-versus-untagged differences uplift, treat the catalog-COGS proxy as contribution margin, set an unsourced discount threshold, or recommend scaling without causal and campaign-cost evidence.",
+    },
+  ],
+  nationwide_logistics: [
+    {
+      title: "Which regions have longer transit times?",
+      question: "Compare average and median ship-to-delivery time and shipping fees by dataset region for the latest three years. Recommend where to investigate, but do not infer a carrier, route, warehouse cause, or SLA breach from these aggregates.",
+    },
+    {
+      title: "Would regional inventory placement help?",
+      question: "Should the business consider regional inventory placement to improve delivery speed or cost? Compare available regional transit evidence with cited company practices, then identify the warehouse origin, route, capacity, carrier, demand, and cost data needed before a pilot.",
+    },
+    {
+      title: "Generate conditional logistics actions",
+      question: "Suggest up to three conditional next actions for nationwide logistics from the SQL observations and company references. Do not recommend network redesign from regional averages alone.",
+    },
+  ],
+};
+
+function renderDecisionDomainQuestions(domain) {
+  const container = $("#decision-domain-questions");
+  if (!container) return;
+  container.innerHTML = (DECISION_DOMAIN_QUESTIONS[domain] || []).map(({ title, question }) =>
+    `<button type="button" data-decision-question="${escapeHtml(question)}"><strong>${escapeHtml(title)}</strong><small>Select to load this question into the editor; review it before submitting.</small></button>`
+  ).join("");
+}
+
 function renderAnalytics(data) {
   analyticsSnapshot = data;
   const companySelect = $("#analytics-company");
   const yearSelect = $("#analytics-year");
-  const domainSelect = $("#analytics-domain");
+  const domainSelect = $("#commerce-decision-domain");
   const metricScopeSelect = $("#analytics-metric-scope");
   const selectedCompany = companySelect.value;
   const selectedYear = yearSelect.value;
@@ -396,14 +1108,20 @@ function renderAnalytics(data) {
   ].filter(Boolean).map(String))].sort();
   companySelect.innerHTML = '<option value="">All companies</option>' + companies.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");
   yearSelect.innerHTML = '<option value="">All years</option>' + years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`).join("");
-  const domains = [...new Set((data.business_metrics || []).map((item) => item.domain).filter(Boolean))].sort();
-  domainSelect.innerHTML = '<option value="">All domains</option>' + domains.map((domain) =>
-    `<option value="${escapeHtml(domain)}">${escapeHtml(domain.replaceAll("_", " "))}</option>`
+  const domains = decisionReadyBusinessDomains(data.business_metrics);
+  const domainLabels = {
+    milk_supply: "Raw Milk Supply Management",
+    market_performance: "Domestic vs International Market Performance (Trial)",
+  };
+  domainSelect.innerHTML = domains.map((domain) =>
+    `<option value="${escapeHtml(domain)}">${escapeHtml(domainLabels[domain] || domain.replaceAll("_", " "))}</option>`
   ).join("");
   companySelect.value = companies.includes(selectedCompany) ? selectedCompany : "";
   yearSelect.value = years.includes(selectedYear) ? selectedYear : "";
   domainSelect.value = domains.includes(selectedDomain) ? selectedDomain
-    : domains.includes("market_performance") ? "market_performance" : "";
+    : domains.includes("milk_supply") ? "milk_supply" : domains[0] || "";
+  const suggestionButton = document.querySelector("[data-decision-suggestions]");
+  if (suggestionButton) suggestionButton.disabled = !domainSelect.value;
   metricScopeSelect.value = metricScopeSelect.value || "primary";
   companySelect.onchange = yearSelect.onchange = domainSelect.onchange = metricScopeSelect.onchange = applyAnalyticsFilters;
   applyAnalyticsFilters();
@@ -415,6 +1133,13 @@ function applyAnalyticsFilters() {
   const year = $("#analytics-year").value;
   const domain = $("#analytics-domain").value;
   const metricScope = $("#analytics-metric-scope").value;
+  const isMarketPerformance = domain === "market_performance";
+  $("#market-performance-dashboard").hidden = !isMarketPerformance;
+  $("#business-metric-gallery").hidden = isMarketPerformance;
+  $("#business-metric-scope-control").hidden = isMarketPerformance;
+  $("#business-metric-title").textContent = isMarketPerformance
+    ? "Market Performance"
+    : domain === "milk_supply" ? "Raw Milk Supply Management" : "Business performance by decision domain";
   const matches = (item) => (!company || item.company === company) && (!year || String(item.fiscal_year ?? "") === year);
   const businessMatches = (item) => matches(item) && (!domain || item.domain === domain);
   const companyYearBusinessMetrics = (analyticsSnapshot.business_metrics || []).filter(matches);
@@ -440,8 +1165,9 @@ function applyAnalyticsFilters() {
     button.hidden = required.some((name) => !roleVisibleMetricNames.has(name))
       || (Boolean(domain) && requiredDomains.some((requiredDomain) => requiredDomain !== domain));
   });
-  const metricGroups = data.financial.reduce((groups, item) => {
-    const key = `${item.company}:${item.metric_name}`;
+  const metricGroups = data.financial.reduce((groups, sourceItem) => {
+    const item = financialDisplayItem(sourceItem);
+    const key = `${item.company}:${item.metric_name}:${item.unit || "unknown unit"}`;
     (groups[key] ??= []).push(item);
     return groups;
   }, {});
@@ -453,9 +1179,7 @@ function applyAnalyticsFilters() {
   const reports = data.documents.filter((item) => item.document_type === "annual_report");
   const reportYears = [...new Set(reports.map((item) => String(item.fiscal_year || "")).filter(Boolean))].sort();
   const verifiedMetrics = [...data.financial, ...businessDisplayMetrics];
-  const verifiedSeries = new Set(verifiedMetrics.map((item) =>
-    `${item.company}:${item.domain || "financial"}:${item.metric_name}`
-  ));
+  const verifiedSeries = new Set(verifiedMetrics.map((item) => metricSeriesKey(financialDisplayItem(item))));
   const verifiedYears = [...new Set(verifiedMetrics.map((item) => String(item.fiscal_year)))].sort();
   $("#analysis-summary").innerHTML = [
     ["Annual reports in scope", reports.length, reportYears.join(" · ") || "No fiscal year recorded"],
@@ -480,7 +1204,7 @@ function applyAnalyticsFilters() {
     const definitionDetails = definition?.definition
       ? `<details class="candidate-source"><summary>Metric definition</summary><p>${escapeHtml(definition.definition)}</p><small>${escapeHtml(definition.unit_guidance || "Use the reported source unit")}</small></details>`
       : "";
-    return `<article class="financial-card"><span>${escapeHtml(latest.metric_label)}</span><strong>${formatFinancialValue(latest.metric_value)} <small>${escapeHtml(latest.unit)}</small></strong><em class="${isNegative ? "negative" : ""}">FY ${escapeHtml(latest.fiscal_year)} · ${comparison}</em>${definitionDetails}${provenance}</article>`;
+    return `<article class="financial-card"><span>${escapeHtml(latest.metric_label)}</span><strong>${formatFinancialValue(latest.metric_value)} <small>${escapeHtml(latest.unit)}</small></strong><em class="${isNegative ? "negative" : ""}">FY ${escapeHtml(latest.fiscal_year)} · ${comparison}</em>${definitionDetails}${provenance}${metricSourceChunkInspectButton(latest.document_id, latest.source_chunk_id, latest.source_chunk_index)}</article>`;
   }).join("") : '<p class="analysis-empty"><strong>No verified financial results for this selection</strong><span>Unreviewed extraction candidates are excluded. Admins can validate source evidence in Document processing.</span></p>';
 
   const comparisons = metrics.flatMap((series) => {
@@ -495,7 +1219,7 @@ function applyAnalyticsFilters() {
     return [`<article class="insight-row"><div class="insight-mark">${change >= 0 ? "+" : "-"}</div><div><strong>${escapeHtml(latest.metric_label)} ${change >= 0 ? "increased" : "decreased"} by ${formatFinancialValue(Math.abs(change))} ${escapeHtml(latest.unit)}${percent === null ? "" : ` (${formatFinancialValue(Math.abs(percent))}%)`}</strong><span>Reported change from FY ${escapeHtml(previous.fiscal_year)} to FY ${escapeHtml(latest.fiscal_year)} · ${source}</span></div></article>`];
   });
   if (comparisons.length) {
-    $("#financial-insights").innerHTML = `<div class="insight-list">${comparisons.join("")}</div><p class="analysis-caveat">These are reported period-to-period changes. They describe the figures and do not establish why they changed.</p>`;
+    $("#financial-insights").innerHTML = `<div class="insight-list">${comparisons.join("")}</div><p class="analysis-caveat">Reported VND, million VND and billion VND observations are normalized to billion VND for comparison; source quotes retain the originally reported units. Period-to-period changes describe the figures and do not establish why they changed.</p>`;
   } else {
     const pending = (data.candidates || []).length;
     const reportScope = reportYears.length ? `Annual reports in this selection: ${reportYears.join(", ")}. ` : "No annual report is available in this selection. ";
@@ -507,7 +1231,7 @@ function applyAnalyticsFilters() {
     return `<article class="trend-card"><h4>${escapeHtml(series[0].metric_label)} · ${escapeHtml(series[0].unit)}</h4><div class="trend-bars">${series.map((item) => { const href = validSourceUrl(item.source_url); const source = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" aria-label="Open source page ${item.page_number}">Source</a>` : ""; const ratio = Math.abs(Number(item.metric_value)) / max; return `<div class="trend-point"><strong>${formatFinancialValue(item.metric_value)}</strong><i style="--bar-ratio:${ratio}" role="img" aria-label="FY ${escapeHtml(item.fiscal_year)} value ${formatFinancialValue(item.metric_value)} ${escapeHtml(item.unit)}"></i><span>FY ${escapeHtml(item.fiscal_year)}</span>${source}</div>`; }).join("")}</div></article>`;
   }).join("");
   const businessGroups = businessDisplayMetrics.reduce((groups, item) => {
-    const key = `${item.company}:${item.domain}:${item.metric_name}`;
+    const key = metricSeriesKey(item);
     (groups[key] ??= []).push(item);
     return groups;
   }, {});
@@ -515,6 +1239,7 @@ function applyAnalyticsFilters() {
     series.sort((a, b) => Number(a.fiscal_year) - Number(b.fiscal_year)
       || (a.reporting_period === "H1" ? -1 : b.reporting_period === "H1" ? 1 : 0))
   );
+  if (isMarketPerformance) renderMarketPerformanceDashboard(scopedBusinessMetrics);
   $("#business-metric-kpis").innerHTML = businessSeries.length
     ? businessSeries.map((series) => {
       const latest = series.at(-1);
@@ -523,13 +1248,18 @@ function applyAnalyticsFilters() {
       const source = uploadedSourcePageUrl(latest.source_document_id, latest.page_number)
         || sourcePageUrl(latest.source_url, latest.page_number);
       const comparable = previous && previous.unit === latest.unit
+        && previous.scope === latest.scope
         && previous.value_qualifier === "exact" && latest.value_qualifier === "exact"
         && (previous.reporting_period || "FY") === (latest.reporting_period || "FY");
       const change = comparable
         ? latest.unit === "%"
           ? ` · ${formatFinancialValue(Number(latest.metric_value) - Number(previous.metric_value))} percentage points vs ${escapeHtml(formatBusinessMetricPeriod(previous))}`
           : ` · ${formatFinancialValue((Number(latest.metric_value) - Number(previous.metric_value)) / Math.abs(Number(previous.metric_value) || 1) * 100)}% vs ${escapeHtml(formatBusinessMetricPeriod(previous))}`
-        : " · one verified reporting period";
+        : previous && previous.scope !== latest.scope
+          ? " · reported scope differs; change not compared"
+          : previous && (previous.value_qualifier !== "exact" || latest.value_qualifier !== "exact")
+            ? " · value qualifier prevents a direct change comparison"
+            : " · one verified reporting period";
       const parserProvenance = latest.extraction_method ? `${latest.extraction_method}${latest.extractor_version ? ` · ${latest.extractor_version}` : ""}${Number.isInteger(latest.source_chunk_index) ? ` · indexed chunk ${latest.source_chunk_index}` : ""}` : "Manual/source-research entry";
       const visualEvidence = latest.extraction_config?.visual_label
         ? `<p>Visual source label: ${escapeHtml(latest.extraction_config.visual_label)}${latest.extraction_config.source_scope ? ` · ${escapeHtml(latest.extraction_config.source_scope)}` : ""}</p>`
@@ -538,7 +1268,7 @@ function applyAnalyticsFilters() {
       const definitionDetails = definition?.definition
         ? `<details class="candidate-source"><summary>Metric definition</summary><p>${escapeHtml(definition.definition)}</p><small>Typical unit: ${escapeHtml(definition.unit_guidance || latest.unit)}</small></details>`
         : "";
-      return `<article class="financial-card"><span>${escapeHtml(latest.domain.replaceAll("_", " "))} · ${escapeHtml(latest.metric_label)}</span><strong>${formatBusinessMetricValue(latest)} <small>${escapeHtml(latest.unit)}</small></strong><em>${escapeHtml(formatBusinessMetricPeriod(latest))}${change}</em><small>${scope}</small>${definitionDetails}${source ? `<a href="${escapeHtml(source)}" target="_blank" rel="noopener noreferrer">Source · page ${escapeHtml(latest.page_number)}</a>` : ""}<details class="candidate-source"><summary>Source excerpt</summary>${visualEvidence}<blockquote>${escapeHtml(latest.source_quote)}</blockquote><small>Verified by ${escapeHtml(latest.verified_by || "administrator")} · ${escapeHtml(parserProvenance)}</small></details></article>`;
+      return `<article class="financial-card"><span>${escapeHtml(latest.domain.replaceAll("_", " "))} · ${escapeHtml(latest.metric_label)}</span><strong>${formatBusinessMetricValue(latest)} <small>${escapeHtml(latest.unit)}</small></strong><em>${escapeHtml(formatBusinessMetricPeriod(latest))}${change}</em><small>${scope}</small>${definitionDetails}${source ? `<a href="${escapeHtml(source)}" target="_blank" rel="noopener noreferrer">Source · page ${escapeHtml(latest.page_number)}</a>` : ""}<details class="candidate-source"><summary>Source excerpt</summary>${visualEvidence}<blockquote>${escapeHtml(latest.source_quote)}</blockquote><small>Verified by ${escapeHtml(latest.verified_by || "administrator")} · ${escapeHtml(parserProvenance)}</small></details>${metricSourceChunkInspectButton(latest.source_document_id, latest.source_chunk_id, latest.source_chunk_index)}</article>`;
     }).join("")
     : '<p class="analysis-empty"><strong>No verified business metrics for this selection yet</strong><span>Source-backed observations remain in the admin review queue and appear here only after verification.</span></p>';
   $("#business-metric-trends").innerHTML = businessSeries.filter((series) =>
@@ -547,7 +1277,12 @@ function applyAnalyticsFilters() {
         || businessMetricDefinitions.get(series[0].metric_name)?.decision_priority === "primary")
   ).map((series) => {
     const max = Math.max(1, ...series.map((item) => Math.abs(Number(item.metric_value))));
-    return `<article class="trend-card"><h4>${escapeHtml(series[0].domain.replaceAll("_", " "))} · ${escapeHtml(series[0].metric_label)} · ${escapeHtml(series[0].unit)}</h4><div class="trend-bars">${series.map((item) => {
+    const scopeOrQualifierVaries = new Set(series.map((item) => item.scope)).size > 1
+      || new Set(series.map((item) => item.value_qualifier)).size > 1;
+    const periodLabel = series[0].reporting_period || "FY";
+    const comparisonNote = scopeOrQualifierVaries
+      ? '<p class="analysis-caveat">Reported scope or value qualifier varies across periods; inspect the source evidence before comparing.</p>' : "";
+    return `<article class="trend-card"><h4>${escapeHtml(series[0].domain.replaceAll("_", " "))} · ${escapeHtml(series[0].metric_label)} · ${escapeHtml(series[0].unit)} · ${escapeHtml(periodLabel)}</h4>${comparisonNote}<div class="trend-bars">${series.map((item) => {
       const source = uploadedSourcePageUrl(item.source_document_id, item.page_number)
         || sourcePageUrl(item.source_url, item.page_number);
       const ratio = Math.abs(Number(item.metric_value)) / max;
@@ -611,9 +1346,14 @@ function applyAnalyticsFilters() {
 }
 
 function renderCandidates(data) {
+  const inScopeBusinessCandidates = (data.business_candidates || []).filter((item) =>
+    ["milk_supply", "market_performance"].includes(
+      item.domain || businessMetricDefinitions.get(item.metric_name)?.domain
+    )
+  );
   const candidates = [
     ...(data.candidates || []),
-    ...(data.business_candidates || []).map((item) => ({
+    ...inScopeBusinessCandidates.map((item) => ({
       ...item, document_id: item.source_document_id,
       candidate_kind: "business", title: item.source_document_id,
       source_note: item.scope, candidate_values: [item.normalized_value],
@@ -738,9 +1478,63 @@ function renderDashboardVisualization(visualization) {
   return `<section class="answer-visualization"><h3>${escapeHtml(visualization.title || "Verified financial trend")}</h3>${charts}<p class="chart-note">Values come from verified, role-visible source metrics. Exact amounts and citations are listed in the response above.</p></section>`;
 }
 
+function renderAnswerBody(answer) {
+  const lines = String(answer || "").split(/\r?\n/);
+  const blocks = [];
+  let paragraph = [];
+  const inline = (value) => escapeHtml(value)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>");
+  const cells = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "")
+    .split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, "|"));
+  const isRow = (line) => /^\s*\|.*\|\s*$/.test(line);
+  const isDivider = (line) => isRow(line)
+    && cells(line).every((cell) => /^:?-{3,}:?$/.test(cell));
+  const flushParagraph = () => {
+    if (paragraph.length) blocks.push(`<p>${paragraph.map(inline).join("<br>")}</p>`);
+    paragraph = [];
+  };
+
+  for (let index = 0; index < lines.length;) {
+    if (isRow(lines[index]) && isDivider(lines[index + 1] || "")) {
+      flushParagraph();
+      const headings = cells(lines[index]);
+      index += 2;
+      const rows = [];
+      while (index < lines.length && isRow(lines[index])) rows.push(cells(lines[index++]));
+      const header = headings.map((cell) => `<th scope="col">${inline(cell)}</th>`).join("");
+      const body = rows.map((row) => `<tr>${headings.map((_, column) =>
+        `<td>${inline(row[column] || "")}</td>`).join("")}</tr>`).join("");
+      blocks.push(`<div class="commerce-table-wrap answer-markdown-table"><table aria-label="Answer details"><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div>`);
+      continue;
+    }
+    if (!lines[index].trim()) flushParagraph();
+    else paragraph.push(lines[index]);
+    index += 1;
+  }
+  flushParagraph();
+  return blocks.join("");
+}
+
 function renderAnswer(data, panel = $("#answer-panel")) {
   panel.hidden = false;
   const citations = Array.isArray(data.citations) ? data.citations : [];
+  const decisionModeNote = data.generation_provider === "deterministic_safety_fallback"
+    ? '<p class="analysis-caveat answer-provenance-note" role="note"><strong>Audit-first safety fallback.</strong> The model draft did not pass grounding checks. This response uses verified KPIs to define the next evidence-gathering steps and does not select a specific intervention.</p>'
+    : "";
+  const referenceRetrievalNote = data.decision_reference_retrieval_limited
+    ? '<p class="analysis-caveat answer-provenance-note" role="note"><strong>Document retrieval was temporarily rate-limited.</strong> This recommendation uses SQL and schema evidence only; no operating document could be checked for this answer.</p>'
+    : "";
+  const questionSqlFallbackNotes = {
+    provider_rate_limited: "The model provider was rate-limited while generating question-specific SQL.",
+    provider_unavailable: "The model provider was unavailable while generating question-specific SQL.",
+    query_rejected: "Generated SQL did not pass the safety checks.",
+    no_question_rows: "The question-specific query returned no rows.",
+    requested_dimension_unavailable: "The requested reporting dimension is not in this domain's approved schema.",
+  };
+  const questionSqlFallbackNote = questionSqlFallbackNotes[data.question_sql_fallback]
+    ? `<p class="analysis-caveat answer-provenance-note" role="note"><strong>Using bounded Commerce aggregates.</strong> ${questionSqlFallbackNotes[data.question_sql_fallback]} This answer may not reflect the exact filters or grouping in your question.</p>`
+    : "";
   panel.innerHTML = `
     <div class="answer-header-wrap">
       <div class="answer-heading">
@@ -751,7 +1545,10 @@ function renderAnswer(data, panel = $("#answer-panel")) {
         <button type="button" class="action-btn" id="copy-answer-btn" title="Copy response text">Copy</button>
       </div>
     </div>
-    <div class="answer-text">${escapeHtml(data.answer)}</div>
+    ${decisionModeNote}
+    ${referenceRetrievalNote}
+    ${questionSqlFallbackNote}
+    <div class="answer-text">${renderAnswerBody(data.answer)}</div>
     ${renderDashboardVisualization(data.data?.visualization)}
     ${data.citation_validation_failed ? '<p class="error-message">Relevant passages were found, but citation verification did not meet the strict confidence threshold.</p>' : citations.length ? `
       <div class="citations">
@@ -764,12 +1561,29 @@ function renderAnswer(data, panel = $("#answer-panel")) {
             || validSourceUrl(source.source_url);
           const link = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View original</a>` : "";
           const chunk = Number.isInteger(source.chunk_index) ? ` · Indexed chunk ${source.chunk_index}` : "";
-          const location = source.page_number ? `Page ${source.page_number}${chunk}` : `Passage ${source.chunk_index + 1}`;
+          const location = source.page_number ? `Page ${source.page_number}${chunk}`
+            : source.source_type === "commerce_sql" ? `SQL aggregate · ${(source.source_tables || []).join(", ")}`
+              : source.source_type === "commerce_schema" ? `Schema coverage · ${(source.source_tables || []).join(", ")}`
+              : Number.isInteger(source.chunk_index) ? `Passage ${source.chunk_index + 1}` : "Reference";
           const relevanceScore = Number.isFinite(source.score) ? source.score * 100 : null;
           const scoreClass = relevanceScore && relevanceScore >= 80 ? "high" : relevanceScore && relevanceScore >= 60 ? "med" : "low";
           const relevanceBadge = relevanceScore !== null
             ? `<span class="citation-relevance-meter ${scoreClass}">Relevance: ${relevanceScore.toFixed(1)}%</span>`
             : "";
+          const referenceScope = source.reference_applicability
+            ? `<p class="citation-scope"><strong>Source scope:</strong> ${escapeHtml(source.reference_applicability)}</p>`
+            : "";
+          const sqlTrace = source.sql_query
+            ? `<details class="citation-sql-trace"><summary>Inspect generated SQL</summary><pre>${escapeHtml(source.sql_query)}</pre></details>`
+            : "";
+          const observationTrace = source.source_type === "commerce_sql"
+            ? renderCommerceEvidence(source.commerce_observations, source.commerce_observation_group)
+            : "";
+          const sourceExcerpt = source.source_type === "commerce_sql"
+            && Array.isArray(source.commerce_observations) && source.commerce_observations.length
+            ? ""
+            : `<p>${escapeHtml(source.excerpt)}</p>`;
+          const publisher = source.source_publisher || source.company || "Verified source";
           return `
             <article class="citation">
               <div class="citation-title">
@@ -777,9 +1591,12 @@ function renderAnswer(data, panel = $("#answer-panel")) {
                 <strong>${escapeHtml(source.title)}</strong>
                 <span>${escapeHtml(location)}</span>
               </div>
-              <p>${escapeHtml(source.excerpt)}</p>
+              ${referenceScope}
+              ${sourceExcerpt}
+              ${observationTrace}
+              ${sqlTrace}
               <div class="citation-foot">
-                <span>${escapeHtml(source.company || "Verified source")}</span>
+                <span>${escapeHtml(publisher)}${source.evidence_class ? ` · ${escapeHtml(source.evidence_class.replaceAll("_", " "))}` : ""}</span>
                 ${relevanceBadge}
                 ${link}
               </div>
@@ -898,6 +1715,62 @@ async function api(path, options = {}) {
   return data;
 }
 
+async function loadCommerceDashboardForActiveView() {
+  const view = document.querySelector('[data-commerce-view][aria-selected="true"]')?.dataset.commerceView || "inventory";
+  const domainByView = {
+    inventory: "inventory_allocation",
+    promotions: "promotion_planning",
+    logistics: "nationwide_logistics",
+  };
+  const domain = domainByView[view];
+  if (!domain || commerceLoadedDomains.has(domain) || commerceLoadingDomains.has(domain)) return;
+  commerceLoadingDomains.add(domain);
+  const status = $("#commerce-dashboard-status");
+  status.textContent = `Loading ${view} data…`;
+  status.hidden = false;
+  const isCurrentView = () => activeTab === "analytics"
+    && domainByView[document.querySelector('[data-commerce-view][aria-selected="true"]')?.dataset.commerceView || "inventory"] === domain;
+  try {
+    const data = await api(`/api/commerce/dashboard?domain=${encodeURIComponent(domain)}`);
+    commerceSnapshot = { ...(commerceSnapshot || {}), ...data };
+    commerceLoadedDomains.add(domain);
+    renderCommerceDashboard(commerceSnapshot);
+    if (isCurrentView()) status.hidden = true;
+    if (domain === "promotion_planning" && $("#commerce-campaign-details").open) loadCommerceCampaigns();
+  } catch (error) {
+    if (isCurrentView()) {
+      status.textContent = `Could not load ${view} data: ${error.message}`;
+      status.hidden = false;
+    }
+  } finally {
+    commerceLoadingDomains.delete(domain);
+  }
+}
+
+async function loadCommerceCampaigns() {
+  if (!commerceLoadedDomains.has("promotion_planning") || commerceCampaignsLoaded || commerceCampaignsLoading) return;
+  commerceCampaignsLoading = true;
+  const status = $("#commerce-dashboard-status");
+  status.textContent = "Loading campaign results…";
+  status.hidden = false;
+  try {
+    const data = await api("/api/commerce/dashboard?domain=promotion_planning&detail=campaigns");
+    commerceSnapshot = { ...(commerceSnapshot || {}), ...data };
+    commerceCampaignsLoaded = true;
+    renderCommerceDashboard(commerceSnapshot);
+    if (activeTab === "analytics" && document.querySelector('[data-commerce-view="promotions"]')?.getAttribute("aria-selected") === "true") {
+      status.hidden = true;
+    }
+  } catch (error) {
+    if (activeTab === "analytics" && document.querySelector('[data-commerce-view="promotions"]')?.getAttribute("aria-selected") === "true") {
+      status.textContent = `Could not load campaign results: ${error.message}`;
+      status.hidden = false;
+    }
+  } finally {
+    commerceCampaignsLoading = false;
+  }
+}
+
 async function loadWorkspace(user) {
   currentUser = user;
   $("#login-view").hidden = true;
@@ -947,23 +1820,18 @@ async function loadWorkspace(user) {
       const capability = await api("/api/documents/upload-capability");
       $("#upload-section").hidden = !capability.can_upload;
       if (capability.can_upload) {
+        $("#upload-synthetic-policy-option").hidden = user.role !== "admin";
         const { roles } = await api("/api/documents/roles");
         $("#upload-role-options").innerHTML = roles.map((role) => `<label><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}"> ${escapeHtml(role.replaceAll("_", " "))}</label>`).join("");
       }
     } catch {
       $("#upload-section").hidden = true;
     }
-    if (["finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user.role)) {
-      if (!financialMetricDefinitions.size || !businessMetricDefinitions.size) {
-        const [financialCatalog, businessCatalog] = await Promise.all([
-          api("/api/metrics/catalog").catch(() => []),
-          api("/api/business-metrics/catalog").catch(() => []),
-        ]);
-        financialMetricDefinitions = new Map(financialCatalog.map((metric) => [metric.metric_name, metric]));
-        businessMetricDefinitions = new Map(businessCatalog.map((metric) => [metric.metric_name, metric]));
-      }
-      const analytics = await api("/api/analytics");
-      renderAnalytics(analytics);
+    if (["operations", "finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user.role)) {
+      $("#commerce-dashboard").hidden = false;
+      $(".analytics-subtabs").hidden = true;
+      document.querySelectorAll(".analytics-subpanel").forEach((panel) => { panel.hidden = true; });
+      renderDecisionDomainQuestions($("#commerce-decision-domain").value);
       $("#analytics-section").hidden = false;
     }
     if (user.role === "admin") {
@@ -972,6 +1840,7 @@ async function loadWorkspace(user) {
       $("#admin-section").hidden = false;
       $("#monitoring-section").hidden = false;
       await refreshAgentMonitoring();
+      await refreshKnowledgeDocuments();
     }
     if (user.role === "admin") await loadOcrTestRuns();
     syncWorkspaceTabs(user);
@@ -1002,16 +1871,51 @@ $("#workspace-tabs").addEventListener("keydown", (event) => {
   selectWorkspaceTab(tabs[next].dataset.tabTarget);
 });
 
+$("#knowledge-documents-search").addEventListener("input", renderKnowledgeDocuments);
+$("#knowledge-documents-refresh").addEventListener("click", async () => {
+  try { await refreshKnowledgeDocuments(); }
+  catch (error) { $("#knowledge-documents-status").textContent = error.message; }
+});
+$("#knowledge-documents-list").addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-knowledge-toggle]");
+  if (!button) return;
+  const active = button.dataset.active === "true";
+  const documentId = button.dataset.knowledgeToggle;
+  const action = active ? "Remove this source from AI retrieval? Its file and metrics will be retained." : "Restore this source to AI retrieval?";
+  if (!window.confirm(action)) return;
+  button.disabled = true;
+  try {
+    await api(`/api/admin/knowledge-documents/${encodeURIComponent(documentId)}`, {
+      method: "PATCH", body: JSON.stringify({active: !active}),
+    });
+    await refreshKnowledgeDocuments();
+  } catch (error) {
+    $("#knowledge-documents-status").textContent = error.message;
+    button.disabled = false;
+  }
+});
+
 $("#parsed-chunk-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const documentId = $("#parsed-document").value;
   const offset = Math.max(0, Number.parseInt($("#parsed-offset").value || "0", 10));
+  const focusChunkIndex = Number.parseInt(event.currentTarget.dataset.focusChunk || "", 10);
+  const stage = event.currentTarget.dataset.stage || "parser";
+  const sourceChunkId = Number.parseInt(event.currentTarget.dataset.sourceChunkId || "", 10);
+  delete event.currentTarget.dataset.focusChunk;
+  delete event.currentTarget.dataset.stage;
+  delete event.currentTarget.dataset.sourceChunkId;
   $("#parsed-chunk-list").innerHTML = '<p class="loading-card">Loading saved parser output…</p>';
   $("#parsed-table-list").innerHTML = '<p class="loading-card">Loading extracted tables…</p>';
   try {
-    const result = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/chunks?offset=${offset}&limit=25`);
-    renderParsedChunks(result.chunks);
+    const sourceChunkParameter = Number.isInteger(sourceChunkId) && sourceChunkId > 0
+      ? `&source_chunk_id=${sourceChunkId}` : "";
+    const result = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/chunks?offset=${offset}&limit=25&stage=${stage}${sourceChunkParameter}`);
+    renderParsedChunks(result.chunks, documentId);
     $("#parsed-chunk-list").insertAdjacentHTML("afterbegin", `<p class="corpus-note">Showing ${result.stage === "parser" ? "saved parser output before embeddings" : "indexed retrieval chunks after embeddings"}.</p>`);
+    if (Number.isInteger(focusChunkIndex)) {
+      requestAnimationFrame(() => document.getElementById(`document-chunk-${focusChunkIndex}`)?.scrollIntoView({behavior: "smooth", block: "center"}));
+    }
   } catch (error) {
     $("#parsed-chunk-list").innerHTML = `<p class="loading-card">${escapeHtml(error.message)}</p>`;
   }
@@ -1023,7 +1927,7 @@ $("#parsed-chunk-form").addEventListener("submit", async (event) => {
   }
   try {
     const result = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/tables?row_limit=100`);
-    renderExtractedTables(result.tables);
+    renderExtractedTables(result.tables, documentId);
   } catch (error) {
     $("#parsed-table-list").innerHTML = error.status === 404
       ? '<p class="loading-card">No structured tables were extracted from this document.</p>'
@@ -1055,6 +1959,7 @@ $("#business-metric-replay-form").addEventListener("submit", async (event) => {
 
 $("#ocr-test-form").addEventListener("submit", async (event) => {
   event.preventDefault();
+  const form = event.currentTarget;
   const button = $("#ocr-test-button");
   button.disabled = true;
   $("#ocr-test-status").textContent = "Running OCR and saving page previews, chunks, and tables…";
@@ -1063,7 +1968,7 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
     $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.chunk_count} chunks, ${result.table_count} tables. No embeddings or production document were created.`;
     await loadOcrTestRuns();
     await openOcrTestRun(result.run_id);
-    event.currentTarget.reset();
+    form.reset();
   } catch (error) {
     $("#ocr-test-status").textContent = error.message;
   } finally {
@@ -1095,6 +2000,11 @@ $("#logout-button").addEventListener("click", async () => {
   $("#user-badge").hidden = true;
   $("#logout-button").hidden = true;
   activeTab = "knowledge";
+  commerceSnapshot = null;
+  commerceLoadedDomains.clear();
+  commerceLoadingDomains.clear();
+  commerceCampaignsLoaded = false;
+  commerceCampaignsLoading = false;
   syncWorkspaceTabs();
 });
 
@@ -1173,17 +2083,22 @@ $("#ask-form").addEventListener("submit", async (event) => {
 $("#business-question-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const button = $("#business-question-button");
-  const question = $("#business-question").value.trim();
-  const businessDecisionDomain = $("#analytics-domain").value;
+  const decisionSuggestions = decisionSuggestionsPending;
+  decisionSuggestionsPending = false;
+  const question = decisionSuggestions ? "" : $("#business-question").value.trim();
+  const businessDecisionDomain = $("#commerce-decision-domain").value;
   const panel = $("#business-answer-panel");
-  if (!question) return;
+  if ((!decisionSuggestions && question.length < 3) || (decisionSuggestions && !businessDecisionDomain)) return;
   button.disabled = true;
   button.innerHTML = '<span>Analyzing sources…</span>';
-  renderSkeletonAnswer(panel, "Combining verified metrics and source passages within your access scope…");
+  renderSkeletonAnswer(panel, decisionSuggestions
+    ? "Combining recent Commerce SQL observations and company references…"
+    : "Combining Commerce SQL observations and cited company references…");
   try {
     const result = await api("/api/ask", { method: "POST", body: JSON.stringify({
-      question,
+      ...(question ? { question } : {}),
       business_decision_domain: businessDecisionDomain || null,
+      decision_suggestions: decisionSuggestions,
     }) });
     renderAnswer(result, panel);
   } catch (error) {
@@ -1195,18 +2110,48 @@ $("#business-question-form").addEventListener("submit", async (event) => {
 });
 
 $(".decision-question-prompts").addEventListener("click", (event) => {
-  const prompt = event.target.closest("[data-decision-question]");
-  if (!prompt) return;
-  $("#business-question").value = prompt.dataset.decisionQuestion;
-  $("#business-question").focus();
+  const questionPrompt = event.target.closest("[data-decision-question]");
+  if (questionPrompt) {
+    $("#business-question").value = questionPrompt.dataset.decisionQuestion;
+    $("#business-question").focus();
+    return;
+  }
+  if (!event.target.closest("[data-decision-suggestions]")) return;
+  if (!$("#commerce-decision-domain").value) return;
+  decisionSuggestionsPending = true;
+  $("#business-question-form").requestSubmit();
 });
 
 $("#analytics-section").addEventListener("click", (event) => {
+  const inspectButton = event.target.closest("[data-inspect-indexed-chunk]");
+  if (inspectButton) {
+    const documentId = inspectButton.dataset.documentId;
+    const sourceChunkId = Number.parseInt(inspectButton.dataset.sourceChunkId, 10);
+    const chunkIndex = Number.parseInt(inspectButton.dataset.chunkIndex, 10);
+    if (!documentId || !Number.isInteger(sourceChunkId) || sourceChunkId < 1
+        || !Number.isInteger(chunkIndex) || chunkIndex < 0) return;
+    $("#parsed-document").value = documentId;
+    $("#parsed-offset").value = String(Math.floor(chunkIndex / 25) * 25);
+    $("#parsed-chunk-form").dataset.focusChunk = String(chunkIndex);
+    $("#parsed-chunk-form").dataset.stage = "indexed";
+    $("#parsed-chunk-form").dataset.sourceChunkId = String(sourceChunkId);
+    selectWorkspaceTab("processing");
+    $("#parsed-chunk-form").requestSubmit();
+    return;
+  }
   const link = event.target.closest("[data-open-tab]");
   if (link) selectWorkspaceTab(link.dataset.openTab);
 });
 
 $("#monitoring-refresh").addEventListener("click", refreshAgentMonitoring);
+
+$("#upload-synthetic-policy").addEventListener("change", (event) => {
+  if (!event.currentTarget.checked) return;
+  const form = $("#upload-form");
+  form.elements.reference_type.value = "company_policy_reference";
+  form.elements.source_publisher.value = "Commerce Demo (fictional organization)";
+  form.elements.reference_applicability.value = "Fictional Commerce Demo only; not a policy of a real company.";
+});
 
 $("#upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -1214,30 +2159,55 @@ $("#upload-form").addEventListener("submit", async (event) => {
   const button = $("#upload-button");
   const file = $("#upload-file").files[0];
   const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
+  const knowledgeDomains = [...form.querySelectorAll('input[name="knowledge_domains"]:checked')].map((input) => input.value);
+  const referenceType = form.elements.reference_type.value;
+  const publisher = form.elements.source_publisher.value.trim();
+  const applicability = form.elements.reference_applicability.value.trim();
+  const syntheticPolicy = form.elements.synthetic_company_policy.checked;
   if (!file || !roles.length) {
     $("#upload-status").textContent = "Select a supported document and at least one access role.";
     return;
   }
+  if ((referenceType || knowledgeDomains.length) && (!referenceType || !knowledgeDomains.length || !publisher || !applicability)) {
+    $("#upload-status").textContent = "Commerce references need a publisher, reference type, applicability scope, and at least one decision domain.";
+    return;
+  }
+  if (syntheticPolicy && referenceType !== "company_policy_reference") {
+    $("#upload-status").textContent = "A synthetic Commerce Demo document must be classified as a company policy.";
+    return;
+  }
   const body = new FormData();
   body.append("file", file);
-  for (const name of ["title", "document_type", "domain", "business_decision_domain", "fiscal_year", "source_url"]) {
+  for (const name of ["title", "document_type", "domain", "source_publisher", "reference_type", "reference_applicability", "fiscal_year", "source_url"]) {
     const value = form.elements[name].value.trim();
     if (value) body.append(name, value);
   }
+  body.append("synthetic_company_policy", syntheticPolicy ? "true" : "false");
+  knowledgeDomains.forEach((domain) => body.append("knowledge_domains", domain));
   roles.forEach((role) => body.append("allowed_roles", role));
   button.disabled = true;
   $("#upload-status").textContent = "Uploading and processing the document…";
   try {
     const result = await api("/api/documents/upload", { method: "POST", body, headers: {} });
-    const metricStatus = body.get("business_decision_domain")
-      ? ` ${result.business_metric_candidates} ${body.get("business_decision_domain")} candidates await admin review.`
-      : " Business KPI extraction was not requested; parsed content remains searchable.";
+    const referenceStatus = referenceType
+      ? syntheticPolicy
+        ? ` Registered as a synthetic Commerce Demo policy for ${knowledgeDomains.join(", ")} (scope: ${applicability}).`
+        : ` Classified as ${referenceType} for ${knowledgeDomains.join(", ")} (scope: ${applicability}); source is attributed, not treated as Commerce Demo policy.`
+      : " No Commerce decision domain was assigned; parsed content is available to general document search only.";
     const traceStatus = result.business_metric_extraction_run_id
       ? ` Extraction trace ${result.business_metric_extraction_run_id} is available in Document processing.`
       : "";
-    $("#upload-status").textContent = `Processed ${result.document_id}; status: ${result.processing_status}; passages indexed: ${result.searchable}.${metricStatus}${traceStatus}`;
+    const pageSummary = result.page_count ? `${formatNumber(result.page_count)} pages` : "File processed";
+    const extractionSummary = `${formatNumber(result.parser_chunk_count)} parser passages · ${formatNumber(result.indexed_chunk_count)} indexed passages · ${formatNumber(result.ocr_chunk_count)} OCR passages · ${formatNumber(result.table_count)} tables`;
+    $("#upload-status").textContent = `Processed ${result.document_id}; status: ${result.processing_status}; ${pageSummary}; ${extractionSummary}.${referenceStatus}${traceStatus}`;
     form.reset();
     await loadWorkspace(await api("/api/auth/me"));
+    const parsedDocument = $("#parsed-document");
+    if ([...parsedDocument.options].some((option) => option.value === result.document_id)) {
+      parsedDocument.value = result.document_id;
+      selectWorkspaceTab("processing");
+      $("#parsed-chunk-form").requestSubmit();
+    }
   } catch (error) {
     $("#upload-status").textContent = error.message;
   } finally {

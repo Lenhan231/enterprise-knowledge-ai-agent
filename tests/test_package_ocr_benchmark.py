@@ -36,7 +36,7 @@ class PackageOcrBenchmarkTest(unittest.TestCase):
         self.assertEqual(result["dataset_id"], "owner/sample-assets")
         self.assertTrue((project / "data/evaluation/sample.json").is_file())
         self.assertEqual((project / "data/raw/sample.pdf").read_bytes(), self.source.read_bytes())
-        self.assertTrue((project / "scripts/evaluate_ocr.py").is_file())
+        self.assertTrue((project / "scripts/processing/evaluate_ocr.py").is_file())
         metadata = json.loads((self.root / "bundle/dataset-metadata.json").read_text())
         self.assertEqual(metadata["id"], "owner/sample-assets")
         self.assertEqual(metadata["title"], "Sample OCR Diagnostic")

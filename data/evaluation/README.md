@@ -1,8 +1,15 @@
 # Evaluation data
 
-The active work is OCR. Current OCR references, fixtures and extraction cases
-are in [`ocr/`](ocr/); use its cumulative [`vinamilk_ocr_ground_truth_v9.json`](ocr/vinamilk_ocr_ground_truth_v9.json) for the cross-engine benchmark.
+The SQL decision questions are in
+[`commerce_decision_benchmark.json`](commerce_decision_benchmark.json). The
+matching document-level retrieval labels are in
+[`commerce_retrieval_cases.json`](commerce_retrieval_cases.json); they cover the
+same nine cases and reference only active sources in the Commerce manifest.
+Those sources are attributed external practices, not the synthetic dataset's
+company policy. Labels assess retrieval relevance, not answer quality.
 
-Older non-OCR evaluation data is kept under [`archive/`](archive/) by topic so
-previous QA, agent, retrieval and embedding evaluations remain reproducible.
-It is not part of the current OCR workflow.
+The OCR fixtures are two-page, image-only synthetic Commerce Demo PDFs in
+[`ocr/`](ocr/), with separate clean and degraded visual-transcription labels.
+They are for upload/OCR robustness checks only; they cannot rank production OCR
+engines or support business decisions. Archived evaluation files are historical
+and are not the active Commerce benchmark.

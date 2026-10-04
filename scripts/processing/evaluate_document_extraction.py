@@ -455,11 +455,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--cases", type=Path,
-        default=REPO_ROOT / "data/evaluation/vinamilk_document_extraction_cases.json",
+        default=REPO_ROOT / "data/evaluation/ocr/vinamilk_document_extraction_cases.json",
     )
     parser.add_argument(
         "--output", type=Path,
-        default=REPO_ROOT / "artifacts/evaluation/vinamilk-document-extraction-smoke.json",
+        default=REPO_ROOT / "artifacts/evaluation/ocr/pipeline/vinamilk-document-extraction-smoke.json",
     )
     parser.add_argument(
         "--compact", action="store_true",

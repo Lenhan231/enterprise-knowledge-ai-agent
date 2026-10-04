@@ -1,0 +1,635 @@
+{
+  "corpus_id": "commerce-operations-reference-v1",
+  "description": "A benchmark-matched Commerce decision corpus combining attributed public operating references with clearly labeled synthetic demo policies. Synthetic policy PDFs apply only to the fictional Commerce Demo scenario and are not real company policy.",
+  "market": "Vietnam",
+  "sources": [
+    {
+      "source_id": "WMT-STANDARDS-FOR-SUPPLIERS-2024",
+      "retrieval_status": "archived",
+      "publisher": "Walmart Inc.",
+      "title": "Standards for Suppliers (Product Suppliers)",
+      "url": "https://corporate.walmart.com/content/dam/corporate/documents/suppliers/requirements/standards-for-suppliers-english.pdf",
+      "published_or_updated": "2024-02-01",
+      "domains": [
+        "nationwide_logistics"
+      ],
+      "document_type": "corporate_supplier_policy",
+      "evidence_class": "company_practice_reference",
+      "external_policy_reference": true,
+      "source_format": "pdf",
+      "ingestion_status": "indexed",
+      "notes": "Official Walmart supplier policy. Use only as an attributed external example for supplier, product handling, and supply-chain controls; it is not policy for the synthetic Commerce Demo and does not define last-mile network decisions. PDF metadata shows modification on 2024-02-01.",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "PDF",
+      "content_sha256": "d01fbc99fb06ceff038598cb520e33ee4951e44c566c23d86f76d0cb4741dd6a"
+    },
+    {
+      "source_id": "WMT-GFR-SUPPLIER-ONBOARDING-2025",
+      "retrieval_status": "active",
+      "publisher": "Walmart Inc.",
+      "title": "GFR Supplier Onboarding Readiness Checklist",
+      "url": "https://corporate.walmart.com/content/dam/corporate/documents/suppliers/apply-to-be-a-supplier/supplier-checklist.pdf",
+      "published_or_updated": "2025-05-08",
+      "domains": [
+        "inventory_allocation",
+        "nationwide_logistics"
+      ],
+      "document_type": "corporate_supplier_operating_guidance",
+      "evidence_class": "company_practice_reference",
+      "external_policy_reference": true,
+      "source_format": "pdf",
+      "ingestion_status": "indexed",
+      "applicability": "Walmart Goods For Resale supplier onboarding requirements only; Commerce Demo has no identified marketplace and this checklist is not its policy.",
+      "notes": "Official 13-page Walmart Goods For Resale supplier onboarding readiness checklist. It enumerates inventory-feed cadence, facility, daily capacity, delivery lead-time, carrier and dispatch inputs. Use only to inform what operations data a supplier workflow may need; do not apply Walmart eligibility or delivery requirements to Commerce Demo. The PDF is Word-generated and text-based, not a scanned document.",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "PDF",
+      "content_sha256": "cf34ff6a7007ff8adb801066b699faf7886aa93d8ce7e7f6031e19d6eab23938"
+    },
+    {
+      "source_id": "TTS-VN-INVENTORY-2026",
+      "retrieval_status": "archived",
+      "publisher": "TikTok Shop Seller University",
+      "title": "Inventory Management",
+      "url": "https://seller-vn.tiktok.com/university/essay?knowledge_id=6837780085163777&lang=en",
+      "published_or_updated": "2026-05-08",
+      "domains": [
+        "inventory_allocation"
+      ],
+      "document_type": "platform_operating_guidance",
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "evidence_class": "platform_operating_rule",
+      "content_sha256": "aba2329f0bb5658612f4b1023efdd6efae8e7e51ce0eb16a2652f7407a0cc683",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "TTS-VN-PROMO-CAMPAIGN-PERFORMANCE-2025",
+      "retrieval_status": "archived",
+      "publisher": "TikTok Shop Seller University",
+      "title": "Campaign Performance Insights",
+      "url": "https://seller-vn.tiktok.com/university/essay?knowledge_id=8437277152495376&lang=en",
+      "published_or_updated": "2025-04-15",
+      "domains": [
+        "promotion_planning"
+      ],
+      "document_type": "platform_operating_guidance",
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "evidence_class": "platform_operating_rule",
+      "content_sha256": "66c74e75afdd284da5f6dd58136a1526d42e380327121a5bff73fb51a1cde13a",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "TTS-VN-PROMO-DISCOUNT-THRESHOLDS-2025",
+      "retrieval_status": "archived",
+      "publisher": "TikTok Shop Seller University",
+      "title": "Seller-Funded Promotions Discount Threshold Guidelines",
+      "url": "https://seller-vn.tiktok.com/university/essay?knowledge_id=1651976556480273&lang=en",
+      "published_or_updated": "2025-08-28",
+      "domains": [
+        "promotion_planning"
+      ],
+      "document_type": "platform_operating_guidance",
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "evidence_class": "platform_operating_rule",
+      "notes": "Thresholds vary by promotion tool and eligible date; verify the current Seller Center before operational use.",
+      "content_sha256": "e4bbf34c180ed28236145f80c61bf507b897f3c339d0a9bc1abd6cd0d8352979",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "TTS-VN-DELIVERY-POLICY-2026",
+      "retrieval_status": "archived",
+      "publisher": "TikTok Shop Seller University",
+      "title": "Delivery Policy",
+      "url": "https://seller-vn.tiktok.com/university/essay?knowledge_id=8974899868518160&lang=en",
+      "published_or_updated": "2026-08-26",
+      "domains": [
+        "nationwide_logistics"
+      ],
+      "document_type": "platform_operating_guidance",
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "evidence_class": "platform_operating_rule",
+      "content_sha256": "760fd5b0cb2be669f097ea5fdbbb354c554a583889fd7aa079bec0aedfb03d9c",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "TTS-VN-ORDER-SHIPPING-GUIDELINES-2025",
+      "retrieval_status": "archived",
+      "publisher": "TikTok Shop Seller University",
+      "title": "TikTok Shop Customer Order Shipping Guidelines",
+      "url": "https://seller-vn.tiktok.com/university/essay?knowledge_id=10008563&lang=en",
+      "published_or_updated": "2025-08-25",
+      "domains": [
+        "nationwide_logistics"
+      ],
+      "document_type": "platform_operating_guidance",
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "evidence_class": "platform_operating_rule",
+      "content_sha256": "e2e6192828d6d387c27eb7604e7612f305983eca94cad01e4491ca1198693b30",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "TTS-VN-FULFILLMENT-TIMELINES-2025",
+      "retrieval_status": "archived",
+      "publisher": "TikTok Shop Seller University",
+      "title": "Order Fulfillment Timelines (Standard Orders)",
+      "url": "https://seller-vn.tiktok.com/university/essay?knowledge_id=7261258355672849&lang=en",
+      "published_or_updated": "2025-07-15",
+      "domains": [
+        "nationwide_logistics"
+      ],
+      "document_type": "platform_operating_guidance",
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "evidence_class": "platform_operating_rule",
+      "content_sha256": "25574ffbcb607d3fefef529dd1cc674333815bb39cbdbd1c94157f81b6a271cf",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "TTS-VN-SHIPPING-FEE-INSTRUCTION-2026",
+      "retrieval_status": "archived",
+      "publisher": "TikTok Shop Seller University",
+      "title": "Vietnam Platform Shipping Fee Instruction",
+      "url": "https://seller-vn.tiktok.com/university/essay?knowledge_id=10014118&lang=en",
+      "published_or_updated": "2026-03-23",
+      "domains": [
+        "nationwide_logistics"
+      ],
+      "document_type": "platform_operating_guidance",
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "evidence_class": "platform_operating_rule",
+      "content_sha256": "456b15700fedda19a5e6bf53e39595d5241422f5c5ade4fc408a26985061c497",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "WMT-WFS-BEST-PRACTICE-CHECKLIST-2023",
+      "retrieval_status": "archived",
+      "publisher": "Walmart Marketplace",
+      "title": "Walmart Fulfillment Services Best Practices Checklist",
+      "url": "https://marketplace.walmart.com/wp-content/uploads/2023/07/WFS-Best-Practice-Checklist.pdf",
+      "published_or_updated": "2023-07",
+      "domains": [
+        "inventory_allocation",
+        "nationwide_logistics"
+      ],
+      "document_type": "marketplace_seller_operating_guidance",
+      "evidence_class": "company_practice_reference",
+      "source_format": "pdf",
+      "ingestion_status": "indexed",
+      "notes": "Official Walmart Marketplace seller checklist covering inventory health, replenishment, fulfillment selection, and shipping preparation. Attribute as Walmart Marketplace guidance; applies to its marketplace, not as Commerce Demo policy.",
+      "content_sha256": "670c63f8f4622589e4e6d6a39f97b2338285fcbb9aefa9508f8a17f11a77a627",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "PDF"
+    },
+    {
+      "source_id": "TTS-VN-PRODUCT-CAMPAIGNS-2026",
+      "retrieval_status": "archived",
+      "publisher": "TikTok Shop Seller University",
+      "title": "Product Campaigns",
+      "url": "https://seller-vn.tiktok.com/university/essay?knowledge_id=8901645928908546&lang=en",
+      "published_or_updated": "2026-01-02",
+      "domains": [
+        "promotion_planning",
+        "inventory_allocation"
+      ],
+      "document_type": "platform_operating_guidance",
+      "evidence_class": "platform_operating_rule",
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "notes": "Official Vietnam Seller University procedure for registering products, campaign price and campaign stock, review, edits, and product eligibility. Applies only to TikTok Shop Vietnam.",
+      "content_sha256": "45188c739de3a3b285a0ed48032e43f1baed395c430cded0dfd773cd0499acff",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+      "retrieval_status": "active",
+      "publisher": "Shopee Vietnam Seller Education Hub (Shopee Uni)",
+      "title": "Quản lý tồn kho",
+      "url": "https://cdngarenanow-a.akamaihd.net/shopee/seller/seller_cms/acf62e028643871447fd5886ed466a10/Qu%E1%BA%A3n%20L%C3%BD%20T%E1%BB%93n%20Kho.pdf",
+      "published_or_updated": "2019",
+      "domains": [
+        "inventory_allocation"
+      ],
+      "document_type": "marketplace_seller_operating_guidance",
+      "evidence_class": "platform_operating_rule",
+      "applicability": "Historical 2019 Shopee Vietnam Seller Center guide; use only when the question explicitly concerns Shopee. It can inform SKU-level stock visibility and replenishment review, but its interface labels and thresholds are not current policy and do not apply to the unidentified Commerce Demo marketplace.",
+      "source_format": "pdf",
+      "ingestion_status": "indexed",
+      "notes": "Official Shopee Uni Vietnam PDF with image-heavy Seller Center screenshots. Historical 2019 process reference for SKU-level stock visibility, sales-cycle review, low-stock alerts, and SKU-location records. Do not present as current policy or apply to Commerce Demo unless Shopee is explicitly in scope.",
+      "content_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "PDF"
+    },
+    {
+      "source_id": "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN",
+      "retrieval_status": "archived",
+      "publisher": "Shopee Vietnam Seller Education Hub (Shopee Uni)",
+      "title": "Sale Sinh nhật 11.11 / 12.12: Bí quyết bán hàng và vận hành shop",
+      "url": "https://cdngarenanow-a.akamaihd.net/shopee/seller/seller_cms/1271c905a4d409ee6e23b2884d1c78ae/Campaign%20Preparation%2011.11%20_%2012.12%20-%20OPS.pdf",
+      "published_or_updated": "2019",
+      "domains": [
+        "inventory_allocation",
+        "promotion_planning",
+        "nationwide_logistics"
+      ],
+      "document_type": "marketplace_campaign_operating_guidance",
+      "evidence_class": "company_practice_reference",
+      "source_format": "pdf",
+      "ingestion_status": "indexed",
+      "notes": "Official Shopee Uni Vietnam campaign operations guide. Covers campaign stock, staffing and order-fulfillment risks; treat as historical company practice, not current platform policy.",
+      "content_sha256": "54cf57025dd8ee24ff2b430c737c035e26e180ca8981cb80e6fa782451379ca1",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "PDF"
+    },
+    {
+      "source_id": "SHOPEE-VN-UNSUCCESSFUL-ORDERS-GUIDE",
+      "retrieval_status": "archived",
+      "publisher": "Shopee Vietnam Seller Education Hub",
+      "title": "Tỷ lệ đơn hàng không thành công là gì?",
+      "url": "https://cdngarenanow-a.akamaihd.net/shopee/seller/help/vn/6565590a4c66a7afcaa081092da576df/T%E1%BB%B7%20l%E1%BB%87%20%C4%91%C6%A1n%20h%C3%A0ng%20kh%C3%B4ng%20th%C3%A0nh%20c%C3%B4ng.pdf",
+      "published_or_updated": null,
+      "domains": [
+        "inventory_allocation"
+      ],
+      "document_type": "seller_education_operating_guide",
+      "evidence_class": "platform_operating_rule",
+      "applicability": "Shopee Vietnam seller workflows only. Publication/update date is not stated; verify current Help Center policy before using any threshold or interface instruction. Not policy for Commerce Demo.",
+      "source_format": "pdf",
+      "ingestion_status": "ocr_lab_tested_not_indexed",
+      "notes": "Official 22-page Seller Education Hub guide describing stockout-related cancellation risk, stock accuracy, order handoff, and return handling. It contains undated thresholds and legacy Seller Center instructions, so keep out of decision retrieval until current applicability is verified. OCR Lab smoke: 22 pages, 24 chunks, 2 extracted tables, five low-text pages invoked Tesseract; screenshot text is noisy and must not support exact penalty claims.",
+      "content_sha256": "a44cc81ef833feb5a987596e74c27baf2c1a87602adbb2f42712cca7f6ce1ba4",
+      "last_fetched_on": "2026-10-04",
+      "ingested_format": "PDF"
+    },
+    {
+      "source_id": "SHOPEE-UNI-STORE-OPS-MALL-VN",
+      "retrieval_status": "archived",
+      "publisher": "Shopee Vietnam Seller Education Hub (Shopee Uni)",
+      "title": "Tài liệu hướng dẫn vận hành Shop (dành cho Shopee Mall)",
+      "url": "https://cdngarenanow-a.akamaihd.net/shopee/seller/seller_cms/b1e8624a0be4fbce8fd1d72ba01f32f6/T%C3%A0i%20li%E1%BB%87u%20h%C6%B0%E1%BB%9Bng%20d%E1%BA%ABn%20V%E1%BA%ADn%20h%C3%A0nh%20Shop%20%28d%C3%A0nh%20cho%20Shopee%20Mall%29.pdf",
+      "published_or_updated": "2019",
+      "domains": [
+        "nationwide_logistics",
+        "inventory_allocation"
+      ],
+      "document_type": "marketplace_seller_operating_guidance",
+      "evidence_class": "company_practice_reference",
+      "source_format": "pdf",
+      "ingestion_status": "indexed",
+      "notes": "Official Shopee Uni Vietnam operating guide with seller order-processing and carrier handoff flow. Database verification on 2026-10-04 found 39 retrieval chunks despite the old manifest status; keep archived and use only as historical, attributed example, not current policy.",
+      "content_sha256": "45885a73136c6efe955d2f5b5c57f7b1f6ed69e6100f78b5b402b98499eefd99",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "PDF"
+    },
+    {
+      "source_id": "SHOPEE-VN-SHIPPING-POLICY-2026",
+      "retrieval_status": "archived",
+      "publisher": "Shopee Vietnam Help Center",
+      "title": "Chính sách vận chuyển Shopee (phiên bản ngày 20/03/2026)",
+      "url": "https://help.shopee.vn/portal/4/article/206477",
+      "published_or_updated": "2026-03-20",
+      "domains": [
+        "nationwide_logistics"
+      ],
+      "document_type": "platform_shipping_policy",
+      "evidence_class": "platform_operating_rule",
+      "external_policy_reference": true,
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "notes": "Current official Shopee Vietnam shipping policy page. Platform-specific constraints only; re-fetch this volatile policy before relying on its current wording or thresholds.",
+      "content_sha256": "94a2d95017579e35eb3209b26e11b0a5f9d1ff2e1e4e18765022fab966f411f4",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "SHOPIFY-MULTI-LOCATION-INVENTORY-2026",
+      "retrieval_status": "archived",
+      "publisher": "Shopify",
+      "title": "How To Set Up Multi-Location Inventory Management",
+      "url": "https://www.shopify.com/blog/multi-location-inventory-management",
+      "published_or_updated": "2026; accessed 2026-10-03",
+      "domains": [
+        "inventory_allocation"
+      ],
+      "document_type": "external_business_process_reference",
+      "evidence_class": "company_practice_reference",
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "applicability": "Shopify-published workflow example only; Commerce Demo does not identify its platform.",
+      "notes": "Official Shopify business article describes per-location stock, transfer workflow, stockout review and routing prerequisites. Use as an attributed example, never as Commerce Demo policy or proof that the dataset has location-level inventory.",
+      "content_sha256": "ea9a4c9f71ae24dae68a280762342b14e253c4831dfd0c38002c766ed9df6abd",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "AMAZON-FBA-RESTOCK-TOOL-GUIDE-2020",
+      "retrieval_status": "active",
+      "publisher": "Amazon Seller Central",
+      "title": "FBA Restock Tool Guide",
+      "url": "https://m.media-amazon.com/images/G/01/sell/pdf/FBA-Restock-Guide-EN.pdf",
+      "published_or_updated": "2020-09-15 (PDF metadata creation date)",
+      "domains": [
+        "inventory_allocation"
+      ],
+      "document_type": "external_business_process_reference",
+      "evidence_class": "company_practice_reference",
+      "source_format": "pdf",
+      "ingestion_status": "indexed",
+      "applicability": "Historical Amazon FBA restocking example only. Its Seller Central screenshots and settings are from 2020; do not transfer tool defaults, example quantities, or thresholds to Commerce Demo.",
+      "notes": "Official Amazon PDF guide describing restock recommendations based on product-level demand forecasts, seasonality, seller/supplier lead times, replenishment frequency, case-pack quantity, and minimum restock quantity. Use only these attributed decision inputs as an external example; not a Commerce Demo policy or evidence of the synthetic dataset's actual capabilities.",
+      "content_sha256": "eec930cb60b86c69506cc54b15249518204b1f5cb55d6afdbafe166f16b6fa44",
+      "last_fetched_on": "2026-10-04",
+      "ingested_format": "PDF"
+    },
+    {
+      "source_id": "AMAZON-ADS-CAMPAIGN-REPORTING",
+      "retrieval_status": "active",
+      "publisher": "Amazon Ads",
+      "title": "Campaign reporting: Analyze advertising performance",
+      "url": "https://advertising.amazon.com/measurement-analytics/campaign-reporting",
+      "published_or_updated": "Current page; accessed 2026-10-03",
+      "domains": [
+        "promotion_planning"
+      ],
+      "document_type": "external_business_process_reference",
+      "evidence_class": "company_practice_reference",
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "applicability": "Amazon Ads reporting example only; Commerce Demo does not identify its ad platform.",
+      "notes": "Official Amazon Ads page describes campaign performance reporting, attributed sales and ROAS/measurement concepts. It helps name evidence required for budget decisions; it cannot supply missing Commerce campaign cost or a counterfactual.",
+      "content_sha256": "4db09645529bb5d7e9d9e622a1dbd82f1d4af5128603262ad4f815cbe80e97ae",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "SHOPIFY-SMART-ORDER-ROUTING",
+      "retrieval_status": "archived",
+      "publisher": "Shopify",
+      "title": "Smart Order Routing: How It Works in Shopify",
+      "url": "https://www.shopify.com/blog/smart-order-routing",
+      "published_or_updated": "2023-07-02",
+      "domains": [
+        "inventory_allocation",
+        "nationwide_logistics"
+      ],
+      "document_type": "external_business_process_reference",
+      "evidence_class": "company_practice_reference",
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "applicability": "Shopify routing example only; Commerce Demo does not identify its platform.",
+      "notes": "Official Shopify article describes fulfillment assignment based on inventory availability, proximity, destination and split-shipment choices. Use as a checklist of missing route/location evidence, not as a recommendation to redesign this dataset’s network.",
+      "content_sha256": "66a74ebd192371cd6c04116c495a013ae1797118682cc2aecdf085b71f694be8",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "SAMS-SUPPLIER-HUB-USER-GUIDE-2022",
+      "retrieval_status": "active",
+      "publisher": "Sam's Club (Walmart Inc.)",
+      "title": "Sam's Supplier Hub User Guide",
+      "url": "https://corporate.walmart.com/content/dam/corporate/sams-club/documents/sams-club-suppliers/dsv-tutorial/edi/Supplier-Hub-Guide.pdf",
+      "published_or_updated": "2022-09-27 (PDF metadata creation date)",
+      "domains": [
+        "inventory_allocation",
+        "nationwide_logistics"
+      ],
+      "document_type": "external_business_process_reference",
+      "evidence_class": "company_practice_reference",
+      "external_policy_reference": true,
+      "source_format": "pdf",
+      "ingestion_status": "indexed",
+      "applicability": "Sam's Club U.S. drop-ship supplier workflow example only. The guide is from 2022; use process concepts such as item/location inventory visibility and reviewed lead-time changes, not its interface instructions, account requirements, phone numbers, or thresholds as current Commerce Demo policy.",
+      "notes": "Official 48-page Sam's Club supplier guide. Relevant sections include weekly performance review (page 5), fulfillment-center/item-level lead times (pages 20-21), feed status (page 21), and low/out-of-stock review at category/item/supplier levels (pages 22-23). PDF metadata identifies Microsoft Word as creator/producer and the text layer is selectable; it is born-digital, not a scanned policy. Retain only as an attributed external process reference; it does not establish Commerce Demo's marketplace or operating rules.",
+      "content_sha256": "7245b3afae1a2b2036e6272bc95c5da0672aca11b65ce81dec09c9c894173a14",
+      "last_fetched_on": "2026-10-03",
+      "ingested_format": "PDF"
+    },
+    {
+      "source_id": "DD-ADS-SALES-LIFT-MEASUREMENT-2026",
+      "retrieval_status": "active",
+      "publisher": "DoorDash Ads",
+      "title": "Sales Lift Measurement for CPG Brands",
+      "url": "https://advertising.doordash.com/en-us/resources/sales-lift-measurement-for-cpg-brands",
+      "published_or_updated": "2026-03-24",
+      "domains": [
+        "promotion_planning"
+      ],
+      "document_type": "external_business_process_reference",
+      "evidence_class": "company_practice_reference",
+      "external_policy_reference": true,
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "applicability": "DoorDash Ads CPG campaign measurement example only; not Commerce Demo policy. Use its experiment/holdout comparison method as an attributed reference. Do not transfer DoorDash, advertiser, or category outcomes or thresholds to Commerce Demo.",
+      "notes": "Official DoorDash Ads article dated 2026-03-24. Explains treatment/control measurement, holdout and ghost-ad experiment concepts for estimating incremental sales and iROAS. Relevant to the promotion benchmark's causal-lift boundary; its reported advertiser results are not Commerce Demo evidence.",
+      "content_sha256": "9bb7ad9d05c37d19d3c4e34aa7549720d3189aebb39fc0fdc8ca6e2497794aa7",
+      "last_fetched_on": "2026-10-04",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "AMAZON-SCS-LOGISTICS-DECISIONS-2026",
+      "retrieval_status": "active",
+      "publisher": "Amazon Supply Chain Services",
+      "title": "Amazon Logistics Solutions: How to Choose the Right One",
+      "url": "https://supplychain.amazon.com/learn/guide-to-choosing-amazon-logistics-solutions",
+      "published_or_updated": "2026 (as listed by publisher search result)",
+      "domains": [
+        "nationwide_logistics"
+      ],
+      "document_type": "external_business_process_reference",
+      "evidence_class": "company_practice_reference",
+      "external_policy_reference": true,
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "applicability": "Amazon Supply Chain Services options and network example only; not Commerce Demo policy. Attribute concepts and scope to Amazon; do not transfer Amazon service levels, network capabilities, outcomes, or performance values to the Commerce dataset.",
+      "notes": "Official Amazon Supply Chain Services guide. It describes how transportation, warehousing, fulfillment, parcel shipping, predictive tools, and real-time visibility fit together, including balancing cost, speed, capacity and demand. Use as an attributed decision framework; not evidence that Commerce Demo uses Amazon or any specific carrier.",
+      "content_sha256": "31660aa06a5e41de8350e61e07844ab955608e6d4df482e87c28fbe9870bfb2d",
+      "last_fetched_on": "2026-10-04",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "ILO-PH-SIYB-STOCK-CONTROL-2002",
+      "retrieval_status": "archived",
+      "publisher": "International Labour Organization; Employers Confederation of the Philippines",
+      "title": "Improve Your Business Basics: Philippine Edition, Module 3 - Stock Control",
+      "url": "https://researchrepository.ilo.org/esploro/outputs/manual/Improve-your-business-basics-Philippine-edition/995368583702676",
+      "published_or_updated": "2002 (repository record); scanned copy metadata dates to 2014",
+      "domains": [
+        "inventory_allocation"
+      ],
+      "document_type": "external_business_process_reference",
+      "evidence_class": "company_practice_reference",
+      "source_format": "pdf",
+      "ingestion_status": "ocr_lab_tested_not_indexed",
+      "applicability": "General stock-control training for small businesses in the Philippines; dated 2002 and not Commerce Demo policy. ILO repository marks the work as copyrighted and requests reproduction permission; do not ingest or redistribute without permission.",
+      "notes": "Temporary OCR Lab verification on 2026-10-04: 42 pages, 76 parser chunks, no structured tables; Tesseract fallback ran on pages 1, 2, 8, 41, and 42. The scan already carries searchable text on most pages, so this is a mixed scan/OCR-layer upload test, not an OCR accuracy benchmark. The temporary OCR run was deleted and all associated rows were verified absent.",
+      "content_sha256": "b1c64258f38737eb06d6d3b53db1726137b4af5146b43781bfd95e8d4bd783c6",
+      "last_fetched_on": "2026-10-04",
+      "ingested_format": "PDF"
+    },
+    {
+      "source_id": "AUS-BUSINESS-INVENTORY-MANAGEMENT",
+      "retrieval_status": "active",
+      "publisher": "Australian Government, business.gov.au",
+      "title": "Manage your inventory",
+      "url": "https://business.gov.au/products-and-services/inventory-management/manage-your-inventory",
+      "published_or_updated": null,
+      "domains": [
+        "inventory_allocation"
+      ],
+      "document_type": "management_cookbook",
+      "evidence_class": "management_cookbook_reference",
+      "external_policy_reference": false,
+      "source_format": "html",
+      "license": "CC BY 3.0 Australia; exclude third-party content and logos",
+      "attribution": "© Commonwealth of Australia 2020",
+      "applicability": "General small-business inventory method published for Australia. Attribute as an external method, not Commerce Demo policy; do not transfer its examples or legal context as local thresholds.",
+      "ingestion_status": "indexed",
+      "notes": "Covers stock records, tracking, stocktakes, reorder points and inputs such as usual sales, supplier lead time, seasonality and reliability. Useful for the inventory review workflow; it cannot supply Commerce Demo's missing location, forecast or cost facts. The page is HTML, not a scanned PDF.",
+      "last_fetched_on": "2026-10-04",
+      "content_sha256": "85b995e83a08e74c4b07e93b5b4531b89b3d417c017d6dd768bc93902a41eee6",
+      "ingested_format": "HTML",
+      "rights_url": "https://business.gov.au/legal-notices/copyright"
+    },
+    {
+      "source_id": "AUS-BUSINESS-MARKETING-PLAN",
+      "retrieval_status": "active",
+      "publisher": "Australian Government, business.gov.au",
+      "title": "Develop your marketing plan",
+      "url": "https://business.gov.au/planning/business-plans/develop-your-marketing-plan",
+      "published_or_updated": null,
+      "domains": [
+        "promotion_planning"
+      ],
+      "document_type": "management_cookbook",
+      "evidence_class": "management_cookbook_reference",
+      "external_policy_reference": false,
+      "source_format": "html",
+      "license": "CC BY 3.0 Australia; exclude third-party content and logos",
+      "attribution": "© Commonwealth of Australia 2020",
+      "applicability": "General small-business marketing-planning method published for Australia. Attribute as an external method, not Commerce Demo policy; examples are not observed Commerce outcomes or approved thresholds.",
+      "ingestion_status": "indexed",
+      "notes": "Covers goals, target market, promotion/channel plan, budget and review of results. Supports planning hygiene, but it does not establish causal uplift or Commerce Demo campaign ROI. The page is HTML, not a scanned PDF.",
+      "last_fetched_on": "2026-10-04",
+      "content_sha256": "c76f6c89651ec3bf2eb062bfa49c202725bc4a02b06101e8b385505aee0496c4",
+      "ingested_format": "HTML",
+      "rights_url": "https://business.gov.au/legal-notices/copyright"
+    },
+    {
+      "source_id": "AUS-BUSINESS-ECOMMERCE-SHIPPING",
+      "retrieval_status": "active",
+      "publisher": "Australian Government, business.gov.au",
+      "title": "Shipping",
+      "url": "https://business.gov.au/Products-and-services/Shipping",
+      "published_or_updated": null,
+      "domains": [
+        "nationwide_logistics"
+      ],
+      "document_type": "management_cookbook",
+      "evidence_class": "management_cookbook_reference",
+      "external_policy_reference": false,
+      "source_format": "html",
+      "license": "CC BY 3.0 Australia; exclude third-party content and logos",
+      "attribution": "© Commonwealth of Australia 2020",
+      "applicability": "General small-business e-commerce shipping selection method published for Australia. Attribute as an external method, not Commerce Demo policy; do not transfer Australian consumer-law obligations or example pricing as Vietnam rules.",
+      "ingestion_status": "indexed",
+      "notes": "Covers parcel-provider selection by delivery time, express availability, parcel size/weight, pickup, loss/damage terms and reporting/integration, plus shipping-cost and customer-expectation considerations. Supports provider review, not route-capacity optimization. The page is HTML, not a scanned PDF.",
+      "last_fetched_on": "2026-10-04",
+      "content_sha256": "dba220017f2eddd524ab77c7491bb171243d69274ccfe87c360f26cceedce6de",
+      "ingested_format": "HTML",
+      "rights_url": "https://business.gov.au/legal-notices/copyright"
+    },
+    {
+      "source_id": "CD-POL-INV-001",
+      "retrieval_status": "active",
+      "publisher": "Commerce Demo (fictional organization)",
+      "title": "Chính sách giả lập: Phân bổ và rà soát tồn kho",
+      "local_path": "data/commerce_knowledge/synthetic_policies/inventory-allocation.pdf",
+      "url": null,
+      "published_or_updated": "2026-10-04",
+      "domains": [
+        "inventory_allocation"
+      ],
+      "document_type": "company_policy_reference",
+      "evidence_class": "company_policy_reference",
+      "external_policy_reference": false,
+      "synthetic_company_policy": true,
+      "source_type": "synthetic_demo_policy",
+      "language": "vi",
+      "source_format": "pdf",
+      "applicability": "Fictional Commerce Demo inventory scenario only. Explicitly synthetic; not an issued policy of a real retailer.",
+      "ingestion_status": "indexed",
+      "notes": "Demo-only rules for category-level inventory review, overlap handling, and conditional SKU/location investigation. No invented numeric targets; requires matching demand, stock, lead-time and cost before transfers.",
+      "ingested_format": "PDF",
+      "content_sha256": "116a03ef6da46505e44bc9da505e7c2a64695b341f4e74e5b1a46fbb9800b16b",
+      "last_fetched_on": "2026-10-05"
+    },
+    {
+      "source_id": "CD-POL-PROMO-001",
+      "retrieval_status": "active",
+      "publisher": "Commerce Demo (fictional organization)",
+      "title": "Chính sách giả lập: Đánh giá và lập kế hoạch khuyến mãi",
+      "local_path": "data/commerce_knowledge/synthetic_policies/promotion-planning.pdf",
+      "url": null,
+      "published_or_updated": "2026-10-04",
+      "domains": [
+        "promotion_planning"
+      ],
+      "document_type": "company_policy_reference",
+      "evidence_class": "company_policy_reference",
+      "external_policy_reference": false,
+      "synthetic_company_policy": true,
+      "source_type": "synthetic_demo_policy",
+      "language": "vi",
+      "source_format": "pdf",
+      "applicability": "Fictional Commerce Demo promotion scenario only. Explicitly synthetic; not an issued policy of a real retailer.",
+      "ingestion_status": "indexed",
+      "notes": "Demo-only rules distinguishing descriptive outcomes from incrementality and profitability. No invented ROI or uplift thresholds; requires holdout/control and campaign cost/margin evidence before budget expansion.",
+      "ingested_format": "PDF",
+      "content_sha256": "076bd3402112c4f0ea5a5b134bda63a10412db9547978f4902053a5fa4772fe8",
+      "last_fetched_on": "2026-10-05"
+    },
+    {
+      "source_id": "CD-POL-LOG-001",
+      "retrieval_status": "active",
+      "publisher": "Commerce Demo (fictional organization)",
+      "title": "Chính sách giả lập: Theo dõi và tối ưu logistics toàn quốc",
+      "local_path": "data/commerce_knowledge/synthetic_policies/nationwide-logistics.pdf",
+      "url": null,
+      "published_or_updated": "2026-10-04",
+      "domains": [
+        "nationwide_logistics"
+      ],
+      "document_type": "company_policy_reference",
+      "evidence_class": "company_policy_reference",
+      "external_policy_reference": false,
+      "synthetic_company_policy": true,
+      "source_type": "synthetic_demo_policy",
+      "language": "vi",
+      "source_format": "pdf",
+      "applicability": "Fictional Commerce Demo logistics scenario only. Explicitly synthetic; not an issued policy of a real retailer.",
+      "ingestion_status": "indexed",
+      "notes": "Demo-only rules for descriptive regional logistics comparison and evidence required before network redesign. No invented SLA or savings threshold; requires route, carrier, SLA, capacity and cost data.",
+      "ingested_format": "PDF",
+      "content_sha256": "a32b3e7523a67c1c8dc2fcd5f40b7bfd33ab81de35c44d982229af404d694566",
+      "last_fetched_on": "2026-10-05"
+    }
+  ],
+  "ocr_demo": {
+    "status": "created_isolated_fixture",
+    "document_id": "commerce_synthetic_policy_scan_demo",
+    "path": "data/evaluation/ocr/commerce_synthetic_policy_scan_demo.pdf",
+    "note": "Two-page image-only synthetic fixture with visible warnings; use only in OCR Lab, never index as company policy or decision evidence."
+  }
+}

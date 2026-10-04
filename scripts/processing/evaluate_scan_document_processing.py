@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Score real image-only PDF scan regions through the upload document processor."""
+"""Score image-only PDF regions through the upload document processor."""
 
 from __future__ import annotations
 
@@ -99,10 +99,18 @@ def score_table_anchors(expected_columns: list[str], expected_rows: list[dict], 
     candidates = []
     for table in tables:
         columns = table.get("columns", [])
-        value_columns = columns[1:] if columns and columns[0] == "label" else columns
+        label_column = "label" if "label" in columns else (columns[0] if columns else None)
+        value_columns = [column for column in columns if column != label_column]
+        expected_value_columns = expected_columns
+        if expected_columns and label_column and _normalize_label(expected_columns[0]) == _normalize_label(label_column):
+            expected_value_columns = expected_columns[1:]
         header_matches = sum(
-            re.sub(r"\D", "", actual) == re.sub(r"\D", "", expected)
-            for actual, expected in zip(value_columns, expected_columns)
+            (
+                re.sub(r"\D", "", actual) == re.sub(r"\D", "", expected)
+                if re.search(r"\d", actual) or re.search(r"\d", expected)
+                else _normalize_label(actual) == _normalize_label(expected)
+            )
+            for actual, expected in zip(value_columns, expected_value_columns)
         )
         remaining = list(enumerate(table.get("rows", [])))
         row_matches = []
@@ -111,7 +119,7 @@ def score_table_anchors(expected_columns: list[str], expected_rows: list[dict], 
         coordinate_total = 0
         for expected in expected_rows:
             best = max(
-                ((SequenceMatcher(None, _normalize_label(expected["label"]), _normalize_label(row.get("label", ""))).ratio(), index, row_index, row)
+                ((SequenceMatcher(None, _normalize_label(expected["label"]), _normalize_label(row.get(label_column, ""))).ratio(), index, row_index, row)
                  for index, (row_index, row) in enumerate(remaining)),
                 default=(0.0, -1, -1, {}),
             )
@@ -156,7 +164,7 @@ def score_table_anchors(expected_columns: list[str], expected_rows: list[dict], 
             coordinate_total += len(cell_locations)
             row_matches.append({
                 "expected_label": expected["label"],
-                "extracted_label": row.get("label") if matched else None,
+                "extracted_label": row.get(label_column) if matched else None,
                 "label_similarity": round(similarity, 4),
                 "matched": matched,
                 "expected_values": expected["values"],
@@ -169,7 +177,7 @@ def score_table_anchors(expected_columns: list[str], expected_rows: list[dict], 
             "extracted_headers": value_columns,
             "comparison": {
                 "labels": "accent-folded character similarity; matched at >= 0.6",
-                "headers": "digits-only period comparison",
+                "headers": "normalized text comparison or digits-only period comparison",
                 "numeric_cells": "sign and digit sequence; punctuation ignored",
             },
             "exact_header_matches": header_matches,
@@ -188,12 +196,33 @@ def score_table_anchors(expected_columns: list[str], expected_rows: list[dict], 
     return max(candidates, default=(0, 0, 0, 0, None), key=lambda candidate: candidate[:4])[4]
 
 
+def source_text_for_scoring(chunks: list[dict]) -> str | None:
+    """Exclude generated table serialization from OCR text scores.
+
+    When structured table chunks replace their source text chunk, the page-level
+    transcription is no longer available for a fair CER/WER comparison; table
+    correctness is scored separately against reviewed row/cell anchors.
+    """
+    if any(
+        chunk.get("metadata", {}).get("table_chunk_match", {}).get("matched_source_chunk")
+        for chunk in chunks
+    ):
+        return None
+    text_chunks = [
+        chunk.get("text", "") for chunk in chunks
+        if chunk.get("metadata", {}).get("parser") != "pymupdf.structured_table_chunk"
+    ]
+    return "\n".join(text for text in text_chunks if text)
+
+
 def evaluate_region(
     spec: dict, source_pdf: bytes, tesseract_psm: int = 11,
     render_scale: float = 1.5, tesseract_table_psm: int = 3,
     table_render_scale: float = 2.5,
 ) -> dict:
-    cropped_pdf = rasterize_for_ocr(crop_pdf_page(source_pdf, spec["page"], spec["clip_rect"]))
+    cropped_pdf = crop_pdf_page(source_pdf, spec["page"], spec["clip_rect"])
+    if not spec.get("image_only"):
+        cropped_pdf = rasterize_for_ocr(cropped_pdf)
     started = time.perf_counter()
     parsed = DocumentProcessor({
         "tesseract_psm": tesseract_psm,
@@ -208,8 +237,9 @@ def evaluate_region(
     elapsed = time.perf_counter() - started
     chunks = sorted(parsed["chunks"], key=lambda item: item["metadata"]["chunk_index"])
     extracted_text = "\n".join(chunk["text"] for chunk in chunks)
+    ocr_text = source_text_for_scoring(chunks)
     reference = normalize(spec.get("reference_text", ""))
-    hypothesis = normalize(extracted_text)
+    hypothesis = normalize(ocr_text or "")
     reference_words = reference.split()
     hypothesis_words = hypothesis.split()
     methods = sorted({chunk["metadata"].get("text_extraction_method", "unknown") for chunk in chunks})
@@ -234,14 +264,20 @@ def evaluate_region(
         "table_anchor_score": score_table_anchors(
             spec.get("table_columns", []), spec.get("table_rows", []), parsed["tables"],
         ),
-        "text_reference_scored": bool(reference),
-        "reference_characters": len(reference) if reference else None,
-        "reference_words": len(reference_words) if reference else None,
-        "hypothesis_characters": len(hypothesis),
-        "character_edit_distance": edit_distance(reference, hypothesis),
-        "word_edit_distance": edit_distance(reference_words, hypothesis_words),
-        "cer": round(error_rate(reference, hypothesis), 6) if reference else None,
-        "wer": round(error_rate(reference_words, hypothesis_words), 6) if reference else None,
+        "text_reference_scored": bool(reference) and ocr_text is not None,
+        "text_score_scope": (
+            "source text chunks; generated table serialization excluded"
+            if ocr_text is not None else
+            "unavailable because a structured table chunk replaced its source text chunk"
+        ),
+        "reference_characters": len(reference) if reference and ocr_text is not None else None,
+        "reference_words": len(reference_words) if reference and ocr_text is not None else None,
+        "hypothesis_characters": len(hypothesis) if ocr_text is not None else None,
+        "character_edit_distance": edit_distance(reference, hypothesis) if reference and ocr_text is not None else None,
+        "word_edit_distance": edit_distance(reference_words, hypothesis_words) if reference and ocr_text is not None else None,
+        "cer": round(error_rate(reference, hypothesis), 6) if reference and ocr_text is not None else None,
+        "wer": round(error_rate(reference_words, hypothesis_words), 6) if reference and ocr_text is not None else None,
+        "ocr_text": ocr_text,
         "latency_seconds": round(elapsed, 3),
         "pages_per_minute": round(60 / elapsed, 3) if elapsed else None,
         "extracted_text": extracted_text,
@@ -254,7 +290,7 @@ def select_cases(pages: list[dict], case_ids: list[str], all_pages: bool = False
     if all_pages:
         return pages
     if not case_ids:
-        return [page for page in pages if page.get("physical_scan")]
+        return [page for page in pages if page.get("physical_scan") or page.get("image_only")]
     by_id = {page["id"]: page for page in pages}
     missing = sorted(set(case_ids) - by_id.keys())
     if missing:
@@ -266,15 +302,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--dataset", type=Path,
-        default=ROOT / "data/evaluation/vinamilk_ocr_ground_truth_v4.json",
+        default=ROOT / "data/evaluation/ocr/commerce_scan_ground_truth.json",
     )
     parser.add_argument(
         "--output", type=Path,
-        default=ROOT / "artifacts/evaluation/vinamilk-scan-document-processor-v1.json",
+        default=ROOT / "artifacts/evaluation/ocr/pipeline/commerce-scan-document-processor-smoke.json",
     )
     parser.add_argument(
         "--case-id", action="append", default=[],
-        help="Evaluate this dataset case instead of the default physical scans; repeat to select multiple cases.",
+        help="Evaluate this dataset case instead of the default image-only regions; repeat to select multiple cases.",
     )
     parser.add_argument(
         "--all-pages", action="store_true",
@@ -317,6 +353,11 @@ def main() -> int:
     ]
     annotated_cell_locations = sum(score["annotated_cell_locations"] for score in coordinate_scores)
     matched_cell_locations = sum(score["matched_cell_locations"] for score in coordinate_scores)
+    table_scores = [score for score in coordinate_scores if score.get("expected_anchor_rows")]
+    expected_anchor_rows = sum(score["expected_anchor_rows"] for score in table_scores)
+    matched_anchor_rows = sum(score["matched_anchor_rows"] for score in table_scores)
+    total_numeric_cells = sum(score["total_numeric_cells"] for score in table_scores)
+    exact_numeric_cells = sum(score["exact_numeric_cells"] for score in table_scores)
     try:
         tesseract_version = subprocess.run(
             ["tesseract", "--version"], capture_output=True, check=True, text=True, timeout=10,
@@ -329,9 +370,9 @@ def main() -> int:
         "dataset_sha256": hashlib.sha256(dataset_bytes).hexdigest(),
         "reference_quality": dataset["reference_quality"],
         "reference_method": dataset["reference_method"],
-        "protocol": "Copy each selected region from its source PDF page, rasterize it at 216 DPI to remove any embedded OCR text layer, then run the existing DocumentProcessor PDF upload path (PyMuPDF/Tesseract fallback) with separate page-text and numeric-table render scales. Score manually transcribed text and reviewed financial row/value anchors.",
+        "protocol": "Copy each selected region from its source PDF page, rasterize it to remove any embedded OCR text layer, then run the existing DocumentProcessor PDF path with separate page-text and table render scales. Score source text chunks without generated structured-table serialization; score tables separately against supplied row/cell anchors.",
         "limitations": (
-            "Production-parser OCR path only. This supplemental set contains pages from one third-party Vietnamese scan packet and manually reviewed financial anchors; it is diagnostic, not representative model-selection evidence or safe automatic financial publication. "
+            "Production-parser OCR path only. Smoke fixtures verify extraction behavior but are not representative model-selection evidence or business evidence. "
             + (
                 f"The selected regions include {annotated_cell_locations} explicit cell-box labels, with {matched_cell_locations} meeting PDF-point bounding-box IoU >= 0.3; labels are limited to reviewed anchors and are not a multi-annotator gold standard. "
                 if annotated_cell_locations else
@@ -358,6 +399,13 @@ def main() -> int:
             "annotated_cell_locations": annotated_cell_locations,
             "matched_cell_locations": matched_cell_locations,
             "cell_location_recall": round(matched_cell_locations / annotated_cell_locations, 4) if annotated_cell_locations else None,
+            "table_scored_pages": len(table_scores),
+            "expected_anchor_rows": expected_anchor_rows,
+            "matched_anchor_rows": matched_anchor_rows,
+            "anchor_row_recall": round(matched_anchor_rows / expected_anchor_rows, 4) if expected_anchor_rows else None,
+            "exact_numeric_cells": exact_numeric_cells,
+            "total_numeric_cells": total_numeric_cells,
+            "exact_numeric_cell_accuracy": round(exact_numeric_cells / total_numeric_cells, 4) if total_numeric_cells else None,
             "micro_cer": round(sum(x["character_edit_distance"] for x in text_scored) / sum(x["reference_characters"] for x in text_scored), 6) if text_scored else None,
             "micro_wer": round(sum(x["word_edit_distance"] for x in text_scored) / sum(x["reference_words"] for x in text_scored), 6) if text_scored else None,
             "mean_latency_seconds": round(sum(x["latency_seconds"] for x in valid) / len(valid), 3) if valid else None,

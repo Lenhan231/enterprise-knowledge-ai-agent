@@ -26,6 +26,27 @@ class DocumentProcessorTest(unittest.TestCase):
     def setUp(self):
         self.processor = DocumentProcessor()
 
+    def test_ocr_scales_from_environment_reach_pdf_processor(self):
+        parsed = {"chunks": [], "tables": []}
+        with (
+            patch.dict("os.environ", {
+                "DOCUMENT_OCR_RENDER_SCALE": "3.5",
+                "DOCUMENT_OCR_TABLE_RENDER_SCALE": "2.5",
+            }),
+            patch("core.document_processing.processors.document_processor.PDFProcessor") as pdf_processor,
+        ):
+            pdf_processor.return_value.process.return_value = parsed
+            result = DocumentProcessor().process("scan.pdf", b"pdf", {})
+
+        self.assertEqual(result, parsed)
+        self.assertEqual(pdf_processor.call_args.args[0]["ocr_render_scale"], 3.5)
+        self.assertEqual(pdf_processor.call_args.args[0]["ocr_table_render_scale"], 2.5)
+
+    def test_unsupported_environment_ocr_scale_fails_clearly(self):
+        with patch.dict("os.environ", {"DOCUMENT_OCR_RENDER_SCALE": "4"}):
+            with self.assertRaisesRegex(ValueError, "ocr_render_scale must be one of"):
+                DocumentProcessor().process("scan.pdf", b"pdf", {})
+
     def test_document_title_and_uploader_are_not_copied_into_chunk_metadata(self):
         pdf = fitz.open()
         page = pdf.new_page()

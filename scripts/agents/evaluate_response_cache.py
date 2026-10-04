@@ -23,7 +23,7 @@ from app.main import app  # noqa: E402
 from core.agents.intent_classifier import IntentClassifier as IntentClassifierImpl  # noqa: E402
 from core.rag.rag_service import _RESPONSE_CACHE, _RESPONSE_CACHE_LOCK  # noqa: E402
 
-CASES = ROOT / "data/evaluation/vinamilk_qa_cases.json"
+CASES = ROOT / "data/evaluation/archive/qa/vinamilk_qa_cases.json"
 OUTPUT = ROOT / "artifacts/evaluation/vinamilk-response-cache-api-smoke.json"
 
 

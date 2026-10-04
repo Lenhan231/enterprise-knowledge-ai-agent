@@ -38,6 +38,11 @@ def ingest_one_document(
     """Keep a seed document out of retrieval until chunks and tables are ready."""
     document_id = item["document_id"]
     source_sha256 = hashlib.sha256(input_path.read_bytes()).hexdigest()
+    expected_sha256 = item.get("source_sha256")
+    if expected_sha256 and source_sha256 != expected_sha256:
+        raise ValueError(
+            f"{document_id}: source SHA-256 mismatch; refusing to ingest changed PDF bytes"
+        )
     storage_path = None
     if input_path.suffix.lower() == ".pdf":
         storage_path = f"{document_id}/{input_path.name}"

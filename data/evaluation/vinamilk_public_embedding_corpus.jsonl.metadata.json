@@ -1,9 +1,0 @@
-{
-  "format": "vinamilk-public-embedding-corpus/v1",
-  "source": "ready database chunks restricted to document IDs in the public manifest",
-  "manifest_sha256": "d2aeb9e93936df9cb283ebb3ac1991b80b3407f9f9c1803450283c463c88cd34",
-  "corpus_sha256": "149b531c39b729c6a5df6e6c05c3761a565dab3fc1860080540024daeca984a7",
-  "chunk_count": 4750,
-  "document_count": 25,
-  "role_policy": "preserve each source document allowed_roles; apply eligibility before ranking"
-}

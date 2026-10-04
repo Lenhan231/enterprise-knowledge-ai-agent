@@ -6,7 +6,7 @@ from pydantic import BaseModel
 class LLMInterface(ABC):
 
     @abstractmethod
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, *, instructions: str | None = None) -> str:
         pass
     
     # @abstractmethod

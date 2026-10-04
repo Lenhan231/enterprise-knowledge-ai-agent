@@ -3,16 +3,37 @@
 import json
 import re
 
+from sqlglot import exp, parse_one
+
 from core.analytics.business_metric_catalog import (
     BUSINESS_DECISION_PROFILES,
     BUSINESS_METRIC_CATALOG,
     resolve_business_metric_names,
 )
+from core.analytics.commerce_decision_support import (
+    COMMERCE_DECISION_PROFILES,
+    COMMERCE_QUERY_TABLES,
+    unavailable_commerce_dimensions,
+)
 from core.agents.base import BaseAgent
-from core.analytics.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql
+from core.analytics.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql, validate_commerce_sql
 from core.database.document_repository import DocumentRepository
 from core.llm.groq_provider import GroqProvider
+from core.llm.provider_fallback import generate_with_provider_fallback
 from core.models.agents import AgentRequest, AgentResult, Evidence
+
+
+class UnsupportedCommerceDimension(ValueError):
+    """Raised when a requested reporting dimension is absent from the domain schema."""
+
+    def __init__(self, dimensions: list[str], available_columns: set[str]):
+        self.dimensions = dimensions
+        self.available_columns = available_columns
+        super().__init__(
+            "Requested reporting dimension is not available in this Commerce domain: "
+            + ", ".join(dimensions)
+        )
+
 
 def _sql_from_model(raw: str) -> str:
     text = raw.strip()
@@ -29,10 +50,297 @@ def _sql_from_model(raw: str) -> str:
     return validate_analytics_sql(text)
 
 
+def _scope_inventory_query_to_latest_snapshot(sql: str, snapshot_date: str | None) -> str:
+    """Use the database's latest inventory date so model-chosen dates cannot skew current-state answers."""
+    if not snapshot_date:
+        raise UnsafeAnalyticsQuery("No inventory snapshot date is available")
+
+    query = parse_one(sql, read="postgres")
+    inventory = next((table for table in query.find_all(exp.Table) if table.name.casefold() == "inventory"), None)
+    if inventory is None:
+        raise UnsafeAnalyticsQuery("Current inventory questions must read commerce.inventory")
+    predicate = exp.EQ(
+        this=exp.column("snapshot_date", table=inventory.alias_or_name),
+        expression=exp.Literal.string(snapshot_date),
+    )
+    existing = query.args.get("where")
+    query.set("where", exp.Where(this=exp.and_(existing.this, predicate)) if existing else exp.Where(this=predicate))
+    return query.sql(dialect="postgres")
+
+
+def _inventory_question_needs_latest_snapshot(question: str) -> bool:
+    text = question.casefold()
+    if re.search(r"\b(?:19|20)\d{2}\b", text):
+        return False
+    historical = (
+        r"\b(trend|historical|over time|year.over.year|by year|by month|across years|all years|all.time)\b"
+        r"|qua các năm|theo năm|theo tháng|thay đổi theo thời gian|xu hướng|toàn bộ dữ liệu|tất cả các năm"
+    )
+    return not re.search(historical, text)
+
+
+def _commerce_sql_from_model(raw: str) -> str:
+    text = raw.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json|sql)?\s*|\s*```$", "", text, flags=re.IGNORECASE)
+    try:
+        payload = json.loads(text)
+        if isinstance(payload, dict):
+            text = payload.get("sql", "")
+    except json.JSONDecodeError:
+        pass
+    if not isinstance(text, str) or not text.strip():
+        raise UnsafeAnalyticsQuery("The model did not return a Commerce SELECT")
+    return text
+
+
+def _validate_comparison_groups(question: str, sql: str) -> str:
+    """Keep all peer groups in ranking queries instead of filtering competitors away."""
+    group = re.search(
+        r"\b(?:categor(?:y|ies)|groups?|regions?|segments?|campaigns?|locations?|warehouses?|carriers?)\b|"
+        r"(?:danh mục|nhóm|vùng|khu vực|chiến dịch|địa điểm|kho|nhà vận chuyển)",
+        question,
+        re.IGNORECASE,
+    )
+    ranking = re.search(
+        r"\b(?:which|rank(?:ing)?|highest|lowest|most|least|largest|smallest|top|prioriti[sz]e|best|worst)\b|"
+        r"(?:nào|cao nhất|thấp nhất|nhiều nhất|ít nhất|lớn nhất|nhỏ nhất|ưu tiên|tốt nhất|kém nhất)",
+        question,
+        re.IGNORECASE,
+    )
+    if group and ranking and re.search(r"\bHAVING\b", sql, re.IGNORECASE):
+        raise UnsafeAnalyticsQuery(
+            "A comparative ranking must retain every peer group; do not filter groups with HAVING"
+        )
+    return sql
+
+
+def _validate_campaign_outcome_query(question: str, sql: str) -> str:
+    """Reject campaign outcome SQL that does not apply the dataset's attribution rules."""
+    asks_campaign_outcome = (
+        re.search(r"\bcampaigns?\b|chiến dịch", question, re.IGNORECASE)
+        and re.search(
+            r"\b(?:sales|revenue|orders?|units?|discounts?)\b|doanh thu|đơn hàng|sản phẩm|giảm giá",
+            question,
+            re.IGNORECASE,
+        )
+    )
+    if not asks_campaign_outcome:
+        return sql
+
+    statement = parse_one(sql, read="postgres")
+    aliases = {
+        table.name.casefold(): table.alias_or_name.casefold()
+        for table in statement.find_all(exp.Table)
+    }
+    promotion_alias = aliases.get("promotions")
+    item_alias = aliases.get("order_items")
+    orders_alias = aliases.get("orders")
+    missing = []
+    if not item_alias or not promotion_alias or not orders_alias:
+        missing.append("join promotions, tagged order items and orders")
+
+    def equality_pairs_campaign_ids(or_expression: exp.Expression) -> bool:
+        pairs = set()
+        for equality in or_expression.find_all(exp.EQ):
+            columns = [node for node in equality.find_all(exp.Column)]
+            if len(columns) == 2:
+                pairs.add(frozenset((
+                    (columns[0].table.casefold(), columns[0].name.casefold()),
+                    (columns[1].table.casefold(), columns[1].name.casefold()),
+                )))
+        return bool(
+            item_alias and promotion_alias
+            and frozenset(((item_alias, "promo_id"), (promotion_alias, "promo_id"))) in pairs
+            and frozenset(((item_alias, "promo_id_2"), (promotion_alias, "promo_id"))) in pairs
+        )
+
+    item_joins = [
+        join for join in statement.find_all(exp.Join)
+        if isinstance(join.this, exp.Table) and join.this.name.casefold() == "order_items"
+    ]
+    if not any(
+        equality_pairs_campaign_ids(or_expression)
+        for join in item_joins
+        for or_expression in join.find_all(exp.Or)
+    ):
+        missing.append("attribute a line tagged in either promo_id or promo_id_2")
+    if not re.search(rf"\b{re.escape(orders_alias or 'orders')}\.order_status\s*=\s*'delivered'", sql, re.IGNORECASE):
+        missing.append("filter to delivered orders")
+    if not any(
+        isinstance(condition, exp.Between)
+        and isinstance(condition.this, exp.Column)
+        and condition.this.name.casefold() == "order_date"
+        and isinstance(condition.args.get("low"), exp.Column)
+        and condition.args["low"].name.casefold() == "start_date"
+        and isinstance(condition.args.get("high"), exp.Column)
+        and condition.args["high"].name.casefold() == "end_date"
+        for condition in statement.find_all(exp.Between)
+    ):
+        missing.append("restrict order_date to each campaign's start_date through end_date")
+
+    order_joins = [
+        join for join in statement.find_all(exp.Join)
+        if isinstance(join.this, exp.Table) and join.this.name.casefold() == "orders"
+    ]
+    left_orders = any((join.args.get("side") or "").casefold() == "left" for join in order_joins)
+    if left_orders:
+        for aggregate in statement.find_all(exp.AggFunc):
+            filter_clause = aggregate.parent if isinstance(aggregate.parent, exp.Filter) else None
+            if (filter_clause is None
+                    or not re.search(
+                        rf"\b{re.escape(orders_alias or 'orders')}\.order_id\s+IS\s+NOT\s+NULL\b",
+                        filter_clause.sql(), re.IGNORECASE,
+                    )):
+                missing.append("filter every LEFT JOIN aggregate to matched delivered orders")
+                break
+
+    years = sorted({int(value) for value in re.findall(r"\b(20\d{2})\b", question)})
+    where_sql = statement.args["where"].sql() if statement.args.get("where") else ""
+    if years and promotion_alias:
+        start_date = re.escape(promotion_alias) + r"\.start_date"
+        year_expr = rf"EXTRACT\s*\(\s*YEAR\s+FROM\s+{start_date}\s*\)"
+        if len(years) == 1:
+            first, last = years[0], years[0]
+            year_filter = re.search(rf"{year_expr}\s*=\s*{first}\b", where_sql, re.IGNORECASE)
+        else:
+            first, last = years[0], years[-1]
+            year_filter = re.search(
+                rf"{year_expr}\s+BETWEEN\s+{first}\s+AND\s+{last}\b", where_sql, re.IGNORECASE,
+            )
+        date_range_filter = re.search(
+            rf"{start_date}\s*>=\s*'{first}-01-01'.*{start_date}\s*<\s*'{last + 1}-01-01'",
+            where_sql,
+            re.IGNORECASE,
+        )
+        if not year_filter and not date_range_filter:
+            missing.append(f"filter campaign start date to requested year range {first}-{last}")
+    if missing:
+        raise UnsafeAnalyticsQuery("Campaign outcome SQL must " + "; ".join(dict.fromkeys(missing)))
+    return sql
+
+
 class SQLAnalyticsAgent(BaseAgent):
     def __init__(self, repository: DocumentRepository | None = None, llm: GroqProvider | None = None):
         self.repository = repository or DocumentRepository()
         self.llm = llm or GroqProvider()
+
+    def commerce_decision_snapshot(self, domain: str) -> dict:
+        """Read the fixed, domain-scoped Commerce aggregates used in decision reports."""
+        return self.repository.commerce_decision_snapshot(domain)
+
+    def commerce_latest_inventory_flag_overlap(self) -> list[dict]:
+        """Read the vetted dashboard aggregate for products carrying both inventory flags."""
+        return self.repository.commerce_dashboard(("inventory_latest_flag_overlap",))["inventory_latest_flag_overlap"]
+
+    def commerce_question_observations(self, question: str, domain: str) -> dict:
+        """Generate a question-specific SELECT over the selected domain's approved schema."""
+        tables = COMMERCE_QUERY_TABLES.get(domain)
+        if tables is None:
+            raise ValueError(f"Unsupported Commerce decision domain: {domain}")
+        available_columns = {column for columns in tables.values() for column in columns}
+        unavailable = unavailable_commerce_dimensions(question, domain, available_columns)
+        if unavailable:
+            raise UnsupportedCommerceDimension(unavailable, available_columns)
+        schema = "\n".join(
+            f"commerce.{table}({', '.join(columns)})"
+            for table, columns in tables.items()
+        )
+        schema_note = (
+            "\nTime-grain note: for annual transit-time or shipping-fee trends, group by the completed "
+            "delivery year using EXTRACT(YEAR FROM s.delivery_date), unless the user explicitly asks for "
+            "order-placement year or dispatch year. This matches the logistics dashboard's reporting period. "
+            "Type note: commerce.shipments.ship_date and delivery_date are DATE columns; "
+            "subtracting one from the other returns an integer number of days. For transit time, "
+            "use AVG(s.delivery_date - s.ship_date); do not wrap that difference in EXTRACT(EPOCH ...)."
+            if domain == "nationwide_logistics" else ""
+        )
+        if domain == "promotion_planning":
+            schema_note += (
+                "\nCampaign-window note: when comparing promotion campaign outcomes, attribute tagged line items "
+                "through either order_items.promo_id or promo_id_2 (use one OR join condition so a line tagged "
+                "with the same campaign in both slots is not double-counted). Use only delivered orders whose "
+                "order_date falls between that campaign's start_date and end_date; apply a requested campaign "
+                "year to the campaign dates as well as the order dates. Use INNER JOINs for eligible order items "
+                "and orders, or filter every order-derived aggregate to matched orders if a LEFT JOIN is needed. "
+                "Calculate net item sales as quantity * unit_price - discount_amount. Preserve the requested "
+                "campaign/channel/year dimensions in grouped results."
+            )
+        if domain == "inventory_allocation":
+            schema_note += (
+                "\nBoolean-column note: inventory.stockout_flag, overstock_flag and reorder_flag are BOOLEAN. "
+                "Filter with boolean predicates and count with COUNT(*) FILTER (WHERE flag); do not compare "
+                "these columns with integer 1/0 or sum them."
+            )
+        prompt = (
+            "Translate the user's Commerce question into one PostgreSQL SELECT and return JSON only: "
+            '{"sql":"SELECT ..."}. Use only the exact tables and columns listed below. '
+            "Qualify every source column with its table name or alias. Use explicit, key-based JOINs only. "
+            "Return aggregated or grouped observations, never individual customer or transaction records. "
+            "Select an aggregate for every measure explicitly requested in the question, and group by every requested dimension and period. "
+            "Do not reduce a multi-measure comparison to only one available measure; if a requested measure is not in the approved schema, omit it and let the answer state that it is unavailable. "
+            "Hard SQL constraints: one SELECT only; no CTEs, nested queries, scalar subqueries, or window functions. "
+            "Every selected non-aggregate expression must appear in GROUP BY; use only allowlisted SQL functions. "
+            "Inventory questions without an explicit year or historical-trend request are scoped by the server "
+            "to the database's latest snapshot date. Group only by the requested dimensions; do not guess dates "
+            "or add time dimensions. "
+            "For ranking or prioritization among categories, groups, regions, or other peer dimensions, include all "
+            "peer groups with comparable measures and order them; do not use HAVING to remove competitors unless "
+            "the user explicitly asks for a threshold-defined subset. "
+            "List the grouped dimension expressions explicitly; do not use ordinal GROUP BY positions. "
+            "Do not calculate causal lift, ROI, or an unsupported target. Use the period requested; if none is given, "
+            "prefer the most recent period represented by the relevant table. Do not invent data. Include LIMIT 100.\n\n"
+            f"Approved domain schema for {domain}:\n{schema}{schema_note}\n\nQuestion: {question}"
+        )
+        text = ""
+        rejected_sql = ""
+
+        def validated_query(raw: str) -> str:
+            query = _validate_comparison_groups(question, _commerce_sql_from_model(raw))
+            reads_inventory = any(
+                table.name.casefold() == "inventory"
+                for table in parse_one(query, read="postgres").find_all(exp.Table)
+            )
+            if (domain == "inventory_allocation" and reads_inventory
+                    and _inventory_question_needs_latest_snapshot(question)):
+                query = _scope_inventory_query_to_latest_snapshot(
+                    query, self.repository.latest_commerce_inventory_snapshot(),
+                )
+            safe_query = validate_commerce_sql(query, tables)
+            if domain == "promotion_planning":
+                safe_query = _validate_campaign_outcome_query(question, safe_query)
+            return safe_query
+
+        try:
+            raw, generation_provider = generate_with_provider_fallback(self.llm, prompt)
+            rejected_sql = _commerce_sql_from_model(raw)
+            text = validated_query(raw)
+            observations = self.repository.execute_commerce_analytics(text, domain)
+        except UnsafeAnalyticsQuery as error:
+            correction = (
+                f"\n\nThe server rejected your previous SQL: {error}. Rewrite it as one safe SELECT that obeys "
+                "every stated SQL constraint. Do not use a subquery, CTE, window, unqualified source column, "
+                "raw transaction row, or unapproved field/function. For a latest snapshot, group by and return "
+                "the snapshot date instead of calculating MAX in a subquery. Return corrected JSON only.\n"
+                "If the question ranks or prioritizes peer groups, include all peer groups with comparable measures; "
+                "do not filter competitors with HAVING unless the user explicitly requested a threshold-defined subset.\n"
+                f"Rejected SQL: {rejected_sql}"
+            )
+            raw, generation_provider = generate_with_provider_fallback(self.llm, prompt + correction)
+            text = validated_query(raw)
+            observations = self.repository.execute_commerce_analytics(text, domain)
+        used_tables = list(dict.fromkeys(re.findall(
+            r"\b(?:from|join)\s+commerce\.([a-z_][a-z0-9_]*)\b", text, re.IGNORECASE,
+        )))
+        return {
+            "domain": domain,
+            "source_tables": [f"commerce.{name}" for name in used_tables],
+            "sql_query": text,
+            "sql_generation_provider": generation_provider,
+            "observations": observations,
+            "limitations": list(COMMERCE_DECISION_PROFILES[domain]["limitations"]),
+            "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer.",
+        }
 
     def run(self, request: AgentRequest) -> AgentResult:
         role = request.metadata.get("role")
@@ -135,7 +443,11 @@ class SQLAnalyticsAgent(BaseAgent):
             # A selected decision scope always runs against its verified business
             # metrics, even when the question uses wording outside the alias map.
             # This prevents fallback SQL from crossing into an unrelated domain.
-            query_business_metrics.update(scoped_business_names if decision_profile and not query_business_metrics else ())
+            if decision_profile and not query_business_metrics:
+                if request.metadata.get("decision_suggestions"):
+                    query_business_metrics.update(decision_profile["primary_metrics"])
+                else:
+                    query_business_metrics.update(scoped_business_names)
             metric_names = ", ".join(f"'{name}'" for name in sorted(query_business_metrics))
             years = sorted(set(re.findall(r"(?<!\d)(?:FY\s*)?((?:19|20)\d{2})\b", request.question, re.I)))
             if len(years) >= 2 and max(map(int, years)) - min(map(int, years)) >= 2:

@@ -25,7 +25,7 @@ from core.agents.router import AgentRouter  # noqa: E402
 from core.llm.groq_provider import GroqProvider  # noqa: E402
 from core.models.agents import AgentRequest, AgentResult  # noqa: E402
 
-_DATASET = REPO_ROOT / "data/evaluation/proposal_business_route_cases.json"
+_DATASET = REPO_ROOT / "data/evaluation/archive/agents/proposal_business_route_cases.json"
 _OUTPUT = REPO_ROOT / "artifacts/evaluation/proposal-business-route-evaluation.json"
 _ROUTES = ("knowledge", "analytics", "hybrid", "dashboard", "report")
 

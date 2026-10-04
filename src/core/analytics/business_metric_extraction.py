@@ -35,6 +35,21 @@ def _source_quote(source: str, quote: str) -> str | None:
     return match.group(0) if match else None
 
 
+def source_quote_matches(source: str, quote: str) -> bool:
+    """Check a quoted excerpt, allowing ellipses only between ordered source spans."""
+    parts = re.split(r"\s*(?:…|\.\.\.)\s*", str(quote or ""))
+    parts = [part for part in parts if part.strip()]
+    if not parts:
+        return False
+    cursor = 0
+    for part in parts:
+        match = re.search(r"\s+".join(re.escape(word) for word in part.split()), source[cursor:], re.IGNORECASE)
+        if match is None:
+            return False
+        cursor += match.end()
+    return True
+
+
 def select_business_metric_chunks(
     chunks: list[dict], tables: list[dict] | None = None,
     max_chunks: int = MAX_BUSINESS_METRIC_CHUNKS,
@@ -84,19 +99,23 @@ def select_business_metric_chunks(
         table_index = metadata.get("table_index")
         context = table_context.get((page_number, table_index), {})
         page_context = "\n".join(page_contexts.get(page_number, []))
-        domain_text = " ".join((
+        direct_text = " ".join((
             text,
             str(metadata.get("section_title") or ""),
             str(context.get("table_title") or "") if isinstance(context, dict) else "",
-            page_context,
         )).casefold()
         matched_metrics = []
+        contextual_metrics = []
         if decision_domain:
             for name in profile_metrics:
                 definition = BUSINESS_METRIC_CATALOG[name]
                 phrases = {name.replace("_", " "), definition["label"], *definition.get("aliases", ())}
-                if any(" ".join(phrase.casefold().split()) in domain_text for phrase in phrases):
+                if any(" ".join(phrase.casefold().split()) in direct_text for phrase in phrases):
                     matched_metrics.append(name)
+                elif any(" ".join(phrase.casefold().split()) in page_context.casefold() for phrase in phrases):
+                    contextual_metrics.append(name)
+        if metric_names is not None and not matched_metrics and not contextual_metrics:
+            continue
         row_text = "\n".join(re.findall(r"(?m)^Row \d+:.*$", text))
         row_text = re.sub(r"(?m)^Row \d+:\s*", "", row_text)
         numeric_tokens = re.findall(
@@ -110,6 +129,7 @@ def select_business_metric_chunks(
             continue
         score = (
             len(matched_metrics) * 100
+            + len(contextual_metrics) * 25
             + min(len(numeric_tokens), 30)
             + min(len(text) // 500, 10)
             + (5 if is_table else 0)
@@ -129,12 +149,19 @@ def select_business_metric_chunks(
                                 for key in ("parser", "text_extraction_method", "table_extraction_method")),
             "selection_signals": {
                 "domain_relevance_score": len(matched_metrics),
+                "contextual_metric_match_count": len(contextual_metrics),
                 "parser_layout": "table" if is_table else "text",
                 "numeric_token_count": len(numeric_tokens),
                 "matched_primary_metrics": sorted(matched_metrics),
                 "score": score,
             },
         })
+    direct_metric_evidence = [
+        item for item in selected
+        if item["selection_signals"]["domain_relevance_score"] > 0
+    ]
+    if metric_names is not None and direct_metric_evidence:
+        selected = direct_metric_evidence
     ranked = sorted(selected, key=lambda item: (
         -item["selection_signals"]["score"],
         item["page_number"] or 0,
@@ -243,8 +270,7 @@ def _validated_metrics(
         quote_normalized = " ".join(quote.split())
         if (source_chunk is None or value not in quote_normalized
                 or _flat(unit) not in _flat("\n".join((source, evidence.get("page_context", ""))))
-                or (str(year) not in quote_normalized
-                    and (not document_year or year != int(document_year)))):
+                or str(year) not in quote_normalized):
             rejected["quote_not_grounded"] += 1
             continue
         negative = value.startswith("(") and value.endswith(")")

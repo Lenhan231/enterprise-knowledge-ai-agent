@@ -23,8 +23,10 @@ uv sync
 PYTHONPATH=src uvicorn app.main:app --reload --env-file .env --port 8000
 ```
 
-Open `http://localhost:8000` for the Enterprise Intelligence dashboard.
-The UI reads the indexed corpus and role-scoped, verified analytics from Supabase.
+Open `http://localhost:8000` for the Commerce decision-support dashboard.
+The UI reads the indexed corpus and live, role-scoped aggregates from Supabase.
+Commerce competition data is synthetic; public operating references are external
+examples, not policy for the synthetic business.
 
 Project layout
 
@@ -37,11 +39,29 @@ Project layout
 - [scripts](scripts/README.md): reproducible CLI entry points grouped by workstream; see the [repository map](docs/technical/repository-ownership.md) for ownership and shared contracts
 - docker-compose.yml: FastAPI service; optional pgvector-only database profile (not the full Supabase stack)
 
-## Dataset
+## Dataset and knowledge sources
 
-The current demo uses a reproducible, public Vinamilk corpus documented in
-[`data/README.md`](data/README.md). Raw source documents and generated Markdown
-stay local and are not committed.
+The current business demo is centered on the Kaggle Datathon 2026 Round 1
+Commerce schema. Its transactional and operational data is synthetic and is
+kept in the private PostgreSQL `commerce` schema; it must not be described as
+observed data from a real retailer. The importer copies source CSV fields
+without recomputing competition metrics. `sample_submission.csv` is not loaded.
+See [`scripts/README.md`](scripts/README.md).
+
+Decision support uses public management cookbooks and attributed retailer or
+platform operating examples, registered in
+[`data/commerce_knowledge/manifest.json`](data/commerce_knowledge/manifest.json).
+Management cookbooks are external decision methods, not policy for the
+synthetic dataset; company practice references are attributed examples, and
+platform rules apply only when that platform is in scope. Source scope and
+reuse terms are recorded in the manifest.
+Three additional generated PDFs define demo-only decision rules for inventory,
+promotions, and logistics. Each page labels them synthetic; they exist to test
+the policy-grounded agent flow and must never be presented as policy from a real
+retailer. The rules intentionally use no fabricated numeric targets.
+No government document is used as company policy. A synthetic scanned PDF may
+demonstrate OCR/upload behavior only; it must be labeled synthetic and excluded
+from business evidence.
 
 ## Local demo access
 
@@ -55,7 +75,7 @@ browser. The demo has no user-registration or password-reset flow.
 - Viewer: corpus overview and document questions.
 - Analyst: viewer access plus the source-backed analytics dashboard.
 - Tester: isolated OCR Lab only; test PDFs and parser output are not added to the corpus.
-- Admin: analyst access plus the role permission matrix.
+- Admin: analyst access plus role permissions, metric review, and knowledge-file management.
 
 Configure `DEMO_TESTER_USERNAME` / `DEMO_TESTER_PASSWORD` to enable the Tester
 login. Tester can run OCR tests and inspect saved test runs, but cannot browse
@@ -84,7 +104,19 @@ uploads go through `/api/documents/upload`; PDF parser output is chunked and
 indexed, then the business-metric extractor proposes only decision-domain
 primary KPIs for admin review. Admins can inspect each source chunk before
 verification.
-Vinamilk's source-backed business metric extraction, provenance and decision-question coverage are documented in [`docs/technical/vinamilk-milk-supply-metrics.md`](docs/technical/vinamilk-milk-supply-metrics.md).
+The Admin **Knowledge Management** tab can remove or restore indexed files from
+AI retrieval. This toggles `documents.knowledge_base_active` without deleting
+the source file, parser chunks, or verified metric history; OCR processing
+status remains independent. The commerce manifest controls the initial state
+for public references, while later Admin changes persist across re-indexing.
+The Commerce dashboard loads only the selected domain's aggregates when an
+analyst opens Analytics or switches domain; dashboard data is not queried as a
+login prerequisite. Commerce decision support combines descriptive aggregates
+from the private `commerce` schema with retrieved management methods and
+attributed operating references. The dashboard excludes fields that failed the
+current quality review and explicitly labels promotion comparisons as
+non-causal. The Commerce source corpus and OCR demo progress are tracked in
+[`docs/commerce-decision-support.md`](docs/commerce-decision-support.md).
 
 The upload route requires `SUPABASE_SECRET_KEY` on the server (legacy
 `SUPABASE_SERVICE_ROLE_KEY` is also accepted), an
@@ -99,6 +131,11 @@ for direct image uploads based on a small labeled pilot; OCR-derived table
 metadata keeps the engine and settings used. See
 [`docs/technical/document-processing.md`](docs/technical/document-processing.md)
 for the evaluation and limitations. KPI candidates stay pending until an admin
-verifies their value and unit. See [`docs/README.md`](docs/README.md) for
-proposal coverage and the technical guide to processing, chunking, embeddings,
-retrieval, agents and evaluation.
+verifies their value and unit. Successful uploads report page, parser-passage,
+indexed-passage, OCR-passage and structured-table counts. Admins are taken to
+the saved parser output for that document; each passage and table links to its
+original PDF page for review. The isolated OCR Lab additionally compares page
+previews with extracted text and tables without adding test files to the corpus.
+See [`docs/README.md`](docs/README.md) for
+current Commerce scope, verification status, limitations and the technical guide
+to processing, chunking, embeddings, retrieval, agents and evaluation.

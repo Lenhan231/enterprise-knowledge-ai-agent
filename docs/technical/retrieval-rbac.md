@@ -10,6 +10,12 @@ PostgreSQL `tsvector`/`tsquery` candidates are fused with reciprocal-rank
 fusion; a single explicit fiscal year is promoted within both candidate sets.
 The default `RetrievalRequest.top_k` is 5, bounded to 1–100.
 
+If query embedding fails during default hybrid retrieval, the service retries
+the same query with BM25 and keeps the original company, role, and metadata
+filters. The response reports `bm25` as the method actually used. Explicit
+dense and parent requests still surface embedding errors instead of silently
+changing retrieval semantics.
+
 Access roles come from the authenticated server-side request and the
 `documents.allowed_roles` source of truth. Client-supplied roles are not trusted.
 `KnowledgeAgent` rejects a missing/blank trusted role before calling RAG, and

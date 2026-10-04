@@ -1,0 +1,154 @@
+{
+  "benchmark_id": "commerce-decision-support-discovery-v1",
+  "dataset": "Synthetic Kaggle Datathon 2026 Round 1 Commerce dataset",
+  "explored_on": "2026-10-03",
+  "purpose": "Candidate SQL-plus-RAG decision-support questions derived from the available Commerce tables. These are evaluation cases, not company facts or approved policies.",
+  "domains": {
+    "inventory_allocation": {
+      "source_tables": ["commerce.inventory", "commerce.products"],
+      "data_limits": [
+        "No warehouse/location, supplier lead time, demand forecast, transfer cost, or service target.",
+        "Stockout and overstock flags can both be true for the same snapshot: 30,495 of 60,247 rows overall and 232 of 424 products in the latest snapshot. Do not treat them as mutually exclusive or infer transferable excess stock.",
+        "days_of_supply is anomalously high and excluded from recommendations."
+      ],
+      "cases": [
+        {
+          "id": "INV-01",
+          "requires_operating_reference": true,
+          "question": "Trong snapshot tồn kho mới nhất, nhóm hàng nào có nhiều sản phẩm bị gắn cờ stockout nhất? Có nên chuyển hàng từ nhóm overstock sang không?",
+          "gold_observations": [
+            {"snapshot_date": "2022-12-31", "category": "Streetwear", "products": 196, "stockout_products": 134, "overstock_products": 162},
+            {"snapshot_date": "2022-12-31", "category": "Outdoor", "products": 144, "stockout_products": 95, "overstock_products": 113}
+          ],
+          "required_numeric_facts": [134, 95, 232],
+          "expected_behavior": "Identify Streetwear as the largest category-level stockout signal; do not recommend a transfer. Explain that category counts do not match SKU surplus to shortage and 232 latest-snapshot rows carry both flags.",
+          "reference_need": "SKU stock-state definitions, stock validation and replenishment review workflow."
+        },
+        {
+          "id": "INV-02",
+          "requires_operating_reference": true,
+          "question": "Tình trạng availability thay đổi thế nào trong ba năm 2020–2022, và có thể đặt service target mới từ các quan sát này không?",
+          "gold_observations": [
+            {"year": 2020, "snapshots": 5686, "stockout_snapshots": 3795, "avg_fill_rate": 0.9656},
+            {"year": 2021, "snapshots": 5609, "stockout_snapshots": 3788, "avg_fill_rate": 0.9619},
+            {"year": 2022, "snapshots": 5232, "stockout_snapshots": 3490, "avg_fill_rate": 0.9635}
+          ],
+          "required_numeric_facts": [2020, 5686, 3795, "0.9656", 2021, 5609, 3788, "0.9619", 2022, 5232, 3490, "0.9635"],
+          "expected_behavior": "Describe the endpoint values and non-monotonic trend. Do not treat historical fill rate as an approved target or conclude a sustained operational improvement from the flag counts alone.",
+          "reference_need": "How to interpret stock availability and replenishment indicators; any numeric service target must come from an approved internal policy."
+        },
+        {
+          "id": "INV-03",
+          "requires_operating_reference": true,
+          "question": "Có đủ cơ sở để phân bổ lại hàng giữa các vùng nhằm giảm stockout không?",
+          "gold_observations": [
+            {"available": "Product/category snapshots; no inventory-by-location or warehouse field."},
+            {"missing": ["location_id", "SKU demand by destination", "transfer lead time", "transfer cost", "service target"]}
+          ],
+          "required_numeric_facts": [],
+          "expected_behavior": "Abstain from a regional transfer recommendation. Request location-level inventory, destination demand and transfer economics first.",
+          "reference_need": "External examples of multi-location inventory transfer and order-routing prerequisites, clearly labelled as external practice."
+        }
+      ]
+    },
+    "promotion_planning": {
+      "source_tables": ["commerce.promotions", "commerce.orders", "commerce.order_items", "commerce.products"],
+      "data_limits": [
+        "Tagged versus untagged groups are observational; there is no randomized holdout or counterfactual.",
+        "Campaign spend and campaign-attributed sessions/customer acquisition cost are absent. Product-level COGS and order-item prices exist, so a merchandise gross-profit proxy can be calculated, but it is not contribution margin or campaign ROI; validate the catalog COGS assumptions before using it for a decision.",
+        "The promotion table has 50 campaign records. order_items has 206 rows with both promotion slots populated; comparisons must define how a dual-tagged row is assigned."
+      ],
+      "cases": [
+        {
+          "id": "PROMO-01",
+          "requires_operating_reference": true,
+          "question": "Trong 2020–2022, so sánh theo từng năm nhóm đơn delivered có gắn khuyến mãi và không gắn tag về số đơn đã giao, số lượng sản phẩm, doanh thu thuần và tổng giảm giá. Các quan sát này có chứng minh uplift để tăng ngân sách không?",
+          "gold_observations": [
+            {"year": 2020, "tagged": true, "delivered_orders": 10305, "units": 49756, "net_sales": 235597280.59, "discounts": 39488236.40},
+            {"year": 2020, "tagged": false, "delivered_orders": 17670, "units": 84029, "net_sales": 570817418.55, "discounts": 0.00},
+            {"year": 2021, "tagged": true, "delivered_orders": 11824, "units": 56795, "net_sales": 272380807.80, "discounts": 39846428.26},
+            {"year": 2021, "tagged": false, "delivered_orders": 14928, "units": 70747, "net_sales": 493703251.83, "discounts": 0.00},
+            {"year": 2022, "tagged": true, "delivered_orders": 10173, "units": 48768, "net_sales": 245344841.20, "discounts": 41728464.79},
+            {"year": 2022, "tagged": false, "delivered_orders": 17515, "units": 82665, "net_sales": 615242495.15, "discounts": 0.00}
+          ],
+          "required_numeric_facts": [2020, 10305, 49756, "235597280.59", "39488236.40", 17670, 84029, "570817418.55", "0.00", 2021, 11824, 56795, "272380807.80", "39846428.26", 14928, 70747, "493703251.83", "0.00", 2022, 10173, 48768, "245344841.20", "41728464.79", 17515, 82665, "615242495.15", "0.00"],
+          "expected_behavior": "Report tagged and untagged aggregate values exactly; they are descriptive groups, not incremental sales or a causal uplift estimate. Do not recommend a budget increase without campaign costs, margin and a credible counterfactual.",
+          "reference_need": "Campaign measurement guidance covering attributed outcomes, cost and attribution boundaries."
+        },
+        {
+          "id": "PROMO-02",
+          "requires_operating_reference": false,
+          "question": "Trong các campaign 2022, campaign nào có net sales gắn tag cao nhất trong thời gian chạy?",
+          "gold_observations": [
+            {"year": 2022, "campaign": "Spring Sale 2022", "channel": "all_channels", "delivered_orders": 3473, "units": 16555, "net_item_sales": 90345105.91, "discounts": 12319787.45},
+            {"year": 2022, "campaign": "Fall Launch 2022", "channel": "all_channels", "delivered_orders": 1899, "units": 8958, "net_item_sales": 55424932.90, "discounts": 6158326.20},
+            {"year": 2022, "campaign": "Mid-Year Sale 2022", "channel": "online", "delivered_orders": 2267, "units": 10559, "net_item_sales": 53901863.12, "discounts": 11832116.28}
+          ],
+          "required_numeric_facts": ["90345105.91"],
+          "expected_behavior": "Rank only the observed tagged outcomes in each declared campaign window. Avoid causal wording such as generated, lifted, or drove.",
+          "reference_need": "Campaign report definitions and attribution scope; platform-specific definitions remain conditional."
+        },
+        {
+          "id": "PROMO-03",
+          "requires_operating_reference": true,
+          "question": "Kênh khuyến mãi nào có ROI cao nhất để dồn ngân sách?",
+          "gold_observations": [
+            {"available": ["promo_channel", "tagged units", "net item sales", "discount amounts", "product catalog COGS for a merchandise gross-profit proxy"]},
+            {"missing": ["campaign spend", "campaign-attributed sessions/impressions", "contribution margin after variable campaign/fulfillment costs", "incremental/control outcome"]}
+          ],
+          "required_numeric_facts": [],
+          "expected_behavior": "State that ROI and incremental channel effectiveness cannot be calculated. The agent may calculate and label a merchandise gross-profit proxy from line-item sales less catalog COGS, but must disclose the COGS assumption and must not call it contribution margin. Request campaign spend, attributable traffic and a holdout or defensible counterfactual before ranking channels by incremental profitability.",
+          "reference_need": "Business-published method for comparing campaign/channel performance with attributed outcomes and cost."
+        }
+      ]
+    },
+    "nationwide_logistics": {
+      "source_tables": ["commerce.shipments", "commerce.orders", "commerce.geography"],
+      "data_limits": [
+        "Shipments provide ship_date, delivery_date and shipping_fee; geography resolves customer ZIPs to East/Central/West.",
+        "Carrier, warehouse origin, route, capacity, promised SLA, package weight and service type are absent.",
+        "All 566,067 shipment rows have ship/delivery dates, non-negative transit and a shipping fee, but timestamps alone do not identify delay causes."
+      ],
+      "cases": [
+        {
+          "id": "LOG-01",
+          "requires_operating_reference": true,
+          "question": "Trong 2022, vùng nào có average transit time cao nhất và có nên thiết kế lại mạng lưới giao hàng không?",
+          "gold_observations": [
+            {"year": 2022, "region": "Central", "deliveries": 9593, "avg_transit_days": 4.51, "median_transit_days": 5.0, "avg_shipping_fee": 4.10},
+            {"year": 2022, "region": "East", "deliveries": 14120, "avg_transit_days": 4.52, "median_transit_days": 5.0, "avg_shipping_fee": 3.98},
+            {"year": 2022, "region": "West", "deliveries": 7054, "avg_transit_days": 4.51, "median_transit_days": 5.0, "avg_shipping_fee": 3.89}
+          ],
+          "required_numeric_facts": ["4.51", "4.52"],
+          "expected_behavior": "Identify East's slightly higher annual average from the supplied data but avoid unsupported precision or a route-level diagnosis. Do not recommend network redesign; require carrier, origin/destination, promised SLA and route-level capacity/cost data.",
+          "reference_need": "External order-routing and delivery-performance workflow examples; clearly state the missing local route and warehouse inputs."
+        },
+        {
+          "id": "LOG-02",
+          "requires_operating_reference": false,
+          "question": "Trong 2020–2022, shipping fee và transit time theo vùng thay đổi ra sao?",
+          "gold_observations": [
+            {"region": "Central", "2020_avg_days": 4.51, "2020_avg_fee": 4.17, "2021_avg_days": 4.52, "2021_avg_fee": 4.13, "2022_avg_days": 4.51, "2022_avg_fee": 4.10},
+            {"region": "East", "2020_avg_days": 4.50, "2020_avg_fee": 4.27, "2021_avg_days": 4.51, "2021_avg_fee": 4.07, "2022_avg_days": 4.52, "2022_avg_fee": 3.98},
+            {"region": "West", "2020_avg_days": 4.51, "2020_avg_fee": 4.11, "2021_avg_days": 4.50, "2021_avg_fee": 4.36, "2022_avg_days": 4.51, "2022_avg_fee": 3.89}
+          ],
+          "required_numeric_facts": [2020, 2021, 2022, "4.51", "4.17", "4.52", "4.13", "4.10", "4.50", "4.27", "4.07", "3.98", "4.11", "4.36", "3.89"],
+          "expected_behavior": "Describe the observed endpoints only; do not claim that lower fees caused or did not cause transit changes. The schema has no carrier, route, package or service mix to explain the pattern.",
+          "reference_need": "Delivery-cost and service-level management process; the example must not be represented as the dataset's carrier policy."
+        },
+        {
+          "id": "LOG-03",
+          "requires_operating_reference": true,
+          "question": "Có nên chuyển năng lực giao hàng giữa East, Central và West để giảm trễ không?",
+          "gold_observations": [
+            {"available": ["customer region", "ship and delivery dates", "shipping fee"]},
+            {"missing": ["origin warehouse", "carrier/service", "route capacity", "promised SLA", "package characteristics", "controllable cost"]}
+          ],
+          "required_numeric_facts": [],
+          "expected_behavior": "Do not prescribe a capacity shift from regional averages. Recommend collecting lane-level delivery and capacity evidence, then compare SLA misses and cost by carrier/service.",
+          "reference_need": "External order-routing criteria such as inventory availability, location proximity, split fulfillment and capacity; label them as an example only."
+        }
+      ]
+    }
+  }
+}

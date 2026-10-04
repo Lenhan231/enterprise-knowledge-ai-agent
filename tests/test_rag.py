@@ -23,8 +23,8 @@ class FakeRetrieval:
         self.contexts = contexts
         self.calls = []
 
-    def retrieve(self, request, company=None, roles=None, method="hybrid"):
-        self.calls.append((request, company, roles, method))
+    def retrieve(self, request, company=None, roles=None, method="hybrid", metadata_filter=None):
+        self.calls.append((request, company, roles, method, metadata_filter))
         results = []
         for rank, item in enumerate(self.contexts[:request.top_k], 1):
             document_id = item["metadata"]["document_id"]
@@ -105,6 +105,28 @@ class RAGServiceTest(unittest.TestCase):
         self.assertFalse(result.insufficient_context)
         self.assertEqual(llm.calls, [])
         self.assertEqual(retrieval.calls[0][3], "parent")
+
+    def test_qa_prompt_preserves_policy_provenance_and_synthetic_status(self):
+        source = context("CD-POL-INV-001")
+        source["metadata"].update({
+            "evidence_class": "company_policy_reference",
+            "source_publisher": "Commerce Demo (fictional)",
+            "reference_applicability": "Inventory demo scenarios only.",
+            "synthetic_company_policy": True,
+            "knowledge_domains": ["inventory_allocation"],
+        })
+        llm = FakeLLM("Đây là quy tắc giả lập cho tình huống demo [S1].")
+
+        RAGService(FakeRetrieval([source]), llm).generate_answer(
+            "Commerce Demo quy định gì về điều chuyển tồn kho?", roles=["analyst"],
+        )
+
+        prompt = llm.calls[0]
+        self.assertIn("Evidence class: company_policy_reference", prompt)
+        self.assertIn("Publisher: Commerce Demo (fictional)", prompt)
+        self.assertIn("Status: synthetic demo policy; not issued by a real company", prompt)
+        self.assertIn("Inventory demo scenarios only.", prompt)
+        self.assertIn("explicitly identify it as fictional demo guidance", prompt)
 
     def test_invoice_request_abstains_when_wrong_document_has_no_narrow_disclosure(self):
         report = context("VNM-AR-2020-VI")
@@ -192,6 +214,18 @@ class RAGServiceTest(unittest.TestCase):
 
         self.assertEqual(result[0]["source_id"], "S1")
         self.assertEqual(llm.calls, [])
+
+    def test_retrieve_contexts_passes_json_metadata_filter_to_retrieval(self):
+        retrieval = FakeRetrieval([context()])
+        RAGService(retrieval, FakeLLM("unused")).retrieve_contexts(
+            "inventory decisions", roles=["analyst"],
+            metadata_filter={"commerce_reference_active": True, "knowledge_domains": ["inventory_allocation"]},
+        )
+
+        self.assertEqual(retrieval.calls[0][4], {
+            "commerce_reference_active": True,
+            "knowledge_domains": ["inventory_allocation"],
+        })
 
     def test_grounded_answer(self):
         llm = FakeLLM("Concerns may be reported [S1].")

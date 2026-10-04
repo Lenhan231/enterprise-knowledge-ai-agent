@@ -302,9 +302,13 @@ deterministic cropped-PDF SHA-256 (`74b3b66d250bbfa60c44d8934e120e8d2f4a10457a37
 `scripts/processing/evaluate_scan_document_processing.py --dataset data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v6.json --case-id annual-2020-product-poster-vi --tesseract-psm 11`; the [PSM 11](../../artifacts/evaluation/ocr/tuning/vinamilk-upload-ocr-vietnamese-poster-psm11-v6-20260928.json), [PSM 3](../../artifacts/evaluation/ocr/tuning/vinamilk-upload-ocr-vietnamese-poster-psm3-v6-20260928.json), and [PSM 6](../../artifacts/evaluation/ocr/tuning/vinamilk-upload-ocr-vietnamese-poster-psm6-v6-20260928.json) artifacts preserve upload-path outputs and input hashes.
 Raising the actual parser render scale from 1.5 (108 DPI) to 2.5 (180 DPI)
 made this same poster worse: PSM 11 CER/WER rose to 0.631250/1.218750 and
-latency to 1.721 seconds, so the default remains 1.5. Set the
-`DocumentProcessor` config key `ocr_render_scale` to change the scale; it is
-recorded per evaluation. See the
+latency to 1.721 seconds, so the page default remains 1.5. The scale is now
+configurable end-to-end for both user uploads and seed ingestion with
+`DOCUMENT_OCR_RENDER_SCALE`; table-word OCR uses
+`DOCUMENT_OCR_TABLE_RENDER_SCALE`. Both accept 1.5, 2.5, or 3.5 and apply only
+to pages selected for OCR fallback. The Sam's Club screenshot result at 3.5×
+is a source-specific improvement, not a universal default; compare the chosen
+source before changing these settings. See the
 [180-DPI run](../../artifacts/evaluation/ocr/tuning/vinamilk-upload-ocr-vietnamese-poster-psm11-180dpi-v6-20260928.json).
 A generated TIFF smoke verified both OCR and transactional
 readback through `extracted_tables`; this validates the path, not image/table

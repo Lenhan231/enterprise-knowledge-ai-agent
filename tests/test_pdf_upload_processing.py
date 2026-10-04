@@ -1,5 +1,5 @@
 import builtins
-import json
+import shutil
 import unittest
 from pathlib import Path
 import sys
@@ -11,9 +11,57 @@ import fitz
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.document_processing.processors.pdf_processor import PDFProcessor
+from core.document_processing.processors.document_processor import DocumentProcessor
 
 
 class PDFUploadProcessingTest(unittest.TestCase):
+    def test_numeric_table_gate_handles_tesseract_cells_split_across_lines(self):
+        ocr_text = "Region\nDelivered sample orders\nMedian transit days\nAvg fee units\n" \
+            "120\n95\n80\n3.0\n4.0\n5.0\n42.50\n48.75\n55.25"
+        self.assertTrue(PDFProcessor._looks_like_numeric_table(ocr_text))
+        self.assertFalse(PDFProcessor._looks_like_numeric_table(
+            "The report shows 120 orders in 2024.\nAverage delivery took 3.0 days."
+        ))
+
+    @unittest.skipUnless(shutil.which("tesseract"), "Tesseract is required for the scanned-PDF integration fixture")
+    def test_synthetic_scanned_pdf_upload_parser_extracts_table_cells(self):
+        root = Path(__file__).resolve().parents[1]
+        path = root / "data/evaluation/ocr/commerce_synthetic_policy_scan_demo.pdf"
+        parsed = DocumentProcessor({"paddle_layout": False}).process(
+            path.name, path.read_bytes(), {"document_id": "OCR-DEMO"},
+        )
+        self.assertEqual(len(parsed["tables"]), 1)
+        table = parsed["tables"][0]
+        self.assertEqual(table["metadata"]["table_extraction_method"], "tesseract.tsv_aligned_columns")
+        self.assertEqual(table["columns"], [
+            "Region", "Delivered sample orders", "Median transit days", "Avg fee units",
+        ])
+        self.assertEqual(table["rows"], [
+            {"Region": "East", "Delivered sample orders": "120", "Median transit days": "3.0", "Avg fee units": "42.50"},
+            {"Region": "Central", "Delivered sample orders": "95", "Median transit days": "4.0", "Avg fee units": "48.75"},
+            {"Region": "West", "Delivered sample orders": "80", "Median transit days": "5.0", "Avg fee units": "55.25"},
+        ])
+
+    @unittest.skipUnless(shutil.which("tesseract"), "Tesseract is required for the degraded scan fixture")
+    def test_degraded_scan_parser_groups_skewed_rows_and_ignores_dash_only_footer(self):
+        root = Path(__file__).resolve().parents[1]
+        path = root / "data/evaluation/ocr/commerce_synthetic_degraded_scan_demo.pdf"
+        parsed = DocumentProcessor({"paddle_layout": False}).process(
+            path.name, path.read_bytes(), {"document_id": "OCR-DEGRADED-DEMO"},
+        )
+
+        self.assertEqual(len(parsed["tables"]), 1)
+        table = parsed["tables"][0]
+        self.assertEqual(table["columns"], [
+            "Region", "Delivered sample orders", "Median transit days", "Avg fee units",
+        ])
+        self.assertEqual(table["rows"], [
+            {"Region": "East", "Delivered sample orders": "120", "Median transit days": "3.0", "Avg fee units": "42.50"},
+            {"Region": "Central", "Delivered sample orders": "95", "Median transit days": "4.0", "Avg fee units": "48.75"},
+            {"Region": "West", "Delivered sample orders": "80", "Median transit days": "5.0", "Avg fee units": "55.25"},
+        ])
+        self.assertEqual(table["context"]["table_title"], "Synthetic regional logistics sample")
+
     def test_logical_account_table_fragments_keep_hierarchy_and_structured_rows(self):
         table = {
             "page_number": 7, "table_index": 0,
@@ -150,34 +198,36 @@ class PDFUploadProcessingTest(unittest.TestCase):
         for field in ("title", "author", "subject", "keywords"):
             self.assertNotIn(field, metadata)
 
-    def test_real_vinamilk_balance_sheet_upload_extracts_native_text_table(self):
-        root = Path(__file__).resolve().parents[1]
-        source = (root / "data/raw/vietnam_enterprises/vnm/vnm-ar-2024-vi.pdf").read_bytes()
-        ground_truth = json.loads(
-            (root / "data/evaluation/ocr/archive/vinamilk_ocr_ground_truth_v8.json").read_text()
-        )
-        case = next(page for page in ground_truth["pages"] if page["id"] == "annual-2024-balance-sheet-table-vi")
-        source_doc = fitz.open(stream=source, filetype="pdf")
-        cropped_doc = fitz.open()
-        cropped_doc.insert_pdf(source_doc, from_page=case["page"] - 1, to_page=case["page"] - 1)
-        cropped_doc[0].set_cropbox(fitz.Rect(case["clip_rect"]))
-        cropped_source = cropped_doc.tobytes()
-        cropped_doc.close()
-        source_doc.close()
+    def test_commerce_operational_pdf_extracts_native_table(self):
+        pdf = fitz.open()
+        page = pdf.new_page(width=600, height=400)
+        for text, x, y in (
+            ("Regional fulfillment results", 40, 50),
+            ("Region", 40, 110), ("Delivered orders", 250, 110), ("Average days", 440, 110),
+            ("East", 40, 145), ("120", 250, 145), ("3.0", 440, 145),
+            ("Central", 40, 180), ("95", 250, 180), ("4.0", 440, 180),
+            ("West", 40, 215), ("80", 250, 215), ("5.0", 440, 215),
+        ):
+            page.insert_text((x, y), text, fontsize=10)
+        source = pdf.tobytes()
+        pdf.close()
 
         result = PDFProcessor({"paddle_layout": False}).process({
-            "content": cropped_source,
-            "metadata": {"document_id": "VNM-AR-2024-VI"},
+            "content": source,
+            "metadata": {"document_id": "COMMERCE-OPS-PDF"},
         })
 
-        table = next(
-            table for table in result["tables"]
-            if any(row.get("label") == "Tổng tài sản" for row in table["rows"])
-        )
+        self.assertEqual(len(result["tables"]), 1)
+        table = result["tables"][0]
         self.assertEqual(table["metadata"]["table_extraction_method"], "pymupdf.find_tables_text_aligned_columns")
-        total_assets = next(row for row in table["rows"] if row.get("label") == "Tổng tài sản")
-        self.assertEqual(total_assets["31/12/2024"], "56.993.245")
-        self.assertEqual(total_assets["31/12/2023"], "54.232.491")
+        self.assertEqual(
+            table["rows"],
+            [
+                {"label": "East", "value_1": "120", "value_2": "3.0"},
+                {"label": "Central", "value_1": "95", "value_2": "4.0"},
+                {"label": "West", "value_1": "80", "value_2": "5.0"},
+            ],
+        )
 
     def test_native_text_chunks_keep_page_and_document_metadata(self):
         pdf = fitz.open()
@@ -221,6 +271,9 @@ class PDFUploadProcessingTest(unittest.TestCase):
         self.assertEqual(run.call_args.args[0][-2:], ["--psm", "11"])
         self.assertIn("100 tỷ", result["chunks"][0]["text"])
         self.assertEqual(result["chunks"][0]["metadata"]["text_extraction_method"], "tesseract")
+        self.assertEqual(result["chunks"][0]["metadata"]["ocr"], {
+            "engine": "tesseract", "language": "vie+eng", "page_psm": 11, "render_scale": 1.5,
+        })
 
     def test_numeric_scan_renders_table_words_at_higher_resolution(self):
         pdf = fitz.open()
@@ -256,7 +309,7 @@ class PDFUploadProcessingTest(unittest.TestCase):
         page = pdf.new_page()
         page.insert_textbox(
             fitz.Rect(40, 650, 550, 780),
-            "Native report context remains searchable. " * 3,
+            "Native report context remains searchable. Native report reference stays readable.",
         )
         pixmap = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, 500, 400), False)
         page.insert_image(fitz.Rect(40, 40, 550, 600), pixmap=pixmap)
@@ -265,7 +318,10 @@ class PDFUploadProcessingTest(unittest.TestCase):
 
         with patch("core.document_processing.processors.pdf_processor.shutil.which", return_value="/usr/bin/tesseract"), \
              patch("core.document_processing.processors.pdf_processor.subprocess.run", return_value=SimpleNamespace(
-                 stdout="Net revenue 2024: 61.8 trillion VND".encode("utf-8")
+                 stdout=(
+                     "Native report contxt remains searchable. Native report reference stays readable. "
+                     "Net revenue 2024: 61.8 trillion VND"
+                 ).encode("utf-8")
              )) as run:
             result = PDFProcessor({
                 "paddle_layout": False, "ocr_fallback": True, "ocr_language": "vie+eng",
@@ -275,6 +331,9 @@ class PDFUploadProcessingTest(unittest.TestCase):
         run.assert_called_once()
         combined_text = " ".join(chunk["text"] for chunk in result["chunks"])
         self.assertIn("Native report context", combined_text)
+        self.assertIn("Native report reference stays readable", combined_text)
+        self.assertEqual(combined_text.count("Native report context remains searchable."), 1)
+        self.assertEqual(combined_text.count("Native report reference stays readable."), 1)
         self.assertIn("61.8 trillion", combined_text)
         self.assertEqual(result["chunks"][0]["metadata"]["text_extraction_method"], "pymupdf+tesseract")
 
@@ -737,6 +796,27 @@ class PDFUploadProcessingTest(unittest.TestCase):
         self.assertEqual(
             result["chunks"][0]["metadata"]["section_title"],
             "Article 12. Rights and duties of the Audit Committee",
+        )
+
+    def test_ocr_heading_detection_keeps_clear_headings_and_ignores_numbered_prose(self):
+        text = (
+            "SYNTHETIC DEMO POLICY - NOT A REAL COMPANY POLICY\n"
+            "Mục đích và phạm vi\n"
+            "Quy tắc này áp dụng cho tồn kho.\n"
+            "Đầu ra agent cần có\n"
+            "(1) snapshot/kỳ và số liệu SQL; (2) tín hiệu và phần giao nhau."
+        )
+
+        self.assertEqual(
+            PDFProcessor._extract_ocr_page_headings(text),
+            ["Mục đích và phạm vi", "Đầu ra agent cần có"],
+        )
+        self.assertEqual(
+            PDFProcessor._extract_ocr_page_headings(
+                "Region Delivered sample orders Median transit days Avg fee units",
+                allow_unstructured=False,
+            ),
+            [],
         )
 
 

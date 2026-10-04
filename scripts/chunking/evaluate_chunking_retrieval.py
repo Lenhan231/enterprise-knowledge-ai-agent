@@ -126,7 +126,7 @@ def _as_vector(value) -> np.ndarray:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--cases", type=Path, default=REPO_ROOT / "data/evaluation/vinamilk_retrieval_cases.json")
+    parser.add_argument("--cases", type=Path, default=REPO_ROOT / "data/evaluation/archive/retrieval/vinamilk_retrieval_cases.json")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--case-ids", nargs="+", help="Finance case subset; default is all five annual-report cases")
     parser.add_argument("--top-k", type=int, default=30)

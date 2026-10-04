@@ -17,11 +17,12 @@ def search(
     query_embedding: list[float] | None,
     limit: int,
     *, query: str | None = None, company: str | None = None,
-    roles: list[str] | None = None, dense_weight: float = 1.0,
+    roles: list[str] | None = None, metadata_filter: dict | None = None,
+    dense_weight: float = 1.0,
     bm25_weight: float = 2.0, rrf_k: int = 60,
 ) -> list[RetrievedChunk]:
     eligible, parameters = eligible_cte(
-        query_embedding, query, company, roles,
+        query_embedding, query, company, roles, metadata_filter=metadata_filter,
         include_vector=True, include_lexical=True,
     )
     parameters.append(lexical_tsquery(query))

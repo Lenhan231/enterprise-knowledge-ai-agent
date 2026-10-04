@@ -12,6 +12,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 from core.database.document_chunks_repository import DocumentChunkRepository
 from core.retrieval.retrieval import RetrievalRequest, RetrievalResponse, RetrievedChunk
 from core.retrieval.retrieval_service import RetrievalService
+from core.retrieval.methods.common import eligible_cte
 
 
 class FakeEmbeddingService:
@@ -26,6 +27,7 @@ class FakeEmbeddingService:
 class FakeRepository:
     def __init__(self):
         self.search_args = None
+        self.metadata_filter = None
         self.closed = False
         self.parent_contexts = {}
         self.results = [RetrievedChunk(
@@ -34,7 +36,8 @@ class FakeRepository:
             retrieval_score=0.81234,
         )]
 
-    def similarity_search(self, embedding: list[float], limit: int, company=None, roles=None, query=None, method="hybrid", **fusion):
+    def similarity_search(self, embedding: list[float], limit: int, company=None, roles=None, query=None, metadata_filter=None, method="hybrid", **fusion):
+        self.metadata_filter = metadata_filter
         self.search_args = (embedding, limit, company, roles, query, method, fusion)
         return self.results
 
@@ -69,6 +72,25 @@ class RetrievalServiceTest(unittest.TestCase):
         self.assertIsNone(chunk.location.page_number)
         self.assertIsNone(chunk.location.section_title)
         self.assertEqual(chunk.retrieval_method, "hybrid")
+
+    def test_retrieve_applies_metadata_filter_before_repository_ranking(self):
+        metadata_filter = {
+            "commerce_reference_active": True,
+            "knowledge_domains": ["inventory_allocation"],
+        }
+        self.service.retrieve(
+            RetrievalRequest(query="inventory", top_k=2), roles=["analyst"],
+            metadata_filter=metadata_filter,
+        )
+
+        self.assertEqual(self.repository.metadata_filter, metadata_filter)
+
+    def test_all_retrieval_methods_exclude_documents_removed_from_knowledge_base(self):
+        cte, _ = eligible_cte(
+            [0.1, 0.2], "inventory", "Commerce Demo", ["admin"],
+            include_vector=True, include_lexical=True,
+        )
+        self.assertIn("d.knowledge_base_active is true", " ".join(cte.lower().split()))
 
     def test_full_text_metadata_location_and_tie_order_are_preserved(self):
         first = self.repository.results[0]
@@ -134,6 +156,9 @@ class RetrievalServiceTest(unittest.TestCase):
         ]
         service = RetrievalService(self.embeddings, repository)
         result = service.retrieve(RetrievalRequest(query="question"))
+        statement = repository.conn.cursor.return_value.__enter__.return_value.execute.call_args.args[0]
+        self.assertIn("'source_title', d.title", statement)
+        self.assertIn("'source_url', d.source_url", statement)
         self.assertEqual(result.results[0].chunk_id, "DOC::chunk::7")
         self.assertEqual(result.results[0].text, "full text")
         cursor.fetchall.return_value = [("policy.pdf", 7, "text", None, 0.9)]
@@ -152,6 +177,28 @@ class RetrievalServiceTest(unittest.TestCase):
         self.assertEqual(self.embeddings.questions, [])
         self.assertEqual(result.method, "bm25")
         self.assertEqual(result.results[0].retrieval_method, "bm25")
+
+    def test_hybrid_falls_back_to_acl_scoped_bm25_when_embedding_fails(self):
+        self.embeddings.embed_query = MagicMock(side_effect=ConnectionError("provider unavailable"))
+        metadata_filter = {"knowledge_domains": ["inventory_allocation"]}
+
+        result = self.service.retrieve(
+            RetrievalRequest(query="stock replenishment", top_k=3),
+            roles=["analyst"], metadata_filter=metadata_filter,
+        )
+
+        self.assertEqual(self.repository.search_args,
+                         (None, 3, None, ["analyst"], "stock replenishment", "bm25", {}))
+        self.assertEqual(self.repository.metadata_filter, metadata_filter)
+        self.assertEqual(result.method, "bm25")
+        self.assertEqual(result.results[0].retrieval_method, "bm25")
+
+    def test_explicit_dense_mode_does_not_silently_fall_back(self):
+        self.embeddings.embed_query = MagicMock(side_effect=ConnectionError("provider unavailable"))
+
+        with self.assertRaisesRegex(ConnectionError, "provider unavailable"):
+            self.service.retrieve(RetrievalRequest(query="stock replenishment"), method="dense")
+        self.assertIsNone(self.repository.search_args)
 
     def test_parent_mode_ranks_children_then_returns_acl_scoped_context(self):
         child = self.repository.results[0]

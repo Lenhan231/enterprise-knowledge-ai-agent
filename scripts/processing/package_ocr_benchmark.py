@@ -12,8 +12,7 @@ from urllib.request import Request, urlopen
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_DATASET = REPO_ROOT / "data/evaluation/vinamilk_ocr_ground_truth_v7.json"
-DEFAULT_DATASET_ID = "ltrngnhn/vinamilk-ocr-v7-benchmark-assets"
+DEFAULT_DATASET = REPO_ROOT / "data/evaluation/ocr/commerce_scan_ground_truth.json"
 
 
 def ensure_dataset_source(labels: dict, source: Path) -> None:
@@ -37,7 +36,9 @@ def ensure_dataset_source(labels: dict, source: Path) -> None:
     source.write_bytes(payload)
 
 
-def package(output: Path, labels_path: Path = DEFAULT_DATASET, dataset_id: str = DEFAULT_DATASET_ID) -> dict:
+def package(output: Path, labels_path: Path = DEFAULT_DATASET, dataset_id: str | None = None) -> dict:
+    if not dataset_id:
+        raise ValueError("dataset_id is required; provide Kaggle's owner/dataset-slug id")
     output = output.resolve()
     if output.exists():
         raise FileExistsError(f"Output already exists; choose an empty path: {output}")
@@ -60,19 +61,22 @@ def package(output: Path, labels_path: Path = DEFAULT_DATASET, dataset_id: str =
             raise ValueError(f"Source PDF SHA-256 does not match reviewed dataset: {source_paths[0]}")
 
     project = output / "project"
-    (project / "scripts").mkdir(parents=True)
+    (project / "scripts/processing").mkdir(parents=True)
     (project / "data/evaluation").mkdir(parents=True)
     for source in source_paths:
         destination = project / source.relative_to(REPO_ROOT)
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
-    shutil.copy2(REPO_ROOT / "scripts/processing/evaluate_ocr.py", project / "scripts/evaluate_ocr.py")
+    shutil.copy2(
+        REPO_ROOT / "scripts/processing/evaluate_ocr.py",
+        project / "scripts/processing/evaluate_ocr.py",
+    )
     dataset_relative_path = labels_path.relative_to(REPO_ROOT)
     dataset_copy = project / dataset_relative_path
     dataset_copy.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(labels_path, dataset_copy)
 
-    title = labels.get("dataset_title", "Vinamilk OCR v7 Benchmark Assets")
+    title = labels.get("dataset_title", "Commerce Synthetic Scan OCR Smoke")
     metadata = {
         "title": title,
         "id": dataset_id,
@@ -114,7 +118,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path, help="New empty output directory for Kaggle dataset files")
     parser.add_argument("--dataset", type=Path, default=DEFAULT_DATASET)
-    parser.add_argument("--dataset-id", default=DEFAULT_DATASET_ID)
+    parser.add_argument("--dataset-id", required=True, help="Kaggle dataset id in owner/dataset-slug form")
     args = parser.parse_args()
     dataset = args.dataset if args.dataset.is_absolute() else REPO_ROOT / args.dataset
     print(json.dumps(package(args.output, dataset, args.dataset_id), ensure_ascii=False, indent=2))

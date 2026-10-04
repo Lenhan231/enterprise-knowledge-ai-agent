@@ -16,6 +16,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from core.evaluation.retrieval_metrics import ndcg_at_k, precision_at_k, recall_at_k, reciprocal_rank  # noqa: E402
+from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES  # noqa: E402
+from core.agents.knowledge_agent import _rank_commerce_reference_evidence  # noqa: E402
 from core.retrieval.retrieval import RetrievalRequest  # noqa: E402
 from core.retrieval.retrieval_service import RetrievalService  # noqa: E402
 
@@ -30,6 +32,23 @@ def ranked_passage_ids(results) -> list[str]:
             if chunk_id not in passages:
                 passages.append(chunk_id)
     return passages
+
+
+def reranked_commerce_contexts(results, question: str, domain: str, limit: int = 3) -> list[dict]:
+    """Measure the same scoped source ranking KnowledgeAgent sends to its prompt."""
+    contexts = []
+    for item in results:
+        metadata = dict(item.metadata)
+        metadata.setdefault("document_id", item.document_id)
+        contexts.append({
+            "document_name": item.source,
+            "chunk_index": item.location.chunk_index,
+            "content": item.text,
+            "metadata": metadata,
+            "retrieval_score": item.score,
+            "retrieval_method": item.retrieval_method,
+        })
+    return _rank_commerce_reference_evidence(contexts, question, domain, limit)
 
 
 def parent_context_metrics(results, relevant_passages: set[str]) -> dict[str, float]:
@@ -113,8 +132,9 @@ def gpu_metadata() -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--cases", type=Path, default=REPO_ROOT / "data/evaluation/vinamilk_retrieval_cases.json")
+    parser.add_argument("--cases", type=Path, default=REPO_ROOT / "data/evaluation/commerce_retrieval_cases.json")
     parser.add_argument("--output", type=Path, help="Optional path for the JSON run report")
+    parser.add_argument("--company", default="Commerce Demo")
     parser.add_argument("--top-k", type=int, default=30, help="Passage candidates before document deduplication")
     parser.add_argument("--methods", nargs="+", choices=("dense", "bm25", "hybrid", "parent"), default=("dense", "bm25", "hybrid"))
     parser.add_argument("--case-ids", nargs="+", help="Optional subset of labeled case IDs")
@@ -148,7 +168,7 @@ def main() -> int:
     results = {}
     database_snapshot = {}
     try:
-        company = "Công ty Cổ phần Sữa Việt Nam (Vinamilk)"
+        company = args.company
         validate_passage_labels(service, cases, company)
         method_configs = [(method, None) for method in args.methods if method != "hybrid"]
         if "hybrid" in args.methods:
@@ -157,7 +177,7 @@ def main() -> int:
             if fusion_config and service.embedding_service is None:
                 service.retrieve(
                     RetrievalRequest(query="warm-up query, excluded from scoring", top_k=1),
-                    company=company, roles=["finance_analyst"], method="dense",
+                    company=company, roles=cases[0].get("allowed_roles", [cases[0]["role"]]), method="dense",
                 )
             method_name = method if fusion_config is None else (
                 f"hybrid-d{fusion_config[0]:g}-b{fusion_config[1]:g}-k{fusion_config[2]}"
@@ -165,10 +185,23 @@ def main() -> int:
             method_started = perf_counter()
             method_results = []
             for case in cases:
+                domain = case.get("domain")
+                metadata_filter = None
+                retrieval_query = case["question"]
+                if domain in COMMERCE_DECISION_PROFILES:
+                    metadata_filter = {
+                        "commerce_reference_active": True,
+                        "knowledge_domains": [domain],
+                    }
+                    retrieval_query = " ".join((
+                        case["question"],
+                        COMMERCE_DECISION_PROFILES[domain]["retrieval_query"],
+                    ))
                 response = service.retrieve(
-                    RetrievalRequest(query=case["question"], top_k=args.top_k),
+                    RetrievalRequest(query=retrieval_query, top_k=args.top_k),
                     company=company,
                     roles=case.get("allowed_roles", [case["role"]]),
+                    metadata_filter=metadata_filter,
                     method=method,
                     **({
                         "dense_weight": fusion_config[0],
@@ -181,7 +214,9 @@ def main() -> int:
                 relevant = set(case["relevant_document_ids"])
                 case_result = {
                     "id": case["id"],
+                    **({"domain": domain} if domain else {}),
                     "role": case["role"],
+                    "retrieval_query": retrieval_query,
                     "latency_ms": round(response.latency_ms, 2),
                     "ranked_document_ids": ranked_documents,
                     "relevant_document_ids": sorted(relevant),
@@ -192,6 +227,26 @@ def main() -> int:
                         **{f"ndcg@{k}": ndcg_at_k(relevant, ranked_documents, k) for k in (1, 3, 5)},
                     },
                 }
+                if domain in COMMERCE_DECISION_PROFILES:
+                    reranked_contexts = reranked_commerce_contexts(
+                        response.results, case["question"], domain,
+                    )
+                    reranked_context_documents = [context["metadata"]["document_id"] for context in reranked_contexts]
+                    reranked_evidence_classes = [context["metadata"].get("evidence_class") for context in reranked_contexts]
+                    reranked_documents = list(dict.fromkeys(reranked_context_documents))
+                    case_result["commerce_reranked_context_document_ids"] = reranked_context_documents
+                    case_result["commerce_reranked_evidence_classes"] = reranked_evidence_classes
+                    case_result["commerce_policy_and_nonpolicy_context_selected"] = (
+                        "company_policy_reference" in reranked_evidence_classes
+                        and any(value and value != "company_policy_reference" for value in reranked_evidence_classes)
+                    )
+                    case_result["commerce_reranked_document_ids"] = reranked_documents
+                    case_result["commerce_reranked_metrics"] = {
+                        **{f"precision@{k}": precision_at_k(relevant, reranked_documents, k) for k in (1, 3)},
+                        **{f"recall@{k}": recall_at_k(relevant, reranked_documents, k) for k in (1, 3)},
+                        "mrr": reciprocal_rank(relevant, reranked_documents),
+                        **{f"ndcg@{k}": ndcg_at_k(relevant, reranked_documents, k) for k in (1, 3)},
+                    }
                 passage_labels = set(case.get("relevant_chunk_ids", []))
                 if passage_labels:
                     case_result["relevant_passage_ids"] = sorted(passage_labels)
@@ -217,6 +272,15 @@ def main() -> int:
             } if method_results else {}
             results[method_name] = {
                 "aggregate": averages,
+                "commerce_reranked_case_count": sum("commerce_reranked_metrics" in case for case in method_results),
+                "commerce_policy_and_nonpolicy_context_case_count": sum(
+                    case.get("commerce_policy_and_nonpolicy_context_selected", False) for case in method_results
+                ),
+                "commerce_reranked_aggregate": {
+                    key: round(sum(case["commerce_reranked_metrics"][key] for case in method_results if "commerce_reranked_metrics" in case)
+                               / sum("commerce_reranked_metrics" in case for case in method_results), 4)
+                    for key in next((case["commerce_reranked_metrics"].keys() for case in method_results if "commerce_reranked_metrics" in case), [])
+                },
                 "passage_case_count": sum("passage_metrics" in case for case in method_results),
                 "passage_aggregate": {
                     key: round(sum(case["passage_metrics"][key] for case in method_results if "passage_metrics" in case)
@@ -245,14 +309,14 @@ def main() -> int:
                   ON d.document_id = c.metadata->>'document_id'
                 WHERE d.company = %s AND coalesce(d.processing_status, 'ready') = 'ready'
                 """,
-                ("Công ty Cổ phần Sữa Việt Nam (Vinamilk)",),
+                (company,),
             )
             server_version, documents, chunks, company_documents, company_chunks = cursor.fetchone()
             database_snapshot = {
                 "postgres_version": server_version,
                 "all_documents": documents,
                 "all_chunks": chunks,
-                "evaluated_company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+                "evaluated_company": company,
                 "company_ready_documents": company_documents,
                 "company_ready_chunks": company_chunks,
             }
@@ -294,10 +358,14 @@ def main() -> int:
                 "parent_context": "up to 2 neighboring chunks on either side with the same section title and page; same-page fallback when no section title exists",
                 "max_parent_results": args.top_k,
             },
+            "commerce_evidence_reranking": {
+                "source_diversity": "Prefer one context per document before adding a second context from any document; evidence-class mix is reported as composition only, not topical relevance.",
+                "selection_function": "KnowledgeAgent._rank_commerce_reference_evidence",
+            },
             "latency_note": "Dense, hybrid, and parent latency include first-use embedding model initialization on their first query; BM25 does not load the embedding model.",
         },
         "methods": results,
-        "limitations": f"{len(cases)}-case demo set with manually assigned passage IDs tied to the current chunk-index snapshot; document and passage judgments are limited and need broader independent review. BM25 is a SQL implementation with k1=1.2 and b=0.75. Parent mode expands retrieved contexts, so its passage ranking is flattened from the returned child indices. No reranker or answer-generation comparison is included.",
+        "limitations": f"{len(cases)}-case demo set with manually assigned passage IDs tied to the current chunk-index snapshot; document and passage judgments are limited and need broader independent review. BM25 is a SQL implementation with k1=1.2 and b=0.75. Parent mode expands retrieved contexts, so its passage ranking is flattened from the returned child indices. Commerce reranker metrics reuse source labels designed for initial retrieval; labels do not yet distinguish mandatory fictional-policy guardrails from external operating-method evidence, so reranked precision/MRR are diagnostic only. No answer-generation comparison is included.",
     }
     encoded = json.dumps(report, ensure_ascii=False, indent=2)
     if args.output:

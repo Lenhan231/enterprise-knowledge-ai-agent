@@ -2,7 +2,16 @@ from typing import TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
-from core.agents.report_agent import _is_decision_support_request
+from core.agents.report_agent import (
+    _is_business_metric_decision_question,
+    _is_business_metric_trend_question,
+    _is_decision_suggestions_request,
+    _is_decision_support_request,
+)
+from core.analytics.commerce_decision_support import (
+    COMMERCE_DECISION_PROFILES,
+    resolve_commerce_decision_domain,
+)
 from core.models.agents import AgentRequest, AgentResult
 
 
@@ -58,12 +67,60 @@ class AgentRouter:
 
     def _classify(self, state: _AgentWorkflowState) -> dict[str, str]:
         request = state["request"]
+        if self.report_agent and (
+            request.metadata.get("decision_suggestions")
+            or _is_decision_suggestions_request(request.question)
+        ):
+            self.last_destination = "report"
+            return {"destination": "report"}
+        if self.report_agent and request.metadata.get("business_decision_domain") in COMMERCE_DECISION_PROFILES:
+            self.last_destination = "report"
+            return {"destination": "report"}
+        commerce_domain = resolve_commerce_decision_domain(request.question)
+        question_text = request.question.casefold()
+        policy_question = any(term in question_text for term in (
+            "policy", "policies", "chính sách",
+        )) and not any(term in question_text for term in (
+            "should", "recommend", "decision", "can we", "nên", "khuyến nghị", "quyết định",
+            "compare", "trend", "how much", "how many", "sales", "revenue", "transit",
+            "so sánh", "xu hướng", "bao nhiêu", "doanh thu", "đơn hàng", "thời gian giao",
+        ))
+        if commerce_domain and policy_question:
+            request.metadata["business_decision_domain"] = commerce_domain
+            request.metadata["policy_reference_only"] = True
+            self.last_destination = "knowledge"
+            return {"destination": "knowledge"}
+        named_external_source = any(name in request.question.casefold() for name in (
+            "shopify", "amazon", "walmart", "shopee", "tiktok shop", "doordash", "sam's club",
+        ))
+        source_how_to_question = named_external_source and any(term in request.question.casefold() for term in (
+            "what does", "what do", "according to", "how does", "how do", "what guidance", "the guide",
+            "what policy", "nói gì", "hướng dẫn", "theo tài liệu",
+        ))
+        if self.report_agent and commerce_domain and source_how_to_question:
+            self.last_destination = "knowledge"
+            return {"destination": "knowledge"}
+        if self.report_agent and commerce_domain:
+            self.last_destination = "report"
+            return {"destination": "report"}
+        dashboard_request = any(term in question_text for term in (
+            "dashboard", "chart", "visualize", "visualise", "plot", "graph", "biểu đồ", "đồ thị",
+        ))
+        if (self.report_agent and not dashboard_request
+                and (_is_business_metric_decision_question(request.question)
+                     or _is_business_metric_trend_question(request.question))):
+            self.last_destination = "report"
+            return {"destination": "report"}
         intent = self.classifier.classify(request.question)
 
         if intent.intent == "report" and self.report_agent:
             destination = "report"
         elif intent.output_mode == "dashboard":
             destination = "dashboard"
+        elif (self.report_agent and
+              (_is_business_metric_decision_question(request.question)
+               or _is_business_metric_trend_question(request.question))):
+            destination = "report"
         elif (self.report_agent and intent.intent == "hybrid"
               and _is_decision_support_request(request.question)):
             destination = "report"

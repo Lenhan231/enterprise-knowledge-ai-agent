@@ -98,7 +98,7 @@ def _candidate_sha256(candidates: list[dict]) -> str:
 
 def _load_candidate_bundle(path: Path, cases: list[dict], cases_bytes: bytes, candidate_k: int) -> tuple[list[dict], str]:
     bundle = json.loads(path.read_text(encoding="utf-8"))
-    if bundle.get("schema") != "vinamilk-role-filtered-reranker-candidates-v1":
+    if bundle.get("schema") != "commerce-role-filtered-reranker-candidates-v1":
         raise ValueError("Unsupported candidate bundle schema")
     expected_case_hash = hashlib.sha256(cases_bytes).hexdigest()
     if bundle.get("case_file_sha256") != expected_case_hash:
@@ -136,11 +136,11 @@ def _load_candidate_bundle(path: Path, cases: list[dict], cases_bytes: bytes, ca
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", choices=sorted(MODELS))
-    parser.add_argument("--cases", type=Path, default=REPO_ROOT / "data/evaluation/vinamilk_retrieval_cases.json")
+    parser.add_argument("--cases", type=Path, default=REPO_ROOT / "data/evaluation/commerce_retrieval_cases.json")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--candidate-input", type=Path, help="Use a hash-verified role-filtered dense candidate bundle; avoids database access")
     parser.add_argument("--export-candidates", type=Path, help="Export public role-filtered dense candidates without loading a reranker")
-    parser.add_argument("--company", default="Công ty Cổ phần Sữa Việt Nam (Vinamilk)")
+    parser.add_argument("--company", default="Commerce Demo")
     parser.add_argument("--candidate-k", type=int, default=30)
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--case-ids", nargs="+", help="Optional subset of labeled case IDs")
@@ -225,7 +225,7 @@ def main() -> int:
 
     if args.export_candidates:
         export = {
-            "schema": "vinamilk-role-filtered-reranker-candidates-v1",
+            "schema": "commerce-role-filtered-reranker-candidates-v1",
             "case_file": args.cases.name,
             "case_file_sha256": hashlib.sha256(cases_bytes).hexdigest(),
             "candidate_sha256": candidate_sha256,
@@ -350,10 +350,10 @@ def main() -> int:
             ),
         } if any("dense_passage_metrics" in case for case in case_results) else {},
         "results": case_results,
-        "limitations": "Small nine-query Vinamilk smoke set with selected, non-exhaustive passage judgments. Every model reranks the same dense top-k passages per case. Metrics measure ranking only, not answer quality, faithfulness, or user-perceived benefit. Full candidate and case hashes and model revision are recorded for comparability.",
+        "limitations": "Small Commerce decision-support set with document-level relevance labels. Every model reranks the same dense top-k passages per case. Metrics measure ranking only, not answer quality, policy applicability, faithfulness, or user-perceived benefit. Full candidate and case hashes and model revision are recorded for comparability.",
     }
     suffix = f"-{args.output_suffix}" if args.output_suffix else ""
-    output = args.output or REPO_ROOT / "artifacts/evaluation" / f"vinamilk-reranker-{args.model}{suffix}.json"
+    output = args.output or REPO_ROOT / "artifacts/evaluation" / f"commerce-reranker-{args.model}{suffix}.json"
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"output": str(output), "candidate_sha256": candidate_sha256, "aggregate": report["aggregate"]}, ensure_ascii=False, indent=2))

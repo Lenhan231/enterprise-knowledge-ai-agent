@@ -113,6 +113,19 @@ class SeedIngestionPipelineTest(unittest.TestCase):
         self.embeddings.embed_documents.assert_not_called()
         self.documents.update_processing_status.assert_called_once_with("VNM-AR-2024-VI", "failed")
 
+    def test_source_hash_mismatch_stops_before_storage_or_database_writes(self):
+        self.item["source_sha256"] = "not-the-pdf-hash"
+
+        with self.assertRaisesRegex(ValueError, "source SHA-256 mismatch"):
+            ingest_one_document(
+                self.item, self.input_path, Path("processed"), self.ingestor,
+                self.embeddings, self.documents, self.chunk_repository,
+                self.parsed_chunks_repository, self.storage, self.bucket,
+            )
+
+        self.storage.storage.from_.assert_not_called()
+        self.documents.upsert_document.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

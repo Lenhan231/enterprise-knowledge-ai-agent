@@ -16,8 +16,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 def manifest_document_ids(path: Path) -> list[str]:
     manifest = json.loads(path.read_text(encoding="utf-8"))
-    documents = manifest["documents"] if isinstance(manifest, dict) else manifest
-    return [item["document_id"] for item in documents]
+    documents = manifest.get("sources", manifest.get("documents", [])) if isinstance(manifest, dict) else manifest
+    return [item.get("source_id", item.get("document_id")) for item in documents]
 
 
 def export_rows(database_url: str, document_ids: list[str]) -> list[dict]:
@@ -59,9 +59,9 @@ def main() -> int:
     parser.add_argument(
         "--output",
         type=Path,
-        default=REPO_ROOT / "data/evaluation/vinamilk_public_embedding_corpus.jsonl",
+        default=REPO_ROOT / "data/evaluation/commerce_public_embedding_corpus.jsonl",
     )
-    parser.add_argument("--manifest", type=Path, default=REPO_ROOT / "data/vietnam_enterprises/manifest.json")
+    parser.add_argument("--manifest", type=Path, default=REPO_ROOT / "data/commerce_knowledge/manifest.json")
     args = parser.parse_args()
     load_dotenv(REPO_ROOT / ".env")
     database_url = os.getenv("DATABASE_URL")
@@ -77,7 +77,7 @@ def main() -> int:
     manifest_hash = hashlib.sha256(args.manifest.read_bytes()).hexdigest()
     corpus_hash = hashlib.sha256(payload.encode("utf-8")).hexdigest()
     metadata = {
-        "format": "vinamilk-public-embedding-corpus/v1",
+        "format": "commerce-public-embedding-corpus/v1",
         "source": "ready database chunks restricted to document IDs in the public manifest",
         "manifest_sha256": manifest_hash,
         "corpus_sha256": corpus_hash,

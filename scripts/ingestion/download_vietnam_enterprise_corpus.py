@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -41,8 +42,17 @@ def main() -> int:
         )
         try:
             status = get_downloader(document).download(
-                document["source_url"], destination, force=args.force
+                document.get("download_url") or document["source_url"],
+                destination,
+                force=args.force,
             )
+            expected_sha256 = document.get("source_sha256")
+            if expected_sha256:
+                actual_sha256 = hashlib.sha256(destination.read_bytes()).hexdigest()
+                if actual_sha256 != expected_sha256:
+                    raise ValueError(
+                        f"source SHA-256 mismatch: expected {expected_sha256}, got {actual_sha256}"
+                    )
         except Exception as error:
             failures += 1
             print(f"failed     {document['document_id']}: {error}", file=sys.stderr)

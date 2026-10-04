@@ -1,0 +1,85 @@
+{
+  "created_at_utc": "2026-10-04T17:59:58.841684+00:00",
+  "evaluation_id": "commerce-degraded-scan-upload-live-20261005-v2",
+  "scope": "Current local Tester API upload, persisted inspection response, and page-preview endpoints. Run remains isolated from production documents/RAG.",
+  "source_file": "data/evaluation/ocr/commerce_synthetic_degraded_scan_demo.pdf",
+  "source_sha256": "86383a8a65d42791d05549369dcd9f3ebc0b597b846ca7fa06e351e8a1c9fd7d",
+  "login_status": 200,
+  "upload_status": 200,
+  "run_id": "c3b72897-ad32-40c9-864b-361fdf23e590",
+  "runtime": {
+    "pymupdf": "1.27.2.3",
+    "tesseract": "tesseract 5.5.3"
+  },
+  "processor_config": {
+    "paddle_layout": false,
+    "tesseract_psm": 11,
+    "ocr_render_scale": 1.5,
+    "chunking_strategy": "sentence",
+    "vision_captioning": false,
+    "tesseract_table_psm": 3,
+    "ocr_table_render_scale": 2.5,
+    "paddle_formula_recognition": false
+  },
+  "persisted_output": {
+    "page_count": 2,
+    "chunk_count": 3,
+    "table_count": 1,
+    "table_page": 2,
+    "columns": [
+      "Region",
+      "Delivered sample orders",
+      "Median transit days",
+      "Avg fee units"
+    ],
+    "rows": [
+      {
+        "Region": "East",
+        "Avg fee units": "42.50",
+        "Median transit days": "3.0",
+        "Delivered sample orders": "120"
+      },
+      {
+        "Region": "Central",
+        "Avg fee units": "48.75",
+        "Median transit days": "4.0",
+        "Delivered sample orders": "95"
+      },
+      {
+        "Region": "West",
+        "Avg fee units": "55.25",
+        "Median transit days": "5.0",
+        "Delivered sample orders": "80"
+      }
+    ],
+    "context": {
+      "page_number": 2,
+      "table_title": "Synthetic regional logistics sample",
+      "section_title": null,
+      "source_filename": "commerce_synthetic_degraded_scan_demo.pdf"
+    },
+    "exact_expected_rows": 3,
+    "exact_numeric_cells": 9
+  },
+  "page_previews": [
+    {
+      "page": 1,
+      "status": 200,
+      "content_type": "image/png",
+      "bytes": 285434
+    },
+    {
+      "page": 2,
+      "status": 200,
+      "content_type": "image/png",
+      "bytes": 155319
+    }
+  ],
+  "business_evidence": false,
+  "limitations": [
+    "This is a digitally generated degraded scan simulation, not a physical scan or a real company policy.",
+    "The OCR page text/chunks and structured table are synthetic OCR test content, not Commerce database evidence.",
+    "The table title and semantic column labels were extracted from OCR word boxes; section title remains unavailable for this fixture.",
+    "UI rendering is data-bound to persisted structured_data.columns and table context, but this check did not use a visual browser session."
+  ]
+}

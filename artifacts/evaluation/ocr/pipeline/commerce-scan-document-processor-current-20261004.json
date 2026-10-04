@@ -1,0 +1,345 @@
+{
+  "created_at_utc": "2026-10-04T15:35:20.478986+00:00",
+  "dataset_id": "commerce-synthetic-image-only-scan-smoke-v1",
+  "dataset_sha256": "57e656522d4cf8b327f1f4588f5d2d63293fa9fda3142fcae9fef3dfc3849ee9",
+  "reference_quality": "visual_transcription_review",
+  "reference_method": "visually transcribed from rendered source pages",
+  "protocol": "Copy each selected region from its source PDF page, rasterize it to remove any embedded OCR text layer, then run the existing DocumentProcessor PDF path with separate page-text and table render scales. Score source text chunks without generated structured-table serialization; score tables separately against supplied row/cell anchors.",
+  "limitations": "Production-parser OCR path only. Smoke fixtures verify extraction behavior but are not representative model-selection evidence or business evidence. This run has no explicitly annotated cell coordinates. There is no paired OCR-engine comparison. Throughput includes parser/OCR invocation but excludes application embedding and database persistence.",
+  "render_dpi": 108.0,
+  "ocr_render_scale": 1.5,
+  "table_ocr_render_dpi": 180.0,
+  "ocr_table_render_scale": 2.5,
+  "tesseract_page_segmentation_mode": 11,
+  "tesseract_table_segmentation_mode": 3,
+  "tesseract_language": "vie+eng",
+  "software": {
+    "python": "3.11.16",
+    "pymupdf": "1.27.2.3",
+    "tesseract": "tesseract 5.5.3"
+  },
+  "process_memory": {
+    "process_peak_rss_mb": 632.434,
+    "child_peak_rss_mb": 125.195
+  },
+  "aggregate": {
+    "ocr_pages": 2,
+    "text_scored_pages": 2,
+    "annotated_cell_locations": 0,
+    "matched_cell_locations": 0,
+    "cell_location_recall": null,
+    "table_scored_pages": 1,
+    "expected_anchor_rows": 3,
+    "matched_anchor_rows": 3,
+    "anchor_row_recall": 1.0,
+    "exact_numeric_cells": 9,
+    "total_numeric_cells": 9,
+    "exact_numeric_cell_accuracy": 1.0,
+    "micro_cer": 0.0,
+    "micro_wer": 0.0,
+    "mean_latency_seconds": 1.849,
+    "mean_pages_per_minute": 33.663
+  },
+  "results": [
+    {
+      "id": "commerce-synthetic-operations-note-en",
+      "document_id": "COMMERCE-SYNTHETIC-OCR-DEMO",
+      "source_page_number": 1,
+      "language": "en",
+      "layout_type": "text",
+      "physical_scan": false,
+      "source_pdf_sha256": "849440fde4b0b790ceba77c5a758186f608f944730860e9ce240a336d7a9a909",
+      "cropped_pdf_sha256": "1f3fd3000232126281208e00bc7ffa4d3366216983e9f3502ea21caf6f102307",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 1,
+      "table_count": 0,
+      "extracted_tables": [],
+      "table_anchor_score": null,
+      "text_reference_scored": true,
+      "text_score_scope": "source text chunks; generated table serialization excluded",
+      "reference_characters": 859,
+      "reference_words": 129,
+      "hypothesis_characters": 859,
+      "character_edit_distance": 0,
+      "word_edit_distance": 0,
+      "cer": 0.0,
+      "wer": 0.0,
+      "ocr_text": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY Commerce Operations Test Note This synthetic page exists only to verify the PDF upload and OCR inspection workflow. The sample values and rules below are invented for testing and must never be treated as business evidence. Inventory allocation: review sales velocity, stockout history, current units on hand, and supplier lead time before changing replenishment. This sample does not set a reorder threshold. Promotion planning: compare delivered orders and recorded discounts across comparable periods. Without a holdout group, a before-and-after difference is descriptive and does not prove promotion uplift. Nationwide logistics: compare actual transit time by region. Carrier, warehouse origin, route capacity, and promised delivery SLA are required before proposing network changes. OCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX",
+      "latency_seconds": 1.499,
+      "pages_per_minute": 40.035,
+      "extracted_text": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY Commerce Operations Test Note This synthetic page exists only to verify the PDF upload and OCR inspection workflow. The sample values and rules below are invented for testing and must never be treated as business evidence. Inventory allocation: review sales velocity, stockout history, current units on hand, and supplier lead time before changing replenishment. This sample does not set a reorder threshold. Promotion planning: compare delivered orders and recorded discounts across comparable periods. Without a holdout group, a before-and-after difference is descriptive and does not prove promotion uplift. Nationwide logistics: compare actual transit time by region. Carrier, warehouse origin, route capacity, and promised delivery SLA are required before proposing network changes. OCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX"
+    },
+    {
+      "id": "commerce-synthetic-region-table-en",
+      "document_id": "COMMERCE-SYNTHETIC-OCR-DEMO",
+      "source_page_number": 2,
+      "language": "en",
+      "layout_type": "table",
+      "physical_scan": false,
+      "source_pdf_sha256": "849440fde4b0b790ceba77c5a758186f608f944730860e9ce240a336d7a9a909",
+      "cropped_pdf_sha256": "e383d530aa16082a45f037f85d0d9681a938b0364173d75f2b2fa525a4717332",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 2,
+      "table_count": 1,
+      "extracted_tables": [
+        {
+          "page_number": 1,
+          "table_index": 0,
+          "columns": [
+            "label",
+            "value_1",
+            "value_2",
+            "value_3"
+          ],
+          "rows": [
+            {
+              "label": "East",
+              "value_1": "120",
+              "value_2": "3.0",
+              "value_3": "42.50"
+            },
+            {
+              "label": "Central",
+              "value_1": "95",
+              "value_2": "4.0",
+              "value_3": "48.75"
+            },
+            {
+              "label": "West",
+              "value_1": "80",
+              "value_2": "5.0",
+              "value_3": "55.25"
+            }
+          ],
+          "metadata": {
+            "element_type": "table",
+            "layout_type": "table",
+            "table_extraction_method": "tesseract.tsv_aligned_columns",
+            "table_detection_strategy": "ocr_word_boxes",
+            "ocr": {
+              "engine": "tesseract",
+              "language": "vie+eng",
+              "table_psm": 3,
+              "render_scale": 2.5
+            },
+            "column_alignment": "left",
+            "bbox": [
+              105.16465053763442,
+              301.2,
+              507.429435483871,
+              434.40000000000003
+            ],
+            "bbox_coordinate_system": "pdf_points",
+            "row_cell_bboxes": [
+              {
+                "label": [
+                  114.36155913978494,
+                  301.2,
+                  136.7540322580645,
+                  310.0
+                ],
+                "value_1": [
+                  245.9173387096774,
+                  301.2,
+                  264.7110215053763,
+                  310.0
+                ],
+                "value_2": [
+                  372.2748655913978,
+                  301.2,
+                  387.869623655914,
+                  310.0
+                ],
+                "value_3": [
+                  477.43951612903226,
+                  301.2,
+                  507.429435483871,
+                  310.0
+                ]
+              },
+              {
+                "label": [
+                  105.16465053763442,
+                  359.2,
+                  144.35147849462368,
+                  375.2
+                ],
+                "value_1": [
+                  248.71639784946237,
+                  361.2,
+                  261.1122311827957,
+                  370.0
+                ],
+                "value_2": [
+                  371.875,
+                  361.2,
+                  387.869623655914,
+                  370.0
+                ],
+                "value_3": [
+                  477.43951612903226,
+                  361.2,
+                  507.0295698924731,
+                  370.0
+                ]
+              },
+              {
+                "label": [
+                  111.16263440860214,
+                  419.6,
+                  138.75336021505376,
+                  434.40000000000003
+                ],
+                "value_1": [
+                  248.71639784946237,
+                  421.2,
+                  261.51209677419354,
+                  430.0
+                ],
+                "value_2": [
+                  372.2748655913978,
+                  421.2,
+                  387.869623655914,
+                  430.0
+                ],
+                "value_3": [
+                  477.8393817204301,
+                  421.2,
+                  507.0295698924731,
+                  430.0
+                ]
+              }
+            ],
+            "document_id": "COMMERCE-SYNTHETIC-OCR-DEMO",
+            "filename": "commerce_synthetic_policy_scan_demo.pdf",
+            "format": "PDF"
+          }
+        }
+      ],
+      "table_anchor_score": {
+        "expected_headers": [
+          "Region",
+          "Delivered sample orders",
+          "Median transit days",
+          "Avg fee units"
+        ],
+        "extracted_headers": [
+          "value_1",
+          "value_2",
+          "value_3"
+        ],
+        "comparison": {
+          "labels": "accent-folded character similarity; matched at >= 0.6",
+          "headers": "digits-only period comparison",
+          "numeric_cells": "sign and digit sequence; punctuation ignored"
+        },
+        "exact_header_matches": 0,
+        "expected_anchor_rows": 3,
+        "matched_anchor_rows": 3,
+        "anchor_row_recall": 1.0,
+        "exact_numeric_cells": 9,
+        "total_numeric_cells": 9,
+        "exact_numeric_cell_accuracy": 1.0,
+        "matched_cell_locations": 0,
+        "annotated_cell_locations": 0,
+        "cell_location_recall": null,
+        "cell_location_comparison": "PDF-point bounding-box IoU >= 0.3",
+        "row_matches": [
+          {
+            "expected_label": "East",
+            "extracted_label": "East",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "120",
+              "3.0",
+              "42.50"
+            ],
+            "extracted_values": [
+              "120",
+              "3.0",
+              "42.50"
+            ],
+            "exact_value_matches": [
+              true,
+              true,
+              true
+            ],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Central",
+            "extracted_label": "Central",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "95",
+              "4.0",
+              "48.75"
+            ],
+            "extracted_values": [
+              "95",
+              "4.0",
+              "48.75"
+            ],
+            "exact_value_matches": [
+              true,
+              true,
+              true
+            ],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "West",
+            "extracted_label": "West",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "80",
+              "5.0",
+              "55.25"
+            ],
+            "extracted_values": [
+              "80",
+              "5.0",
+              "55.25"
+            ],
+            "exact_value_matches": [
+              true,
+              true,
+              true
+            ],
+            "cell_location_matches": {}
+          }
+        ]
+      },
+      "text_reference_scored": true,
+      "text_score_scope": "source text chunks; generated table serialization excluded",
+      "reference_characters": 344,
+      "reference_words": 65,
+      "hypothesis_characters": 344,
+      "character_edit_distance": 0,
+      "word_edit_distance": 0,
+      "cer": 0.0,
+      "wer": 0.0,
+      "ocr_text": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY Synthetic regional logistics sample Region Delivered sample orders Median transit days Avg fee units East 120 3.0 42.50 Central 95 4.0 48.75 West 80 5.0 55.25 Every record on this page is invented for OCR testing. Values are not from the Commerce database. OCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX",
+      "latency_seconds": 2.199,
+      "pages_per_minute": 27.291,
+      "extracted_text": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY Synthetic regional logistics sample Region Delivered sample orders Median transit days Avg fee units East 120 3.0 42.50 Central 95 4.0 48.75 West 80 5.0 55.25 Every record on this page is invented for OCR testing. Values are not from the Commerce database. OCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX\nColumns: label | value_1 | value_2 | value_3\nRow 1: label: East | value_1: 120 | value_2: 3.0 | value_3: 42.50\nRow 2: label: Central | value_1: 95 | value_2: 4.0 | value_3: 48.75\nRow 3: label: West | value_1: 80 | value_2: 5.0 | value_3: 55.25"
+    }
+  ]
+}

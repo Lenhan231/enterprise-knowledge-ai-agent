@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare available OCR engines on the same rendered Vinamilk report pages."""
+"""Compare OCR engines on the image-only Commerce scan smoke fixture."""
 
 from __future__ import annotations
 
@@ -255,13 +255,13 @@ def run_engine(engine: str, model, image_path: Path, language: str, tesseract_ps
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dataset", type=Path, default=REPO_ROOT / "data/evaluation/ocr_pages.json")
+    parser.add_argument("--dataset", type=Path, default=REPO_ROOT / "data/evaluation/ocr/commerce_scan_ground_truth.json")
     parser.add_argument("--engines", nargs="+", choices=("paddleocr", "easyocr", "surya", "tesseract"), default=("paddleocr", "easyocr", "surya"))
     parser.add_argument("--dpi", type=int, default=160)
     parser.add_argument("--tesseract-psm", type=int, choices=(3, 6, 11, 12), default=3,
                         help="Tesseract page-segmentation mode; used only when tesseract is selected")
     parser.add_argument("--max-pages", type=int, help="Optional first-N-page slice for resource-constrained smoke runs")
-    parser.add_argument("--output", type=Path, default=REPO_ROOT / "artifacts/evaluation/vinamilk-ocr-comparison.json")
+    parser.add_argument("--output", type=Path, default=REPO_ROOT / "artifacts/evaluation/ocr/commerce-scan-ocr-comparison.json")
     args = parser.parse_args()
     if args.dpi < 72:
         parser.error("--dpi must be at least 72")
@@ -272,7 +272,7 @@ def main() -> int:
 
     dataset = json.loads(args.dataset.read_text(encoding="utf-8"))
     dataset_sha256 = hashlib.sha256(args.dataset.read_bytes()).hexdigest()
-    output_dir = REPO_ROOT / "artifacts/evaluation/ocr-rendered"
+    output_dir = REPO_ROOT / "artifacts/evaluation/ocr/renders/ocr-rendered"
     output_dir.mkdir(parents=True, exist_ok=True)
     engines = {}
     for engine in args.engines:

@@ -39,7 +39,10 @@ class WebSocketQATest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_websocket_returns_status_then_shared_qa_response(self):
-        expected = {"answer": "Grounded result [S1]", "citations": [], "agent": "knowledge", "data": None}
+        expected = {
+            "answer": "Grounded result [S1]", "citations": [], "agent": "knowledge", "data": None,
+            "question_sql_fallback": "provider_rate_limited",
+        }
         self.login()
         with patch("app.main._answer_documents", return_value=expected) as answer:
             with self.client.websocket_connect("/ws/ask") as websocket:
@@ -77,6 +80,74 @@ class WebSocketQATest(unittest.TestCase):
                 message = websocket.receive_json()
                 self.assertEqual(message["type"], "answer")
                 self.assertEqual(message["data"]["results"][0]["total"], 61824.0)
+
+    def test_commerce_sql_citation_exposes_generated_query_for_review(self):
+        result = AgentResult(
+            answer="The grouped result and vetted overlap are shown below [C1][C2].", agent="report",
+            evidence=[
+                Evidence(
+                    citation_id="C1", source_type="commerce_sql", source="Commerce SQL",
+                    content='question_specific_query question-specific SQL observations: '
+                            '[{"category": "Shoes", "units_sold": 42}]',
+                    metadata={
+                        "company": "Commerce Demo", "source_tables": ["commerce.inventory"],
+                        "commerce_observation_group": "question_specific_query",
+                        "commerce_observations": [{"category": "Shoes", "units_sold": 42}],
+                        "sql_query": "SELECT i.category, SUM(i.units_sold) AS units_sold FROM commerce.inventory i GROUP BY i.category",
+                    },
+                ),
+                Evidence(
+                    citation_id="C2", source_type="commerce_sql", source="Commerce SQL aggregate",
+                    content='inventory_latest_flag_overlap aggregate observations: [{"both_flagged_rows": 232}]',
+                    metadata={
+                        "company": "Commerce Demo", "source_tables": ["commerce.inventory"],
+                        "commerce_aggregate_key": "inventory_latest_flag_overlap",
+                        "commerce_observation_group": "inventory_latest_flag_overlap",
+                        "commerce_observations": [{"both_flagged_rows": 232}],
+                    },
+                ),
+            ],
+        )
+        self.login()
+        with patch("app.main.KnowledgeAgent"), patch("app.main.SQLAnalyticsAgent"), \
+             patch("app.main.HybridAgent"), patch("app.main.DashboardAgent"), \
+             patch("app.main.IntentClassifier"), patch("app.main.ReportAgent"), \
+             patch("app.main.AgentRouter") as router, patch("app.main.AgentRunRepository"):
+            router.return_value.route.return_value = result
+            response = self.client.post("/api/ask", json={"question": "Which category moved fastest?"})
+
+        self.assertEqual(response.status_code, 200)
+        citations = {item["id"]: item for item in response.json()["citations"]}
+        self.assertEqual(citations["C1"]["source_tables"], ["commerce.inventory"])
+        self.assertIn("SUM(i.units_sold)", citations["C1"]["sql_query"])
+        self.assertEqual(citations["C2"]["commerce_aggregate_key"], "inventory_latest_flag_overlap")
+        self.assertIsNone(citations["C2"]["sql_query"])
+        self.assertEqual(citations["C1"]["commerce_observations"], [{"category": "Shoes", "units_sold": 42}])
+        self.assertEqual(citations["C2"]["commerce_observations"], [{"both_flagged_rows": 232}])
+
+    def test_http_exposes_commerce_query_fallback_reason(self):
+        result = AgentResult(
+            answer="Using the bounded snapshot because SQL generation was rate-limited [C1].",
+            agent="report",
+            metadata={
+                "question_sql_fallback": "provider_rate_limited",
+                "generation_provider": "deterministic_safety_fallback",
+            },
+        )
+        self.login()
+        with patch("app.main.KnowledgeAgent"), patch("app.main.SQLAnalyticsAgent"), \
+             patch("app.main.HybridAgent"), patch("app.main.DashboardAgent"), \
+             patch("app.main.IntentClassifier"), patch("app.main.ReportAgent"), \
+             patch("app.main.AgentRouter") as router, patch("app.main.AgentRunRepository"):
+            router.return_value.route.return_value = result
+            response = self.client.post("/api/ask", json={
+                "question": "Compare recent inventory signals by category?",
+                "business_decision_domain": "inventory_allocation",
+            })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["question_sql_fallback"], "provider_rate_limited")
+        self.assertEqual(response.json()["generation_provider"], "deterministic_safety_fallback")
 
     def test_http_marks_report_withheld_for_unverified_citations(self):
         result = AgentResult(

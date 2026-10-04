@@ -23,7 +23,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 from app.main import app  # noqa: E402
 from core.rag.rag_service import extract_source_ids  # noqa: E402
 
-_CASES = REPO_ROOT / "data/evaluation/vinamilk_qa_cases.json"
+_CASES = REPO_ROOT / "data/evaluation/archive/qa/vinamilk_qa_cases.json"
 _OUTPUT = REPO_ROOT / "artifacts/evaluation/vinamilk-app-qa-suite.json"
 _ACCOUNT_BY_ROLE = {
     "employee": "viewer",

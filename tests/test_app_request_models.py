@@ -4,40 +4,210 @@ import unittest
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock, patch
 
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import app.main as app_main
-from app.main import CORPUS_COMPANY, DOCUMENT_ROLES, ROLE_PERMISSIONS, AskRequest, CandidateReviewRequest, _answer_documents, _referenced_citation_ids, _role_accounts, _roles_with_permission, access_matrix, app, business_metric_catalog, require_permission, upload_capability
+from app.main import CORPUS_COMPANY, DOCUMENT_ROLES, ROLE_PERMISSIONS, AskRequest, CandidateReviewRequest, KnowledgeBaseStatusRequest, _answer_documents, _commerce_reference_metadata, _referenced_citation_ids, _role_accounts, _roles_with_permission, access_matrix, app, require_permission, upload_capability
 from core.agents.intent_classifier import IntentClassifier
 from core.models.agents import AgentResult, Evidence
 
 
 class AskRequestTest(unittest.TestCase):
-    def test_business_metric_catalog_exposes_primary_decision_profile_for_ui(self):
-        catalog = business_metric_catalog({"role": "admin"})
-        by_name = {item["metric_name"]: item for item in catalog}
+    def test_analyst_dashboard_can_request_one_commerce_domain_at_a_time(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ANALYST_USERNAME": "analyst-test",
+            "DEMO_ANALYST_PASSWORD": "analyst-password",
+        }
+        repository = Mock()
+        repository.commerce_dashboard.side_effect = lambda keys: {"requested_keys": keys}
+        expected = {
+            "inventory_allocation": ("inventory_by_year", "inventory_year_end_by_category"),
+            "promotion_planning": ("promotions_by_year",),
+            "nationwide_logistics": ("logistics_by_year_region",),
+        }
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main.DocumentRepository", return_value=repository), \
+             TestClient(app) as client:
+            self.assertEqual(client.post("/api/auth/login", json={
+                "username": "analyst-test", "password": "analyst-password",
+            }).status_code, 200)
+            responses = {
+                domain: client.get(f"/api/commerce/dashboard?domain={domain}")
+                for domain in expected
+            }
+            campaigns = client.get("/api/commerce/dashboard?domain=promotion_planning&detail=campaigns")
+            invalid = client.get("/api/commerce/dashboard?domain=unknown")
+            invalid_detail = client.get("/api/commerce/dashboard?domain=nationwide_logistics&detail=campaigns")
 
-        self.assertEqual(by_name["domestic_consolidated_net_revenue_growth"]["decision_priority"], "primary")
-        self.assertEqual(by_name["domestic_consolidated_net_revenue_growth"]["decision_profile"], "market_performance")
-        self.assertEqual(by_name["domestic_consolidated_net_revenue_growth"]["decision_profile_label"], "Market performance and route-to-market reach")
-        self.assertEqual(by_name["market_share_lead_over_runner_up"]["decision_priority"], "primary")
-        self.assertEqual(by_name["foreign_subsidiary_revenue"]["decision_priority"], "supporting")
-        self.assertEqual(by_name["retail_points_of_sale"]["domain"], "market_performance")
-        self.assertEqual(by_name["vinamilk_stores"]["decision_profile"], "market_performance")
-        self.assertEqual(by_name["tpm_defect_free_streak_years"]["domain"], "manufacturing_efficiency")
-        domains = {item["domain"] for item in catalog}
-        self.assertNotIn("distribution_reach", domains)
-        self.assertNotIn("manufacturing_quality", domains)
+        for domain, response in responses.items():
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()["requested_keys"], list(expected[domain]))
+        self.assertEqual(invalid.status_code, 422)
+        self.assertEqual(campaigns.status_code, 200)
+        self.assertEqual(campaigns.json()["requested_keys"], ["promotions_by_campaign"])
+        self.assertEqual(invalid_detail.status_code, 422)
+        self.assertEqual(repository.commerce_dashboard.call_args_list,
+                         [unittest.mock.call(keys) for keys in expected.values()]
+                         + [unittest.mock.call(("promotions_by_campaign",))])
+
+    def test_commerce_domain_is_accepted_for_questions_and_server_side_suggestions(self):
+        question = AskRequest(
+            question="Should we rebalance inventory?",
+            business_decision_domain="inventory_allocation",
+        )
+        suggestions = AskRequest(
+            decision_suggestions=True,
+            business_decision_domain="promotion_planning",
+        )
+        self.assertEqual(question.business_decision_domain, "inventory_allocation")
+        self.assertTrue(suggestions.decision_suggestions)
+        with self.assertRaises(ValidationError):
+            AskRequest(question="Should we change inventory?", business_decision_domain="made_up")
+
+    def test_commerce_upload_reference_requires_trusted_classification_and_attribution(self):
+        metadata = _commerce_reference_metadata(
+            ["inventory_allocation", "nationwide_logistics", "inventory_allocation"],
+            " Walmart Inc. ",
+            "company_policy_reference",
+            " Walmart suppliers only; not Commerce Demo policy ",
+        )
+        self.assertEqual(metadata["knowledge_domains"], ["inventory_allocation", "nationwide_logistics"])
+        self.assertEqual(metadata["source_publisher"], "Walmart Inc.")
+        self.assertEqual(metadata["reference_applicability"], "Walmart suppliers only; not Commerce Demo policy")
+        self.assertEqual(metadata["evidence_class"], "company_policy_reference")
+        self.assertFalse(metadata["external_policy_reference"])
+        self.assertFalse(metadata["synthetic_company_policy"])
+
+        synthetic = _commerce_reference_metadata(
+            ["inventory_allocation"],
+            "Commerce Demo (fictional organization)",
+            "company_policy_reference",
+            "Fictional Commerce Demo only; not a policy of a real company.",
+            True,
+        )
+        self.assertTrue(synthetic["synthetic_company_policy"])
+        self.assertFalse(synthetic["external_business_reference"])
+        self.assertEqual(synthetic["evidence_class"], "company_policy_reference")
+
+        for domains, publisher, reference_type in (
+            (["made_up"], "Publisher", "company_policy_reference"),
+            (["inventory_allocation"], "", "company_policy_reference"),
+            (["inventory_allocation"], "Publisher", ""),
+        ):
+            with self.subTest(reference_type=reference_type, publisher=publisher):
+                with self.assertRaises(HTTPException):
+                    _commerce_reference_metadata(domains, publisher, reference_type)
+
+        with self.assertRaises(HTTPException):
+            _commerce_reference_metadata(["inventory_allocation"], "Publisher", "company_policy_reference", " ")
+
+        for reference_type, publisher, scope in (
+            ("company_practice_reference", "Commerce Demo (fictional organization)", "Fictional demo only"),
+            ("company_policy_reference", "Walmart Inc.", "Fictional demo only"),
+            ("company_policy_reference", "Commerce Demo (fictional organization)", "Applies to suppliers"),
+        ):
+            with self.subTest(reference_type=reference_type, publisher=publisher, scope=scope):
+                with self.assertRaises(HTTPException):
+                    _commerce_reference_metadata(["inventory_allocation"], publisher, reference_type, scope, True)
+
+    def test_document_uploader_cannot_mark_an_upload_as_synthetic_policy(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_UPLOADER_USERNAME": "uploader-test",
+            "DEMO_UPLOADER_PASSWORD": "uploader-password",
+        }
+        with patch.dict("os.environ", environment, clear=False), TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "uploader-test", "password": "uploader-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.post(
+                "/api/documents/upload",
+                files={"file": ("demo-policy.pdf", b"%PDF-1.4\n", "application/pdf")},
+                data={
+                    "title": "Synthetic inventory policy",
+                    "document_type": "company_policy_reference",
+                    "domain": "inventory_allocation",
+                    "source_publisher": "Commerce Demo (fictional organization)",
+                    "reference_type": "company_policy_reference",
+                    "reference_applicability": "Fictional Commerce Demo only",
+                    "synthetic_company_policy": "true",
+                    "knowledge_domains": "inventory_allocation",
+                    "allowed_roles": "admin",
+                },
+            )
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("Only an admin", response.json()["detail"])
+
+    def test_admin_upload_marks_synthetic_policy_metadata_before_indexing(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ADMIN_USERNAME": "admin-test",
+            "DEMO_ADMIN_PASSWORD": "admin-password",
+        }
+        repository = Mock()
+        processor = Mock()
+        processor.process.side_effect = lambda _name, _content, metadata: {
+            "chunks": [{"text": "Fictional inventory policy", "metadata": {**metadata, "page_number": 1}}],
+            "tables": [],
+        }
+        embedding = Mock(model_name="test-embedding", max_sequence_length=128)
+        embedding.embed_documents.return_value = [[0.1, 0.2]]
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main._storage_client", return_value=(Mock(), "test-bucket")), \
+             patch("app.main.DocumentRepository", return_value=repository), \
+             patch("core.document_processing.processors.document_processor.DocumentProcessor", return_value=processor) as processor_class, \
+             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding), \
+             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_repo, \
+             patch("core.database.processed_chunks_repository.ProcessedChunksRepository"), \
+             patch("core.database.structured_store.StructuredDataStore"), \
+             patch("core.utils.token_counter.TokenCounter") as token_counter, \
+             TestClient(app) as client:
+            processor_class.SUPPORTED = {".pdf"}
+            token_counter.return_value.split_text.side_effect = lambda text, max_sequence_tokens: [text]
+            token_counter.return_value.count.return_value = 1
+            self.assertEqual(client.post("/api/auth/login", json={
+                "username": "admin-test", "password": "admin-password",
+            }).status_code, 200)
+            response = client.post(
+                "/api/documents/upload",
+                files={"file": ("inventory-policy.pdf", b"%PDF-1.4\n", "application/pdf")},
+                data={
+                    "title": "Synthetic inventory policy",
+                    "document_type": "company_policy_reference",
+                    "domain": "inventory_allocation",
+                    "source_publisher": "Commerce Demo (fictional organization)",
+                    "reference_type": "company_policy_reference",
+                    "reference_applicability": "Fictional Commerce Demo only; not a policy of a real company.",
+                    "synthetic_company_policy": "true",
+                    "knowledge_domains": "inventory_allocation",
+                    "allowed_roles": "admin",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertTrue(response.json()["searchable"])
+        uploaded_metadata = processor.process.call_args.args[2]
+        self.assertTrue(uploaded_metadata["synthetic_company_policy"])
+        self.assertFalse(uploaded_metadata["external_business_reference"])
+        self.assertEqual(uploaded_metadata["source_type"], "synthetic_demo_policy")
+        indexed_rows = chunks_repo.return_value.replace_document.call_args.args[1]
+        self.assertTrue(indexed_rows[0][3]["synthetic_company_policy"])
 
     def test_report_route_uses_knowledge_agent_without_running_hybrid_sql(self):
         evidence = Evidence(
             citation_id="S1", source_type="document", source="2024 annual report",
             content="Vinamilk reported its 2024 strategy and risks.",
             metadata={"document_id": "VNM-AR-2024-VI", "page_number": 20,
-                      "source_url": "https://example.com/report.pdf"},
+                      "source_url": "https://example.com/report.pdf",
+                      "source_publisher": "Example Publisher",
+                      "evidence_class": "company_practice_reference",
+                      "reference_applicability": "External example only."},
         )
         knowledge = Mock()
         analytics = Mock()
@@ -72,6 +242,33 @@ class AskRequestTest(unittest.TestCase):
         analytics.run.assert_not_called()
         self.assertEqual(payload["agent"], "report")
         self.assertEqual([item["document_id"] for item in payload["citations"]], ["VNM-AR-2024-VI"])
+        self.assertEqual(payload["citations"][0]["source_publisher"], "Example Publisher")
+        self.assertEqual(payload["citations"][0]["evidence_class"], "company_practice_reference")
+        self.assertEqual(payload["citations"][0]["reference_applicability"], "External example only.")
+
+    def test_action_suggestion_api_mode_builds_internal_question_and_domain_metadata(self):
+        report, classifier = Mock(), Mock()
+        report.run.return_value = AgentResult(answer="No recommendation", agent="report")
+        with (
+            patch("app.main.KnowledgeAgent", return_value=Mock()),
+            patch("app.main.SQLAnalyticsAgent", return_value=Mock()),
+            patch("app.main.HybridAgent", return_value=Mock()),
+            patch("app.main.DashboardAgent", return_value=Mock()),
+            patch("app.main.IntentClassifier", return_value=classifier),
+            patch("app.main.ReportAgent", return_value=report),
+            patch("app.main.AgentRunRepository", return_value=Mock()),
+        ):
+            payload = _answer_documents(
+                AskRequest(decision_suggestions=True, business_decision_domain="inventory_allocation"),
+                {"sub": "admin-test", "role": "admin"},
+            )
+
+        request = report.run.call_args.args[0]
+        self.assertEqual(request.question, "Generate conditional management actions from available Commerce observations.")
+        self.assertEqual(request.metadata["business_decision_domain"], "inventory_allocation")
+        self.assertTrue(request.metadata["decision_suggestions"])
+        classifier.classify.assert_not_called()
+        self.assertEqual(payload["agent"], "report")
 
     def test_ask_api_preserves_dashboard_visualization_and_verified_citations(self):
         answer = AgentResult(
@@ -155,14 +352,27 @@ class AskRequestTest(unittest.TestCase):
         with self.assertRaises(ValidationError):
             AskRequest(question="Revenue for 2024?", retrieval_method="unfiltered")
 
-    def test_business_question_accepts_only_configured_decision_domains(self):
+    def test_business_decision_workflow_accepts_only_commerce_domains(self):
         request = AskRequest(
-            question="Which market needs commercial diligence?",
-            business_decision_domain="market_performance",
+            question="How should we review inventory allocation?",
+            business_decision_domain="inventory_allocation",
         )
-        self.assertEqual(request.business_decision_domain, "market_performance")
+        self.assertEqual(request.business_decision_domain, "inventory_allocation")
+        promotion = AskRequest(
+            question="Compare tagged and untagged promotions", business_decision_domain="promotion_planning",
+        )
+        self.assertEqual(promotion.business_decision_domain, "promotion_planning")
         with self.assertRaises(ValidationError):
-            AskRequest(question="Which market needs diligence?", business_decision_domain="all_metrics")
+            AskRequest(question="Which market needs diligence?", business_decision_domain="milk_supply")
+
+    def test_conditional_suggestion_mode_needs_no_user_question_but_requires_a_domain(self):
+        request = AskRequest(decision_suggestions=True, business_decision_domain="inventory_allocation")
+        self.assertEqual(request.question, "")
+        self.assertTrue(request.decision_suggestions)
+        with self.assertRaises(ValidationError):
+            AskRequest()
+        with self.assertRaises(ValidationError):
+            AskRequest(decision_suggestions=True)
 
     def test_access_matrix_matches_actual_role_capabilities(self):
         matrix = access_matrix({"sub": "admin"})
@@ -171,8 +381,77 @@ class AskRequestTest(unittest.TestCase):
         self.assertIn("view_agent_monitoring", permissions["admin"])
         self.assertNotIn("view_agent_monitoring", permissions["employee"])
         self.assertNotIn("view_agent_monitoring", permissions["document_uploader"])
-        self.assertEqual(set(_roles_with_permission("view_analytics")), {"finance_analyst", "sustainability_analyst", "executive", "admin"})
+        self.assertEqual(set(_roles_with_permission("view_analytics")), {"finance_analyst", "sustainability_analyst", "operations", "executive", "admin"})
         self.assertNotIn("view_analytics", permissions["employee"])
+        self.assertIn("manage_knowledge", permissions["admin"])
+        self.assertNotIn("manage_knowledge", permissions["finance_analyst"])
+
+    def test_admin_can_remove_and_restore_a_source_from_retrieval(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ADMIN_USERNAME": "admin-test",
+            "DEMO_ADMIN_PASSWORD": "admin-password",
+        }
+        repository = Mock()
+        repository.set_knowledge_base_active.return_value = True
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main.DocumentRepository", return_value=repository), \
+             TestClient(app) as client:
+            self.assertEqual(client.post("/api/auth/login", json={
+                "username": "admin-test", "password": "admin-password",
+            }).status_code, 200)
+            response = client.patch("/api/admin/knowledge-documents/SHOPIFY-1", json={"active": False})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"document_id": "SHOPIFY-1", "active": False})
+        repository.set_knowledge_base_active.assert_called_once_with("SHOPIFY-1", False)
+
+    def test_analyst_cannot_change_knowledge_base_sources(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ANALYST_USERNAME": "analyst-test",
+            "DEMO_ANALYST_PASSWORD": "analyst-password",
+        }
+        with patch.dict("os.environ", environment, clear=False), TestClient(app) as client:
+            self.assertEqual(client.post("/api/auth/login", json={
+                "username": "analyst-test", "password": "analyst-password",
+            }).status_code, 200)
+            response = client.patch("/api/admin/knowledge-documents/SHOPIFY-1", json={"active": False})
+        self.assertEqual(response.status_code, 403)
+
+    def test_only_admin_can_open_manifest_registered_synthetic_policy_pdf(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ADMIN_USERNAME": "admin-test",
+            "DEMO_ADMIN_PASSWORD": "admin-password",
+            "DEMO_ANALYST_USERNAME": "analyst-test",
+            "DEMO_ANALYST_PASSWORD": "analyst-password",
+        }
+        with patch.dict("os.environ", environment, clear=False), TestClient(app) as client:
+            self.assertEqual(client.post("/api/auth/login", json={
+                "username": "admin-test", "password": "admin-password",
+            }).status_code, 200)
+            response = client.get("/api/admin/knowledge-documents/CD-POL-INV-001/source")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.headers["content-type"], "application/pdf")
+            self.assertIn("inline", response.headers["content-disposition"])
+            self.assertTrue(response.content.startswith(b"%PDF-"))
+            self.assertEqual(client.get(
+                "/api/admin/knowledge-documents/UNKNOWN/source",
+            ).status_code, 404)
+
+            client.post("/api/auth/logout")
+            self.assertEqual(client.post("/api/auth/login", json={
+                "username": "analyst-test", "password": "analyst-password",
+            }).status_code, 200)
+            self.assertEqual(client.get(
+                "/api/admin/knowledge-documents/CD-POL-INV-001/source",
+            ).status_code, 403)
+
+    def test_knowledge_status_request_rejects_unknown_fields(self):
+        with self.assertRaises(ValidationError):
+            KnowledgeBaseStatusRequest(active=False, delete_source=True)
 
     def test_uploader_can_upload_without_analytics_or_admin_review(self):
         self.assertTrue(upload_capability({"role": "document_uploader"})["can_upload"])
@@ -232,12 +511,14 @@ class AskRequestTest(unittest.TestCase):
                 request=None,
                 file=upload,
                 tesseract_psm=11, tesseract_table_psm=3,
-                render_scale=1.5, table_render_scale=2.5,
+                render_scale=3.5, table_render_scale=3.5,
                 user={"sub": "ocr-tester", "role": "tester"},
             ))
 
         self.assertEqual(response["page_count"], 43)
         self.assertEqual(response["chunk_count"], 1)
+        self.assertEqual(processor.call_args.args[0]["ocr_render_scale"], 3.5)
+        self.assertEqual(processor.call_args.args[0]["ocr_table_render_scale"], 3.5)
         repository.save_run.assert_called_once()
         self.assertEqual(repository.save_run.call_args.kwargs["chunks"], parsed["chunks"])
         self.assertEqual(len(repository.save_run.call_args.kwargs["page_previews"]), 43)
@@ -341,6 +622,37 @@ class AskRequestTest(unittest.TestCase):
         )
         parsed.close.assert_called_once()
 
+    def test_admin_can_request_exact_indexed_metric_source_chunk(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ADMIN_USERNAME": "admin-test",
+            "DEMO_ADMIN_PASSWORD": "admin-password",
+        }
+        parsed = Mock()
+        indexed = Mock()
+        indexed.get_document_chunk.return_value = {
+            "chunk_index": 413, "content": "Exact linked indexed source passage", "metadata": {},
+        }
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("core.database.processed_chunks_repository.ProcessedChunksRepository", return_value=parsed), \
+             patch("core.database.document_chunks_repository.DocumentChunkRepository", return_value=indexed), \
+             TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "admin-test", "password": "admin-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.get("/api/admin/processing/VNM-SR-2025-EN/chunks?stage=indexed&source_chunk_id=9021")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["stage"], "indexed")
+        self.assertEqual(response.json()["chunks"][0]["content"], "Exact linked indexed source passage")
+        parsed.get_document.assert_not_called()
+        indexed.get_document_chunk.assert_called_once_with(
+            9021, "VNM-SR-2025-EN", company=CORPUS_COMPANY,
+        )
+        indexed.close.assert_called_once()
+        parsed.close.assert_not_called()
+
     def test_admin_can_inspect_company_scoped_extracted_tables(self):
         environment = {
             "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
@@ -440,7 +752,7 @@ class AskRequestTest(unittest.TestCase):
             self.assertEqual(login.status_code, 200)
             response = client.post(
                 "/api/admin/processing/UPLOAD-1/business-metric-extraction-runs",
-                json={"decision_domain": "market_performance", "metric_name": "domestic_consolidated_net_revenue_growth"},
+                json={"decision_domain": "milk_supply", "metric_name": "farmer_raw_milk_purchased"},
             )
 
         self.assertEqual(response.status_code, 200)
@@ -450,7 +762,7 @@ class AskRequestTest(unittest.TestCase):
         parsed.get_document.assert_called_once_with("UPLOAD-1", company=CORPUS_COMPANY)
         repository.save_business_metric_candidates.assert_called_once_with([candidate], entered_by="parser")
         repository.save_business_metric_extraction_run.assert_called_once()
-        self.assertEqual(extractor.call_args.kwargs["metric_names"], ["domestic_consolidated_net_revenue_growth"])
+        self.assertEqual(extractor.call_args.kwargs["metric_names"], ["farmer_raw_milk_purchased"])
         repository.close.assert_called_once()
 
     def test_replay_rejects_metric_that_does_not_belong_to_selected_domain(self):
@@ -486,7 +798,7 @@ class AskRequestTest(unittest.TestCase):
             self.assertEqual(login.status_code, 200)
             response = client.post(
                 "/api/admin/processing/UPLOAD-1/business-metric-extraction-runs",
-                json={"decision_domain": "market_performance", "metric_name": "domestic_consolidated_net_revenue_growth"},
+                json={"decision_domain": "milk_supply", "metric_name": "farmer_raw_milk_purchased"},
             )
 
         self.assertEqual(response.status_code, 403)

@@ -113,6 +113,29 @@ class DocumentChunkRepository:
             return [dict(row) if isinstance(row, dict) else dict(zip(columns, row))
                     for row in cursor.fetchall()]
 
+    def get_document_chunk(
+        self, chunk_id: int, document_id: str, company: str | None = None,
+    ) -> dict | None:
+        """Load one indexed passage by its persisted provenance key."""
+        with self.conn.cursor() as cursor:
+            cursor.execute(
+                """SELECT c.chunk_index, c.content, c.metadata,
+                          'embedded'::text AS processing_status,
+                          NULL::text AS processing_error
+                   FROM public.document_chunks c
+                   JOIN public.documents d ON d.document_id = c.metadata->>'document_id'
+                   WHERE c.id = %s AND d.document_id = %s
+                     AND coalesce(d.processing_status, 'ready') = 'ready'
+                     AND (%s::text IS NULL OR d.company = %s::text)
+                   LIMIT 1""",
+                (chunk_id, document_id, company, company),
+            )
+            row = cursor.fetchone()
+            if row is None:
+                return None
+            columns = [column.name for column in cursor.description]
+            return dict(row) if isinstance(row, dict) else dict(zip(columns, row))
+
     def close(self) -> None:
         close_database_connection(self.conn)
 
@@ -198,6 +221,7 @@ class DocumentChunkRepository:
     def similarity_search(
         self, query_embedding: list[float] | None, limit: int, company: str | None = None,
         roles: list[str] | None = None, query: str | None = None,
+        metadata_filter: dict | None = None,
         method: Literal["dense", "bm25", "hybrid"] = "hybrid",
         dense_weight: float = 1.0, bm25_weight: float = 2.0, rrf_k: int = 60,
     ) -> list[RetrievedChunk]:
@@ -210,7 +234,7 @@ class DocumentChunkRepository:
             raise ValueError("hybrid weights must be positive and rrf_k must be non-negative")
         from core.retrieval.methods import bm25, dense, hybrid
 
-        options = {"query": query, "company": company, "roles": roles}
+        options = {"query": query, "company": company, "roles": roles, "metadata_filter": metadata_filter}
         if method == "dense":
             return dense.search(self, query_embedding, limit, **options)
         if method == "bm25":

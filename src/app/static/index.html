@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f3f6fa">
-  <title>Vietnam Enterprise Knowledge AI</title>
+  <title>Commerce Intelligence · Operations</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=domain-metric-review-14">
+  <link rel="stylesheet" href="/static/styles.css?v=commerce-answer-tables-1">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -23,7 +23,7 @@
   <header class="topbar">
     <a class="brand" href="/" aria-label="Enterprise Knowledge home">
       <span class="brand-mark">EK</span>
-      <span><strong>Enterprise Knowledge AI</strong><small>Vietnam public company corpus</small></span>
+      <span><strong>Enterprise Knowledge AI</strong><small>Commerce operations workspace</small></span>
     </a>
     <div class="topbar-status">
       <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light and dark mode" title="Toggle theme">
@@ -56,11 +56,11 @@
       <div>
         <p class="eyebrow">GROUNDED COMPANY INTELLIGENCE</p>
         <h1>Ask company documents.<br><span>Get answers with sources.</span></h1>
-        <p class="intro-copy">Search Vinamilk’s public reports, financial statements, and sustainability records. Every answer is grounded in retrieved passages and directly linked to primary evidence.</p>
+        <p class="intro-copy">Search company-published commerce operating guidance and analyze the synthetic Commerce dataset. Answers cite their source and disclose evidence limits.</p>
       </div>
       <div class="corpus-scope">
         <span>ENTERPRISE SCOPE</span>
-        <strong>Vinamilk · VNM (HOSE)</strong>
+        <strong>Commerce demo · synthetic data</strong>
       </div>
     </section>
 
@@ -100,7 +100,7 @@
         Knowledge Q&amp;A
       </button>
       <button id="tab-button-analytics" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-analytics" data-tab-target="analytics" hidden>
-        Business Analysis
+        Commerce Dashboard
       </button>
       <button id="tab-button-processing" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-processing" data-tab-target="processing" hidden>
         Document Processing
@@ -110,6 +110,9 @@
       </button>
       <button id="tab-button-metrics" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-metrics" data-tab-target="metrics" hidden>
         Metric Management
+      </button>
+      <button id="tab-button-knowledge-management" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-knowledge-management" data-tab-target="knowledge-management" hidden>
+        Knowledge Management
       </button>
       <button id="tab-button-access" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-access" data-tab-target="access" hidden>
         Access Control
@@ -132,14 +135,13 @@
         <form id="ask-form">
           <label class="visually-hidden" for="question">Search or ask a question about company documents</label>
           <div class="textarea-wrapper">
-            <textarea id="question" minlength="3" maxlength="1000" required placeholder="Example: What were Vinamilk's consolidated revenue and profit after tax in 2024? How did they change compared to 2023?"></textarea>
+          <textarea id="question" minlength="3" maxlength="1000" required placeholder="Example: What evidence should be checked before transferring inventory?"></textarea>
           </div>
           <div class="quick-prompts" id="quick-prompts">
             <span class="quick-prompt-label">Quick prompts:</span>
-            <button type="button" class="quick-chip" data-prompt="What were Vinamilk's consolidated net revenue and profit after tax in 2024?">2024 Revenue &amp; Profit</button>
-            <button type="button" class="quick-chip" data-prompt="Summarize Vinamilk's Net Zero 2050 targets and ESG commitments in recent reports.">Net Zero &amp; ESG Strategy</button>
-            <button type="button" class="quick-chip" data-prompt="What is the breakdown of Vinamilk's current and non-current assets as of December 31, 2024?">Asset Composition 2024</button>
-            <button type="button" class="quick-chip" data-prompt="What cash dividends did Vinamilk distribute or approve for fiscal year 2024?">2024 Cash Dividends</button>
+            <button type="button" class="quick-chip" data-prompt="What evidence should be checked before transferring inventory when stockout and overstock flags overlap?">Inventory guidance</button>
+            <button type="button" class="quick-chip" data-prompt="How can an experiment distinguish incremental promotion sales from attributed sales?">Campaign measurement</button>
+            <button type="button" class="quick-chip" data-prompt="Which factors should a retailer compare before choosing an ecommerce delivery service?">Delivery planning</button>
           </div>
           <div class="ask-controls">
             <span id="question-hint">Use precise questions for exact passage retrieval and primary source citations.</span>
@@ -165,16 +167,16 @@
       <section class="corpus-section">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">PRIMARY SOURCE LIBRARY</p>
-            <h2>Vinamilk verified documents</h2>
+            <p class="eyebrow">DECISION-SUPPORT LIBRARY</p>
+            <h2>Commerce decision-support sources</h2>
           </div>
           <span id="source-count" class="source-count"></span>
         </div>
         <div id="company-grid" class="company-grid">
-          <div class="loading-card">Loading verified company records…</div>
+          <div class="loading-card">Loading decision-support sources…</div>
         </div>
       </section>
-      <p class="corpus-note">This demo operates on public Vinamilk disclosure documents (Annual Reports, Financial Statements, ESG Reports). Always verify against original sources for business decisions.</p>
+      <p class="corpus-note">Company-published platform guidance is external reference material, not an internal policy of the synthetic Commerce dataset. Confirm current rules at the source before acting.</p>
     </section>
 
     <!-- TAB 2: ANALYTICS / BUSINESS ANALYSIS -->
@@ -183,9 +185,9 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">EXECUTIVE DECISION SUPPORT</p>
-            <h2>Business Analysis &amp; KPI Dashboard</h2>
+            <h2>Commerce Operations Dashboard</h2>
           </div>
-          <div class="analytics-tools">
+          <div class="analytics-tools" hidden>
             <label>Company:
               <select id="analytics-company">
                 <option value="">All companies</option>
@@ -198,7 +200,74 @@
             </label>
           </div>
         </div>
-        <div id="analysis-summary" class="analysis-summary" aria-label="Analysis coverage"></div>
+        <div id="analysis-summary" class="analysis-summary" aria-label="Analysis coverage" hidden></div>
+
+        <section id="commerce-dashboard" class="commerce-dashboard" aria-labelledby="commerce-dashboard-title" hidden>
+          <div class="commerce-dashboard-heading">
+            <div><p class="eyebrow">COMMERCE OPERATIONS · DATABASE AGGREGATES</p><h2 id="commerce-dashboard-title">Commerce decision dashboard</h2>
+              <p>Values are computed from the private Commerce schema. This competition dataset is synthetic.</p></div>
+            <div class="commerce-dashboard-filters">
+              <label>Question domain <select id="commerce-decision-domain" aria-label="Choose the decision domain for analysis">
+                <option value="inventory_allocation">Inventory allocation</option>
+                <option value="promotion_planning">Promotion planning</option>
+                <option value="nationwide_logistics">Nationwide logistics</option>
+              </select></label>
+              <label>Year <select id="commerce-year-filter" aria-label="Filter Commerce dashboard by year"><option value="">All available years</option></select></label>
+            </div>
+          </div>
+          <p id="commerce-dashboard-status" class="loading-card" role="status" hidden></p>
+          <div class="commerce-dashboard-tabs" role="tablist" aria-label="Commerce decision domains">
+            <button type="button" role="tab" aria-selected="true" data-commerce-view="inventory">Inventory allocation</button>
+            <button type="button" role="tab" aria-selected="false" data-commerce-view="promotions">Promotion planning</button>
+            <button type="button" role="tab" aria-selected="false" data-commerce-view="logistics">Nationwide logistics</button>
+          </div>
+          <div id="commerce-domain-cards" class="commerce-kpi-grid" aria-live="polite"></div>
+          <details class="commerce-financial-context"><summary>Dataset sales context (not a decision-domain KPI)</summary>
+            <div id="commerce-sales-table" class="commerce-table-wrap"></div>
+          </details>
+          <section id="commerce-view-inventory" class="commerce-view" role="tabpanel">
+            <h3>Inventory health by year</h3><p>Snapshot flags and realized stockout days. Anomalous days-of-supply values are omitted.</p>
+            <div id="commerce-inventory-chart" class="commerce-chart-card"></div>
+            <div id="commerce-inventory-table" class="commerce-table-wrap"></div>
+            <h3>Latest inventory snapshot in selected year by product category <span id="commerce-inventory-latest-date"></span></h3><div id="commerce-inventory-category" class="commerce-table-wrap"></div>
+          </section>
+          <section id="commerce-view-promotions" class="commerce-view" role="tabpanel" hidden>
+            <h3>Delivered order-item outcomes by promotion tag</h3><p>Descriptive comparison only, not causal uplift. Mixed orders can appear in both groups; no holdout/control assignment is available. Gross-profit and gross-margin values are merchandise proxies using catalog COGS, not contribution margin or ROI.</p>
+            <div id="commerce-promotion-chart" class="commerce-chart-card"></div>
+            <div id="commerce-promotion-table" class="commerce-table-wrap"></div>
+            <details id="commerce-campaign-details">
+              <summary>Campaign-window results</summary>
+              <p>Tagged item outcomes within each campaign's declared dates. An item with two different promotion IDs can appear in both campaigns; totals are not additive or causal lift. Validate catalog COGS before relying on the gross-profit proxy.</p>
+              <div id="commerce-campaign-table" class="commerce-table-wrap"></div>
+            </details>
+          </section>
+          <section id="commerce-view-logistics" class="commerce-view" role="tabpanel" hidden>
+            <h3>Transit time and shipping fee by region</h3><p>Actual elapsed ship-to-delivery days; the data does not identify carriers, warehouse origins, route capacity, or promised SLA.</p>
+            <div id="commerce-logistics-chart" class="commerce-chart-card"></div>
+            <div id="commerce-logistics-table" class="commerce-table-wrap"></div>
+          </section>
+          <details class="commerce-data-notes"><summary>Dataset scope and decision limits</summary><ul id="commerce-data-notes-list"></ul></details>
+          <section class="analysis-section commerce-decision-question" aria-labelledby="business-question-title">
+            <div class="analysis-section-heading">
+              <div><p class="eyebrow">DATABASE + COMPANY REFERENCES</p><h3 id="business-question-title">Ask a Commerce decision question</h3></div>
+              <span>Answers combine aggregates from the synthetic Commerce schema with cited company-published practice references.</span>
+            </div>
+            <form id="business-question-form" class="business-question-form">
+              <label class="visually-hidden" for="business-question">Analytical question</label>
+              <textarea id="business-question" maxlength="1000" placeholder="Example: Should we rebalance inventory toward categories with repeated stockout snapshots? State what lead-time and warehouse data are still needed."></textarea>
+              <button id="business-question-button" type="submit" class="submit-query-btn"><span>Analyze decision evidence</span></button>
+            </form>
+            <div class="decision-question-prompts" aria-label="Domain-focused analysis prompts">
+              <span>Suggested questions for this domain</span>
+              <div id="decision-domain-questions" class="decision-question-list"></div>
+              <button type="button" data-decision-suggestions>
+                <strong>Generate conditional action recommendations</strong>
+                <small>The agent will combine Commerce SQL observations with relevant company references. Conditions and recommendations stay server-side.</small>
+              </button>
+            </div>
+            <div id="business-answer-panel" class="answer-panel" hidden aria-live="polite"></div>
+          </section>
+        </section>
 
         <div class="analytics-subtabs" role="tablist" aria-label="Analytics views">
           <button id="analytics-tab-financial" class="analytics-subtab active" type="button" role="tab"
@@ -241,15 +310,11 @@
           <div class="analysis-section-heading">
             <div>
               <p class="eyebrow">VERIFIED BUSINESS DECISION DOMAINS</p>
-              <h3 id="milk-supply-title">Business performance by decision domain</h3>
+              <h3 id="business-metric-title">Business performance by decision domain</h3>
             </div>
             <div class="analytics-tools">
-              <label>Decision domain:
-                <select id="analytics-domain" aria-label="Filter business metrics by decision domain">
-                  <option value="">All domains</option>
-                </select>
-              </label>
-              <label>Business metrics:
+              <select id="analytics-domain" hidden aria-hidden="true"></select>
+              <label id="business-metric-scope-control">Business metrics:
                 <select id="analytics-metric-scope" aria-label="Choose primary or all verified business metrics">
                   <option value="primary">Primary decision KPIs</option>
                   <option value="all">All verified metrics</option>
@@ -257,38 +322,33 @@
               </label>
             </div>
           </div>
-          <div id="business-metric-kpis" class="financial-kpis"></div>
-          <div id="business-metric-trends" class="financial-trends"></div>
-          <p class="analysis-caveat">Report figures describe public annual snapshots. They do not include live purchase price, quality, rejection, factory demand or regional data.</p>
-        </section>
-
-        <section class="analysis-section" aria-labelledby="business-question-title">
-          <div class="analysis-section-heading">
-            <div>
-              <p class="eyebrow">DOCUMENT-GROUNDED SYNTHESIS</p>
-              <h3 id="business-question-title">Ask an analytical business question</h3>
-            </div>
-            <span>Decision answers combine verified KPIs with role-authorized source passages; filters above apply to charts.</span>
+          <div id="market-performance-dashboard" class="market-performance-dashboard" hidden>
+            <section class="market-dashboard-section" aria-labelledby="market-core-title">
+              <div class="market-section-heading"><div><p class="eyebrow">CORE PERFORMANCE</p><h4 id="market-core-title">Domestic vs overseas performance</h4></div><p>Scale, growth and segment profitability; only comparable observations enter a chart.</p></div>
+              <div id="market-core-cards" class="market-kpi-grid"></div>
+              <div class="market-chart-grid">
+                <article class="market-chart-card"><h5>Revenue trend</h5><p>Domestic and overseas net revenue · verified fiscal years</p><div id="market-revenue-trend"></div></article>
+                <article class="market-chart-card"><h5>Revenue growth</h5><p>Source-reported year-over-year growth</p><div id="market-revenue-growth"></div></article>
+                <article class="market-chart-card market-chart-wide"><h5>Segment gross margin</h5><p>Derived only when gross profit and revenue match in year, scope, period, unit and exact-value status</p><div id="market-profitability"></div></article>
+              </div>
+            </section>
+            <section class="market-dashboard-section" aria-labelledby="market-international-title">
+              <div class="market-section-heading"><div><p class="eyebrow">INTERNATIONAL GROWTH</p><h4 id="market-international-title">Channels and selected market signals</h4></div><p>Channel totals, shipping and disclosed market-level signals stay distinct from overseas-market revenue.</p></div>
+              <div id="market-channel-cards" class="market-kpi-grid"></div>
+              <article class="market-chart-card"><h5>Export net revenue vs overseas subsidiaries</h5><p>Compare only shared fiscal years; commercial export revenue remains a separately defined measure above.</p><div id="market-channel-trend"></div></article>
+              <div id="market-market-highlights" class="market-highlights"></div>
+            </section>
+            <section class="market-dashboard-section" aria-labelledby="market-footprint-title">
+              <div class="market-section-heading"><div><p class="eyebrow">DISTRIBUTION AND REACH</p><h4 id="market-footprint-title">Market footprint</h4></div><p>Context indicators are shown as source-backed cards, not time-series charts.</p></div>
+              <div id="market-footprint" class="market-kpi-grid"></div>
+            </section>
+            <details class="market-glossary"><summary>Metric definitions and reporting boundaries</summary><div id="market-glossary-content"></div></details>
           </div>
-          <form id="business-question-form" class="business-question-form">
-            <label class="visually-hidden" for="business-question">Analytical question</label>
-            <textarea id="business-question" minlength="3" maxlength="1000" required placeholder="Example: Should Vinamilk prioritize overseas or domestic investment? Compare FY2025 growth and FY2024–FY2025 revenue changes, then identify missing margin, cost, capacity and return evidence."></textarea>
-            <button id="business-question-button" type="submit" class="submit-query-btn">
-              <span>Analyze decision evidence</span>
-            </button>
-          </form>
-          <div class="decision-question-prompts" aria-label="Decision-support question examples">
-            <span>Decision questions</span>
-            <button type="button" data-required-metrics="domestic_consolidated_net_revenue,domestic_segment_gross_profit,overseas_market_net_revenue,overseas_segment_gross_profit" data-decision-question="Compare Vinamilk's domestic and overseas segment net revenue and segment gross profit in 2022 and 2023. Which market improved more, and what additional evidence is needed before reallocating investment?"><strong>Market allocation</strong><small>Compare domestic and overseas results · 2022–2023</small></button>
-            <button type="button" data-required-metrics="market_share_lead_over_runner_up" data-decision-question="Vinamilk reported an approximate market-share lead over the second-largest manufacturer in 2024. What should management monitor to protect this position, and what category-level sales, margin, distribution and customer-retention evidence is still needed before changing investment? Preserve the report's approximate qualifier and do not infer a trend from one year."><strong>Competitive position</strong><small>Reported FY2024 lead · identify monitoring evidence before investment</small></button>
-            <button type="button" data-required-metrics="domestic_consolidated_net_revenue,overseas_market_net_revenue,domestic_consolidated_net_revenue_growth,overseas_market_net_revenue_growth" data-decision-question="Should Vinamilk prioritize overseas or domestic investment based on FY2025 revenue growth? Compare each market's FY2024–FY2025 revenue scale and absolute change as well as reported growth, then identify missing margins, distribution costs, capacity, working capital and expected returns before allocating capital."><strong>Market investment diligence</strong><small>FY2025 growth + FY2024–FY2025 revenue change · cite verified metrics</small></button>
-            <button type="button" data-required-metrics="guinea_export_revenue_growth,hong_kong_export_revenue_growth,japan_export_revenue_growth" data-decision-question="Which export markets should Vinamilk prioritize for a commercial diligence review or limited pilot? Compare Guinea, Hong Kong and Japan using the FY2025 reported growth rates, then explain why the figures are not enough to approve a capital shift and list the market-level revenue, margin, cost and capacity data still needed."><strong>Export market shortlist</strong><small>Guinea · Hong Kong · Japan · diligence signal, not ROI</small></button>
-            <button type="button" data-required-metrics="farmer_raw_milk_purchased" data-decision-question="Compare Vinamilk's raw fresh milk purchased from farming households in 2023, 2024 and 2025. How large is the reported change, what sourcing or supplier-support actions should leadership investigate next, and what operating evidence is needed before changing procurement?"><strong>Milk sourcing</strong><small>Farmer purchase trend · 2023–2025 · decision limits</small></button>
-            <button type="button" data-required-metrics="production_lines_meeting_oee_target,production_cost_savings,purchasing_cost_savings" data-decision-question="Given Vinamilk's FY2024 report of more than 96% of production lines meeting their OEE targets, estimated production cost savings of VND 100.8 billion, and nearly VND 550 billion savings from purchasing activities, which factory and procurement reviews should management prioritize next? Preserve the reported qualifiers, do not infer causes, and list the plant-level OEE, baseline, spend-category and cost data required before approving investment or savings targets."><strong>Factory and procurement priorities</strong><small>FY2024 OEE and reported savings · identify next diligence</small></button>
-            <button type="button" data-required-metrics="total_raw_water_intake,recycled_reused_water,total_water_consumption,wastewater_discharge,scope_1_ghg_emissions,scope_2_ghg_emissions,scope_1_2_ghg_emissions,dairy_product_ghg_intensity,sugar_product_ghg_intensity,total_waste_generated,waste_recovered_recycled,waste_treated_disposed" data-decision-question="Across the reported 2023–2025 water, emissions and waste indicators, which environmental priorities appear to be improving? Account for changes in reporting scope and identify what is not comparable."><strong>Environmental priorities</strong><small>Water, emissions and waste · 2023–2025</small></button>
-            <button type="button" data-required-metrics="plant_based_milk_sales_growth,green_farm_sales_growth,green_farm_brand_awareness,green_farm_urban_purchase_consideration,green_farm_customer_loyalty,new_or_relaunched_products" data-decision-question="Which Vinamilk product portfolio initiatives should management investigate for retention or expansion? Compare reported plant-based milk sales growth, Green Farm sales growth, Green Farm brand awareness, purchase consideration, Green Farm loyalty and new or relaunched products; identify the profitability evidence needed before scaling."><strong>Product portfolio</strong><small>Growth, consideration, loyalty · evidence limits</small></button>
+          <div id="business-metric-gallery">
+            <div id="business-metric-kpis" class="financial-kpis"></div>
+            <div id="business-metric-trends" class="financial-trends"></div>
+            <p id="business-metric-note" class="analysis-caveat">Report figures describe public annual snapshots. They do not include live purchase price, quality, rejection, factory demand or regional data.</p>
           </div>
-          <div id="business-answer-panel" class="answer-panel" hidden aria-live="polite"></div>
         </section>
 
         </div>
@@ -341,24 +401,39 @@
           <label for="upload-domain">Domain</label>
           <input id="upload-domain" name="domain" required maxlength="80" placeholder="finance_and_operations">
 
-          <label for="upload-business-decision-domain">Business decision domain (optional)</label>
-          <select id="upload-business-decision-domain" name="business_decision_domain">
-            <option value="">Do not extract business KPIs</option>
-            <option value="market_performance">Market performance and route-to-market reach</option>
-            <option value="milk_supply">Milk supply resilience</option>
-            <option value="product_portfolio">Product portfolio investment signals</option>
-            <option value="manufacturing_efficiency">Factory productivity, cost and quality</option>
-            <option value="human_resources">Workforce capacity and capability</option>
-            <option value="environmental_performance">Environmental performance</option>
-            <option value="farm_operations">Farm capacity and operations</option>
+          <label for="upload-publisher">Source publisher</label>
+          <input id="upload-publisher" name="source_publisher" maxlength="200" placeholder="e.g. Walmart Inc.">
+
+          <label for="upload-reference-type">Commerce reference type</label>
+          <select id="upload-reference-type" name="reference_type">
+            <option value="">General document · not used as decision reference</option>
+            <option value="company_practice_reference">Company practice reference</option>
+            <option value="company_policy_reference">Company-issued policy</option>
+            <option value="platform_operating_rule">Platform operating rule</option>
           </select>
+
+          <label for="upload-reference-applicability">Reference applicability / scope</label>
+          <textarea id="upload-reference-applicability" name="reference_applicability" maxlength="1000" rows="2" placeholder="e.g. Walmart suppliers only; not Commerce Demo policy"></textarea>
+
+          <fieldset id="upload-synthetic-policy-option" hidden>
+            <legend>Fictional demo policy</legend>
+            <label><input id="upload-synthetic-policy" name="synthetic_company_policy" type="checkbox"> Register as a synthetic Commerce Demo policy (Admin only)</label>
+            <small>Use only for fictional demo procedures. The document will be labeled synthetic in RAG and citations.</small>
+          </fieldset>
+
+          <fieldset id="upload-commerce-domains">
+            <legend>Commerce decision domains</legend>
+            <label><input type="checkbox" name="knowledge_domains" value="inventory_allocation"> Inventory allocation</label>
+            <label><input type="checkbox" name="knowledge_domains" value="promotion_planning"> Promotion planning</label>
+            <label><input type="checkbox" name="knowledge_domains" value="nationwide_logistics"> Nationwide logistics</label>
+          </fieldset>
 
           <label for="upload-year">Fiscal year</label>
           <input id="upload-year" name="fiscal_year" type="number" min="1900" max="2100" placeholder="2024">
 
           <label for="upload-source-url">Official source URL (optional)</label>
           <input id="upload-source-url" name="source_url" type="url" pattern="https://.*" placeholder="https://…">
-          <p class="corpus-note">Choose one decision domain to extract only its primary KPIs. Unselected domains are not sent to the extraction model; all parsed content is still retained for search and QA. Candidates stay pending for admin review.</p>
+          <p class="corpus-note">A Commerce reference needs a publisher, reference type, applicability scope, and at least one decision domain. External references are attributed examples, not policy for the synthetic dataset. Parsed chunks retain source URL, publisher, scope, domain tags, and parser/OCR provenance.</p>
 
           <fieldset>
             <legend>Roles authorized to retrieve this document</legend>
@@ -402,6 +477,20 @@
 
     </section>
 
+    <section id="tab-knowledge-management" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-knowledge-management" hidden>
+      <section class="candidate-review knowledge-management-section">
+        <div class="section-heading">
+          <div><p class="eyebrow">ADMINISTRATION</p><h2>Knowledge-base files</h2></div>
+          <button id="knowledge-documents-refresh" class="secondary-button" type="button">Refresh</button>
+        </div>
+        <p>Remove a source from AI retrieval while keeping its original file, parser output, and verified metric history. Restore it any time.</p>
+        <label class="knowledge-search-label" for="knowledge-documents-search">Find by title, publisher, domain, or ID</label>
+        <input id="knowledge-documents-search" class="knowledge-search" type="search" autocomplete="off">
+        <p id="knowledge-documents-status" class="corpus-note" aria-live="polite"></p>
+        <div id="knowledge-documents-list" class="knowledge-documents-list"></div>
+      </section>
+    </section>
+
     <section id="tab-ocr-lab" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-ocr-lab" hidden>
       <section class="candidate-review">
         <div class="section-heading">
@@ -416,9 +505,9 @@
           <label for="ocr-test-table-psm">Tesseract page segmentation (table)</label>
           <select id="ocr-test-table-psm" name="tesseract_table_psm"><option value="3" selected>3 · automatic (current upload default)</option><option value="4">4 · single column</option><option value="6">6 · uniform text block</option><option value="11">11 · sparse text</option><option value="12">12 · sparse text with OSD</option></select>
           <label for="ocr-test-render-scale">Page OCR render scale</label>
-          <select id="ocr-test-render-scale" name="render_scale"><option value="1.5" selected>1.5 · current upload default (108 DPI)</option><option value="2.5">2.5 (180 DPI)</option></select>
+          <select id="ocr-test-render-scale" name="render_scale"><option value="1.5" selected>1.5 · current upload default (108 DPI)</option><option value="2.5">2.5 (180 DPI)</option><option value="3.5">3.5 · detailed scan pages (252 DPI)</option></select>
           <label for="ocr-test-table-scale">Table OCR render scale</label>
-          <select id="ocr-test-table-scale" name="table_render_scale"><option value="2.5" selected>2.5 · current upload default (180 DPI)</option><option value="1.5">1.5 (108 DPI)</option></select>
+          <select id="ocr-test-table-scale" name="table_render_scale"><option value="2.5" selected>2.5 · current upload default (180 DPI)</option><option value="1.5">1.5 (108 DPI)</option><option value="3.5">3.5 · detailed scan tables (252 DPI)</option></select>
           <button id="ocr-test-button" type="submit" class="primary-button">Run OCR test</button>
           <p id="ocr-test-status" class="corpus-note" aria-live="polite"></p>
         </form>
@@ -559,6 +648,6 @@
       </section>
     </section>
   </main>
-  <script src="/static/app.js?v=domain-metric-review-20" defer></script>
+  <script src="/static/app.js?v=commerce-answer-tables-1" defer></script>
 </body>
 </html>

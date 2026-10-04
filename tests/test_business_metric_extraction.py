@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -9,8 +10,14 @@ from core.analytics.business_metric_extraction import (
     build_business_metric_extraction_run,
     extract_business_metric_candidates,
     select_business_metric_chunks,
+    source_quote_matches,
 )
-from core.analytics.business_metric_catalog import BUSINESS_DECISION_PROFILES, BUSINESS_METRIC_CATALOG
+from core.analytics.business_metric_catalog import (
+    BUSINESS_DECISION_PROFILES,
+    BUSINESS_METRIC_CATALOG,
+    resolve_business_metric_names,
+)
+from core.analytics.commerce_decision_support import resolve_commerce_decision_domain
 
 
 class FakeLLM:
@@ -47,10 +54,224 @@ class BusinessMetricExtractionTests(unittest.TestCase):
             for metric_name in profile["primary_metrics"]:
                 self.assertIn(metric_name, BUSINESS_METRIC_CATALOG)
                 self.assertEqual(BUSINESS_METRIC_CATALOG[metric_name]["domain"], domain)
-        self.assertIn(
-            "market_share_lead_over_runner_up",
-            BUSINESS_DECISION_PROFILES["market_performance"]["primary_metrics"],
+        self.assertTrue({
+            "domestic_consolidated_net_revenue", "overseas_market_net_revenue",
+            "domestic_consolidated_net_revenue_growth", "overseas_market_net_revenue_growth",
+        }.issubset(BUSINESS_DECISION_PROFILES["market_performance"]["primary_metrics"]))
+
+    def test_dashboard_question_starters_resolve_only_their_commerce_domains(self):
+        app_js = (Path(__file__).resolve().parents[1] / "src/app/static/app.js").read_text()
+        starters = dict(re.findall(
+            r'title: "([^"]+)",\s*question: "([^"]+)"',
+            app_js[app_js.index("const DECISION_DOMAIN_QUESTIONS ="):app_js.index("function renderDecisionDomainQuestions")],
+        ))
+        expected_domains = {
+            "inventory_allocation": {
+                "Where are stockouts and excess inventory concentrated?",
+                "What should be checked before reallocating stock?",
+                "Generate conditional inventory actions",
+            },
+            "promotion_planning": {
+                "How do promotion-tagged orders compare?",
+                "Should we repeat a promotion?",
+                "Generate conditional promotion actions",
+            },
+            "nationwide_logistics": {
+                "Which regions have longer transit times?",
+                "Would regional inventory placement help?",
+                "Generate conditional logistics actions",
+            },
+        }
+        self.assertEqual(set(starters), set().union(*expected_domains.values()))
+        for domain, titles in expected_domains.items():
+            for title in titles:
+                with self.subTest(title=title):
+                    self.assertEqual(resolve_commerce_decision_domain(starters[title]), domain)
+
+    def test_dashboard_decision_domains_require_complete_primary_kpi_series(self):
+        app_js = (Path(__file__).resolve().parents[1] / "src/app/static/app.js").read_text()
+        readiness = app_js[app_js.index("function decisionReadyBusinessDomains"):app_js.index("const DECISION_DOMAIN_QUESTIONS")]
+        self.assertIn("definition?.decision_priority !== \"primary\"", readiness)
+        self.assertIn("definition.domain !== item.domain", readiness)
+        self.assertIn('["milk_supply", "market_performance"].includes(domain)', readiness)
+
+    def test_dashboard_metric_series_preserve_period_unit_and_scope(self):
+        app_js = (Path(__file__).resolve().parents[1] / "src/app/static/app.js").read_text()
+        series_key = app_js[app_js.index("function metricSeriesKey"):app_js.index("function formatBusinessMetricValue")]
+        self.assertIn("item.unit || \"unknown unit\"", series_key)
+        self.assertIn('item.reporting_period || "FY"', series_key)
+        self.assertIn("metricSeriesKey(financialDisplayItem(item))", app_js)
+        self.assertIn("const key = metricSeriesKey(item)", app_js)
+        self.assertIn("previous.scope === latest.scope", app_js)
+        self.assertIn("Reported scope or value qualifier varies across periods", app_js)
+
+    def test_admin_kpi_cards_open_the_exact_linked_indexed_chunk(self):
+        app_js = (Path(__file__).resolve().parents[1] / "src/app/static/app.js").read_text()
+        helper = app_js[app_js.index("function metricSourceChunkInspectButton"):app_js.index("function selectWorkspaceTab")]
+        self.assertIn('currentUser?.role !== "admin"', helper)
+        self.assertIn("metricSourceChunkInspectButton(latest.document_id, latest.source_chunk_id, latest.source_chunk_index)", app_js)
+        self.assertIn("metricSourceChunkInspectButton(latest.source_document_id, latest.source_chunk_id, latest.source_chunk_index)", app_js)
+        self.assertIn('data-inspect-indexed-chunk', app_js)
+        self.assertIn('Math.floor(chunkIndex / 25) * 25', app_js)
+        self.assertIn('dataset.focusChunk = String(chunkIndex)', app_js)
+        self.assertIn('dataset.sourceChunkId = String(sourceChunkId)', app_js)
+        self.assertIn('source_chunk_id=${sourceChunkId}', app_js)
+        self.assertIn('scrollIntoView({behavior: "smooth", block: "center"})', app_js)
+
+    def test_historical_factory_and_workforce_indicators_are_domain_signals(self):
+        factory_chunk = {
+            "text": "Columns: 2011 | 2012 | 2013\nRow 1: Production cost savings (VND billion): 16.03 | 13.49 | 4.59",
+            "metadata": {"page_number": 53, "chunk_index": 1, "layout_type": "table"},
+        }
+        workforce_chunk = {
+            "text": "Columns: 2011 | 2012 | 2013\nRow 1: Employee training hours: 31 | 24 | 10.8 hours",
+            "metadata": {"page_number": 73, "chunk_index": 2, "layout_type": "table"},
+        }
+
+        factory = select_business_metric_chunks(
+            [factory_chunk], decision_domain="manufacturing_efficiency",
         )
+        workforce = select_business_metric_chunks(
+            [workforce_chunk], decision_domain="human_resources",
+        )
+
+        self.assertIn(
+            "production_cost_savings",
+            factory[0]["selection_signals"]["matched_primary_metrics"],
+        )
+        self.assertIn(
+            "employee_training_hours",
+            workforce[0]["selection_signals"]["matched_primary_metrics"],
+        )
+
+    def test_supported_factory_and_training_labels_match_their_domains(self):
+        chunks = [
+            {"text": "Columns: 2010 | 2011 | 2012\n"
+                      "Row 1: Production cost savings (VND billion): 553.810 | 662.146 | 768.552",
+             "metadata": {"page_number": 15, "chunk_index": 10, "layout_type": "table"}},
+            {"text": "Columns: 2011 | 2012\nRow 1: Employee training hours: 31 | 24 hours",
+             "metadata": {"page_number": 24, "chunk_index": 11, "layout_type": "text"}},
+        ]
+
+        savings = select_business_metric_chunks(
+            chunks, decision_domain="manufacturing_efficiency",
+            metric_names=["production_cost_savings"],
+        )
+        training = select_business_metric_chunks(
+            chunks, decision_domain="human_resources",
+            metric_names=["employee_training_hours"],
+        )
+
+        self.assertEqual(savings[0]["chunk_index"], 10)
+        self.assertIn("production_cost_savings", savings[0]["selection_signals"]["matched_primary_metrics"])
+        self.assertIn("employee_training_hours", training[0]["selection_signals"]["matched_primary_metrics"])
+
+    def test_metric_match_excludes_unrelated_numeric_pages_from_llm_selection(self):
+        chunks = [
+            {"text": "Columns: 2011 2012 2013\nRow 1: Employee training hours 31 24 10.8 hours",
+             "metadata": {"page_number": 37, "chunk_index": 1, "layout_type": "table"}},
+            {"text": "2013 awards 2014 and five top products valued at 250 units",
+             "metadata": {"page_number": 8, "chunk_index": 2, "layout_type": "text"}},
+        ]
+
+        selected = select_business_metric_chunks(
+            chunks, decision_domain="human_resources",
+            metric_names=["employee_training_hours"],
+        )
+
+        self.assertEqual([chunk["chunk_index"] for chunk in selected], [1])
+
+    def test_historical_metric_chunk_is_preferred_over_neighboring_broken_table(self):
+        chunks = [
+            {
+                "text": "Measurement criteria 2011 2012 2013 Employee training hours 31 24 10.8 hours",
+                "metadata": {"page_number": 37, "chunk_index": 129, "layout_type": "text"},
+            },
+            {
+                "text": "Columns: column_1 | column_2 | column_3\n"
+                        "Row 7: column_1:  | column_2:  | column_3: 10.8",
+                "metadata": {"page_number": 37, "chunk_index": 132, "layout_type": "table"},
+            },
+            {
+                "text": "Columns: Year | Value\nRow 1: 2011: 8",
+                "metadata": {"page_number": 53, "chunk_index": 500, "layout_type": "table"},
+            },
+            {
+                "text": "Employee training hours are reported in this table.",
+                "metadata": {"page_number": 53, "chunk_index": 501, "layout_type": "text"},
+            },
+        ]
+
+        selected = select_business_metric_chunks(
+            chunks, decision_domain="human_resources",
+            metric_names=["employee_training_hours"],
+        )
+
+        self.assertEqual([chunk["chunk_index"] for chunk in selected], [129])
+
+    def test_extracts_supported_historical_training_series_with_source_periods(self):
+        text = "Employee training hours by year: 2011: 31 hours; 2012: 24 hours; 2013: 10.8 hours."
+        chunk = {
+            "text": text,
+            "metadata": {"page_number": 37, "chunk_index": 129, "layout_type": "text"},
+        }
+        self.document["business_decision_domain"] = "human_resources"
+        llm = FakeLLM(json.dumps({"metrics": [
+            {"metric_name": "employee_training_hours", "metric_value": value,
+             "unit": "hours", "fiscal_year": year,
+             "source_quote": f"{year}: {value} hours"}
+            for year, value in ((2011, "31"), (2012, "24"), (2013, "10.8"))
+        ]}))
+
+        candidates, _ = extract_business_metric_candidates(
+            [chunk], [], self.document, llm,
+            metric_names=["employee_training_hours"],
+        )
+
+        self.assertEqual(
+            [(row["fiscal_year"], row["metric_value"]) for row in candidates],
+            [(2011, 31.0), (2012, 24.0), (2013, 10.8)],
+        )
+        self.assertEqual(
+            [row["source_quote"] for row in candidates],
+            ["2011: 31 hours", "2012: 24 hours", "2013: 10.8 hours"],
+        )
+        self.assertIn("employee_training_hours", llm.prompts[0])
+        self.assertIn("metric label, value, unit, and year must be supported", llm.prompts[0])
+
+    def test_source_quote_ellipsis_requires_exact_ordered_excerpts(self):
+        source = "Measurement criteria 2011 2012 2013 Employee training hours 31 24 10.8 hours"
+        self.assertTrue(source_quote_matches(
+            source, "2012 … Employee training hours 31 24 10.8 hours",
+        ))
+        self.assertFalse(source_quote_matches(
+            source, "Employee training hours 31 24 10.8 hours … 2012",
+        ))
+
+    def test_multiyear_source_quote_must_include_the_value_year_even_for_report_year(self):
+        text = "Measurement criteria 2011 2012 2013 Employee training hours 31 24 10.8 hours"
+        chunk = {
+            "text": text,
+            "metadata": {"page_number": 37, "chunk_index": 129, "layout_type": "text"},
+        }
+        document = {
+            **self.document,
+            "fiscal_year": 2013,
+            "business_decision_domain": "human_resources",
+        }
+        llm = FakeLLM(json.dumps({"metrics": [{
+            "metric_name": "employee_training_hours", "metric_value": "10.8",
+            "unit": "hours", "fiscal_year": 2013,
+            "source_quote": "Employee training hours 31 24 10.8 hours",
+        }]}))
+
+        candidates, selected = extract_business_metric_candidates(
+            [chunk], [], document, llm,
+            metric_names=["employee_training_hours"],
+        )
+
+        self.assertEqual(candidates, [])
+        self.assertEqual(selected[0]["validation_rejections"]["quote_not_grounded"], 1)
 
     def test_sends_parser_table_chunk_to_model_and_keeps_catalog_key(self):
         tables = [{
@@ -199,7 +420,7 @@ class BusinessMetricExtractionTests(unittest.TestCase):
 
         self.assertEqual(candidates[0]["source_quote"], self.page)
 
-    def test_report_year_can_supply_context_when_source_quote_omits_annual_period(self):
+    def test_report_year_cannot_replace_year_missing_from_source_quote(self):
         self.page = "Dairy cattle managed by Vinamilk reached 130,000 cows."
         self.chunks[0]["text"] = self.page
         llm = FakeLLM(json.dumps({"metrics": [{
@@ -207,9 +428,10 @@ class BusinessMetricExtractionTests(unittest.TestCase):
             "unit": "cows", "fiscal_year": 2024, "source_quote": self.page,
         }]}))
 
-        candidates, _ = extract_business_metric_candidates(self.chunks, [], self.document, llm)
+        candidates, selected = extract_business_metric_candidates(self.chunks, [], self.document, llm)
 
-        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates, [])
+        self.assertEqual(selected[0]["validation_rejections"]["quote_not_grounded"], 1)
 
     def test_selects_numeric_parser_table_without_metric_alias_match(self):
         chunks = [{

@@ -16,8 +16,8 @@ EXPECTED_MODELS = {
     "e5-large-v2": "intfloat/e5-large-v2",
 }
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_CORPUS = REPO_ROOT / "data/evaluation/vinamilk_public_embedding_corpus.jsonl"
-DEFAULT_CASES = REPO_ROOT / "data/evaluation/vinamilk_retrieval_cases.json"
+DEFAULT_CORPUS = REPO_ROOT / "data/evaluation/commerce_public_embedding_corpus.jsonl"
+DEFAULT_CASES = REPO_ROOT / "data/evaluation/commerce_retrieval_cases.json"
 PAIR_FIELDS = (
     "case_file_sha256",
     "corpus_file_sha256",
@@ -197,7 +197,7 @@ def compare_reports(
 
     return {
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
-        "benchmark": "paired proposal embedding models on the manifest-allowlisted Vinamilk corpus",
+        "benchmark": "paired embedding models on the Commerce decision-support reference corpus",
         "paired_protocol": {
             **{field: first[field] for field in PAIR_FIELDS},
             "configuration_without_conflicting_sample_strategy": comparable_configuration(first),

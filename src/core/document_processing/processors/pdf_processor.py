@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import csv
 import unicodedata
+from difflib import SequenceMatcher
 from collections import Counter, defaultdict
 from typing import Dict, List, Optional, Any, Tuple
 import fitz  # PyMuPDF
@@ -43,8 +44,12 @@ class PDFProcessor:
         self.config.setdefault("paddle_formula_recognition", False)
         self.config.setdefault("tesseract_psm", 11)
         self.config.setdefault("tesseract_table_psm", 3)
-        self.config.setdefault("ocr_render_scale", 1.5)
-        self.config.setdefault("ocr_table_render_scale", 2.5)
+        self.config.setdefault("ocr_language", "vie+eng")
+        self.config.setdefault("ocr_render_scale", float(os.getenv("DOCUMENT_OCR_RENDER_SCALE", "1.5")))
+        self.config.setdefault("ocr_table_render_scale", float(os.getenv("DOCUMENT_OCR_TABLE_RENDER_SCALE", "2.5")))
+        for setting in ("ocr_render_scale", "ocr_table_render_scale"):
+            if float(self.config[setting]) not in {1.5, 2.5, 3.5}:
+                raise ValueError(f"{setting} must be one of 1.5, 2.5, or 3.5")
         self.config.setdefault("vision_captioning", False)
         self.config.setdefault("vision_caption_max_images", 3)
         self.config.setdefault("table_chunk_replacement_threshold", 0.8)
@@ -162,6 +167,14 @@ class PDFProcessor:
                             "layout_type": "text",
                             "section_title": current_section_title,
                             "parser": "pymupdf",
+                            **({
+                                "ocr": {
+                                    "engine": "tesseract",
+                                    "language": self.config["ocr_language"],
+                                    "page_psm": self.config["tesseract_psm"],
+                                    "render_scale": self.config["ocr_render_scale"],
+                                },
+                            } if page_number in ocr_pages else {}),
                         },
                     })
         chunks = self._replace_flat_table_chunks(chunks, tables)
@@ -545,6 +558,7 @@ class PDFProcessor:
                 )
                 native_text = page_text.strip()
                 ocr_headings = []
+                ocr_text = ""
                 if (
                     self.ocr_available
                     and self.config.get("ocr_fallback", False)
@@ -571,9 +585,8 @@ class PDFProcessor:
                             page_text = ocr_text
                             ocr_pages[page_num + 1] = "tesseract"
                         else:
-                            page_text = f"{page_text}\n{ocr_text}"
+                            page_text = f"{page_text}\n{self._remove_ocr_duplicates(native_text, ocr_text)}"
                             ocr_pages[page_num + 1] = "pymupdf+tesseract"
-                        ocr_headings = self._extract_ocr_page_headings(ocr_text)
 
                 extracted_text.append(f"\n--- Page {page_num + 1} ---\n{page_text}")
 
@@ -588,13 +601,22 @@ class PDFProcessor:
                     if table.get("page_number") == page_num + 1
                     and table.get("metadata", {}).get("bbox")
                 ]
+                if ocr_text:
+                    has_ocr_table = any(
+                        table.get("page_number") == page_num + 1 for table in tables
+                    )
+                    ocr_headings = self._extract_ocr_page_headings(
+                        ocr_text, allow_unstructured=not has_ocr_table,
+                    )
                 headings = self._extract_page_headings(page, table_bboxes)
                 headings.extend(heading for heading in ocr_headings if heading not in headings)
                 if headings:
                     page_headings[page_num + 1] = headings
                 for table in tables:
                     if table.get("page_number") == page_num + 1:
-                        table_title = self._extract_table_title(page, table)
+                        table_title = self._extract_table_title(
+                            page, table, ocr_table_words.get(page_num + 1),
+                        )
                         if table_title:
                             table.setdefault("context", {})["table_title"] = table_title
 
@@ -652,20 +674,39 @@ class PDFProcessor:
         return headings
 
     @staticmethod
-    def _extract_ocr_page_headings(text: str) -> List[str]:
-        """Recover only explicitly numbered structural headings from OCR text."""
+    def _extract_ocr_page_headings(
+        text: str, *, allow_unstructured: bool = True,
+    ) -> List[str]:
+        """Recover clear structural headings without promoting numbered prose."""
         headings = []
         for line in text.splitlines():
-            line = " ".join(line.split()).strip(" .\t")
+            line = " ".join(line.split()).strip("\t ")
             if not line or len(line) > 140:
                 continue
-            if any(pattern.match(line) for pattern in _HEADING_PATTERNS.values()):
+            structural = any(
+                _HEADING_PATTERNS[name].match(line)
+                for name in ("chapter", "article")
+            )
+            numbered = _HEADING_PATTERNS["subsection"].match(line)
+            if numbered:
+                remainder = line[numbered.end():].lstrip()
+                structural = bool(remainder and remainder[0].isupper())
+            words = line.split()
+            plain_heading = (
+                allow_unstructured
+                and 2 <= len(line) <= 72
+                and 2 <= len(words) <= 9
+                and not any(char.isdigit() or char in ".,;:!?/|()[]{}" for char in line)
+                and not line.isupper()
+                and line[0].isupper()
+            )
+            if structural or plain_heading:
                 if line not in headings:
                     headings.append(line)
         return headings
 
     @staticmethod
-    def _extract_table_title(page, table: Dict[str, Any]) -> Optional[str]:
+    def _extract_table_title(page, table: Dict[str, Any], ocr_words=None) -> Optional[str]:
         """Find an explicit table/report caption immediately above its detected bounds."""
         bbox = table.get("metadata", {}).get("bbox")
         if not bbox:
@@ -689,7 +730,28 @@ class PDFProcessor:
                 gap = table_top - line_rect.y1
                 if 0 <= gap <= 100 and any(term in text.casefold() for term in caption_terms):
                     candidates.append((gap, text))
-        return min(candidates, default=(None, None), key=lambda candidate: candidate[0])[1]
+        native_title = min(candidates, default=(None, None), key=lambda candidate: candidate[0])[1]
+        if native_title or not ocr_words:
+            return native_title
+
+        header_bbox = table.get("metadata", {}).get("ocr_column_header_bbox")
+        if not header_bbox:
+            return None
+        header_top = fitz.Rect(header_bbox).y0
+        lines: Dict[Tuple[int, int], List[Tuple[float, float, float, float, str]]] = {}
+        for word in ocr_words:
+            lines.setdefault((word[5], word[6]), []).append(word)
+        ocr_candidates = []
+        for words in lines.values():
+            words.sort(key=lambda word: word[0])
+            text = " ".join(str(word[4]).strip() for word in words).strip()
+            if not 2 <= len(text) <= 120 or text.endswith((".", ";", ",")):
+                continue
+            line_bottom = max(word[3] for word in words)
+            gap = header_top - line_bottom
+            if 0 < gap <= 120:
+                ocr_candidates.append((gap, text))
+        return min(ocr_candidates, default=(None, None), key=lambda item: item[0])[1]
 
     @staticmethod
     def _needs_ocr(page, native_text: str) -> bool:
@@ -706,13 +768,46 @@ class PDFProcessor:
         return image_area / max(page.rect.get_area(), 1) >= 0.25
 
     @staticmethod
+    def _remove_ocr_duplicates(native_text: str, ocr_text: str) -> str:
+        """Drop OCR sentences already represented by native PDF text."""
+        def normalized_sentences(text: str) -> list[str]:
+            compact = " ".join(text.split())
+            return [
+                "".join(
+                    character for character in unicodedata.normalize("NFD", sentence.casefold())
+                    if unicodedata.category(character) != "Mn" and character.isalnum()
+                )
+                for sentence in re.split(r"(?<=[.!?])\s+", compact)
+                if len(sentence.strip()) >= 30
+            ]
+
+        native_sentences = normalized_sentences(native_text)
+        if not native_sentences:
+            return ocr_text
+
+        kept = []
+        for sentence in re.split(r"(?<=[.!?])\s+", " ".join(ocr_text.split())):
+            normalized = "".join(
+                character for character in unicodedata.normalize("NFD", sentence.casefold())
+                if unicodedata.category(character) != "Mn" and character.isalnum()
+            )
+            duplicate = len(normalized) >= 30 and any(
+                min(len(normalized), len(native)) / max(len(normalized), len(native)) >= 0.65
+                and SequenceMatcher(None, normalized, native, autojunk=False).ratio() >= 0.82
+                for native in native_sentences
+            )
+            if not duplicate:
+                kept.append(sentence)
+        return " ".join(kept)
+
+    @staticmethod
     def _looks_like_numeric_table(text: str) -> bool:
-        """Gate the extra OCR-box pass to OCR output with repeated numeric rows."""
-        likely_rows = sum(
-            len(re.findall(r"(?:[-+]?\d[\d.,]*|[-–—])", line)) >= 2
-            for line in text.splitlines()
-        )
-        return likely_rows >= 3
+        """Detect aligned rows even when Tesseract emits each cell on its own line."""
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        numeric_cell = re.compile(r"(?:[-+]?\d[\d.,]*|[-–—])")
+        multi_value_rows = sum(len(numeric_cell.findall(line)) >= 2 for line in lines)
+        split_cell_rows = sum(bool(numeric_cell.fullmatch(line)) for line in lines)
+        return multi_value_rows >= 3 or split_cell_rows >= 8
 
     def _ocr_table_metadata(self) -> Dict[str, Any]:
         return {

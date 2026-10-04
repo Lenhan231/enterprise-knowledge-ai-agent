@@ -106,6 +106,16 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
             "source_type": "commerce_sql", "commerce_observations": sql_rows,
         }]), [])
 
+    def test_log02_numeric_gold_matches_endpoint_only_answer_contract(self):
+        case = next(case for case in self.cases if case["id"] == "LOG-02")
+        answer = (
+            "FY2020 4.51 and 4.17 → FY2022 4.51 and 4.10; "
+            "FY2020 4.50 and 4.27 → FY2022 4.52 and 3.98; "
+            "FY2020 4.51 and 4.11 → FY2022 4.51 and 3.89."
+        )
+
+        self.assertEqual(missing_gold_numeric_facts(case, answer), [])
+
     def test_gold_observations_accept_year_proven_by_single_year_sql_filter(self):
         case = next(case for case in self.cases if case["id"] == "LOG-01")
         citation = {

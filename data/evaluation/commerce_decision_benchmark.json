@@ -133,7 +133,7 @@
             {"region": "East", "2020_avg_days": 4.50, "2020_avg_fee": 4.27, "2021_avg_days": 4.51, "2021_avg_fee": 4.07, "2022_avg_days": 4.52, "2022_avg_fee": 3.98},
             {"region": "West", "2020_avg_days": 4.51, "2020_avg_fee": 4.11, "2021_avg_days": 4.50, "2021_avg_fee": 4.36, "2022_avg_days": 4.51, "2022_avg_fee": 3.89}
           ],
-          "required_numeric_facts": [2020, 2021, 2022, "4.51", "4.17", "4.52", "4.13", "4.10", "4.50", "4.27", "4.07", "3.98", "4.11", "4.36", "3.89"],
+          "required_numeric_facts": [2020, 2022, "4.51", "4.17", "4.52", "4.10", "4.50", "4.27", "3.98", "4.11", "3.89"],
           "expected_behavior": "Describe the observed endpoints only; do not claim that lower fees caused or did not cause transit changes. The schema has no carrier, route, package or service mix to explain the pattern.",
           "reference_need": "Delivery-cost and service-level management process; the example must not be represented as the dataset's carrier policy."
         },

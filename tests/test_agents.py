@@ -1772,11 +1772,14 @@ class AgentFlowTest(unittest.TestCase):
             "nationwide_logistics", "Trong 2020–2022, shipping fee và transit time theo vùng thay đổi ra sao?", evidence,
         )
 
-        for fragment in ("East", "FY2020 4.50 → FY2022 4.52", "thay đổi +0.02",
-                         "FY2020 4.27 → FY2022 3.98", "thay đổi -0.29", "không cho biết nguyên nhân", "[C1]"):
+        for fragment in ("East", "FY2020 4.5 → FY2022 4.52 (tăng)",
+                         "FY2020 4.27 → FY2022 3.98 (giảm)",
+                         "không cho biết nguyên nhân", "[C1]"):
             self.assertIn(fragment, answer)
         self.assertNotIn("FY2021", answer)
         self.assertNotIn("Highest average transit time", answer)
+        self.assertIsNone(_report_validation_failure(answer, evidence, {"C1"},
+                                                      "Trong 2020–2022, shipping fee và transit time theo vùng thay đổi ra sao?"))
 
     def test_commerce_roi_question_does_not_substitute_tagged_sales(self):
         evidence = [Evidence(

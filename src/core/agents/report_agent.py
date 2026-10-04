@@ -1127,8 +1127,8 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
                                                  ("avg_shipping_fee", fee),
                                                  ("median_transit_days", "median" in question.casefold() or "trung vị" in question.casefold())) if enabled]
             # For a multi-year question, summarize endpoints per region instead of
-            # dumping every annual row. Keep this descriptive; the aggregates do
-            # not explain what caused a change.
+            # dumping every annual row. Report direction, not calculated deltas:
+            # numeric claims must appear verbatim in the cited observations.
             if asks_trend and len({row.get("year") for row in rows}) > 1:
                 by_region: dict[str, list[dict]] = {}
                 for row in rows:
@@ -1149,12 +1149,18 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
                         if isinstance(start, (int, float)) and isinstance(end, (int, float)):
                             delta = end - start
                             label = metric_labels.get(metric, metric) if _is_vietnamese_text(question) else metric
-                            start_text, end_text, delta_text = f"{start:.2f}", f"{end:.2f}", f"{delta:+.2f}"
+                            direction = (
+                                "gần như ổn định" if round(delta, 2) == 0 else
+                                "tăng" if delta > 0 else "giảm"
+                            )
+                            if not _is_vietnamese_text(question):
+                                direction = (
+                                    "roughly stable" if round(delta, 2) == 0 else
+                                    "increased" if delta > 0 else "decreased"
+                            )
                             changes.append(
-                                f"{label}: FY{first['year']} {start_text} → FY{last['year']} {end_text} "
-                                f"(thay đổi {delta_text})" if _is_vietnamese_text(question) else
-                                f"{label}: FY{first['year']} {start_text} → FY{last['year']} {end_text} "
-                                f"(change {delta_text})"
+                                f"{label}: FY{first['year']} {start:g} → FY{last['year']} {end:g} "
+                                f"({direction})"
                             )
                     if changes:
                         trend_lines.append(f"{region}: " + "; ".join(changes))

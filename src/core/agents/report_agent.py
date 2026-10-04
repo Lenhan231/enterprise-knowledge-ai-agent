@@ -1149,11 +1149,12 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
                         if isinstance(start, (int, float)) and isinstance(end, (int, float)):
                             delta = end - start
                             label = metric_labels.get(metric, metric) if _is_vietnamese_text(question) else metric
+                            start_text, end_text, delta_text = f"{start:.2f}", f"{end:.2f}", f"{delta:+.2f}"
                             changes.append(
-                                f"{label}: FY{first['year']} {start:g} → FY{last['year']} {end:g} "
-                                f"(thay đổi {delta:+g})" if _is_vietnamese_text(question) else
-                                f"{label}: FY{first['year']} {start:g} → FY{last['year']} {end:g} "
-                                f"(change {delta:+g})"
+                                f"{label}: FY{first['year']} {start_text} → FY{last['year']} {end_text} "
+                                f"(thay đổi {delta_text})" if _is_vietnamese_text(question) else
+                                f"{label}: FY{first['year']} {start_text} → FY{last['year']} {end_text} "
+                                f"(change {delta_text})"
                             )
                     if changes:
                         trend_lines.append(f"{region}: " + "; ".join(changes))

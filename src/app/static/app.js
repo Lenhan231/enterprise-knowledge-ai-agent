@@ -411,9 +411,11 @@ function renderCommerceDashboard(data = commerceSnapshot) {
     const overstockProducts = categoryRows.reduce((sum, row) => sum + Number(row.overstock_products || 0), 0);
     const bothFlaggedProducts = categoryRows.reduce((sum, row) => sum + Number(row.both_flagged_products || 0), 0);
     const stockoutDays = Number(latest.avg_stockout_days);
+    const fillRate = Number(latest.avg_fill_rate);
     renderCommerceCards([
       ["SKU snapshots", formatCommerceValue(latest.sku_snapshots), inventoryPeriod],
       ["Average units on hand", formatCommerceValue(latest.avg_stock_on_hand), inventoryPeriod],
+      ["Average fill rate", Number.isFinite(fillRate) ? `${(fillRate * 100).toFixed(2)}%` : "—", "Mean of source fill_rate values"],
       ["Stockout snapshots", formatCommerceValue(latest.stockout_snapshots), `${inventoryPeriod}; not unique products`],
       ["Overstock snapshots", formatCommerceValue(latest.overstock_snapshots), `${inventoryPeriod}; days-of-supply excluded`],
       ["Average stockout days", Number.isFinite(stockoutDays) ? stockoutDays.toFixed(2) : "—", inventoryPeriod],
@@ -475,6 +477,7 @@ function renderCommerceDashboard(data = commerceSnapshot) {
   ]);
   $("#commerce-inventory-table").innerHTML = commerceTable(byYear(data.inventory_by_year || []), [
     ["year", "Year"], ["products", "Products"], ["sku_snapshots", "SKU snapshots"], ["avg_stock_on_hand", "Avg units on hand", formatCommerceValue],
+    ["avg_fill_rate", "Average fill rate", (value) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(2)}%` : "—"],
     ["stockout_snapshots", "Stockout snapshots"], ["overstock_snapshots", "Overstock snapshots"],
     ["avg_stockout_days", "Avg stockout days"],
   ]);
@@ -544,14 +547,21 @@ $(".commerce-dashboard-tabs").addEventListener("keydown", (event) => {
   tabs[next].click();
 });
 $("#commerce-year-filter").addEventListener("change", () => renderCommerceDashboard());
+function selectedQuestionSuggestionDomain() {
+  return $("#business-question-domain").value || $("#commerce-decision-domain").value;
+}
+
 $("#commerce-decision-domain").addEventListener("change", () => {
-  renderDecisionDomainQuestions($("#commerce-decision-domain").value);
+  renderDecisionDomainQuestions(selectedQuestionSuggestionDomain());
   const viewByDomain = {
     inventory_allocation: "inventory",
     promotion_planning: "promotions",
     nationwide_logistics: "logistics",
   };
   document.querySelector(`[data-commerce-view="${viewByDomain[$("#commerce-decision-domain").value]}"]`)?.click();
+});
+$("#business-question-domain").addEventListener("change", () => {
+  renderDecisionDomainQuestions(selectedQuestionSuggestionDomain());
 });
 
 function formatBusinessMetricValue(item) {
@@ -618,7 +628,7 @@ function renderDecisionDomainQuestions(domain) {
   const container = $("#decision-domain-questions");
   if (!container) return;
   container.innerHTML = (DECISION_DOMAIN_QUESTIONS[domain] || []).map(({ title, question }) =>
-    `<button type="button" data-decision-question="${escapeHtml(question)}"><strong>${escapeHtml(title)}</strong><small>Select to load this question into the editor; review it before submitting.</small></button>`
+    `<button type="button" data-decision-domain="${escapeHtml(domain)}" data-decision-question="${escapeHtml(question)}"><strong>${escapeHtml(title)}</strong><small>Select to load this question and its domain into the editor.</small></button>`
   ).join("");
 }
 
@@ -1023,7 +1033,7 @@ async function loadWorkspace(user) {
     }
     if (["operations", "finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user.role)) {
       $("#commerce-dashboard").hidden = false;
-      renderDecisionDomainQuestions($("#commerce-decision-domain").value);
+      renderDecisionDomainQuestions(selectedQuestionSuggestionDomain());
       $("#analytics-section").hidden = false;
     }
     if (user.role === "admin") {
@@ -1280,6 +1290,7 @@ $(".decision-question-prompts").addEventListener("click", (event) => {
   const questionPrompt = event.target.closest("[data-decision-question]");
   if (questionPrompt) {
     $("#business-question").value = questionPrompt.dataset.decisionQuestion;
+    $("#business-question-domain").value = questionPrompt.dataset.decisionDomain;
     $("#business-question").focus();
     return;
   }

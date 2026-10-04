@@ -117,6 +117,11 @@ class BusinessMetricExtractionTests(unittest.TestCase):
             self.assertIn(f'data-commerce-view="{view}"', index_html)
         self.assertIn("const DECISION_DOMAIN_QUESTIONS = {", app_js)
         self.assertIn("function renderDecisionDomainQuestions(domain)", app_js)
+        self.assertIn('$("#business-question-domain").addEventListener("change"', app_js)
+        self.assertIn('$("#business-question-domain").value = questionPrompt.dataset.decisionDomain', app_js)
+        self.assertIn('data-decision-domain="${escapeHtml(domain)}"', app_js)
+        self.assertIn('["avg_fill_rate", "Average fill rate"', app_js)
+        self.assertIn("Average fill rate", app_js)
 
     def test_historical_factory_and_workforce_indicators_are_domain_signals(self):
         factory_chunk = {

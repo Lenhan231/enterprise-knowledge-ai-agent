@@ -191,12 +191,22 @@ def _rank_commerce_reference_evidence(
                     "in stock", "oos %", "stockout", "inventory health",
                 ))
                 score += 25 * stock_state_hits
-        if domain == "nationwide_logistics" and any(term in question_text for term in (
+        asks_network_comparison = (
+            domain == "nationwide_logistics"
+            and any(term in question_text for term in (
+                "network", "logistics", "routing", "distribution network", "mạng lưới", "phân tuyến",
+            ))
+            and any(term in question_text for term in (
+                "compare", "comparison", "evaluate", "criteria", "guide", "choose", "select",
+                "priorities", "should guide", "so sánh", "tiêu chí", "ưu tiên",
+            ))
+        )
+        if domain == "nationwide_logistics" and (asks_network_comparison or any(term in question_text for term in (
             "redesign", "network design", "network optimization", "thiết kế lại mạng lưới",
             "điều chỉnh mạng lưới", "shipping cost", "shipping fee", "transit time",
             "chi phí vận chuyển", "cước vận chuyển", "thời gian vận chuyển", "chuyển năng lực",
             "phân bổ năng lực", "giảm trễ",
-        )):
+        ))):
             strong_network_method_hits = sum(term in content for term in (
                 "network design", "network optimization", "transportation cost",
                 "shipment consolidation", "what-if scenario", "what if scenario",
@@ -220,7 +230,15 @@ def _rank_commerce_reference_evidence(
             ))
             if asks_network_decision and not strong_network_method_hits and not direct_routing_method_hits:
                 continue
-            score += 12 * strong_network_method_hits + 20 * direct_routing_method_hits + supporting_priority_hits
+            if (asks_network_comparison and not asks_network_decision
+                    and not strong_network_method_hits and not direct_routing_method_hits
+                    and not supporting_priority_hits):
+                continue
+            score += (
+                12 * strong_network_method_hits
+                + 20 * direct_routing_method_hits
+                + 12 * supporting_priority_hits
+            )
         if score:
             scored.append((platform_named, score, -index, context))
     ordered = sorted(scored, reverse=True, key=lambda item: (item[0], item[1], item[2]))

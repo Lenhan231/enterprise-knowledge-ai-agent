@@ -726,6 +726,37 @@ class AgentFlowTest(unittest.TestCase):
         )
         self.assertEqual([item["metadata"]["document_id"] for item in ranked], ["CD-POL-LOG-001"])
 
+    def test_logistics_comparison_keeps_network_priorities_reference(self):
+        def reference(document_id, evidence_class, content):
+            return {
+                "document_name": document_id,
+                "content": content,
+                "metadata": {
+                    "document_id": document_id,
+                    "knowledge_domains": ["nationwide_logistics"],
+                    "evidence_class": evidence_class,
+                    "commerce_reference_active": True,
+                },
+            }
+
+        contexts = [
+            reference("CD-POL-LOG-001", "company_policy_reference",
+                      "Compare service and cost by route before changing network design."),
+            reference("AMAZON-NETWORK-METHOD", "company_practice_reference",
+                      "Consider business priorities and customer needs, including fast shipping, shipping modes, network coverage, and long-distance shipping costs."),
+            reference("GENERIC-PARCEL-RATES", "management_cookbook_reference",
+                      "Compare parcel shipping rates and transit times across providers."),
+        ]
+
+        ranked = _rank_commerce_reference_evidence(
+            contexts,
+            "What customer needs, service priorities, and cost evidence should guide a logistics-network comparison?",
+            "nationwide_logistics", 3,
+        )
+
+        self.assertEqual(ranked[0]["metadata"]["document_id"], "CD-POL-LOG-001")
+        self.assertIn("AMAZON-NETWORK-METHOD", [item["metadata"]["document_id"] for item in ranked])
+
     def test_commerce_reference_retrieval_abstains_when_source_does_not_cover_decision_need(self):
         def reference(document_id, domain, content):
             return {

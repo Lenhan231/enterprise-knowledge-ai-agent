@@ -82,6 +82,7 @@ class AskRequestTest(unittest.TestCase):
         self.assertEqual(metadata["evidence_class"], "company_policy_reference")
         self.assertFalse(metadata["external_policy_reference"])
         self.assertFalse(metadata["synthetic_company_policy"])
+        self.assertTrue(metadata["commerce_reference_active"])
 
         synthetic = _commerce_reference_metadata(
             ["inventory_allocation"],
@@ -93,6 +94,7 @@ class AskRequestTest(unittest.TestCase):
         self.assertTrue(synthetic["synthetic_company_policy"])
         self.assertFalse(synthetic["external_business_reference"])
         self.assertEqual(synthetic["evidence_class"], "company_policy_reference")
+        self.assertTrue(synthetic["commerce_reference_active"])
 
         for domains, publisher, reference_type in (
             (["made_up"], "Publisher", "company_policy_reference"),
@@ -196,8 +198,10 @@ class AskRequestTest(unittest.TestCase):
         self.assertTrue(uploaded_metadata["synthetic_company_policy"])
         self.assertFalse(uploaded_metadata["external_business_reference"])
         self.assertEqual(uploaded_metadata["source_type"], "synthetic_demo_policy")
+        self.assertTrue(uploaded_metadata["commerce_reference_active"])
         indexed_rows = chunks_repo.return_value.replace_document.call_args.args[1]
         self.assertTrue(indexed_rows[0][3]["synthetic_company_policy"])
+        self.assertTrue(indexed_rows[0][3]["commerce_reference_active"])
 
     def test_report_route_uses_knowledge_agent_without_running_hybrid_sql(self):
         evidence = Evidence(

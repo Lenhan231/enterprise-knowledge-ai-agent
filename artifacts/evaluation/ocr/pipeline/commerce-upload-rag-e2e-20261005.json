@@ -1,0 +1,41 @@
+{
+  "evaluation": "temporary authenticated Commerce PDF upload to role/domain filtered retrieval",
+  "created_at": "2026-10-05",
+  "source": {
+    "filename": "commerce_synthetic_degraded_scan_demo.pdf",
+    "sha256": "86383a8a65d42791d05549369dcd9f3ebc0b597b846ca7fa06e351e8a1c9fd7d",
+    "pages": 2,
+    "fixture_type": "synthetic degraded raster PDF; not a real company source"
+  },
+  "upload": {
+    "authenticated_role": "admin",
+    "http_status": 200,
+    "processing_status": "ready",
+    "searchable": true,
+    "parser_chunks": 3,
+    "ocr_chunks": 3,
+    "embedded_chunks": 3,
+    "structured_tables": 1,
+    "persisted_parser_chunks": 3,
+    "persisted_embedded_chunks": 3,
+    "persisted_tables": 1,
+    "ocr_pages": [1, 2]
+  },
+  "retrieval": {
+    "method": "bm25",
+    "authenticated_role_filter": "finance_analyst",
+    "commerce_domain_filter": "nationwide_logistics",
+    "query": "Synthetic regional logistics sample median transit days delivered orders",
+    "uploaded_document_rank": 1,
+    "retrieved_ocr_excerpt_contains_transit": true
+  },
+  "cleanup": {
+    "temporary_database_document_removed": true,
+    "temporary_storage_object_removed": true
+  },
+  "limits": [
+    "This validates upload, OCR, persistence, embedding, and authorized/domain-filtered retrieval with a synthetic fixture.",
+    "It does not validate LLM answer generation or accuracy on physical scans.",
+    "The temporary document was removed after the run."
+  ]
+}

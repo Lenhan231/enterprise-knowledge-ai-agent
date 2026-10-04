@@ -192,6 +192,7 @@ def _commerce_reference_metadata(
             reference_type == "company_policy_reference" and not synthetic_company_policy
         ),
         "synthetic_company_policy": synthetic_company_policy,
+        "commerce_reference_active": bool(domains),
     }
 
 

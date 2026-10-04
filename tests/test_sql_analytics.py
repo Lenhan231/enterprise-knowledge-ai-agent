@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.agents.sql_analytics_agent import (
     SQLAnalyticsAgent, UnsupportedCommerceDimension, _asks_for_promotion_tag_comparison,
-    _validate_campaign_outcome_query,
+    _validate_campaign_outcome_query, _validate_requested_year_filter,
 )
 from core.analytics.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql, validate_commerce_sql
 from core.analytics.commerce_decision_support import COMMERCE_QUERY_TABLES
@@ -160,6 +160,62 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
 
         self.assertEqual(result["observations"], [{"region": "East", "shipment_count": 4}])
 
+    def test_explicit_year_query_repairs_when_sql_omits_requested_period(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = [
+            {"region": "East", "avg_transit_time": 4.52},
+            {"region": "Central", "avg_transit_time": 4.51},
+            {"region": "West", "avg_transit_time": 4.51},
+        ]
+        llm = Mock()
+        llm.generate.side_effect = [
+            '{"sql":"SELECT g.region, AVG(s.delivery_date - s.ship_date) AS avg_transit_time '
+            'FROM commerce.shipments s JOIN commerce.orders o ON s.order_id = o.order_id '
+            'JOIN commerce.geography g ON o.zip = g.zip GROUP BY g.region LIMIT 100"}',
+            '{"sql":"SELECT g.region, AVG(s.delivery_date - s.ship_date) AS avg_transit_time '
+            'FROM commerce.shipments s JOIN commerce.orders o ON s.order_id = o.order_id '
+            'JOIN commerce.geography g ON o.zip = g.zip '
+            'WHERE EXTRACT(YEAR FROM s.delivery_date) = 2022 GROUP BY g.region LIMIT 100"}',
+        ]
+
+        result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            "Trong năm 2022, vùng nào có average transit time cao nhất?", "nationwide_logistics",
+        )
+
+        self.assertEqual(len(llm.generate.call_args_list), 2)
+        self.assertIn("requests year(s) [2022]", llm.generate.call_args_list[1].args[0])
+        self.assertEqual(result["observations"][0], {"region": "East", "avg_transit_time": 4.52})
+        self.assertEqual(len(result["observations"]), 3)
+        self.assertIn("EXTRACT(YEAR FROM s.delivery_date) = 2022", result["sql_query"])
+
+    def test_requested_year_filter_accepts_exact_year_and_explicit_range(self):
+        exact_year = (
+            "SELECT g.region, AVG(s.delivery_date - s.ship_date) AS avg_days "
+            "FROM commerce.shipments s JOIN commerce.geography g ON TRUE "
+            "WHERE EXTRACT(YEAR FROM s.delivery_date) = 2022 GROUP BY g.region"
+        )
+        year_range = (
+            "SELECT g.region, EXTRACT(YEAR FROM s.delivery_date) AS year "
+            "FROM commerce.shipments s JOIN commerce.geography g ON TRUE "
+            "WHERE EXTRACT(YEAR FROM s.delivery_date) BETWEEN 2020 AND 2022 "
+            "GROUP BY g.region, EXTRACT(YEAR FROM s.delivery_date)"
+        )
+
+        self.assertEqual(_validate_requested_year_filter("In 2022, compare regions", exact_year), exact_year)
+        self.assertEqual(_validate_requested_year_filter("Compare 2020–2022", year_range), year_range)
+
+    def test_requested_year_filter_rejects_missing_year_or_broadened_or(self):
+        missing_year = "SELECT g.region FROM commerce.geography g GROUP BY g.region"
+        broadened_or = (
+            "SELECT g.region FROM commerce.shipments s JOIN commerce.geography g ON TRUE "
+            "WHERE EXTRACT(YEAR FROM s.delivery_date) = 2022 OR g.region = 'East' GROUP BY g.region"
+        )
+
+        with self.assertRaisesRegex(UnsafeAnalyticsQuery, "filter a time column"):
+            _validate_requested_year_filter("In 2022, compare regions", missing_year)
+        with self.assertRaisesRegex(UnsafeAnalyticsQuery, "mixed with OR"):
+            _validate_requested_year_filter("In 2022, compare regions", broadened_or)
+
     def test_promotion_sql_prompt_defines_campaign_window_tagging_semantics(self):
         repository = Mock()
         repository.execute_commerce_analytics.return_value = [{"campaign": "Spring Sale 2022", "net_item_sales": 42}]
@@ -197,13 +253,14 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
             '{"sql":"SELECT EXTRACT(YEAR FROM o.order_date) AS year, '
             'COUNT(DISTINCT o.order_id) AS delivered_orders FROM commerce.orders o '
             'JOIN commerce.order_items oi ON oi.order_id = o.order_id '
-            'WHERE o.order_status = \'delivered\' AND (oi.promo_id IS NOT NULL OR oi.promo_id_2 IS NOT NULL) '
+            'WHERE o.order_status = \'delivered\' AND o.order_date BETWEEN \'2020-01-01\' AND \'2022-12-31\' '
+            'AND (oi.promo_id IS NOT NULL OR oi.promo_id_2 IS NOT NULL) '
             'GROUP BY EXTRACT(YEAR FROM o.order_date) LIMIT 100"}',
             '{"sql":"SELECT EXTRACT(YEAR FROM o.order_date) AS year, '
             '(oi.promo_id IS NOT NULL OR oi.promo_id_2 IS NOT NULL) AS used_promotion, '
             'COUNT(DISTINCT o.order_id) AS delivered_orders FROM commerce.orders o '
             'JOIN commerce.order_items oi ON oi.order_id = o.order_id '
-            'WHERE o.order_status = \'delivered\' '
+            'WHERE o.order_status = \'delivered\' AND o.order_date BETWEEN \'2020-01-01\' AND \'2022-12-31\' '
             'GROUP BY EXTRACT(YEAR FROM o.order_date), '
             '(oi.promo_id IS NOT NULL OR oi.promo_id_2 IS NOT NULL) LIMIT 100"}',
         ]
@@ -230,7 +287,8 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         llm.generate.side_effect = [
             '{"sql":"SELECT p.promo_name, SUM(oi.quantity * oi.unit_price) AS net_sales '
             'FROM commerce.promotions p LEFT JOIN commerce.order_items oi ON oi.promo_id = p.promo_id '
-            'LEFT JOIN commerce.orders o ON o.order_id = oi.order_id GROUP BY p.promo_name LIMIT 10"}',
+            'LEFT JOIN commerce.orders o ON o.order_id = oi.order_id '
+            'WHERE EXTRACT(YEAR FROM p.start_date) = 2022 GROUP BY p.promo_name LIMIT 10"}',
             '{"sql":"SELECT p.promo_name, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_sales '
             'FROM commerce.promotions p JOIN commerce.order_items oi ON (oi.promo_id = p.promo_id OR oi.promo_id_2 = p.promo_id) '
             'JOIN commerce.orders o ON o.order_id = oi.order_id WHERE o.order_status = \'delivered\' '

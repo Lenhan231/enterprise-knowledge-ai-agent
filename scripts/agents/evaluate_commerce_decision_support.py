@@ -132,13 +132,16 @@ def _evidence_observation_rows(citations: list[dict]) -> list[dict]:
                 observations = None
         if isinstance(observations, list):
             scoped_year = _single_scoped_year(citation.get("sql_query"))
+            scoped_snapshot_date = _single_scoped_snapshot_date(citation.get("sql_query"))
             for row in observations:
                 if not isinstance(row, dict):
                     continue
                 # A constant year filter is valid period evidence even when the
                 # query does not redundantly project that same year in every row.
-                if scoped_year is not None and not any(key in row for key in _TIME_DIMENSIONS):
+                if scoped_year is not None and not any(key in row for key in ("year", "fiscal_year")):
                     row = {**row, "year": scoped_year}
+                if scoped_snapshot_date is not None and "snapshot_date" not in row:
+                    row = {**row, "snapshot_date": scoped_snapshot_date}
                 rows.append(row)
     return rows
 
@@ -155,6 +158,19 @@ def _single_scoped_year(sql: str | None) -> int | None:
         re.I,
     ))
     return int(next(iter(years))) if len(years) == 1 else None
+
+
+def _single_scoped_snapshot_date(sql: str | None) -> str | None:
+    if not sql:
+        return None
+    where = re.search(r"\bWHERE\b(.*?)(?:\bGROUP\s+BY\b|\bORDER\s+BY\b|\bLIMIT\b|$)", sql, re.I | re.S)
+    if not where or re.search(r"\bOR\b", where.group(1), re.I):
+        return None
+    dates = set(re.findall(
+        r"\bsnapshot_date\s*=\s*'((?:19|20)\d{2}-\d{2}-\d{2})'",
+        where.group(1), re.I,
+    ))
+    return next(iter(dates)) if len(dates) == 1 else None
 
 
 def _matches_observation_value(actual, expected) -> bool:

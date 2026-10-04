@@ -1,0 +1,510 @@
+{
+  "artifact_type": "commerce_decision_support_offline_rescore",
+  "source_live_artifact": "artifacts/evaluation/commerce-decision-support-live-20261005-r4.json",
+  "source_live_artifact_sha256": "6fa9911df492596c2cbe2863ceb80b6cdf891707ed5b6e9154bd840afef9ca55",
+  "current_benchmark_sha256": "2747832c748e13a3b19d1cd171cc04a23a66ad921578cfe08fc4c9bd9cd3c73f",
+  "reason": "Re-evaluate fixed snapshot date from SQL WHERE; LOG-01 remains a real missing-year SQL failure.",
+  "results": [
+    {
+      "case_id": "INV-01",
+      "domain": "inventory_allocation",
+      "question": "Trong snapshot tồn kho mới nhất, nhóm hàng nào có nhiều sản phẩm bị gắn cờ stockout nhất? Có nên chuyển hàng từ nhóm overstock sang không?",
+      "decision_analysis": "commerce_sql_and_operating_references",
+      "citation_validation_failed": false,
+      "passed": true,
+      "checks": {
+        "citation_integrity": true,
+        "citation_validation": true,
+        "domain_sql_evidence": true,
+        "question_specific_sql_available": true,
+        "question_specific_sql_requirement_met": true,
+        "sql_dataset_provenance": true,
+        "document_source_locations": true,
+        "document_scope_attribution": true,
+        "operating_reference_present": true,
+        "required_gold_numeric_facts_present": true,
+        "gold_observation_rows_present_in_cited_sql": true
+      },
+      "citation_domain_checks_passed": true,
+      "question_specific_sql_passed": true,
+      "gold_numeric_coverage_passed": true,
+      "gold_numeric_coverage_applicable": true,
+      "missing_gold_numeric_facts": [],
+      "gold_observation_coverage_passed": true,
+      "gold_observation_coverage_applicable": true,
+      "missing_gold_observation_rows": [],
+      "citations": [
+        {
+          "id": "C1",
+          "company": "Commerce Demo",
+          "title": "Commerce SQL aggregate: Inventory allocation",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "source_url": null,
+          "excerpt": "question_specific_query question-specific SQL observations: [{\"category\": \"Streetwear\", \"overstock_count\": 162, \"stockout_count\": 134}, {\"category\": \"Outdoor\", \"overstock_count\": 113, \"stockout_count\": 95}, {\"category\": \"Casual\", \"overstock_count\": 29, \"stockout_count\": 31}, {\"category\": \"GenZ\", \"overstock_count\": 37, \"stockout_count\": 25}]",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_sql",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "inventory_allocation",
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": "question_specific_query",
+          "commerce_observations": [
+            {
+              "category": "Streetwear",
+              "stockout_count": 134,
+              "overstock_count": 162
+            },
+            {
+              "category": "Outdoor",
+              "stockout_count": 95,
+              "overstock_count": 113
+            },
+            {
+              "category": "Casual",
+              "stockout_count": 31,
+              "overstock_count": 29
+            },
+            {
+              "category": "GenZ",
+              "stockout_count": 25,
+              "overstock_count": 37
+            }
+          ],
+          "source_tables": [
+            "commerce.inventory"
+          ],
+          "sql_query": "SELECT i.category, COUNT(*) FILTER(WHERE i.stockout_flag) AS stockout_count, COUNT(*) FILTER(WHERE i.overstock_flag) AS overstock_count FROM commerce.inventory AS i WHERE i.snapshot_date = '2022-12-31' GROUP BY i.category ORDER BY stockout_count DESC LIMIT 100",
+          "sql_generation_provider": "groq",
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        },
+        {
+          "id": "C2",
+          "company": "Commerce Demo",
+          "title": "Commerce SQL aggregate: Inventory allocation",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "source_url": null,
+          "excerpt": "inventory_latest_flag_overlap aggregate observations: [{\"both_flagged_rows\": 232, \"overstock_flagged_rows\": 341, \"product_rows\": 424, \"snapshot_date\": \"2022-12-31\", \"stockout_flagged_rows\": 285}]",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_sql",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "inventory_allocation",
+          "commerce_aggregate_key": "inventory_latest_flag_overlap",
+          "commerce_observation_group": "inventory_latest_flag_overlap",
+          "commerce_observations": [
+            {
+              "snapshot_date": "2022-12-31",
+              "product_rows": 424,
+              "stockout_flagged_rows": 285,
+              "overstock_flagged_rows": 341,
+              "both_flagged_rows": 232
+            }
+          ],
+          "source_tables": [
+            "commerce.inventory"
+          ],
+          "sql_query": null,
+          "sql_generation_provider": null,
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        },
+        {
+          "id": "L1",
+          "company": "Commerce Demo",
+          "title": "Commerce schema/data coverage: Inventory allocation",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "source_url": null,
+          "excerpt": "The supplied data has no supplier lead time, demand forecast, ordering cost, holding cost, warehouse location, or approved service-level target.",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_schema",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "inventory_allocation",
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": null,
+          "commerce_observations": null,
+          "source_tables": [
+            "commerce.inventory"
+          ],
+          "sql_query": null,
+          "sql_generation_provider": null,
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        },
+        {
+          "id": "L2",
+          "company": "Commerce Demo",
+          "title": "Commerce schema/data coverage: Inventory allocation",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "source_url": null,
+          "excerpt": "The schema has no separate low-stock alert or seller-defined minimum-stock threshold; do not infer low-stock status from stockout or overstock counts.",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_schema",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "inventory_allocation",
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": null,
+          "commerce_observations": null,
+          "source_tables": [
+            "commerce.inventory"
+          ],
+          "sql_query": null,
+          "sql_generation_provider": null,
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        },
+        {
+          "id": "L3",
+          "company": "Commerce Demo",
+          "title": "Commerce schema/data coverage: Inventory allocation",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "source_url": null,
+          "excerpt": "Yearly stockout_snapshots count inventory rows flagged stockout, not distinct stockout incidents. Latest category stockout_products and overstock_products are overlapping flag counts, not disjoint stock pools. The separate latest-snapshot overlap aggregate reports how many rows carry both flags; none of these category aggregates establishes transferable surplus or justifies shifting inventory between categories.",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_schema",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "inventory_allocation",
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": null,
+          "commerce_observations": null,
+          "source_tables": [
+            "commerce.inventory"
+          ],
+          "sql_query": null,
+          "sql_generation_provider": null,
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        },
+        {
+          "id": "L4",
+          "company": "Commerce Demo",
+          "title": "Commerce schema/data coverage: Inventory allocation",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "source_url": null,
+          "excerpt": "days_of_supply is excluded because the supplied values are anomalously high.",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_schema",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "inventory_allocation",
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": null,
+          "commerce_observations": null,
+          "source_tables": [
+            "commerce.inventory"
+          ],
+          "sql_query": null,
+          "sql_generation_provider": null,
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        },
+        {
+          "id": "S1",
+          "company": "Commerce Demo",
+          "title": "Chính sách giả lập: Phân bổ và rà soát tồn kho",
+          "source_publisher": "Commerce Demo (fictional organization)",
+          "evidence_class": "company_policy_reference",
+          "reference_applicability": "Fictional Commerce Demo inventory scenario only. Explicitly synthetic; not an issued policy of a real retailer.",
+          "document_id": "CD-POL-INV-001",
+          "chunk_index": 2,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": 2,
+          "source_url": null,
+          "excerpt": "| SYNTHETIC DEMO POLICY - NOT A REAL COMPANY POLICY COMMERCE DEMO / CD-POL-INV-001 Chính sách giả lập: Phân bổ và rà soát tồn kho Điều kiện hành động và giới hạn dữ liệu Khi nào được đề xuất phương án Có thể đề xuất kiểm tra SKU, điểm bán/kho và nhu cầu theo cùng một thời điểm khi dashboard cho thấy nhóm có nhiều cờ thiếu hàng. Chỉ xem xét điều chuyển khi có đối chiếu SKU giữa nơi gửi và nơi nhận, tồn khả dụng, nhu cầu dự báo, thời gian bổ sung, chỉ phí vận chuyển và ràng buộc dich vụ. Chỉ đề xuất tăng/giảm đặt hàng khi có lịch sử nhu cầu, lead time, quy cách đặt hàng, chi phí lưu kho và mục tiêu dịch vụ được phê duyệt cho demo. Không được suy diễn Không tự đặt safety stock, reorder point, s",
+          "score": 0.04169202678028,
+          "retrieval_method": "hybrid",
+          "source_type": "document",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": null,
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": null,
+          "commerce_observations": null,
+          "source_tables": null,
+          "sql_query": null,
+          "sql_generation_provider": null,
+          "dataset_note": null
+        }
+      ],
+      "question_specific_sql_used": true,
+      "sql_generation_provider": "groq",
+      "question_sql_fallback": null,
+      "answer_generation_provider": null,
+      "token_usage": {
+        "sql_generation": {
+          "input_tokens": 619,
+          "output_tokens": 327,
+          "total_tokens": 946
+        },
+        "answer_generation": {
+          "input_tokens": 2809,
+          "output_tokens": 743,
+          "total_tokens": 3552
+        },
+        "total": {
+          "input_tokens": 3428,
+          "output_tokens": 1070,
+          "total_tokens": 4498
+        }
+      },
+      "answer": "Quan sát SQL theo câu hỏi:\n| Danh mục | Cờ overstock | Cờ stockout |\n| --- | --- | --- |\n| Streetwear | 162 | 134 |\n| Outdoor | 113 | 95 |\n| Casual | 29 | 31 |\n| GenZ | 37 | 25 |\n [C1]. Trong snapshot 2022-12-31, 232 dòng sản phẩm có đồng thời cờ stockout và overstock; hai tổng cờ có thể chồng lấp [C2].\nKhuyến nghị: Chưa điều chuyển tồn kho. Aggregate theo danh mục không xác định được SKU nào dư ở đâu và đang thiếu ở đâu. Hãy ghép dữ liệu nhu cầu, tồn kho SKU theo địa điểm, lead time và chi phí trước khi thử điều chuyển. [L1][L2][L3][L4][C1][C2]\nPolicy giả lập Commerce Demo đã được truy xuất; xem nguồn để đối chiếu nội dung OCR. Chỉ áp dụng cho kịch bản dữ liệu giả lập này, không phải chính sách của doanh nghiệp thật. [S1]",
+      "semantic_review_required": true
+    },
+    {
+      "case_id": "LOG-01",
+      "domain": "nationwide_logistics",
+      "question": "Trong 2022, vùng nào có average transit time cao nhất và có nên thiết kế lại mạng lưới giao hàng không?",
+      "decision_analysis": "commerce_sql_and_operating_references",
+      "citation_validation_failed": false,
+      "passed": false,
+      "checks": {
+        "citation_integrity": true,
+        "citation_validation": true,
+        "domain_sql_evidence": true,
+        "question_specific_sql_available": true,
+        "question_specific_sql_requirement_met": true,
+        "sql_dataset_provenance": true,
+        "document_source_locations": true,
+        "document_scope_attribution": true,
+        "operating_reference_present": true,
+        "required_gold_numeric_facts_present": false,
+        "gold_observation_rows_present_in_cited_sql": false
+      },
+      "citation_domain_checks_passed": false,
+      "question_specific_sql_passed": true,
+      "gold_numeric_coverage_passed": false,
+      "gold_numeric_coverage_applicable": true,
+      "missing_gold_numeric_facts": [
+        "4.51",
+        "4.52"
+      ],
+      "gold_observation_coverage_passed": false,
+      "gold_observation_coverage_applicable": true,
+      "missing_gold_observation_rows": [
+        {
+          "year": 2022,
+          "region": "Central",
+          "avg_transit_days": 4.51
+        },
+        {
+          "year": 2022,
+          "region": "East",
+          "avg_transit_days": 4.52
+        },
+        {
+          "year": 2022,
+          "region": "West",
+          "avg_transit_days": 4.51
+        }
+      ],
+      "citations": [
+        {
+          "id": "C1",
+          "company": "Commerce Demo",
+          "title": "Commerce SQL aggregate: Nationwide logistics",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "source_url": null,
+          "excerpt": "question_specific_query question-specific SQL observations: [{\"avg_transit_time\": \"4.4996767014014143\", \"region\": \"West\"}, {\"avg_transit_time\": \"4.4993016651406757\", \"region\": \"East\"}, {\"avg_transit_time\": \"4.4986368255384539\", \"region\": \"Central\"}]",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_sql",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "nationwide_logistics",
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": "question_specific_query",
+          "commerce_observations": [
+            {
+              "region": "West",
+              "avg_transit_time": 4.499676701401414
+            },
+            {
+              "region": "East",
+              "avg_transit_time": 4.499301665140676
+            },
+            {
+              "region": "Central",
+              "avg_transit_time": 4.498636825538454
+            }
+          ],
+          "source_tables": [
+            "commerce.shipments",
+            "commerce.orders",
+            "commerce.geography"
+          ],
+          "sql_query": "SELECT g.region, AVG(s.delivery_date - s.ship_date) AS avg_transit_time FROM commerce.shipments AS s JOIN commerce.orders AS o ON s.order_id = o.order_id JOIN commerce.geography AS g ON o.zip = g.zip GROUP BY g.region ORDER BY avg_transit_time DESC LIMIT 100",
+          "sql_generation_provider": "groq",
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        },
+        {
+          "id": "L1",
+          "company": "Commerce Demo",
+          "title": "Commerce schema/data coverage: Nationwide logistics",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "source_url": null,
+          "excerpt": "The data has no carrier, warehouse origin, route capacity, promised SLA, service type, or controllable transport-cost breakdown.",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_schema",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "nationwide_logistics",
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": null,
+          "commerce_observations": null,
+          "source_tables": [
+            "commerce.shipments",
+            "commerce.orders",
+            "commerce.geography"
+          ],
+          "sql_query": null,
+          "sql_generation_provider": null,
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        },
+        {
+          "id": "L2",
+          "company": "Commerce Demo",
+          "title": "Commerce schema/data coverage: Nationwide logistics",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "source_url": null,
+          "excerpt": "Observed ship-to-delivery time does not identify the cause of delay or prove that a network change would help.",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_schema",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "nationwide_logistics",
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": null,
+          "commerce_observations": null,
+          "source_tables": [
+            "commerce.shipments",
+            "commerce.orders",
+            "commerce.geography"
+          ],
+          "sql_query": null,
+          "sql_generation_provider": null,
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        },
+        {
+          "id": "S1",
+          "company": "Commerce Demo",
+          "title": "Chính sách giả lập: Theo dõi và tối ưu logistics toàn quốc",
+          "source_publisher": "Commerce Demo (fictional organization)",
+          "evidence_class": "company_policy_reference",
+          "reference_applicability": "Fictional Commerce Demo logistics scenario only. Explicitly synthetic; not an issued policy of a real retailer.",
+          "document_id": "CD-POL-LOG-001",
+          "chunk_index": 1,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": 2,
+          "source_url": null,
+          "excerpt": "| SYNTHETIC DEMO POLICY - NOT A REAL COMPANY POLICY COMMERCE DEMO / CD-POL-LOG-001 Chính sách giả lập: Theo dõi và tối ưu logistics toàn quốc Điều kiện thiết kế thay đổi mạng lưới Dữ liệu tối thiểu trước khi đề xuất thay đổi Shipment-level origin, destination, route/lane, carrier/service class và timestamp các mốc xử lý. SLA cam kết, ngày hứa giao, tỷ lệ giao đúng hạn, exception/return và phân bố thời gian giao. Chi phí theo tuyến/dịch vụ, phụ phí, năng lực kho/carrier, nhu cầu và giới hạn địa lý. Network design hoặc route optimization chỉ sau khi so sánh phương án trên cùng tập đơn/kỳ, ghi nhận giả định, trade-off chi phí/dịch vụ và kế hoạch pilot. Không được suy diễn + Khong đề xuất đóng/m",
+          "score": 0.0459447799827437,
+          "retrieval_method": "hybrid",
+          "source_type": "document",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": null,
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": null,
+          "commerce_observations": null,
+          "source_tables": null,
+          "sql_query": null,
+          "sql_generation_provider": null,
+          "dataset_note": null
+        }
+      ],
+      "question_specific_sql_used": true,
+      "sql_generation_provider": "groq",
+      "question_sql_fallback": null,
+      "answer_generation_provider": null,
+      "token_usage": {
+        "sql_generation": {
+          "input_tokens": 637,
+          "output_tokens": 93,
+          "total_tokens": 730
+        },
+        "answer_generation": {
+          "input_tokens": 2530,
+          "output_tokens": 671,
+          "total_tokens": 3201
+        },
+        "total": {
+          "input_tokens": 3167,
+          "output_tokens": 764,
+          "total_tokens": 3931
+        }
+      },
+      "answer": "Quan sát SQL theo câu hỏi:\n| Thời gian vận chuyển TB (ngày) | Vùng |\n| --- | --- |\n| 4.4996767014014143 | West |\n| 4.4993016651406757 | East |\n| 4.4986368255384539 | Central |\n [C1]. Khuyến nghị: Chưa thiết kế lại mạng lưới giao hàng từ thời gian vận chuyển theo vùng. Bổ sung điểm đi/đến, hãng vận chuyển, loại dịch vụ, SLA cam kết, năng lực tuyến và chi phí kiểm soát được; sau đó mới so sánh dịch vụ và chi phí theo vùng. [L1][L2][C1]\nPolicy giả lập Commerce Demo đã được truy xuất; xem nguồn để đối chiếu nội dung OCR. Chỉ áp dụng cho kịch bản dữ liệu giả lập này, không phải chính sách của doanh nghiệp thật. [S1]",
+      "semantic_review_required": true
+    }
+  ]
+}

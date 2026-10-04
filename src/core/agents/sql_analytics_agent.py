@@ -115,6 +115,70 @@ def _validate_comparison_groups(question: str, sql: str) -> str:
     return sql
 
 
+def _validate_requested_year_filter(question: str, sql: str) -> str:
+    """Require explicit question years to constrain the SQL time period."""
+    years = sorted({int(year) for year in re.findall(r"\b((?:19|20)\d{2})\b", question)})
+    if not years:
+        return sql
+    query = parse_one(sql, read="postgres")
+    where = query.args.get("where")
+    temporal_columns = {
+        "year", "fiscal_year", "snapshot_date", "order_date", "delivery_date",
+        "ship_date", "start_date", "end_date",
+    }
+    if where is None:
+        raise UnsafeAnalyticsQuery(
+            f"The question requests year(s) {years}; filter a time column in WHERE"
+        )
+    predicate = where.this
+    where_sql = predicate.sql(dialect="postgres")
+    where_years = {int(year) for year in re.findall(r"\b((?:19|20)\d{2})\b", where_sql)}
+    has_temporal_column = any(
+        column.name.casefold() in temporal_columns for column in predicate.find_all(exp.Column)
+    )
+    if any(
+        any(column.name.casefold() in temporal_columns for column in clause.find_all(exp.Column))
+        for clause in predicate.find_all(exp.Or)
+    ):
+        raise UnsafeAnalyticsQuery(
+            "The requested year filter is mixed with OR; constrain the selected period without broadening it"
+        )
+    if not has_temporal_column:
+        raise UnsafeAnalyticsQuery(
+            f"The question requests year(s) {years}; filter a time column in WHERE"
+        )
+
+    range_match = re.search(
+        r"\b((?:19|20)\d{2})\s*(?:[-–—]|\bto\b|\bthrough\b|\bđến\b)\s*((?:19|20)\d{2})\b",
+        question,
+        re.IGNORECASE,
+    )
+    if range_match:
+        start_year, end_year = map(int, range_match.groups())
+        expected_years = set(range(start_year, end_year + 1))
+        between_covers_range = any(
+            (
+                isinstance(between.this, exp.Column)
+                and between.this.name.casefold() in temporal_columns
+                or any(column.name.casefold() in temporal_columns
+                       for column in between.this.find_all(exp.Column))
+            )
+            and {int(year) for year in re.findall(
+                r"\b((?:19|20)\d{2})\b", between.sql(dialect="postgres"),
+            )}.issuperset({start_year, end_year})
+            for between in predicate.find_all(exp.Between)
+        )
+        if not between_covers_range and not expected_years.issubset(where_years):
+            raise UnsafeAnalyticsQuery(
+                f"The question requests the full year range {start_year}-{end_year}; filter that complete range in WHERE"
+            )
+    elif where_years != set(years):
+        raise UnsafeAnalyticsQuery(
+            f"The question requests year(s) {years}; WHERE must filter exactly those year(s)"
+        )
+    return sql
+
+
 def _asks_for_promotion_tag_comparison(question: str) -> bool:
     text = question.casefold()
     positive = re.search(
@@ -327,7 +391,9 @@ class SQLAnalyticsAgent(BaseAgent):
             "peer groups with comparable measures and order them; do not use HAVING to remove competitors unless "
             "the user explicitly asks for a threshold-defined subset. "
             "List the grouped dimension expressions explicitly; do not use ordinal GROUP BY positions. "
-            "Do not calculate causal lift, ROI, or an unsupported target. Use the period requested; if none is given, "
+            "For an explicit year or year range in the question, constrain the matching time column in WHERE "
+            "to exactly that period; never return an unfiltered multi-year aggregate. Do not calculate causal lift, "
+            "ROI, or an unsupported target. Use the period requested; if none is given, "
             "prefer the most recent period represented by the relevant table. Do not invent data. Include LIMIT 100.\n\n"
             f"Approved domain schema for {domain}:\n{schema}{schema_note}\n\nQuestion: {question}"
         )
@@ -337,6 +403,7 @@ class SQLAnalyticsAgent(BaseAgent):
 
         def validated_query(raw: str) -> str:
             query = _validate_comparison_groups(question, _commerce_sql_from_model(raw))
+            query = _validate_requested_year_filter(question, query)
             reads_inventory = any(
                 table.name.casefold() == "inventory"
                 for table in parse_one(query, read="postgres").find_all(exp.Table)

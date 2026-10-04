@@ -126,6 +126,23 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
 
         self.assertEqual(missing_gold_observations(case, [citation]), [])
 
+    def test_gold_observations_accept_snapshot_date_proven_by_sql_filter(self):
+        case = next(case for case in self.cases if case["id"] == "INV-01")
+        citation = {
+            "source_type": "commerce_sql",
+            "sql_query": (
+                "SELECT i.category, COUNT(*) FILTER (WHERE i.stockout_flag) AS stockout_count "
+                "FROM commerce.inventory i WHERE i.snapshot_date = '2022-12-31' "
+                "GROUP BY i.category"
+            ),
+            "commerce_observations": [
+                {"category": "Streetwear", "stockout_count": 134},
+                {"category": "Outdoor", "stockout_count": 95},
+            ],
+        }
+
+        self.assertEqual(missing_gold_observations(case, [citation]), [])
+
     def test_year_is_not_inferred_from_a_mixed_year_or_predicate(self):
         case = next(case for case in self.cases if case["id"] == "LOG-01")
         citation = {

@@ -10,7 +10,8 @@ from openai import RateLimitError
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.agents.sql_analytics_agent import (
-    SQLAnalyticsAgent, UnsupportedCommerceDimension, _validate_campaign_outcome_query,
+    SQLAnalyticsAgent, UnsupportedCommerceDimension, _asks_for_promotion_tag_comparison,
+    _validate_campaign_outcome_query,
 )
 from core.analytics.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql, validate_commerce_sql
 from core.analytics.commerce_decision_support import COMMERCE_QUERY_TABLES
@@ -181,6 +182,46 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         self.assertIn("delivered orders", prompt)
         self.assertIn("requested campaign year to the campaign dates", prompt)
         self.assertIn("filter every order-derived aggregate", prompt)
+
+    def test_promotion_query_repairs_when_a_requested_tag_comparison_returns_one_group(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.side_effect = [
+            [{"year": 2020, "delivered_orders": 10}],
+            [
+                {"year": 2020, "used_promotion": True, "delivered_orders": 4},
+                {"year": 2020, "used_promotion": False, "delivered_orders": 8},
+            ],
+        ]
+        llm = Mock()
+        llm.generate.side_effect = [
+            '{"sql":"SELECT EXTRACT(YEAR FROM o.order_date) AS year, '
+            'COUNT(DISTINCT o.order_id) AS delivered_orders FROM commerce.orders o '
+            'JOIN commerce.order_items oi ON oi.order_id = o.order_id '
+            'WHERE o.order_status = \'delivered\' AND (oi.promo_id IS NOT NULL OR oi.promo_id_2 IS NOT NULL) '
+            'GROUP BY EXTRACT(YEAR FROM o.order_date) LIMIT 100"}',
+            '{"sql":"SELECT EXTRACT(YEAR FROM o.order_date) AS year, '
+            '(oi.promo_id IS NOT NULL OR oi.promo_id_2 IS NOT NULL) AS used_promotion, '
+            'COUNT(DISTINCT o.order_id) AS delivered_orders FROM commerce.orders o '
+            'JOIN commerce.order_items oi ON oi.order_id = o.order_id '
+            'WHERE o.order_status = \'delivered\' '
+            'GROUP BY EXTRACT(YEAR FROM o.order_date), '
+            '(oi.promo_id IS NOT NULL OR oi.promo_id_2 IS NOT NULL) LIMIT 100"}',
+        ]
+
+        result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            "Trong 2020–2022, so sánh nhóm đơn delivered có gắn khuyến mãi và không gắn tag theo số đơn?",
+            "promotion_planning",
+        )
+
+        self.assertTrue(_asks_for_promotion_tag_comparison("Compare tagged and untagged orders."))
+        self.assertTrue(_asks_for_promotion_tag_comparison("Compare orders with promotion and without promotion."))
+        self.assertFalse(_asks_for_promotion_tag_comparison("Compare promotion sales with and without discounts."))
+        self.assertEqual(len(llm.generate.call_args_list), 2)
+        self.assertEqual(len(repository.execute_commerce_analytics.call_args_list), 2)
+        self.assertIn("both TRUE and FALSE", llm.generate.call_args_list[0].args[0])
+        self.assertIn("both values of used_promotion", llm.generate.call_args_list[1].args[0])
+        self.assertEqual(result["observations"][0]["used_promotion"], True)
+        self.assertEqual(result["observations"][1]["used_promotion"], False)
 
     def test_promotion_query_repairs_incomplete_campaign_attribution(self):
         repository = Mock()

@@ -115,6 +115,35 @@ def _validate_comparison_groups(question: str, sql: str) -> str:
     return sql
 
 
+def _asks_for_promotion_tag_comparison(question: str) -> bool:
+    text = question.casefold()
+    positive = re.search(
+        r"\btagged\b|\bwith\s+(?:a\s+)?(?:promo(?:tion)?(?:\s+tags?)?|tags?)|có\s+(?:gắn|tag|khuyến mãi)",
+        text,
+    )
+    negative = re.search(
+        r"\buntagged\b|\bwithout\s+(?:a\s+)?(?:promo(?:tion)?(?:\s+tags?)?|tags?)|"
+        r"\bno\s+(?:promo(?:tion)?(?:\s+tags?)?|tags?)|không\s+(?:gắn|có)\s*(?:tag|khuyến mãi)?",
+        text,
+    )
+    return bool(positive and negative)
+
+
+def _validate_promotion_tag_groups(question: str, observations: list[dict]) -> None:
+    """Reject a with/without promotion comparison when SQL returned only one group."""
+    if not _asks_for_promotion_tag_comparison(question):
+        return
+    groups = {
+        row.get("used_promotion")
+        for row in observations
+        if isinstance(row, dict) and isinstance(row.get("used_promotion"), bool)
+    }
+    if groups != {True, False}:
+        raise UnsafeAnalyticsQuery(
+            "A with/without promotion comparison must return both values of used_promotion"
+        )
+
+
 def _validate_campaign_outcome_query(question: str, sql: str) -> str:
     """Reject campaign outcome SQL that does not apply the dataset's attribution rules."""
     asks_campaign_outcome = (
@@ -266,6 +295,13 @@ class SQLAnalyticsAgent(BaseAgent):
                 "Calculate net item sales as quantity * unit_price - discount_amount. Preserve the requested "
                 "campaign/channel/year dimensions in grouped results."
             )
+            if _asks_for_promotion_tag_comparison(question):
+                schema_note += (
+                    " For a with/without promotion comparison, return both groups using "
+                    "(order_items.promo_id IS NOT NULL OR order_items.promo_id_2 IS NOT NULL) "
+                    "AS used_promotion, group by that expression, and include both TRUE and FALSE. "
+                    "These are item-tag groups; a delivered order may appear in both if its items have mixed tags."
+                )
         if domain == "inventory_allocation":
             schema_note += (
                 "\nBoolean-column note: inventory.stockout_flag, overstock_flag and reorder_flag are BOOLEAN. "
@@ -321,6 +357,8 @@ class SQLAnalyticsAgent(BaseAgent):
             rejected_sql = _commerce_sql_from_model(raw)
             text = validated_query(raw)
             observations = self.repository.execute_commerce_analytics(text, domain)
+            if domain == "promotion_planning":
+                _validate_promotion_tag_groups(question, observations)
         except UnsafeAnalyticsQuery as error:
             correction = (
                 f"\n\nThe server rejected your previous SQL: {error}. Rewrite it as one safe SELECT that obeys "
@@ -335,6 +373,8 @@ class SQLAnalyticsAgent(BaseAgent):
             token_usage = accumulate_token_usage(token_usage, self.llm)
             text = validated_query(raw)
             observations = self.repository.execute_commerce_analytics(text, domain)
+            if domain == "promotion_planning":
+                _validate_promotion_tag_groups(question, observations)
         used_tables = list(dict.fromkeys(re.findall(
             r"\b(?:from|join)\s+commerce\.([a-z_][a-z0-9_]*)\b", text, re.IGNORECASE,
         )))

@@ -328,6 +328,7 @@ def score_case(case: dict, response_payload: dict, expected_tables: set[str]) ->
         "sql_generation_provider": question_specific_sql.get("sql_generation_provider") if question_specific_sql else None,
         "question_sql_fallback": response_payload.get("question_sql_fallback"),
         "answer_generation_provider": response_payload.get("generation_provider"),
+        "token_usage": response_payload.get("token_usage"),
         "answer": answer,
         "semantic_review_required": True,
     }

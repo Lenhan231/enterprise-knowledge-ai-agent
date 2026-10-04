@@ -30,6 +30,11 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
         case = next(case for case in self.cases if case["id"] == "INV-01")
         payload = {
             "answer": "Snapshot stockout counts were Streetwear=134 and Outdoor=95 [C1]. 232 rows carried both flags [C2]. Do not transfer stock before validation [S1].",
+            "token_usage": {
+                "sql_generation": {"input_tokens": 80, "output_tokens": 14, "total_tokens": 94},
+                "answer_generation": {"input_tokens": 120, "output_tokens": 25, "total_tokens": 145},
+                "total": {"input_tokens": 200, "output_tokens": 39, "total_tokens": 239},
+            },
             "citations": [
                 {"id": "C1", "source_type": "commerce_sql", "commerce_domain": "inventory_allocation",
                  "source_tables": ["commerce.inventory"], "dataset_note": "Synthetic Kaggle Commerce data.",
@@ -53,6 +58,7 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
 
         self.assertTrue(result["passed"], result["checks"])
         self.assertTrue(result["gold_observation_coverage_passed"])
+        self.assertEqual(result["token_usage"]["total"]["total_tokens"], 239)
 
     def test_numeric_values_in_answer_do_not_pass_when_sql_rows_swap_category_values(self):
         case = next(case for case in self.cases if case["id"] == "INV-01")

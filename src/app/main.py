@@ -201,6 +201,7 @@ class AskRequest(BaseModel):
     question: str = Field(default="", min_length=3, max_length=1000)
     retrieval_method: Literal["dense", "bm25", "hybrid", "parent"] = "hybrid"
     business_decision_domain: str | None = None
+    commerce_decision_support: bool = False
     decision_suggestions: bool = False
 
     @field_validator("business_decision_domain")
@@ -1573,6 +1574,7 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
                 "company": CORPUS_COMPANY,
                 "retrieval_method": request.retrieval_method,
                 "business_decision_domain": request.business_decision_domain,
+                "commerce_decision_support": request.commerce_decision_support,
                 "decision_suggestions": request.decision_suggestions,
             },
         ))
@@ -1620,6 +1622,12 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
             "citations": citations,
             "agent": agent_result.agent,
             "data": jsonable_encoder(agent_result.data),
+            **({"business_decision_domain": agent_result.metadata["business_decision_domain"]}
+               if agent_result.metadata.get("business_decision_domain") else {}),
+            **({"business_domain_auto_detected": True}
+               if agent_result.metadata.get("business_domain_auto_detected") else {}),
+            **({"needs_domain_clarification": True}
+               if agent_result.metadata.get("needs_domain_clarification") else {}),
             **({"decision_analysis": agent_result.metadata["decision_analysis"]}
                if agent_result.metadata.get("decision_analysis") else {}),
             **({"decision_reference_retrieval_limited": True}

@@ -73,10 +73,9 @@ class AgentRouter:
         ):
             self.last_destination = "report"
             return {"destination": "report"}
-        if self.report_agent and request.metadata.get("business_decision_domain") in COMMERCE_DECISION_PROFILES:
-            self.last_destination = "report"
-            return {"destination": "report"}
-        commerce_domain = resolve_commerce_decision_domain(request.question)
+        commerce_domain = request.metadata.get("business_decision_domain")
+        if commerce_domain not in COMMERCE_DECISION_PROFILES:
+            commerce_domain = resolve_commerce_decision_domain(request.question)
         question_text = request.question.casefold()
         policy_question = any(term in question_text for term in (
             "policy", "policies", "chính sách",
@@ -100,6 +99,9 @@ class AgentRouter:
         if self.report_agent and commerce_domain and source_how_to_question:
             self.last_destination = "knowledge"
             return {"destination": "knowledge"}
+        if self.report_agent and commerce_domain in COMMERCE_DECISION_PROFILES:
+            self.last_destination = "report"
+            return {"destination": "report"}
         if self.report_agent and commerce_domain:
             self.last_destination = "report"
             return {"destination": "report"}
@@ -134,5 +136,30 @@ class AgentRouter:
         return {"destination": destination}
 
     def route(self, request: AgentRequest) -> AgentResult:
+        auto_detected_domain = False
+        if request.metadata.get("commerce_decision_support") and not request.metadata.get("business_decision_domain"):
+            classify_domain = getattr(self.classifier, "classify_commerce_domain", None)
+            domain = (
+                classify_domain(request.question)
+                if callable(classify_domain)
+                else resolve_commerce_decision_domain(request.question)
+            )
+            if domain not in COMMERCE_DECISION_PROFILES:
+                self.last_destination = "commerce_domain_router"
+                labels = ", ".join(profile["label"] for profile in COMMERCE_DECISION_PROFILES.values())
+                return AgentResult(
+                    answer=f"I couldn't determine one Commerce decision domain with enough confidence. Please clarify whether the question is about {labels}.",
+                    agent="commerce_domain_router",
+                    metadata={"needs_domain_clarification": True},
+                )
+            request.metadata["business_decision_domain"] = domain
+            auto_detected_domain = True
         result = self.workflow.invoke({"request": request})["result"]
-        return AgentResult.model_validate(result)
+        result = AgentResult.model_validate(result)
+        domain = request.metadata.get("business_decision_domain")
+        if domain in COMMERCE_DECISION_PROFILES:
+            result.metadata.update({
+                "business_decision_domain": domain,
+                "business_domain_auto_detected": auto_detected_domain,
+            })
+        return result

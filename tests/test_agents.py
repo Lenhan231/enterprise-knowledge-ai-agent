@@ -2474,6 +2474,25 @@ class AgentFlowTest(unittest.TestCase):
         intent = IntentClassifier(llm).classify("Summarize these company documents")
         self.assertEqual(intent.intent, "report")
 
+    def test_commerce_domain_classifier_uses_profile_context_and_supported_ids(self):
+        llm = Mock()
+        llm.generate.return_value = '{"domain":"nationwide_logistics","confidence":0.92}'
+        domain = IntentClassifier(llm).classify_commerce_domain(
+            "Should we move delivery capacity between regions?"
+        )
+        self.assertEqual(domain, "nationwide_logistics")
+        prompt = llm.generate.call_args.args[0]
+        self.assertIn("commerce.shipments", prompt)
+        self.assertIn("inventory_allocation", prompt)
+
+    def test_commerce_domain_classifier_abstains_on_low_confidence_and_uses_clear_fallback(self):
+        llm = Mock()
+        llm.generate.return_value = '{"domain":"promotion_planning","confidence":0.4}'
+        classifier = IntentClassifier(llm)
+        self.assertEqual(classifier.classify_commerce_domain("Should we repeat the campaign?"), "promotion_planning")
+        llm.generate.return_value = '{"domain":null,"confidence":0.91}'
+        self.assertIsNone(classifier.classify_commerce_domain("What business decision should we make?"))
+
     def test_report_intent_falls_back_to_hybrid_when_report_agent_is_not_configured(self):
         classifier = Mock()
         classifier.classify.return_value = IntentClassifier.fallback("Summarize these company documents")
@@ -2762,6 +2781,54 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(router.last_destination, "report")
         classifier.classify.assert_not_called()
         report.run.assert_called_once()
+
+    def test_router_auto_detects_domain_before_commerce_decision_analysis(self):
+        classifier, report = Mock(), Mock()
+        classifier.classify_commerce_domain.return_value = "promotion_planning"
+        report.run.return_value = AgentResult(answer="promotion evidence", agent="report")
+        unused = Mock()
+        request = AgentRequest(
+            question="Should we repeat the campaign?",
+            metadata={"commerce_decision_support": True},
+        )
+        router = AgentRouter(classifier, unused, unused, unused, unused, report)
+
+        result = router.route(request)
+
+        classifier.classify_commerce_domain.assert_called_once_with(request.question)
+        self.assertEqual(report.run.call_args.args[0].metadata["business_decision_domain"], "promotion_planning")
+        self.assertTrue(result.metadata["business_domain_auto_detected"])
+
+    def test_router_asks_for_domain_when_commerce_question_is_ambiguous(self):
+        classifier, report = Mock(), Mock()
+        classifier.classify_commerce_domain.return_value = None
+        unused = Mock()
+        router = AgentRouter(classifier, unused, unused, unused, unused, report)
+
+        result = router.route(AgentRequest(
+            question="What should we improve?",
+            metadata={"commerce_decision_support": True},
+        ))
+
+        self.assertEqual(result.agent, "commerce_domain_router")
+        self.assertTrue(result.metadata["needs_domain_clarification"])
+        report.run.assert_not_called()
+        unused.run.assert_not_called()
+
+    def test_selected_domain_policy_questions_use_knowledge_agent(self):
+        question = "What does the inventory policy require before a stock transfer?"
+        classifier, knowledge, report = Mock(), Mock(), Mock()
+        knowledge.run.return_value = AgentResult(answer="Review SKU and location evidence [S1]", agent="knowledge")
+        unused = Mock()
+        router = AgentRouter(classifier, knowledge, unused, unused, unused, report)
+
+        result = router.route(AgentRequest(question=question, metadata={
+            "business_decision_domain": "inventory_allocation",
+        }))
+
+        self.assertEqual(result.agent, "knowledge")
+        self.assertTrue(knowledge.run.call_args.args[0].metadata["policy_reference_only"])
+        report.run.assert_not_called()
 
     def test_router_sends_implicit_commerce_decision_questions_to_report(self):
         questions = (

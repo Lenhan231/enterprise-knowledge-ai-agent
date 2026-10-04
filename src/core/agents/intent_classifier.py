@@ -3,9 +3,13 @@ import re
 
 from core.analytics.metric_ontology import resolve_metric_names
 from core.analytics.business_metric_catalog import resolve_business_metric_names
+from core.analytics.commerce_decision_support import (
+    COMMERCE_DECISION_PROFILES,
+    resolve_commerce_decision_domain,
+)
 from core.llm.groq_provider import GroqProvider
 from core.models.intent import IntentResult
-from core.prompts.intent import INTENT_CLASSIFIER_PROMPT
+from core.prompts.intent import COMMERCE_DOMAIN_CLASSIFIER_PROMPT, INTENT_CLASSIFIER_PROMPT
 
 
 def _is_document_count_request(text: str) -> bool:
@@ -45,6 +49,30 @@ class IntentClassifier:
             return self._normalize_data_intent(question, result)
         except Exception:
             return self.fallback(question)
+
+    def classify_commerce_domain(self, question: str) -> str | None:
+        """Classify the Commerce objective; fall back to domain terms if the model is unavailable."""
+        fallback = resolve_commerce_decision_domain(question)
+        domains = "\n".join(
+            f"- {domain}: {profile['label']}; data: {', '.join(profile['source_tables'])}; "
+            f"scope: {profile['limitations'][0]}"
+            for domain, profile in COMMERCE_DECISION_PROFILES.items()
+        )
+        try:
+            raw = self.llm.generate(COMMERCE_DOMAIN_CLASSIFIER_PROMPT.format(
+                domains=domains,
+                question=question,
+            )).strip()
+            if raw.startswith("```"):
+                raw = raw.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+            payload = json.loads(raw)
+            domain = payload.get("domain")
+            confidence = float(payload.get("confidence", 0))
+            if domain in COMMERCE_DECISION_PROFILES and 0.6 <= confidence <= 1:
+                return domain
+        except Exception:
+            pass
+        return fallback
 
     @staticmethod
     def fallback(question: str) -> IntentResult:

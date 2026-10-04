@@ -119,6 +119,7 @@
 [data-theme="dark"] .ask-panel{background:linear-gradient(135deg,#111c28 20%,#0f1925 100%)}
 [data-theme="dark"] #question,
 [data-theme="dark"] .business-question-form textarea,
+[data-theme="dark"] .business-question-form select,
 [data-theme="dark"] .upload-form>input,
 [data-theme="dark"] .upload-form>select,
 [data-theme="dark"] .login-card input,
@@ -346,3 +347,4 @@
 .upload-form fieldset[hidden]{display:none}.upload-form fieldset small{grid-column:1/-1;color:var(--muted);font-size:10px;line-height:1.5}
 .answer-text>p{margin:0 0 12px}.answer-markdown-table{margin:12px 0 18px}.answer-markdown-table table{min-width:680px;table-layout:fixed;white-space:normal}.answer-markdown-table th,.answer-markdown-table td{width:auto;text-align:left;vertical-align:top;white-space:normal;overflow-wrap:anywhere;line-height:1.55}.answer-markdown-table th:first-child,.answer-markdown-table td:first-child{text-align:left}
 .token-usage{margin:0 0 12px;color:var(--muted);font-size:11px}.token-usage summary{width:max-content;max-width:100%;cursor:pointer;color:var(--blue);font-weight:700}.token-usage ul{margin:6px 0;padding-left:18px;line-height:1.6}.token-usage small{font-size:10px}
+.business-question-form textarea{grid-column:1/-1}.business-question-form label{display:grid;gap:5px;color:var(--muted);font-size:11px}.business-question-form select{min-height:40px;padding:0 10px;border:1px solid #d4deea;border-radius:7px;background:#fff;color:var(--navy);font:inherit}

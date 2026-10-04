@@ -39,3 +39,21 @@ Return valid JSON only:
 User request:
 {question}
 """
+
+COMMERCE_DOMAIN_CLASSIFIER_PROMPT = """
+Choose which Commerce decision domain best fits the user's business objective.
+
+Available domains:
+{domains}
+
+Return JSON only with keys `domain` and `confidence`. `domain` must be one of the
+listed IDs or null. Choose from the decision requested, not just a word mentioned
+in passing. If the request materially spans multiple domains or is not a Commerce
+operations question, return null. Do not infer data availability or recommend an
+action.
+
+Example shape: {{"domain": "inventory_allocation", "confidence": 0.91}}
+
+Question:
+{question}
+"""

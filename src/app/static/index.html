@@ -204,7 +204,7 @@
             <div><p class="eyebrow">COMMERCE OPERATIONS · DATABASE AGGREGATES</p><h2 id="commerce-dashboard-title">Commerce decision dashboard</h2>
               <p>Values are computed from the private Commerce schema. This competition dataset is synthetic.</p></div>
             <div class="commerce-dashboard-filters">
-              <label>Question domain <select id="commerce-decision-domain" aria-label="Choose the decision domain for analysis">
+              <label>Dashboard domain <select id="commerce-decision-domain" aria-label="Choose the dashboard domain">
                 <option value="inventory_allocation">Inventory allocation</option>
                 <option value="promotion_planning">Promotion planning</option>
                 <option value="nationwide_logistics">Nationwide logistics</option>
@@ -252,6 +252,12 @@
             <form id="business-question-form" class="business-question-form">
               <label class="visually-hidden" for="business-question">Analytical question</label>
               <textarea id="business-question" maxlength="1000" placeholder="Example: Should we rebalance inventory toward categories with repeated stockout snapshots? State what lead-time and warehouse data are still needed."></textarea>
+              <label>Question domain <select id="business-question-domain" aria-label="Choose a domain or detect it from the question">
+                <option value="">Detect from my question</option>
+                <option value="inventory_allocation">Inventory allocation</option>
+                <option value="promotion_planning">Promotion planning</option>
+                <option value="nationwide_logistics">Nationwide logistics</option>
+              </select></label>
               <button id="business-question-button" type="submit" class="submit-query-btn"><span>Analyze decision evidence</span></button>
             </form>
             <div class="decision-question-prompts" aria-label="Domain-focused analysis prompts">

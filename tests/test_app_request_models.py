@@ -58,6 +58,7 @@ class AskRequestTest(unittest.TestCase):
     def test_commerce_domain_is_accepted_for_questions_and_server_side_suggestions(self):
         question = AskRequest(
             question="Should we rebalance inventory?",
+            commerce_decision_support=True,
             business_decision_domain="inventory_allocation",
         )
         suggestions = AskRequest(
@@ -65,6 +66,7 @@ class AskRequestTest(unittest.TestCase):
             business_decision_domain="promotion_planning",
         )
         self.assertEqual(question.business_decision_domain, "inventory_allocation")
+        self.assertTrue(question.commerce_decision_support)
         self.assertTrue(suggestions.decision_suggestions)
         with self.assertRaises(ValidationError):
             AskRequest(question="Should we change inventory?", business_decision_domain="made_up")

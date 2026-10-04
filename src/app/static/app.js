@@ -709,6 +709,16 @@ function renderAnswerBody(answer) {
 function renderAnswer(data, panel = $("#answer-panel")) {
   panel.hidden = false;
   const citations = Array.isArray(data.citations) ? data.citations : [];
+  const domainLabels = {
+    inventory_allocation: "Inventory allocation",
+    promotion_planning: "Promotion planning",
+    nationwide_logistics: "Nationwide logistics",
+  };
+  const domainNote = domainLabels[data.business_decision_domain]
+    ? `<p class="analysis-caveat answer-provenance-note" role="status"><strong>Decision domain:</strong> ${escapeHtml(domainLabels[data.business_decision_domain])}${data.business_domain_auto_detected ? " · detected from your question" : " · selected"}</p>`
+    : data.needs_domain_clarification
+      ? '<p class="analysis-caveat answer-provenance-note" role="status"><strong>No analysis was run.</strong> Choose one decision domain or clarify the question.</p>'
+      : "";
   const decisionModeNote = data.generation_provider === "deterministic_safety_fallback"
     ? '<p class="analysis-caveat answer-provenance-note" role="note"><strong>Audit-first safety fallback.</strong> The model draft did not pass grounding checks. This response uses available SQL observations and schema evidence to define the next evidence-gathering steps; it does not select a specific intervention.</p>'
     : "";
@@ -743,6 +753,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
         <button type="button" class="action-btn" id="copy-answer-btn" title="Copy response text">Copy</button>
       </div>
     </div>
+    ${domainNote}
     ${decisionModeNote}
     ${referenceRetrievalNote}
     ${questionSqlFallbackNote}
@@ -1239,7 +1250,9 @@ $("#business-question-form").addEventListener("submit", async (event) => {
   const decisionSuggestions = decisionSuggestionsPending;
   decisionSuggestionsPending = false;
   const question = decisionSuggestions ? "" : $("#business-question").value.trim();
-  const businessDecisionDomain = $("#commerce-decision-domain").value;
+  const businessDecisionDomain = decisionSuggestions
+    ? $("#commerce-decision-domain").value
+    : $("#business-question-domain").value || null;
   const panel = $("#business-answer-panel");
   if ((!decisionSuggestions && question.length < 3) || (decisionSuggestions && !businessDecisionDomain)) return;
   button.disabled = true;
@@ -1250,7 +1263,8 @@ $("#business-question-form").addEventListener("submit", async (event) => {
   try {
     const result = await api("/api/ask", { method: "POST", body: JSON.stringify({
       ...(question ? { question } : {}),
-      business_decision_domain: businessDecisionDomain || null,
+      business_decision_domain: businessDecisionDomain,
+      commerce_decision_support: true,
       decision_suggestions: decisionSuggestions,
     }) });
     renderAnswer(result, panel);

@@ -88,35 +88,35 @@ class BusinessMetricExtractionTests(unittest.TestCase):
                 with self.subTest(title=title):
                     self.assertEqual(resolve_commerce_decision_domain(starters[title]), domain)
 
-    def test_dashboard_decision_domains_require_complete_primary_kpi_series(self):
+    def test_commerce_ui_has_no_legacy_public_company_kpi_dashboard(self):
+        index_html = (Path(__file__).resolve().parents[1] / "src/app/static/index.html").read_text()
         app_js = (Path(__file__).resolve().parents[1] / "src/app/static/app.js").read_text()
-        readiness = app_js[app_js.index("function decisionReadyBusinessDomains"):app_js.index("const DECISION_DOMAIN_QUESTIONS")]
-        self.assertIn("definition?.decision_priority !== \"primary\"", readiness)
-        self.assertIn("definition.domain !== item.domain", readiness)
-        self.assertIn('["milk_supply", "market_performance"].includes(domain)', readiness)
+        self.assertIn('id="commerce-dashboard"', index_html)
+        self.assertNotIn('id="analytics-tab-business"', index_html)
+        self.assertNotIn('id="tab-metrics"', index_html)
+        self.assertNotIn("Metric Management", index_html)
+        self.assertNotIn('id="business-metric-management-section"', index_html)
+        self.assertNotIn("decisionReadyBusinessDomains", app_js)
+        self.assertNotIn("milk_supply", app_js)
+        self.assertNotIn("market_performance", app_js)
+        self.assertNotIn("/api/analytics", app_js)
 
-    def test_dashboard_metric_series_preserve_period_unit_and_scope(self):
+    def test_admin_pdf_inspector_keeps_chunks_and_structured_tables(self):
+        index_html = (Path(__file__).resolve().parents[1] / "src/app/static/index.html").read_text()
         app_js = (Path(__file__).resolve().parents[1] / "src/app/static/app.js").read_text()
-        series_key = app_js[app_js.index("function metricSeriesKey"):app_js.index("function formatBusinessMetricValue")]
-        self.assertIn("item.unit || \"unknown unit\"", series_key)
-        self.assertIn('item.reporting_period || "FY"', series_key)
-        self.assertIn("metricSeriesKey(financialDisplayItem(item))", app_js)
-        self.assertIn("const key = metricSeriesKey(item)", app_js)
-        self.assertIn("previous.scope === latest.scope", app_js)
-        self.assertIn("Reported scope or value qualifier varies across periods", app_js)
+        self.assertIn('id="parsed-chunk-form"', index_html)
+        self.assertIn('id="parsed-table-list"', index_html)
+        self.assertIn("/chunks?offset=", app_js)
+        self.assertIn("/tables?row_limit=100", app_js)
+        self.assertNotIn("business-metric-replay", index_html + app_js)
 
-    def test_admin_kpi_cards_open_the_exact_linked_indexed_chunk(self):
+    def test_commerce_tabs_and_questions_remain_domain_scoped(self):
+        index_html = (Path(__file__).resolve().parents[1] / "src/app/static/index.html").read_text()
         app_js = (Path(__file__).resolve().parents[1] / "src/app/static/app.js").read_text()
-        helper = app_js[app_js.index("function metricSourceChunkInspectButton"):app_js.index("function selectWorkspaceTab")]
-        self.assertIn('currentUser?.role !== "admin"', helper)
-        self.assertIn("metricSourceChunkInspectButton(latest.document_id, latest.source_chunk_id, latest.source_chunk_index)", app_js)
-        self.assertIn("metricSourceChunkInspectButton(latest.source_document_id, latest.source_chunk_id, latest.source_chunk_index)", app_js)
-        self.assertIn('data-inspect-indexed-chunk', app_js)
-        self.assertIn('Math.floor(chunkIndex / 25) * 25', app_js)
-        self.assertIn('dataset.focusChunk = String(chunkIndex)', app_js)
-        self.assertIn('dataset.sourceChunkId = String(sourceChunkId)', app_js)
-        self.assertIn('source_chunk_id=${sourceChunkId}', app_js)
-        self.assertIn('scrollIntoView({behavior: "smooth", block: "center"})', app_js)
+        for view in ("inventory", "promotions", "logistics"):
+            self.assertIn(f'data-commerce-view="{view}"', index_html)
+        self.assertIn("const DECISION_DOMAIN_QUESTIONS = {", app_js)
+        self.assertIn("function renderDecisionDomainQuestions(domain)", app_js)
 
     def test_historical_factory_and_workforce_indicators_are_domain_signals(self):
         factory_chunk = {

@@ -108,9 +108,6 @@
       <button id="tab-button-ocr-lab" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-ocr-lab" data-tab-target="ocr-lab" hidden>
         OCR Lab
       </button>
-      <button id="tab-button-metrics" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-metrics" data-tab-target="metrics" hidden>
-        Metric Management
-      </button>
       <button id="tab-button-knowledge-management" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-knowledge-management" data-tab-target="knowledge-management" hidden>
         Knowledge Management
       </button>
@@ -269,90 +266,6 @@
           </section>
         </section>
 
-        <div class="analytics-subtabs" role="tablist" aria-label="Analytics views">
-          <button id="analytics-tab-financial" class="analytics-subtab active" type="button" role="tab"
-            aria-selected="true" aria-controls="analytics-panel-financial" data-analytics-tab="financial">Financial Results &amp; YoY Variance</button>
-          <button id="analytics-tab-business" class="analytics-subtab" type="button" role="tab"
-            aria-selected="false" aria-controls="analytics-panel-business" data-analytics-tab="business" tabindex="-1">Markets, Operations &amp; Sustainability</button>
-        </div>
-
-        <div id="analytics-panel-financial" class="analytics-subpanel" role="tabpanel" aria-labelledby="analytics-tab-financial">
-
-        <section class="analysis-section" aria-labelledby="financial-title">
-          <div class="analysis-section-heading">
-            <div>
-              <p class="eyebrow">VERIFIED FINANCIAL PERFORMANCE</p>
-              <h3 id="financial-title">Financial Results &amp; Year-over-Year Variance</h3>
-            </div>
-            <span class="badge-verified-only">Admin verified only</span>
-          </div>
-          <div id="financial-kpis" class="financial-kpis"></div>
-          <div id="financial-insights" class="financial-insights" aria-live="polite"></div>
-          <div id="financial-trends" class="financial-trends"></div>
-        </section>
-
-        <section class="analysis-section" aria-labelledby="segment-margin-title">
-          <div class="analysis-section-heading">
-            <div>
-              <p class="eyebrow">DERIVED FROM VERIFIED OBSERVATIONS</p>
-              <h3 id="segment-margin-title">Gross margin by customer geography</h3>
-            </div>
-            <span>Gross profit ÷ net revenue · before selling and administration costs</span>
-          </div>
-          <div id="segment-gross-margin-kpis" class="financial-kpis"></div>
-        </section>
-
-        </div>
-
-        <div id="analytics-panel-business" class="analytics-subpanel" role="tabpanel" aria-labelledby="analytics-tab-business" hidden>
-
-        <section class="analysis-section" aria-labelledby="milk-supply-title">
-          <div class="analysis-section-heading">
-            <div>
-              <p class="eyebrow">VERIFIED BUSINESS DECISION DOMAINS</p>
-              <h3 id="business-metric-title">Business performance by decision domain</h3>
-            </div>
-            <div class="analytics-tools">
-              <select id="analytics-domain" hidden aria-hidden="true"></select>
-              <label id="business-metric-scope-control">Business metrics:
-                <select id="analytics-metric-scope" aria-label="Choose primary or all verified business metrics">
-                  <option value="primary">Primary decision KPIs</option>
-                  <option value="all">All verified metrics</option>
-                </select>
-              </label>
-            </div>
-          </div>
-          <div id="market-performance-dashboard" class="market-performance-dashboard" hidden>
-            <section class="market-dashboard-section" aria-labelledby="market-core-title">
-              <div class="market-section-heading"><div><p class="eyebrow">CORE PERFORMANCE</p><h4 id="market-core-title">Domestic vs overseas performance</h4></div><p>Scale, growth and segment profitability; only comparable observations enter a chart.</p></div>
-              <div id="market-core-cards" class="market-kpi-grid"></div>
-              <div class="market-chart-grid">
-                <article class="market-chart-card"><h5>Revenue trend</h5><p>Domestic and overseas net revenue · verified fiscal years</p><div id="market-revenue-trend"></div></article>
-                <article class="market-chart-card"><h5>Revenue growth</h5><p>Source-reported year-over-year growth</p><div id="market-revenue-growth"></div></article>
-                <article class="market-chart-card market-chart-wide"><h5>Segment gross margin</h5><p>Derived only when gross profit and revenue match in year, scope, period, unit and exact-value status</p><div id="market-profitability"></div></article>
-              </div>
-            </section>
-            <section class="market-dashboard-section" aria-labelledby="market-international-title">
-              <div class="market-section-heading"><div><p class="eyebrow">INTERNATIONAL GROWTH</p><h4 id="market-international-title">Channels and selected market signals</h4></div><p>Channel totals, shipping and disclosed market-level signals stay distinct from overseas-market revenue.</p></div>
-              <div id="market-channel-cards" class="market-kpi-grid"></div>
-              <article class="market-chart-card"><h5>Export net revenue vs overseas subsidiaries</h5><p>Compare only shared fiscal years; commercial export revenue remains a separately defined measure above.</p><div id="market-channel-trend"></div></article>
-              <div id="market-market-highlights" class="market-highlights"></div>
-            </section>
-            <section class="market-dashboard-section" aria-labelledby="market-footprint-title">
-              <div class="market-section-heading"><div><p class="eyebrow">DISTRIBUTION AND REACH</p><h4 id="market-footprint-title">Market footprint</h4></div><p>Context indicators are shown as source-backed cards, not time-series charts.</p></div>
-              <div id="market-footprint" class="market-kpi-grid"></div>
-            </section>
-            <details class="market-glossary"><summary>Metric definitions and reporting boundaries</summary><div id="market-glossary-content"></div></details>
-          </div>
-          <div id="business-metric-gallery">
-            <div id="business-metric-kpis" class="financial-kpis"></div>
-            <div id="business-metric-trends" class="financial-trends"></div>
-            <p id="business-metric-note" class="analysis-caveat">Report figures describe public annual snapshots. They do not include live purchase price, quality, rejection, factory demand or regional data.</p>
-          </div>
-        </section>
-
-        </div>
-
         <section class="analysis-section" aria-labelledby="operations-title">
           <div class="analysis-section-heading">
             <div>
@@ -506,51 +419,6 @@
       </section>
     </section>
 
-    <section id="tab-metrics" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-metrics" hidden>
-      <section id="metric-management-section" class="candidate-review" hidden>
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">CANONICAL KPI CATALOG</p>
-            <h2>Enter a missing financial metric</h2>
-          </div>
-        </div>
-        <p>Choose a canonical metric, record its reporting period and source context. Manual entries stay pending until verified by an admin.</p>
-        <div id="metric-definition" class="analysis-summary" aria-live="polite"></div>
-        <form id="manual-metric-form" class="upload-form">
-          <label for="manual-metric-name">Metric</label>
-          <select id="manual-metric-name" name="metric_name" required></select>
-          <label for="manual-metric-year">Fiscal year</label>
-          <input id="manual-metric-year" name="fiscal_year" type="number" min="1900" max="2100" required>
-          <label for="manual-metric-value">Reported value</label>
-          <input id="manual-metric-value" name="metric_value" type="text" inputmode="decimal" pattern="[+-]?[0-9.,]+" required placeholder="e.g. 59.723 or 59.723,5">
-          <label for="manual-metric-unit">Unit</label>
-          <input id="manual-metric-unit" name="unit" maxlength="40" required placeholder="billion VND">
-          <label for="manual-metric-reference">Source reference (URL or publication/page)</label>
-          <input id="manual-metric-reference" name="source_reference" maxlength="1000" placeholder="e.g. audited FY2024 statement, page 8">
-          <label for="manual-metric-note">Verification context</label>
-          <textarea id="manual-metric-note" name="source_note" minlength="12" maxlength="2000" required placeholder="Where did this number come from, and what entity/reporting basis does it describe?"></textarea>
-          <fieldset>
-            <legend>Roles allowed to view this metric</legend>
-            <div id="manual-metric-role-options" class="upload-role-options"></div>
-          </fieldset>
-          <button id="manual-metric-button" type="submit" class="primary-button">Save for admin verification</button>
-          <p id="manual-metric-status" class="corpus-note" aria-live="polite"></p>
-        </form>
-      </section>
-      <section id="candidate-review" class="candidate-review" hidden>
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">ADMINISTRATIVE REVIEW</p>
-            <h2>Metric entries awaiting verification</h2>
-          </div>
-        </div>
-        <p>Check the source evidence and reporting basis. Only verified values appear in Business Analysis.</p>
-        <label for="candidate-domain-filter">Domain</label>
-        <select id="candidate-domain-filter"><option value="all">All domains</option></select>
-        <div id="candidate-list"></div>
-      </section>
-    </section>
-
     <!-- TAB 4: ACCESS / RBAC -->
     <section id="tab-access" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-access" hidden>
       <section id="admin-section" class="admin-section" hidden>
@@ -599,6 +467,6 @@
       </section>
     </section>
   </main>
-  <script src="/static/app.js?v=commerce-answer-tables-1" defer></script>
+  <script src="/static/app.js?v=commerce-only-ui-1" defer></script>
 </body>
 </html>

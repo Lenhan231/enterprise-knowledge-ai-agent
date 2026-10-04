@@ -1126,6 +1126,43 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
             metrics = [key for key, enabled in (("avg_transit_days", transit or not fee),
                                                  ("avg_shipping_fee", fee),
                                                  ("median_transit_days", "median" in question.casefold() or "trung vị" in question.casefold())) if enabled]
+            # For a multi-year question, summarize endpoints per region instead of
+            # dumping every annual row. Keep this descriptive; the aggregates do
+            # not explain what caused a change.
+            if asks_trend and len({row.get("year") for row in rows}) > 1:
+                by_region: dict[str, list[dict]] = {}
+                for row in rows:
+                    if row.get("region") and isinstance(row.get("year"), int):
+                        by_region.setdefault(str(row["region"]), []).append(row)
+                trend_lines = []
+                metric_labels = {
+                    "avg_transit_days": "thời gian vận chuyển trung bình (ngày)",
+                    "avg_shipping_fee": "phí giao hàng trung bình",
+                    "median_transit_days": "trung vị thời gian vận chuyển (ngày)",
+                }
+                for region, yearly_rows in sorted(by_region.items()):
+                    yearly_rows.sort(key=lambda row: row["year"])
+                    first, last = yearly_rows[0], yearly_rows[-1]
+                    changes = []
+                    for metric in metrics:
+                        start, end = first.get(metric), last.get(metric)
+                        if isinstance(start, (int, float)) and isinstance(end, (int, float)):
+                            delta = end - start
+                            label = metric_labels.get(metric, metric) if _is_vietnamese_text(question) else metric
+                            changes.append(
+                                f"{label}: FY{first['year']} {start:g} → FY{last['year']} {end:g} "
+                                f"(thay đổi {delta:+g})" if _is_vietnamese_text(question) else
+                                f"{label}: FY{first['year']} {start:g} → FY{last['year']} {end:g} "
+                                f"(change {delta:+g})"
+                            )
+                    if changes:
+                        trend_lines.append(f"{region}: " + "; ".join(changes))
+                if trend_lines:
+                    if _is_vietnamese_text(question):
+                        return ("So sánh mô tả đầu-cuối theo vùng: " + "; ".join(trend_lines)
+                                + f". Chênh lệch này không cho biết nguyên nhân. [{citation}]\n")
+                    return ("Descriptive endpoint comparison by region: " + "; ".join(trend_lines)
+                            + f". These differences do not establish a cause. [{citation}]\n")
             details = "; ".join(
                 f"FY{row.get('year')} {row.get('region')}: " + ", ".join(f"{metric}={row[metric]}" for metric in metrics if row.get(metric) is not None)
                 for row in rows if any(row.get(metric) is not None for metric in metrics)

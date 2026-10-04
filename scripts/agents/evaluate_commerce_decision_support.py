@@ -29,11 +29,16 @@ MANIFEST = ROOT / "data/commerce_knowledge/manifest.json"
 DEFAULT_OUTPUT = ROOT / "artifacts/evaluation/commerce-decision-support-live.json"
 _NUMBER_TOKEN = re.compile(r"(?<!\d)\d+(?:[.,\u00a0\u202f]\d+)*(?!\d)")
 _GOLD_FIELD_ALIASES = {
-    "snapshots": ("sku_snapshots",),
+    "snapshots": ("sku_snapshots", "snapshot_count", "total_snapshots"),
+    "stockout_snapshots": ("stockout_count", "stockout_products"),
+    "overstock_snapshots": ("overstock_count", "overstock_products"),
     "overstock_products": ("overstock_count",),
     "stockout_products": ("stockout_count",),
     "tagged": ("used_promotion",),
     "campaign": ("promo_name",),
+    "units": ("total_quantity", "quantity"),
+    "discounts": ("total_discount",),
+    "net_sales": ("net_item_sales",),
     "net_item_sales": ("net_sales",),
     "avg_days": ("avg_transit_days", "avg_transit_time_days"),
     "avg_transit_days": ("avg_transit_time_days", "avg_days"),

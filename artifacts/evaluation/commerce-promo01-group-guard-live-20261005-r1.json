@@ -1,0 +1,335 @@
+{
+  "benchmark_id": "commerce-decision-support-discovery-v1",
+  "dataset": "Synthetic Kaggle Datathon 2026 Round 1 Commerce dataset",
+  "created_at_utc": "2026-10-04T20:42:25.616409+00:00",
+  "route": "POST /api/ask",
+  "principal_role": "admin",
+  "benchmark_sha256": "2747832c748e13a3b19d1cd171cc04a23a66ad921578cfe08fc4c9bd9cd3c73f",
+  "manifest_sha256": "4e60f17261f7812085c427dbd491e4b5f0dd30470808ce53a1279d8bdcf0aa3c",
+  "manifest_corpus_id": "commerce-operations-reference-v1",
+  "case_count": 1,
+  "attempted_count": 1,
+  "unrun_case_ids": [],
+  "stop_reason": null,
+  "mechanically_passed": 0,
+  "failed": 1,
+  "citation_domain_checks_passed": 0,
+  "question_specific_sql_passed": 1,
+  "question_sql_fallback_reasons": {
+    "none": 1
+  },
+  "gold_numeric_coverage_passed": 1,
+  "gold_numeric_coverage_applicable": 1,
+  "gold_observation_coverage_passed": 0,
+  "gold_observation_coverage_applicable": 1,
+  "semantic_review_required": true,
+  "limitations": [
+    "Structured gold-observation checks verify that expected dimension/value groups occur together in cited SQL rows. This does not verify that the final answer associates each row correctly, causal interpretation, qualitative claims, or recommendation quality.",
+    "Review each answer against gold_observations and expected_behavior before reporting semantic benchmark scores.",
+    "Commerce observations and synthetic policy rules are demo-only, not facts or policies of a real retailer."
+  ],
+  "results": [
+    {
+      "case_id": "PROMO-01",
+      "domain": "promotion_planning",
+      "question": "Trong 2020–2022, so sánh theo từng năm nhóm đơn delivered có gắn khuyến mãi và không gắn tag về số đơn đã giao, số lượng sản phẩm, doanh thu thuần và tổng giảm giá. Các quan sát này có chứng minh uplift để tăng ngân sách không?",
+      "decision_analysis": "commerce_sql_and_operating_references",
+      "citation_validation_failed": false,
+      "passed": false,
+      "checks": {
+        "citation_integrity": true,
+        "citation_validation": true,
+        "domain_sql_evidence": true,
+        "question_specific_sql_available": true,
+        "question_specific_sql_requirement_met": true,
+        "sql_dataset_provenance": true,
+        "document_source_locations": true,
+        "document_scope_attribution": true,
+        "operating_reference_present": true,
+        "required_gold_numeric_facts_present": true,
+        "gold_observation_rows_present_in_cited_sql": false
+      },
+      "citation_domain_checks_passed": false,
+      "question_specific_sql_passed": true,
+      "gold_numeric_coverage_passed": true,
+      "gold_numeric_coverage_applicable": true,
+      "missing_gold_numeric_facts": [],
+      "gold_observation_coverage_passed": false,
+      "gold_observation_coverage_applicable": true,
+      "missing_gold_observation_rows": [
+        {
+          "year": 2020,
+          "tagged": true,
+          "delivered_orders": 10305,
+          "units": 49756,
+          "net_sales": 235597280.59,
+          "discounts": 39488236.4
+        },
+        {
+          "year": 2020,
+          "tagged": false,
+          "delivered_orders": 17670,
+          "units": 84029,
+          "net_sales": 570817418.55,
+          "discounts": 0.0
+        },
+        {
+          "year": 2021,
+          "tagged": true,
+          "delivered_orders": 11824,
+          "units": 56795,
+          "net_sales": 272380807.8,
+          "discounts": 39846428.26
+        },
+        {
+          "year": 2021,
+          "tagged": false,
+          "delivered_orders": 14928,
+          "units": 70747,
+          "net_sales": 493703251.83,
+          "discounts": 0.0
+        },
+        {
+          "year": 2022,
+          "tagged": true,
+          "delivered_orders": 10173,
+          "units": 48768,
+          "net_sales": 245344841.2,
+          "discounts": 41728464.79
+        },
+        {
+          "year": 2022,
+          "tagged": false,
+          "delivered_orders": 17515,
+          "units": 82665,
+          "net_sales": 615242495.15,
+          "discounts": 0.0
+        }
+      ],
+      "citations": [
+        {
+          "id": "C1",
+          "company": "Commerce Demo",
+          "title": "Commerce SQL aggregate: Promotion planning",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "source_url": null,
+          "excerpt": "question_specific_query question-specific SQL observations: [{\"delivered_orders\": 17670, \"net_sales\": \"570817418.55\", \"total_discount\": \"0.0\", \"total_quantity\": 84029, \"used_promotion\": false, \"year\": \"2020\"}, {\"delivered_orders\": 10305, \"net_sales\": \"235597280.59\", \"total_discount\": \"39488236.40\", \"total_quantity\": 49756, \"used_promotion\": true, \"year\": \"2020\"}, {\"delivered_orders\": 14928, \"net_sales\": \"493703251.83\", \"total_discount\": \"0.0\", \"total_quantity\": 70747, \"used_promotion\": false, \"year\": \"2021\"}, {\"delivered_orders\": 11824, \"net_sales\": \"272380807.80\", \"total_discount\": \"39846428.26\", \"total_quantity\": 56795, \"used_promotion\": true, \"year\": \"2021\"}, {\"delivered_orders\": 17515, \"",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_sql",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "promotion_planning",
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": "question_specific_query",
+          "commerce_observations": [
+            {
+              "year": 2020,
+              "used_promotion": false,
+              "delivered_orders": 17670,
+              "total_quantity": 84029,
+              "net_sales": 570817418.55,
+              "total_discount": 0.0
+            },
+            {
+              "year": 2020,
+              "used_promotion": true,
+              "delivered_orders": 10305,
+              "total_quantity": 49756,
+              "net_sales": 235597280.59,
+              "total_discount": 39488236.4
+            },
+            {
+              "year": 2021,
+              "used_promotion": false,
+              "delivered_orders": 14928,
+              "total_quantity": 70747,
+              "net_sales": 493703251.83,
+              "total_discount": 0.0
+            },
+            {
+              "year": 2021,
+              "used_promotion": true,
+              "delivered_orders": 11824,
+              "total_quantity": 56795,
+              "net_sales": 272380807.8,
+              "total_discount": 39846428.26
+            },
+            {
+              "year": 2022,
+              "used_promotion": false,
+              "delivered_orders": 17515,
+              "total_quantity": 82665,
+              "net_sales": 615242495.15,
+              "total_discount": 0.0
+            },
+            {
+              "year": 2022,
+              "used_promotion": true,
+              "delivered_orders": 10173,
+              "total_quantity": 48768,
+              "net_sales": 245344841.2,
+              "total_discount": 41728464.79
+            }
+          ],
+          "source_tables": [
+            "commerce.orders",
+            "commerce.order_items"
+          ],
+          "sql_query": "SELECT EXTRACT(YEAR FROM o.order_date) AS year, (oi.promo_id IS NOT NULL OR oi.promo_id_2 IS NOT NULL) AS used_promotion, COUNT(DISTINCT o.order_id) AS delivered_orders, SUM(oi.quantity) AS total_quantity, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_sales, SUM(oi.discount_amount) AS total_discount FROM commerce.orders AS o INNER JOIN commerce.order_items AS oi ON oi.order_id = o.order_id WHERE o.order_status = 'delivered' AND o.order_date BETWEEN '2020-01-01' AND '2022-12-31' GROUP BY EXTRACT(YEAR FROM o.order_date), (oi.promo_id IS NOT NULL OR oi.promo_id_2 IS NOT NULL) LIMIT 100",
+          "sql_generation_provider": "huggingface_inference",
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        },
+        {
+          "id": "L1",
+          "company": "Commerce Demo",
+          "title": "Commerce schema/data coverage: Promotion planning",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "source_url": null,
+          "excerpt": "Promotion-tagged and untagged orders are descriptive groups, not a causal uplift estimate; the dataset has no randomized holdout.",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_schema",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "promotion_planning",
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": null,
+          "commerce_observations": null,
+          "source_tables": [
+            "commerce.orders",
+            "commerce.order_items"
+          ],
+          "sql_query": null,
+          "sql_generation_provider": null,
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        },
+        {
+          "id": "L2",
+          "company": "Commerce Demo",
+          "title": "Commerce schema/data coverage: Promotion planning",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "source_url": null,
+          "excerpt": "Product-level catalog COGS supports a merchandise gross-profit/margin proxy from order-item prices and discounts, but this is not contribution margin. Campaign spend, campaign-attributed traffic, and a customer-level counterfactual are absent, so ROI and incremental profitability cannot be established.",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_schema",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "promotion_planning",
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": null,
+          "commerce_observations": null,
+          "source_tables": [
+            "commerce.orders",
+            "commerce.order_items"
+          ],
+          "sql_query": null,
+          "sql_generation_provider": null,
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        },
+        {
+          "id": "L3",
+          "company": "Commerce Demo",
+          "title": "Commerce schema/data coverage: Promotion planning",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "source_url": null,
+          "excerpt": "Campaign-window net item sales attribute tagged line items to each promotion's declared dates; a line item with two different promotion IDs can be counted in both campaigns.",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_schema",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "promotion_planning",
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": null,
+          "commerce_observations": null,
+          "source_tables": [
+            "commerce.orders",
+            "commerce.order_items"
+          ],
+          "sql_query": null,
+          "sql_generation_provider": null,
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        },
+        {
+          "id": "S1",
+          "company": "Commerce Demo",
+          "title": "Chính sách giả lập: Đánh giá và lập kế hoạch khuyến mãi",
+          "source_publisher": "Commerce Demo (fictional organization)",
+          "evidence_class": "company_policy_reference",
+          "reference_applicability": "Fictional Commerce Demo promotion scenario only. Explicitly synthetic; not an issued policy of a real retailer.",
+          "document_id": "CD-POL-PROMO-001",
+          "chunk_index": 1,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": 2,
+          "source_url": null,
+          "excerpt": "| SYNTHETIC DEMO POLICY - NOT A REAL COMPANY POLICY COMMERCE DEMO / CD-POL-PROMO-001 Chính sách giả lập: Đánh giá và lập kế hoạch khuyến mãi Điều kiện ngân sách và bảo vệ kết luận Điều kiện trước khi mở rộng ngân sách Có ước lượng incrementality từ thiết kế đo lường phù hợp, không chỉ so sánh doanh số của đơn có/không có tag. Có chỉ phí campaign, discount funding, giá vốn và contribution margin theo cùng phạm vi để đánh giá hiệu quả lợi nhuận. Có kiểm tra tính day đủ dữ liệu, thời gian đo, khả năng nhiễm chéo giữa nhóm và độ bất dinh của kết quả. Không được suy diễn . Không gọi chênh lệch tagged/untagged là uplift hoặc tác động nhân qua. Không dùng ROAS thay ROI hoặc lợi nhuận tăng thêm; khô",
+          "score": 0.0469639468690702,
+          "retrieval_method": "hybrid",
+          "source_type": "document",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": null,
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": null,
+          "commerce_observations": null,
+          "source_tables": null,
+          "sql_query": null,
+          "sql_generation_provider": null,
+          "dataset_note": null
+        }
+      ],
+      "question_specific_sql_used": true,
+      "sql_generation_provider": "huggingface_inference",
+      "question_sql_fallback": null,
+      "answer_generation_provider": "deterministic_safety_fallback",
+      "token_usage": {
+        "sql_generation": {
+          "input_tokens": 1928,
+          "output_tokens": 567,
+          "total_tokens": 2495
+        },
+        "answer_generation": null,
+        "total": {
+          "input_tokens": 1928,
+          "output_tokens": 567,
+          "total_tokens": 2495
+        }
+      },
+      "answer": "Quan sát SQL theo câu hỏi:\n| Đơn đã giao | Doanh thu thuần | Total Discount | Total Quantity | Used Promotion | Năm |\n| --- | --- | --- | --- | --- | --- |\n| 17670 | 570817418.55 | 0.0 | 84029 | Không | 2020 |\n| 10305 | 235597280.59 | 39488236.40 | 49756 | Có | 2020 |\n| 14928 | 493703251.83 | 0.0 | 70747 | Không | 2021 |\n| 11824 | 272380807.80 | 39846428.26 | 56795 | Có | 2021 |\n| 17515 | 615242495.15 | 0.0 | 82665 | Không | 2022 |\n| 10173 | 245344841.20 | 41728464.79 | 48768 | Có | 2022 |\n [C1]. Khuyến nghị: Chưa mở rộng chiến dịch chỉ từ doanh số hoặc đơn hàng quan sát được; dữ liệu hiện có không cho biết phần kết quả tăng thêm có thể quy cho chiến dịch. Trước tiên, dùng thử nghiệm treatment/control hoặc holdout để ước lượng doanh số tăng thêm; sau đó cần chi phí campaign, mức giảm giá, tồn kho và mua lại để đánh giá phần đóng góp lợi nhuận tăng thêm. [L1][L2][L3][C1]\nPolicy giả lập Commerce Demo đã được truy xuất; xem nguồn để đối chiếu nội dung OCR. Chỉ áp dụng cho kịch bản dữ liệu giả lập này, không phải chính sách của doanh nghiệp thật. [S1]",
+      "semantic_review_required": true,
+      "http_status": 200,
+      "latency_seconds": 27.59
+    }
+  ]
+}

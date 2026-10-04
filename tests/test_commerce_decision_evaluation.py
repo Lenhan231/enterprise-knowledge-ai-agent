@@ -146,9 +146,9 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
     def test_gold_observation_evaluator_accepts_schema_aliases_and_campaign_year_label(self):
         inventory_case = next(case for case in self.cases if case["id"] == "INV-02")
         inventory_rows = [
-            {"year": 2020, "sku_snapshots": 5686, "stockout_snapshots": 3795, "avg_fill_rate": 0.9656},
-            {"year": 2021, "sku_snapshots": 5609, "stockout_snapshots": 3788, "avg_fill_rate": 0.9619},
-            {"year": 2022, "sku_snapshots": 5232, "stockout_snapshots": 3490, "avg_fill_rate": 0.9635},
+            {"year": 2020, "total_snapshots": 5686, "stockout_snapshots": 3795, "avg_fill_rate": 0.9656},
+            {"year": 2021, "total_snapshots": 5609, "stockout_snapshots": 3788, "avg_fill_rate": 0.9619},
+            {"year": 2022, "total_snapshots": 5232, "stockout_snapshots": 3490, "avg_fill_rate": 0.9635},
         ]
         self.assertEqual(missing_gold_observations(inventory_case, [{
             "source_type": "commerce_sql", "commerce_observations": inventory_rows,
@@ -163,6 +163,27 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
         self.assertEqual(missing_gold_observations(promotion_case, [{
             "source_type": "commerce_sql", "commerce_observations": promotion_rows,
         }]), [])
+
+    def test_promo01_accepts_generated_measure_aliases_without_losing_grouping(self):
+        case = next(case for case in self.cases if case["id"] == "PROMO-01")
+        rows = [
+            {"year": year, "used_promotion": used, "delivered_orders": orders,
+             "total_quantity": units, "net_sales": sales, "total_discount": discounts}
+            for year, used, orders, units, sales, discounts in [
+                (2020, False, 17670, 84029, 570817418.55, 0.0),
+                (2020, True, 10305, 49756, 235597280.59, 39488236.40),
+                (2021, False, 14928, 70747, 493703251.83, 0.0),
+                (2021, True, 11824, 56795, 272380807.80, 39846428.26),
+                (2022, False, 17515, 82665, 615242495.15, 0.0),
+                (2022, True, 10173, 48768, 245344841.20, 41728464.79),
+            ]
+        ]
+
+        missing = missing_gold_observations(case, [{
+            "source_type": "commerce_sql", "commerce_observations": rows,
+        }])
+
+        self.assertEqual(missing, [])
 
     def test_schema_gap_gold_observations_do_not_require_sql_rows(self):
         case = next(case for case in self.cases if case["id"] == "INV-03")

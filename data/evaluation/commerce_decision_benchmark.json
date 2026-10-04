@@ -27,7 +27,7 @@
         {
           "id": "INV-02",
           "requires_operating_reference": true,
-          "question": "Tình trạng availability thay đổi thế nào trong ba năm 2020–2022, và có thể đặt service target mới từ các quan sát này không?",
+          "question": "Trong từng năm 2020–2022, tổng số snapshot tồn kho, số snapshot có cờ stockout và fill rate trung bình thay đổi thế nào; có thể đặt service target mới từ các quan sát này không?",
           "gold_observations": [
             {"year": 2020, "snapshots": 5686, "stockout_snapshots": 3795, "avg_fill_rate": 0.9656},
             {"year": 2021, "snapshots": 5609, "stockout_snapshots": 3788, "avg_fill_rate": 0.9619},

@@ -86,6 +86,8 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         self.assertEqual(result["sql_generation_usage"], llm.last_usage)
         self.assertIn("Which product groups are moving fastest", llm.generate.call_args.args[0])
         self.assertIn("Select an aggregate for every measure explicitly requested", llm.generate.call_args.args[0])
+        self.assertIn("preserve every requested group", llm.generate.call_args.args[0])
+        self.assertIn("COUNT(*) as its own measure", llm.generate.call_args.args[0])
         self.assertIn("no CTEs, nested queries, scalar subqueries", llm.generate.call_args.args[0])
         self.assertIn("database's latest snapshot date", llm.generate.call_args.args[0])
         repository.execute_commerce_analytics.assert_called_once()

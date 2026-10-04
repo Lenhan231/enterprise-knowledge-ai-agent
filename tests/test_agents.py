@@ -902,6 +902,14 @@ class AgentFlowTest(unittest.TestCase):
             ),
             [],
         )
+        self.assertEqual(
+            _rank_commerce_reference_evidence(
+                [shopee_inventory],
+                "What evidence should be checked before inventory transfer?",
+                "inventory_allocation", 3,
+            ),
+            [],
+        )
         named_inventory = _rank_commerce_reference_evidence(
             [shopee_inventory], "For Shopee, how should we review stockouts?", "inventory_allocation", 3,
         )

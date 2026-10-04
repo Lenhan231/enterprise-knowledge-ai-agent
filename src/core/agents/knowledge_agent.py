@@ -110,10 +110,9 @@ def _rank_commerce_reference_evidence(
             continue
         if evidence_class == "platform_operating_rule":
             issuer = str(metadata.get("source_publisher") or "").casefold()
-            document = str(context.get("document_name") or "").casefold()
             generic_terms = {"shop", "seller", "university", "help", "center", "marketplace", "vietnam", "education", "hub"}
             issuer_terms = {
-                term for term in re.findall(r"[a-z0-9]+", f"{issuer} {document}")
+                term for term in re.findall(r"[a-z0-9]+", issuer)
                 if len(term) > 3 and term not in generic_terms
             }
             if not issuer_terms.intersection(set(re.findall(r"[a-z0-9]+", question_text))):

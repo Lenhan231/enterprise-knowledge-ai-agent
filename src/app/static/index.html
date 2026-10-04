@@ -459,17 +459,6 @@
           <input id="parsed-offset" type="number" min="0" value="0">
           <button type="submit" class="secondary-button">Load parsed passages</button>
         </form>
-        <h3 class="subheading-margin">Business metric extraction history</h3>
-        <form id="business-metric-replay-form" class="review-form">
-          <label for="business-metric-replay-domain">Decision domain</label>
-          <select id="business-metric-replay-domain" name="decision_domain" required></select>
-          <label for="business-metric-replay-metric">Metric to extract</label>
-          <select id="business-metric-replay-metric" name="metric_name" required></select>
-          <button id="business-metric-replay-button" type="submit" class="secondary-button">Re-run on saved parser chunks</button>
-          <p id="business-metric-replay-status" class="corpus-note" aria-live="polite">Reuses saved PDF parser chunks; does not rerun OCR or embeddings.</p>
-        </form>
-        <p>Each run records which parsed chunks were checked, skipped, or produced review candidates, with the selector signals and model/prompt versions.</p>
-        <div id="business-metric-extraction-runs"></div>
         <div id="parsed-chunk-list"></div>
         <h3 class="subheading-margin">Extracted structured tables</h3>
         <div id="parsed-table-list"></div>
@@ -546,44 +535,6 @@
           </fieldset>
           <button id="manual-metric-button" type="submit" class="primary-button">Save for admin verification</button>
           <p id="manual-metric-status" class="corpus-note" aria-live="polite"></p>
-        </form>
-      </section>
-      <section id="business-metric-management-section" class="candidate-review" hidden>
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">SOURCE-BACKED OPERATIONS METRICS</p>
-            <h2>Add a source-backed business metric</h2>
-          </div>
-        </div>
-        <p>Enter a report observation with its exact page, quote, scope and public source. It remains pending until an admin verifies it.</p>
-        <div id="business-metric-definition" class="analysis-summary" aria-live="polite"></div>
-        <form id="business-metric-form" class="upload-form">
-          <label for="business-metric-entry-domain">Domain</label>
-          <select id="business-metric-entry-domain" required></select>
-          <label for="business-metric-name">Metric</label>
-          <select id="business-metric-name" name="metric_name" required></select>
-          <label for="business-metric-year">Fiscal year</label>
-          <input id="business-metric-year" name="fiscal_year" type="number" min="1900" max="2100" required>
-          <label for="business-metric-value">Proposed value</label>
-          <input id="business-metric-value" name="metric_value" type="text" inputmode="decimal" pattern="[+-]?[0-9.,]+" required placeholder="e.g. 239254">
-          <label for="business-metric-unit">Unit</label>
-          <input id="business-metric-unit" name="unit" maxlength="40" required placeholder="tonnes">
-          <label for="business-metric-scope">Reporting scope / qualifiers</label>
-          <input id="business-metric-scope" name="scope" minlength="8" maxlength="500" required placeholder="Group; farmer purchases; approximate or exact">
-          <label for="business-metric-document">Source document ID</label>
-          <input id="business-metric-document" name="source_document_id" minlength="3" maxlength="120" required placeholder="VNM-SR-2025-EN">
-          <label for="business-metric-page">PDF page number (physical page)</label>
-          <input id="business-metric-page" name="page_number" type="number" min="1" max="10000" required>
-          <label for="business-metric-quote">Exact source quote</label>
-          <textarea id="business-metric-quote" name="source_quote" minlength="12" maxlength="3000" required></textarea>
-          <label for="business-metric-url">Official source URL (HTTPS)</label>
-          <input id="business-metric-url" name="source_url" type="url" pattern="https://.*" maxlength="1000" required>
-          <fieldset>
-            <legend>Roles allowed to view this metric</legend>
-            <div id="business-metric-role-options" class="upload-role-options"></div>
-          </fieldset>
-          <button id="business-metric-button" type="submit" class="primary-button">Save for admin verification</button>
-          <p id="business-metric-status" class="corpus-note" aria-live="polite"></p>
         </form>
       </section>
       <section id="candidate-review" class="candidate-review" hidden>

@@ -97,7 +97,6 @@ document.querySelector(".analytics-subtabs").addEventListener("keydown", (event)
 });
 
 function syncWorkspaceTabs(user = currentUser) {
-  const isAdmin = user?.role === "admin";
   const isTester = user?.role === "tester";
   const canViewAnalytics = ["operations", "finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user?.role);
   const canUpload = ["document_uploader", "admin"].includes(user?.role);
@@ -106,7 +105,9 @@ function syncWorkspaceTabs(user = currentUser) {
     analytics: canViewAnalytics,
     processing: canUpload,
     "ocr-lab": isTester || isAdmin,
-    metrics: isAdmin,
+    // Commerce dashboards are sourced from the commerce schema; the legacy
+    // public-company KPI workflow is not part of this demo workspace.
+    metrics: false,
     "knowledge-management": isAdmin,
     access: isAdmin,
     monitoring: isAdmin,
@@ -229,53 +230,6 @@ function renderMetricCatalog(metrics) {
   showDefinition();
 }
 
-function renderBusinessMetricCatalog(metrics) {
-  businessMetricDefinitions = new Map(metrics.map((metric) => [metric.metric_name, metric]));
-  const domains = [...new Set(metrics.map((metric) => metric.domain).filter(Boolean))].sort();
-  const domainLabel = (domain) => metrics.find((metric) => metric.domain === domain)?.decision_profile_label
-    || domain.replaceAll("_", " ");
-  const populateDomains = (select, placeholder = "Choose a domain") => {
-    select.innerHTML = `<option value="">${placeholder}</option>` + domains.map((domain) =>
-      `<option value="${escapeHtml(domain)}">${escapeHtml(domainLabel(domain))}</option>`
-    ).join("");
-  };
-  const entryDomain = $("#business-metric-entry-domain");
-  const entryMetric = $("#business-metric-name");
-  populateDomains(entryDomain);
-  const updateEntryMetrics = () => {
-    const matching = metrics.filter((metric) => metric.domain === entryDomain.value);
-    entryMetric.innerHTML = matching.map((metric) =>
-      `<option value="${escapeHtml(metric.metric_name)}">${escapeHtml(metric.label)}</option>`
-    ).join("");
-    update();
-  };
-  const update = () => {
-    const metric = metrics.find((item) => item.metric_name === entryMetric.value);
-    $("#business-metric-definition").innerHTML = metric
-      ? `<article class="analysis-stat"><span>${escapeHtml(domainLabel(metric.domain))}</span><strong>${escapeHtml(metric.definition)}</strong><small>Typical unit: ${escapeHtml(metric.unit_guidance)}</small></article>`
-      : "";
-    const unit = $("#business-metric-unit");
-    if (metric) unit.placeholder = metric.unit_guidance;
-  };
-  entryDomain.onchange = updateEntryMetrics;
-  entryMetric.onchange = update;
-  updateEntryMetrics();
-
-  const replayDomain = $("#business-metric-replay-domain");
-  const replayMetric = $("#business-metric-replay-metric");
-  populateDomains(replayDomain);
-  const updateReplayMetrics = () => {
-    const matching = metrics.filter((metric) => metric.domain === replayDomain.value
-      && metric.decision_priority === "primary");
-    replayMetric.innerHTML = matching.map((metric) =>
-      `<option value="${escapeHtml(metric.metric_name)}">${escapeHtml(metric.label)}</option>`
-    ).join("");
-    replayMetric.disabled = matching.length === 0;
-  };
-  replayDomain.onchange = updateReplayMetrics;
-  updateReplayMetrics();
-}
-
 function renderParsedChunks(chunks, documentId) {
   $("#parsed-chunk-list").innerHTML = chunks.map((chunk) => {
     const pageNumber = chunk.metadata?.page_number;
@@ -313,28 +267,6 @@ function renderExtractedTables(tables, documentId) {
     </article>`;
   }).join("") || '<p class="loading-card">No structured tables were extracted from this document.</p>';
 }
-
-function renderBusinessMetricExtractionRuns(runs) {
-  const label = {
-    candidate_found: "Candidate found",
-    checked_no_candidate: "Checked · no candidate",
-    not_selected: "Not selected for LLM",
-    not_evaluated: "Not evaluated",
-    llm_error: "LLM error",
-  };
-  $("#business-metric-extraction-runs").innerHTML = runs.map((run) => {
-    const decisions = run.audit?.chunk_decisions || [];
-    return `<details class="candidate-row">
-      <summary class="candidate-heading"><strong>${escapeHtml(run.decision_domain)} · ${(run.audit?.selected_metric_names || []).map(escapeHtml).join(", ")} · ${escapeHtml(run.status)}</strong><span>${formatNumber(run.selected_chunk_count)} / ${formatNumber(run.input_chunk_count)} chunks selected · ${formatNumber(run.candidate_count)} candidates · ${escapeHtml(run.model_name)}</span></summary>
-      <p class="corpus-note">Extractor ${escapeHtml(run.extractor_version)} · prompt ${escapeHtml(run.prompt_version)} · ${escapeHtml(new Date(run.created_at).toLocaleString())}</p>
-      <div class="extracted-table-wrap"><table class="extracted-table"><thead><tr><th>Chunk</th><th>Page</th><th>Decision</th><th>Selection reason</th><th>Selector signals</th></tr></thead><tbody>${decisions.map((item) => `<tr><td>${formatNumber(item.chunk_index)}</td><td>${formatNumber(item.page_number)}</td><td>${escapeHtml(label[item.status] || item.status)}</td><td>${escapeHtml(item.selection_reason || "selected")}</td><td>${escapeHtml(JSON.stringify(item.selection_signals || {}))}</td></tr>`).join("")}</tbody></table></div>
-      <details class="candidate-source"><summary>LLM page results and validation</summary><pre>${escapeHtml(JSON.stringify({pages: run.audit?.page_results || [], error: run.audit?.execution_error || null}, null, 2))}</pre></details>
-    </details>`;
-  }).join("") || '<p class="loading-card">No business metric extraction run is recorded for this document.</p>';
-}
-
-const replayDomainSelect = $("#business-metric-replay-domain");
-const replayMetricSelect = $("#business-metric-replay-metric");
 
 async function loadOcrTestRuns() {
   const result = await api("/api/ocr-tests");
@@ -1779,8 +1711,7 @@ async function loadWorkspace(user) {
   $("#upload-section").hidden = true;
   $("#admin-section").hidden = true;
   $("#monitoring-section").hidden = true;
-  $("#metric-management-section").hidden = user.role !== "admin";
-  $("#business-metric-management-section").hidden = user.role !== "admin";
+  $("#metric-management-section").hidden = true;
   $("#candidate-review").hidden = true;
   syncWorkspaceTabs();
   $("#access-matrix").replaceChildren();
@@ -1803,19 +1734,6 @@ async function loadWorkspace(user) {
     const data = await api("/api/dashboard");
     renderCorpus(data);
     if (user.role === "admin") renderParsedChunkInspector(data);
-    if (user.role === "admin") {
-      $("#metric-management-section").hidden = false;
-      const roles = await api("/api/documents/roles");
-      $("#manual-metric-role-options").innerHTML = roles.roles.map((role) =>
-        `<label><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}" ${["admin", "executive", "finance_analyst"].includes(role) ? "checked" : ""}> ${escapeHtml(role.replaceAll("_", " "))}</label>`
-      ).join("");
-      renderMetricCatalog(await api("/api/metrics/catalog"));
-      renderBusinessMetricCatalog(await api("/api/business-metrics/catalog"));
-      $("#business-metric-role-options").innerHTML = roles.roles.map((role) =>
-        `<label><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}" ${["admin", "executive", "sustainability_analyst"].includes(role) ? "checked" : ""}> ${escapeHtml(role.replaceAll("_", " "))}</label>`
-      ).join("");
-      $("#business-metric-management-section").hidden = false;
-    }
     try {
       const capability = await api("/api/documents/upload-capability");
       $("#upload-section").hidden = !capability.can_upload;
@@ -1920,40 +1838,12 @@ $("#parsed-chunk-form").addEventListener("submit", async (event) => {
     $("#parsed-chunk-list").innerHTML = `<p class="loading-card">${escapeHtml(error.message)}</p>`;
   }
   try {
-    const result = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/business-metric-extraction-runs`);
-    renderBusinessMetricExtractionRuns(result.runs);
-  } catch (error) {
-    $("#business-metric-extraction-runs").innerHTML = `<p class="loading-card">${escapeHtml(error.message)}</p>`;
-  }
-  try {
     const result = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/tables?row_limit=100`);
     renderExtractedTables(result.tables, documentId);
   } catch (error) {
     $("#parsed-table-list").innerHTML = error.status === 404
       ? '<p class="loading-card">No structured tables were extracted from this document.</p>'
       : `<p class="loading-card">${escapeHtml(error.message)}</p>`;
-  }
-});
-
-$("#business-metric-replay-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const documentId = $("#parsed-document").value;
-  if (!documentId) return;
-  const button = $("#business-metric-replay-button");
-  button.disabled = true;
-  $("#business-metric-replay-status").textContent = "Re-running extraction against saved parser chunks…";
-  try {
-    const result = await api(
-      `/api/admin/processing/${encodeURIComponent(documentId)}/business-metric-extraction-runs`,
-      {method: "POST", body: JSON.stringify({decision_domain: replayDomainSelect.value, metric_name: replayMetricSelect.value})},
-    );
-    $("#business-metric-replay-status").textContent = `Run ${result.run_id}: ${result.status}; ${formatNumber(result.selected_chunk_count || 0)} / ${formatNumber(result.input_chunk_count || 0)} chunks selected; ${formatNumber(result.candidate_count)} candidates await review.`;
-    const history = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/business-metric-extraction-runs`);
-    renderBusinessMetricExtractionRuns(history.runs);
-  } catch (error) {
-    $("#business-metric-replay-status").textContent = error.message;
-  } finally {
-    button.disabled = false;
   }
 });
 
@@ -2234,30 +2124,6 @@ $("#manual-metric-form").addEventListener("submit", async (event) => {
     await loadWorkspace(await api("/api/auth/me"));
   } catch (error) {
     $("#manual-metric-status").textContent = error.message;
-  } finally {
-    button.disabled = false;
-  }
-});
-
-$("#business-metric-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const form = event.currentTarget;
-  const values = Object.fromEntries(new FormData(form));
-  values.allowed_roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
-  if (!values.allowed_roles.length) {
-    $("#business-metric-status").textContent = "Select at least one role allowed to view this metric.";
-    return;
-  }
-  const button = $("#business-metric-button");
-  button.disabled = true;
-  $("#business-metric-status").textContent = "Saving source observation for verification…";
-  try {
-    await api("/api/business-metrics/candidates", {method: "POST", body: JSON.stringify(values)});
-    form.reset();
-    $("#business-metric-status").textContent = "Saved in the review queue. It will appear in Business Analysis only after admin verification.";
-    await loadWorkspace(await api("/api/auth/me"));
-  } catch (error) {
-    $("#business-metric-status").textContent = error.message;
   } finally {
     button.disabled = false;
   }

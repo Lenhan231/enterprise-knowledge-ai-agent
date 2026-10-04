@@ -36,6 +36,7 @@ _GOLD_FIELD_ALIASES = {
     "campaign": ("promo_name",),
     "net_item_sales": ("net_sales",),
     "avg_days": ("avg_transit_days", "avg_transit_time_days"),
+    "avg_transit_days": ("avg_transit_time_days", "avg_days"),
     "avg_fee": ("avg_shipping_fee",),
 }
 _YEAR_METRIC = re.compile(r"^(?P<year>20\d{2})_(?P<metric>avg_days|avg_fee)$")
@@ -125,8 +126,30 @@ def _evidence_observation_rows(citations: list[dict]) -> list[dict]:
             except json.JSONDecodeError:
                 observations = None
         if isinstance(observations, list):
-            rows.extend(row for row in observations if isinstance(row, dict))
+            scoped_year = _single_scoped_year(citation.get("sql_query"))
+            for row in observations:
+                if not isinstance(row, dict):
+                    continue
+                # A constant year filter is valid period evidence even when the
+                # query does not redundantly project that same year in every row.
+                if scoped_year is not None and not any(key in row for key in _TIME_DIMENSIONS):
+                    row = {**row, "year": scoped_year}
+                rows.append(row)
     return rows
+
+
+def _single_scoped_year(sql: str | None) -> int | None:
+    if not sql:
+        return None
+    where = re.search(r"\bWHERE\b(.*?)(?:\bGROUP\s+BY\b|\bORDER\s+BY\b|\bLIMIT\b|$)", sql, re.I | re.S)
+    if not where or re.search(r"\bOR\b", where.group(1), re.I):
+        return None
+    years = set(re.findall(
+        r"EXTRACT\s*\(\s*YEAR\s+FROM\s+[\w.]+\s*\)\s*=\s*'?((?:19|20)\d{2})'?",
+        where.group(1),
+        re.I,
+    ))
+    return int(next(iter(years))) if len(years) == 1 else None
 
 
 def _matches_observation_value(actual, expected) -> bool:

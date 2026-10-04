@@ -100,6 +100,43 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
             "source_type": "commerce_sql", "commerce_observations": sql_rows,
         }]), [])
 
+    def test_gold_observations_accept_year_proven_by_single_year_sql_filter(self):
+        case = next(case for case in self.cases if case["id"] == "LOG-01")
+        citation = {
+            "source_type": "commerce_sql",
+            "sql_query": (
+                "SELECT g.region, AVG(s.delivery_date - s.ship_date) AS avg_transit_time_days "
+                "FROM commerce.shipments s JOIN commerce.orders o ON s.order_id = o.order_id "
+                "JOIN commerce.geography g ON o.zip = g.zip "
+                "WHERE EXTRACT(YEAR FROM s.delivery_date) = 2022 "
+                "GROUP BY g.region ORDER BY avg_transit_time_days DESC LIMIT 100"
+            ),
+            "commerce_observations": [
+                {"region": "East", "avg_transit_time_days": "4.5200424929"},
+                {"region": "Central", "avg_transit_time_days": "4.5137079120"},
+                {"region": "West", "avg_transit_time_days": "4.5099234476"},
+            ],
+        }
+
+        self.assertEqual(missing_gold_observations(case, [citation]), [])
+
+    def test_year_is_not_inferred_from_a_mixed_year_or_predicate(self):
+        case = next(case for case in self.cases if case["id"] == "LOG-01")
+        citation = {
+            "source_type": "commerce_sql",
+            "sql_query": (
+                "SELECT g.region, AVG(s.delivery_date - s.ship_date) AS avg_transit_time_days "
+                "FROM commerce.shipments s JOIN commerce.geography g ON TRUE "
+                "WHERE EXTRACT(YEAR FROM s.delivery_date) = 2022 OR g.region = 'East' "
+                "GROUP BY g.region"
+            ),
+            "commerce_observations": [
+                {"region": "East", "avg_transit_time_days": "4.5200424929"},
+            ],
+        }
+
+        self.assertTrue(missing_gold_observations(case, [citation]))
+
     def test_gold_observation_evaluator_accepts_schema_aliases_and_campaign_year_label(self):
         inventory_case = next(case for case in self.cases if case["id"] == "INV-02")
         inventory_rows = [

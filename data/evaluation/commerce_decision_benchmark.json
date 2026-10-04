@@ -40,6 +40,7 @@
         {
           "id": "INV-03",
           "requires_operating_reference": true,
+          "question_specific_sql_expected": false,
           "question": "Có đủ cơ sở để phân bổ lại hàng giữa các vùng nhằm giảm stockout không?",
           "gold_observations": [
             {"available": "Product/category snapshots; no inventory-by-location or warehouse field."},
@@ -139,6 +140,7 @@
         {
           "id": "LOG-03",
           "requires_operating_reference": true,
+          "question_specific_sql_expected": false,
           "question": "Có nên chuyển năng lực giao hàng giữa East, Central và West để giảm trễ không?",
           "gold_observations": [
             {"available": ["customer region", "ship and delivery dates", "shipping fee"]},

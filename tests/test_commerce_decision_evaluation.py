@@ -168,6 +168,27 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
 
         self.assertFalse(result["gold_observation_coverage_applicable"])
         self.assertIsNone(result["gold_observation_coverage_passed"])
+        self.assertFalse(result["passed"])
+        self.assertFalse(result["checks"]["operating_reference_present"])
+
+    def test_expected_schema_gap_passes_with_schema_and_operating_citations_without_sql(self):
+        case = next(case for case in self.cases if case["id"] == "INV-03")
+        payload = {
+            "answer": "Chưa đủ dữ liệu theo vùng để kết luận [L1]. Policy giả lập yêu cầu đối chiếu SKU và nhu cầu trước khi điều chuyển [S1].",
+            "question_sql_fallback": "requested_dimension_unavailable",
+            "citations": [
+                {"id": "L1", "source_type": "commerce_schema", "commerce_domain": "inventory_allocation"},
+                {"id": "S1", "source_type": "document", "document_id": "CD-POL-INV-001",
+                 "page_number": 2, "evidence_class": "company_policy_reference",
+                 "reference_applicability": "Fictional demo policy only."},
+            ],
+        }
+
+        result = score_case(case, payload, {"commerce.inventory"})
+
+        self.assertTrue(result["passed"], result["checks"])
+        self.assertFalse(result["question_specific_sql_used"])
+        self.assertTrue(result["checks"]["question_specific_sql_requirement_met"])
 
     def test_inv01_numeric_coverage_detects_missing_flag_overlap_fact(self):
         case = next(case for case in self.cases if case["id"] == "INV-01")
@@ -238,10 +259,10 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
     def test_snapshot_fallback_separates_grounding_from_sql_generation(self):
         case = next(case for case in self.cases if case["id"] == "LOG-03")
         result = score_case(case, {
-            "answer": "Regional shipping values [C1], checked against the demo policy [S1].",
+            "answer": "Chưa đủ dữ liệu theo năng lực tuyến để quyết định chuyển vùng [L1]. Policy logistics giả lập yêu cầu kiểm tra tuyến, SLA, năng lực và chi phí trước khi điều chỉnh [S1].",
+            "question_sql_fallback": "requested_dimension_unavailable",
             "citations": [
-                {"id": "C1", "source_type": "commerce_sql", "commerce_domain": "nationwide_logistics",
-                 "source_tables": ["commerce.shipments"], "dataset_note": "Synthetic Kaggle Commerce data."},
+                {"id": "L1", "source_type": "commerce_schema", "commerce_domain": "nationwide_logistics"},
                 {"id": "S1", "source_type": "document", "document_id": "CD-POL-LOG-001",
                  "page_number": 2, "evidence_class": "company_policy_reference",
                  "reference_applicability": "Synthetic demo policy only."},
@@ -249,9 +270,10 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
         }, {"commerce.shipments", "commerce.orders", "commerce.geography"})
 
         self.assertFalse(result["checks"]["question_specific_sql_available"])
+        self.assertTrue(result["checks"]["question_specific_sql_requirement_met"])
         self.assertTrue(result["citation_domain_checks_passed"])
         self.assertFalse(result["question_specific_sql_passed"])
-        self.assertFalse(result["passed"])
+        self.assertTrue(result["passed"], result["checks"])
 
     def test_gold_numeric_coverage_accepts_vietnamese_number_format(self):
         case = {"required_numeric_facts": [235597280.59, 0.9656, 10305]}

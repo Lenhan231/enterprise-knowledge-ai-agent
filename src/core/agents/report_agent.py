@@ -1985,7 +1985,8 @@ class ReportAgent(BaseAgent):
         for index, item in enumerate(references, start=1):
             item.citation_id = f"S{index}"
         evidence.extend(references)
-        if not any(item.source_type == "commerce_sql" for item in evidence):
+        if (not any(item.source_type == "commerce_sql" for item in evidence)
+                and not (question_sql_fallback == "requested_dimension_unavailable" and references)):
             return AgentResult(
                 answer=(
                     "Chưa thể trả lời theo chiều dữ liệu được yêu cầu vì schema được duyệt của domain này không có chiều đó. "

@@ -188,6 +188,34 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("không có chiều đó", result.answer)
         self.assertFalse(any(item.source_type == "commerce_sql" for item in result.evidence))
 
+    def test_missing_commerce_dimension_uses_retrieved_policy_before_abstaining(self):
+        repository = Mock()
+        llm = Mock()
+        llm.generate.return_value = (
+            "Chưa đủ dữ liệu theo vùng để quyết định điều chuyển [L1]. "
+            "Policy giả lập Commerce Demo yêu cầu đối chiếu SKU, tồn khả dụng và nhu cầu trước khi xem xét chuyển hàng [S1]."
+        )
+        analytics = SQLAnalyticsAgent(repository=repository, llm=llm)
+        knowledge = Mock()
+        knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[Evidence(
+            citation_id="S1", source_type="document", source="Commerce Demo inventory policy",
+            content="Chỉ xem xét điều chuyển khi có đối chiếu SKU giữa nơi gửi và nơi nhận, tồn khả dụng và nhu cầu.",
+            metadata={"evidence_class": "company_policy_reference", "synthetic_company_policy": True,
+                      "reference_applicability": "Fictional Commerce Demo inventory scenario only."},
+        )])
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
+            question="Có đủ cơ sở để phân bổ lại hàng giữa các vùng nhằm giảm stockout?",
+            metadata={"business_decision_domain": "inventory_allocation", "role": "analyst"},
+        ))
+
+        self.assertEqual(result.metadata["question_sql_fallback"], "requested_dimension_unavailable")
+        self.assertFalse(any(item.source_type == "commerce_sql" for item in result.evidence))
+        self.assertTrue(any(item.source_type == "document" for item in result.evidence))
+        self.assertIn("[L1]", result.answer)
+        self.assertIn("[S1]", result.answer)
+        llm.generate.assert_called_once()
+
     def test_rejected_commerce_query_repair_uses_bounded_snapshot(self):
         repository = Mock()
         repository.latest_commerce_inventory_snapshot.return_value = "2022-12-31"

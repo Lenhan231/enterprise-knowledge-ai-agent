@@ -253,15 +253,28 @@ def score_case(case: dict, response_payload: dict, expected_tables: set[str]) ->
     sql_citations = [item for item in citations if item.get("source_type") == "commerce_sql"]
     document_citations = [item for item in citations if item.get("source_type") == "document"]
     question_specific_sql = next((item for item in sql_citations if item.get("sql_query")), None)
+    sql_expected = case.get("question_specific_sql_expected", True)
+    schema_gap_cited = any(
+        item.get("source_type") == "commerce_schema"
+        and item.get("commerce_domain") == case["domain"]
+        for item in citations
+    )
     checks = {
         "citation_integrity": citation_ids == answer_ids,
         "citation_validation": not response_payload.get("citation_validation_failed", False),
-        "domain_sql_evidence": any(
-            item.get("commerce_domain") == case["domain"]
-            and expected_tables.intersection(item.get("source_tables") or [])
-            for item in sql_citations
+        "domain_sql_evidence": (
+            any(item.get("commerce_domain") == case["domain"]
+                and expected_tables.intersection(item.get("source_tables") or [])
+                for item in sql_citations)
+            if sql_expected else (
+                response_payload.get("question_sql_fallback") == "requested_dimension_unavailable"
+                and schema_gap_cited
+            )
         ),
         "question_specific_sql_available": question_specific_sql is not None,
+        "question_specific_sql_requirement_met": (
+            (question_specific_sql is not None) == sql_expected
+        ),
         "sql_dataset_provenance": all(
             "Synthetic Kaggle" in str(item.get("dataset_note") or "")
             for item in sql_citations
@@ -297,7 +310,10 @@ def score_case(case: dict, response_payload: dict, expected_tables: set[str]) ->
         "question": case["question"],
         "decision_analysis": response_payload.get("decision_analysis"),
         "citation_validation_failed": response_payload.get("citation_validation_failed", False),
-        "passed": all(checks.values()),
+        "passed": all(
+            passed for name, passed in checks.items()
+            if name != "question_specific_sql_available"
+        ),
         "checks": checks,
         "citation_domain_checks_passed": citation_domain_passed,
         "question_specific_sql_passed": checks["question_specific_sql_available"],

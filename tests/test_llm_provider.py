@@ -130,6 +130,21 @@ class GroqProviderTest(unittest.TestCase):
             {"input_tokens": 12, "output_tokens": 3, "total_tokens": 15},
         )
 
+    @patch("core.llm.huggingface_provider.OpenAI")
+    def test_huggingface_generation_records_openai_compatible_usage(self, openai):
+        openai.return_value.chat.completions.create.return_value = MagicMock(
+            choices=[MagicMock(message=MagicMock(content="answer"), finish_reason="stop")],
+            usage=MagicMock(prompt_tokens=7, completion_tokens=4, total_tokens=11),
+        )
+        with patch.dict(os.environ, {"HUGGINGFACE_API_KEY": "test-secret"}):
+            provider = HuggingFaceProvider()
+            self.assertEqual(provider.generate("prompt"), "answer")
+
+        self.assertEqual(
+            provider.last_usage,
+            {"input_tokens": 7, "output_tokens": 4, "total_tokens": 11},
+        )
+
     @patch("core.llm.groq_provider.OpenAI")
     def test_caption_image_sends_bounded_base64_input_to_configured_vision_model(self, openai):
         openai.return_value.responses.create.return_value = MagicMock(

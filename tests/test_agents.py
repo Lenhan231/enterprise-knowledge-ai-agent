@@ -1922,6 +1922,33 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("[S1]", result.answer)
         self.assertIn("không chứng minh quan hệ nhân quả", result.answer)
 
+    def test_promotion_fallback_does_not_claim_a_two_group_comparison_from_tagged_only_rows(self):
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Commerce promotion SQL",
+                content=("promotions_by_year: " + json.dumps([
+                    {"year": 2022, "used_promotion": True, "delivered_orders": 8, "net_sales": 200.0},
+                ])),
+            ),
+            Evidence(
+                citation_id="L1", source_type="commerce_schema", source="Commerce schema",
+                content="The data has no randomized holdout or campaign-attributed costs.",
+            ),
+            Evidence(
+                citation_id="S1", source_type="document", source="Synthetic Commerce Demo policy",
+                content="Use holdout evidence before expanding a campaign.",
+                metadata={"evidence_class": "company_policy_reference", "synthetic_company_policy": True},
+            ),
+        ]
+
+        answer = _commerce_safe_fallback(
+            "promotion_planning", "Có nên mở rộng campaign dựa trên các số liệu này?", evidence,
+        )
+
+        self.assertIn("doanh số hoặc đơn hàng quan sát được", answer)
+        self.assertIn("không cho biết phần kết quả tăng thêm", answer)
+        self.assertNotIn("so sánh đơn có và không có", answer)
+
     def test_commerce_decision_degrades_transparently_when_reference_retrieval_is_rate_limited(self):
         analytics = Mock()
         analytics.commerce_decision_snapshot.return_value = {

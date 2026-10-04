@@ -1441,16 +1441,16 @@ def _commerce_safe_fallback(
             example = ""
         elif is_vietnamese:
             answer = (
-                "Khuyến nghị: Chưa mở rộng chiến dịch chỉ từ so sánh đơn có và không có khuyến mãi; dữ liệu này không "
-                "chứng minh tác động nhân quả. Trước tiên, dùng thử nghiệm treatment/control hoặc holdout để ước lượng "
+                "Khuyến nghị: Chưa mở rộng chiến dịch chỉ từ doanh số hoặc đơn hàng quan sát được; dữ liệu hiện có không "
+                "cho biết phần kết quả tăng thêm có thể quy cho chiến dịch. Trước tiên, dùng thử nghiệm treatment/control hoặc holdout để ước lượng "
                 "doanh số tăng thêm; sau đó cần chi phí campaign, mức giảm giá, tồn kho và mua lại để đánh giá phần "
                 f"đóng góp lợi nhuận tăng thêm. {limitation_citation}{sql_citation}\n"
             )
             example = reference_basis
         else:
             answer = (
-                "Recommended next move: Do not expand a campaign from tagged-versus-untagged order differences alone; "
-                "those comparisons do not establish causal lift. First use a treatment/control or holdout experiment to "
+                "Recommended next move: Do not expand a campaign from observed sales or orders alone; the available data "
+                "does not establish which outcomes are incremental to the campaign. First use a treatment/control or holdout experiment to "
                 "estimate incremental sales. Then collect campaign cost, discount, availability, and repeat-purchase data "
                 f"to assess incremental contribution margin. {limitation_citation}{sql_citation}\n"
             )

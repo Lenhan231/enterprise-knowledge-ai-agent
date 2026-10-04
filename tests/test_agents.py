@@ -1000,6 +1000,29 @@ class AgentFlowTest(unittest.TestCase):
 
         self.assertEqual(ranked, [])
 
+    def test_commerce_retrieval_does_not_treat_negated_service_target_as_target_request(self):
+        stock_state_guide = {
+            "document_name": "Sam's Club Supplier Hub guide",
+            "chunk_index": 29,
+            "content": (
+                "Smart Inventory shows OOS %, low stock, in stock and out of stock status at category and item level."
+            ),
+            "metadata": {
+                "document_id": "SAMS", "page_number": 23,
+                "knowledge_domains": ["inventory_allocation"],
+                "evidence_class": "company_practice_reference", "commerce_reference_active": True,
+            },
+        }
+
+        ranked = _rank_commerce_reference_evidence(
+            [stock_state_guide],
+            "How should historical stock availability and low-stock signals be reviewed without treating them as an approved service target?",
+            "inventory_allocation",
+            3,
+        )
+
+        self.assertEqual([item["metadata"]["document_id"] for item in ranked], ["SAMS"])
+
     def test_commerce_logistics_ranking_prefers_supplier_readiness_fields_when_asked(self):
         route_article = {
             "document_name": "Shopify Smart Order Routing",

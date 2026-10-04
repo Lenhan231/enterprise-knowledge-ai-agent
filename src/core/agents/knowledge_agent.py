@@ -128,10 +128,17 @@ def _rank_commerce_reference_evidence(
             str(metadata.get("section_title") or ""),
             str(metadata.get("table_title") or ""),
         )).casefold()
-        asks_service_target = domain == "inventory_allocation" and any(term in question_text for term in (
+        mentions_service_target = domain == "inventory_allocation" and any(term in question_text for term in (
             "service target", "service-level target", "fill rate target", "set a target",
             "service level goal", "mục tiêu dịch vụ", "đặt mục tiêu", "target mới",
         ))
+        negates_service_target_use = bool(re.search(
+            r"\bwithout\b.{0,60}\b(?:service(?:-level)?|fill rate|in-stock)?\s*target\b|"
+            r"\bnot\s+(?:an?\s+)?(?:approved\s+)?(?:service(?:-level)?|fill rate|in-stock)\s+target\b|"
+            r"\b(?:không|đừng|chưa)\b.{0,50}\b(?:mục tiêu dịch vụ|service target|fill rate target)\b",
+            question_text,
+        ))
+        asks_service_target = mentions_service_target and not negates_service_target_use
         if asks_service_target:
             target_terms = (
                 "service target", "service-level target", "service level target", "fill rate target",

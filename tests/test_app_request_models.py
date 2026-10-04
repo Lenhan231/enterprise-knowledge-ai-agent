@@ -282,6 +282,51 @@ class AskRequestTest(unittest.TestCase):
         classifier.classify.assert_not_called()
         self.assertEqual(payload["agent"], "report")
 
+    def test_commerce_question_api_returns_auto_detected_domain(self):
+        report, classifier = Mock(), Mock()
+        report.run.return_value = AgentResult(answer="Inventory evidence [C1]", agent="report")
+        classifier.classify_commerce_domain.return_value = "inventory_allocation"
+        with (
+            patch("app.main.KnowledgeAgent", return_value=Mock()),
+            patch("app.main.SQLAnalyticsAgent", return_value=Mock()),
+            patch("app.main.HybridAgent", return_value=Mock()),
+            patch("app.main.DashboardAgent", return_value=Mock()),
+            patch("app.main.IntentClassifier", return_value=classifier),
+            patch("app.main.ReportAgent", return_value=report),
+            patch("app.main.AgentRunRepository", return_value=Mock()),
+        ):
+            payload = _answer_documents(
+                AskRequest(question="Should inventory be reallocated?", commerce_decision_support=True),
+                {"sub": "analyst-test", "role": "analyst"},
+            )
+
+        self.assertEqual(report.run.call_args.args[0].metadata["business_decision_domain"], "inventory_allocation")
+        self.assertEqual(payload["business_decision_domain"], "inventory_allocation")
+        self.assertTrue(payload["business_domain_auto_detected"])
+
+    def test_commerce_question_api_returns_clarification_without_running_agents(self):
+        report, classifier = Mock(), Mock()
+        classifier.classify_commerce_domain.return_value = None
+        unused = Mock()
+        with (
+            patch("app.main.KnowledgeAgent", return_value=unused),
+            patch("app.main.SQLAnalyticsAgent", return_value=unused),
+            patch("app.main.HybridAgent", return_value=unused),
+            patch("app.main.DashboardAgent", return_value=unused),
+            patch("app.main.IntentClassifier", return_value=classifier),
+            patch("app.main.ReportAgent", return_value=report),
+            patch("app.main.AgentRunRepository", return_value=Mock()),
+        ):
+            payload = _answer_documents(
+                AskRequest(question="What should we improve?", commerce_decision_support=True),
+                {"sub": "analyst-test", "role": "analyst"},
+            )
+
+        self.assertEqual(payload["agent"], "commerce_domain_router")
+        self.assertTrue(payload["needs_domain_clarification"])
+        report.run.assert_not_called()
+        unused.run.assert_not_called()
+
     def test_ask_api_preserves_dashboard_visualization_and_verified_citations(self):
         answer = AgentResult(
             answer="Revenue trend [M1] [M2]", agent="dashboard",

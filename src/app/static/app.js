@@ -710,7 +710,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
   panel.hidden = false;
   const citations = Array.isArray(data.citations) ? data.citations : [];
   const decisionModeNote = data.generation_provider === "deterministic_safety_fallback"
-    ? '<p class="analysis-caveat answer-provenance-note" role="note"><strong>Audit-first safety fallback.</strong> The model draft did not pass grounding checks. This response uses verified KPIs to define the next evidence-gathering steps and does not select a specific intervention.</p>'
+    ? '<p class="analysis-caveat answer-provenance-note" role="note"><strong>Audit-first safety fallback.</strong> The model draft did not pass grounding checks. This response uses available SQL observations and schema evidence to define the next evidence-gathering steps; it does not select a specific intervention.</p>'
     : "";
   const referenceRetrievalNote = data.decision_reference_retrieval_limited
     ? '<p class="analysis-caveat answer-provenance-note" role="note"><strong>Document retrieval was temporarily rate-limited.</strong> This recommendation uses SQL and schema evidence only; no operating document could be checked for this answer.</p>'

@@ -18,6 +18,13 @@ OCR, metric extraction, or normal Groq selection. Hugging Face currently lists
 monthly routed inference credits for free accounts, subject to change; routed
 usage consumes those credits and additional usage requires purchased credits.
 See [Hugging Face Inference Providers pricing](https://huggingface.co/docs/inference-providers/pricing).
+The `:cheapest` suffix chooses the lowest-price provider; it does not guarantee
+free inference. In the 2026-10-05 Commerce replay, Groq rejected question-SQL
+generation at its token/day limit and the configured Hugging Face fallback
+returned HTTP 402 after its monthly included credits were depleted. The app
+therefore used its bounded SQL snapshot fallback; rerun provider-backed
+evaluation only after quota resets or credits become available. Groq documents
+429 responses and rate-limit headers in its [rate-limit guide](https://console.groq.com/docs/rate-limits).
 
 Agent teardown closes the shared provider's HTTP client. PDF financial uploads
 extract parser candidates first, then request LLM candidates only for selected

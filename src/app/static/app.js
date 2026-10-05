@@ -345,7 +345,7 @@ function renderCommerceChart(selector, rows, series, unit, kind = "line", period
   }
   const years = [...new Set(rows.map((row) => Number(row.year)).filter(Number.isFinite))].sort((a, b) => a - b);
   const values = rows.flatMap((row) => series.map((item) => Number(item.value(row)))).filter(Number.isFinite);
-  const max = Math.max(1, ...values) * 1.08;
+  const max = unit === "%" ? Math.max(100, ...values) : Math.max(1, ...values) * 1.08;
   const width = 760, height = 250, left = 60, right = 746, top = 15, bottom = 199;
   const x = (index) => years.length < 2 ? (left + right) / 2 : left + index * (right - left) / (years.length - 1);
   const y = (value) => bottom - (value / max) * (bottom - top);
@@ -656,9 +656,10 @@ function renderDashboardVisualization(visualization) {
   const colors = ["#2463b5", "#da8a2d", "#24866b", "#8758a8"];
   const charts = series.map((item, seriesIndex) => {
     const values = item.values.map((value) => Number.isFinite(value) ? value : null);
-    const max = Math.max(...values.filter((value) => value !== null), 0) || 1;
+    const observedMax = Math.max(...values.filter((value) => value !== null), 0) || 1;
+    const max = visualization.unit === "%" ? Math.max(100, observedMax) : observedMax * 1.1;
     const x = (index) => left + (categories.length === 1 ? plotWidth / 2 : index * plotWidth / (categories.length - 1));
-    const y = (value) => top + plotHeight - value / (max * 1.1) * plotHeight;
+    const y = (value) => top + plotHeight - value / max * plotHeight;
     const segments = [];
     let segment = [];
     values.forEach((value, index) => {

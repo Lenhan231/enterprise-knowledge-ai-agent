@@ -69,7 +69,7 @@ class DashboardAgent(BaseAgent):
         return wants_visual and bool(resolve_metric_names(question))
 
     @staticmethod
-    def _commerce_chart(question: str, domain: str, data: dict) -> tuple[dict | None, list[dict]]:
+    def _commerce_chart(question: str, domain: str, data: dict) -> tuple[dict | None, list[dict], list[int]]:
         observations = data
         if domain == "inventory_allocation":
             rows = observations.get("inventory_by_year", [])
@@ -105,14 +105,18 @@ class DashboardAgent(BaseAgent):
                       for region in regions]
             key, title = "logistics_by_year_region", "Regional logistics by year"
 
-        years = sorted({int(row["year"]) for row in rows if row.get("year") is not None})
+        source_rows = rows
+        available_years = sorted({int(row["year"]) for row in source_rows if row.get("year") is not None})
+        years = available_years
         requested_years = sorted({int(year) for year in re.findall(r"\b(?:19|20)\d{2}\b", question)})
         if requested_years:
             year_range = set(range(requested_years[0], requested_years[-1] + 1))
             rows = [row for row in rows if int(row["year"]) in year_range]
             years = [year for year in years if year in year_range]
+            if not rows:
+                rows = source_rows
         if len(years) < 2 or not series:
-            return None, rows
+            return None, rows, available_years
         chart_series = []
         for item in series:
             values_by_year = {}
@@ -126,9 +130,9 @@ class DashboardAgent(BaseAgent):
             if sum(year in values_by_year for year in years) >= 2:
                 chart_series.append({"name": item["name"], "values": [values_by_year.get(year) for year in years]})
         if not chart_series:
-            return None, rows
+            return None, rows, available_years
         return {"type": "line", "title": title, "unit": series[0]["unit"], "categories": years,
-                "series": chart_series}, rows
+                "series": chart_series}, rows, available_years
 
     def run(self, request: AgentRequest) -> AgentResult:
         role = request.metadata.get("role")
@@ -138,7 +142,7 @@ class DashboardAgent(BaseAgent):
         if commerce_domain in COMMERCE_DECISION_PROFILES:
             profile = COMMERCE_DECISION_PROFILES[commerce_domain]
             data = self.repository.commerce_dashboard(profile["dashboard_keys"])
-            visualization, rows = self._commerce_chart(request.question, commerce_domain, data)
+            visualization, rows, available_years = self._commerce_chart(request.question, commerce_domain, data)
             evidence = [Evidence(
                 citation_id="C1", source_type="commerce_sql",
                 source=f"Commerce dashboard aggregate · {profile['label']}",
@@ -150,17 +154,29 @@ class DashboardAgent(BaseAgent):
                     "dataset_note": (data.get("data_notes") or ["Synthetic Commerce data."])[0],
                 },
             )]
-            answer = (
-                f"Dashboard chart for {profile['label']} is grounded in the synthetic Commerce aggregates. [C1]"
-                if visualization else
-                f"The selected Commerce domain does not contain enough annual observations for a chart. [C1]"
-            )
+            requested_years = sorted({int(year) for year in re.findall(r"\b(?:19|20)\d{2}\b", request.question)})
+            requested_range = set(range(requested_years[0], requested_years[-1] + 1)) if requested_years else set()
+            matching_years = requested_range.intersection(available_years)
+            if visualization:
+                answer = f"Dashboard chart for {profile['label']} is grounded in the synthetic Commerce aggregates. [C1]"
+                status = "ready"
+            elif requested_range and not matching_years:
+                available_label = ", ".join(map(str, available_years)) or "none"
+                answer = (
+                    f"No observations match the requested period FY{requested_years[0]}–FY{requested_years[-1]}. "
+                    f"Available years for {profile['label']}: {available_label}. [C1]"
+                )
+                status = "no_matching_period"
+            else:
+                answer = f"There are not enough annual observations to chart {profile['label']} for that period. [C1]"
+                status = "insufficient_series"
             return AgentResult(answer=answer, agent="dashboard", evidence=evidence, data={
                 "visualization": visualization,
-                "visualization_status": "ready" if visualization else "insufficient_series",
+                "visualization_status": status,
                 "domain": commerce_domain,
                 "domain_label": profile["label"],
                 "observations": {"rows": rows},
+                "available_years": available_years,
             }, metadata={"business_decision_domain": commerce_domain})
         if self.analytics and self._requests_financial_chart(request.question):
             analytics_request = request.model_copy(update={

@@ -421,6 +421,27 @@ class DocumentDashboardTest(unittest.TestCase):
                 self.assertEqual(len(result.data["visualization"]["series"]), 2)
                 self.assertEqual(result.evidence[0].citation_id, "C1")
 
+    def test_dashboard_agent_explains_when_requested_commerce_years_are_absent(self):
+        repository = Mock()
+        repository.commerce_dashboard.return_value = {
+            "inventory_by_year": [
+                {"year": 2020, "avg_fill_rate": 0.91},
+                {"year": 2021, "avg_fill_rate": 0.92},
+                {"year": 2022, "avg_fill_rate": 0.93},
+            ],
+        }
+
+        result = DashboardAgent(repository).run(AgentRequest(
+            question="Show inventory fill rate from 2023 to 2024", metadata={
+                "role": "analyst", "business_decision_domain": "inventory_allocation",
+            },
+        ))
+
+        self.assertIsNone(result.data["visualization"])
+        self.assertEqual(result.data["visualization_status"], "no_matching_period")
+        self.assertIn("Available years for Inventory allocation: 2020, 2021, 2022", result.answer)
+        self.assertEqual(len(result.evidence[0].metadata["commerce_observations"]), 3)
+
     def test_financial_chart_rejects_ambiguous_or_incomparable_rows(self):
         base = {"metric_name": "net_revenue", "metric_label": "Net revenue", "unit": "billion VND"}
         rows = [

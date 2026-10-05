@@ -1629,8 +1629,8 @@ def _commerce_question_safe_fallback(question: str, evidence: list[Evidence], *,
         omitted = len(observations) - len(visible)
         if omitted:
             omitted_note = f"\n(Đã lược {omitted} dòng khác.)" if localized else f"\n({omitted} additional rows omitted.)"
-    if decision_request and domain and (
-        _is_decision_support_request(question)
+    if domain and (
+        decision_request
         or (domain == "inventory_allocation" and _is_inventory_flag_review_question(question))
     ):
         if table:

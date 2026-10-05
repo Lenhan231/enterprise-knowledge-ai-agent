@@ -348,6 +348,38 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("[C1]", answer)
         self.assertIn("[S1]", answer)
 
+    def test_dynamic_promotion_fallback_honors_router_decision_metadata(self):
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Commerce SQL",
+                content=('question-specific SQL observations: '
+                         '[{"year": 2022, "campaign_tagged_net_sales": 570817418.55}]'),
+                metadata={"commerce_domain": "promotion_planning"},
+            ),
+            Evidence(
+                citation_id="L1", source_type="commerce_schema", source="Commerce schema",
+                content="Campaign cost, control-group outcomes, and incremental margin are unavailable.",
+            ),
+            Evidence(
+                citation_id="S1", source_type="document", source="Campaign measurement cookbook",
+                content="Use a holdout group to estimate incremental sales before changing campaign investment.",
+                metadata={
+                    "evidence_class": "management_cookbook_reference",
+                    "source_publisher": "Demo cookbook",
+                },
+            ),
+        ]
+
+        answer = _commerce_question_safe_fallback(
+            "Summarize the campaign signals for the planning review.",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertIn("Do not expand a campaign", answer)
+        self.assertIn("[L1]", answer)
+        self.assertIn("[S1]", answer)
+
     def test_dynamic_decision_fallback_keeps_sql_rows_and_gives_a_conditional_safe_action(self):
         evidence = [
             Evidence(

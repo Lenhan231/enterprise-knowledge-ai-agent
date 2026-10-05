@@ -81,6 +81,20 @@ def _is_decision_support_request(question: str) -> bool:
         "đủ cơ sở", "chứng minh", "tăng ngân sách", "dồn ngân sách", "thiết kế lại", "điều chỉnh",
     )):
         return True
+    action_verbs = (
+        "improve", "reduce", "lower", "increase", "optimize", "optimise", "prevent", "mitigate", "minimize", "maximize",
+    )
+    action_pattern = r"(?:" + "|".join(action_verbs) + r")\b"
+    if re.search(
+        r"\b(?:how can|how should|what can|what should|can we|could we|how do we|how to|ways to)\b"
+        r"[^.!?\n]{0,100}\b" + action_pattern,
+        text,
+    ) or re.search(
+        r"\b(?:làm sao|làm thế nào|cách|các cách)\b[^.!?\n]{0,100}"
+        r"(?:cải thiện|giảm|tăng|tối ưu|ngăn ngừa|hạn chế)\b",
+        text,
+    ):
+        return True
     return bool(re.search(
         r"\b(?:what|which|how much)\s+(?:(?:additional|more|other)\s+)?"
         r"(?:evidence|data|information)\b.{0,160}\b(?:needed|required|missing|before|to decide|to choose)\b",

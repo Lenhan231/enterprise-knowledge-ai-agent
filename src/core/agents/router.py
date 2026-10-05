@@ -15,6 +15,14 @@ from core.analytics.commerce_decision_support import (
 from core.models.agents import AgentRequest, AgentResult
 
 
+def _is_method_only_question(question: str) -> bool:
+    text = " ".join(question.casefold().split())
+    return text.startswith((
+        "how to ", "how do i ", "how do you ", "what are the steps", "steps to ",
+        "explain how to ", "explain the steps", "cách ", "các bước", "hướng dẫn", "quy trình", "làm thế nào",
+    )) and not _is_decision_support_request(text)
+
+
 class _AgentWorkflowState(TypedDict, total=False):
     request: AgentRequest
     destination: str
@@ -104,9 +112,22 @@ class AgentRouter:
             "what policy", "nói gì", "hướng dẫn", "theo tài liệu",
         ))
         if self.report_agent and commerce_domain and source_how_to_question:
+            request.metadata["business_decision_domain"] = commerce_domain
             self.last_destination = "knowledge"
             return {"destination": "knowledge"}
         if self.report_agent and commerce_domain in COMMERCE_DECISION_PROFILES:
+            if (request.metadata.get("commerce_decision_support")
+                    or _is_decision_support_request(request.question)):
+                self.last_destination = "report"
+                return {"destination": "report"}
+            # Let the shared intent model identify new document-only questions;
+            # keep the established report route when classification falls back.
+            intent = self.classifier.classify(request.question)
+            knowledge_only = intent.intent == "knowledge" and intent.needs_knowledge and not intent.needs_sql
+            if knowledge_only or _is_method_only_question(request.question):
+                request.metadata["business_decision_domain"] = commerce_domain
+                self.last_destination = "knowledge"
+                return {"destination": "knowledge"}
             self.last_destination = "report"
             return {"destination": "report"}
         if self.report_agent and commerce_domain:
@@ -158,6 +179,11 @@ class AgentRouter:
                 )
             request.metadata["business_decision_domain"] = domain
             auto_detected_domain = True
+        elif not request.metadata.get("business_decision_domain"):
+            domain = resolve_commerce_decision_domain(request.question)
+            if domain in COMMERCE_DECISION_PROFILES:
+                request.metadata["business_decision_domain"] = domain
+                auto_detected_domain = True
         result = self.workflow.invoke({"request": request})["result"]
         result = AgentResult.model_validate(result)
         domain = request.metadata.get("business_decision_domain")

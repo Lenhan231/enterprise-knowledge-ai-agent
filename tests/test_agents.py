@@ -53,6 +53,8 @@ class AgentFlowTest(unittest.TestCase):
         ))
         self.assertTrue(_is_decision_support_request("Should we be reallocating inventory?"))
         self.assertTrue(_is_decision_support_request("What data is needed before inventory reallocation?"))
+        self.assertTrue(_is_decision_support_request("How can we reduce inventory stockouts?"))
+        self.assertFalse(_is_decision_support_request("Did inventory stockouts reduce last year?"))
         self.assertFalse(_is_decision_support_request("Which category had the most stockout-flagged products?"))
 
     def test_decision_fallback_includes_overlap_when_question_says_reallocating(self):
@@ -2854,6 +2856,58 @@ class AgentFlowTest(unittest.TestCase):
         self.assertTrue(knowledge.run.call_args.args[0].metadata["policy_reference_only"])
         report.run.assert_not_called()
 
+    def test_unseen_commerce_method_question_uses_shared_intent_and_domain_filtered_knowledge(self):
+        question = "Explain how to review inventory before replenishment."
+        classifier, knowledge, report = Mock(), Mock(), Mock()
+        classifier.classify.return_value = IntentClassifier.fallback(question)
+        knowledge.run.return_value = AgentResult(answer="Review the relevant evidence [S1]", agent="knowledge")
+        unused = Mock()
+        router = AgentRouter(classifier, knowledge, unused, unused, unused, report)
+
+        result = router.route(AgentRequest(question=question))
+
+        self.assertEqual(result.agent, "knowledge")
+        self.assertEqual(router.last_destination, "knowledge")
+        self.assertEqual(
+            knowledge.run.call_args.args[0].metadata["business_decision_domain"],
+            "inventory_allocation",
+        )
+        self.assertTrue(result.metadata["business_domain_auto_detected"])
+        report.run.assert_not_called()
+
+    def test_commerce_aggregation_fallback_keeps_sql_questions_on_report_path(self):
+        question = "Which category had the most stockout rows?"
+        classifier, knowledge, report = Mock(), Mock(), Mock()
+        classifier.classify.return_value = IntentClassifier.fallback(question)
+        report.run.return_value = AgentResult(answer="SQL comparison [C1]", agent="report")
+        unused = Mock()
+        router = AgentRouter(classifier, knowledge, unused, unused, unused, report)
+
+        result = router.route(AgentRequest(question=question))
+
+        self.assertEqual(result.agent, "report")
+        self.assertTrue(classifier.classify.return_value.needs_sql)
+        knowledge.run.assert_not_called()
+
+    def test_explicit_commerce_decision_ui_keeps_report_route_when_intent_says_knowledge(self):
+        classifier, knowledge, report = Mock(), Mock(), Mock()
+        classifier.classify.return_value = IntentResult(
+            intent="knowledge", needs_knowledge=True, needs_sql=False,
+            output_mode="answer", confidence=0.91,
+        )
+        report.run.return_value = AgentResult(answer="Decision synthesis", agent="report")
+        unused = Mock()
+        router = AgentRouter(classifier, knowledge, unused, unused, unused, report)
+
+        result = router.route(AgentRequest(question="How can we review inventory?", metadata={
+            "business_decision_domain": "inventory_allocation",
+            "commerce_decision_support": True,
+        }))
+
+        self.assertEqual(result.agent, "report")
+        classifier.classify.assert_not_called()
+        knowledge.run.assert_not_called()
+
     def test_router_sends_implicit_commerce_decision_questions_to_report(self):
         questions = (
             "Trong snapshot tồn kho mới nhất, nhóm hàng nào có nhiều sản phẩm bị gắn cờ stockout nhất? "
@@ -2874,7 +2928,6 @@ class AgentFlowTest(unittest.TestCase):
 
                 self.assertEqual(result.agent, "report")
                 self.assertEqual(router.last_destination, "report")
-                classifier.classify.assert_not_called()
                 report.run.assert_called_once()
                 unused.run.assert_not_called()
 

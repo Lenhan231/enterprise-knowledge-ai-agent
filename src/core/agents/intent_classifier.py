@@ -100,6 +100,11 @@ class IntentClassifier:
         )
         analytics = metadata_counts or bool(financial_metrics) or bool(business_metrics) or any(term in text for term in (
             "trend", "compare", "growth", "tăng trưởng", "so sánh", "thống kê"
+        )) or any(term in text for term in (
+            "by year", "by region", "by category", "by campaign", "highest", "lowest", "most", "fewest",
+            "average", "median", "maximum", "minimum",
+            "theo năm", "theo vùng", "theo khu vực", "theo danh mục", "theo campaign",
+            "nhiều nhất", "ít nhất", "trung bình", "cao nhất", "thấp nhất",
         ))
         dashboard = any(term in text for term in ("dashboard", "chart", "visualize", "biểu đồ", "đồ thị"))
         report = not metadata_counts and (financial_summary or why_financial_change or

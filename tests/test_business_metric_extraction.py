@@ -122,6 +122,11 @@ class BusinessMetricExtractionTests(unittest.TestCase):
         self.assertIn('data-decision-domain="${escapeHtml(domain)}"', app_js)
         self.assertIn('["avg_fill_rate", "Average fill rate"', app_js)
         self.assertIn("Average fill rate", app_js)
+        self.assertIn('id="commerce-inventory-fill-rate-chart"', index_html)
+        self.assertIn('"#commerce-inventory-fill-rate-chart"', app_js)
+        self.assertIn("Chart values come from the cited database observations", app_js)
+        self.assertIn("const domainYears = {", app_js)
+        self.assertIn("domainYears[activeView]", app_js)
 
     def test_historical_factory_and_workforce_indicators_are_domain_signals(self):
         factory_chunk = {

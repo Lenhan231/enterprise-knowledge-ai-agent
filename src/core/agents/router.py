@@ -77,6 +77,13 @@ class AgentRouter:
         if commerce_domain not in COMMERCE_DECISION_PROFILES:
             commerce_domain = resolve_commerce_decision_domain(request.question)
         question_text = request.question.casefold()
+        dashboard_request = any(term in question_text for term in (
+            "dashboard", "chart", "visualize", "visualise", "plot", "graph", "biểu đồ", "đồ thị",
+        ))
+        if dashboard_request and commerce_domain:
+            request.metadata["business_decision_domain"] = commerce_domain
+            self.last_destination = "dashboard"
+            return {"destination": "dashboard"}
         policy_question = any(term in question_text for term in (
             "policy", "policies", "chính sách",
         )) and not any(term in question_text for term in (
@@ -105,9 +112,6 @@ class AgentRouter:
         if self.report_agent and commerce_domain:
             self.last_destination = "report"
             return {"destination": "report"}
-        dashboard_request = any(term in question_text for term in (
-            "dashboard", "chart", "visualize", "visualise", "plot", "graph", "biểu đồ", "đồ thị",
-        ))
         if (self.report_agent and not dashboard_request
                 and (_is_business_metric_decision_question(request.question)
                      or _is_business_metric_trend_question(request.question))):

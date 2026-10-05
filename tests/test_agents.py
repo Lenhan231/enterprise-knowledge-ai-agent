@@ -2524,6 +2524,22 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(intent.intent, "dashboard")
         self.assertEqual(intent.output_mode, "dashboard")
 
+    def test_router_sends_commerce_chart_requests_to_dashboard_agent(self):
+        report, dashboard, classifier = Mock(), Mock(), Mock()
+        dashboard.run.return_value = AgentResult(
+            answer="Dashboard chart [C1]", agent="dashboard",
+        )
+        router = AgentRouter(classifier, Mock(), Mock(), Mock(), dashboard, report)
+        request = AgentRequest(question="Show a chart of inventory fill rate by year")
+
+        result = router.route(request)
+
+        self.assertEqual(result.agent, "dashboard")
+        self.assertEqual(request.metadata["business_decision_domain"], "inventory_allocation")
+        dashboard.run.assert_called_once_with(request)
+        report.run.assert_not_called()
+        classifier.classify.assert_not_called()
+
     def test_document_metadata_counts_are_analytics_even_if_llm_says_knowledge(self):
         llm = Mock()
         llm.generate.return_value = (

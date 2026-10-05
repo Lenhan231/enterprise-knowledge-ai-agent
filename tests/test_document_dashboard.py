@@ -366,6 +366,61 @@ class DocumentDashboardTest(unittest.TestCase):
         self.assertEqual(result.data["visualization"]["categories"], [2023, 2024])
         self.assertEqual(result.data["visualization"]["series"][0]["values"], [60322.0, 61524.0])
 
+    def test_dashboard_agent_creates_cited_commerce_fill_rate_chart(self):
+        repository = Mock()
+        repository.commerce_dashboard.return_value = {
+            "inventory_by_year": [
+                {"year": 2022, "avg_fill_rate": 0.89, "stockout_snapshots": 9, "overstock_snapshots": 2},
+                {"year": 2023, "avg_fill_rate": 0.91, "stockout_snapshots": 8, "overstock_snapshots": 3},
+                {"year": 2024, "avg_fill_rate": 0.94, "stockout_snapshots": 7, "overstock_snapshots": 4},
+            ], "data_notes": ["Synthetic Commerce data."],
+        }
+        agent = DashboardAgent(repository)
+
+        result = agent.run(AgentRequest(
+            question="Show a chart of inventory fill rate by year from 2023 to 2024", user_id="analyst",
+            metadata={"role": "analyst"},
+        ))
+
+        repository.commerce_dashboard.assert_called_once_with(("inventory_by_year", "inventory_latest_by_category", "inventory_latest_flag_overlap"))
+        self.assertEqual(result.agent, "dashboard")
+        self.assertEqual(result.data["visualization"]["categories"], [2023, 2024])
+        self.assertEqual(result.data["visualization"]["unit"], "%")
+        self.assertEqual(result.data["visualization"]["series"][0]["values"], [91.0, 94.0])
+        self.assertIn("[C1]", result.answer)
+        self.assertEqual(result.evidence[0].metadata["source_tables"], ["commerce.inventory"])
+        self.assertEqual([row["year"] for row in result.evidence[0].metadata["commerce_observations"]], [2023, 2024])
+
+    def test_dashboard_agent_charts_promotions_and_logistics_by_available_period(self):
+        cases = (
+            ("promotion_planning", "Show a chart of promotion net sales by year", {
+                "promotions_by_year": [
+                    {"year": 2023, "used_promotion": True, "net_sales": 30},
+                    {"year": 2023, "used_promotion": False, "net_sales": 20},
+                    {"year": 2024, "used_promotion": True, "net_sales": 40},
+                    {"year": 2024, "used_promotion": False, "net_sales": 25},
+                ],
+            }, [2023, 2024]),
+            ("nationwide_logistics", "Show a chart of transit time by region and year", {
+                "logistics_by_year_region": [
+                    {"year": 2023, "region": "North", "avg_transit_days": 2.0},
+                    {"year": 2024, "region": "North", "avg_transit_days": 2.2},
+                    {"year": 2023, "region": "South", "avg_transit_days": 3.0},
+                    {"year": 2024, "region": "South", "avg_transit_days": 2.8},
+                ],
+            }, [2023, 2024]),
+        )
+        for domain, question, data, expected_years in cases:
+            with self.subTest(domain=domain):
+                repository = Mock()
+                repository.commerce_dashboard.return_value = data
+                result = DashboardAgent(repository).run(AgentRequest(
+                    question=question, metadata={"role": "analyst", "business_decision_domain": domain},
+                ))
+                self.assertEqual(result.data["visualization"]["categories"], expected_years)
+                self.assertEqual(len(result.data["visualization"]["series"]), 2)
+                self.assertEqual(result.evidence[0].citation_id, "C1")
+
     def test_financial_chart_rejects_ambiguous_or_incomparable_rows(self):
         base = {"metric_name": "net_revenue", "metric_label": "Net revenue", "unit": "billion VND"}
         rows = [

@@ -384,21 +384,23 @@ function renderCommerceChart(selector, rows, series, unit, kind = "line", period
 function renderCommerceDashboard(data = commerceSnapshot) {
   if (!data) return;
   commerceSnapshot = data;
+  const activeView = document.querySelector('[data-commerce-view][aria-selected="true"]')?.dataset.commerceView || "inventory";
   const yearSelect = $("#commerce-year-filter");
   const selectedYear = yearSelect.value;
-  const years = [...new Set([
-    ...(data.sales_by_year || []).map((row) => row.year),
-    ...(data.inventory_by_year || []).map((row) => row.year),
-    ...(data.promotions_by_year || []).map((row) => row.year),
-    ...(data.promotions_by_campaign || []).map((row) => row.year),
-    ...(data.logistics_by_year_region || []).map((row) => row.year),
-  ].filter(Number.isFinite))].sort((a, b) => a - b);
+  const domainYears = {
+    inventory: (data.inventory_by_year || []).map((row) => row.year),
+    promotions: [
+      ...(data.promotions_by_year || []).map((row) => row.year),
+      ...(data.promotions_by_campaign || []).map((row) => row.year),
+    ],
+    logistics: (data.logistics_by_year_region || []).map((row) => row.year),
+  };
+  const years = [...new Set((domainYears[activeView] || []).filter(Number.isFinite))].sort((a, b) => a - b);
   yearSelect.innerHTML = '<option value="">All available years</option>' + years.map((year) =>
     `<option value="${year}">${year}</option>`).join("");
   yearSelect.value = years.includes(Number(selectedYear)) ? selectedYear : "";
   const year = yearSelect.value ? Number(yearSelect.value) : null;
   const byYear = (rows) => rows.filter((row) => year == null || Number(row.year) === year);
-  const activeView = document.querySelector('[data-commerce-view][aria-selected="true"]')?.dataset.commerceView || "inventory";
   const yearLabel = year == null ? "All available years" : `Year ${year}`;
   if (activeView === "inventory") {
     const rows = byYear(data.inventory_by_year || []);
@@ -459,6 +461,9 @@ function renderCommerceDashboard(data = commerceSnapshot) {
     { label: "Stockout snapshots", color: "#c54845", matches: () => true, value: (row) => row.stockout_snapshots },
     { label: "Overstock snapshots", color: "#3972bd", matches: () => true, value: (row) => row.overstock_snapshots },
   ], "snapshot count", "line", yearLabel);
+  renderCommerceChart("#commerce-inventory-fill-rate-chart", inventoryRows, [
+    { label: "Average fill rate", color: "#48a17c", matches: () => true, value: (row) => Number(row.avg_fill_rate) * 100 },
+  ], "%", "line", yearLabel);
   const promotionRows = byYear(data.promotions_by_year || []);
   renderCommerceChart("#commerce-promotion-chart", promotionRows, [
     { label: "Items with promotion tag", color: "#3972bd", matches: (row) => row.used_promotion, value: (row) => row.net_sales },
@@ -675,7 +680,7 @@ function renderDashboardVisualization(visualization) {
     ).join("");
     return `<article class="answer-chart"><h4>${escapeHtml(item.name)} · ${escapeHtml(visualization.unit)}</h4><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(item.name)} by fiscal year">${grid}<line x1="${left}" y1="${top}" x2="${left}" y2="${top + plotHeight}" class="chart-axis"/>${segments.map((path) => `<path d="${path.join(" ")}" fill="none" stroke="${colors[seriesIndex % colors.length]}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`).join("")}${points}${xLabels}</svg></article>`;
   }).join("");
-  return `<section class="answer-visualization"><h3>${escapeHtml(visualization.title || "Verified financial trend")}</h3>${charts}<p class="chart-note">Values come from verified, role-visible source metrics. Exact amounts and citations are listed in the response above.</p></section>`;
+  return `<section class="answer-visualization"><h3>${escapeHtml(visualization.title || "Verified data trend")}</h3>${charts}<p class="chart-note">Chart values come from the cited database observations. Review the source and scope in the response above.</p></section>`;
 }
 
 function renderAnswerBody(answer) {

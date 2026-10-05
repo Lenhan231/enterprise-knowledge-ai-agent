@@ -261,7 +261,7 @@ class DocumentRepository:
                 LEFT JOIN document_chunks c
                   ON c.metadata->>'document_id' = d.document_id
                  AND coalesce(d.processing_status, 'ready') = 'ready'
-                WHERE d.source_type IN ('public_enterprise_document', 'user_upload')
+                WHERE d.source_type IN ('public_enterprise_document', 'user_upload', 'synthetic_demo_policy')
                   AND d.knowledge_base_active IS TRUE
                   AND {visible_filter}
                 GROUP BY d.document_id
@@ -277,7 +277,7 @@ class DocumentRepository:
                     FROM documents d LEFT JOIN document_chunks c
                       ON c.metadata->>'document_id' = d.document_id
                      AND coalesce(d.processing_status, 'ready') = 'ready'
-                    WHERE d.source_type IN ('public_enterprise_document', 'user_upload')
+                    WHERE d.source_type IN ('public_enterprise_document', 'user_upload', 'synthetic_demo_policy')
                       AND d.knowledge_base_active IS TRUE
                       AND {visible_filter}
                     GROUP BY d.company, d.domain, d.fiscal_year
@@ -293,7 +293,7 @@ class DocumentRepository:
                     FROM documents d LEFT JOIN document_chunks c
                       ON c.metadata->>'document_id' = d.document_id
                      AND coalesce(d.processing_status, 'ready') = 'ready'
-                    WHERE d.source_type IN ('public_enterprise_document', 'user_upload')
+                    WHERE d.source_type IN ('public_enterprise_document', 'user_upload', 'synthetic_demo_policy')
                       AND d.knowledge_base_active IS TRUE
                       AND {visible_filter}
                     GROUP BY d.document_id ORDER BY d.title""",
@@ -303,7 +303,7 @@ class DocumentRepository:
             cursor.execute(
                 f"""SELECT d.company, d.fiscal_year, d.processing_status, count(*)::int AS documents
                     FROM documents d
-                    WHERE d.source_type IN ('public_enterprise_document', 'user_upload')
+                    WHERE d.source_type IN ('public_enterprise_document', 'user_upload', 'synthetic_demo_policy')
                       AND d.knowledge_base_active IS TRUE
                       AND {visible_filter}
                     GROUP BY d.company, d.fiscal_year, d.processing_status

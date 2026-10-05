@@ -277,10 +277,13 @@ class DocumentDashboardTest(unittest.TestCase):
         self.assertEqual(result["chunk_count"], 5)
         self.assertEqual(result["financial"], [])
         self.assertEqual(result["candidates"], [])
-        for index in (0, 1, 2):
+        for index in range(3):
             query = " ".join(cursor.execute.call_args_list[index].args[0].lower().split())
             self.assertIn("coalesce(d.processing_status, 'ready') = 'ready'", query)
             self.assertIn("d.knowledge_base_active is true", query)
+            self.assertIn("'synthetic_demo_policy'", query)
+        processing_query = " ".join(cursor.execute.call_args_list[3].args[0].lower().split())
+        self.assertIn("'synthetic_demo_policy'", processing_query)
         first_query, first_params = cursor.execute.call_args_list[0].args
         self.assertNotIn("Vinamilk", first_query)
         self.assertIn("reference.metadata->'knowledge_domains'", first_query)

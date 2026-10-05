@@ -6,6 +6,9 @@ COMMERCE_DECISION_PROFILES = {
         "query_terms": (
             "inventory", "stock", "stockout", "overstock", "fill rate", "allocation",
             "replenishment", "sku", "tồn kho", "thiếu hàng", "hết hàng", "phân bổ tồn kho",
+            "product availability", "item availability", "products unavailable", "unavailable products",
+            "products being unavailable",
+            "out-of-stock products", "sản phẩm không có sẵn", "tình trạng sẵn hàng",
             "bổ sung hàng", "lead time", "fulfillment center", "supplier", "smart inventory",
             "low stock", "low in stock", "out of stock", "item level", "category level",
             "stock alert", "inventory visibility", "inventory feed", "supplier readiness",
@@ -19,6 +22,7 @@ COMMERCE_DECISION_PROFILES = {
         ),
         "retrieval_query": (
             "inventory placement allocation stock availability stockout overstock replenishment "
+            "product availability item availability unavailable products out-of-stock products "
             "low stock out of stock item level category level alerts visibility "
             "lead time fulfillment center supplier smart inventory inventory feed supplier readiness "
             "warehouse facility capacity daily updates multi-location inventory stock transfer "

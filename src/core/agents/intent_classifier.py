@@ -55,7 +55,7 @@ class IntentClassifier:
         fallback = resolve_commerce_decision_domain(question)
         domains = "\n".join(
             f"- {domain}: {profile['label']}; data: {', '.join(profile['source_tables'])}; "
-            f"scope: {profile['limitations'][0]}"
+            f"decision scope: {profile['retrieval_query']}; data limits: {profile['limitations'][0]}"
             for domain, profile in COMMERCE_DECISION_PROFILES.items()
         )
         try:

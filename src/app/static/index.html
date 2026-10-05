@@ -179,24 +179,6 @@
     <!-- TAB 2: ANALYTICS / BUSINESS ANALYSIS -->
     <section id="tab-analytics" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-analytics" hidden>
       <section id="analytics-section" class="analytics-section" hidden>
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">EXECUTIVE DECISION SUPPORT</p>
-            <h2>Commerce Operations Dashboard</h2>
-          </div>
-          <div class="analytics-tools" hidden>
-            <label>Company:
-              <select id="analytics-company">
-                <option value="">All companies</option>
-              </select>
-            </label>
-            <label>Fiscal Year:
-              <select id="analytics-year">
-                <option value="">All years</option>
-              </select>
-            </label>
-          </div>
-        </div>
         <div id="analysis-summary" class="analysis-summary" aria-label="Analysis coverage" hidden></div>
 
         <section id="commerce-dashboard" class="commerce-dashboard" aria-labelledby="commerce-dashboard-title" hidden>
@@ -204,11 +186,6 @@
             <div><p class="eyebrow">COMMERCE OPERATIONS · DATABASE AGGREGATES</p><h2 id="commerce-dashboard-title">Commerce decision dashboard</h2>
               <p>Values are computed from the private Commerce schema. This competition dataset is synthetic.</p></div>
             <div class="commerce-dashboard-filters">
-              <label>Dashboard domain <select id="commerce-decision-domain" aria-label="Choose the dashboard domain">
-                <option value="inventory_allocation">Inventory allocation</option>
-                <option value="promotion_planning">Promotion planning</option>
-                <option value="nationwide_logistics">Nationwide logistics</option>
-              </select></label>
               <label>Year <select id="commerce-year-filter" aria-label="Filter Commerce dashboard by year"><option value="">All available years</option></select></label>
             </div>
           </div>
@@ -474,6 +451,6 @@
       </section>
     </section>
   </main>
-  <script src="/static/app.js?v=commerce-evidence-copy-1" defer></script>
+  <script src="/static/app.js?v=commerce-domain-tabs-1" defer></script>
 </body>
 </html>

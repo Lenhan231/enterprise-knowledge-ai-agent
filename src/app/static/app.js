@@ -452,7 +452,7 @@ function renderCommerceDashboard(data = commerceSnapshot) {
     renderCommerceCards([
       ["Delivered shipments", formatCommerceValue(deliveries), yearLabel],
       ["Weighted average transit", Number.isFinite(weighted("avg_transit_days")) ? `${weighted("avg_transit_days").toFixed(2)} days` : "—", "Weighted by delivered shipments"],
-      ["Regional median range", medianRange, "Range across displayed dataset regions"],
+      ["Regional-year median range", medianRange, "Range across displayed region/year aggregates, not individual shipments"],
       ["Weighted average shipping fee", formatCommerceValue(weighted("avg_shipping_fee")), "Dataset units; currency not declared"],
     ], "Descriptive regional summary; no carrier or route-level data");
   }
@@ -519,6 +519,16 @@ function renderCommerceDashboard(data = commerceSnapshot) {
   $("#commerce-data-notes-list").innerHTML = (data.data_notes || []).map((note) => `<li>${escapeHtml(note)}</li>`).join("");
 }
 
+function selectedCommerceDomain() {
+  const domainByView = {
+    inventory: "inventory_allocation",
+    promotions: "promotion_planning",
+    logistics: "nationwide_logistics",
+  };
+  const activeView = document.querySelector('[data-commerce-view][aria-selected="true"]')?.dataset.commerceView;
+  return domainByView[activeView] || "inventory_allocation";
+}
+
 document.querySelectorAll("[data-commerce-view]").forEach((button) => {
   button.addEventListener("click", () => {
     $("#commerce-dashboard-status").hidden = true;
@@ -527,13 +537,7 @@ document.querySelectorAll("[data-commerce-view]").forEach((button) => {
       tab.setAttribute("aria-selected", String(selected));
       $("#commerce-view-" + tab.dataset.commerceView).hidden = !selected;
     });
-    const domainByView = {
-      inventory: "inventory_allocation",
-      promotions: "promotion_planning",
-      logistics: "nationwide_logistics",
-    };
-    $("#commerce-decision-domain").value = domainByView[button.dataset.commerceView];
-    renderDecisionDomainQuestions($("#commerce-decision-domain").value);
+    renderDecisionDomainQuestions(selectedCommerceDomain());
     renderCommerceDashboard();
     loadCommerceDashboardForActiveView();
   });
@@ -553,18 +557,9 @@ $(".commerce-dashboard-tabs").addEventListener("keydown", (event) => {
 });
 $("#commerce-year-filter").addEventListener("change", () => renderCommerceDashboard());
 function selectedQuestionSuggestionDomain() {
-  return $("#business-question-domain").value || $("#commerce-decision-domain").value;
+  return $("#business-question-domain").value || selectedCommerceDomain();
 }
 
-$("#commerce-decision-domain").addEventListener("change", () => {
-  renderDecisionDomainQuestions(selectedQuestionSuggestionDomain());
-  const viewByDomain = {
-    inventory_allocation: "inventory",
-    promotion_planning: "promotions",
-    nationwide_logistics: "logistics",
-  };
-  document.querySelector(`[data-commerce-view="${viewByDomain[$("#commerce-decision-domain").value]}"]`)?.click();
-});
 $("#business-question-domain").addEventListener("change", () => {
   renderDecisionDomainQuestions(selectedQuestionSuggestionDomain());
 });
@@ -776,7 +771,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
     ${tokenUsage}
     <div class="answer-text">${renderAnswerBody(data.answer)}</div>
     ${renderDashboardVisualization(data.data?.visualization)}
-    ${data.citation_validation_failed ? '<p class="error-message">Relevant passages were found, but citation verification did not meet the strict confidence threshold.</p>' : citations.length ? `
+    ${data.citation_validation_failed ? `<p class="error-message">The answer was withheld because it failed evidence validation.${data.decision_validation_failure ? ` <details><summary>Admin diagnostic</summary><code>${escapeHtml(data.decision_validation_failure)}</code>${data.decision_validation_numeric_tokens?.length ? `<p>Unsupported numeric claims: ${data.decision_validation_numeric_tokens.map(escapeHtml).join(", ")}</p>` : ""}</details>` : ""}</p>` : citations.length ? `
       <div class="citations">
         <div class="citation-header-row">
           <h4>Cited Sources (${citations.length})</h4>
@@ -1267,7 +1262,7 @@ $("#business-question-form").addEventListener("submit", async (event) => {
   decisionSuggestionsPending = false;
   const question = decisionSuggestions ? "" : $("#business-question").value.trim();
   const businessDecisionDomain = decisionSuggestions
-    ? $("#commerce-decision-domain").value
+    ? selectedCommerceDomain()
     : $("#business-question-domain").value || null;
   const panel = $("#business-answer-panel");
   if ((!decisionSuggestions && question.length < 3) || (decisionSuggestions && !businessDecisionDomain)) return;
@@ -1301,7 +1296,6 @@ $(".decision-question-prompts").addEventListener("click", (event) => {
     return;
   }
   if (!event.target.closest("[data-decision-suggestions]")) return;
-  if (!$("#commerce-decision-domain").value) return;
   decisionSuggestionsPending = true;
   $("#business-question-form").requestSubmit();
 });

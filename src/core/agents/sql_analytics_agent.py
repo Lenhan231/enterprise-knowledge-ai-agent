@@ -208,17 +208,29 @@ def _validate_promotion_tag_groups(question: str, observations: list[dict]) -> N
         )
 
 
+def _asks_for_campaign_scoped_outcomes(question: str) -> bool:
+    """Only require campaign-window attribution when the question requests campaign-level results."""
+    text = question.casefold()
+    outcome = re.search(
+        r"\b(?:sales|revenue|orders?|units?|discounts?|performance|outcomes?|results?)\b|"
+        r"(?:doanh thu|đơn hàng|sản phẩm|giảm giá|hiệu quả|kết quả)",
+        text,
+    )
+    scope = re.search(
+        r"\bwhich\s+(?:\d{4}\s+)?campaigns?\b|"
+        r"\b(?:compare|rank|ranking)\b[^.!?\n]{0,80}\bcampaigns?\b|"
+        r"\bcampaigns?\b[^.!?\n]{0,50}\b(?:sales|revenue|orders?|units?|discounts?|performance|outcomes?|results?|window)\b|"
+        r"\b(?:each|per|by|during|within)\s+(?:the\s+)?campaigns?\b|"
+        r"\bcampaign[- ]window\b|"
+        r"(?:chiến dịch nào|từng chiến dịch|theo chiến dịch|trong thời gian chạy chiến dịch|kết quả từng chiến dịch)",
+        text,
+    )
+    return bool(outcome and scope)
+
+
 def _validate_campaign_outcome_query(question: str, sql: str) -> str:
     """Reject campaign outcome SQL that does not apply the dataset's attribution rules."""
-    asks_campaign_outcome = (
-        re.search(r"\bcampaigns?\b|chiến dịch", question, re.IGNORECASE)
-        and re.search(
-            r"\b(?:sales|revenue|orders?|units?|discounts?)\b|doanh thu|đơn hàng|sản phẩm|giảm giá",
-            question,
-            re.IGNORECASE,
-        )
-    )
-    if not asks_campaign_outcome:
+    if not _asks_for_campaign_scoped_outcomes(question):
         return sql
 
     statement = parse_one(sql, read="postgres")

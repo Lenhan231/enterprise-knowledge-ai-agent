@@ -361,6 +361,32 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
             query,
         )
 
+    def test_promotion_decision_question_does_not_require_campaign_window_join(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = [
+            {"used_promotion": True, "delivered_order_items": 40, "net_sales": 900},
+            {"used_promotion": False, "delivered_order_items": 60, "net_sales": 1100},
+        ]
+        llm = Mock()
+        llm.generate.return_value = (
+            '{"sql":"SELECT (oi.promo_id IS NOT NULL OR oi.promo_id_2 IS NOT NULL) AS used_promotion, '
+            'COUNT(*) AS delivered_order_items, '
+            'SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_sales '
+            'FROM commerce.order_items oi JOIN commerce.orders o ON o.order_id = oi.order_id '
+            'WHERE o.order_status = \'delivered\' '
+            'GROUP BY (oi.promo_id IS NOT NULL OR oi.promo_id_2 IS NOT NULL) LIMIT 100"}'
+        )
+
+        result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            "Should the business repeat or expand a promotion based on available order data? "
+            "Explain why causal lift and ROI cannot be established without a holdout and campaign spend.",
+            "promotion_planning",
+        )
+
+        self.assertIn("FROM commerce.order_items", result["sql_query"])
+        self.assertEqual(len(llm.generate.call_args_list), 1)
+        repository.execute_commerce_analytics.assert_called_once()
+
     def test_inventory_sql_prompt_identifies_boolean_flag_columns(self):
         repository = Mock()
         repository.execute_commerce_analytics.return_value = [{"category": "Shoes", "stockout_products": 2}]

@@ -1619,6 +1619,10 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
             "answer": agent_result.answer,
             "insufficient_context": agent_result.metadata.get("insufficient_context", False),
             "citation_validation_failed": agent_result.metadata.get("citation_validation_failed", False),
+            **({"decision_validation_failure": agent_result.metadata["decision_validation_failure"]}
+               if user.get("role") == "admin" and agent_result.metadata.get("decision_validation_failure") else {}),
+            **({"decision_validation_numeric_tokens": agent_result.metadata["decision_validation_numeric_tokens"]}
+               if user.get("role") == "admin" and agent_result.metadata.get("decision_validation_numeric_tokens") else {}),
             "citations": citations,
             "agent": agent_result.agent,
             "data": jsonable_encoder(agent_result.data),

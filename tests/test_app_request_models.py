@@ -284,7 +284,12 @@ class AskRequestTest(unittest.TestCase):
 
     def test_commerce_question_api_returns_auto_detected_domain(self):
         report, classifier = Mock(), Mock()
-        report.run.return_value = AgentResult(answer="Inventory evidence [C1]", agent="report")
+        report.run.return_value = AgentResult(
+            answer="Inventory evidence [C1]", agent="report",
+            metadata={"citation_validation_failed": True,
+                      "decision_validation_failure": "decision_numeric_claim_not_present_in_cited_evidence",
+                      "decision_validation_numeric_tokens": ["0.12", "25"]},
+        )
         classifier.classify_commerce_domain.return_value = "inventory_allocation"
         with (
             patch("app.main.KnowledgeAgent", return_value=Mock()),
@@ -299,10 +304,23 @@ class AskRequestTest(unittest.TestCase):
                 AskRequest(question="Should inventory be reallocated?", commerce_decision_support=True),
                 {"sub": "analyst-test", "role": "analyst"},
             )
+            admin_payload = _answer_documents(
+                AskRequest(question="Should inventory be reallocated?", commerce_decision_support=True),
+                {"sub": "admin-test", "role": "admin"},
+            )
 
         self.assertEqual(report.run.call_args.args[0].metadata["business_decision_domain"], "inventory_allocation")
         self.assertEqual(payload["business_decision_domain"], "inventory_allocation")
         self.assertTrue(payload["business_domain_auto_detected"])
+        self.assertTrue(payload["citation_validation_failed"])
+        self.assertNotIn("decision_validation_failure", payload)
+        self.assertNotIn("decision_validation_numeric_tokens", payload)
+
+        self.assertEqual(
+            admin_payload["decision_validation_failure"],
+            "decision_numeric_claim_not_present_in_cited_evidence",
+        )
+        self.assertEqual(admin_payload["decision_validation_numeric_tokens"], ["0.12", "25"])
 
     def test_commerce_question_api_returns_clarification_without_running_agents(self):
         report, classifier = Mock(), Mock()

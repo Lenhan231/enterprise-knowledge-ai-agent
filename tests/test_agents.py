@@ -25,6 +25,7 @@ from core.agents.report_agent import (
     ReportAgent, _commerce_safe_fallback, _commerce_question_safe_fallback,
     _generate_conditional_draft,
     _decision_numeric_facts_match_cited_evidence,
+    _unsupported_decision_numeric_tokens,
     _commerce_schema_gap_citation_failure, _financial_facts_match_cited_evidence, _format_prompt_evidence,
     _has_untranslated_prose, _has_unsolicited_commerce_recommendation, _has_unsupported_logistics_intervention,
     _has_unprovided_logistics_fields, _omits_cited_logistics_method,
@@ -321,6 +322,21 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("recommendation could not be synthesized", answer)
         self.assertNotIn("transfer inventory", answer.casefold())
         self.assertNotIn("holdout experiment", answer.casefold())
+
+    def test_dynamic_fallback_row_omission_note_does_not_add_an_uncited_number(self):
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Commerce SQL",
+            content="question-specific SQL observations: " + json.dumps([{"campaign": "Spring Sale"}] * 50),
+            metadata={"commerce_domain": "promotion_planning"},
+        )]
+
+        answer = _commerce_question_safe_fallback(
+            "Should we expand a campaign based on order outcomes?", evidence, decision_request=True,
+        )
+
+        self.assertIn("(Additional rows omitted.)", answer)
+        self.assertNotIn("30", answer)
+        self.assertTrue(_decision_numeric_facts_match_cited_evidence(answer, evidence))
 
     def test_dynamic_commerce_fallback_cites_retrieved_synthetic_policy(self):
         evidence = [
@@ -1231,6 +1247,40 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("[C1]", result.answer)
         self.assertNotEqual(result.answer, "The answer was withheld because it could not be validated against the verified evidence. Please retry the question.")
 
+    def test_commerce_ui_mode_retrieves_operating_method_for_indirect_decision_question(self):
+        analytics = Mock()
+        analytics.commerce_decision_snapshot.return_value = {
+            "domain": "inventory_allocation", "domain_label": "Inventory allocation",
+            "source_tables": ["commerce.inventory"],
+            "observations": {"inventory_by_year": [{"year": 2022, "stockout_snapshots": 14}]},
+            "limitations": ["Warehouse-level lead time and transfer cost are unavailable."],
+            "dataset_note": "Synthetic competition data.",
+        }
+        knowledge = Mock()
+        knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[Evidence(
+            citation_id="S1", source_type="document", source="Inventory management cookbook",
+            content="Set reorder points using usual sales, supplier lead time, and seasonal patterns.",
+            metadata={"evidence_class": "management_cookbook_reference",
+                      "source_publisher": "business.gov.au"},
+        )])
+        llm = Mock()
+        llm.generate.return_value = (
+            "Check item-level demand and stock before adjusting replenishment, using the cited guide's "
+            "reorder-point method as a reference [S1]. The 2022 data recorded 14 stockout snapshots [C1], "
+            "but warehouse-level lead time and transfer cost are unavailable [L1]."
+        )
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
+            question="What operational changes would reduce products being unavailable for customers?",
+            metadata={"business_decision_domain": "inventory_allocation", "role": "admin",
+                      "commerce_decision_support": True},
+        ))
+
+        knowledge.run.assert_called_once()
+        self.assertEqual({item.citation_id for item in result.evidence}, {"C1", "L1", "S1"})
+        self.assertIn("[S1]", result.answer)
+        self.assertIn("[L1]", result.answer)
+
     def test_commerce_report_uses_named_platform_operating_rule_for_conditional_advice(self):
         analytics = Mock()
         analytics.commerce_decision_snapshot.return_value = {
@@ -1350,6 +1400,7 @@ class AgentFlowTest(unittest.TestCase):
             content='avg_fill_rate: 0.9635; stockout_snapshots: 3490',
         )
         self.assertFalse(_decision_numeric_facts_match_cited_evidence("Average fill rate was 0.96 [C1].", [sql_evidence]))
+        self.assertEqual(_unsupported_decision_numeric_tokens("Average fill rate was 0.96 [C1].", [sql_evidence]), ["0.96"])
         self.assertTrue(_decision_numeric_facts_match_cited_evidence("Fill rate was 0.9635 [C1].", [sql_evidence]))
         self.assertTrue(_decision_numeric_facts_match_cited_evidence(
             "1. Collect location-level demand [C1].\n2. Review lead times [C1].", [sql_evidence],
@@ -2614,6 +2665,7 @@ class AgentFlowTest(unittest.TestCase):
         prompt = llm.generate.call_args.args[0]
         self.assertIn("commerce.shipments", prompt)
         self.assertIn("inventory_allocation", prompt)
+        self.assertIn("stock availability stockout overstock replenishment", prompt)
 
     def test_commerce_domain_classifier_abstains_on_low_confidence_and_uses_clear_fallback(self):
         llm = Mock()
@@ -2622,6 +2674,12 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(classifier.classify_commerce_domain("Should we repeat the campaign?"), "promotion_planning")
         llm.generate.return_value = '{"domain":null,"confidence":0.91}'
         self.assertIsNone(classifier.classify_commerce_domain("What business decision should we make?"))
+
+    def test_product_availability_paraphrases_resolve_to_inventory_domain(self):
+        self.assertEqual(
+            resolve_commerce_decision_domain("What changes could reduce products being unavailable for customers?"),
+            "inventory_allocation",
+        )
 
     def test_report_intent_falls_back_to_hybrid_when_report_agent_is_not_configured(self):
         classifier = Mock()

@@ -828,30 +828,25 @@ def _financial_facts_match_cited_evidence(answer: str, evidence: list[Evidence])
 
 def _decision_numeric_facts_match_cited_evidence(answer: str, evidence: list[Evidence]) -> bool:
     """Require numeric decision-report claims to be source-reported, not calculated in prose."""
+    return not _unsupported_decision_numeric_tokens(answer, evidence)
+
+
+def _unsupported_decision_numeric_tokens(answer: str, evidence: list[Evidence]) -> list[str]:
+    """Return numeric tokens in an answer that are absent from its cited evidence."""
     cited_ids = set(_CITATION.findall(answer))
-    cited = [item for item in evidence if item.citation_id in cited_ids]
-    answer_text = _CITATION.sub("", answer)
-    source_text = " ".join(
-        " ".join((
-            item.source or "",
-            str(item.metadata.get("title", "")),
-            item.content or "",
-            str(item.metadata.get("metric_value", "")),
-            str(item.metadata.get("fiscal_year", "")),
-        ))
-        for item in cited
+    cited_text = " ".join(
+        " ".join((item.source or "", str(item.metadata.get("title", "")), item.content or "",
+                   str(item.metadata.get("metric_value", "")), str(item.metadata.get("fiscal_year", ""))))
+        for item in evidence if item.citation_id in cited_ids
     )
 
-    def numbers(text: str) -> set[str]:
-        return {
-            re.sub(r"(?<=\d)[\s.,]+(?=\d)", "", match)
-            for match in _NUMBER.findall(text)
-        }
+    def normalize(match: str) -> str:
+        return re.sub(r"(?<=\d)[\s.,]+(?=\d)", "", match)
 
-    # Ordered-list markers are formatting, not business facts to cite.
+    answer_text = _CITATION.sub("", answer)
     answer_text = re.sub(r"(?m)^\s*\d{1,2}\.\s+", "", answer_text)
-    answer_numbers = numbers(answer_text)
-    return answer_numbers.issubset(numbers(source_text))
+    cited_numbers = {normalize(match) for match in _NUMBER.findall(cited_text)}
+    return sorted({match for match in _NUMBER.findall(answer_text) if normalize(match) not in cited_numbers})
 
 
 def _has_unsupported_inventory_overlap_count(answer: str, evidence: list[Evidence]) -> bool:
@@ -1628,7 +1623,7 @@ def _commerce_question_safe_fallback(question: str, evidence: list[Evidence], *,
             table += "| " + " | ".join(values) + " |\n"
         omitted = len(observations) - len(visible)
         if omitted:
-            omitted_note = f"\n(Đã lược {omitted} dòng khác.)" if localized else f"\n({omitted} additional rows omitted.)"
+            omitted_note = "\n(Các dòng còn lại đã được lược bỏ.)" if localized else "\n(Additional rows omitted.)"
     if domain and (
         decision_request
         or (domain == "inventory_allocation" and _is_inventory_flag_review_question(question))
@@ -2072,6 +2067,7 @@ class ReportAgent(BaseAgent):
             ))
         decision_request = (
             bool(request.metadata.get("decision_suggestions"))
+            or bool(request.metadata.get("commerce_decision_support"))
             or bool(request.metadata.get("decision_support"))
             or _is_decision_support_request(question)
         )
@@ -2300,9 +2296,15 @@ class ReportAgent(BaseAgent):
             item.citation_id for item in references if item.citation_id
         }
 
+        validation_numeric_tokens: list[str] = []
+
         def validation_failure(candidate: str) -> str | None:
+            nonlocal validation_numeric_tokens
+            validation_numeric_tokens = []
             failed = _report_validation_failure(candidate, evidence, allowed, question)
             if failed:
+                if failed == "decision_numeric_claim_not_present_in_cited_evidence":
+                    validation_numeric_tokens = _unsupported_decision_numeric_tokens(candidate, evidence)
                 return failed
             if _has_verbatim_synthetic_policy_quote(candidate, evidence):
                 return "synthetic_policy_quoted_verbatim"
@@ -2317,6 +2319,7 @@ class ReportAgent(BaseAgent):
             if _has_unsupported_numeric_decision_gate(candidate, evidence):
                 return "decision_gate_uses_an_unsourced_numeric_threshold"
             if not _decision_numeric_facts_match_cited_evidence(candidate, evidence):
+                validation_numeric_tokens = _unsupported_decision_numeric_tokens(candidate, evidence)
                 return "decision_numeric_claim_not_present_in_cited_evidence"
             if domain == "nationwide_logistics" and _has_unsupported_logistics_intervention(candidate):
                 return "unsupported_specific_logistics_intervention"
@@ -2488,6 +2491,9 @@ class ReportAgent(BaseAgent):
                 "decision_analysis": "commerce_sql_and_operating_references",
                 "decision_reference_retrieval_limited": reference_retrieval_limited,
                 "citation_validation_failed": failure is not None,
+                **({"decision_validation_failure": failure} if failure else {}),
+                **({"decision_validation_numeric_tokens": validation_numeric_tokens}
+                   if failure and validation_numeric_tokens else {}),
                 "decision_validation_repair_attempted": repaired,
                 "decision_fallback_used": fallback_used,
                 "generation_provider": provider,

@@ -440,6 +440,28 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("Policy giả lập Commerce Demo đã được truy xuất", answer)
         self.assertIn("không phải chính sách của doanh nghiệp thật", answer)
 
+    def test_dynamic_inventory_fallback_ranks_requested_stockout_category(self):
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Commerce SQL",
+            content=("question_specific_query question-specific SQL observations: "
+                     '[{"category":"GenZ","stockout_count":25,"avg_stockout_days":0.84},'
+                     '{"category":"Streetwear","stockout_count":134,"avg_stockout_days":1.13},'
+                     '{"category":"Outdoor","stockout_count":95,"avg_stockout_days":1.29}]'),
+            metadata={"commerce_domain": "inventory_allocation"},
+        )]
+
+        answer = _commerce_question_safe_fallback(
+            "Nên ưu tiên kiểm tra danh mục nào để giảm tình trạng thiếu hàng?",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertIn("Ưu tiên rà soát Streetwear", answer)
+        self.assertIn("134 số dòng có cờ stockout", answer)
+        self.assertIn("aggregate, chưa đủ căn cứ để điều chuyển", answer)
+        self.assertIn("[C1]", answer)
+        self.assertNotIn("[[C1]]", answer)
+
     def test_report_agent_uses_question_specific_commerce_sql_for_unseen_aggregate(self):
         analytics = SQLAnalyticsAgent(repository=Mock(), llm=Mock())
         analytics.commerce_question_observations = Mock(return_value={

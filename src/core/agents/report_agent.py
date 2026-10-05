@@ -1593,6 +1593,7 @@ def _commerce_question_safe_fallback(question: str, evidence: list[Evidence], *,
         observations = None
     table = ""
     omitted_note = ""
+    priority_fact = ""
     if isinstance(observations, list) and observations and all(isinstance(row, dict) for row in observations):
         localized_labels = {
             "year": "Năm", "region": "Vùng", "category": "Danh mục", "snapshot_date": "Ngày snapshot",
@@ -1621,6 +1622,43 @@ def _commerce_question_safe_fallback(question: str, evidence: list[Evidence], *,
                     value = json.dumps(value, ensure_ascii=False, sort_keys=True)
                 values.append(str(value).replace("|", "\\|").replace("\n", " "))
             table += "| " + " | ".join(values) + " |\n"
+        if decision_request and domain == "inventory_allocation":
+            query = question.casefold()
+            asks_priority = any(term in query for term in (
+                "priorit", "which categor", "highest", "top categor", "danh mục nào",
+                "ưu tiên", "cao nhất", "nhóm nào trước",
+            ))
+            asks_stockout = any(term in query for term in (
+                "stockout", "out of stock", "out-of-stock", "thiếu hàng", "hết hàng",
+            ))
+            if asks_priority and asks_stockout:
+                metric_keys = [
+                    key for key in columns
+                    if any(term in key.casefold() for term in ("stockout", "out_of_stock"))
+                    and not any(term in key.casefold() for term in ("avg", "average", "days", "rate", "pct"))
+                ]
+                category_key = next((key for key in columns if key.casefold() in {"category", "product_category"}), None)
+                metric_key = next((key for key in metric_keys if any(term in key.casefold() for term in ("count", "products", "rows"))), None)
+                metric_key = metric_key or next(iter(metric_keys), None)
+                ranked = sorted(
+                    (row for row in observations if category_key and metric_key
+                     and isinstance(row.get(metric_key), (int, float))),
+                    key=lambda row: row[metric_key], reverse=True,
+                )
+                if ranked:
+                    leaders = [row for row in ranked if row[metric_key] == ranked[0][metric_key]]
+                    label = " / ".join(str(row[category_key]) for row in leaders)
+                    metric_label = "số dòng có cờ stockout" if _is_vietnamese_text(question) else "stockout-flagged rows"
+                    if _is_vietnamese_text(question):
+                        priority_fact = (
+                            f"Ưu tiên rà soát {label}: có {ranked[0][metric_key]} {metric_label}, cao nhất trong kết quả này "
+                            f"{citation}. Đây là thứ tự kiểm tra theo aggregate, chưa đủ căn cứ để điều chuyển tồn kho. "
+                        )
+                    else:
+                        priority_fact = (
+                            f"Prioritize reviewing {label}: it has {ranked[0][metric_key]} {metric_label}, the highest "
+                            f"in these results {citation}. This aggregate ranking is not enough to justify an inventory transfer. "
+                        )
         omitted = len(observations) - len(visible)
         if omitted:
             omitted_note = "\n(Các dòng còn lại đã được lược bỏ.)" if localized else "\n(Additional rows omitted.)"
@@ -1633,7 +1671,7 @@ def _commerce_question_safe_fallback(question: str, evidence: list[Evidence], *,
                 facts = f"Quan sát SQL theo câu hỏi:\n{table}{omitted_note} {citation}. "
             else:
                 facts = f"SQL observations matching the question:\n{table}{omitted_note} {citation}. "
-            return facts + _commerce_safe_fallback(
+            return facts + priority_fact + _commerce_safe_fallback(
                 domain, question, evidence, decision_request=True,
             )
     if _is_vietnamese_text(question):

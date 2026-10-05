@@ -288,7 +288,8 @@ class AskRequestTest(unittest.TestCase):
             answer="Inventory evidence [C1]", agent="report",
             metadata={"citation_validation_failed": True,
                       "decision_validation_failure": "decision_numeric_claim_not_present_in_cited_evidence",
-                      "decision_validation_numeric_tokens": ["0.12", "25"]},
+                      "decision_validation_numeric_tokens": ["0.12", "25"],
+                      "answer_fallback_reason": "provider_unavailable"},
         )
         classifier.classify_commerce_domain.return_value = "inventory_allocation"
         with (
@@ -313,6 +314,7 @@ class AskRequestTest(unittest.TestCase):
         self.assertEqual(payload["business_decision_domain"], "inventory_allocation")
         self.assertTrue(payload["business_domain_auto_detected"])
         self.assertTrue(payload["citation_validation_failed"])
+        self.assertEqual(payload["answer_fallback_reason"], "provider_unavailable")
         self.assertNotIn("decision_validation_failure", payload)
         self.assertNotIn("decision_validation_numeric_tokens", payload)
 

@@ -1377,6 +1377,7 @@ class AgentFlowTest(unittest.TestCase):
         ))
 
         self.assertTrue(result.metadata["decision_fallback_used"])
+        self.assertEqual(result.metadata["answer_fallback_reason"], "evidence_validation_failed")
         self.assertFalse(result.metadata["citation_validation_failed"])
         self.assertIn("Verify that Shop's SKU-level stock and demand", result.answer)
         self.assertNotRegex(result.answer, r"(?i)replenish.{0,50}\b2\s+(?:low.stock\s+)?skus?\b")
@@ -2117,6 +2118,7 @@ class AgentFlowTest(unittest.TestCase):
 
         self.assertTrue(result.metadata["decision_fallback_used"])
         self.assertEqual(result.metadata["generation_provider"], "deterministic_safety_fallback")
+        self.assertEqual(result.metadata["answer_fallback_reason"], "provider_unavailable")
         self.assertFalse(result.metadata["citation_validation_failed"])
         self.assertIn("[C1]", result.answer)
         self.assertNotRegex(result.answer, r"\[C1\] \[C1\]")

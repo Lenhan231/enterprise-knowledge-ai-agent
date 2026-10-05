@@ -720,6 +720,7 @@ function renderAnswerBody(answer) {
 function renderAnswer(data, panel = $("#answer-panel")) {
   panel.hidden = false;
   const citations = Array.isArray(data.citations) ? data.citations : [];
+  const usedEvidenceFallback = Boolean(data.answer_fallback_reason);
   const domainLabels = {
     inventory_allocation: "Inventory allocation",
     promotion_planning: "Promotion planning",
@@ -730,8 +731,12 @@ function renderAnswer(data, panel = $("#answer-panel")) {
     : data.needs_domain_clarification
       ? '<p class="analysis-caveat answer-provenance-note" role="status"><strong>No analysis was run.</strong> Choose one decision domain or clarify the question.</p>'
       : "";
-  const decisionModeNote = data.generation_provider === "deterministic_safety_fallback"
-    ? '<p class="analysis-caveat answer-provenance-note" role="note"><strong>Audit-first safety fallback.</strong> The model draft did not pass grounding checks. This response uses available SQL observations and schema evidence to define the next evidence-gathering steps; it does not select a specific intervention.</p>'
+  const answerFallbackNotes = {
+    provider_unavailable: "The answer model was unavailable. This response uses a conservative, built-in evidence fallback; it is not a model-synthesized recommendation.",
+    evidence_validation_failed: "The model draft did not pass grounding checks. This response uses a conservative, built-in evidence fallback instead.",
+  };
+  const decisionModeNote = answerFallbackNotes[data.answer_fallback_reason]
+    ? `<p class="analysis-caveat answer-provenance-note" role="note"><strong>Decision-support fallback.</strong> ${answerFallbackNotes[data.answer_fallback_reason]}</p>`
     : "";
   const referenceRetrievalNote = data.decision_reference_retrieval_limited
     ? '<p class="analysis-caveat answer-provenance-note" role="note"><strong>Document retrieval was temporarily rate-limited.</strong> This recommendation uses SQL and schema evidence only; no operating document could be checked for this answer.</p>'
@@ -757,8 +762,8 @@ function renderAnswer(data, panel = $("#answer-panel")) {
   panel.innerHTML = `
     <div class="answer-header-wrap">
       <div class="answer-heading">
-        <span class="answer-mark">AI</span>
-        <div><span class="eyebrow">GROUNDED RESPONSE</span><h3>Synthesized Answer</h3></div>
+        <span class="answer-mark">${usedEvidenceFallback ? "EV" : "AI"}</span>
+        <div><span class="eyebrow">GROUNDED RESPONSE</span><h3>${usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer"}</h3></div>
       </div>
       <div class="answer-actions-bar">
         <button type="button" class="action-btn" id="copy-answer-btn" title="Copy response text">Copy</button>

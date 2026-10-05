@@ -2496,6 +2496,10 @@ class ReportAgent(BaseAgent):
                    if failure and validation_numeric_tokens else {}),
                 "decision_validation_repair_attempted": repaired,
                 "decision_fallback_used": fallback_used,
+                **({"answer_fallback_reason": "provider_unavailable"}
+                   if fallback_used and provider_rate_limited else {}),
+                **({"answer_fallback_reason": "evidence_validation_failed"}
+                   if fallback_used and not provider_rate_limited else {}),
                 "generation_provider": provider,
                 "question_sql_fallback": question_sql_fallback,
                 **({"token_usage": {

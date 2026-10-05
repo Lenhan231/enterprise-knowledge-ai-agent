@@ -1636,6 +1636,8 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
                if agent_result.metadata.get("decision_analysis") else {}),
             **({"decision_reference_retrieval_limited": True}
                if agent_result.metadata.get("decision_reference_retrieval_limited") else {}),
+            **({"answer_fallback_reason": agent_result.metadata["answer_fallback_reason"]}
+               if agent_result.metadata.get("answer_fallback_reason") else {}),
             **({"question_sql_fallback": agent_result.metadata["question_sql_fallback"]}
                if agent_result.metadata.get("question_sql_fallback") else {}),
             **({"generation_provider": agent_result.metadata["generation_provider"]}

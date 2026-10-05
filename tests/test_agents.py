@@ -2634,6 +2634,7 @@ class AgentFlowTest(unittest.TestCase):
 
     def test_policy_qa_retrieval_is_limited_to_the_resolved_commerce_domain(self):
         rag = Mock()
+        rag.retrieve_contexts.return_value = []
         rag.generate_answer.return_value = RAGResult(answer="Policy answer [S1]", source_ids=["S1"])
         question = "What does the inventory policy require before transferring stock?"
 
@@ -2643,11 +2644,48 @@ class AgentFlowTest(unittest.TestCase):
                       "policy_reference_only": True},
         ))
 
-        self.assertEqual(rag.generate_answer.call_args.kwargs["metadata_filter"], {
+        self.assertEqual(rag.retrieve_contexts.call_args.kwargs["metadata_filter"], {
             "commerce_reference_active": True,
             "knowledge_domains": ["inventory_allocation"],
             "evidence_class": "company_policy_reference",
         })
+        self.assertEqual(rag.generate_answer.call_args.kwargs["retrieved_contexts"], [])
+
+    def test_commerce_document_qa_reranks_scoped_policy_before_external_methods(self):
+        policy = {
+            "source_id": "S2", "document_name": "Inventory policy", "chunk_index": 1,
+            "content": "The policy requires checking stockout and overstock flags before replenishment.",
+            "metadata": {"document_id": "CD-POL-INV-001", "commerce_reference_active": True,
+                         "knowledge_domains": ["inventory_allocation"],
+                         "evidence_class": "company_policy_reference", "synthetic_company_policy": True},
+            "retrieval_score": 0.8, "retrieval_method": "bm25",
+        }
+        cookbook = {
+            "source_id": "S1", "document_name": "Inventory guide", "chunk_index": 0,
+            "content": "General inventory management guidance.",
+            "metadata": {"document_id": "AUS-BUSINESS-INVENTORY-MANAGEMENT",
+                         "commerce_reference_active": True, "knowledge_domains": ["inventory_allocation"],
+                         "evidence_class": "management_cookbook_reference"},
+            "retrieval_score": 0.9, "retrieval_method": "bm25",
+        }
+        rag = Mock()
+        rag.retrieve_contexts.return_value = [cookbook, policy]
+        rag.generate_answer.return_value = RAGResult(answer="Check flags before replenishment [S1]")
+        question = "Explain the steps to review stockout and overstock flags before replenishment."
+
+        KnowledgeAgent(rag).run(AgentRequest(
+            question=question,
+            metadata={"role": "admin", "company": "Commerce Demo",
+                      "business_decision_domain": "inventory_allocation"},
+        ))
+
+        self.assertEqual(rag.retrieve_contexts.call_args.kwargs["limit"], 50)
+        self.assertEqual(rag.retrieve_contexts.call_args.kwargs["metadata_filter"], {
+            "commerce_reference_active": True,
+            "knowledge_domains": ["inventory_allocation"],
+        })
+        selected = rag.generate_answer.call_args.kwargs["retrieved_contexts"]
+        self.assertEqual(selected[0]["metadata"]["document_id"], "CD-POL-INV-001")
 
     def test_knowledge_agent_preserves_the_user_query_without_company_specific_rewrites(self):
         rag = Mock()

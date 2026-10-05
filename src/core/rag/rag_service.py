@@ -257,13 +257,18 @@ class RAGService:
         metadata_filter: dict | None = None,
         retrieval_method: Literal["dense", "bm25", "hybrid", "parent"] = "hybrid",
         retrieval_query: str | None = None,
+        retrieved_contexts: list[dict] | None = None,
     ) -> RAGResult:
+        if not isinstance(roles, list) or not roles or any(
+            not isinstance(role, str) or not role.strip() for role in roles
+        ):
+            raise ValueError("RAG generation requires trusted authenticated roles")
         requested_record_type = _requested_record_type(question)
-        if requested_record_type == "invoice" and retrieval_method == "hybrid":
+        if retrieved_contexts is None and requested_record_type == "invoice" and retrieval_method == "hybrid":
             # Adjacent chunks may contain the scope that was split from a
             # payment-term sentence; parent expansion remains role/company filtered.
             retrieval_method = "parent"
-        contexts = self.retrieve_contexts(
+        contexts = retrieved_contexts if retrieved_contexts is not None else self.retrieve_contexts(
             retrieval_query or question,
             limit=limit,
             company=company,

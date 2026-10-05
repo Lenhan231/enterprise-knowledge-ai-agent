@@ -68,6 +68,28 @@ class RetrievalCallersTest(unittest.TestCase):
         )
         self.assertIn("Question:\nWhat were revenue and profit?", llm.generate.call_args.args[0])
 
+    def test_rag_can_generate_from_pre_ranked_contexts_without_retrieving_again(self):
+        context = {
+            "source_id": "S1", "document_name": "Commerce Demo policy", "chunk_index": 2,
+            "content": "Check stock evidence before replenishment.", "metadata": {"page_number": 2},
+            "retrieval_score": 0.9, "retrieval_method": "bm25",
+        }
+        llm = MagicMock()
+        llm.generate.return_value = "Check the cited evidence [S1]."
+        rag = RAGService(self.retrieval, llm)
+
+        answer = rag.generate_answer("How should I review inventory?", roles=["admin"], retrieved_contexts=[context])
+
+        self.retrieval.retrieve.assert_not_called()
+        self.assertEqual(answer.contexts, [context])
+        self.assertIn("Commerce Demo policy", llm.generate.call_args.args[0])
+
+    def test_rag_still_requires_trusted_roles_for_pre_ranked_contexts(self):
+        with self.assertRaisesRegex(ValueError, "trusted authenticated roles"):
+            RAGService(self.retrieval, MagicMock()).generate_answer(
+                "question", retrieved_contexts=[],
+            )
+
     def test_rag_bounds_context_without_mutating_results_or_printing(self):
         # Include separators and a second chunk in the cutoff, not just one
         # oversized chunk, to verify the limit applies to the assembled context.

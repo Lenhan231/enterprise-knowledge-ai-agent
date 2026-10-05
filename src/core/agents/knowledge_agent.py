@@ -319,6 +319,22 @@ class KnowledgeAgent(BaseAgent):
                 contexts=contexts,
                 insufficient_context=not contexts,
             )
+        elif decision_domain in COMMERCE_DECISION_PROFILES:
+            rag_options["limit"] = 50
+            retrieval_query = " ".join((
+                request.question,
+                COMMERCE_DECISION_PROFILES[decision_domain]["retrieval_query"],
+            ))
+            contexts = self.rag.retrieve_contexts(retrieval_query, **rag_options)
+            contexts = _rank_commerce_reference_evidence(
+                contexts, request.question, decision_domain, 5,
+            )
+            result = self.rag.generate_answer(
+                request.question,
+                company=rag_options["company"],
+                roles=rag_options["roles"],
+                retrieved_contexts=contexts,
+            )
         else:
             result = self.rag.generate_answer(request.question, **rag_options)
         evidence = [

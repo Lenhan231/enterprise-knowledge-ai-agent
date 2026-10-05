@@ -133,6 +133,14 @@ def _asks_both_inventory_flags(question: str) -> bool:
     return any(term in text for term in stockout_terms) and any(term in text for term in overstock_terms)
 
 
+def _is_inventory_flag_review_question(question: str) -> bool:
+    text = question.casefold()
+    return _asks_both_inventory_flags(text) and any(term in text for term in (
+        "review", "check", "inspect", "steps", "before replenishment", "rà soát", "kiểm tra",
+        "các bước", "trước khi bổ sung", "trước khi đặt hàng",
+    ))
+
+
 def _suggests_unsupported_inventory_transfer(answer: str) -> bool:
     return bool(re.search(
         r"\b(?:consider|recommend|suggest|should)\s+(?:(?:that\s+)?(?:we|you)\s+)?"
@@ -1046,8 +1054,9 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
     asks_transfer = any(term in query_text for term in (
         "transfer", "reallocat", "rebalanc", "chuyển hàng", "điều chuyển", "phân bổ lại", "tái cân bằng",
     ))
+    asks_inventory_review = _is_inventory_flag_review_question(question)
     overlap_fact = ""
-    if domain == "inventory_allocation" and asks_transfer:
+    if domain == "inventory_allocation" and (asks_transfer or asks_inventory_review):
         for name, rows, citation in observations:
             if name == "inventory_latest_flag_overlap" and rows:
                 row = rows[0]
@@ -1438,6 +1447,48 @@ def _commerce_safe_fallback(
     else:
         reference_basis = ""
     if domain == "inventory_allocation":
+        if _is_inventory_flag_review_question(question):
+            observation = next((
+                (item, item.metadata.get("commerce_observations", []))
+                for item in evidence
+                if item.source_type == "commerce_sql"
+                and item.metadata.get("commerce_aggregate_key") == "inventory_latest_flag_overlap"
+                and item.metadata.get("commerce_observations")
+            ), None)
+            schema_reference = next((
+                item.citation_id for item in evidence
+                if item.source_type == "commerce_schema" and item.citation_id
+                and "lead time" in (item.content or "").casefold()
+            ), None)
+            if observation:
+                row = observation[1][0]
+                sql_reference = f"[{observation[0].citation_id}]"
+                facts = (
+                    f"The latest snapshot ({row.get('snapshot_date')}) contains "
+                    f"{row.get('stockout_flagged_rows')} stockout-flagged rows, "
+                    f"{row.get('overstock_flagged_rows')} overstock-flagged rows, and "
+                    f"{row.get('both_flagged_rows')} rows with both flags; these are overlapping product-snapshot counts, "
+                    f"not unique incidents. {sql_reference} "
+                )
+            else:
+                facts = sql_facts
+            source_reference = ref_citation if reference else ""
+            limitation_reference = f"[{schema_reference}]" if schema_reference else limitation_citation
+            if is_vietnamese:
+                guidance = (
+                    "Dùng cờ theo snapshot để chọn danh mục cần rà soát sâu; policy giả lập dùng từ ‘nhiều’ nhưng không định nghĩa ngưỡng, "
+                    "nên đây chỉ là tín hiệu kiểm tra, không phải điều kiện tự động bổ sung hàng. "
+                    "Trước khi quyết định số lượng đặt, cần đối chiếu nhu cầu và tồn khả dụng theo SKU, lead time, quy cách đặt hàng, "
+                    "chi phí và service target được duyệt; schema hiện thiếu các trường này. "
+                )
+            else:
+                guidance = (
+                    "Use snapshot flags to identify categories for deeper review. The fictional policy uses ‘many’ without defining a threshold, "
+                    "so treat it only as an inspection cue, not an automatic replenishment condition. Before deciding an order quantity, "
+                    "verify SKU-level demand and available stock, lead time, order constraints, costs, and an approved service target; "
+                    "the current schema lacks these fields. "
+                )
+            return facts + guidance + f"{source_reference}{limitation_reference}".strip()
         if _is_inventory_service_target_question(question):
             if is_vietnamese:
                 answer = (
@@ -1578,7 +1629,10 @@ def _commerce_question_safe_fallback(question: str, evidence: list[Evidence], *,
         omitted = len(observations) - len(visible)
         if omitted:
             omitted_note = f"\n(Đã lược {omitted} dòng khác.)" if localized else f"\n({omitted} additional rows omitted.)"
-    if decision_request and domain and _is_decision_support_request(question):
+    if decision_request and domain and (
+        _is_decision_support_request(question)
+        or (domain == "inventory_allocation" and _is_inventory_flag_review_question(question))
+    ):
         if table:
             if _is_vietnamese_text(question):
                 facts = f"Quan sát SQL theo câu hỏi:\n{table}{omitted_note} {citation}. "
@@ -2016,7 +2070,11 @@ class ReportAgent(BaseAgent):
                     "dataset_note": snapshot["dataset_note"],
                 },
             ))
-        decision_request = bool(request.metadata.get("decision_suggestions")) or _is_decision_support_request(question)
+        decision_request = (
+            bool(request.metadata.get("decision_suggestions"))
+            or bool(request.metadata.get("decision_support"))
+            or _is_decision_support_request(question)
+        )
         references = []
         reference_retrieval_limited = False
         if decision_request:
@@ -2086,6 +2144,9 @@ class ReportAgent(BaseAgent):
             "questions or principles, and use SQL observations for claims about this dataset. Build the recommendation "
             "from the retrieved reference's actual method or decision criteria: state the source-backed principle, "
             "connect it to the relevant SQL observation, then recommend a bounded action with a qualitative condition. "
+            "Some sources use undefined qualitative terms such as 'many'. If a source gives no operational definition "
+            "or approved threshold, label that term as undefined and use it only as an inspection signal, never as a "
+            "decision gate or a condition that the current data has satisfied. Do not invent what qualifies as 'many'. "
             "Do not merely append a generic external citation to advice that was not derived from the retrieved passage. "
             "Use only SQL observation groups that directly answer the question. For a recommendation, prefer the "
             "current or explicitly requested period and omit unrelated KPI histories, targets, and data gaps; mention "

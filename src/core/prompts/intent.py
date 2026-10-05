@@ -16,7 +16,12 @@ Example: "Compare document counts by business domain" is analytics, needs_sql
 is true, and needs_knowledge is false.
 
 hybrid:
-Requires both document knowledge and structured business data.
+Requires both document knowledge and structured business data. Choose hybrid when
+the user asks how to apply a procedure, policy, or method to the current business
+dataset, or asks for a data-backed next step under a documented rule. Choose
+knowledge only when the user asks what a source says or requests general guidance
+without applying it to the current dataset. Do not treat a source's required
+fields as proof that the application currently collects or displays them.
 
 dashboard:
 User explicitly requests charts, dashboard, visualization, or KPI view.

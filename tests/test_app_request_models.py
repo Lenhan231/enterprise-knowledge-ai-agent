@@ -26,9 +26,9 @@ class AskRequestTest(unittest.TestCase):
         repository = Mock()
         repository.commerce_dashboard.side_effect = lambda keys: {"requested_keys": keys}
         expected = {
-            "inventory_allocation": ("inventory_by_year", "inventory_year_end_by_category"),
-            "promotion_planning": ("promotions_by_year",),
-            "nationwide_logistics": ("logistics_by_year_region",),
+            "inventory_allocation": ("sales_by_year", "inventory_by_year", "inventory_year_end_by_category"),
+            "promotion_planning": ("sales_by_year", "promotions_by_year"),
+            "nationwide_logistics": ("sales_by_year", "logistics_by_year_region"),
         }
         with patch.dict("os.environ", environment, clear=False), \
              patch("app.main.DocumentRepository", return_value=repository), \

@@ -143,6 +143,57 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("[C1]", report.answer)
         knowledge.run.assert_called_once()
 
+    def test_inventory_method_fallback_explains_undefined_many_without_a_fake_gate(self):
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Inventory flag overlap",
+                content=("inventory_latest_flag_overlap aggregate observations: "
+                         '[{"snapshot_date":"2022-12-31","product_rows":424,'
+                         '"stockout_flagged_rows":285,"overstock_flagged_rows":341,'
+                         '"both_flagged_rows":232}]'),
+                metadata={"commerce_domain": "inventory_allocation",
+                          "commerce_aggregate_key": "inventory_latest_flag_overlap",
+                          "commerce_observations": [{
+                              "snapshot_date": "2022-12-31", "product_rows": 424,
+                              "stockout_flagged_rows": 285, "overstock_flagged_rows": 341,
+                              "both_flagged_rows": 232,
+                          }]},
+            ),
+            Evidence(
+                citation_id="L1", source_type="commerce_schema", source="Commerce schema",
+                content="Supplier lead time, SKU location, and approved service target are unavailable.",
+            ),
+            Evidence(
+                citation_id="S1", source_type="document", source="Synthetic Commerce Demo policy",
+                content="Review categories with many stockout flags; verify item and location before replenishment.",
+                metadata={"evidence_class": "company_policy_reference", "synthetic_company_policy": True},
+            ),
+        ]
+
+        answer = _commerce_safe_fallback(
+            "inventory_allocation",
+            "Explain the steps to review stockout and overstock flags before replenishment.",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertIn("285 stockout-flagged rows", answer)
+        self.assertIn("341 overstock-flagged rows", answer)
+        self.assertIn("232 rows with both flags", answer)
+        self.assertIn("without defining a threshold", answer)
+        self.assertIn("not an automatic replenishment condition", answer)
+        self.assertIn("[C1]", answer)
+        self.assertIn("[S1]", answer)
+        self.assertIn("[L1]", answer)
+
+        dynamic_answer = _commerce_question_safe_fallback(
+            "Explain the steps to review stockout and overstock flags before replenishment.",
+            evidence,
+            decision_request=True,
+        )
+        self.assertIn("without defining a threshold", dynamic_answer)
+        self.assertIn("not an automatic replenishment condition", dynamic_answer)
+
     def test_commerce_query_connection_failure_uses_bounded_snapshot(self):
         connection_error = APIConnectionError(request=httpx.Request("POST", "https://llm.test"))
         repository = Mock()
@@ -2042,6 +2093,43 @@ class AgentFlowTest(unittest.TestCase):
         self.assertNotIn("[S1]", result.answer)
         self.assertIn("document-backed", llm.generate.call_args.kwargs["instructions"])
 
+    def test_intent_classified_decision_support_retrieves_operating_reference(self):
+        analytics = object.__new__(SQLAnalyticsAgent)
+        analytics.commerce_question_observations = Mock(return_value={
+            "domain": "inventory_allocation", "domain_label": "Inventory allocation",
+            "source_tables": ["commerce.inventory"],
+            "sql_query": "SELECT category, COUNT(*) AS rows FROM commerce.inventory GROUP BY category",
+            "observations": [{"category": "Shoes", "rows": 20}],
+            "limitations": ["The schema has no warehouse location or stock transfer cost."],
+            "dataset_note": "Synthetic Commerce competition dataset.",
+        })
+        analytics.commerce_latest_inventory_flag_overlap = Mock(return_value=[])
+        policy = Evidence(
+            citation_id="S1", source_type="document", source="Commerce Demo inventory guide",
+            content="Compare current stockout and overstock flags before deciding whether to replenish.",
+            metadata={"evidence_class": "company_policy_reference", "synthetic_company_policy": True},
+        )
+        knowledge = Mock()
+        knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[policy])
+        llm = Mock()
+        llm.generate.return_value = (
+            "Shoes has 20 inventory rows in the supplied comparison [C1]. "
+            "Review the flags before replenishment under the fictional demo guide [S1]. "
+            "The data has no warehouse location or transfer cost, so it cannot support transfer planning [L1]."
+        )
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
+            question="Explain the steps to review stockout and overstock flags before replenishment.",
+            metadata={"business_decision_domain": "inventory_allocation", "decision_support": True,
+                      "role": "analyst"},
+        ))
+
+        analytics.commerce_question_observations.assert_called_once()
+        knowledge.run.assert_called_once()
+        self.assertIn("Commerce Demo inventory guide", llm.generate.call_args.args[0])
+        self.assertIn("Do not invent what qualifies as 'many'", llm.generate.call_args.kwargs["instructions"])
+        self.assertIn("[S1]", result.answer)
+
     def test_commerce_logistics_report_repairs_false_regional_equality_claim(self):
         analytics = Mock()
         analytics.commerce_decision_snapshot.return_value = {
@@ -2895,7 +2983,7 @@ class AgentFlowTest(unittest.TestCase):
         report.run.assert_not_called()
 
     def test_unseen_commerce_method_question_uses_shared_intent_and_domain_filtered_knowledge(self):
-        question = "Explain how to review inventory before replenishment."
+        question = "Explain how regional delivery coordination works."
         classifier, knowledge, report = Mock(), Mock(), Mock()
         classifier.classify.return_value = IntentClassifier.fallback(question)
         knowledge.run.return_value = AgentResult(answer="Review the relevant evidence [S1]", agent="knowledge")
@@ -2908,9 +2996,46 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(router.last_destination, "knowledge")
         self.assertEqual(
             knowledge.run.call_args.args[0].metadata["business_decision_domain"],
-            "inventory_allocation",
+            "nationwide_logistics",
         )
         self.assertTrue(result.metadata["business_domain_auto_detected"])
+        report.run.assert_not_called()
+
+    def test_commerce_method_applied_to_current_flags_routes_to_sql_and_retrieved_policy(self):
+        question = "Explain the steps to review stockout and overstock flags before replenishment."
+        classifier, knowledge, report = Mock(), Mock(), Mock()
+        classifier.classify.return_value = IntentResult(
+            intent="knowledge", needs_knowledge=True, needs_sql=False,
+            output_mode="answer", confidence=0.9,
+        )
+        report.run.return_value = AgentResult(answer="Use current flags with policy limits [C1][S1]", agent="report")
+        unused = Mock()
+        result = AgentRouter(classifier, knowledge, unused, unused, unused, report).route(
+            AgentRequest(question=question),
+        )
+
+        self.assertEqual(result.agent, "report")
+        classifier.classify.assert_not_called()
+        self.assertTrue(report.run.call_args.args[0].metadata["decision_support"])
+        knowledge.run.assert_not_called()
+
+    def test_router_keeps_general_inventory_method_question_on_knowledge_path(self):
+        question = "Explain the steps for an inventory stocktake."
+        classifier, knowledge, report = Mock(), Mock(), Mock()
+        classifier.classify.return_value = IntentClassifier.fallback(question)
+        knowledge.run.return_value = AgentResult(answer="Follow the published steps [S1]", agent="knowledge")
+        report.run.return_value = AgentResult(answer="unexpected SQL route", agent="report")
+        unused = Mock()
+
+        result = AgentRouter(classifier, knowledge, unused, unused, unused, report).route(
+            AgentRequest(question=question),
+        )
+
+        self.assertEqual(result.agent, "knowledge")
+        self.assertEqual(
+            knowledge.run.call_args.args[0].metadata["business_decision_domain"],
+            "inventory_allocation",
+        )
         report.run.assert_not_called()
 
     def test_commerce_aggregation_fallback_keeps_sql_questions_on_report_path(self):

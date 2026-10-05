@@ -23,6 +23,19 @@ def _is_method_only_question(question: str) -> bool:
     )) and not _is_decision_support_request(text)
 
 
+def _applies_method_to_commerce_data(question: str) -> bool:
+    text = " ".join(question.casefold().split())
+    refers_to_observations = any(term in text for term in (
+        "flag", "snapshot", "current data", "latest data", "observations", "dataset",
+        "sql result", "the data", "these rows", "các cờ", "dữ liệu hiện tại", "snapshot mới nhất",
+    ))
+    applies_method = any(term in text for term in (
+        "review", "check", "inspect", "compare", "interpret", "apply", "before", "based on",
+        "rà soát", "kiểm tra", "đánh giá", "so sánh", "dựa trên", "trước khi",
+    ))
+    return refers_to_observations and applies_method
+
+
 class _AgentWorkflowState(TypedDict, total=False):
     request: AgentRequest
     destination: str
@@ -120,14 +133,21 @@ class AgentRouter:
                     or _is_decision_support_request(request.question)):
                 self.last_destination = "report"
                 return {"destination": "report"}
+            if _is_method_only_question(request.question) and _applies_method_to_commerce_data(request.question):
+                request.metadata["decision_support"] = True
+                self.last_destination = "report"
+                return {"destination": "report"}
             # Let the shared intent model identify new document-only questions;
             # keep the established report route when classification falls back.
             intent = self.classifier.classify(request.question)
             knowledge_only = intent.intent == "knowledge" and intent.needs_knowledge and not intent.needs_sql
-            if knowledge_only or _is_method_only_question(request.question):
+            if knowledge_only or (_is_method_only_question(request.question)
+                                  and not _applies_method_to_commerce_data(request.question)):
                 request.metadata["business_decision_domain"] = commerce_domain
                 self.last_destination = "knowledge"
                 return {"destination": "knowledge"}
+            if intent.intent == "hybrid":
+                request.metadata["decision_support"] = True
             self.last_destination = "report"
             return {"destination": "report"}
         if self.report_agent and commerce_domain:

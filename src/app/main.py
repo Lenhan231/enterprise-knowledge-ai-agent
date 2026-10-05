@@ -461,9 +461,9 @@ def dashboard_data(user: dict = Depends(require_permission("view_corpus"))):
 
 
 _COMMERCE_DASHBOARD_KEYS_BY_DOMAIN = {
-    "inventory_allocation": ("inventory_by_year", "inventory_year_end_by_category"),
-    "promotion_planning": ("promotions_by_year",),
-    "nationwide_logistics": ("logistics_by_year_region",),
+    "inventory_allocation": ("sales_by_year", "inventory_by_year", "inventory_year_end_by_category"),
+    "promotion_planning": ("sales_by_year", "promotions_by_year"),
+    "nationwide_logistics": ("sales_by_year", "logistics_by_year_region"),
 }
 
 

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import hashlib
 import json
 import os
@@ -76,7 +77,7 @@ class _RouteTarget:
     def __init__(self, name: str):
         self.name = name
 
-    def run(self, _request: AgentRequest) -> AgentResult:
+    async def run(self, _request: AgentRequest) -> AgentResult:
         return AgentResult(answer="", agent=self.name)
 
 
@@ -103,7 +104,7 @@ class _TrackedProvider:
             close()
 
 
-def main() -> int:
+async def _main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case-id", action="append", help="Run selected case IDs; may be repeated")
     parser.add_argument("--output", type=Path, default=_OUTPUT)
@@ -145,7 +146,7 @@ def main() -> int:
             provider.last_error_type = None
             provider.last_output = None
             started = time.perf_counter()
-            routed = router.route(AgentRequest(question=case["question"]))
+            routed = await router.route(AgentRequest(question=case["question"]))
             elapsed = time.perf_counter() - started
             try:
                 model_payload = json.loads(
@@ -221,6 +222,10 @@ def main() -> int:
     output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"output": str(output), **metrics, "fallback_count": report["fallback_count"]}, indent=2))
     return 0 if metrics["correct"] == metrics["case_count"] else 1
+
+
+def main() -> int:
+    return asyncio.run(_main())
 
 
 if __name__ == "__main__":

@@ -5,19 +5,29 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Any
 
-from src.core.agents.sql_analytics_agent import SQLAnalyticsAgent
+try:
+    from core.agents.base import BaseAgent
+    from core.agents.sql_analytics_agent import SQLAnalyticsAgent, payload_to_agent_result
+    from core.models.agents import AgentResult
+except ModuleNotFoundError:  # Support importing the package as ``src.core``.
+    from src.core.agents.base import BaseAgent
+    from src.core.agents.sql_analytics_agent import SQLAnalyticsAgent, payload_to_agent_result
+    from src.core.models.agents import AgentResult
 
 
 def _decimal(value: Any) -> Decimal:
     return Decimal(str(value or 0))
 
 
-class AnalyticsAgent:
+class AnalyticsAgent(BaseAgent):
     def __init__(self, sql_agent: SQLAnalyticsAgent) -> None:
         self.sql_agent = sql_agent
 
-    async def run(self, request: Any) -> dict[str, Any]:
-        result = await self.sql_agent.run(request)
+    async def run(self, request: Any) -> AgentResult:
+        return payload_to_agent_result(await self.run_payload(request))
+
+    async def run_payload(self, request: Any) -> dict[str, Any]:
+        result = await self.sql_agent.run_payload(request)
         if not result.get("ok"):
             return result
 
@@ -30,9 +40,12 @@ class AnalyticsAgent:
         elif operation == "inventory_by_category":
             analysis = self._analyze_inventory(rows)
         else:
-            return {**result, "ok": False, "limitations": ["Unknown analysis operation"]}
+            return {**result, "ok": False, "limitations": ["Phép phân tích chưa được hỗ trợ."]}
 
         return {**result, **analysis}
+
+    async def close(self) -> None:
+        await self.sql_agent.close()
 
     @staticmethod
     def _analyze_sales(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -51,15 +64,15 @@ class AnalyticsAgent:
                 "gross_margin": gross_margin,
             })
             if gross_profit < 0:
-                findings.append(f"{row.get('month')}: gross profit âm {abs(gross_profit)}.")
+                findings.append(f"{row.get('month')}: lợi nhuận gộp âm {abs(gross_profit)}.")
             else:
-                findings.append(f"{row.get('month')}: gross profit dương {gross_profit}.")
+                findings.append(f"{row.get('month')}: lợi nhuận gộp dương {gross_profit}.")
         return {
             "analysis": "sales_performance",
             "metrics": metrics,
             "findings": findings,
             "recommendations": [
-                "Kiểm tra giá vốn, discount và chính sách giá khi gross profit âm."
+                "Kiểm tra giá vốn, chiết khấu và chính sách giá khi lợi nhuận gộp âm."
             ] if any(item["gross_profit"] < 0 for item in metrics) else [],
         }
 
@@ -78,8 +91,12 @@ class AnalyticsAgent:
             "analysis": "regional_revenue",
             "metrics": metrics,
             "findings": [f"{highest[0]} có doanh thu cao nhất: {highest[1]}."],
-            "recommendations": ["So sánh thêm order count và AOV trước khi kết luận nguyên nhân chênh lệch vùng."],
-            "limitations": ["Regional revenue được tái dựng từ orders và order_items, không phải commerce.sales."],
+            "recommendations": [
+                "So sánh thêm số lượng đơn hàng và giá trị đơn hàng trung bình trước khi kết luận nguyên nhân chênh lệch vùng."
+            ],
+            "limitations": [
+                "Doanh thu theo khu vực được tái dựng từ đơn hàng và chi tiết đơn hàng, không lấy từ commerce.sales."
+            ],
         }
 
     @staticmethod
@@ -95,14 +112,16 @@ class AnalyticsAgent:
             })
         highest = max(metrics, key=lambda row: row["stockout_rate"] or 0, default=None)
         findings = [
-            f"{highest['category']} có stockout rate cao nhất: {highest['stockout_rate']:.2%}."
-        ] if highest else ["Không có dữ liệu inventory trong snapshot này."]
+            f"{highest['category']} có tỷ lệ hết hàng cao nhất: {highest['stockout_rate']:.2%}."
+        ] if highest else ["Không có dữ liệu tồn kho tại thời điểm này."]
         return {
             "analysis": "inventory_by_category",
             "metrics": metrics,
             "findings": findings,
             "recommendations": [
-                "Kiểm tra các SKU có stockout_flag = true trước khi thay đổi lượng đặt hàng."
+                "Kiểm tra các SKU được đánh dấu hết hàng trước khi thay đổi lượng đặt hàng."
             ] if highest else [],
-            "limitations": ["stockout_rate = flagged SKU / observed SKU; không phải tỷ lệ product-days."],
+            "limitations": [
+                "Tỷ lệ hết hàng được tính bằng số SKU được đánh dấu hết hàng chia cho số SKU quan sát; không phải tỷ lệ theo số ngày-sản phẩm."
+            ],
         }

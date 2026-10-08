@@ -1,3 +1,5 @@
+import inspect
+
 from core.models.agents import AgentRequest, AgentResult
 
 class AgentRouter:
@@ -18,7 +20,7 @@ class AgentRouter:
         self.report_agent = report_agent
         self.last_destination = "unrouted"
 
-    def route(self, request: AgentRequest) -> AgentResult:
+    async def route(self, request: AgentRequest) -> AgentResult:
         intent = self.classifier.classify(request.question)
 
         if intent.intent == "report" and self.report_agent:
@@ -33,5 +35,8 @@ class AgentRouter:
             destination, agent = "knowledge", self.knowledge_agent
 
         self.last_destination = destination
-        return AgentResult.model_validate(agent.run(request))
+        result = agent.run(request)
+        if inspect.isawaitable(result):
+            result = await result
+        return AgentResult.model_validate(result)
 

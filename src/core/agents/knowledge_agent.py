@@ -1,3 +1,5 @@
+import asyncio
+
 from core.agents.base import BaseAgent
 from core.models.agents import (
     AgentRequest,
@@ -14,13 +16,14 @@ class KnowledgeAgent(BaseAgent):
     ):
         self.rag = rag_service or RAGService()
 
-    def run(
+    async def run(
         self,
         request: AgentRequest,
     ) -> AgentResult:
 
-        result = self.rag.generate_answer(
-            request.question
+        result = await asyncio.to_thread(
+            self.rag.generate_answer,
+            request.question,
         )
         cited = set(result.source_ids)
 
@@ -48,5 +51,5 @@ class KnowledgeAgent(BaseAgent):
             evidence=evidence,
         )
 
-    def close(self) -> None:
-        self.rag.close()
+    async def close(self) -> None:
+        await asyncio.to_thread(self.rag.close)

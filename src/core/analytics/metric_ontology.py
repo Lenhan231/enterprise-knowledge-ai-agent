@@ -114,7 +114,7 @@ METRIC_ONTOLOGY = {
         "dimensions": ("ship_date", "region"),
     },
     "stock_on_hand": {
-        "aliases": ("stock on hand", "inventory level", "tồn kho", "lượng tồn kho"),
+        "aliases": ("stock on hand", "inventory", "inventory level", "tồn kho", "lượng tồn kho"),
         "source": "commerce.inventory",
         "formula": "SUM(stock_on_hand) within one snapshot",
         "grain": "product_snapshot",

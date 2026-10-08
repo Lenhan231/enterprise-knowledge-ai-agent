@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.agents.evaluate_commerce_decision_support import (
+from tools.agents.evaluate_commerce_decision_support import (
     load_cases, missing_gold_numeric_facts, missing_gold_observations, score_case,
 )
 
@@ -29,7 +29,7 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
     def test_composite_policy_and_sql_answer_passes_mechanical_checks(self):
         case = next(case for case in self.cases if case["id"] == "INV-01")
         payload = {
-            "answer": "Snapshot stockout counts were Streetwear=134 and Outdoor=95 [C1]. 232 rows carried both flags [C2]. Do not transfer stock before validation [S1].",
+            "answer": "Snapshot stockout counts were Streetwear=134 and Outdoor=95 [C1]. 232 rows carried both flags [C2]. Chưa điều chuyển tồn kho until SKU-level validation [S1].",
             "token_usage": {
                 "sql_generation": {"input_tokens": 80, "output_tokens": 14, "total_tokens": 94},
                 "answer_generation": {"input_tokens": 120, "output_tokens": 25, "total_tokens": 145},
@@ -60,6 +60,69 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
         self.assertTrue(result["gold_observation_coverage_passed"])
         self.assertEqual(result["token_usage"]["total"]["total_tokens"], 239)
 
+    def test_inv01_snapshot_answer_does_not_require_second_generated_query(self):
+        case = next(case for case in self.cases if case["id"] == "INV-01")
+        payload = {
+            "answer": (
+                "Trong snapshot mới nhất, stockout: Streetwear 134; Outdoor 95 [C2]. "
+                "232 sản phẩm có cả hai cờ [C3]. Chưa điều chuyển tồn kho khi chưa có đối chiếu SKU và nhu cầu [L1][S1]."
+            ),
+            "citations": [
+                {"id": "C2", "source_type": "commerce_sql", "commerce_domain": "inventory_allocation",
+                 "commerce_observation_group": "inventory_latest_by_category",
+                 "commerce_observations": [
+                     {"snapshot_date": "2022-12-31", "category": "Streetwear", "stockout_products": 134},
+                     {"snapshot_date": "2022-12-31", "category": "Outdoor", "stockout_products": 95},
+                 ], "source_tables": ["commerce.inventory"],
+                 "dataset_note": "Synthetic Kaggle Commerce data."},
+                {"id": "C3", "source_type": "commerce_sql", "commerce_domain": "inventory_allocation",
+                 "commerce_observation_group": "inventory_latest_flag_overlap",
+                 "commerce_observations": [{"snapshot_date": "2022-12-31", "both_flagged_rows": 232}],
+                 "source_tables": ["commerce.inventory"],
+                 "dataset_note": "Synthetic Kaggle Commerce data."},
+                {"id": "L1", "source_type": "commerce_schema", "commerce_domain": "inventory_allocation"},
+                {"id": "S1", "source_type": "document", "document_id": "CD-POL-INV-001",
+                 "page_number": 2, "evidence_class": "company_policy_reference",
+                 "reference_applicability": "Synthetic demo policy only."},
+            ],
+        }
+
+        result = score_case(case, payload, {"commerce.inventory", "commerce.products"})
+
+        self.assertTrue(result["passed"], result["checks"])
+        self.assertFalse(result["question_specific_sql_used"])
+
+    def test_log01_snapshot_answer_abstains_from_network_redesign(self):
+        case = next(case for case in self.cases if case["id"] == "LOG-01")
+        observations = [
+            {"year": 2022, "region": "Central", "deliveries": 9593, "avg_transit_days": 4.51,
+             "median_transit_days": 5.0, "avg_shipping_fee": 4.10},
+            {"year": 2022, "region": "East", "deliveries": 14120, "avg_transit_days": 4.52,
+             "median_transit_days": 5.0, "avg_shipping_fee": 3.98},
+            {"year": 2022, "region": "West", "deliveries": 7054, "avg_transit_days": 4.51,
+             "median_transit_days": 5.0, "avg_shipping_fee": 3.89},
+        ]
+        payload = {
+            "answer": (
+                "East có average transit time cao nhất: 4.52 ngày, so với 4.51 ở Central và West [C1]. Chưa thiết kế lại mạng lưới giao hàng; "
+                "cần điểm đi/đến, carrier, SLA và năng lực tuyến trước khi quyết định [L1][S1]."
+            ),
+            "citations": [
+                {"id": "C1", "source_type": "commerce_sql", "commerce_domain": "nationwide_logistics",
+                 "source_tables": ["commerce.shipments", "commerce.orders", "commerce.geography"],
+                 "dataset_note": "Synthetic Kaggle Commerce data.", "commerce_observations": observations},
+                {"id": "L1", "source_type": "commerce_schema", "commerce_domain": "nationwide_logistics"},
+                {"id": "S1", "source_type": "document", "document_id": "LOG-REFERENCE",
+                 "page_number": 2, "evidence_class": "company_practice_reference",
+                 "reference_applicability": "External example only."},
+            ],
+        }
+
+        result = score_case(case, payload, set(self.benchmark["domains"]["nationwide_logistics"]["source_tables"]))
+
+        self.assertTrue(result["passed"], result["checks"])
+        self.assertFalse(result["question_specific_sql_used"])
+
     def test_numeric_values_in_answer_do_not_pass_when_sql_rows_swap_category_values(self):
         case = next(case for case in self.cases if case["id"] == "INV-01")
         citations = [{
@@ -89,6 +152,19 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
         self.assertEqual(len(missing), 2)
         self.assertTrue(result["gold_numeric_coverage_passed"])
         self.assertFalse(result["gold_observation_coverage_passed"])
+
+    def test_gold_observations_accept_live_group_category_sql_alias(self):
+        case = next(case for case in self.cases if case["id"] == "INV-01")
+        citation = {
+            "source_type": "commerce_sql",
+            "sql_query": "SELECT ... WHERE i.snapshot_date = '2022-12-31' GROUP BY i.category",
+            "commerce_observations": [
+                {"group_category": "Streetwear", "stockout_count": 134, "overstock_count": 162},
+                {"group_category": "Outdoor", "stockout_count": 95, "overstock_count": 113},
+            ],
+        }
+
+        self.assertEqual(missing_gold_observations(case, [citation]), [])
 
     def test_gold_observation_evaluator_flattens_yearly_region_measure_rows(self):
         case = next(case for case in self.cases if case["id"] == "LOG-02")
@@ -191,6 +267,32 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
             "source_type": "commerce_sql", "commerce_observations": promotion_rows,
         }]), [])
 
+        logistics_case = next(case for case in self.cases if case["id"] == "LOG-02")
+        logistics_rows = [
+            {"region": "Central", "year": 2020, "avg_transit_time": 4.5103, "avg_shipping_fee": 4.1748},
+            {"region": "Central", "year": 2021, "avg_transit_time": 4.5160, "avg_shipping_fee": 4.1266},
+            {"region": "Central", "year": 2022, "avg_transit_time": 4.5137, "avg_shipping_fee": 4.1010},
+            {"region": "East", "year": 2020, "avg_transit_time": 4.5039, "avg_shipping_fee": 4.2673},
+            {"region": "East", "year": 2021, "avg_transit_time": 4.5099, "avg_shipping_fee": 4.0739},
+            {"region": "East", "year": 2022, "avg_transit_time": 4.5200, "avg_shipping_fee": 3.9791},
+            {"region": "West", "year": 2020, "avg_transit_time": 4.5067, "avg_shipping_fee": 4.1145},
+            {"region": "West", "year": 2021, "avg_transit_time": 4.4980, "avg_shipping_fee": 4.3564},
+            {"region": "West", "year": 2022, "avg_transit_time": 4.5099, "avg_shipping_fee": 3.8925},
+        ]
+        self.assertEqual(missing_gold_observations(logistics_case, [{
+            "source_type": "commerce_sql", "commerce_observations": logistics_rows,
+        }]), [])
+
+    def test_inventory_category_gold_matches_group_label_from_live_sql(self):
+        case = next(case for case in self.cases if case["id"] == "INV-01")
+        rows = [
+            {"snapshot_date": "2022-12-31", "group_label": "Streetwear", "stockout_count": 134},
+            {"snapshot_date": "2022-12-31", "group_label": "Outdoor", "stockout_count": 95},
+        ]
+        self.assertEqual(missing_gold_observations(case, [{
+            "source_type": "commerce_sql", "commerce_observations": rows,
+        }]), [])
+
     def test_promo01_accepts_generated_measure_aliases_without_losing_grouping(self):
         case = next(case for case in self.cases if case["id"] == "PROMO-01")
         rows = [
@@ -243,6 +345,45 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
         self.assertTrue(result["passed"], result["checks"])
         self.assertFalse(result["question_specific_sql_used"])
         self.assertTrue(result["checks"]["question_specific_sql_requirement_met"])
+
+    def test_promo03_requires_roi_abstention_and_rejects_roi_as_a_numeric_sql_measure(self):
+        case = next(case for case in self.cases if case["id"] == "PROMO-03")
+        payload = {
+            "answer": "Không thể tính ROI khi thiếu chi phí chiến dịch và holdout [C1][L1][S1].",
+            "question_sql_fallback": "unsupported_measure",
+            "citations": [
+                {"id": "C1", "source_type": "commerce_sql", "commerce_domain": "promotion_planning",
+                 "source_tables": ["commerce.promotions", "commerce.orders", "commerce.order_items"],
+                 "dataset_note": "Synthetic Kaggle Commerce data."},
+                {"id": "L1", "source_type": "commerce_schema", "commerce_domain": "promotion_planning"},
+                {"id": "S1", "source_type": "document", "document_id": "CD-POL-PROMO-001",
+                 "page_number": 2, "evidence_class": "company_policy_reference",
+                 "reference_applicability": "Synthetic demo policy only."},
+            ],
+        }
+
+        result = score_case(case, payload, {
+            "commerce.promotions", "commerce.orders", "commerce.order_items", "commerce.products",
+        })
+        self.assertTrue(result["passed"], result["checks"])
+        self.assertFalse(result["question_specific_sql_used"])
+
+        payload["answer"] = "| Channel | ROI |\n| email | 8.28 | [C1][L1][S1]"
+        result = score_case(case, payload, {
+            "commerce.promotions", "commerce.orders", "commerce.order_items", "commerce.products",
+        })
+        self.assertFalse(result["checks"]["answer_contract"])
+        self.assertFalse(result["passed"])
+
+    def test_promo02_ranking_contract_rejects_unsolicited_recommendation(self):
+        case = next(case for case in self.cases if case["id"] == "PROMO-02")
+        payload = {"answer": "Spring Sale 2022 ranked first by tagged net sales [C1]."}
+        result = score_case(case, payload, {"commerce.promotions", "commerce.orders", "commerce.order_items"})
+        self.assertTrue(result["checks"]["answer_contract"])
+
+        payload["answer"] = "Spring Sale 2022 ranked first [C1]. Khuyến nghị: tăng ngân sách."
+        result = score_case(case, payload, {"commerce.promotions", "commerce.orders", "commerce.order_items"})
+        self.assertFalse(result["checks"]["answer_contract"])
 
     def test_inv01_numeric_coverage_detects_missing_flag_overlap_fact(self):
         case = next(case for case in self.cases if case["id"] == "INV-01")
@@ -328,6 +469,44 @@ class CommerceDecisionEvaluationTest(unittest.TestCase):
         self.assertTrue(result["citation_domain_checks_passed"])
         self.assertFalse(result["question_specific_sql_passed"])
         self.assertTrue(result["passed"], result["checks"])
+
+    def test_optional_question_sql_may_include_a_cited_diagnostic_query(self):
+        case = next(case for case in self.cases if case["id"] == "LOG-03")
+        result = score_case(case, {
+            "answer": "Regional transit observations are diagnostic only [C1]. The schema lacks route capacity [L1]; use the cited routing method only after collecting lane-level evidence [S1].",
+            "citations": [
+                {"id": "C1", "source_type": "commerce_sql", "commerce_domain": "nationwide_logistics",
+                 "source_tables": ["commerce.shipments", "commerce.orders", "commerce.geography"],
+                 "sql_query": "SELECT g.region, AVG(s.delivery_date - s.ship_date) FROM commerce.shipments s JOIN commerce.orders o ON s.order_id = o.order_id JOIN commerce.geography g ON o.zip = g.zip GROUP BY g.region",
+                 "dataset_note": "Synthetic Kaggle Datathon 2026 Commerce data."},
+                {"id": "L1", "source_type": "commerce_schema", "commerce_domain": "nationwide_logistics"},
+                {"id": "S1", "source_type": "document", "document_id": "CD-POL-LOG-001",
+                 "page_number": 2, "evidence_class": "company_policy_reference",
+                 "reference_applicability": "Synthetic demo policy only."},
+            ],
+        }, {"commerce.shipments", "commerce.orders", "commerce.geography"})
+
+        self.assertTrue(result["checks"]["question_specific_sql_available"])
+        self.assertTrue(result["checks"]["question_specific_sql_requirement_met"])
+        self.assertTrue(result["checks"]["domain_sql_evidence"])
+        self.assertTrue(result["passed"], result["checks"])
+
+    def test_precomputed_promotion_aggregate_is_valid_without_question_sql(self):
+        case = next(case for case in self.cases if case["id"] == "PROMO-01")
+        result = score_case(case, {
+            "answer": "Observed annual groups are compared here [C1].",
+            "citations": [{
+                "id": "C1", "source_type": "commerce_sql",
+                "commerce_domain": "promotion_planning",
+                "source_tables": ["commerce.orders", "commerce.order_items", "commerce.products"],
+                "dataset_note": "Synthetic Kaggle Commerce data.",
+                "commerce_observations": [{"year": 2020, "used_promotion": True}],
+            }],
+        }, {"commerce.orders", "commerce.order_items", "commerce.products", "commerce.promotions"})
+
+        self.assertFalse(result["checks"]["question_specific_sql_available"])
+        self.assertTrue(result["checks"]["question_specific_sql_requirement_met"])
+        self.assertTrue(result["checks"]["domain_sql_evidence"])
 
     def test_gold_numeric_coverage_accepts_vietnamese_number_format(self):
         case = {"required_numeric_facts": [235597280.59, 0.9656, 10305]}

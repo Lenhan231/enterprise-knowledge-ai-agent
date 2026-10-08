@@ -68,6 +68,7 @@ class PaddleLayoutProcessor:
         page_count = len(pdf_document)
         pipeline = PPStructureV3(
             device="cpu",
+            enable_mkldnn=False,
             layout_detection_model_name="PP-DocLayout-S",
             text_detection_model_name="PP-OCRv5_mobile_det",
             text_recognition_model_name="PP-OCRv5_mobile_rec",
@@ -75,7 +76,7 @@ class PaddleLayoutProcessor:
             use_doc_unwarping=False,
             use_textline_orientation=False,
             use_formula_recognition=bool(self.config["paddle_formula_recognition"]),
-            use_chart_recognition=True,
+            use_chart_recognition=bool(self.config.get("paddle_chart_recognition", False)),
             use_seal_recognition=False,
         )
         tables: List[Dict[str, Any]] = []

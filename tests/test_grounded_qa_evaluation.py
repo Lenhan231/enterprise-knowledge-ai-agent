@@ -5,15 +5,16 @@ from types import SimpleNamespace
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.agents.run_review1_grounded_qa import case_passed, citation_metrics, cited_sources, missing_expected_facts
-from scripts.agents.score_qa_artifact import summarize_human_reviews
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from tools.agents.qa_metrics import case_passed, citation_metrics, cited_sources, missing_expected_facts
+from tools.agents.score_qa_artifact import summarize_human_reviews
 
 
 class GroundedQAEvaluationTest(unittest.TestCase):
     def test_case_requires_expected_source_and_normalized_facts(self):
         case = {
             "expect_insufficient": False,
-            "expected_document_id": "VNM-AR-2024-VI",
+            "expected_document_id": "EXAMPLE-AR-2024-VI",
             "expected_key_facts": ["61 824", "9 453"],
         }
         result = SimpleNamespace(
@@ -21,7 +22,7 @@ class GroundedQAEvaluationTest(unittest.TestCase):
             source_ids=["S1"],
             answer="Revenue was 61\u202f824 and profit was 9\u202f453. [S1]",
         )
-        sources = [{"source_id": "S1", "document_id": "VNM-AR-2024-VI"}]
+        sources = [{"source_id": "S1", "document_id": "EXAMPLE-AR-2024-VI"}]
 
         self.assertEqual(missing_expected_facts(case, result.answer), [])
         self.assertEqual(case_passed(case, result, sources), (True, "Answer cites the expected document"))
@@ -29,7 +30,7 @@ class GroundedQAEvaluationTest(unittest.TestCase):
     def test_case_fails_when_key_fact_is_missing(self):
         case = {
             "expect_insufficient": False,
-            "expected_document_id": "VNM-AR-2024-VI",
+            "expected_document_id": "EXAMPLE-AR-2024-VI",
             "expected_key_facts": ["61 824", "9 453"],
         }
         result = SimpleNamespace(
@@ -37,7 +38,7 @@ class GroundedQAEvaluationTest(unittest.TestCase):
             source_ids=["S1"],
             answer="Revenue was 61 824. [S1]",
         )
-        sources = [{"source_id": "S1", "document_id": "VNM-AR-2024-VI"}]
+        sources = [{"source_id": "S1", "document_id": "EXAMPLE-AR-2024-VI"}]
 
         passed, reason = case_passed(case, result, sources)
         self.assertFalse(passed)
@@ -54,7 +55,7 @@ class GroundedQAEvaluationTest(unittest.TestCase):
     def test_financial_anchors_require_correct_magnitude_units(self):
         case = {
             "expect_insufficient": False,
-            "expected_document_id": "VNM-AR-2024-VI",
+            "expected_document_id": "EXAMPLE-AR-2024-VI",
             "expected_key_facts": ["61 824", "9 453"],
             "expected_key_fact_groups": [
                 ["61 824 tỷ đồng", "61 824 billion VND"],
@@ -71,7 +72,7 @@ class GroundedQAEvaluationTest(unittest.TestCase):
             source_ids=["S1"],
             answer="Doanh thu 61\u202f824 triệu đồng và lợi nhuận 9\u202f453 triệu đồng. [S1]",
         )
-        sources = [{"source_id": "S1", "document_id": "VNM-AR-2024-VI"}]
+        sources = [{"source_id": "S1", "document_id": "EXAMPLE-AR-2024-VI"}]
 
         self.assertEqual(case_passed(case, correct, sources), (True, "Answer cites the expected document"))
         passed, reason = case_passed(case, wrong_unit, sources)
@@ -115,13 +116,13 @@ class GroundedQAEvaluationTest(unittest.TestCase):
         self.assertTrue(metrics["answer_has_valid_citation"])
 
     def test_expected_facts_must_appear_in_the_cited_source_excerpt(self):
-        case = {"expected_key_facts": ["61 824", "9 453"]}
+        case = {"expected_key_facts": ["18 624", "2 453"]}
         cited_sources = [{
             "source_id": "S1",
             "document_id": "D1",
-            "content_preview": "Consolidated revenue 61.824 billion VND.",
+            "content_preview": "Consolidated revenue 18.624 billion VND.",
         }]
-        metrics = citation_metrics(case, "Revenue 61 824 and profit 9 453. [S1]", cited_sources)
+        metrics = citation_metrics(case, "Revenue 18 624 and profit 2 453. [S1]", cited_sources)
 
         self.assertEqual(metrics["expected_fact_count"], 2)
         self.assertEqual(metrics["expected_facts_literal_in_cited_evidence"], 1)
@@ -129,21 +130,21 @@ class GroundedQAEvaluationTest(unittest.TestCase):
         self.assertIn("not semantic entailment", metrics["expected_fact_cited_evidence_definition"])
 
     def test_expected_fact_in_uncited_source_does_not_count_as_supported(self):
-        case = {"expected_key_facts": ["61 824"]}
-        sources = [{"source_id": "S1", "content_preview": "Revenue 61.824"}]
+        case = {"expected_key_facts": ["18 624"]}
+        sources = [{"source_id": "S1", "content_preview": "Revenue 18.624"}]
 
-        metrics = citation_metrics(case, "Revenue 61 824. [S2]", sources)
+        metrics = citation_metrics(case, "Revenue 18 624. [S2]", sources)
 
         self.assertEqual(metrics["expected_facts_literal_in_cited_evidence"], 0)
 
     def test_cited_table_evidence_can_separate_a_shared_unit_from_values(self):
-        case = {"expected_key_fact_groups": [["61 824 tỷ đồng", "61 824 billion VND"]]}
+        case = {"expected_key_fact_groups": [["18 624 tỷ đồng", "18 624 billion VND"]]}
         sources = [{
             "source_id": "S1",
-            "evidence": "Consolidated revenue 2024; net profit 2024; tỷ đồng tỷ đồng 9.453 61.824",
+            "evidence": "Consolidated revenue 2024; net profit 2024; tỷ đồng tỷ đồng 2.453 18.624",
         }]
 
-        metrics = citation_metrics(case, "Revenue 61 824 tỷ đồng. [S1]", sources)
+        metrics = citation_metrics(case, "Revenue 18 624 tỷ đồng. [S1]", sources)
 
         self.assertEqual(metrics["expected_facts_literal_in_cited_evidence"], 1)
         self.assertEqual(metrics["expected_fact_cited_evidence_rate"], 1.0)

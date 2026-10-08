@@ -15,7 +15,7 @@ _SEARCH_STOP_WORDS = {
     "how", "many", "much", "of", "for", "in", "on", "at", "to", "and",
     "or", "with", "by", "from", "about", "please", "show", "me", "give",
     "tell", "của", "là", "năm", "bao", "nhiêu", "gì", "cho", "với",
-    "được", "về", "thế", "nào", "summarize", "summary", "vinamilk", "s",
+    "được", "về", "thế", "nào", "summarize", "summary", "s",
 }
 
 

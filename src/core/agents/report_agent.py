@@ -8,17 +8,13 @@ from decimal import Decimal
 
 from core.agents.base import BaseAgent
 from core.agents.knowledge_agent import KnowledgeAgent
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent, UnsupportedCommerceDimension
-from core.analytics.metric_ontology import resolve_metric_names
-from core.analytics.business_metric_catalog import (
-    BUSINESS_DECISION_PROFILES,
-    BUSINESS_METRIC_CATALOG,
-    SUPPORTED_BUSINESS_DECISION_DOMAINS,
-    resolve_business_metric_domain,
-    resolve_business_metric_names,
+from core.agents.sql_analytics_agent import (
+    SQLAnalyticsAgent, UnsupportedCommerceDimension, _asks_for_campaign_scoped_outcomes,
 )
+from core.analytics.metric_ontology import resolve_metric_names
 from core.analytics.commerce_decision_support import (
     COMMERCE_QUERY_TABLES,
+    COMMERCE_UNAVAILABLE_DIMENSIONS,
     COMMERCE_DECISION_PROFILES,
     resolve_commerce_decision_domain,
 )
@@ -71,15 +67,40 @@ def _is_financial_change_explanation(question: str) -> bool:
     )
 
 
+def _asks_for_pre_action_data(question: str) -> bool:
+    """Recognize requests for evidence to check before taking an operational action."""
+    return bool(re.search(
+        r"\b(?:before|prior to|trước khi)\b[^.!?\n]{0,120}"
+        r"(?:\b(?:what|which)\b[^.!?\n]{0,50}\b(?:data|evidence|information)\b[^.!?\n]{0,80}"
+        r"\b(?:check|review|verify|collect|need|required|should|must)\b|"
+        r"\b(?:need|should|must|cần|nên|phải)\b[^.!?\n]{0,50}"
+        r"\b(?:check|review|verify|collect|kiểm tra|đối chiếu|xác minh|thu thập)\b[^.!?\n]{0,80}"
+        r"\b(?:data|evidence|information|criteria|dữ liệu|thông tin|bằng chứng|tiêu chí)\b)",
+        question,
+        re.IGNORECASE,
+    ))
+
+
 def _is_decision_support_request(question: str) -> bool:
     text = question.casefold()
+    if _asks_for_pre_action_data(text):
+        return True
     if any(term in text for term in (
-        "should", "recommend", "decision", "decide", "strategy", "what should", "which market",
+        "should", "recommend", "decision", "decide", "what should", "which market",
         "which option", "prioritize", "scale", "scaling", "expand", "repeat", "pilot", "target", "reallocat",
         "enough evidence", "increase budget", "raise budget", "budget increase", "increase spend",
         "investment", "nên", "đề xuất", "quyết định", "chiến lược", "ưu tiên", "mở rộng", "phân bổ",
-        "đủ cơ sở", "chứng minh", "tăng ngân sách", "dồn ngân sách", "thiết kế lại", "điều chỉnh",
+        "đủ cơ sở", "đủ căn cứ", "chứng minh", "tăng ngân sách", "dồn ngân sách", "thiết kế lại", "điều chỉnh",
     )):
+        return True
+    if re.search(
+        r"\b(?:justify|warrant|support)\b[^.!?\n]{0,80}\b"
+        r"(?:increase|increasing|raise|raising|expand|expanding|invest|investing|"
+        r"prioriti[sz]e|allocat(?:e|ing))\b|"
+        r"\b(?:increase|increasing|raise|raising|expand|expanding|invest|investing)\b"
+        r"[^.!?\n]{0,60}\b(?:budgets?|spend|investment|capital|resources?)\b",
+        text,
+    ):
         return True
     action_verbs = (
         "improve", "reduce", "lower", "increase", "optimize", "optimise", "prevent", "mitigate", "minimize", "maximize",
@@ -102,6 +123,29 @@ def _is_decision_support_request(question: str) -> bool:
     ))
 
 
+def _asks_for_operating_steps(question: str) -> bool:
+    """Treat a request for applied operating steps as decision support, not a fact lookup."""
+    return _asks_for_pre_action_data(question) or bool(re.search(
+        r"\b(?:explain|describe|outline|what are)\b[^.!?\n]{0,50}"
+        r"\b(?:steps?|process|workflow|procedure)\b|"
+        r"\b(?:what|which)\s+(?:must|should|needs? to)\s+(?:be\s+)?"
+        r"(?:verified|checked|reviewed|confirmed)\b[^.!?\n]{0,100}\b(?:before|prior to)\b|"
+        r"\b(?:giải thích|hướng dẫn|trình bày)\b[^.!?\n]{0,50}\b(?:các bước|quy trình)\b|"
+        r"\b(?:what|which)\b[^.!?\n]{0,80}\b(?:checks?|criteria|conditions|evidence|requirements?)\b"
+        r"[^.!?\n]{0,80}\b(?:before|prior to|required|must)\b|"
+        r"\b(?:policy|guide|document)\b[^.!?\n]{0,80}\b(?:require|requires|specify|states|say)\b"
+        r"[^.!?\n]{0,80}\b(?:checks?|verify|match|review|criteria|conditions?|evidence|steps?)\b|"
+        r"(?:chính sách|policy|tài liệu|hướng dẫn)[^.!?\n]{0,80}"
+        r"(?:yêu cầu|quy định|nêu)[^.!?\n]{0,80}"
+        r"(?:kiểm tra|đối chiếu|rà soát|tiêu chí|điều kiện|bằng chứng|các bước)|"
+        r"(?:cần|phải|yêu cầu|nên)[^.!?\n]{0,50}"
+        r"(?:kiểm tra|đối chiếu|rà soát|tiêu chí|điều kiện|bằng chứng)[^.!?\n]{0,60}"
+        r"(?:trước khi|để|prior to)",
+        question,
+        re.IGNORECASE,
+    ))
+
+
 def _is_vietnamese_text(text: str) -> bool:
     return any(character in _VIETNAMESE_DIACRITICS for character in text.casefold())
 
@@ -112,6 +156,10 @@ def _has_untranslated_prose(answer: str, question: str) -> bool:
         return False
     narration = re.sub(r"“[^”]*”|\"[^\"]*\"|'[^']*'", " ", answer)
     for sentence in re.split(r"(?<=[.!?])\s+|\n+", narration):
+        # Dynamic SQL fallbacks include column labels and values in Markdown
+        # tables; those are structured data, not English prose to translate.
+        if sentence.lstrip().startswith("|") and sentence.rstrip().endswith("|"):
+            continue
         letters = [character for character in sentence if character.isalpha()]
         if len(letters) >= 24 and not _is_vietnamese_text(sentence):
             return True
@@ -141,41 +189,126 @@ def _is_inventory_flag_review_question(question: str) -> bool:
     ))
 
 
+def _asks_inventory_transfer(question: str) -> bool:
+    text = question.casefold()
+    return any(term in text for term in (
+        "transfer", "reallocat", "rebalanc", "chuyển hàng", "điều chuyển", "phân bổ lại", "tái cân bằng",
+    ))
+
+
+def _asks_for_promotion_outcome_comparison(question: str) -> bool:
+    text = question.casefold()
+    compares = any(term in text for term in ("compare", "comparison", "so sánh", "đối chiếu"))
+    outcomes = any(term in text for term in (
+        "sales", "revenue", "profit", "discount", "orders", "doanh thu", "lợi nhuận",
+        "giảm giá", "đơn hàng", "proxy",
+    ))
+    return compares and outcomes
+
+
+def _has_unsupported_campaign_causal_claim(answer: str) -> bool:
+    """Catch positive campaign-to-outcome attribution when SQL is descriptive only."""
+    claim = re.compile(
+        r"\b(?:campaign|promotion|promo|chiến dịch|khuyến mãi)\b(?:(?![.!?\n]).){0,80}?"
+        r"(?P<verb>generated|produced|drove|caused|lifted|delivered|created|increased|brought|"
+        r"mang lại|đem lại|tạo ra|gây ra|thúc đẩy|làm tăng)\b"
+        r"(?:(?![.!?\n]).){0,60}?"
+        r"\b(?:sales|revenue|profit|margin|outcomes?|uplift|doanh thu|lợi nhuận|lãi gộp|đơn hàng)\b",
+        re.IGNORECASE,
+    )
+    for sentence in re.split(r"(?<=[.!?])\s+|\n+", answer):
+        for match in claim.finditer(sentence):
+            prefix = sentence[:match.start("verb")]
+            if re.search(
+                r"\b(?:did not|does not|do not|cannot|can't|didn't|doesn't)\s+"
+                r"(?:establish|prove|show|demonstrate|confirm|indicate|support|mean)\b"
+                r"[^.!?\n]{0,60}\Z|\bno\s+(?:campaign|promotion|promo)\s+\Z",
+                prefix,
+                re.IGNORECASE,
+            ):
+                continue
+            if re.search(
+                r"\b(?:không|chưa|chẳng)\s+(?:(?:thể|đủ)\s+)?"
+                r"(?:chứng minh|cho thấy|xác nhận|kết luận|tạo ra|gây ra)\b[^.!?\n]{0,45}\Z",
+                prefix,
+                re.IGNORECASE,
+            ):
+                continue
+            return True
+    return False
+
+
+def _asks_promotion_incrementality(question: str) -> bool:
+    text = question.casefold()
+    return any(term in text for term in (
+        "incremental", "incrementality", "causal", "caused", "uplift", "holdout",
+        "treatment/control", "control group", "đối chứng", "nhân quả", "tăng thêm",
+        "tác động do chiến dịch", "campaign có gây",
+    ))
+
+
+def _asks_for_unavailable_promotion_roi(question: str) -> bool:
+    """Recognize ROI requests whose required campaign-cost inputs are absent from this domain."""
+    text = question.casefold()
+    roi_terms = r"(?:roi|return on investment|tỷ suất hoàn vốn|hiệu quả đầu tư|lợi tức trên)"
+    negated_instruction = re.compile(
+        rf"\b(?:do not|don't|must not|should not|avoid|never)\s+"
+        rf"(?:infer|calculate|estimate|extrapolate|assume|claim|report|recommend|treat)\b"
+        rf"[^.!?\n]{{0,60}}\b{roi_terms}\b|"
+        rf"\b(?:đừng|chớ|không)\s+(?:tự\s+)?"
+        rf"(?:suy ra|tính|ước tính|ngoại suy|giả định|khẳng định|báo cáo|đề xuất)\b"
+        rf"[^.!?\n]{{0,60}}\b{roi_terms}\b",
+        re.IGNORECASE,
+    )
+    text = negated_instruction.sub(" ", text)
+    return any(term in text for term in (
+        "roi", "return on investment", "tỷ suất hoàn vốn", "hiệu quả đầu tư", "lợi tức trên",
+    ))
+
+
 def _suggests_unsupported_inventory_transfer(answer: str) -> bool:
-    return bool(re.search(
+    recommendation = re.compile(
         r"\b(?:consider|recommend|suggest|should)\s+(?:(?:that\s+)?(?:we|you)\s+)?"
         r"(?:transfer\w*|reallocat\w*|rebalanc\w*|move\s+(?:stock|inventory))\b"
         r"|\b(?:cân nhắc|khuyến nghị|nên|hãy)\s+(?:thử\s+)?"
         r"(?:điều chuyển|chuyển hàng|phân bổ lại|tái cân bằng)\b",
-        answer,
         re.IGNORECASE,
-    ))
-
-
-def _is_business_metric_decision_question(question: str) -> bool:
-    text = question.casefold()
-    return bool(resolve_business_metric_names(question)) and (
-        _is_decision_support_request(question)
-        or any(term in text for term in ("why", "reason", "cause", "tại sao", "vì sao", "nguyên nhân"))
     )
-
-
-def _is_business_metric_trend_question(question: str) -> bool:
-    text = question.casefold()
-    trend_request = any(term in text for term in (
-        "summarize", "summary", "trend", "compare", "performance", "tóm tắt", "xu hướng",
-        "so sánh", "hiệu quả", "thay đổi", "improv", "worsen", "rebound", "deteriorat",
-    ))
-    return trend_request and bool(resolve_business_metric_names(question))
+    negation = re.compile(
+        r"\b(?:do not|don't|does not|doesn't|cannot|can't|never|not)\b|"
+        r"\b(?:không|chưa|chẳng)\b",
+        re.IGNORECASE,
+    )
+    condition = re.compile(
+        r"\b(?:only if|only after|only when|after|once|until|unless|when|before)\b|"
+        r"\bchỉ\b[^.!?\n]{0,35}\b(?:khi|nếu|sau khi)\b|"
+        r"\b(?:chỉ khi|chỉ nếu|sau khi|trước khi|đến khi)\b",
+        re.IGNORECASE,
+    )
+    for sentence in re.split(r"(?<=[.!?])\s+|\n+", answer):
+        for match in recommendation.finditer(sentence):
+            if (not negation.search(sentence[:match.start()])
+                    and not condition.search(sentence[match.end():])):
+                return True
+    return False
 
 
 def _is_decision_suggestions_request(question: str) -> bool:
     text = question.casefold()
-    return text.startswith((
+    explicit = text.startswith((
         "generate conditional management actions", "generate decision opportunities",
         "suggest management decisions", "suggest decisions",
         "gợi ý quyết định", "gợi ý các quyết định", "gợi ý hành động", "khuyến nghị hành động",
     ))
+    natural = re.match(r"^(?:suggest|recommend|generate|provide|give)\b", text) and re.search(
+        r"\b(?:conditional|management|actionable)\b.{0,80}\b(?:actions|recommendations|next steps)\b",
+        text,
+    )
+    vietnamese = re.match(r"^(?:gợi ý|đề xuất|khuyến nghị)\b", text) and re.search(
+        r"\b(?:hành động|phương án|quyết định)\b.{0,80}\b(?:điều kiện|nếu)\b",
+        text,
+    )
+    return bool(explicit or natural or vietnamese)
 
 
 def _has_unsupported_numeric_decision_gate(answer: str, evidence: list[Evidence]) -> bool:
@@ -266,7 +399,7 @@ def _has_unsupported_numeric_decision_gate(answer: str, evidence: list[Evidence]
     return False
 
 
-def _has_unsupported_logistics_intervention(answer: str) -> bool:
+def _has_unsupported_logistics_intervention(answer: str, evidence: list[Evidence] | None = None) -> bool:
     """Reject concrete network changes when the available evidence is only regional aggregates."""
     action = re.compile(
         r"\b(?:add|build|open|relocate|move|shift|reallocate|switch|change|replace|redesign|optimize)\b"
@@ -280,9 +413,29 @@ def _has_unsupported_logistics_intervention(answer: str) -> bool:
         r"\b(?:chưa|không|đừng|tránh)\b",
         re.IGNORECASE,
     )
+    checked_answer = answer
+    if evidence:
+        cited_documents = {
+            item.citation_id: " ".join((item.content or "").split()).casefold()
+            for item in evidence
+            if item.source_type == "document" and item.citation_id and item.content
+        }
+        characters = list(answer)
+        for match in re.finditer(r"“([^”]+)”|\"([^\"]+)\"|‘([^’]+)’", answer):
+            quoted_text = next(part for part in match.groups() if part is not None)
+            normalized_quote = " ".join(quoted_text.split()).casefold()
+            same_line_after_quote = answer[match.end():].split("\n", 1)[0][:300]
+            cited_ids = _CITATION.findall(same_line_after_quote)
+            if any(
+                citation_id in cited_documents
+                and normalized_quote in cited_documents[citation_id]
+                for citation_id in cited_ids
+            ):
+                characters[match.start():match.end()] = " " * (match.end() - match.start())
+        checked_answer = "".join(characters)
     return any(
         action.search(sentence) and not refusal.search(sentence)
-        for sentence in re.split(r"[.!?;\n]+", answer)
+        for sentence in re.split(r"[.!?;\n]+", checked_answer)
     )
 
 
@@ -323,394 +476,12 @@ def _omits_cited_logistics_method(answer: str, references: list[Evidence]) -> bo
     return False
 
 
-def _has_undisclosed_approved_hurdle(answer: str) -> bool:
-    """Require the answer to disclose when an approved decision hurdle is absent from evidence."""
-    missing_disclosure = re.compile(
-        r"\b(?:not supplied|not provided|not stated|do not provide|does not provide|"
-        r"must (?:first )?be set|set one first)\b",
-        re.IGNORECASE,
-    )
-    segments = [segment for segment in re.split(r"(?=\bIf\b)", answer, flags=re.IGNORECASE)
-                if re.match(r"\s*If\b", segment, flags=re.IGNORECASE)]
-    first_action = re.search(r"\bIf\b", answer, re.IGNORECASE)
-    preamble = answer[:first_action.start()] if first_action else answer
-    if (re.search(r"\b(?:approved|management[- ]approved|company[- ]approved)\b[^.\n]{0,60}"
-                  r"\b(?:hurdle|target|threshold|standard)\b", preamble, re.IGNORECASE)
-            and missing_disclosure.search(preamble)):
-        return False
-    for segment in segments:
-        has_hurdle = re.search(r"\b(?:approved|management[- ]approved|company[- ]approved)\b[^.\n]{0,60}"
-                               r"\b(?:hurdle|target|threshold|standard)\b", segment, re.IGNORECASE)
-        if has_hurdle and not missing_disclosure.search(segment):
-            return True
-    return False
-
-
-def _has_uncited_environmental_intervention(answer: str, evidence: list[Evidence]) -> bool:
-    patterns = (
-        r"\bcompost(?:ing)?\b",
-        r"\banaerobic digestion\b",
-        r"\bmembrane filtration\b",
-        r"\blow[-‐‑ ]emission boilers?\b",
-        r"\bfeedstock logistics\b",
-    )
-    by_id = {item.citation_id: item for item in evidence if item.citation_id}
-    segments = [segment for segment in re.split(r"(?=\bIf\b)", answer, flags=re.IGNORECASE)
-                if re.match(r"\s*If\b", segment, flags=re.IGNORECASE)]
-    for segment in segments:
-        cited_text = " ".join(
-            by_id[citation_id].content or ""
-            for citation_id in set(_CITATION.findall(segment))
-            if citation_id in by_id
-        ).casefold().replace("‑", "-").replace("–", "-")
-        normalized_segment = segment.casefold().replace("‑", "-").replace("–", "-")
-        example = re.search(r"(?:\be\.g\.?\s*|\bfor example\b\s*|\bsuch as\b\s*)([^.;\n)]*)",
-                            normalized_segment, re.IGNORECASE)
-        if example:
-            candidate = example.group(1).strip(" ,:")
-            if candidate and candidate not in cited_text:
-                return True
-        if any(re.search(pattern, normalized_segment) and not re.search(pattern, cited_text)
-               for pattern in patterns):
-            return True
-    return False
-
-
 def _generate_conditional_draft(llm, prompt: str, instructions: str) -> tuple[str, str]:
     return generate_with_provider_fallback(llm, prompt, instructions=instructions)
 
 
 def _provider_failure_reason(error: Exception) -> str:
     return "provider_rate_limited" if getattr(error, "status_code", None) == 429 else "provider_unavailable"
-
-
-def _conditional_decision_suggestions(
-    metric_data: AgentResult, domain: str | None, llm,
-) -> AgentResult:
-    """Generate cited if/then decision gates from the latest verified annual KPI periods."""
-    if domain not in BUSINESS_DECISION_PROFILES:
-        return metric_data.model_copy(update={
-            "answer": "Chọn một domain có dữ liệu đã xác minh trước khi tạo khuyến nghị.",
-            "agent": "report",
-            "metadata": {**metric_data.metadata, "insufficient_context": True,
-                         "decision_analysis": "decision_domain_required"},
-        })
-
-    rows = [row for row in metric_data.data.get("business_metrics", [])
-            if row.get("fiscal_year") is not None
-            and row.get("reporting_period", "FY") == "FY"]
-    years = sorted({int(row["fiscal_year"]) for row in rows})[-3:]
-    recent_rows = [row for row in rows if int(row["fiscal_year"]) in years]
-    by_series = {}
-    for row in recent_rows:
-        key = row.get("metric_name"), row.get("unit")
-        by_series.setdefault(key, set()).add(int(row["fiscal_year"]))
-    usable_series = sum(all(year in observed_years for year in years) for observed_years in by_series.values())
-    consecutive_years = len(years) == 3 and all(
-        year == years[index - 1] + 1 for index, year in enumerate(years) if index > 0
-    )
-    if not consecutive_years or usable_series < 2:
-        return metric_data.model_copy(update={
-            "answer": (
-                f"Domain {BUSINESS_DECISION_PROFILES[domain]['label']} chưa có đủ ít nhất hai KPI "
-                "đã xác minh trong ba năm tài chính liên tiếp gần nhất để tạo khuyến nghị có căn cứ."
-            ),
-            "agent": "report",
-            "metadata": {**metric_data.metadata, "insufficient_context": True,
-                         "decision_analysis": "insufficient_recent_metric_coverage",
-                         "analysis_periods": years},
-        })
-
-    selected_ids = {row.get("business_metric_id") for row in recent_rows}
-    evidence = [item for item in metric_data.evidence
-                if item.metadata.get("business_metric_id") in selected_ids]
-    evidence_by_id = {item.metadata.get("business_metric_id"): item for item in evidence}
-    recent_rows = [row for row in recent_rows if row.get("business_metric_id") in evidence_by_id]
-    evidence_series = {}
-    for row in recent_rows:
-        key = row.get("metric_name"), row.get("unit")
-        evidence_series.setdefault(key, set()).add(int(row["fiscal_year"]))
-    cited_series_count = sum(all(year in observed_years for year in years)
-                             for observed_years in evidence_series.values())
-    if cited_series_count < 2:
-        return metric_data.model_copy(update={
-            "answer": "Các KPI gần nhất chưa có đủ chuỗi số liệu với trích dẫn nguồn cho cả ba năm.",
-            "agent": "report",
-            "metadata": {**metric_data.metadata, "insufficient_context": True,
-                         "decision_analysis": "recent_kpi_sources_missing"},
-        })
-
-    topic_instruction = ""
-    supported_topics = []
-    topics = {}
-    if domain == "environmental_performance":
-        complete_metric_names = {
-            name for (name, _unit), observed_years in evidence_series.items()
-            if all(year in observed_years for year in years)
-        }
-        topics = {
-            "waste": {"total_waste_generated", "waste_recovered_recycled", "waste_treated_disposed"},
-            "water": {"total_raw_water_intake", "total_water_consumption", "recycled_reused_water", "wastewater_discharge"},
-            "emissions": {"scope_1_2_ghg_emissions", "scope_1_ghg_emissions", "scope_2_ghg_emissions",
-                          "dairy_product_ghg_intensity", "sugar_product_ghg_intensity"},
-        }
-        supported_topics = [name for name, metrics in topics.items() if complete_metric_names & metrics]
-        if len(supported_topics) > 1:
-            topic_instruction = (
-                "Environmental decision coverage is available for these distinct, three-year-supported topics: "
-                + ", ".join(supported_topics) + ". Produce one distinct action for each listed topic, and ground each "
-                "action only in citations for that topic. Do not repeat the same action or reuse one topic's evidence "
-                "for every action. Keep source-scope caveats and site-level evidence requirements specific to each topic. "
-            )
-    elif domain == "market_performance":
-        topic_instruction = (
-            "Market-allocation guard: revenue growth and segment gross margin can justify further diligence, not a "
-            "capital-allocation decision. Do not recommend opening stores, entering countries, expanding exports, or "
-            "shifting investment from these aggregate series alone. Keep any immediate action to a bounded market or "
-            "channel diligence task. Make any later investment conditional on comparable market-level operating profit, "
-            "incremental CAPEX, working capital, competitive conditions, currency/regulatory risk, and management's "
-            "approved return hurdle. Otherwise hold the allocation and request those data. "
-        )
-
-    context = []
-    for row in sorted(recent_rows, key=lambda item: (int(item["fiscal_year"]), item["metric_name"])):
-        source = evidence_by_id[row["business_metric_id"]]
-        context.append(
-            f"[{source.citation_id}] FY{row['fiscal_year']} {row['metric_label']}: "
-            f"{_qualified_business_metric_value(row)}; scope: {row.get('scope') or 'not stated'}; "
-            f"source excerpt: {source.content or 'not available'}"
-        )
-
-    system_instructions = (
-        "You are a source-grounded enterprise decision-support analyst. Respond in the user's language. "
-        "Generate up to three useful management actions to consider from the supplied verified observations; "
-        "do not return a menu of generic questions or merely summarize numbers. "
-        "Write every action in this exact form: 'If [future observable condition], then [bounded next action]; "
-        "otherwise [hold, continue checking, or gather evidence]. Evidence: [M#]'. Include the literal words If, "
-        "then and otherwise in every action. Do not put a number, percentage, or comparison of prior-year values "
-        "inside a condition. Never use an increase, decrease, greater-than/lower-than comparison, prior-year value, "
-        "or completed historical trend as an action trigger, even if the number is cited. Do not make a future fiscal "
-        "year compared with a previous-year value the gate. Instead, condition action on a future operational finding "
-        "that is not yet in the data, such as a site audit identifying a controllable process and confirming an "
-        "approved cost, quality, and compliance hurdle. Begin with one short note before the actions stating that "
-        "the cited reports do not provide a management-approved operational hurdle and management must set one "
-        "before judging any pilot. Keep every action conditional on a future audit and that hurdle being set. State "
-        "historical KPI values only after 'Evidence:', outside the condition. "
-        "Prefer a diligence step or bounded pilot over a technical prescription that the evidence does not support. "
-        "Never turn a reported observation or prior-year value into a decision "
-        "target, hurdle, or cutoff. A numeric threshold is allowed only when the cited source explicitly labels that "
-        "number as a target, threshold, standard, or hurdle. Do not compare rates to levels, compare unlike units, or "
-        "call a reported value a target. The supplied evidence contains no management-approved operational hurdle "
-        "unless a cited source explicitly says otherwise. Do not phrase an approval as if it already exists. State the "
-        "missing-hurdle disclosure once in the opening note, then condition any pilot on management first setting "
-        "the hurdle and a future audit confirming a controllable opportunity meets it; do not invent a threshold. Use three-year-complete series "
-        "as trend evidence; treat "
-        "one-year-only measures as "
-        "single-period signals for diligence, never as a trend or a threshold. Distinguish a diligence step or pilot "
-        "from approval to scale or allocate capital. For each action, state the cited evidence, the condition that "
-        "would trigger action, and missing data needed to test that condition. Preserve source scope and qualifiers, "
-        "make the immediate action only an audit, measurement, or bounded pilot at one selected site or line. "
-        "Do not name a specific technology, equipment, treatment, production protocol, or initiative unless a cited source "
-        "explicitly identifies it as an existing practice or reported option. A hypothetical future audit does not "
-        "support naming a candidate technology today. If the reports do not name a practice, recommend an audit to "
-        "identify and compare options; do not list examples, use parenthetical examples, choose, or prescribe one. "
-        "Never recommend rollout, deployment, or expansion across all sites; scaling requires a separate later decision "
-        "after pilot results. Do not imply an intervention or process already exists unless the evidence says so; "
-        "frame it as an option to test if a future audit confirms the opportunity. "
-        "Do not claim causes from correlation, and cite every source-derived fact with its exact [M#] citation. "
-        "Use only the evidence in the user message. If it does not support an action, return fewer than three. "
-        + topic_instruction
-    )
-    prompt = (
-        f"Analyze only the latest available annual periods {years} for the selected decision domain "
-        f"{BUSINESS_DECISION_PROFILES[domain]['label']}. The data are source-backed observations, not targets. "
-        "Use only the evidence below.\n\nEvidence:\n"
-        + "\n".join(context)
-    )
-    raw_answer, generation_provider = _generate_conditional_draft(llm, prompt, system_instructions)
-    answer = _normalize_numeric_citations(raw_answer, evidence)
-    validation_failure = _report_validation_failure(answer, evidence, {item.citation_id for item in evidence}, "")
-    unsupported_numeric_gate = _has_unsupported_numeric_decision_gate(answer, evidence)
-    undisclosed_hurdle = _has_undisclosed_approved_hurdle(answer)
-    unsupported_intervention = (
-        domain == "environmental_performance"
-        and _has_uncited_environmental_intervention(answer, evidence)
-    )
-    repaired = False
-    citation_repair_attempted = False
-    numeric_gate_repair_attempted = False
-    hurdle_repair_attempted = False
-    intervention_repair_attempted = False
-    if validation_failure or unsupported_numeric_gate or undisclosed_hurdle or unsupported_intervention:
-        repaired = True
-        corrections = []
-        if validation_failure:
-            citation_repair_attempted = True
-            corrections.append(
-                "Citation validation failed: " + validation_failure + ". Use only the supplied citation IDs."
-            )
-        if unsupported_numeric_gate:
-            numeric_gate_repair_attempted = True
-            corrections.append(
-                "The previous draft failed because its condition used historical values as a comparison gate. This is "
-                "prohibited even when cited. Remove all numeric comparisons, increase/decrease trends, and past-year "
-                "values from every gate. Use only a future site/process audit finding and a management-approved "
-                "cost/quality/compliance hurdle as the condition; if no hurdle is supplied, make setting one a "
-                "prerequisite. Put historical values only in the separate Evidence clause and retain otherwise."
-            )
-        if undisclosed_hurdle:
-            hurdle_repair_attempted = True
-            corrections.append(
-                "The previous draft did not disclose that the evidence lacks an approved hurdle. Add this exact note "
-                "before the actions: 'The cited reports do not provide a management-approved operational hurdle; "
-                "management must set one before judging any pilot.' Then condition each action on a future audit "
-                "confirming a controllable opportunity after management sets the hurdle. Do not imply the hurdle "
-                "already exists."
-            )
-        if unsupported_intervention:
-            intervention_repair_attempted = True
-            corrections.append(
-                "The previous draft named a specific environmental technology or process that its cited passages do "
-                "not support. Remove that name and all parenthetical examples. Recommend only an audit that measures "
-                "the relevant waste, water, or emissions stream and identifies and compares candidate options; do not "
-                "select or prescribe an option unless a cited passage explicitly names it."
-            )
-        repair_prompt = prompt + "\n\n" + " ".join(corrections)
-        raw_answer, repair_provider = _generate_conditional_draft(llm, repair_prompt, system_instructions)
-        if repair_provider == "huggingface_inference":
-            generation_provider = repair_provider
-        answer = _normalize_numeric_citations(raw_answer, evidence)
-        validation_failure = _report_validation_failure(
-            answer, evidence, {item.citation_id for item in evidence}, "",
-        )
-        unsupported_numeric_gate = _has_unsupported_numeric_decision_gate(answer, evidence)
-        undisclosed_hurdle = _has_undisclosed_approved_hurdle(answer)
-        unsupported_intervention = (
-            domain == "environmental_performance"
-            and _has_uncited_environmental_intervention(answer, evidence)
-        )
-    if unsupported_numeric_gate:
-        return metric_data.model_copy(update={
-            "answer": (
-                "Chưa thể phát hành khuyến nghị: bản trả lời dùng số liệu quan sát như ngưỡng quyết định, nhưng nguồn "
-                "không xác nhận đó là mục tiêu hoặc hurdle đã được phê duyệt. Cần đặt hurdle quản trị rõ ràng; trong "
-                "lúc đó chỉ nên xem các KPI gần nhất là tín hiệu để điều tra hoặc thử nghiệm giới hạn."
-            ),
-            "agent": "report",
-            "evidence": evidence,
-            "data": {**metric_data.data, "business_metrics": recent_rows},
-            "metadata": {**metric_data.metadata, "insufficient_context": True,
-                         "decision_threshold_validation_failed": True,
-                         "decision_analysis": "unsupported_numeric_decision_gate"},
-        })
-    if undisclosed_hurdle:
-        return metric_data.model_copy(update={
-            "answer": (
-                "Recommendations were withheld because they referred to management-approved hurdles that the cited "
-                "evidence does not establish. Set and document the relevant hurdle before evaluating a bounded pilot."
-            ),
-            "agent": "report",
-            "evidence": evidence,
-            "data": {**metric_data.data, "business_metrics": recent_rows},
-            "metadata": {**metric_data.metadata, "insufficient_context": True,
-                         "decision_hurdle_validation_failed": True,
-                         "decision_analysis": "undisclosed_approved_hurdle"},
-        })
-    if unsupported_intervention:
-        topic_actions = {
-            "waste": (
-                "If a site audit confirms a controllable waste stream and management sets a measurable waste-reduction "
-                "hurdle, then run a bounded measurement pilot selected by that audit at one line; otherwise collect "
-                "comparable waste-composition, output, recovery, disposal, compliance and cost data."
-            ),
-            "water": (
-                "If a site water balance confirms a controllable intake or discharge opportunity and management sets "
-                "water-quality, compliance and cost criteria, then run a bounded measurement pilot selected after "
-                "comparing options; otherwise collect comparable intake, reuse, discharge, output, quality and cost data."
-            ),
-            "emissions": (
-                "If a site audit identifies a controllable emissions source and management sets a reduction hurdle on "
-                "a like-for-like output basis, then measure a bounded pilot selected after comparing options; otherwise "
-                "collect site energy-source, output, emissions and abatement-cost data."
-            ),
-        }
-        fallback_actions = []
-        for topic in supported_topics:
-            topic_rows = [row for row in recent_rows if row.get("metric_name") in topics[topic]]
-            if not all(any(int(row["fiscal_year"]) == year for row in topic_rows) for year in years):
-                continue
-            citation_ids = sorted({
-                evidence_by_id[row["business_metric_id"]].citation_id
-                for row in topic_rows
-                if row.get("business_metric_id") in evidence_by_id
-            })
-            if citation_ids:
-                fallback_actions.append(f"{topic.title()}: {topic_actions[topic]} Evidence: "
-                                        + ", ".join(f"[{citation_id}]" for citation_id in citation_ids) + ".")
-        fallback_answer = (
-            "The queried KPI evidence does not provide a management-approved operational hurdle; management must set one "
-            "before judging a pilot. These are audit-first decision steps, not reported Vinamilk initiatives.\n\n"
-            + "\n\n".join(fallback_actions)
-        )
-        fallback_invalid = (
-            not fallback_actions
-            or _report_validation_failure(fallback_answer, evidence, {item.citation_id for item in evidence}, "")
-            or _has_unsupported_numeric_decision_gate(fallback_answer, evidence)
-            or _has_undisclosed_approved_hurdle(fallback_answer)
-            or _has_uncited_environmental_intervention(fallback_answer, evidence)
-        )
-        if not fallback_invalid:
-            return metric_data.model_copy(update={
-                "answer": fallback_answer,
-                "agent": "report",
-                "evidence": evidence,
-                "data": {**metric_data.data, "business_metrics": recent_rows},
-                "metadata": {**metric_data.metadata, "insufficient_context": False,
-                             "decision_analysis": "environmental_audit_first_fallback",
-                             "analysis_periods": years,
-                             "generation_provider": "deterministic_safety_fallback",
-                             "recommendation_repair_attempted": True,
-                             "intervention_repair_attempted": True},
-            })
-        return metric_data.model_copy(update={
-            "answer": (
-                "Recommendations were withheld because the cited KPI passages do not identify a specific waste, water, "
-                "or emissions intervention. Start with a site-level audit to identify and compare options against "
-                "management-set criteria before choosing a bounded pilot."
-            ),
-            "agent": "report",
-            "evidence": evidence,
-            "data": {**metric_data.data, "business_metrics": recent_rows},
-            "metadata": {**metric_data.metadata, "insufficient_context": True,
-                         "environmental_intervention_validation_failed": True,
-                         "decision_analysis": "uncited_environmental_intervention"},
-        })
-    if validation_failure:
-        logger.warning("Conditional recommendation citation validation failed after repair (%s)", validation_failure)
-        return metric_data.model_copy(update={
-            "answer": _INVALID_REPORT,
-            "agent": "report",
-            "evidence": evidence,
-            "data": {**metric_data.data, "business_metrics": recent_rows},
-            "metadata": {**metric_data.metadata, "insufficient_context": True,
-                         "citation_validation_failed": True,
-                         "decision_analysis": "conditional_recommendation_validation_failed"},
-        })
-    return metric_data.model_copy(update={
-        "answer": answer,
-        "agent": "report",
-        "evidence": evidence,
-        "data": {**metric_data.data, "business_metrics": recent_rows},
-        "metadata": {**metric_data.metadata, "insufficient_context": False,
-                     "decision_analysis": "conditional_recommendations_from_recent_verified_kpis",
-                     "analysis_periods": years,
-                     "generation_provider": generation_provider,
-                     **({"hurdle_repair_attempted": True} if hurdle_repair_attempted else {}),
-                     **({"recommendation_repair_attempted": True} if repaired else {}),
-                     **({"citation_repair_attempted": True} if citation_repair_attempted else {}),
-                     **({"numeric_gate_repair_attempted": True} if numeric_gate_repair_attempted else {}),
-                     **({"intervention_repair_attempted": True} if intervention_repair_attempted else {})},
-    })
 
 
 def _normalize_numeric_citations(answer: str, evidence: list[Evidence]) -> str:
@@ -723,6 +494,87 @@ def _normalize_numeric_citations(answer: str, evidence: list[Evidence]) -> str:
         return match.group(0)
 
     return _NUMERIC_CITATION.sub(replace, answer)
+
+
+def _format_commerce_number(value, key: str, localized: bool) -> str:
+    """Format SQL numerics for display without assigning an undeclared currency."""
+    name = key.casefold()
+    if name in {"year", "fiscal_year", "page", "page_number"} or name.endswith("_id"):
+        return str(value)
+    try:
+        number = Decimal(str(value))
+    except (ArithmeticError, ValueError):
+        return str(value)
+    if not number.is_finite():
+        return str(value)
+
+    if "margin_proxy" in name:
+        number *= 100
+        suffix = "%"
+        precision = 2
+    else:
+        suffix = ""
+        monetary = any(token in name for token in (
+            "sales", "revenue", "discount", "cogs", "profit", "shipping_fee",
+        ))
+        precision = 2 if monetary or name.startswith(("avg_", "average_")) else min(
+            max(-number.as_tuple().exponent, 0), 4,
+        )
+        if number == number.to_integral_value():
+            precision = 0
+
+    formatted = f"{number:,.{precision}f}"
+    if precision:
+        formatted = formatted.rstrip("0").rstrip(".")
+    if localized:
+        formatted = formatted.replace(",", "\0").replace(".", ",").replace("\0", ".")
+    return formatted + suffix
+
+
+def _filter_named_campaigns(question: str, rows: list[dict]) -> list[dict]:
+    """Keep only explicitly named campaign rows, including year-suffixed names."""
+    query = question.casefold()
+
+    def mentioned(name: str) -> bool:
+        return bool(re.search(rf"(?<!\w){re.escape(name.casefold())}(?!\w)", query))
+
+    exact = [row for row in rows if isinstance(row.get("campaign"), str) and mentioned(row["campaign"].strip())]
+    if exact:
+        return exact
+
+    named_bases = {
+        re.sub(r"\s+(?:19|20)\d{2}$", "", row["campaign"].strip())
+        for row in rows if isinstance(row.get("campaign"), str)
+    }
+    named_bases = {name for name in named_bases if len(name.split()) > 1 and mentioned(name)}
+    if not named_bases:
+        return rows
+    return [
+        row for row in rows
+        if isinstance(row.get("campaign"), str)
+        and re.sub(r"\s+(?:19|20)\d{2}$", "", row["campaign"].strip()) in named_bases
+    ]
+
+
+def _ensure_commerce_dataset_disclosure(answer: str, evidence: list[Evidence], question: str) -> str:
+    sql_evidence = next((
+        item for item in evidence
+        if item.source_type == "commerce_sql"
+        and "synthetic" in str(item.metadata.get("dataset_note", "")).casefold()
+        and item.citation_id
+    ), None)
+    if not sql_evidence or re.search(
+        r"(?is)(?:synthetic|fictional).{0,60}(?:commerce\s+demo\s+)?dataset|"
+        r"(?:dataset|dữ liệu).{0,60}(?:synthetic|fictional|giả lập)",
+        answer,
+    ):
+        return answer
+    citation = f"[{sql_evidence.citation_id}]"
+    if _is_vietnamese_text(question):
+        note = f"Các số liệu dưới đây thuộc bộ dữ liệu Commerce Demo giả lập, không phải kết quả của nhà bán lẻ có thật. {citation}"
+    else:
+        note = f"These figures come from the synthetic Commerce Demo dataset, not a real retailer. {citation}"
+    return f"{note}\n\n{answer}"
 
 
 def _ordered_report_evidence(evidence: list[Evidence], question: str) -> list[Evidence]:
@@ -827,7 +679,7 @@ def _financial_facts_match_cited_evidence(answer: str, evidence: list[Evidence])
 
 
 def _decision_numeric_facts_match_cited_evidence(answer: str, evidence: list[Evidence]) -> bool:
-    """Require numeric decision-report claims to be source-reported, not calculated in prose."""
+    """Require numeric claims to match cited values or supported display-unit conversions."""
     return not _unsupported_decision_numeric_tokens(answer, evidence)
 
 
@@ -841,11 +693,64 @@ def _unsupported_decision_numeric_tokens(answer: str, evidence: list[Evidence]) 
     )
 
     def normalize(match: str) -> str:
-        return re.sub(r"(?<=\d)[\s.,]+(?=\d)", "", match)
+        value = match.strip().replace(" ", "").replace("\u00a0", "").replace("\u202f", "")
+        separators = [index for index, char in enumerate(value) if char in ".,"]
+        if not separators:
+            return value.lstrip("+")
+        last = separators[-1]
+        fraction_digits = len(value) - last - 1
+        integer_start = 1 if value.startswith(("-", "+")) else 0
+        is_decimal = fraction_digits != 3 or value[integer_start:last] == "0"
+        if is_decimal:
+            integer = re.sub(r"[.,]", "", value[:last])
+            fraction = re.sub(r"[.,]", "", value[last + 1:])
+            value = integer + ("." + fraction if fraction else "")
+        else:
+            value = re.sub(r"[.,]", "", value)
+        try:
+            return format(Decimal(value).normalize(), "f")
+        except (ArithmeticError, ValueError):
+            return value.lstrip("+")
 
     answer_text = _CITATION.sub("", answer)
     answer_text = re.sub(r"(?m)^\s*\d{1,2}\.\s+", "", answer_text)
     cited_numbers = {normalize(match) for match in _NUMBER.findall(cited_text)}
+    # SQL summaries round averages for display; fill rate is also converted from
+    # its stored ratio to percent. Accept those deterministic presentations only.
+    for item in evidence:
+        if item.citation_id not in cited_ids or item.source_type != "commerce_sql":
+            continue
+        try:
+            observations = json.loads((item.content or "").partition(": ")[2])
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(observations, list):
+            continue
+        for row in observations:
+            if not isinstance(row, dict):
+                continue
+            for key, value in row.items():
+                if value is None:
+                    continue
+                key_folded = key.casefold()
+                is_fill_rate = key_folded in {"avg_fill_rate", "average_fill_rate"}
+                is_formatted_measure = (
+                    any(token in key_folded for token in ("avg_", "average_", "sales", "revenue", "discount", "cogs", "profit", "shipping_fee"))
+                    or "margin_proxy" in key_folded
+                )
+                if not is_formatted_measure:
+                    continue
+                try:
+                    average = Decimal(str(value))
+                except (ArithmeticError, ValueError):
+                    continue
+                if average.is_finite():
+                    for localized in (False, True):
+                        display_value = _format_commerce_number(value, key, localized)
+                        cited_numbers.update(normalize(match) for match in _NUMBER.findall(display_value))
+                    if is_fill_rate:
+                        percentage = f"{average * 100:.2f}".rstrip("0").rstrip(".")
+                        cited_numbers.update(normalize(match) for match in _NUMBER.findall(percentage))
     return sorted({match for match in _NUMBER.findall(answer_text) if normalize(match) not in cited_numbers})
 
 
@@ -888,8 +793,16 @@ def _report_validation_failure(
     citations = set(_CITATION.findall(answer))
     if not citations or citations - allowed:
         return "missing_or_unknown_citations"
-    if _is_financial_summary(question) and not _financial_facts_match_cited_evidence(answer, evidence):
-        return "financial_values_or_units_do_not_match_cited_evidence"
+    has_cited_commerce_sql = any(
+        item.citation_id in citations and item.source_type == "commerce_sql"
+        for item in evidence
+    )
+    if _is_financial_summary(question):
+        if has_cited_commerce_sql:
+            if not _decision_numeric_facts_match_cited_evidence(answer, evidence):
+                return "decision_numeric_claim_not_present_in_cited_evidence"
+        elif not _financial_facts_match_cited_evidence(answer, evidence):
+            return "financial_values_or_units_do_not_match_cited_evidence"
     if _is_decision_support_request(question) and _has_unsupported_numeric_decision_gate(answer, evidence):
         return "decision_gate_uses_an_unsourced_numeric_threshold"
     if _is_decision_support_request(question) and _has_unsupported_inventory_overlap_count(answer, evidence):
@@ -897,6 +810,204 @@ def _report_validation_failure(
     if _is_decision_support_request(question) and not _decision_numeric_facts_match_cited_evidence(answer, evidence):
         return "decision_numeric_claim_not_present_in_cited_evidence"
     return None
+
+
+def _commerce_requested_observation_missing(
+    answer: str, evidence: list[Evidence], question: str,
+) -> str | None:
+    """Require an explicitly requested SQL measure in source or display units."""
+    query = question.casefold()
+    measures = {
+        "avg_fill_rate": ("fill rate", "availability", "tỷ lệ đáp ứng", "khả dụng"),
+        "net_sales": ("sales", "revenue", "doanh thu"),
+        "merchandise_gross_profit_proxy": (
+            "profit proxy", "gross profit", "profit", "lợi nhuận", "lãi gộp",
+        ),
+        "merchandise_gross_margin_proxy": ("gross margin", "biên lợi nhuận", "biên lãi"),
+        "discounts": ("discount", "giảm giá", "chiết khấu"),
+        "delivered_orders": ("delivered orders", "orders", "đơn hàng"),
+        "units": ("units", "units sold", "số lượng bán", "sản lượng"),
+    }
+    observation_fields = {
+        "avg_fill_rate": ("avg_fill_rate", "average_fill_rate"),
+        "net_sales": ("net_sales", "net_item_sales"),
+    }
+    observations = [
+        row
+        for item in evidence
+        if item.source_type == "commerce_sql" and item.citation_id in _CITATION.findall(answer)
+        for row in (item.metadata.get("commerce_observations") or [])
+        if isinstance(row, dict)
+    ]
+    requested_years = {int(year) for year in re.findall(r"\b(?:19|20)\d{2}\b", question)}
+    year_range = re.search(
+        r"\b((?:19|20)\d{2})\s*(?:-|–|—|to|through|đến)\s*((?:19|20)\d{2})\b",
+        question,
+        re.IGNORECASE,
+    )
+    if year_range:
+        first, last = map(int, year_range.groups())
+        if first <= last and last - first <= 20:
+            requested_years.update(range(first, last + 1))
+    if requested_years:
+        def observed_year(row: dict) -> int | None:
+            try:
+                value = row.get("year", row.get("fiscal_year"))
+                return int(value) if value is not None else None
+            except (TypeError, ValueError):
+                return None
+
+        observations = [
+            row for row in observations
+            if observed_year(row) is None or observed_year(row) in requested_years
+        ]
+    if not observations:
+        return None
+
+    def normalize_number(value: str) -> tuple[str, str]:
+        value = value.strip()
+        sign = "-" if value.startswith("-") or value.startswith("(") else "+"
+        value = value.strip("()+-").replace(" ", "").replace("\u00a0", "").replace("\u202f", "")
+        separators = [index for index, char in enumerate(value) if char in ".,"]
+        if separators:
+            last = separators[-1]
+            fraction_digits = len(value) - last - 1
+            is_decimal = fraction_digits != 3 or value[:last] == "0"
+            if is_decimal:
+                value = re.sub(r"[.,]", "", value[:last]) + "." + re.sub(r"[.,]", "", value[last + 1:])
+            else:
+                value = re.sub(r"[.,]", "", value)
+        try:
+            normalized = format(Decimal(value).normalize(), "f")
+        except (ArithmeticError, ValueError):
+            normalized = re.sub(r"\D", "", value)
+        return sign, normalized
+
+    answer_numbers = {
+        normalize_number(value)
+        for value in re.findall(r"(?<![\w])(?:\([\d.,]+\)|[+-]?\d+(?:[.,]\d+)*)(?![\w])",
+                               _CITATION.sub("", answer))
+    }
+    for field, aliases in measures.items():
+        if not any(alias in query for alias in aliases):
+            continue
+        if (field == "merchandise_gross_profit_proxy"
+                and (_asks_for_unavailable_promotion_roi(question)
+                     or _asks_promotion_incrementality(question))
+                and not any(term in query for term in (
+                    "gross profit", "gross-profit", "profit proxy", "profitability proxy",
+                    "lãi gộp", "proxy lãi gộp",
+                ))):
+            # ROI/incrementality questions must abstain on those unavailable
+            # outcomes; they do not implicitly request the catalog-COGS proxy.
+            continue
+        expected = {
+            normalize_number(format(Decimal(str(row[observed_field])).normalize(), "f"))
+            for row in observations
+            for observed_field in observation_fields.get(field, (field,))
+            if row.get(observed_field) is not None and isinstance(row.get(observed_field), (int, float))
+        }
+        expected.update(
+            normalize_number(f"{Decimal(str(row[field])):.2f}")
+            for row in observations
+            if field in {"net_sales", "merchandise_gross_profit_proxy", "discounts"}
+            and row.get(field) is not None
+        )
+        if field == "avg_fill_rate":
+            expected.update(
+                normalize_number(f"{Decimal(str(row[observed_field])) * 100:.2f}")
+                for row in observations
+                for observed_field in observation_fields[field]
+                if row.get(observed_field) is not None
+                and isinstance(row.get(observed_field), (int, float))
+            )
+        if expected and not expected.intersection(answer_numbers):
+            return field
+    return None
+
+
+def _commerce_fill_rate_missing_percent(answer: str, evidence: list[Evidence], question: str) -> bool:
+    """Require stored fill-rate ratios to be displayed in their user-facing percent unit."""
+    query = question.casefold()
+    if not any(term in query for term in ("fill rate", "availability", "tỷ lệ đáp ứng", "khả dụng")):
+        return False
+    if re.search(r"\b(?:raw ratio|decimal ratio|as a fraction|0-to-1)\b|dạng thập phân|tỷ lệ gốc|dạng 0-1", query):
+        return False
+    cited_ids = set(_CITATION.findall(answer))
+    years = {int(year) for year in re.findall(r"\b(?:19|20)\d{2}\b", question)}
+    year_range = re.search(
+        r"\b((?:19|20)\d{2})\s*(?:-|–|—|to|through|đến)\s*((?:19|20)\d{2})\b",
+        question,
+        re.IGNORECASE,
+    )
+    if year_range:
+        first, last = map(int, year_range.groups())
+        if first <= last and last - first <= 20:
+            years.update(range(first, last + 1))
+    expected = set()
+    for item in evidence:
+        if item.source_type != "commerce_sql" or item.citation_id not in cited_ids:
+            continue
+        for row in item.metadata.get("commerce_observations") or []:
+            if not isinstance(row, dict):
+                continue
+            if years and row.get("year") is not None:
+                try:
+                    observed_year = int(Decimal(str(row["year"])))
+                except (ArithmeticError, ValueError):
+                    observed_year = None
+                if observed_year is not None and observed_year not in years:
+                    continue
+            value = next((row[key] for key in ("avg_fill_rate", "average_fill_rate", "fill_rate")
+                          if row.get(key) is not None), None)
+            if value is None:
+                continue
+            try:
+                ratio_or_percent = Decimal(str(value))
+                percentage = f"{ratio_or_percent * 100 if 0 <= ratio_or_percent <= 1 else ratio_or_percent:.2f}"
+            except (ArithmeticError, ValueError):
+                continue
+            expected.add(percentage)
+    if not expected:
+        return False
+    displayed = set()
+    for value in expected:
+        for localized in (value, value.replace(".", ",")):
+            if re.search(rf"(?<![\d.,]){re.escape(localized)}\s*%", answer):
+                displayed.add(value)
+                break
+    return displayed != expected
+
+
+def _has_multiple_unrequested_actions(answer: str) -> bool:
+    """Detect multiple list items under an explicit recommendation heading."""
+    lines = answer.splitlines()
+    heading = re.compile(
+        r"^(?:\d+[.)]\s*)?(?:recommended next move|recommended action|recommended next step|"
+        r"recommendations?|next steps|khuyến nghị(?: hành động(?: tiếp theo)?)?|"
+        r"bước tiếp theo|hành động tiếp theo)\s*:?$",
+        re.IGNORECASE,
+    )
+    items = re.compile(r"^(?:[-*+]\s+|\d+[.)]\s+).+")
+    for index, raw_line in enumerate(lines):
+        line = raw_line.strip().strip("*#` ")
+        if not heading.fullmatch(line):
+            continue
+        count = 0
+        for next_line in lines[index + 1:]:
+            candidate = next_line.strip()
+            if not candidate or candidate.startswith("---"):
+                if count:
+                    break
+                continue
+            normalized = candidate.strip("*#` ")
+            if re.match(r"^(?:\d+[.)]\s*)?[A-ZÀ-Ỹ].{0,80}$", normalized) and normalized.endswith("**"):
+                break
+            if items.match(candidate):
+                count += 1
+        if count > 1:
+            return True
+    return False
 
 
 def _has_unsolicited_commerce_recommendation(answer: str) -> bool:
@@ -940,6 +1051,42 @@ def _commerce_schema_gap_citation_failure(answer: str, evidence: list[Evidence],
         re.IGNORECASE,
     ))
     return bool(claims_target_missing and target_limitations and target_limitations.isdisjoint(_CITATION.findall(answer)))
+
+
+def _claims_missing_commerce_dimension_is_available(answer: str, domain: str) -> bool:
+    """Reject claims that SQL can verify a dimension excluded from the domain schema."""
+    tables = COMMERCE_QUERY_TABLES.get(domain, {})
+    available_columns = {column for columns in tables.values() for column in columns}
+    missing = [
+        definition
+        for definition in COMMERCE_UNAVAILABLE_DIMENSIONS.get(domain, {}).values()
+        if not set(definition["columns"]).intersection(available_columns)
+    ]
+    if not missing:
+        return False
+
+    capability = re.compile(
+        r"\b(?:can|could|may|does|do)\s+(?!not\b)"
+        r"(?:(?:be\s+)?used\s+to\s+)?"
+        r"(?:confirm|verify|compare|identify|determine|show|track|measure|"
+        r"estimate|approximate|predict|forecast|infer)\b",
+        re.IGNORECASE,
+    )
+    commerce_source = re.compile(
+        r"\b(?:commerce|dataset|schema|data|snapshot|columns?|fields?|cột|dữ liệu)\b",
+        re.IGNORECASE,
+    )
+    for sentence in re.split(r"(?<=[.!?])\s+|\n+", answer):
+        for clause in re.split(r"\s+(?:but|however|whereas)\s+|[;|]", sentence, flags=re.IGNORECASE):
+            if not capability.search(clause) or not commerce_source.search(clause):
+                continue
+            for definition in missing:
+                if any(
+                    re.search(rf"\b{re.escape(alias)}(?:s|es)?\b", clause, re.IGNORECASE)
+                    for alias in definition["aliases"]
+                ):
+                    return True
+    return False
 
 
 def _has_unsupported_monotonic_commerce_trend(answer: str, evidence: list[Evidence]) -> bool:
@@ -1011,6 +1158,59 @@ def _has_unsupported_monotonic_commerce_trend(answer: str, evidence: list[Eviden
             ):
                 return True
     return False
+def _inventory_fill_rate_trend(rows: list[dict], citation: str, localized: bool) -> str:
+    """Describe a non-monotonic fill-rate series without treating counts as targets."""
+    yearly_rows = sorted(
+        (row for row in rows if isinstance(row.get("year"), int)),
+        key=lambda row: row["year"],
+    )
+    fill_points = []
+    for row in yearly_rows:
+        value = row.get("avg_fill_rate", row.get("average_fill_rate"))
+        try:
+            percentage = Decimal(str(value)) * 100
+        except (ArithmeticError, ValueError):
+            continue
+        if percentage.is_finite():
+            fill_points.append((row["year"], percentage))
+    trend = ""
+    if len(fill_points) >= 3:
+        transitions = [
+            (left, right, "giảm" if right[1] < left[1] else "tăng" if right[1] > left[1] else "ổn định")
+            for left, right in zip(fill_points, fill_points[1:])
+        ]
+        directions = {direction for _, _, direction in transitions}
+        if "giảm" in directions and "tăng" in directions:
+            transition_text = "; ".join(
+                f"{direction} {left[0]}–{right[0]}" if localized else
+                f"{'decreased' if direction == 'giảm' else 'increased'} from {left[0]} to {right[0]}"
+                for left, right, direction in transitions
+            )
+            trend = (
+                f"Fill rate không đơn điệu ({transition_text}) [{citation}]."
+                if localized else
+                f"Fill rate was non-monotonic ({transition_text}) [{citation}]."
+            )
+    if len(yearly_rows) >= 2:
+        first, last = yearly_rows[0], yearly_rows[-1]
+        stockout_first = first.get("stockout_snapshots", first.get("stockout_count"))
+        stockout_last = last.get("stockout_snapshots", last.get("stockout_count"))
+        snapshots_first = first.get("sku_snapshots", first.get("total_snapshots", first.get("snapshot_count")))
+        snapshots_last = last.get("sku_snapshots", last.get("total_snapshots", last.get("snapshot_count")))
+        if (all(isinstance(value, (int, float, Decimal)) for value in (
+                stockout_first, stockout_last, snapshots_first, snapshots_last,
+        )) and stockout_first > stockout_last and snapshots_first > snapshots_last):
+            count_trend = (
+                f"Số snapshot có cờ stockout và tổng snapshot đều giảm từ {first['year']} đến {last['year']}; "
+                f"số đếm này không chứng minh rủi ro giảm khi quy mô snapshot cũng thay đổi [{citation}]."
+                if localized else
+                f"Stockout-flagged snapshots and total snapshots both declined from {first['year']} to {last['year']}; "
+                f"these counts alone do not show reduced risk when snapshot volume also changed [{citation}]."
+            )
+            trend = f"{trend} {count_trend}".strip()
+    return trend
+
+
 def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evidence]) -> str:
     """Keep requested SQL observations visible when both generated drafts fail validation."""
     requested_years = {int(year) for year in re.findall(r"\b(?:19|20)\d{2}\b", question)}
@@ -1035,6 +1235,8 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
             continue
         prefix, separator, payload = (item.content or "").partition(" aggregate observations: ")
         if not separator:
+            prefix, separator, payload = (item.content or "").partition(" question-specific SQL observations: ")
+        if not separator:
             continue
         try:
             rows = json.loads(payload)
@@ -1057,9 +1259,13 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
                 row = rows[0]
                 both = row.get("both_flagged_rows")
                 if both is not None:
+                    snapshot = row.get("snapshot_date", "latest")
                     overlap_fact = (
-                        f"Trong snapshot {row.get('snapshot_date', 'mới nhất')}, {both} dòng sản phẩm "
-                        f"có đồng thời cờ stockout và overstock; hai tổng cờ có thể chồng lấp [{citation}].\n"
+                        f"Trong snapshot {snapshot}, {both} dòng sản phẩm có đồng thời cờ stockout và overstock; "
+                        f"hai tổng cờ có thể chồng lấp [{citation}].\n"
+                        if _is_vietnamese_text(question) else
+                        f"In snapshot {snapshot}, {both} product rows have both stockout and overstock flags; "
+                        f"the totals overlap [{citation}].\n"
                     )
                 break
 
@@ -1068,10 +1274,25 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
                 and (requested_years or any(term in question.casefold() for term in (
                     "availability", "fill rate", "thay đổi", "xu hướng",
                 )))):
+            localized = _is_vietnamese_text(question)
+            year_label = "Năm" if localized else "Year"
+            fill_label = "Fill rate TB" if localized else "Avg fill rate"
+            snapshot_label = "Snapshot có cờ stockout" if localized else "Stockout snapshots"
+            total_label = "Tổng snapshot" if localized else "Total snapshots"
+
+            def display_value(row: dict, key: str) -> str:
+                value = row[key]
+                if key != "avg_fill_rate":
+                    return str(value)
+                percentage = f"{Decimal(str(value)) * 100:.2f}"
+                return f"{percentage.replace('.', ',') if localized else percentage}%"
+
             details = "; ".join(
-                f"FY{row.get('year')}: " + ", ".join(
-                    f"{key}={row[key]}" for key in (
-                        "avg_fill_rate", "stockout_snapshots", "sku_snapshots",
+                f"{year_label} {row.get('year')}: " + ", ".join(
+                    f"{label}={display_value(row, key)}" for key, label in (
+                        ("avg_fill_rate", fill_label),
+                        ("stockout_snapshots", snapshot_label),
+                        ("sku_snapshots", total_label),
                     ) if row.get(key) is not None
                 )
                 for row in rows
@@ -1083,16 +1304,31 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
                 facts = f"{historical}{details} [{citation}]."
                 if not _is_inventory_service_target_question(question):
                     return facts + "\n"
+                trend = _inventory_fill_rate_trend(rows, citation, localized)
                 if _is_vietnamese_text(question):
                     return (
-                        facts + " Dữ liệu không có service-level target đã được phê duyệt "
+                        facts + (" " if trend else "") + trend + (" " if trend else "")
+                        + "Dữ liệu không có service-level target đã được phê duyệt "
                         f"{service_target_citation or f'[{citation}]'}.\n"
                     )
                 return (
-                    facts + " The data has no approved service-level target "
+                    facts + (" " if trend else "") + trend + (" " if trend else "")
+                    + "The data has no approved service-level target "
                     f"{service_target_citation or f'[{citation}]'}.\n"
                 )
-        if domain == "inventory_allocation" and name == "inventory_latest_by_category" and rows:
+        if domain == "inventory_allocation" and name == "question_specific_query":
+            rows = [
+                {
+                    **row,
+                    "category": row.get("category", row.get("group_label")),
+                    "stockout_products": row.get("stockout_products", row.get("stockout_count")),
+                    "overstock_products": row.get("overstock_products", row.get("overstock_count")),
+                }
+                for row in rows
+                if row.get("category") or row.get("group_label")
+            ]
+        if (domain == "inventory_allocation"
+                and name in {"inventory_latest_by_category", "question_specific_query"} and rows):
             query = question.casefold()
             asks_low_stock = any(term in query for term in (
                 "low stock", "low-stock", "sắp hết hàng", "sắp hết tồn", "cảnh báo tồn kho thấp",
@@ -1119,6 +1355,13 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
             if ranked:
                 details = "; ".join(f"{row.get('category')}={row[metric]}" for row in ranked)
                 date = ranked[0].get("snapshot_date")
+                if date is None and name == "question_specific_query":
+                    query_sql = next((
+                        str(item.metadata.get("sql_query", ""))
+                        for item in evidence if item.citation_id == citation
+                    ), "")
+                    match = re.search(r"\bsnapshot_date\s*=\s*'([0-9]{4}-[0-9]{2}-[0-9]{2})'", query_sql, re.IGNORECASE)
+                    date = match.group(1) if match else None
                 if _is_vietnamese_text(question):
                     metric_label = "sản phẩm bị gắn cờ overstock" if metric == "overstock_products" else "sản phẩm bị gắn cờ stockout"
                     return (
@@ -1127,7 +1370,7 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
                     )
                 return overlap_fact + f"SQL comparison{f' ({date})' if date else ''}: {details} [{citation}]. Highest: {ranked[0].get('category')}={ranked[0][metric]} [{citation}].\n"
         if domain == "nationwide_logistics" and name == "logistics_by_year_region" and rows:
-            query = question.casefold()
+            query = re.sub(r"[-‐‑‒–—]+", " ", question.casefold())
             asks_trend = bool(requested_years) or any(term in query for term in (
                 "trend", "change", "changed", "over time", "during", "thay đổi", "xu hướng", "giai đoạn",
             ))
@@ -1135,12 +1378,15 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
                 latest_year = max((row.get("year") for row in rows if isinstance(row.get("year"), int)), default=None)
                 if latest_year is not None:
                     rows = [row for row in rows if row.get("year") == latest_year]
-            transit = any(term in question.casefold() for term in (
-                "avg_transit_days", "average transit", "transit time", "thời gian vận chuyển",
+            transit = any(term in query for term in (
+                "avg_transit_days", "average transit", "transit time", "delivery delay",
+                "delay signal", "late delivery", "chậm giao", "giao trễ", "thời gian vận chuyển",
             ))
             fee = any(term in question.casefold() for term in (
                 "fee", "shipping cost", "shipping fee", "chi phí", "cước",
             ))
+            localized = _is_vietnamese_text(question)
+            year_label = "Năm" if localized else "Year"
             metrics = [key for key, enabled in (("avg_transit_days", transit or not fee),
                                                  ("avg_shipping_fee", fee),
                                                  ("median_transit_days", "median" in question.casefold() or "trung vị" in question.casefold())) if enabled]
@@ -1166,35 +1412,38 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
                         start, end = first.get(metric), last.get(metric)
                         if isinstance(start, (int, float)) and isinstance(end, (int, float)):
                             delta = end - start
-                            label = metric_labels.get(metric, metric) if _is_vietnamese_text(question) else metric
+                            label = metric_labels.get(metric, metric) if localized else metric
                             direction = (
                                 "gần như ổn định" if round(delta, 2) == 0 else
                                 "tăng" if delta > 0 else "giảm"
                             )
-                            if not _is_vietnamese_text(question):
+                            if not localized:
                                 direction = (
                                     "roughly stable" if round(delta, 2) == 0 else
                                     "increased" if delta > 0 else "decreased"
                             )
                             changes.append(
-                                f"{label}: FY{first['year']} {start:g} → FY{last['year']} {end:g} "
+                                f"{label}: {year_label} {first['year']} {start:g} → {year_label} {last['year']} {end:g} "
                                 f"({direction})"
                             )
                     if changes:
                         trend_lines.append(f"{region}: " + "; ".join(changes))
                 if trend_lines:
-                    if _is_vietnamese_text(question):
+                    if localized:
                         return ("So sánh mô tả đầu-cuối theo vùng: " + "; ".join(trend_lines)
                                 + f". Chênh lệch này không cho biết nguyên nhân. [{citation}]\n")
                     return ("Descriptive endpoint comparison by region: " + "; ".join(trend_lines)
                             + f". These differences do not establish a cause. [{citation}]\n")
             details = "; ".join(
-                f"FY{row.get('year')} {row.get('region')}: " + ", ".join(f"{metric}={row[metric]}" for metric in metrics if row.get(metric) is not None)
+                f"{year_label} {row.get('year')} {row.get('region')}: " + ", ".join(
+                    f"{metric}={row[metric]}" for metric in metrics if row.get(metric) is not None
+                )
                 for row in rows if any(row.get(metric) is not None for metric in metrics)
             )
             if details:
                 asks_ranking = any(term in query for term in (
-                    "highest", "longest", "slowest", "most", "cao nhất", "dài nhất", "lâu nhất", "chậm nhất",
+                    "highest", "longest", "slowest", "strongest", "greatest", "most delayed",
+                    "worst", "cao nhất", "dài nhất", "lâu nhất", "chậm nhất",
                 ))
                 years = {row.get("year") for row in rows}
                 ranked = [row for row in rows if isinstance(row.get("avg_transit_days"), (int, float))]
@@ -1202,15 +1451,15 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
                 if transit and asks_ranking and len(years) == 1 and ranked:
                     maximum = max(row["avg_transit_days"] for row in ranked)
                     leaders = sorted({row.get("region") for row in ranked if row["avg_transit_days"] == maximum})
-                    highest = f" Highest average transit time in FY{next(iter(years))}: {', '.join(leaders)}={maximum} days [{citation}]."
-                if _is_vietnamese_text(question):
+                    highest = f" Highest average transit time in {next(iter(years))}: {', '.join(leaders)}={maximum} days [{citation}]."
+                if localized:
                     metric_labels = {
                         "avg_transit_days": "thời gian vận chuyển trung bình (ngày)",
                         "avg_shipping_fee": "phí giao hàng trung bình",
                         "median_transit_days": "trung vị thời gian vận chuyển (ngày)",
                     }
                     localized_details = "; ".join(
-                        f"FY{row.get('year')} {row.get('region')}: " + ", ".join(
+                        f"Năm {row.get('year')} {row.get('region')}: " + ", ".join(
                             f"{metric_labels.get(metric, metric)}={row[metric]}"
                             for metric in metrics if row.get(metric) is not None
                         ) for row in rows if any(row.get(metric) is not None for metric in metrics)
@@ -1219,7 +1468,7 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
                     if transit and asks_ranking and len(years) == 1 and ranked:
                         maximum = max(row["avg_transit_days"] for row in ranked)
                         leaders = sorted({row.get("region") for row in ranked if row["avg_transit_days"] == maximum})
-                        highest = f" Vùng có thời gian vận chuyển trung bình cao nhất FY{next(iter(years))}: {', '.join(leaders)}={maximum} ngày [{citation}]."
+                        highest = f" Vùng có thời gian vận chuyển trung bình cao nhất trong năm {next(iter(years))}: {', '.join(leaders)}={maximum} ngày [{citation}]."
                     return f"Quan sát vận chuyển theo vùng: {localized_details} [{citation}].{highest}\n"
                 return f"SQL regional observations: {details} [{citation}].{highest}\n"
         asks_roi = any(term in question.casefold() for term in (
@@ -1241,16 +1490,112 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
             )
         if (domain == "promotion_planning" and name == "promotions_by_campaign" and rows
                 and any(term in question.casefold() for term in ("campaign", "chiến dịch"))):
-            asks_profit = any(term in question.casefold() for term in (
-                "gross profit", "profitability", "profit", "lợi nhuận", "lãi gộp",
-            ))
-            metric = "merchandise_gross_profit_proxy" if asks_profit else "net_item_sales"
+            rows = _filter_named_campaigns(question, rows)
+            campaign_metrics = (
+                ("net_item_sales", ("net item sales", "net-item-sales", "net sales", "net-sales", "sales", "revenue", "doanh thu", "doanh số"),
+                 "doanh thu thuần gắn tag", "campaign-window tagged net item sales"),
+                ("merchandise_gross_profit_proxy", ("merchandise gross profit", "merchandise gross-profit", "gross profit", "gross-profit", "profitability", "profit", "lợi nhuận", "lãi gộp"),
+                 "proxy lãi gộp hàng hóa", "merchandise gross-profit proxy"),
+                ("merchandise_gross_margin_proxy", ("gross margin", "biên lợi nhuận gộp", "biên lãi gộp"),
+                 "proxy biên lãi gộp hàng hóa", "merchandise gross-margin proxy"),
+                ("delivered_orders", ("delivered orders", "đơn hàng đã giao", "đơn đã giao"),
+                 "đơn hàng đã giao", "delivered orders"),
+                ("units", ("units sold", "units", "số lượng bán", "sản lượng"),
+                 "số lượng bán", "units sold"),
+                ("discounts", ("discounts", "discount", "mức giảm giá", "chiết khấu"),
+                 "mức giảm giá", "discounts"),
+            )
+            query = question.casefold()
+            requested_campaign_metrics = [
+                (field, vi_label if _is_vietnamese_text(question) else en_label)
+                for field, terms, vi_label, en_label in campaign_metrics
+                if any(term in query for term in terms)
+                and any(isinstance(row.get(field), (int, float)) for row in rows)
+            ]
             asks_single_winner = any(term in question.casefold() for term in (
                 "highest", "largest", "best-performing", "top campaign", "cao nhất", "lớn nhất", "tốt nhất",
             ))
-            campaigns = sorted(rows, key=lambda row: row.get(metric, 0), reverse=True)[:1 if asks_single_winner else 5]
+            if len(requested_campaign_metrics) > 1:
+                if asks_single_winner:
+                    leaders = []
+                    for field, label in requested_campaign_metrics:
+                        maximum = max(row[field] for row in rows if isinstance(row.get(field), (int, float)))
+                        winners = [row for row in rows if row.get(field) == maximum]
+                        names = {str(row.get("campaign")) for row in winners if row.get("campaign")}
+                        shown = ", ".join(
+                            f"{row.get('campaign')}"
+                            f" ({row['campaign_start']} to {row['campaign_end']})"
+                            f"={row[field]}" if row.get("campaign_start") and row.get("campaign_end")
+                            else f"{row.get('campaign')}={row[field]}"
+                            for row in winners
+                        )
+                        leaders.append((label, shown, names))
+                    metric_results = "; ".join(
+                        f"{label} cao nhất: {shown}" if _is_vietnamese_text(question)
+                        else f"Highest {label}: {shown}"
+                        for label, shown, _ in leaders
+                    )
+                    winner_sets = [names for _, _, names in leaders]
+                    same_campaigns = all(names == winner_sets[0] for names in winner_sets[1:])
+                    if _is_vietnamese_text(question):
+                        comparison = "cùng một campaign" if same_campaigns else "các campaign khác nhau"
+                        return (
+                            "Xếp hạng mô tả theo từng chỉ số trong cửa sổ campaign đã khai báo "
+                            f"(mặt hàng gắn hai campaign có thể được tính ở cả hai): {metric_results}; "
+                            f"các chỉ số chọn {comparison}. Proxy lãi gộp dùng giá giao dịch và COGS catalog, "
+                            f"không phải biên lợi nhuận đóng góp, ROI hay tác động nhân quả [{citation}].\n"
+                        )
+                    comparison = "the same campaign" if same_campaigns else "different campaigns"
+                    return (
+                        "Descriptive ranking by each measure within declared campaign windows "
+                        f"(dual-tagged items may appear in both campaigns): {metric_results}; "
+                        f"the measures rank {comparison}. Gross profit is a catalog-COGS proxy, "
+                        f"not contribution margin, ROI, or causal impact [{citation}].\n"
+                    )
+
+                campaign_rows = [
+                    row for row in rows if row.get("campaign")
+                    and any(isinstance(row.get(field), (int, float)) for field, _ in requested_campaign_metrics)
+                ]
+                summaries = []
+                for row in campaign_rows:
+                    window = (
+                        f" ({row['campaign_start']} to {row['campaign_end']})"
+                        if row.get("campaign_start") and row.get("campaign_end") else ""
+                    )
+                    measures = ", ".join(
+                        f"{label}={_format_commerce_number(row[field], field, _is_vietnamese_text(question))}"
+                        for field, label in requested_campaign_metrics
+                        if isinstance(row.get(field), (int, float))
+                    )
+                    summaries.append(f"{row['campaign']}{window}: {measures}")
+                if summaries:
+                    details = "; ".join(summaries)
+                    if _is_vietnamese_text(question):
+                        return (
+                            "So sánh mô tả các chỉ số theo cửa sổ campaign đã khai báo "
+                            f"(mặt hàng gắn hai campaign có thể được tính ở cả hai): {details}. "
+                            f"Proxy lãi gộp không phải biên lợi nhuận đóng góp, ROI hay tác động nhân quả [{citation}].\n"
+                        )
+                    return (
+                        "Descriptive comparison by declared campaign window "
+                        f"(dual-tagged items may appear in both campaigns): {details}. "
+                        f"Gross profit is a catalog-COGS proxy, not contribution margin, ROI, or causal impact [{citation}].\n"
+                    )
+
+            metric = requested_campaign_metrics[0][0] if requested_campaign_metrics else "net_item_sales"
+            asks_profit = metric == "merchandise_gross_profit_proxy"
+            campaigns = sorted(
+                (row for row in rows if isinstance(row.get(metric), (int, float))),
+                key=lambda row: row[metric], reverse=True,
+            )[:1 if asks_single_winner else 5]
+            metric_label = (
+                ("proxy lãi gộp hàng hóa" if asks_profit else "doanh thu thuần")
+                if _is_vietnamese_text(question) else metric.replace("_", " ")
+            )
             details = "; ".join(
-                f"{row.get('campaign')} ({row.get('campaign_start')} to {row.get('campaign_end')}): {metric}={row.get(metric)}"
+                f"{row.get('campaign')} ({row.get('campaign_start')} to {row.get('campaign_end')}): "
+                f"{metric_label}={_format_commerce_number(row.get(metric), metric, _is_vietnamese_text(question))}"
                 for row in campaigns
             )
             if details:
@@ -1300,18 +1645,18 @@ def _commerce_sql_fallback_facts(domain: str, question: str, evidence: list[Evid
             for row in rows:
                 if "used_promotion" not in row:
                     continue
-                period = f"FY{row['year']}" if row.get("year") else "period"
+                period = f"{'Năm' if _is_vietnamese_text(question) else 'Year'} {row['year']}" if row.get("year") else "period"
                 group = (
                     ("gắn khuyến mãi" if _is_vietnamese_text(question) else "tagged")
                     if row["used_promotion"] else
                     ("không gắn khuyến mãi" if _is_vietnamese_text(question) else "untagged")
                 )
                 metrics = [
-                    f"{metric_labels[metric]}={row[metric]}"
+                    f"{metric_labels[metric]}={_format_commerce_number(row[metric], metric, _is_vietnamese_text(question))}"
                     for metric in requested_metrics if row.get(metric) is not None
                 ]
                 comparisons.append(f"{period} {group}: {'; '.join(metrics)} [{citation}]")
-            if comparisons:
+            if comparisons and not _asks_promotion_incrementality(question):
                 if _is_vietnamese_text(question):
                     return "So sánh mô tả giữa đơn gắn và không gắn khuyến mãi (không chứng minh quan hệ nhân quả): " + "; ".join(comparisons) + ".\n"
                 return "SQL tagged-versus-untagged observations (descriptive, not causal): " + "; ".join(comparisons) + ".\n"
@@ -1326,6 +1671,16 @@ def _commerce_safe_fallback(
         decision_request = _is_decision_support_request(question)
     sql_facts = _commerce_sql_fallback_facts(domain, question, evidence)
     sql_ids = [item.citation_id for item in evidence if item.source_type == "commerce_sql" and item.citation_id]
+    repeatability_note = ""
+    if domain == "inventory_allocation" and any(term in question.casefold() for term in ("repeated", "persistently", "nhiều lần", "liên tục")):
+        annual = next((item for item in evidence if item.metadata.get("commerce_observation_group") == "inventory_by_year"), None)
+        latest = next((item for item in evidence if item.metadata.get("commerce_observation_group") == "inventory_latest_by_category"), None)
+        if annual and latest:
+            citations = "".join(f"[{item.citation_id}]" for item in (annual, latest) if item.citation_id)
+            repeatability_note = (
+                f"The annual aggregate counts snapshots, so do not count repeated stockout snapshots by product as persistently flagged products {citations}. "
+            )
+    sql_facts = repeatability_note + sql_facts
     if not decision_request:
         if sql_facts:
             return sql_facts
@@ -1348,6 +1703,8 @@ def _commerce_safe_fallback(
     reference = reference or next((item for item in references if item.metadata.get("evidence_class") == "management_cookbook_reference"), None)
     reference = reference or next((item for item in references if item.metadata.get("evidence_class") == "platform_operating_rule"), None)
     reference = reference or next((item for item in references if item.metadata.get("evidence_class") == "company_practice_reference"), None)
+    if domain == "promotion_planning" and _asks_promotion_incrementality(question):
+        reference = next((item for item in references if item.metadata.get("evidence_class") == "management_cookbook_reference"), reference)
     refs = [reference.citation_id] if reference and reference.citation_id else []
     is_vietnamese = _is_vietnamese_text(question)
     sql_citation = "".join(f"[{item}]" for item in sql_ids)
@@ -1363,8 +1720,13 @@ def _commerce_safe_fallback(
     )
     ref_citation = "".join(f"[{item}]" for item in refs)
     publisher = reference.metadata.get("source_publisher", "the cited company") if reference else ""
+    ocr_source = bool(reference and (
+        reference.metadata.get("ocr")
+        or reference.metadata.get("ocr_model")
+        or reference.metadata.get("text_extraction_method") in {"tesseract", "pymupdf+tesseract"}
+    ))
     reference_excerpt = ""
-    if reference and reference.content:
+    if reference and reference.content and not ocr_source:
         normalized_reference = " ".join(reference.content.split())
         if domain == "nationwide_logistics":
             sentences = re.split(r"(?<=[.!?])\s+", normalized_reference)
@@ -1395,17 +1757,61 @@ def _commerce_safe_fallback(
     if reference and reference.metadata.get("evidence_class") == "company_policy_reference":
         synthetic_policy = reference.metadata.get("synthetic_company_policy") is True
         if synthetic_policy:
-            intro = ("Policy giả lập Commerce Demo đã được truy xuất; xem nguồn để đối chiếu nội dung OCR. "
-                     if is_vietnamese else
-                     "A synthetic Commerce Demo policy was retrieved; consult the source to verify its OCR text. ")
+            source_notes = reference.metadata.get("source_notes")
+            source_notes_en = reference.metadata.get("source_notes_en")
+            if domain == "inventory_allocation" and _is_inventory_service_target_question(question):
+                source_notes = source_notes_en = None
+            if (is_vietnamese and ocr_source and isinstance(source_notes, str)
+                    and source_notes.strip()):
+                intro = (
+                    "Policy giả lập Commerce Demo được truy xuất. Tóm tắt biên mục (không phải trích nguyên văn): "
+                    f"{source_notes.strip()} "
+                    "Hãy đối chiếu trang PDF gốc trước khi áp dụng. "
+                )
+            elif is_vietnamese:
+                intro = ("Policy giả lập Commerce Demo được truy xuất, nhưng văn bản OCR chưa được xác minh. "
+                         "Kiểm tra PDF gốc trước khi áp dụng. " if ocr_source else
+                         "Policy giả lập Commerce Demo đã được truy xuất; đối chiếu nguồn trước khi áp dụng. ")
+            elif (ocr_source and isinstance(source_notes_en, str) and source_notes_en.strip()):
+                intro = (
+                    "A synthetic Commerce Demo policy was retrieved. Catalog summary (not a verbatim excerpt): "
+                    f"{source_notes_en.strip()} Check the original PDF page before relying on it. "
+                )
+            else:
+                intro = ("A synthetic Commerce Demo policy was retrieved, but its OCR text is not verified. "
+                         "Check the source PDF before relying on it. " if ocr_source else
+                         "A synthetic Commerce Demo policy was retrieved; consult the source before relying on it. ")
             scope = (f"Chỉ áp dụng cho kịch bản dữ liệu giả lập này, không phải chính sách của doanh nghiệp thật. {ref_citation}"
                      if is_vietnamese else f"Apply only to this fictional demo scenario, not to a real company's operations. {ref_citation}")
         else:
-            intro = (f"Chính sách nội bộ do {publisher} phát hành nêu: “{reference_excerpt}” " if is_vietnamese
-                     else f"The company-issued policy from {publisher} states: “{reference_excerpt}” ")
-            scope = (f"Áp dụng trong phạm vi chính sách đã nêu; xác minh hiệu lực trước khi thực hiện. {ref_citation}"
-                     if is_vietnamese else f"Apply only within its stated scope and verify that it is current before acting. {ref_citation}")
+            if ocr_source:
+                intro = (f"Đã truy xuất tài liệu chính sách của {publisher}, nhưng phần văn bản được nhận dạng bằng OCR chưa được xác minh. "
+                         if is_vietnamese else
+                         f"A policy document from {publisher} was retrieved, but its OCR text has not been verified. ")
+                scope = (f"Đối chiếu trang PDF gốc và xác nhận phạm vi, hiệu lực trước khi áp dụng; đây không phải chính sách Commerce Demo. {ref_citation}"
+                         if is_vietnamese else
+                         f"Check the original PDF page and confirm its scope and current status before relying on it; it is not Commerce Demo policy. {ref_citation}")
+            else:
+                intro = (f"Chính sách nội bộ do {publisher} phát hành nêu: “{reference_excerpt}” " if is_vietnamese
+                         else f"The company-issued policy from {publisher} states: “{reference_excerpt}” ")
+                scope = (f"Áp dụng trong phạm vi chính sách đã nêu; xác minh hiệu lực trước khi thực hiện. {ref_citation}"
+                         if is_vietnamese else f"Apply only within its stated scope and verify that it is current before acting. {ref_citation}")
         reference_basis = intro + scope
+    elif reference and ocr_source:
+        if is_platform_rule:
+            scope = ("Chỉ áp dụng trong phạm vi nền tảng được nêu; tên mục và quy tắc có thể đã thay đổi. "
+                     if "historical" in applicability_note.casefold() else
+                     "Chỉ áp dụng sau khi xác nhận đang dùng đúng nền tảng. ")
+            verification = "Đây là nội dung OCR, hãy đối chiếu trang PDF gốc trước khi dùng."
+            reference_basis = (f"Đã truy xuất hướng dẫn vận hành từ {publisher}. {scope}{verification} {ref_citation}"
+                               if is_vietnamese else
+                               f"An operating guide from {publisher} was retrieved. It applies only to the named platform; verify this OCR-derived content against the original PDF page before relying on it. {ref_citation}")
+        else:
+            reference_basis = (
+                f"Đã truy xuất tài liệu tham khảo bên ngoài từ {publisher}; nội dung OCR chưa được xác minh, hãy đối chiếu trang PDF gốc. Đây không phải chính sách Commerce Demo. {ref_citation}"
+                if is_vietnamese else
+                f"An external reference from {publisher} was retrieved, but its OCR text has not been verified. Check the original PDF page before relying on it; it is not Commerce Demo policy. {ref_citation}"
+            )
     elif reference and is_platform_rule and is_vietnamese:
         localized_caveat = (
             "Đây là hướng dẫn lịch sử; nhãn giao diện và ngưỡng trong tài liệu có thể đã thay đổi."
@@ -1441,8 +1847,28 @@ def _commerce_safe_fallback(
         )
     else:
         reference_basis = ""
+    secondary_method = next((item for item in references if item is not reference and item.metadata.get("evidence_class") in {
+        "management_cookbook_reference", "company_practice_reference",
+    }), None)
+    if reference and reference.metadata.get("synthetic_company_policy") is True and secondary_method and domain == "nationwide_logistics":
+        secondary_publisher = secondary_method.metadata.get("source_publisher") or secondary_method.source or "the external source"
+        secondary_citation = f"[{secondary_method.citation_id}]" if secondary_method.citation_id else ""
+        method_note = (
+            f"External method from {secondary_publisher} also emphasizes balancing delivery speed with business priorities; "
+            f"this is not Commerce Demo policy. {secondary_citation}"
+            if not is_vietnamese else
+            f"Phương pháp tham khảo từ {secondary_publisher} cũng nhấn mạnh cân bằng tốc độ giao hàng với ưu tiên kinh doanh; "
+            f"đây không phải chính sách Commerce Demo. {secondary_citation}"
+        )
+        reference_basis = f"{reference_basis} {method_note}".strip()
     if domain == "inventory_allocation":
-        if _is_inventory_flag_review_question(question):
+        query = question.casefold()
+        asks_category_review = (
+            _asks_inventory_transfer(question)
+            and any(term in query for term in ("categor", "danh mục", "nhóm hàng", "nhóm nào"))
+            and any(term in query for term in ("review", "inspect", "priorit", "rà soát", "kiểm tra", "ưu tiên"))
+        )
+        if _is_inventory_flag_review_question(question) or asks_category_review:
             observation = next((
                 (item, item.metadata.get("commerce_observations", []))
                 for item in evidence
@@ -1458,18 +1884,115 @@ def _commerce_safe_fallback(
             if observation:
                 row = observation[1][0]
                 sql_reference = f"[{observation[0].citation_id}]"
-                facts = (
-                    f"The latest snapshot ({row.get('snapshot_date')}) contains "
-                    f"{row.get('stockout_flagged_rows')} stockout-flagged rows, "
-                    f"{row.get('overstock_flagged_rows')} overstock-flagged rows, and "
-                    f"{row.get('both_flagged_rows')} rows with both flags; these are overlapping product-snapshot counts, "
-                    f"not unique incidents. {sql_reference} "
-                )
+                counts = []
+                stockout_count = row.get("stockout_flagged_rows", row.get("stockout_products"))
+                overstock_count = row.get("overstock_flagged_rows", row.get("overstock_products"))
+                both_count = row.get("both_flagged_rows")
+                if stockout_count is not None:
+                    counts.append(f"{stockout_count} stockout-flagged rows")
+                if overstock_count is not None:
+                    counts.append(f"{overstock_count} overstock-flagged rows")
+                if both_count is not None:
+                    counts.append(f"{both_count} rows with both flags")
+                counts_text = ", ".join(counts)
+                if is_vietnamese:
+                    localized_counts = []
+                    if stockout_count is not None:
+                        localized_counts.append(f"{stockout_count} dòng có cờ stockout")
+                    if overstock_count is not None:
+                        localized_counts.append(f"{overstock_count} dòng có cờ overstock")
+                    if both_count is not None:
+                        localized_counts.append(f"{both_count} dòng có cả hai cờ")
+                    facts = (
+                        f"Snapshot mới nhất ({row.get('snapshot_date')}) có {', '.join(localized_counts)}; "
+                        f"các cờ có thể chồng lấp và đây không phải số sự cố riêng biệt {sql_reference}. "
+                    )
+                else:
+                    facts = (
+                        f"The latest snapshot ({row.get('snapshot_date')}) contains {counts_text}; "
+                        f"these counts overlap and are not unique incidents {sql_reference}. "
+                    )
             else:
                 facts = sql_facts
+            category_observation = next((
+                item for item in evidence
+                if item.source_type == "commerce_sql"
+                and item.metadata.get("commerce_observation_group") == "inventory_latest_by_category"
+                and item.metadata.get("commerce_observations")
+            ), None)
+            if category_observation and asks_category_review:
+                rows = category_observation.metadata["commerce_observations"]
+                category_citation = f"[{category_observation.citation_id}]"
+                category_date = next((row.get("snapshot_date") for row in rows if row.get("snapshot_date")), None)
+                rankings = []
+                for key, label in (
+                    ("stockout_products", "stockout"),
+                    ("overstock_products", "overstock"),
+                ):
+                    ranked = [row for row in rows if isinstance(row.get(key), (int, float))]
+                    ranked.sort(key=lambda row: row[key], reverse=True)
+                    if ranked:
+                        leaders = ", ".join(
+                            str(row.get("category")) for row in ranked if row[key] == ranked[0][key]
+                        )
+                        rankings.append(f"{label}: {leaders} ({ranked[0][key]})")
+                if rankings:
+                    period = f" ({category_date})" if category_date else ""
+                    summary = "; ".join(rankings)
+                    facts += (
+                        f"Highest category flag counts{period}: {summary}; use these only to select categories for review, "
+                        f"not to infer movable surplus. {category_citation} "
+                        if not is_vietnamese else
+                        f"Danh mục có số cờ cao nhất{period}: {summary}; chỉ dùng để chọn danh mục cần rà soát, "
+                        f"không suy ra lượng hàng có thể điều chuyển. {category_citation} "
+                    )
+            asks_repeated_signal = any(term in question.casefold() for term in (
+                "repeat", "recurr", "persist", "lặp lại", "tái diễn", "nhiều snapshot", "nhiều kỳ", "liên tiếp",
+            ))
+            if asks_repeated_signal:
+                annual = next((item for item in evidence if item.source_type == "commerce_sql"
+                               and item.metadata.get("commerce_aggregate_key") == "inventory_by_year"), None)
+                annual_citation = f"[{annual.citation_id}]" if annual and annual.citation_id else ""
+                if annual:
+                    if is_vietnamese:
+                        facts += (
+                            "Snapshot mới nhất không chứng minh cờ lặp lại; tổng năm đếm các dòng sản phẩm-ngày có cờ, "
+                            "không phải số sản phẩm bị gắn cờ ở ít nhất hai ngày khác nhau. Cần đếm ngày snapshot phân biệt "
+                            f"theo từng product_id trước khi kết luận có tín hiệu tái diễn. {annual_citation} "
+                        )
+                    else:
+                        facts += (
+                            "The latest snapshot does not establish recurrence. Annual totals count flagged product-date rows, "
+                            "not unique products flagged on at least two dates; count distinct snapshot dates per product "
+                            f"before treating a signal as recurring. {annual_citation} "
+                        )
+                elif is_vietnamese:
+                    facts += (
+                        "Các aggregate được truy xuất không chứng minh cờ lặp lại; chưa có kết quả theo product_id và ngày "
+                        "snapshot để xác nhận sản phẩm bị gắn cờ ở ít nhất hai ngày khác nhau. "
+                    )
+                else:
+                    facts += (
+                        "The retrieved aggregates do not establish recurrence; no product-by-snapshot-date result is present "
+                        "to confirm products flagged on at least two distinct dates. "
+                    )
             source_reference = ref_citation if reference else ""
             limitation_reference = f"[{schema_reference}]" if schema_reference else limitation_citation
-            if is_vietnamese:
+            if _asks_inventory_transfer(question):
+                if is_vietnamese:
+                    guidance = (
+                        "Các cờ tổng hợp theo danh mục chưa đủ căn cứ điều chuyển. Trước khi cân nhắc, hãy đối chiếu "
+                        "cùng SKU tại kho nguồn và kho đích, nhu cầu dự báo, lead time, chi phí chuyển, năng lực và "
+                        "ràng buộc dịch vụ; dữ liệu hiện tại thiếu các chiều này. "
+                    )
+                else:
+                    guidance = (
+                        "Recommended next move: Do not rebalance inventory yet. Category-level flags do not support a transfer decision. "
+                        "Before considering one, match the same "
+                        "SKU at source and destination, then verify forecast demand, lead time, transfer cost, capacity, "
+                        "and service constraints; these dimensions are absent from the current data. "
+                    )
+            elif is_vietnamese:
                 guidance = (
                     "Dùng cờ theo snapshot để chọn danh mục cần rà soát sâu; policy giả lập dùng từ ‘nhiều’ nhưng không định nghĩa ngưỡng, "
                     "nên đây chỉ là tín hiệu kiểm tra, không phải điều kiện tự động bổ sung hàng. "
@@ -1505,6 +2028,20 @@ def _commerce_safe_fallback(
                 "nên chưa xác nhận được SKU hay Shop Shopee cụ thể nào đang sắp hết hàng. "
                 f"Hãy xác minh tồn kho và nhu cầu của SKU trong Shop; chỉ cân nhắc bổ sung khi cảnh báo được xác nhận. {sql_citation}\n"
             )
+            example = reference_basis
+        elif not _asks_inventory_transfer(question) and any(term in question.casefold() for term in (
+            "replenish", "replenishment", "restock", "bổ sung hàng", "đặt hàng",
+        )):
+            if is_vietnamese:
+                answer = (
+                    "Trước khi điều chỉnh bổ sung hàng, cần xác minh nhu cầu và tồn khả dụng theo SKU/địa điểm, lead time, "
+                    f"quy cách đặt hàng, chi phí và service target được duyệt; aggregate hiện tại chưa cung cấp các trường này. {limitation_citation}{sql_citation}\n"
+                )
+            else:
+                answer = (
+                    "Before adjusting replenishment, verify SKU-level demand and available stock by location, lead time, "
+                    f"order constraints, costs, and an approved service target; the current category aggregates do not provide these fields. {limitation_citation}{sql_citation}\n"
+                )
             example = reference_basis
         elif is_vietnamese:
             answer = (
@@ -1574,38 +2111,172 @@ def _commerce_safe_fallback(
                 f"cost; then compare service and cost by region before considering a bounded test. {limitation_citation}{sql_citation}\n"
             )
             example = reference_basis
+    if domain == "promotion_planning" and _asks_promotion_incrementality(question):
+        causal_limit = next((item for item in evidence if item.source_type == "commerce_schema" and "not causal" in (item.content or "").casefold()), None)
+        if causal_limit:
+            causal_citation = f"[{causal_limit.citation_id}]" if causal_limit.citation_id else ""
+            answer += (
+                f"Tagged-versus-untagged observations are descriptive, not causal {causal_citation}. "
+                if not is_vietnamese else
+                f"Quan sát nhóm có và không gắn tag chỉ mang tính mô tả, không chứng minh quan hệ nhân quả {causal_citation}. "
+            )
     return sql_facts + (answer + example if reference else answer)
 
 
 def _commerce_question_safe_fallback(question: str, evidence: list[Evidence], *, decision_request: bool) -> str:
     """Expose validated dynamic-query rows as a compact table when model drafting fails."""
-    sql_item = next((item for item in evidence if item.source_type == "commerce_sql"), None)
-    if sql_item is None:
+    sql_items = [item for item in evidence if item.source_type == "commerce_sql"]
+    if not sql_items:
         return INSUFFICIENT_ANSWER
-    rows = sql_item.content.partition(": ")[2]
-    if not rows:
+
+    def observation_rows(item: Evidence) -> list[dict]:
+        rows = item.metadata.get("commerce_observations")
+        if isinstance(rows, list):
+            return [row for row in rows if isinstance(row, dict)]
+        try:
+            payload = (item.content or "").partition(": ")[2]
+            parsed = json.loads(payload)
+            return [row for row in parsed if isinstance(row, dict)] if isinstance(parsed, list) else []
+        except json.JSONDecodeError:
+            return []
+
+    question_terms = set(re.findall(r"[a-z0-9]+", question.casefold()))
+    question_terms = {term[:-1] if term.endswith("s") and len(term) > 4 else term for term in question_terms}
+
+    def evidence_relevance(item: Evidence) -> int:
+        fields = set(re.findall(r"[a-z0-9]+", (item.metadata.get("commerce_observation_group") or "").casefold()))
+        for row in observation_rows(item):
+            for key in row:
+                fields.update(re.findall(r"[a-z0-9]+", str(key).replace("_", " ").casefold()))
+        fields = {term[:-1] if term.endswith("s") and len(term) > 4 else term for term in fields}
+        return len(question_terms & fields)
+
+    sql_item = max(sql_items, key=evidence_relevance)
+    observations = observation_rows(sql_item)
+    if not observations:
         return INSUFFICIENT_ANSWER
     citation = f"[{sql_item.citation_id}]" if sql_item.citation_id else ""
-    domain = sql_item.metadata.get("commerce_domain")
-    try:
-        observations = json.loads(rows)
-    except json.JSONDecodeError:
-        observations = None
+    domain = sql_item.metadata.get("commerce_domain") or resolve_commerce_decision_domain(question) or next((
+        "inventory_allocation" for item in evidence
+        if item.metadata.get("commerce_aggregate_key") == "inventory_latest_flag_overlap"
+        or "inventory" in (item.content or "").casefold()
+    ), None)
+    if domain == "promotion_planning" and _asks_promotion_incrementality(question) and not _asks_for_promotion_outcome_comparison(question):
+        return _commerce_safe_fallback(domain, question, evidence, decision_request=True)
+    requested_years = {int(year) for year in re.findall(r"\b(?:19|20)\d{2}\b", question)}
+    year_range = re.search(
+        r"\b((?:19|20)\d{2})\s*(?:-|–|—|to|through|đến)\s*((?:19|20)\d{2})\b",
+        question, re.IGNORECASE,
+    )
+    if year_range:
+        first, last = map(int, year_range.groups())
+        if first <= last and last - first <= 20:
+            requested_years.update(range(first, last + 1))
+    if requested_years and any(
+        isinstance(row, dict) and ("year" in row or "fiscal_year" in row) for row in observations
+    ):
+        def observed_year(row: dict) -> int | None:
+            try:
+                return int(row.get("year", row.get("fiscal_year")))
+            except (TypeError, ValueError):
+                return None
+
+        observations = [row for row in observations if isinstance(row, dict) and observed_year(row) in requested_years]
+        if not observations:
+            available_years = sorted({
+                year for row in observation_rows(sql_item)
+                if (year := observed_year(row)) is not None
+            })
+            if available_years:
+                available_period = ", ".join(map(str, available_years))
+                no_rows = (
+                    f"Không có quan sát SQL khớp khoảng thời gian được hỏi. Các dòng trong snapshot hiện có cho các năm "
+                    f"{available_period} {citation}. "
+                    if _is_vietnamese_text(question) else
+                    f"No SQL observations matched the requested period. Rows in this snapshot cover "
+                    f"{available_period} {citation}. "
+                )
+            else:
+                no_rows = (
+                    f"Không có quan sát SQL khớp khoảng thời gian được hỏi. {citation} "
+                    if _is_vietnamese_text(question) else
+                    f"No SQL observations matched the requested period. {citation} "
+                )
+            if decision_request and domain:
+                return no_rows + _commerce_safe_fallback(domain, question, evidence, decision_request=True)
+            return no_rows.strip()
     table = ""
     omitted_note = ""
     priority_fact = ""
     if isinstance(observations, list) and observations and all(isinstance(row, dict) for row in observations):
         localized_labels = {
-            "year": "Năm", "region": "Vùng", "category": "Danh mục", "snapshot_date": "Ngày snapshot",
+            "year": "Năm", "region": "Vùng", "category": "Danh mục", "group_label": "Nhóm hàng",
+            "group_category": "Nhóm hàng",
+            "snapshot_date": "Ngày snapshot",
+            "avg_fill_rate": "Tỷ lệ đáp ứng TB", "average_fill_rate": "Tỷ lệ đáp ứng TB",
+            "stockout_snapshots": "Snapshot có cờ stockout", "total_snapshots": "Tổng snapshot",
+            "applicable_category": "Danh mục áp dụng", "promo_channel": "Kênh khuyến mãi",
+            "promo_name": "Tên chiến dịch", "promo_id": "Mã khuyến mãi",
+            "avg_discount_per_item": "Giảm giá TB mỗi mặt hàng", "gross_sales": "Doanh thu gộp",
+            "order_item_count": "Số mặt hàng trong đơn", "total_discount": "Tổng giảm giá",
             "avg_shipping_fee": "Phí vận chuyển TB", "avg_transit_time": "Thời gian vận chuyển TB (ngày)",
             "avg_transit_time_days": "Thời gian vận chuyển TB (ngày)", "avg_transit_days": "Thời gian vận chuyển TB (ngày)",
             "campaign": "Chiến dịch", "net_item_sales": "Doanh thu thuần", "net_sales": "Doanh thu thuần",
             "discounts": "Giảm giá", "delivered_orders": "Đơn đã giao", "units": "Số lượng",
+            "used_promotion": "Đơn có gắn khuyến mãi",
             "stockout_count": "Cờ stockout", "stockout_products": "Sản phẩm có cờ stockout",
             "overstock_count": "Cờ overstock", "overstock_products": "Sản phẩm có cờ overstock",
+            "stock_on_hand": "Lượng tồn kho hiện có", "total_stock": "Tổng lượng tồn kho hiện có",
+            "total_stock_on_hand": "Tổng lượng tồn kho hiện có",
+            "catalog_cogs": "Giá vốn theo catalog",
+            "merchandise_gross_profit_proxy": "Lợi nhuận gộp hàng hóa (proxy)",
+            "merchandise_gross_margin_proxy": "Biên lợi nhuận gộp hàng hóa (proxy)",
         }
         columns = list(dict.fromkeys(key for row in observations for key in row))
         localized = _is_vietnamese_text(question)
+        trend_note = (
+            _inventory_fill_rate_trend(observations, sql_item.citation_id, localized)
+            if domain == "inventory_allocation" and _is_inventory_service_target_question(question)
+            else ""
+        )
+        metric_terms = {
+            "avg_fill_rate": ("fill rate", "availability", "tỷ lệ đáp ứng", "khả dụng"),
+            "average_fill_rate": ("fill rate", "availability", "tỷ lệ đáp ứng", "khả dụng"),
+            "stockout_snapshots": ("stockout", "cờ thiếu hàng", "cờ stockout"),
+            "total_snapshots": ("snapshot", "tổng số snapshot", "tổng snapshot"),
+            "sku_snapshots": ("snapshot", "tổng số snapshot", "tổng snapshot"),
+            "overstock_snapshots": ("overstock", "cờ tồn dư"),
+            "stockout_products": ("stockout", "sản phẩm thiếu hàng", "cờ stockout"),
+            "overstock_products": ("overstock", "sản phẩm tồn dư", "cờ overstock"),
+            "delivered_orders": ("delivered orders", "orders", "đơn đã giao", "số đơn"),
+            "units": ("units", "quantity", "số lượng", "sản lượng"),
+            "net_sales": ("net sales", "net revenue", "doanh thu thuần"),
+            "net_item_sales": ("net sales", "doanh thu thuần"),
+            "discounts": ("discount", "giảm giá", "chiết khấu"),
+            "total_discount": ("discount", "giảm giá", "chiết khấu"),
+            "avg_shipping_fee": ("shipping fee", "shipping cost", "phí vận chuyển", "cước"),
+            "avg_transit_days": ("transit time", "delivery time", "thời gian vận chuyển", "thời gian giao"),
+            "avg_transit_time": ("transit time", "delivery time", "thời gian vận chuyển", "thời gian giao"),
+            "avg_transit_time_days": ("transit time", "delivery time", "thời gian vận chuyển", "thời gian giao"),
+            "median_transit_days": ("median transit", "median delivery", "trung vị thời gian"),
+            "catalog_cogs": ("cogs", "cost of goods sold", "giá vốn"),
+            "merchandise_gross_profit_proxy": ("gross profit proxy", "profit proxy", "lợi nhuận gộp proxy"),
+            "merchandise_gross_margin_proxy": ("gross margin proxy", "biên lợi nhuận gộp proxy"),
+        }
+        if domain == "promotion_planning":
+            metric_terms["net_sales"] = (*metric_terms["net_sales"], "sales")
+        normalize_metric_phrase = lambda value: re.sub(
+            r"[-‐‑‒–—_/]+", " ", value.casefold(),
+        )
+        folded_question = normalize_metric_phrase(question)
+        requested_metrics = {
+            key for key, terms in metric_terms.items()
+            if key in columns and any(
+                normalize_metric_phrase(term) in folded_question for term in terms
+            )
+        }
+        if requested_metrics:
+            columns = [key for key in columns if key not in metric_terms or key in requested_metrics]
         headings = [localized_labels.get(key, key.replace("_", " ").title()) if localized else key.replace("_", " ").title()
                     for key in columns]
         visible = observations[:20]
@@ -1620,24 +2291,38 @@ def _commerce_question_safe_fallback(question: str, evidence: list[Evidence], *,
                     value = "—"
                 elif isinstance(value, (dict, list)):
                     value = json.dumps(value, ensure_ascii=False, sort_keys=True)
+                elif key.casefold() in {"avg_fill_rate", "average_fill_rate"}:
+                    try:
+                        percentage = Decimal(str(value)) * 100
+                    except (ArithmeticError, ValueError):
+                        pass
+                    else:
+                        if percentage.is_finite():
+                            value = f"{percentage:.2f}".replace(".", "," if localized else ".") + "%"
+                elif isinstance(value, (int, float, Decimal)) or (
+                    isinstance(value, str) and re.fullmatch(r"-?\d+(?:\.\d+)?", value)
+                ):
+                    value = _format_commerce_number(value, key, localized)
                 values.append(str(value).replace("|", "\\|").replace("\n", " "))
             table += "| " + " | ".join(values) + " |\n"
         if decision_request and domain == "inventory_allocation":
             query = question.casefold()
             asks_priority = any(term in query for term in (
-                "priorit", "which categor", "highest", "top categor", "danh mục nào",
-                "ưu tiên", "cao nhất", "nhóm nào trước",
+                "priorit", "which categor", "which product categor", "highest", "top categor", "danh mục nào",
+                "ưu tiên", "cao nhất", "nhiều nhất", "nhóm hàng nào", "nhóm nào trước",
             ))
             asks_stockout = any(term in query for term in (
                 "stockout", "out of stock", "out-of-stock", "thiếu hàng", "hết hàng",
             ))
-            if asks_priority and asks_stockout:
+            if (asks_priority and asks_stockout) or _asks_both_inventory_flags(question):
                 metric_keys = [
                     key for key in columns
                     if any(term in key.casefold() for term in ("stockout", "out_of_stock"))
                     and not any(term in key.casefold() for term in ("avg", "average", "days", "rate", "pct"))
                 ]
-                category_key = next((key for key in columns if key.casefold() in {"category", "product_category"}), None)
+                category_key = next((key for key in columns if key.casefold() in {
+                    "category", "product_category", "group_label", "group_category",
+                }), None)
                 metric_key = next((key for key in metric_keys if any(term in key.casefold() for term in ("count", "products", "rows"))), None)
                 metric_key = metric_key or next(iter(metric_keys), None)
                 ranked = sorted(
@@ -1651,17 +2336,39 @@ def _commerce_question_safe_fallback(question: str, evidence: list[Evidence], *,
                     metric_label = "số dòng có cờ stockout" if _is_vietnamese_text(question) else "stockout-flagged rows"
                     if _is_vietnamese_text(question):
                         priority_fact = (
-                            f"Ưu tiên rà soát {label}: có {ranked[0][metric_key]} {metric_label}, cao nhất trong kết quả này "
-                            f"{citation}. Đây là thứ tự kiểm tra theo aggregate, chưa đủ căn cứ để điều chuyển tồn kho. "
+                            f"Ưu tiên rà soát theo từng cờ: stockout: {label} ({ranked[0][metric_key]}), "
+                            f"chỉ là thứ tự rà soát theo aggregate {citation}. "
                         )
                     else:
                         priority_fact = (
-                            f"Prioritize reviewing {label}: it has {ranked[0][metric_key]} {metric_label}, the highest "
-                            f"in these results {citation}. This aggregate ranking is not enough to justify an inventory transfer. "
+                            f"Prioritize review by flag: stockout: {label} ({ranked[0][metric_key]}), "
+                            f"an aggregate review order only {citation}. "
                         )
-        omitted = len(observations) - len(visible)
-        if omitted:
-            omitted_note = "\n(Các dòng còn lại đã được lược bỏ.)" if localized else "\n(Additional rows omitted.)"
+            asks_imbalance = any(term in query for term in ("imbalance", "inventory flags", "cờ tồn kho", "mất cân bằng"))
+            if (asks_priority or _asks_both_inventory_flags(question)) and (asks_imbalance or _asks_both_inventory_flags(question)):
+                category_key = next((key for key in columns if key.casefold() in {
+                    "category", "product_category", "group_label", "group_category",
+                }), None)
+                flag_columns = [key for key in columns if any(term in key.casefold() for term in ("stockout", "overstock"))
+                                and isinstance(observations[0].get(key), (int, float))]
+                parts = []
+                for flag in ("stockout", "overstock"):
+                    key = next((column for column in flag_columns if flag in column.casefold()), None)
+                    ranked = sorted((row for row in observations if category_key and key and isinstance(row.get(key), (int, float))),
+                                    key=lambda row: row[key], reverse=True)
+                    if ranked:
+                        leaders = " / ".join(str(row[category_key]) for row in ranked if row[key] == ranked[0][key])
+                        parts.append(f"{flag}: {leaders} ({ranked[0][key]})")
+                if parts:
+                    priority_fact = (
+                        f"Ưu tiên rà soát theo từng cờ: {'; '.join(parts)}; chỉ là thứ tự rà soát theo aggregate {citation}. "
+                        if _is_vietnamese_text(question) else
+                        f"Review each flag separately: {'; '.join(parts)}; aggregate review order only {citation}. "
+                    )
+    omitted = len(observations) - len(visible) if isinstance(observations, list) else 0
+    if omitted:
+        omitted_note = "\n(Các dòng còn lại đã được lược bỏ.)" if localized else "\n(Additional rows omitted.)"
+        table += omitted_note
     if domain and (
         decision_request
         or (domain == "inventory_allocation" and _is_inventory_flag_review_question(question))
@@ -1671,7 +2378,7 @@ def _commerce_question_safe_fallback(question: str, evidence: list[Evidence], *,
                 facts = f"Quan sát SQL theo câu hỏi:\n{table}{omitted_note} {citation}. "
             else:
                 facts = f"SQL observations matching the question:\n{table}{omitted_note} {citation}. "
-            return facts + priority_fact + _commerce_safe_fallback(
+            return facts + omitted_note + priority_fact + trend_note + (" " if trend_note else "") + _commerce_safe_fallback(
                 domain, question, evidence, decision_request=True,
             )
     if _is_vietnamese_text(question):
@@ -1746,87 +2453,26 @@ class ReportAgent(BaseAgent):
         decision_suggestions = bool(request.metadata.get("decision_suggestions")) or _is_decision_suggestions_request(
             request.question,
         )
-        business_decision_domain = (
-            request.metadata.get("business_decision_domain")
-            or resolve_business_metric_domain(request.question)
-        )
-        requested_business_metrics = resolve_business_metric_names(request.question)
-        requested_domains = {
-            BUSINESS_METRIC_CATALOG[name]["domain"] for name in requested_business_metrics
-        }
-        decision_request = (
-            decision_suggestions
-            or _is_decision_support_request(request.question)
-            or _is_business_metric_trend_question(request.question)
-        )
-        financial_request = bool(resolve_metric_names(request.question))
-        unsupported_business_request = (
-            decision_request and business_decision_domain is not None
-            and business_decision_domain not in SUPPORTED_BUSINESS_DECISION_DOMAINS
-            and not financial_request
-        ) or (
-            bool(requested_business_metrics)
-            and not requested_domains.issubset(SUPPORTED_BUSINESS_DECISION_DOMAINS)
-        )
-        if unsupported_business_request:
+        if decision_suggestions or _is_decision_support_request(request.question):
+            available = ", ".join(profile["label"] for profile in COMMERCE_DECISION_PROFILES.values())
             return AgentResult(
                 answer=(
-                    "Câu hỏi nằm ngoài các domain đang thử nghiệm. Agent chỉ dùng KPI đã xác minh trong domain "
-                    "quản trị nguồn sữa tươi hoặc hiệu quả thị trường nội địa/quốc tế; không suy rộng từ domain khác."
+                    f"Hãy chọn một domain Commerce trước khi yêu cầu khuyến nghị: {available}."
+                    if _is_vietnamese_text(request.question) else
+                    f"Choose a Commerce decision domain before requesting a recommendation: {available}."
                 ),
                 agent="report",
-                metadata={"insufficient_context": True,
-                          "decision_analysis": "outside_active_business_domain",
-                          "supported_business_decision_domains": sorted(SUPPORTED_BUSINESS_DECISION_DOMAINS),
-                          "detected_business_decision_domain": business_decision_domain},
+                metadata={"needs_domain_clarification": True},
             )
         report_metadata = {
             **request.metadata,
             "evidence_only": True,
-            "decision_support": (_is_decision_support_request(request.question)
-                                 or decision_suggestions),
         }
-        if business_decision_domain:
-            report_metadata["business_decision_domain"] = business_decision_domain
-        report_request = request.model_copy(update={
-            "metadata": report_metadata,
-        })
+        report_request = request.model_copy(update={"metadata": report_metadata})
         metric_data = None
-        business_metric_question = (
-            _is_business_metric_decision_question(request.question)
-            or _is_business_metric_trend_question(request.question)
-        )
-        if (_is_financial_change_explanation(request.question)
-                or _is_decision_support_request(request.question)
-                or decision_suggestions
-                or business_metric_question) and self.analytics is not None:
+        if _is_financial_change_explanation(request.question) and self.analytics is not None:
             metric_data = self.analytics.run(report_request)
-            if decision_suggestions:
-                return _conditional_decision_suggestions(
-                    metric_data, request.metadata.get("business_decision_domain"), self.llm,
-                )
-            if business_metric_question:
-                requested_metrics = resolve_business_metric_names(request.question)
-                visible_metrics = {row.get("metric_name") for row in metric_data.data.get("business_metrics", [])}
-                missing_metrics = requested_metrics - visible_metrics
-                if missing_metrics:
-                    labels = sorted(BUSINESS_METRIC_CATALOG[name]["label"] for name in missing_metrics)
-                    return metric_data.model_copy(update={
-                        "answer": (
-                            "I could not find verified, role-visible KPI observations for every requested measure "
-                            f"({'; '.join(labels)}). I will not substitute a similar figure from document text. "
-                            "No complete comparison or decision recommendation can be grounded from the available "
-                            "metrics; ask an administrator to review the source or check the access classification."
-                        ),
-                        "agent": "report",
-                        "metadata": {**metric_data.metadata, "insufficient_context": True,
-                                     "decision_analysis": "missing_role_visible_verified_metrics"},
-                    })
-        source_data = (
-            metric_data
-            if business_metric_question and metric_data is not None and metric_data.evidence
-            else self.knowledge.run(report_request)
-        )
+        source_data = self.knowledge.run(report_request)
         if metric_data is not None and source_data is not metric_data:
             source_data = source_data.model_copy(update={
                 "evidence": source_data.evidence + metric_data.evidence,
@@ -1899,21 +2545,6 @@ class ReportAgent(BaseAgent):
                 "leadership", "executive", "options", "risks", "lãnh đạo", "rủi ro",
             )) else ""
         )
-        grounded_business_instruction = (
-            "For business-metric summaries, explain direction from the supplied verified observations. Do not derive "
-            "ratios, growth rates, shares, or changes from raw rows; use source-reported or independently validated "
-            "derived measures, otherwise state the comparison gap. Preserve value qualifiers such as approximately "
-            "and more_than in all numerical summaries, "
-            "and distinguish H1 from full-year reporting periods. You may explain a reporting-boundary change only "
-            "when a cited passage explicitly states it. "
-            "Do not infer operational causes, production changes, efficiency gains, measurement uncertainty, or "
-            "causal effects from year-to-year movement. If the sources do not state why a value changed, say the "
-            "reports show the movement but do not establish its cause. For operational recommendations, state an "
-            "actionable next step tied to the reported trend; label possible causes as unverified hypotheses and never imply a "
-            "specific initiative drove a change unless the evidence says so. Preserve scope notes and qualifiers, and "
-            "cite every numeric statement. Label supported decision implications as inferences.\n\n"
-            if metric_data is not None and metric_data.data.get("business_metrics") else ""
-        )
         change_instruction = (
             "The user asks why a reported financial metric changed between years. Use verified metric evidence only "
             "to state the amounts and direction. Explain a cause only if the retrieved report evidence explicitly "
@@ -1928,7 +2559,7 @@ class ReportAgent(BaseAgent):
             "Do not calculate from unverified candidates. Treat external company-practice references as examples "
             "from their named issuers, not as Commerce Demo policy; establish transferability from the supplied "
             "Commerce data and state limits. Apply platform operating rules only when that platform is in scope.\n\n"
-            f"{financial_instruction}{executive_instruction}{grounded_business_instruction}{change_instruction}Request: {request.question}\n\n{priority_note}Evidence:\n{sources}"
+            f"{financial_instruction}{executive_instruction}{change_instruction}Request: {request.question}\n\n{priority_note}Evidence:\n{sources}"
         )
         answer = _normalize_numeric_citations(self.llm.generate(prompt).strip(), prompt_evidence)
         validation_failure = _report_validation_failure(
@@ -1999,10 +2630,24 @@ class ReportAgent(BaseAgent):
         question = request.question.strip() or (
             f"Recommend conditional management actions for {profile['label']} using the available Commerce data."
         )
+        suggestions = bool(request.metadata.get("decision_suggestions")) or _is_decision_suggestions_request(question)
         # Production SQLAnalyticsAgent selects evidence for the actual question;
-        # the fixed snapshot remains only for small legacy test doubles.
-        question_query = isinstance(self.analytics, SQLAnalyticsAgent)
-        question_sql_fallback = None
+        # suggestion requests need the complete domain snapshot, not one arbitrary
+        # query inferred from a generic request for actions.
+        use_promotion_snapshot = (
+            domain == "promotion_planning"
+            and (
+                (_asks_for_promotion_outcome_comparison(question)
+                 and not _asks_for_campaign_scoped_outcomes(question))
+                or _asks_for_unavailable_promotion_roi(question)
+            )
+        )
+        question_query = isinstance(self.analytics, SQLAnalyticsAgent) and not suggestions and not use_promotion_snapshot
+        question_sql_fallback = (
+            "unsupported_measure"
+            if domain == "promotion_planning" and _asks_for_unavailable_promotion_roi(question)
+            else None
+        )
         try:
             snapshot = (
                 self.analytics.commerce_question_observations(question, domain)
@@ -2010,18 +2655,14 @@ class ReportAgent(BaseAgent):
             )
         except UnsupportedCommerceDimension as error:
             logger.info("Commerce question requests an unavailable dimension (%s): %s", domain, error)
-            snapshot = {
-                "domain": domain,
-                "domain_label": profile["label"],
-                "source_tables": [f"commerce.{table}" for table in COMMERCE_QUERY_TABLES[domain]],
-                "observations": [],
-                "limitations": [
-                    f"Requested dimension(s) {', '.join(error.dimensions)} are not available in the approved "
-                    f"{domain} schema. Available columns: {', '.join(sorted(error.available_columns))}. "
-                    "No question-specific SQL was run; aggregate observations cannot answer this dimension."
-                ],
-                "dataset_note": "Synthetic Commerce competition dataset.",
-            }
+            snapshot = self.analytics.commerce_decision_snapshot(domain)
+            snapshot["limitations"] = [
+                f"Requested dimension(s) {', '.join(error.dimensions)} are not available in the approved "
+                f"{domain} schema. Available columns: {', '.join(sorted(error.available_columns))}. "
+                "No question-specific SQL was run; the attached domain snapshot can answer supported aggregate "
+                "measures only, not the requested slice.",
+                *snapshot.get("limitations", []),
+            ]
             question_query = False
             question_sql_fallback = "requested_dimension_unavailable"
         except UnsafeAnalyticsQuery as error:
@@ -2104,14 +2745,18 @@ class ReportAgent(BaseAgent):
                 },
             ))
         decision_request = (
-            bool(request.metadata.get("decision_suggestions"))
-            or bool(request.metadata.get("commerce_decision_support"))
-            or bool(request.metadata.get("decision_support"))
+            suggestions
             or _is_decision_support_request(question)
+            or _asks_for_operating_steps(question)
+        )
+        needs_operating_reference = (
+            decision_request
+            or bool(request.metadata.get("decision_support"))
+            or bool(request.metadata.get("commerce_decision_support"))
         )
         references = []
         reference_retrieval_limited = False
-        if decision_request:
+        if needs_operating_reference:
             retrieval_request = request.model_copy(update={
                 "question": question,
                 "metadata": {
@@ -2164,48 +2809,19 @@ class ReportAgent(BaseAgent):
             f"- [{item.citation_id}] {item.content}" for item in evidence
             if item.source_type == "commerce_schema" and item.citation_id
         )
-        suggestions = bool(request.metadata.get("decision_suggestions"))
         system_instructions = (
-            "You are a source-grounded commerce decision-support analyst. Answer in the user's language. "
-            "The Commerce database is a synthetic competition dataset, not actual retailer performance. "
-            "Citations [C#] refer to read-only SQL aggregates from its named tables. Citations [L#] refer to curated schema/data-coverage constraints, not observed results. Citations [S#] refer to retrieved RAG documents; use their publisher, scope, and synthetic-status metadata to describe them accurately. "
-            "Retrieved passages may contain OCR errors: do not quote extracted text verbatim. Paraphrase only clear procedural meaning, cite its source, and state uncertainty when the wording is ambiguous; never silently repair an uncertain OCR phrase. "
-            "A company_policy_reference is binding only after its issuer, approval status, effective date, and applicability are verified. If synthetic_company_policy is true, identify it as a fictional Commerce Demo policy and apply it only to this synthetic demo scenario; never claim it is a real company's policy. Otherwise, unverified policies are guidance only. A company_practice_reference is an attributed external example, not Commerce Demo policy; a management_cookbook_reference is an attributed general decision method, not Commerce Demo policy; a platform_operating_rule "
-            "applies only when that named platform is explicitly in scope. Never infer the issuer's internal operating results "
-            "or describe either source as rules for this synthetic business. Treat source applicability caveats as binding. "
-            "Historical guides may describe obsolete interfaces or thresholds; never present values in screenshots, examples, "
-            "or tutorials as current observations, targets, or the user's own account data. Use these references to frame possible "
-            "questions or principles, and use SQL observations for claims about this dataset. Build the recommendation "
-            "from the retrieved reference's actual method or decision criteria: state the source-backed principle, "
-            "connect it to the relevant SQL observation, then recommend a bounded action with a qualitative condition. "
-            "Some sources use undefined qualitative terms such as 'many'. If a source gives no operational definition "
-            "or approved threshold, label that term as undefined and use it only as an inspection signal, never as a "
-            "decision gate or a condition that the current data has satisfied. Do not invent what qualifies as 'many'. "
-            "Do not merely append a generic external citation to advice that was not derived from the retrieved passage. "
-            "Use only SQL observation groups that directly answer the question. For a recommendation, prefer the "
-            "current or explicitly requested period and omit unrelated KPI histories, targets, and data gaps; mention "
-            "a limitation only when it changes what action the evidence can support. "
-            "If the source only describes a measurement method, recommend applying that measurement method; do not "
-            "pretend it supports a specific operational outcome. For every numeric claim, "
-            "describe an external source only by the method or criteria present in its cited passage; do not call it a "
-            "recognized or standard method unless the passage explicitly does so. Do not use source-provider product "
-            "features or service guarantees as decision criteria for Commerce Demo. "
-            "copy the exact cited value and period without rounding or calculation. Do not compute averages across "
-            "years, ranges, ratios, shares, changes, or percentages from the supplied rows; omit such values unless "
-            "they are already present as a SQL observation. Never turn an observed value into a future goal by saying "
-            "to increase above it, reduce below it, or proceed once it is reached; use only a separately sourced, "
-            "approved hurdle. Separate observation, inference and recommendation. Do not "
-            "claim causality from promotion-tagged versus untagged orders. Do not invent targets, thresholds, causes, "
-            "warehouse locations, carriers, lead times or costs. State data gaps that prevent a confident choice. "
-            "Cite [L#] when stating that a required field, target, or dataset capability is absent; never cite an unrelated [C#] aggregate for a schema limitation. Give one practical next move and state what future measurable evidence would justify proceeding, stopping "
-            "or switching; use qualitative conditions unless the evidence supplies an approved numeric threshold. "
-            "Answer every explicit factual/comparison subquestion first from the supplied SQL rows, with its exact cited values; then give the decision boundary and next step. Do not replace a requested ranking or comparison with generic advice. Every factual sentence must end with the exact citation IDs that support it."
+            "You are a source-grounded analyst for a synthetic Commerce dataset, not real retailer performance. "
+            "Whenever you report Commerce SQL observations, explicitly identify them as synthetic Commerce demo data, not real retailer results, in the answer. "
+            "Citations [C#] are read-only SQL observations; Citations [L#] refer to curated schema/data-coverage constraints, not observed results; [S#] cites retrieved documents. "
+            "Cite every factual sentence. Use only SQL observation groups that directly answer the question. Answer every explicit factual/comparison subquestion first, using supplied values and periods exactly. Do not calculate metrics, infer causality, or invent targets, causes, costs, or operational facts. "
+            "Cite [L#] when stating that a required field, target, or capability is absent; never cite an unrelated [C#] aggregate for a schema limitation. "
+            "Build the recommendation from the retrieved reference's actual method: state its principle and connect it to the relevant SQL observation. Separate observations, inference, and recommendation; use qualitative conditions unless evidence supplies an approved numeric hurdle. Give one practical next move unless the user explicitly asks for multiple suggestions, and keep each action conditional. "
+            "Attribute sources by scope: a synthetic policy applies only to fictional Commerce Demo; company practices and management cookbooks are external guidance, not Commerce Demo policy; a platform rule applies only when that named platform is explicitly in scope. Never transfer an external company's results to this dataset. "
+            "Do not call a method recognized or standard unless the passage explicitly does so. Retrieved passages may contain OCR errors: do not quote extracted text verbatim, paraphrase only clear procedural meaning, state ambiguity, and never silently repair an uncertain OCR phrase. Do not invent what qualifies as 'many'; without a sourced definition, use it only as an inspection signal, not a decision gate."
         )
         system_instructions += (
-            " For time-series comparisons, inspect the full ordered observations for each group. Describe endpoint movement "
-            "separately from intermediate movement; use words such as 'steadily', 'each year', 'giảm dần', or 'tăng dần' "
-            "only when every observed step supports that direction. If a series reverses, state the reversal and cite it. "
-            "Answer each requested measure and grouping; do not omit a requested measure because another is easier to summarize."
+            " For time-series comparisons, inspect every ordered observation; distinguish endpoint change from intermediate reversals. "
+            "Do not say 'steadily', 'each year', 'giảm dần', or 'tăng dần' unless every step supports it. Answer every requested measure and grouping."
         )
         if not decision_request:
             system_instructions = (
@@ -2217,9 +2833,7 @@ class ReportAgent(BaseAgent):
             )
         elif not references:
             system_instructions += (
-                " No applicable operating reference was retrieved. Do not prescribe or name a specialized external method, "
-                "policy, experiment, or platform workflow. Base the decision boundary on the supplied SQL and schema limits only, "
-                "and identify the missing observations needed before a choice."
+                " No applicable operating reference was retrieved. Do not prescribe a specialized method or policy; use SQL and schema limits only, and state what evidence is missing."
             )
         if any(character.isalpha() and ord(character) > 127 for character in question):
             system_instructions += (
@@ -2228,37 +2842,20 @@ class ReportAgent(BaseAgent):
             )
         if references:
             system_instructions += (
-                " Cite at least one retrieved external operating reference as an explicitly attributed published guide/article for the "
-                "recommended measurement or operating principle, explain how that principle informs the conditional recommendation, "
-                "and describe its scope accurately: a company practice is not Commerce Demo policy; a platform rule applies only "
-                "within that named platform. Do not say the issuer itself follows the method unless the supplied source explicitly supports that claim. Use [S#] "
-                "for that statement. Never use an external company's results as a claim about this dataset."
+                " Cite at least one retrieved operating reference for the method used, attribute it with [S#], and connect it to the SQL-based condition. Do not claim the issuer uses the method or transfer its results unless the source says so."
             )
         if decision_request and domain == "inventory_allocation":
             system_instructions += (
-                " Inventory-specific constraint: category stockout_products and overstock_products are independent "
-                "aggregate counts and may overlap. The latest-snapshot SQL overlap aggregate gives the number of rows "
-                "carrying both flags, but does not identify those products or locations. Do not treat category counts "
-                "as disjoint stock pools, infer a SKU/location match, or claim that stock can be transferred. "
-                "For a question about service targets, distinguish historical service measurements from an authorized "
-                "target and cite the schema limitation for the missing approval. For an allocation decision, require "
-                "matched SKU/location demand and stock before recommending a move. Address only the action relevant "
-                "to the user's question; do not switch to a transfer recommendation when asked about service targets."
+                " Inventory: stockout and overstock counts may overlap. The latest-snapshot SQL overlap aggregate counts rows with both flags but does not identify SKU/location matches. "
+                "Do not infer transferable surplus; require matched SKU/location demand and stock before recommending a move. Distinguish historical service measurements from an approved target and cite [L#] for a missing approval. "
+                "The stored fill_rate is a 0-to-1 ratio; when reporting it, display the value as a percentage to two decimal places unless the user explicitly asks for the raw ratio."
             )
         if decision_request and domain == "promotion_planning":
             system_instructions += (
-                " Promotion-specific constraint: use the retrieved campaign-reporting passage only for the measurement "
-                "method it actually describes. ROAS requires both attributed revenue and advertising spend; do not "
-                "calculate or compare ROAS for an untagged group when its spend is absent. ROAS alone does not prove "
-                "incremental lift or justify increasing budget. If no approved budget hurdle is present in the SQL or "
-                "retrieved documents, explicitly say none was supplied; do not assume the marketing team already has one "
-                "or invent a benchmark. When an applicable reference describes a treatment/control or holdout experiment, "
-                "state that it estimates incremental sales (and iROAS only with the required spend data); do not claim that "
-                "the experiment alone measures contribution margin. You may use the SQL merchandise gross-profit proxy "
-                "calculated from transaction prices, discounts and catalog COGS as descriptive evidence, but label it as "
-                "an estimate, do not call it contribution margin or ROI, and state that catalog COGS needs validation. "
-                "Assess incremental contribution margin separately using campaign cost and margin evidence. Do not transfer "
-                "the source company's results or thresholds."
+                " Promotion: use each source only for its stated method. ROAS requires both attributed revenue and advertising spend; do not infer lift or increase budget from descriptive tagged/untagged results. "
+                "If no approved budget hurdle is supplied, say so; do not assume the marketing team already has one. A holdout estimates incremental sales; do not claim that the experiment alone measures contribution margin. "
+                "Label catalog-COGS gross-profit/margin as a proxy, not ROI or contribution margin; require campaign cost and validated margin evidence for those conclusions. "
+                "For observed campaign-window results, say a campaign had or recorded a value; do not say it generated, produced, drove, caused, lifted, or increased sales/profit without counterfactual evidence."
             )
         if decision_request and domain == "nationwide_logistics":
             if isinstance(snapshot["observations"], dict):
@@ -2271,25 +2868,12 @@ class ReportAgent(BaseAgent):
             )
             if varies_by_region:
                 system_instructions += (
-                    " Logistics-specific constraint: the supplied regional rows contain different values. Do not call "
-                    "them identical, equal, or say there is no regional variation. Use 'similar' only if supported; "
-                    "do not claim an exact difference unless it is separately supplied and cited."
+                    " Regional rows differ: do not call them identical or claim no variation. State exact differences only when supplied and cited."
                 )
             system_instructions += (
-                " Do not claim a region has an unacceptable service or cost level unless an authorized target or "
-                "threshold is present in the evidence. If no such target is supplied, identify the missing approved "
-                "service/cost objective and request it before proposing a network change. Do not call a source's "
-                "commercial service offering a recommendation for Commerce Demo. Never recommend shifting delivery "
-                "capacity, adding or relocating warehouses, changing carriers, or redesigning routes from regional "
-                "averages alone. A general external guide may support comparing cost, speed, capacity, and customer "
-                "needs; it does not establish which network change will work here. Do not invent hypothetical causes "
-                "such as distance or insufficient capacity unless measured. "
-                "For a network-change question, give "
-                "one next step: collect the route-level fields named in [L#] and establish the business/customer "
-                "priorities described in [S#] before comparing options. Do not invent or list possible delay causes "
-                "or unprovided data fields such as warehouse processing time, traffic, weather, or distance. Do not "
-                "use 'significant', 'acceptable', or similar decision gates without an authorized definition. Do not "
-                "write a multi-step plan unless the user explicitly asks for one."
+                " Logistics: Do not claim a region has an unacceptable service or cost level without an authorized target. Regional averages alone do not justify moving capacity, changing carriers, or redesigning routes. "
+                "For a network-change question, give one next step: collect route-level fields named in [L#] and priorities described in [S#]. Do not invent or list possible delay causes or missing data fields. "
+                "Do not use 'significant' or 'acceptable' as decision gates without a definition, and do not write a multi-step plan unless the user explicitly asks for one."
             )
         if suggestions:
             system_instructions += (
@@ -2310,24 +2894,38 @@ class ReportAgent(BaseAgent):
                 "recommendation limited to a diagnostic/data-gathering next step grounded in SQL and schema limits."
             )
         provider_rate_limited = False
+        answer_fallback_reason = None
         answer_token_usage = None
 
         def safe_fallback() -> str:
-            if snapshot.get("sql_query"):
+            if (snapshot.get("sql_query")
+                    or question_sql_fallback == "requested_dimension_unavailable"
+                    or (domain == "promotion_planning"
+                        and _asks_for_promotion_outcome_comparison(question))):
                 return _commerce_question_safe_fallback(
                     question, evidence, decision_request=decision_request,
                 )
             return _commerce_safe_fallback(domain, question, evidence, decision_request=decision_request)
 
-        try:
-            answer, provider = _generate_conditional_draft(self.llm, prompt, system_instructions)
-            answer_token_usage = accumulate_token_usage(answer_token_usage, self.llm)
-        except Exception as error:
-            if not is_retryable_provider_error(error):
-                raise
+        # SQL generation already exhausted the primary and configured fallback
+        # providers. Avoid immediately retrying the same providers for prose;
+        # the bounded SQL evidence still has a deterministic cited response.
+        if question_sql_fallback in {"provider_rate_limited", "provider_unavailable", "unsupported_measure"}:
             answer = safe_fallback()
             provider = "deterministic_safety_fallback"
-            provider_rate_limited = True
+            provider_rate_limited = question_sql_fallback in {"provider_rate_limited", "provider_unavailable"}
+            answer_fallback_reason = question_sql_fallback
+        else:
+            try:
+                answer, provider = _generate_conditional_draft(self.llm, prompt, system_instructions)
+                answer_token_usage = accumulate_token_usage(answer_token_usage, self.llm)
+            except Exception as error:
+                if not is_retryable_provider_error(error):
+                    raise
+                answer = safe_fallback()
+                provider = "deterministic_safety_fallback"
+                provider_rate_limited = True
+                answer_fallback_reason = _provider_failure_reason(error)
         answer = _normalize_numeric_citations(answer, evidence)
         allowed = {item.citation_id for item in evidence if item.citation_id}
         reference_ids = {
@@ -2352,14 +2950,25 @@ class ReportAgent(BaseAgent):
                 return "unsolicited_recommendation_in_descriptive_answer"
             if _commerce_schema_gap_citation_failure(candidate, evidence, question):
                 return "missing_schema_limitation_citation"
+            if _claims_missing_commerce_dimension_is_available(candidate, domain):
+                return "claims_missing_commerce_dimension_is_available"
             if _has_unsupported_monotonic_commerce_trend(candidate, evidence):
                 return "unsupported_monotonic_time_series_claim"
+            if domain == "promotion_planning" and _has_unsupported_campaign_causal_claim(candidate):
+                return "unsupported_campaign_causal_attribution"
             if _has_unsupported_numeric_decision_gate(candidate, evidence):
                 return "decision_gate_uses_an_unsourced_numeric_threshold"
             if not _decision_numeric_facts_match_cited_evidence(candidate, evidence):
                 validation_numeric_tokens = _unsupported_decision_numeric_tokens(candidate, evidence)
                 return "decision_numeric_claim_not_present_in_cited_evidence"
-            if domain == "nationwide_logistics" and _has_unsupported_logistics_intervention(candidate):
+            missing_observation = _commerce_requested_observation_missing(candidate, evidence, question)
+            if missing_observation:
+                return "requested_commerce_observation_omitted:" + missing_observation
+            if _commerce_fill_rate_missing_percent(candidate, evidence, question):
+                return "fill_rate_not_presented_as_percent"
+            if decision_request and not suggestions and _has_multiple_unrequested_actions(candidate):
+                return "multiple_unrequested_recommendations"
+            if domain == "nationwide_logistics" and _has_unsupported_logistics_intervention(candidate, evidence):
                 return "unsupported_specific_logistics_intervention"
             if domain == "nationwide_logistics" and _has_unprovided_logistics_fields(candidate):
                 return "unprovided_logistics_field"
@@ -2395,14 +3004,14 @@ class ReportAgent(BaseAgent):
                 candidate, re.IGNORECASE,
             ):
                 return "platform_action_uses_unattributed_aggregate_count"
-            if reference_ids and reference_ids.isdisjoint(_CITATION.findall(candidate)):
+            if decision_request and reference_ids and reference_ids.isdisjoint(_CITATION.findall(candidate)):
                 return "missing_attributed_operating_reference"
             return None
 
         failure = validation_failure(answer)
         repaired = False
-        fallback_used = provider_rate_limited
-        if failure and not provider_rate_limited:
+        fallback_used = provider_rate_limited or question_sql_fallback == "unsupported_measure"
+        if failure and not fallback_used:
             repaired = True
             correction = (
                 f"\n\nYour answer failed evidence validation: {failure}. Rewrite using only supplied SQL values "
@@ -2413,6 +3022,27 @@ class ReportAgent(BaseAgent):
                 "to generic advice. Do not add causes or business rules. "
                 "Ensure every factual sentence ends with valid [C#] or [S#] citations."
             )
+            if failure.startswith("requested_commerce_observation_omitted:"):
+                missing_field = failure.partition(":")[2].replace("_", " ")
+                correction = (
+                    f"The answer omitted the explicitly requested SQL measure '{missing_field}', although it is present "
+                    "in the supplied commerce_observations. Add its exact source-reported value(s) and period/group "
+                    "with the matching [C#] citation before giving the recommendation. Preserve the proxy label and "
+                    "do not turn descriptive comparisons into causal effects."
+                )
+            if failure == "fill_rate_not_presented_as_percent":
+                correction = (
+                    "Commerce inventory fill_rate is stored as a 0-to-1 ratio. Rewrite each requested period as its "
+                    "percentage (ratio multiplied by 100, displayed to two decimal places with a % sign); do not show "
+                    "the raw ratio as the user-facing fill rate. This is the documented display-unit conversion. "
+                    "Preserve the other supplied observations, periods, and citations."
+                )
+            if failure == "multiple_unrequested_recommendations":
+                correction = (
+                    "The user did not ask for multiple suggestions. Keep the factual comparison and conclusion, then give "
+                    "only one conditional next action. Remove additional action bullets and do not turn the response into a plan. "
+                    "Preserve valid citations."
+                )
             if failure == "unsolicited_recommendation_in_descriptive_answer":
                 correction = (
                     "Rewrite as a factual SQL-only comparison answering exactly the user's descriptive question. "
@@ -2426,11 +3056,25 @@ class ReportAgent(BaseAgent):
                     "giảm dần, or tăng dần wording unless the complete cited series supports it. Keep all requested "
                     "measures and exact [C#] citations."
                 )
+            if failure == "unsupported_campaign_causal_attribution":
+                correction = (
+                    "Rewrite campaign SQL results as descriptive observations within the stated campaign windows. "
+                    "Say a campaign recorded or had the highest observed value; do not say it generated, produced, "
+                    "drove, caused, lifted, or increased sales or profit. State that these rows do not establish causal "
+                    "impact without a counterfactual. Preserve all exact values, requested metrics, and citations."
+                )
             if failure == "missing_schema_limitation_citation":
                 correction = (
                     "The answer says no approved service-level target is available. Cite the matching Commerce schema "
                     "limitation [L#], not an SQL observation [C#], for that absence. Preserve the historical fill-rate "
                     "values with their [C#] citations."
+                )
+            if failure == "claims_missing_commerce_dimension_is_available":
+                correction = (
+                    "The approved domain schema explicitly lacks the dimension named in the answer. Do not say its "
+                    "SQL data can confirm, compare, estimate, or predict that dimension, and do not substitute a "
+                    "different field as an unvalidated proxy. State the limitation with its [L#] citation; use [S#] "
+                    "only to describe the cited operating method, then name the additional source data needed."
                 )
             if failure == "inventory_overlap_count_not_present_in_cited_sql":
                 correction = (
@@ -2505,8 +3149,9 @@ class ReportAgent(BaseAgent):
                 provider = "deterministic_safety_fallback"
                 fallback_used = True
                 provider_rate_limited = True
+                answer_fallback_reason = _provider_failure_reason(error)
             failure = validation_failure(answer)
-        if failure and not provider_rate_limited:
+        if failure and not fallback_used:
             answer = safe_fallback()
             fallback_used = True
             failure = validation_failure(answer)
@@ -2516,6 +3161,8 @@ class ReportAgent(BaseAgent):
                 failure, fallback_used, domain,
             )
             answer = _INVALID_REPORT
+        else:
+            answer = _ensure_commerce_dataset_disclosure(answer, evidence, question)
         sql_token_usage = snapshot.get("sql_generation_usage")
         total_token_usage = sum_token_usage(sql_token_usage, answer_token_usage)
         return AgentResult(
@@ -2527,6 +3174,7 @@ class ReportAgent(BaseAgent):
                 "insufficient_context": False,
                 "commerce_decision_domain": domain,
                 "decision_analysis": "commerce_sql_and_operating_references",
+                "decision_suggestions": suggestions,
                 "decision_reference_retrieval_limited": reference_retrieval_limited,
                 "citation_validation_failed": failure is not None,
                 **({"decision_validation_failure": failure} if failure else {}),
@@ -2534,10 +3182,9 @@ class ReportAgent(BaseAgent):
                    if failure and validation_numeric_tokens else {}),
                 "decision_validation_repair_attempted": repaired,
                 "decision_fallback_used": fallback_used,
-                **({"answer_fallback_reason": "provider_unavailable"}
-                   if fallback_used and provider_rate_limited else {}),
-                **({"answer_fallback_reason": "evidence_validation_failed"}
-                   if fallback_used and not provider_rate_limited else {}),
+                **({"answer_fallback_reason": answer_fallback_reason or (
+                    "provider_unavailable" if provider_rate_limited else "evidence_validation_failed"
+                )} if fallback_used else {}),
                 "generation_provider": provider,
                 "question_sql_fallback": question_sql_fallback,
                 **({"token_usage": {

@@ -1,3 +1,4 @@
+import hashlib
 import json
 import fitz
 from pathlib import Path
@@ -5,10 +6,11 @@ import sys
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.processing.evaluate_scan_document_processing import (
+from tools.processing.evaluate_scan_document_processing import (
     crop_pdf_page,
     evaluate_region,
     rasterize_for_ocr,
+    score_text_anchors,
     score_table_anchors,
     select_cases,
     source_text_for_scoring,
@@ -16,6 +18,32 @@ from scripts.processing.evaluate_scan_document_processing import (
 
 
 class ScanDocumentProcessingEvaluationTest(unittest.TestCase):
+    def test_shopee_inventory_grid_labels_match_the_registered_source_hash(self):
+        root = Path(__file__).resolve().parents[1]
+        dataset = json.loads(
+            (root / "data/evaluation/ocr/commerce_shopee_inventory_grid_anchors.json").read_text(encoding="utf-8")
+        )
+        self.assertFalse(dataset["primary_metric_selection_eligible"])
+        self.assertEqual(len(dataset["pages"]), 1)
+        page = dataset["pages"][0]
+        source = (root / page["file"]).read_bytes()
+
+        self.assertEqual(hashlib.sha256(source).hexdigest(), page["source_pdf_sha256"])
+        self.assertFalse(page["physical_scan"])
+        self.assertEqual(len(page["table_rows"]), 2)
+        self.assertTrue(all(len(row["values"]) == 6 for row in page["table_rows"]))
+
+    def test_text_anchor_score_does_not_treat_selected_phrases_as_full_page_cer(self):
+        score = score_text_anchors(
+            ["Stock is available", "Replenish soon"],
+            "Stock is available for now; please replenish soon.",
+        )
+
+        self.assertEqual(score["matched_anchor_count"], 2)
+        self.assertEqual(score["anchor_recall"], 1.0)
+        self.assertIsNone(score_text_anchors(["expected"], None))
+        self.assertIsNone(score_text_anchors([], "some OCR text"))
+
     def test_structured_table_serialization_is_not_counted_as_ocr_errors(self):
         chunks = [
             {"text": "East 120", "metadata": {"parser": "pymupdf"}},
@@ -161,6 +189,20 @@ class ScanDocumentProcessingEvaluationTest(unittest.TestCase):
 
         self.assertEqual(score["exact_numeric_cells"], 0)
         self.assertEqual(score["row_matches"][0]["exact_value_matches"], [False, False])
+
+    def test_table_score_rejects_numeric_values_contaminated_by_action_text(self):
+        score = score_table_anchors(
+            ["Sales", "Available", "Minimum"],
+            [{"label": "Product A", "values": ["10", "0", "0"]}],
+            [{
+                "columns": ["Product", "Sales", "Available", "Minimum"],
+                "rows": [{"Product": "Product A", "Sales": "10", "Available": "0", "Minimum": "Edit 0"}],
+            }],
+        )
+
+        self.assertEqual(score["exact_numeric_cells"], 2)
+        self.assertEqual(score["row_matches"][0]["exact_value_matches"], [True, True, False])
+        self.assertFalse(score["table_anchor_quality_pass"])
 
     def test_financial_table_score_checks_cell_location_and_column_assignment(self):
         expected = [{

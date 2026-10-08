@@ -1,0 +1,53 @@
+{
+  "dataset_id": "commerce-shopee-inventory-upload-lab-v1",
+  "source_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+  "source_filename": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN.pdf",
+  "source_url": "https://cdngarenanow-a.akamaihd.net/shopee/seller/seller_cms/acf62e028643871447fd5886ed466a10/Qu%E1%BA%A3n%20L%C3%BD%20T%E1%BB%93n%20Kho.pdf",
+  "source_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+  "date": "2026-10-08",
+  "application_route": "POST /api/ocr-tests",
+  "role": "tester",
+  "run_id": "c2f7c941-1973-42d9-b60b-5444684dd02f",
+  "pre_filter_run_id": "2d6c7552-8c71-4a1e-ad8c-bffb46227710",
+  "processor": {
+    "pymupdf": "1.27.2.3",
+    "tesseract": "5.5.3",
+    "language": "vie+eng",
+    "page_psm": 11,
+    "table_psm": 3,
+    "page_scale": 1.5,
+    "table_scale": 2.5
+  },
+  "result": {
+    "pages": 17,
+    "chunks": 18,
+    "structured_tables": 0,
+    "selected_page_chunk_counts": {
+      "7": 1,
+      "8": 2,
+      "10": 1,
+      "11": 1
+    },
+    "page_11_preview_http_status": 200,
+    "page_11_preview_content_type": "image/png",
+    "page_11_preview_bytes": 110354,
+    "page_11_extraction_method": "pymupdf+tesseract"
+  },
+  "before_parser_filter": {
+    "same_source_pages": 17,
+    "chunks": 23,
+    "false_or_empty_native_table_candidates": 15
+  },
+  "ocr_anchor_check": {
+    "report": "shopee-inventory-selected-anchor-current-20261008.json",
+    "expected_phrase_anchors": 4,
+    "matched_phrase_anchors": 4,
+    "anchor_recall": 1.0,
+    "mean_page_latency_seconds": 3.248
+  },
+  "limitations": [
+    "This official 2019 Shopee PDF is a mixed vector-text and rasterized PowerPoint export, not a physical scan.",
+    "The four manually reviewed anchors cover selected phrases on page 11 only; they are not a full-page transcription or representative OCR benchmark.",
+    "The seller-center inventory screenshot is retained as OCR text but was not reconstructed as a structured table."
+  ]
+}

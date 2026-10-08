@@ -12,8 +12,7 @@ from core.database.document_repository import (
     DocumentRepository,
     link_financial_metric_source_chunk,
 )
-from core.analytics.business_metric_catalog import BUSINESS_VALUE_QUALIFIER_SQL
-from core.agents.dashboard_agent import DashboardAgent, _financial_time_series
+from core.agents.dashboard_agent import DashboardAgent
 from core.models.agents import AgentRequest, AgentResult, Evidence
 
 
@@ -35,6 +34,7 @@ class DocumentDashboardTest(unittest.TestCase):
         repository.conn = MagicMock()
         cursor = repository.conn.cursor.return_value.__enter__.return_value
         policy = {"document_id": "CD-POL-INV-001", "synthetic_company_policy": True,
+                  "knowledge_base_active": False,
                   "evidence_class": "company_policy_reference"}
         cursor.fetchall.return_value = [policy]
 
@@ -44,6 +44,54 @@ class DocumentDashboardTest(unittest.TestCase):
         query = " ".join(cursor.execute.call_args.args[0].lower().split())
         self.assertIn("max(c.metadata->>'evidence_class') as evidence_class", query)
         self.assertIn("bool_or(c.metadata->>'synthetic_company_policy' = 'true')", query)
+        self.assertIn("left join public.document_chunks c", query)
+        self.assertNotIn("where d.knowledge_base_active", query)
+        self.assertFalse(result[0]["knowledge_base_active"])
+
+    def test_failed_upload_without_indexed_chunks_remains_visible_in_file_management(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        failed_upload = {
+            "document_id": "UPLOAD-failed", "title": "OCR test only",
+            "processing_status": "failed", "knowledge_base_active": True,
+            "chunk_count": 0, "allowed_roles": ["admin"],
+        }
+        cursor.fetchall.return_value = [failed_upload]
+
+        result = repository.list_knowledge_documents()
+
+        self.assertEqual(result[0]["processing_status"], "failed")
+        self.assertEqual(result[0]["chunk_count"], 0)
+        query = " ".join(cursor.execute.call_args.args[0].lower().split())
+        self.assertIn("left join public.document_chunks c", query)
+
+    def test_failed_upload_can_be_removed_from_retrieval_before_it_has_indexed_chunks(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        cursor.fetchone.return_value = {"document_id": "UPLOAD-failed"}
+
+        removed = repository.set_knowledge_base_active("UPLOAD-failed", False)
+
+        self.assertTrue(removed)
+        query = " ".join(cursor.execute.call_args.args[0].lower().split())
+        self.assertIn("set knowledge_base_active = %s", query)
+        self.assertIn("(%s is false or (", query)
+        self.assertEqual(cursor.execute.call_args.args[1], (False, "UPLOAD-failed", False))
+
+    def test_failed_upload_without_indexed_chunks_cannot_be_restored_to_retrieval(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        cursor.fetchone.return_value = None
+
+        restored = repository.set_knowledge_base_active("UPLOAD-failed", True)
+
+        self.assertFalse(restored)
+        query = " ".join(cursor.execute.call_args.args[0].lower().split())
+        self.assertIn("processing_status = 'ready'", query)
+        self.assertIn("exists (", query)
 
     def test_commerce_dashboard_runs_only_requested_aggregates(self):
         repository = DocumentRepository.__new__(DocumentRepository)
@@ -54,6 +102,43 @@ class DocumentDashboardTest(unittest.TestCase):
 
         self.assertEqual(cursor.fetchall.call_count, 1)
         self.assertEqual(set(result), {"inventory_latest_flag_overlap", "data_notes"})
+
+    def test_slow_commerce_dashboard_aggregates_read_refreshed_database_views(self):
+        cases = (
+            (("promotions_by_year",), "commerce.dashboard_promotions_by_year"),
+            (("promotions_by_campaign",), "commerce.dashboard_promotions_by_campaign"),
+            (("logistics_by_year_region",), "commerce.dashboard_logistics_by_year_region"),
+        )
+        for keys, view in cases:
+            with self.subTest(view=view):
+                repository = DocumentRepository.__new__(DocumentRepository)
+                repository.conn = MagicMock()
+                cursor = repository.conn.cursor.return_value.__enter__.return_value
+
+                repository.commerce_dashboard(keys)
+
+                query = " ".join(cursor.execute.call_args.args[0].lower().split())
+                self.assertIn(f"select * from {view}", query)
+
+    def test_commerce_dashboard_scopes_data_notes_to_requested_domain(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        cursor.fetchall.return_value = []
+        cases = (
+            (("inventory_by_year",), "days_of_supply", ("Promotion comparisons", "Geography is grouped")),
+            (("promotions_by_year",), "randomized holdout", ("days_of_supply", "Geography is grouped")),
+            (("logistics_by_year_region",), "carrier, warehouse origin", ("randomized holdout", "days_of_supply")),
+        )
+
+        for keys, expected_note, excluded_notes in cases:
+            with self.subTest(keys=keys):
+                notes = repository.commerce_dashboard(keys)["data_notes"]
+                joined = " ".join(notes)
+                self.assertIn("synthetic competition data", joined)
+                self.assertIn(expected_note, joined)
+                for excluded in excluded_notes:
+                    self.assertNotIn(excluded, joined)
 
     def test_commerce_dashboard_rejects_unknown_aggregate_key(self):
         repository = DocumentRepository.__new__(DocumentRepository)
@@ -152,27 +237,6 @@ class DocumentDashboardTest(unittest.TestCase):
         self.assertTrue(all(row["net_item_sales"] >= 2 for row in campaigns))
         self.assertEqual(result["source_tables"], ["commerce.orders", "commerce.order_items", "commerce.products", "commerce.promotions"])
 
-    def test_business_metric_extraction_run_reads_dict_row_id(self):
-        repository = DocumentRepository.__new__(DocumentRepository)
-        repository.conn = MagicMock()
-        cursor = repository.conn.cursor.return_value.__enter__.return_value
-        cursor.fetchone.return_value = {"id": 73}
-        run = {
-            "document_id": "VNM-SR-2013-EN", "company": "Vinamilk",
-            "decision_domain": "human_resources", "extractor_version": "v5",
-            "prompt_version": "v5", "model_name": "test", "status": "completed",
-            "input_chunk_count": 175, "selected_chunk_count": 2,
-            "candidate_count": 1, "audit": {},
-        }
-
-        self.assertEqual(repository.save_business_metric_extraction_run(run), 73)
-
-    def test_estimated_savings_are_not_exposed_as_exact_metrics(self):
-        self.assertRegex(BUSINESS_VALUE_QUALIFIER_SQL, r"estimated\?|ước tính")
-        self.assertIn("THEN 'approximately'", BUSINESS_VALUE_QUALIFIER_SQL)
-        self.assertIn("[[:space:]])over[[:space:]]", BUSINESS_VALUE_QUALIFIER_SQL)
-        self.assertNotIn("|over|", BUSINESS_VALUE_QUALIFIER_SQL)
-
     def test_uploaded_source_lookup_requires_ready_upload_in_company_scope(self):
         repository = DocumentRepository.__new__(DocumentRepository)
         repository.conn = MagicMock()
@@ -181,7 +245,7 @@ class DocumentDashboardTest(unittest.TestCase):
             "title": "Annual report", "format": "PDF", "storage_path": "UPLOAD-1/report.pdf",
         }
 
-        result = repository.uploaded_source("UPLOAD-1", "Vinamilk", "admin", "reviewer")
+        result = repository.uploaded_source("UPLOAD-1", "Example Retailer", "admin", "reviewer")
 
         self.assertEqual(result["storage_path"], "UPLOAD-1/report.pdf")
         query, params = cursor.execute.call_args.args
@@ -190,7 +254,26 @@ class DocumentDashboardTest(unittest.TestCase):
         self.assertIn("processing_status = 'ready'", normalized)
         self.assertIn("storage_path is not null", normalized)
         self.assertIn("allowed_roles && array[%s]::text[]", normalized)
-        self.assertEqual(params, ("UPLOAD-1", "Vinamilk", "admin", "admin", "admin", "reviewer"))
+        self.assertEqual(params, ("UPLOAD-1", "Example Retailer", "admin", "admin", "admin", "reviewer"))
+
+    def test_synthetic_policy_source_lookup_enforces_active_status_and_document_roles(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        cursor.fetchone.return_value = {"title": "Inventory policy", "format": "PDF"}
+
+        result = repository.accessible_synthetic_policy_source(
+            "CD-POL-INV-001", "Commerce Demo", "finance_analyst",
+        )
+
+        self.assertEqual(result["format"], "PDF")
+        query, params = cursor.execute.call_args.args
+        normalized = " ".join(query.lower().split())
+        self.assertIn("source_type = 'synthetic_demo_policy'", normalized)
+        self.assertIn("processing_status = 'ready'", normalized)
+        self.assertIn("knowledge_base_active is true", normalized)
+        self.assertIn("allowed_roles && array[%s]::text[]", normalized)
+        self.assertEqual(params, ("CD-POL-INV-001", "Commerce Demo", "finance_analyst", "finance_analyst"))
 
     def test_manifest_upsert_persists_processing_status(self):
         repository = DocumentRepository.__new__(DocumentRepository)
@@ -203,63 +286,10 @@ class DocumentDashboardTest(unittest.TestCase):
         query = " ".join(cursor.execute.call_args.args[0].lower().split())
         self.assertIn("allowed_roles, storage_path, processing_status, knowledge_base_active", query)
         self.assertIn("processing_status = excluded.processing_status", query)
+        self.assertNotIn("allowed_roles = excluded.allowed_roles", query)
         self.assertNotIn("knowledge_base_active = excluded.knowledge_base_active", query)
         self.assertEqual(cursor.execute.call_args.args[1], {**document, "storage_path": None})
         repository.conn.commit.assert_called_once()
-
-    def test_public_metric_source_archive_is_guarded_and_hashes_existing_chunks(self):
-        repository = DocumentRepository.__new__(DocumentRepository)
-        repository.conn = MagicMock()
-        cursor = repository.conn.cursor.return_value.__enter__.return_value
-        cursor.fetchone.return_value = {"document_id": "VNM-SR-2023-EN"}
-        cursor.rowcount = 270
-
-        updated = repository.archive_public_metric_source(
-            "VNM-SR-2023-EN", "Vinamilk", "VNM-SR-2023-EN/report.pdf", "sha256",
-        )
-
-        statements = [" ".join(call.args[0].lower().split()) for call in cursor.execute.call_args_list]
-        self.assertEqual(updated, 270)
-        self.assertIn("source_type = 'public_enterprise_document'", statements[0])
-        self.assertIn("processing_status = 'ready'", statements[0])
-        self.assertIn("e.status = 'verified'", statements[0])
-        self.assertIn("jsonb_build_object('source_sha256', %s::text)", statements[1])
-        self.assertEqual(cursor.execute.call_args_list[1].args[1], ("sha256", "VNM-SR-2023-EN"))
-
-    def test_parser_candidate_enriches_one_matching_pending_research_record(self):
-        repository = DocumentRepository.__new__(DocumentRepository)
-        repository.conn = MagicMock()
-        cursor = repository.conn.cursor.return_value.__enter__.return_value
-        cursor.fetchall.return_value = [{
-            "id": 42, "chunk_index": 31, "content": "Source quote: milk supplied 402,000 tonnes",
-        }]
-        cursor.fetchone.side_effect = [None, {"id": 18}]
-        candidate = {
-            "company": "Vinamilk", "domain": "milk_supply", "metric_name": "total_raw_milk_supply",
-            "metric_label": "Total raw milk supply", "fiscal_year": 2024, "metric_value": 402000,
-            "unit": "tonnes", "scope": "Annual reported supply", "source_document_id": "VNM-AR-2024-VI",
-            "page_number": 31, "source_quote": "milk supplied 402,000 tonnes", "source_url": "https://example.test/report.pdf",
-            "allowed_roles": ["admin"], "extraction_method": "llm_parser", "extractor_version": "v4",
-            "extraction_config": {"pdf_page_number": 31}, "source_content_hash": "page-hash",
-        }
-
-        saved = repository.save_business_metric_candidates([candidate])
-
-        self.assertEqual(saved, 1)
-        self.assertEqual(cursor.execute.call_count, 3)
-        refresh_query = " ".join(cursor.execute.call_args_list[1].args[0].lower().split())
-        self.assertIn("candidate.entered_by = 'source_research'", refresh_query)
-        self.assertIn("candidate.source_chunk_id is null", refresh_query)
-        self.assertIn("candidate.status = 'needs_review'", refresh_query)
-        query, params = cursor.execute.call_args_list[2].args
-        normalized = " ".join(query.lower().split())
-        self.assertIn("having count(*) = 1", normalized)
-        self.assertIn("candidate.status = 'needs_review'", normalized)
-        self.assertIn("candidate.entered_by = 'source_research'", normalized)
-        self.assertIn("candidate.metric_value = %s", normalized)
-        self.assertIn("not exists", normalized)
-        self.assertEqual(params[:3], (31, "milk supplied 402,000 tonnes", "https://example.test/report.pdf"))
-        self.assertEqual(params[-5:], (2024, "VNM-AR-2024-VI", 402000, "tonnes", 31))
 
     def test_dashboard_aggregates_database_rows_without_company_constants(self):
         repository = DocumentRepository.__new__(DocumentRepository)
@@ -275,8 +305,6 @@ class DocumentDashboardTest(unittest.TestCase):
 
         self.assertEqual(result["document_count"], 2)
         self.assertEqual(result["chunk_count"], 5)
-        self.assertEqual(result["financial"], [])
-        self.assertEqual(result["candidates"], [])
         for index in range(3):
             query = " ".join(cursor.execute.call_args_list[index].args[0].lower().split())
             self.assertIn("coalesce(d.processing_status, 'ready') = 'ready'", query)
@@ -285,7 +313,7 @@ class DocumentDashboardTest(unittest.TestCase):
         processing_query = " ".join(cursor.execute.call_args_list[3].args[0].lower().split())
         self.assertIn("'synthetic_demo_policy'", processing_query)
         first_query, first_params = cursor.execute.call_args_list[0].args
-        self.assertNotIn("Vinamilk", first_query)
+        self.assertNotIn("Example Retailer", first_query)
         self.assertIn("reference.metadata->'knowledge_domains'", first_query)
         self.assertIn("source_publisher", first_query)
         self.assertEqual(first_params, (["employee"], "employee", "employee", "uploader"))
@@ -294,80 +322,33 @@ class DocumentDashboardTest(unittest.TestCase):
         self.assertIn("group by d.company, d.domain, d.fiscal_year", domain_query)
         self.assertEqual(cursor.execute.call_count, 4)
 
-    def test_dashboard_company_filter_scopes_all_queries_including_metrics_and_candidates(self):
-        repository = DocumentRepository.__new__(DocumentRepository)
-        repository.conn = MagicMock()
-        cursor = repository.conn.cursor.return_value.__enter__.return_value
-        cursor.fetchall.side_effect = [[], [], [], [], [], [], [], []]
-
-        repository.corpus_dashboard(
-            "admin", "admin-user", include_analytics=True, company="Vinamilk Ltd."
-        )
-
-        self.assertEqual(cursor.execute.call_count, 8)
-        for query, parameters in (call.args for call in cursor.execute.call_args_list):
-            query = query.lower()
-            self.assertTrue(any(scope in query for scope in (
-                "d.company = %s::text", "m.company = %s::text",
-                "coalesce(candidate.company, d.company) = %s::text",
-                "(%s::text is null or company = %s::text)",
-            )))
-            self.assertEqual(parameters[-1], "Vinamilk Ltd.")
-
-    def test_dashboard_agent_passes_trusted_company_scope(self):
+    def test_dashboard_agent_requires_a_commerce_domain(self):
         repository = Mock()
-        repository.corpus_dashboard.return_value = {"documents": []}
         agent = DashboardAgent(repository)
 
         result = agent.run(AgentRequest(
             question="Show the dashboard",
             user_id="analyst",
-            metadata={"role": "finance_analyst", "company": "Vinamilk Ltd."},
+            metadata={"role": "finance_analyst"},
         ))
 
-        repository.corpus_dashboard.assert_called_once_with(
-            "finance_analyst", "analyst", include_analytics=True,
-            company="Vinamilk Ltd.",
-        )
-        self.assertEqual(result.data, {"documents": []})
+        repository.corpus_dashboard.assert_not_called()
+        self.assertTrue(result.metadata["needs_domain_clarification"])
+        self.assertIn("Inventory allocation", result.answer)
 
-    def test_dashboard_agent_creates_only_source_backed_financial_time_series(self):
+    def test_dashboard_does_not_fall_back_to_legacy_financial_metrics(self):
         repository = Mock()
-        analytics = Mock()
-        analytics.run.return_value = AgentResult(
-            answer="Revenue by year [M1] [M2]", agent="analytics",
-            evidence=[Evidence(
-                citation_id="M1", source_type="verified_metric", source="FY2023 revenue",
-                metadata={"document_id": "AR23"},
-            ), Evidence(
-                citation_id="M2", source_type="verified_metric", source="FY2024 revenue",
-                metadata={"document_id": "AR24"},
-            )],
-            data={"financial": [
-                {"metric_name": "net_revenue", "metric_label": "Net revenue", "fiscal_year": 2023,
-                 "metric_value": "60322", "unit": "billion VND", "document_id": "AR23"},
-                {"metric_name": "net_revenue", "metric_label": "Net revenue", "fiscal_year": 2024,
-                 "metric_value": "61524", "unit": "billion VND", "document_id": "AR24"},
-            ]},
-        )
-        agent = DashboardAgent(repository, analytics)
+        agent = DashboardAgent(repository)
         request = AgentRequest(
             question="Show a chart of revenue by year", user_id="analyst",
-            metadata={"role": "finance_analyst", "company": "Vinamilk"},
+            metadata={"role": "finance_analyst"},
         )
 
         result = agent.run(request)
 
-        analytics.run.assert_called_once()
-        chart_request = analytics.run.call_args.args[0]
-        self.assertEqual(chart_request.metadata["role"], "finance_analyst")
-        self.assertEqual(chart_request.metadata["company"], "Vinamilk")
-        self.assertTrue(chart_request.metadata["dashboard_visualization"])
         repository.corpus_dashboard.assert_not_called()
         self.assertEqual(result.agent, "dashboard")
-        self.assertEqual(result.evidence[0].citation_id, "M1")
-        self.assertEqual(result.data["visualization"]["categories"], [2023, 2024])
-        self.assertEqual(result.data["visualization"]["series"][0]["values"], [60322.0, 61524.0])
+        self.assertTrue(result.metadata["needs_domain_clarification"])
 
     def test_dashboard_agent_creates_cited_commerce_fill_rate_chart(self):
         repository = Mock()
@@ -445,62 +426,13 @@ class DocumentDashboardTest(unittest.TestCase):
         self.assertIn("Available years for Inventory allocation: 2020, 2021, 2022", result.answer)
         self.assertEqual(len(result.evidence[0].metadata["commerce_observations"]), 3)
 
-    def test_financial_chart_rejects_ambiguous_or_incomparable_rows(self):
-        base = {"metric_name": "net_revenue", "metric_label": "Net revenue", "unit": "billion VND"}
-        rows = [
-            {**base, "fiscal_year": 2023, "metric_value": 10},
-            {**base, "fiscal_year": 2024, "metric_value": 12},
-        ]
-        self.assertIsNotNone(_financial_time_series(rows, "Revenue trend"))
-        self.assertIsNone(_financial_time_series(rows + [rows[0]], "Revenue trend"))
-        self.assertIsNone(_financial_time_series([
-            rows[0], {**rows[1], "unit": "million VND"},
-        ], "Revenue trend"))
-        self.assertIsNone(_financial_time_series([
-            rows[0], {**rows[1], "metric_value": "1e9999"},
-        ], "Revenue trend"))
-
     def test_dashboard_agent_requires_authenticated_role_before_querying(self):
-        analytics = Mock()
         repository = Mock()
         with self.assertRaisesRegex(ValueError, "authenticated role"):
-            DashboardAgent(repository, analytics).run(AgentRequest(
+            DashboardAgent(repository).run(AgentRequest(
                 question="Show a chart of revenue by year",
             ))
-        analytics.run.assert_not_called()
         repository.corpus_dashboard.assert_not_called()
-
-    def test_unreviewed_metric_candidates_are_only_returned_to_admins(self):
-        candidate = {"id": 7, "status": "needs_review"}
-        for role, expected_queries, candidates in (
-            ("finance_analyst", 6, []),
-            ("admin", 8, [candidate]),
-        ):
-            with self.subTest(role=role):
-                repository = DocumentRepository.__new__(DocumentRepository)
-                repository.conn = MagicMock()
-                cursor = repository.conn.cursor.return_value.__enter__.return_value
-                cursor.fetchall.side_effect = [[], [], [], [], [], [], [], [candidate]][:expected_queries]
-
-                result = repository.corpus_dashboard(role, "reviewer", include_analytics=True)
-
-                self.assertEqual(result["candidates"], candidates)
-                self.assertEqual(cursor.execute.call_count, expected_queries)
-                if role == "admin":
-                    candidate_query = cursor.execute.call_args_list[-1].args[0]
-                    self.assertIn("FROM extracted_metric_candidates", candidate_query)
-                    self.assertIn("text_extraction_method", candidate_query)
-                    self.assertIn("candidate.extraction_method", candidate_query)
-                    self.assertIn("candidate.selection_evidence", candidate_query)
-                    self.assertIn("c.document_id", candidate_query)
-                    self.assertIn("d.processing_status = 'ready'", candidate_query)
-                    normalized = " ".join(candidate_query.lower().split())
-                    self.assertIn("row_number() over", normalized)
-                    self.assertIn("partition by coalesce(candidate.document_id, 'manual-' || candidate.id::text), candidate.metric_name", normalized)
-                    self.assertIn("candidate.created_at desc, candidate.id desc", normalized)
-                    self.assertIn("where c.review_rank = 1", normalized)
-                    self.assertIn("not exists", normalized)
-                    self.assertIn("candidate.status = 'needs_review'", normalized)
 
     def test_candidate_review_requires_fully_processed_document(self):
         repository = DocumentRepository.__new__(DocumentRepository)
@@ -509,7 +441,7 @@ class DocumentDashboardTest(unittest.TestCase):
         cursor.fetchone.return_value = None
 
         reviewed = repository.review_metric_candidate(
-            7, "verified", 42.0, "billion VND", "admin", "Vinamilk Ltd."
+            7, "verified", 42.0, "billion VND", "admin", "Example Retailer Ltd."
         )
 
         query = " ".join(cursor.execute.call_args.args[0].lower().split())
@@ -518,7 +450,7 @@ class DocumentDashboardTest(unittest.TestCase):
         self.assertIn("d.processing_status='ready'", query)
         self.assertIn("candidate.status='needs_review'", query)
         self.assertIn("d.company=%s::text", query)
-        self.assertEqual(cursor.execute.call_args.args[1][-2:], ("Vinamilk Ltd.", "Vinamilk Ltd."))
+        self.assertEqual(cursor.execute.call_args.args[1][-2:], ("Example Retailer Ltd.", "Example Retailer Ltd."))
 
     def test_candidate_upsert_refreshes_pending_evidence_for_admin_queue(self):
         repository = DocumentRepository.__new__(DocumentRepository)
@@ -534,7 +466,7 @@ class DocumentDashboardTest(unittest.TestCase):
             "unit": "billion VND",
         }]
 
-        repository.save_metric_candidates("VNM-AR-2023-EN", rows)
+        repository.save_metric_candidates("EXAMPLE-AR-2023-EN", rows)
 
         cursor = repository.conn.cursor.return_value.__enter__.return_value
         upsert = " ".join(cursor.executemany.call_args.args[0].lower().split())
@@ -553,7 +485,7 @@ class DocumentDashboardTest(unittest.TestCase):
         self.assertIn("set status = 'superseded'", supersede)
         self.assertIn("old.status = 'needs_review'", supersede)
         self.assertIn("from unnest(%s::text[], %s::text[])", supersede)
-        self.assertEqual(params, ("VNM-AR-2023-EN", ["net_revenue"], ["hash"]))
+        self.assertEqual(params, ("EXAMPLE-AR-2023-EN", ["net_revenue"], ["hash"]))
 
     def test_financial_candidate_links_to_unique_source_chunk_and_hash(self):
         import hashlib
@@ -573,7 +505,7 @@ class DocumentDashboardTest(unittest.TestCase):
             "source_quote_hash": "quote-hash", "unit": "billion VND",
         }
 
-        repository.save_metric_candidates("VNM-AR-2025-EN", [row])
+        repository.save_metric_candidates("EXAMPLE-AR-2025-EN", [row])
 
         values = cursor.executemany.call_args.args[1][0]
         self.assertEqual(values[13:15], (991, 7))
@@ -582,11 +514,11 @@ class DocumentDashboardTest(unittest.TestCase):
     def test_financial_metric_link_prefers_structured_table_chunk_on_text_tie(self):
         import hashlib
 
-        shared_content = "Gross profit 15,166,269 14,503,136"
+        shared_content = "Gross profit 8.166.269 7.503.136"
         row = {
             "metric_name": "gross_profit", "metric_label": "Gross profit",
-            "candidate_values": ["15.166.269"], "page_number": 92,
-            "source_quote": "label: Lợi nhuận gộp | value_1: 15.166.269",
+            "candidate_values": ["8.166.269"], "page_number": 92,
+            "source_quote": "label: Lợi nhuận gộp | value_1: 8.166.269",
         }
         chunks = [
             {"id": 11, "chunk_index": 4, "content": shared_content,
@@ -603,12 +535,12 @@ class DocumentDashboardTest(unittest.TestCase):
     def test_financial_metric_link_does_not_fallback_to_a_different_page(self):
         row = {
             "metric_name": "gross_profit", "metric_label": "Gross profit",
-            "candidate_values": ["15,166,269"], "page_number": 92,
-            "source_quote": "Gross profit 15,166,269",
+            "candidate_values": ["8,166,269"], "page_number": 92,
+            "source_quote": "Gross profit 8,166,269",
         }
 
         self.assertEqual(link_financial_metric_source_chunk(row, [{
-            "id": 1, "chunk_index": 0, "content": "Gross profit 15,166,269",
+            "id": 1, "chunk_index": 0, "content": "Gross profit 8,166,269",
             "page_number": "91", "metadata": {"layout_type": "table"},
         }]), (None, None, None))
 

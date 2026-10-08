@@ -15,26 +15,31 @@
         {
           "id": "INV-01",
           "requires_operating_reference": true,
+          "question_specific_sql_expected": false,
           "question": "Trong snapshot tồn kho mới nhất, nhóm hàng nào có nhiều sản phẩm bị gắn cờ stockout nhất? Có nên chuyển hàng từ nhóm overstock sang không?",
           "gold_observations": [
             {"snapshot_date": "2022-12-31", "category": "Streetwear", "products": 196, "stockout_products": 134, "overstock_products": 162},
             {"snapshot_date": "2022-12-31", "category": "Outdoor", "products": 144, "stockout_products": 95, "overstock_products": 113}
           ],
           "required_numeric_facts": [134, 95, 232],
-          "expected_behavior": "Identify Streetwear as the largest category-level stockout signal; do not recommend a transfer. Explain that category counts do not match SKU surplus to shortage and 232 latest-snapshot rows carry both flags.",
+          "expected_behavior": "Use the latest-snapshot category and overlap aggregates; a second question-generated SQL query is unnecessary for this fixed reporting slice. Identify Streetwear as the largest category-level stockout signal; do not recommend a transfer from category counts. Explain that category counts do not match SKU surplus to shortage and 232 latest-snapshot rows carry both flags.",
+          "required_answer_terms": ["Chưa điều chuyển tồn kho", "SKU"],
+          "forbidden_answer_patterns": ["(?i)\\b(?:should|recommend|suggest|nên|hãy)\\s+(?:transfer|reallocat\\w*|điều chuyển|chuyển hàng)\\b"],
           "reference_need": "SKU stock-state definitions, stock validation and replenishment review workflow."
         },
         {
           "id": "INV-02",
           "requires_operating_reference": true,
+          "question_specific_sql_expected": false,
           "question": "Trong từng năm 2020–2022, tổng số snapshot tồn kho, số snapshot có cờ stockout và fill rate trung bình thay đổi thế nào; có thể đặt service target mới từ các quan sát này không?",
           "gold_observations": [
             {"year": 2020, "snapshots": 5686, "stockout_snapshots": 3795, "avg_fill_rate": 0.9656},
             {"year": 2021, "snapshots": 5609, "stockout_snapshots": 3788, "avg_fill_rate": 0.9619},
             {"year": 2022, "snapshots": 5232, "stockout_snapshots": 3490, "avg_fill_rate": 0.9635}
           ],
-          "required_numeric_facts": [2020, 5686, 3795, "0.9656", 2021, 5609, 3788, "0.9619", 2022, 5232, 3490, "0.9635"],
-          "expected_behavior": "Describe the endpoint values and non-monotonic trend. Do not treat historical fill rate as an approved target or conclude a sustained operational improvement from the flag counts alone.",
+          "required_numeric_facts": [2020, 5686, 3795, "96.56", 2021, 5609, 3788, "96.19", 2022, 5232, 3490, "96.35"],
+          "expected_behavior": "Describe the endpoint values and non-monotonic trend. Explain that stockout-flagged and total snapshot counts both change, so fewer flagged snapshots alone do not establish sustained operational improvement. Do not treat historical fill rate as an approved target.",
+          "required_answer_terms": ["không đơn điệu"],
           "reference_need": "How to interpret stock availability and replenishment indicators; any numeric service target must come from an approved internal policy."
         },
         {
@@ -63,6 +68,7 @@
         {
           "id": "PROMO-01",
           "requires_operating_reference": true,
+          "question_specific_sql_expected": false,
           "question": "Trong 2020–2022, so sánh theo từng năm nhóm đơn delivered có gắn khuyến mãi và không gắn tag về số đơn đã giao, số lượng sản phẩm, doanh thu thuần và tổng giảm giá. Các quan sát này có chứng minh uplift để tăng ngân sách không?",
           "gold_observations": [
             {"year": 2020, "tagged": true, "delivered_orders": 10305, "units": 49756, "net_sales": 235597280.59, "discounts": 39488236.40},
@@ -78,6 +84,7 @@
         },
         {
           "id": "PROMO-02",
+          "question_specific_sql_expected": false,
           "requires_operating_reference": false,
           "question": "Trong các campaign 2022, campaign nào có net sales gắn tag cao nhất trong thời gian chạy?",
           "gold_observations": [
@@ -87,11 +94,13 @@
           ],
           "required_numeric_facts": ["90345105.91"],
           "expected_behavior": "Rank only the observed tagged outcomes in each declared campaign window. Avoid causal wording such as generated, lifted, or drove.",
+          "forbidden_answer_patterns": ["(?i)(?:khuyến nghị|recommended next move)\\s*:"],
           "reference_need": "Campaign report definitions and attribution scope; platform-specific definitions remain conditional."
         },
         {
           "id": "PROMO-03",
           "requires_operating_reference": true,
+          "question_specific_sql_expected": false,
           "question": "Kênh khuyến mãi nào có ROI cao nhất để dồn ngân sách?",
           "gold_observations": [
             {"available": ["promo_channel", "tagged units", "net item sales", "discount amounts", "product catalog COGS for a merchandise gross-profit proxy"]},
@@ -99,6 +108,8 @@
           ],
           "required_numeric_facts": [],
           "expected_behavior": "State that ROI and incremental channel effectiveness cannot be calculated. The agent may calculate and label a merchandise gross-profit proxy from line-item sales less catalog COGS, but must disclose the COGS assumption and must not call it contribution margin. Request campaign spend, attributable traffic and a holdout or defensible counterfactual before ranking channels by incremental profitability.",
+          "required_answer_terms": ["không thể tính ROI", "chi phí chiến dịch", "holdout"],
+          "forbidden_answer_patterns": ["(?im)\\|\\s*roi\\s*\\|", "(?i)\\bROI cao nhất\\b", "(?i)\\bROI\\s*[:=]\\s*[0-9]"],
           "reference_need": "Business-published method for comparing campaign/channel performance with attributed outcomes and cost."
         }
       ]
@@ -114,6 +125,7 @@
         {
           "id": "LOG-01",
           "requires_operating_reference": true,
+          "question_specific_sql_expected": false,
           "question": "Trong 2022, vùng nào có average transit time cao nhất và có nên thiết kế lại mạng lưới giao hàng không?",
           "gold_observations": [
             {"year": 2022, "region": "Central", "deliveries": 9593, "avg_transit_days": 4.51, "median_transit_days": 5.0, "avg_shipping_fee": 4.10},
@@ -122,11 +134,14 @@
           ],
           "required_numeric_facts": ["4.51", "4.52"],
           "expected_behavior": "Identify East's slightly higher annual average from the supplied data but avoid unsupported precision or a route-level diagnosis. Do not recommend network redesign; require carrier, origin/destination, promised SLA and route-level capacity/cost data.",
+          "required_answer_terms": ["Chưa thiết kế lại mạng lưới", "điểm đi/đến"],
+          "forbidden_answer_patterns": ["(?i)\\b(?:should|recommend(?:ed)?|nên|hãy)\\s+(?:to\\s+)?(?:redesign|thiết kế lại)\\b"],
           "reference_need": "External order-routing and delivery-performance workflow examples; clearly state the missing local route and warehouse inputs."
         },
         {
           "id": "LOG-02",
           "requires_operating_reference": false,
+          "question_specific_sql_expected": false,
           "question": "Trong 2020–2022, shipping fee và transit time theo vùng thay đổi ra sao?",
           "gold_observations": [
             {"region": "Central", "2020_avg_days": 4.51, "2020_avg_fee": 4.17, "2021_avg_days": 4.52, "2021_avg_fee": 4.13, "2022_avg_days": 4.51, "2022_avg_fee": 4.10},

@@ -1,59 +1,47 @@
-# Commerce decision-support status
+# Commerce project status
 
-This page is the current implementation and evaluation index for the Commerce demo. The transaction and operations data are synthetic; public retailer/platform documents provide attributed examples, not policies for the dataset owner.
+This page is the short status index. The detailed evidence and limitations live in the linked workstream guides.
 
-## Current status (2026-10-05)
+## Scope
 
-| Area | Verified state | Boundary |
+The app demonstrates the proposal against the Commerce schema: transaction data is synthetic Kaggle competition data, not observations from a real retailer. Public manuals are attributed examples and platform-specific rules; three generated, image-only PDFs are explicitly fictional Commerce Demo policies. The app keeps those evidence types separate.
+
+## Current state
+
+| Proposal area | Implemented and checked | Still open |
 | --- | --- | --- |
-| Commerce dashboard | `/api/commerce/dashboard?domain=...` returns selected-domain aggregates plus 11 annual sales-context rows; campaign-window details load only when expanded. Current authenticated API reads return inventory (11 years), promotions (21 rows), campaigns (50 rows on expand), and logistics (33 region-year rows). Admin browser check rendered all three dashboard domains; inventory, promotion and logistics views populated without console errors. | Visual browser review is one desktop viewport; no fresh mobile viewport check. Values are synthetic. Promotion comparisons are observational; the gross-profit proxy is not contribution margin or ROI. Shipping data lacks route, carrier, warehouse and promised SLA. |
-| Decision support | `ReportAgent` combines read-only SQL facts `[C#]` with retrieved domain references `[S#]`; policy-only questions use domain-scoped `KnowledgeAgent` retrieval. Method questions applied to current flags now route to ReportAgent even when the intent model says document-only. Admin UI smoke for “Should we repeat a promotion?” returned cited SQL/schema/policy evidence and a bounded safety fallback. | The smoke disclosed `query_rejected`: model-generated SQL failed safety validation, so the answer used bounded aggregates and warned that exact filters/grouping may differ. The policy OCR excerpt was visibly noisy; answer did not quote it and told the user to inspect the source. This is not a quality pass for all domains. |
-| Benchmark cases | [`commerce_decision_benchmark.json`](../data/evaluation/commerce_decision_benchmark.json) contains nine questions: three each for inventory allocation, promotion planning and nationwide logistics. The latest full replay r6 remains at 3/9 mechanical checks; six cases hit provider limits, and two schema-gap questions abstained correctly ([full replay](../artifacts/evaluation/commerce-decision-support-live-20261005-r6.json)). A focused LOG-02 replay gives cited FY2020-to-FY2022 direction by region; citation, endpoint-number and SQL-row checks pass, while question-specific SQL remains unverified because of provider rate limits ([LOG-02](../artifacts/evaluation/commerce-log02-live-20261005-r1.json)). A focused LOG-01 replay generated FY2022-only SQL and passed mechanical checks; answer drafting used deterministic fallback ([LOG-01](../artifacts/evaluation/commerce-log01-live-20261005-r5.json]). The benchmark contract matches LOG-02's endpoint-only expected behavior. |
-| Active knowledge base | The manifest registers 13 active and 17 archived references: 3 management cookbooks, 6 attributed company-practice examples, 1 platform operating rule, and 3 synthetic Commerce Demo policies. The Admin API lists 28 registered documents, 13 active, and 410 chunks linked to those documents. | A direct DB read also found 202 chunks under four legacy `APL-*` IDs without parent document rows. Retrieval joins through `documents`, so those chunks are excluded; cleanup remains open. The three internal-policy PDFs are synthetic scan-only examples, not real retailer policy. |
-| OCR/upload | All nine current image-only policy pages score micro-CER 0.005229 / WER 0.019515 through the production upload processor against authored HTML references; all three policy files have been re-indexed with OCR-derived section metadata. Admin UI opens the original three-page image-only promotion policy PDF and shows its Tesseract-indexed passage; OCR Lab exposes the separate degraded two-page fixture and per-page output. The degraded Tester upload preserves table title, semantic headers, 3/3 rows and 9/9 numeric cells; persisted output and PNG previews return HTTP 200. | All PDFs are generated synthetic scans, references are not independently human-reviewed, and physical scans remain untested. The UI smoke exposed OCR recognition errors in the promotion policy passage; verify its source before using those lines as rules. See the [OCR comparison and limitations](../data/evaluation/ocr/README.md#ocr-engine-comparison-active-commerce-policy-pdfs), [paired report](../artifacts/evaluation/ocr/comparisons/commerce-active-policy-scan-20261005/comparison.json), [policy OCR run](../artifacts/evaluation/ocr/pipeline/commerce-active-policy-scan-ocr-20261005.json), and [live OCR upload](../artifacts/evaluation/ocr/pipeline/commerce-degraded-scan-upload-live-20261005.json). |
+| Knowledge base and RBAC | Manifest-backed Commerce references, domain/source metadata, role-filtered retrieval, Admin file management with domain/state filters, and access editing. | Independently reviewed evidence for more physical scans; sources remain examples, not internal policy for the mock business. |
+| PDF/OCR and upload | Admin upload and isolated Tester OCR Lab both persist inspectable source pages and parser output. Three synthetic policies are fully image-only; the 9-page run scored 0.3297% CER / 1.4558% WER against authored references. A saved 48-page Sam's Club run has 80 chunks and 2 tables; its page preview API returns 200. | Synthetic OCR scores are not real-scan accuracy. Public screenshot pages remain noisy; the Sam's inventory grid is not reliably reconstructed as a table. |
+| Retrieval and Q&A | Dense, BM25, Hybrid and Parent methods exist; retrieval applies domain and role filters. Answers cite document/page sources. | The retrieval label set is small. Broader embedding, reranker and model comparisons are incomplete. |
+| Decision agents | ReportAgent joins bounded read-only SQL observations with domain-filtered knowledge. The nine-case set has three cases per domain. A separate AI review found the deterministic answers aligned with the expected evidence and action limits; read-only queries against Commerce base tables reconfirmed the reviewed inventory, campaign and logistics values. | The replay used deterministic fallbacks because providers were rate-limited/unavailable. Provider-backed answer quality and independent human review remain open. The workflow is sequential, not an iterative multi-agent planner. |
+| Dashboard and admin UI | Three SQL-backed dashboard views: inventory allocation, promotion planning and nationwide logistics. Admin can manage knowledge files and roles; Tester can inspect OCR pages, chunks and tables. | Commerce data lacks some decision-critical dimensions listed below. |
+| Deployment | Local FastAPI demo is runnable. | Hosted deployment/CI is outside the current agreed scope. |
 
-## Proposal coverage for the Commerce demo
+## Next work
 
-The proposal describes the full capstone platform. The Commerce demo is its proof-of-concept slice: operational facts come from the synthetic SQL schema; retrieved documents contribute attributed methods, not facts about a real retailer or policies for the mock dataset.
+1. Improve and review OCR on a representative scanned business PDF; retain the original, parser text/tables, page previews and source provenance in the OCR Lab.
+2. Review the nine decision answers against SQL rows, policy scope and decision limits; repeat with a model provider available and record semantic review separately from mechanical checks.
+3. Only then expand model benchmarks or tune thresholds. Do not treat the current exploratory screenshot labels as primary OCR ground truth.
 
-| Proposal requirement | What the Commerce demo provides | Status / remaining evidence |
-| --- | --- | --- |
-| Document management, parsing, OCR and metadata | Authenticated upload, PDF page rendering, text/table extraction, OCR fallback and saved parser output; common office/image formats have processor support. | PDF upload has an end-to-end smoke check. The synthetic image-only fixture has OCR ground truth; it is not representative scan-accuracy evidence. |
-| Knowledge database, retrieval and RBAC | Supabase/PostgreSQL corpus with role-scoped retrieval; active references are filtered before ranking. | Commerce source metadata distinguishes cookbooks, attributed practice examples and platform rules. Four legacy Apple chunk IDs have no parent document row and are not retrievable; cleanup remains open. Do not label external references as Commerce policy. |
-| QA, SQL analytics and business decision support | Selected domain bounds generated read-only SQL; ReportAgent combines SQL observations with retrieved operating methods and missing-data limits. Policy-only questions use domain-scoped KnowledgeAgent retrieval. Both paths use the same knowledge base with evidence-class/domain filters; hybrid retrieval falls back to ACL/domain-filtered BM25. Deterministic fallback now respects the router's decision-support metadata for unseen promotion questions. | The latest full replay r6 mechanically passed 3/9; six question-specific SQL requests hit Groq's token/day limit, and two absent-schema requests abstained. Hugging Face fallback returned 402 due depleted credits. Required numbers and applicable SQL groups appeared, but value-dimension pairing and recommendation reasoning were not semantically verified. Do not use r6 as a clean pass. See [r6](../artifacts/evaluation/commerce-decision-support-live-20261005-r6.json) and [Commerce status](commerce-decision-support.md). |
-| Dashboard and visualization | `/api/commerce/dashboard` reads SQL aggregates for inventory, promotion and nationwide logistics views. | The dashboard reflects synthetic source tables; promotion comparisons are non-causal and regional shipping summaries cannot justify network redesign. |
-| Admin UI scope | The Commerce demo exposes Knowledge Management, PDF/OCR processing, access control, monitoring, and collapsed per-answer token usage for SQL and answer generation. The legacy public-company KPI entry/replay UI is removed from workspace navigation; Commerce dashboard values come from SQL aggregates. | Token usage excludes embeddings and intent routing. Old metric extraction tables and endpoints remain in the migration/backend history for compatibility, but they are not an active Commerce workflow. |
-| Multi-agent application | Router, document QA, analytics, report and dashboard paths are present in the local FastAPI app. | Proposal-wide agent/model comparison is not complete; validate the full authenticated flow, not only unit tests. |
-| Proposal evaluation and benchmarking | Commerce has nine SQL-plus-RAG decision cases and a 12-case document-retrieval relevance set; Dense, BM25, Hybrid, and Parent retrieval have been compared on the same database snapshot. A narrow 4-engine OCR smoke comparison is also recorded for the synthetic policy PDFs. | OCR comparison needs human-reviewed references and real scan/table examples before model selection; embedding-model, LLM, and learned-reranker comparisons plus human answer-quality review remain incomplete for the Commerce corpus. Retrieval labels are document-level and too small for tuning. |
-| Deployment and operations tooling | Local FastAPI demo and role-aware UI. | Hosted deployment is outside the current Commerce work; proposal-listed Docker/Nginx/CI and centralized experiment/monitoring tools are not a completion gate for this slice. |
+## Decision limits
 
-Latest full-suite verification (2026-10-05): 740 tests passed (3 skipped), with JavaScript syntax, Python compilation, and `git diff --check` passing. The focused current agent/dashboard/API suite passed 236 tests, including a regression for unseen promotion questions routed as decision-support. The authenticated local UI shell and dashboard script returned HTTP 200; all three Commerce dashboard endpoints returned HTTP 200 with domain-specific rows and the 11-year sales context. The Admin API currently lists 28 ready Commerce documents (13 active) and 410 linked chunks; a direct DB audit found another 202 legacy Apple chunks without parent document rows. They are excluded from retrieval but need cleanup. A read-only Supabase audit found zero matching Vinamilk rows in indexed documents, metric tables, OCR runs, and Storage. The policy OCR report is checksum-bound to active PDFs, with 5/3/4 OCR-derived chunks read back for the three synthetic scan-only policies. Fresh full decision replay r6 remains 3/9 mechanical passes; six SQL requests exhausted Groq's token/day quota, and the Hugging Face fallback reported depleted monthly credits. This is not a complete dynamic-SQL or semantic answer pass. See [`commerce-decision-support.md`](commerce-decision-support.md) for remaining gaps.
+- Inventory aggregates do not identify SKU/location overlap, forecast, lead time, transfer cost or an approved service target.
+- Promotion tags are observational; there is no holdout or campaign spend. Catalog-COGS gross profit is a proxy, not contribution margin or ROI.
+- Logistics data has no carrier, route, warehouse origin, capacity or promised SLA.
+- Recommendations must distinguish SQL observations from sourced methods and state missing evidence; do not invent thresholds or attribute external rules to the synthetic business.
 
-## Data and recommendation limits
+## Run locally
 
-- Inventory flags are aggregate snapshots; they do not identify SKU overlap, location, demand forecast, lead time, transfer cost or an approved service target.
-- Promotion tags do not provide a holdout or campaign cost, so they cannot establish causal uplift or ROI. Catalog COGS permits a merchandise gross-profit proxy, but that is not contribution margin and depends on the catalog cost assumption.
-- Regional shipping summaries do not identify carrier, route, warehouse origin, capacity, service class or promised delivery target.
-- Recommendations must separate SQL observations from document-derived methods. They should name missing evidence instead of inventing thresholds or claiming an external guide is Commerce Demo policy.
+    uv sync
+    PYTHONPATH=src .venv/bin/uvicorn app.main:app --reload --env-file .env --host 127.0.0.1 --port 8000
 
-## Reproduce locally
+Open http://127.0.0.1:8000. Setup and credentials are in the [deployment guide](deployment-guide.md).
 
-```bash
-uv sync
-PYTHONPATH=src .venv/bin/uvicorn app.main:app --reload --env-file .env --host 127.0.0.1 --port 8000
-```
+## Workstream documentation
 
-Run the Commerce knowledge seed pipeline:
-
-```bash
-PYTHONPATH=src .venv/bin/python scripts/ingestion/ingest_commerce_knowledge.py --download-only
-PYTHONPATH=src .venv/bin/python scripts/ingestion/ingest_commerce_knowledge.py
-```
-
-Set `DOCUMENT_OCR_RENDER_SCALE` and `DOCUMENT_OCR_TABLE_RENDER_SCALE` to `1.5`, `2.5`, or `3.5` to control OCR fallback for scanned/image-heavy PDF pages. The defaults reflect current small-sample evidence, not universal best settings.
-
-## Technical guides
-
+- [Commerce sources, dashboard, decision cases and live evaluations](commerce-decision-support.md)
+- [Capstone implementation report and proposal coverage](capstone-project-report.md)
+- [User guide](user-guide.md)
 - [Document processing and OCR](technical/document-processing.md)
 - [Chunking](technical/chunking.md)
 - [Embeddings and tokenization](technical/embeddings-tokenization.md)
@@ -61,13 +49,5 @@ Set `DOCUMENT_OCR_RENDER_SCALE` and `DOCUMENT_OCR_TABLE_RENDER_SCALE` to `1.5`, 
 - [Agents and evaluation](technical/agents-and-evaluation.md)
 - [Database connections](technical/database-connections.md)
 - [Repository ownership](technical/repository-ownership.md)
-- [Commerce data, references, benchmark and live checks](commerce-decision-support.md)
-
-## Focused verification
-
-```bash
-PYTHONPATH=src .venv/bin/python -m unittest tests.test_document_processor tests.test_seed_ingestion tests.test_pdf_upload_processing tests.test_upload_processing_flow -q
-PYTHONPATH=src .venv/bin/python -m unittest tests.test_agents.AgentFlowTest.test_commerce_platform_rule_requires_platform_named_and_active_reference tests.test_agents.AgentFlowTest.test_commerce_inventory_ranking_prefers_operating_steps_over_table_of_contents -q
-```
-
-The focused OCR/upload commands above provide a smaller regression loop; use the full-suite result in the verification note when reporting current status.
+- [OCR datasets and evaluation](../data/evaluation/ocr/README.md)
+- [Reproducible scripts](../tools/README.md)

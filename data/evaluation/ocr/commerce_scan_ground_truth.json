@@ -33,6 +33,7 @@
       "layout_type": "table",
       "table_columns": ["Region", "Delivered sample orders", "Median transit days", "Avg fee units"],
       "clip_rect": [0, 0, 595, 842],
+      "text_reference": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY\nSynthetic regional logistics sample\nEvery record on this page is invented for OCR testing. Values are not from the Commerce database.\nOCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX",
       "reference_text": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY\nSynthetic regional logistics sample\nRegion\tDelivered sample orders\tMedian transit days\tAvg fee units\nEast\t120\t3.0\t42.50\nCentral\t95\t4.0\t48.75\nWest\t80\t5.0\t55.25\nEvery record on this page is invented for OCR testing. Values are not from the Commerce database.\nOCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX",
       "table_rows": [
         {"label": "East", "values": ["120", "3.0", "42.50"]},

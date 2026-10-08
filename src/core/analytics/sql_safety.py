@@ -3,13 +3,12 @@
 from sqlglot import exp, parse
 from sqlglot.errors import ParseError
 
-SOURCE_CTES = {"authorized_financial_metrics", "authorized_business_metrics", "authorized_documents"}
+SOURCE_CTES = {"authorized_financial_metrics", "authorized_documents"}
 ALLOWED_COLUMNS = {
     "company", "domain", "title", "document_type", "format", "fiscal_year",
     "processing_status", "metric_name", "metric_label", "metric_value", "unit",
     "value_qualifier", "reporting_period",
-    "document_id", "metric_id", "business_metric_id", "page_number", "source_url", "source_quote",
-    "metric_domain", "scope",
+    "document_id", "metric_id", "page_number", "source_url", "source_quote",
 }
 ALLOWED_AGGREGATES = (exp.Count, exp.Sum, exp.Avg, exp.Min, exp.Max, exp.ArrayAgg)
 ALLOWED_EXPRESSION_NODES = (exp.Case, exp.If)
@@ -35,10 +34,8 @@ def validate_analytics_sql(sql: str) -> str:
     tables = list(query.find_all(exp.Table))
     if len(tables) != 1 or tables[0].name not in SOURCE_CTES or tables[0].db or tables[0].catalog:
         raise UnsafeAnalyticsQuery("Query must read one authorized analytics source")
-    metric_source = tables[0].name in {"authorized_financial_metrics", "authorized_business_metrics"}
-    evidence_alias = ("evidence_business_metric_ids" if tables[0].name == "authorized_business_metrics"
-                      else "evidence_metric_ids" if tables[0].name == "authorized_financial_metrics"
-                      else "evidence_document_ids")
+    metric_source = tables[0].name == "authorized_financial_metrics"
+    evidence_alias = "evidence_metric_ids" if metric_source else "evidence_document_ids"
     if metric_source:
         projected_metrics = {
             selection.name.casefold()
@@ -73,7 +70,6 @@ def validate_analytics_sql(sql: str) -> str:
     evidence_columns = {column.name.casefold() for column in evidence_expression.find_all(exp.Column)}
     expected_evidence_column = {
         "evidence_metric_ids": "metric_id",
-        "evidence_business_metric_ids": "business_metric_id",
         "evidence_document_ids": "document_id",
     }[evidence_alias]
     if not isinstance(evidence_expression, exp.ArrayAgg) or evidence_columns != {expected_evidence_column}:

@@ -229,7 +229,7 @@
       "ingestion_status": "indexed",
       "notes": "Official Shopee Uni Vietnam PDF with image-heavy Seller Center screenshots. Historical 2019 process reference for SKU-level stock visibility, sales-cycle review, low-stock alerts, and SKU-location records. Do not present as current policy or apply to Commerce Demo unless Shopee is explicitly in scope.",
       "content_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
-      "last_fetched_on": "2026-10-03",
+      "last_fetched_on": "2026-10-06",
       "ingested_format": "PDF"
     },
     {
@@ -374,6 +374,26 @@
       "ingested_format": "HTML"
     },
     {
+      "source_id": "SHOPIFY-HELP-DEVELOPING-MARKETING-PLAN",
+      "retrieval_status": "active",
+      "publisher": "Shopify",
+      "title": "What Is a Marketing Plan? + How to Write One",
+      "url": "https://www.shopify.com/blog/marketing-plan",
+      "published_or_updated": "Current page; accessed 2026-10-05",
+      "domains": [
+        "promotion_planning"
+      ],
+      "document_type": "external_business_process_reference",
+      "evidence_class": "company_practice_reference",
+      "source_format": "html",
+      "ingestion_status": "indexed",
+      "applicability": "Shopify business-planning guidance; use as an attributed process example only, not Commerce Demo policy or evidence about its synthetic campaigns.",
+      "notes": "Covers planning goals, audience and channel choices, campaign budget, and tracking outcomes. It supplies a planning workflow, not a causal measurement method; use the DoorDash holdout reference for incrementality and SQL data for observed campaign outcomes.",
+      "last_fetched_on": "2026-10-05",
+      "ingested_format": "HTML",
+      "content_sha256": "b36629869de9f4a501871ae366d61684f36724cd326d7d24bc1cd0f58c90e705"
+    },
+    {
       "source_id": "SHOPIFY-SMART-ORDER-ROUTING",
       "retrieval_status": "archived",
       "publisher": "Shopify",
@@ -438,6 +458,29 @@
       "ingested_format": "HTML"
     },
     {
+      "source_id": "IAB-COMMERCE-INCREMENTALITY-GUIDELINES-2025",
+      "retrieval_status": "active",
+      "publisher": "IAB and IAB Europe",
+      "title": "Guidelines for Incremental Measurement in Commerce Media",
+      "url": "https://iabeurope.eu/wp-content/uploads/IAB_and_IAB_Europe_Guidelines_Incremental_Measurement_Commerce_Media_November_2025.pdf",
+      "published_or_updated": "2025-11-03",
+      "domains": [
+        "promotion_planning"
+      ],
+      "document_type": "industry_measurement_guideline",
+      "evidence_class": "management_cookbook_reference",
+      "external_policy_reference": false,
+      "source_format": "pdf",
+      "ingestion_status": "indexed",
+      "applicability": "General commerce-media measurement guidance. Attribute its methods to IAB and IAB Europe; it is not a platform rule or Commerce Demo policy, and it does not provide data about the synthetic campaigns.",
+      "license": "Copyright remains with IAB and IAB Europe; source is publicly downloadable. Do not redistribute the full document as a project-created work.",
+      "rights_url": "https://www.iab.com/guidelines/guidelines-for-incremental-measurement-in-commerce-media/",
+      "notes": "Thirteen-page industry guideline comparing experiments, modeled counterfactuals, econometrics and proxy methods. It distinguishes incremental impact from attribution/ROAS and explains test/control, bias, and measurement limitations. Relevant to the dataset because campaign spend, holdout groups, and attributed exposure data are absent; it informs what evidence is needed, not a claim that current sales lift is causal.",
+      "last_fetched_on": "2026-10-06",
+      "content_sha256": "057cfe7231bf343ab3af07babf6440187b493f6b7e40a48ff5c630d2e5fc8907",
+      "ingested_format": "PDF"
+    },
+    {
       "source_id": "AMAZON-SCS-LOGISTICS-DECISIONS-2026",
       "retrieval_status": "active",
       "publisher": "Amazon Supply Chain Services",
@@ -455,7 +498,7 @@
       "applicability": "Amazon Supply Chain Services options and network example only; not Commerce Demo policy. Attribute concepts and scope to Amazon; do not transfer Amazon service levels, network capabilities, outcomes, or performance values to the Commerce dataset.",
       "notes": "Official Amazon Supply Chain Services guide. It describes how transportation, warehousing, fulfillment, parcel shipping, predictive tools, and real-time visibility fit together, including balancing cost, speed, capacity and demand. Use as an attributed decision framework; not evidence that Commerce Demo uses Amazon or any specific carrier.",
       "content_sha256": "31660aa06a5e41de8350e61e07844ab955608e6d4df482e87c28fbe9870bfb2d",
-      "last_fetched_on": "2026-10-04",
+      "last_fetched_on": "2026-10-05",
       "ingested_format": "HTML"
     },
     {
@@ -479,8 +522,31 @@
       "ingested_format": "PDF"
     },
     {
-      "source_id": "AUS-BUSINESS-INVENTORY-MANAGEMENT",
+      "source_id": "KROGER-VENDOR-ROUTING-INSTRUCTIONS-2024",
       "retrieval_status": "active",
+      "publisher": "The Kroger Co.",
+      "title": "Vendor Standard Routing Instructions (Parcel, LTL, and TL)",
+      "url": "https://www.thekrogerco.com/wp-content/uploads/2024/07/Kroger-Vendor-General-Routing-Instructions-4.30.21.pdf",
+      "rights_url": "https://www.thekrogerco.com/vendor-suppliers/document-library/",
+      "published_or_updated": "Version 2.7, updated 2024-06-18; listed in Kroger's supplier document library accessed 2026-10-08",
+      "domains": [
+        "nationwide_logistics"
+      ],
+      "document_type": "external_company_logistics_reference",
+      "evidence_class": "company_practice_reference",
+      "external_policy_reference": true,
+      "source_format": "pdf",
+      "license": "No reuse license stated on the publisher page; use as an attributed reference and do not redistribute the full guide.",
+      "ingestion_status": "indexed",
+      "applicability": "Kroger supplier routing instructions for U.S. shipments only; not Commerce Demo policy, Vietnamese routing requirements, or evidence about the synthetic Commerce dataset. Attribute every carrier, mode, threshold, and receiving rule to Kroger and do not transfer its numeric limits to Commerce Demo.",
+      "notes": "Ten-page official routing guide. It selects parcel, air, LTL, refrigerated LTL, or truckload using shipment weight/volume, urgency and buyer approval, destination, refrigeration, and carrier conditions; it also specifies purchase-order references and receiving constraints. Use it only as an attributed example of the operational fields a routing decision can require. The PDF contains a native text layer and tables; it is not a physical scan.",
+      "content_sha256": "292a2a7da65c7468ac03484f544e24a3c09a68d824181e67f5563e76ca604dda",
+      "last_fetched_on": "2026-10-08",
+      "ingested_format": "PDF"
+    },
+    {
+      "source_id": "AUS-BUSINESS-INVENTORY-MANAGEMENT",
+      "retrieval_status": "archived",
       "publisher": "Australian Government, business.gov.au",
       "title": "Manage your inventory",
       "url": "https://business.gov.au/products-and-services/inventory-management/manage-your-inventory",
@@ -495,7 +561,7 @@
       "license": "CC BY 3.0 Australia; exclude third-party content and logos",
       "attribution": "© Commonwealth of Australia 2020",
       "applicability": "General small-business inventory method published for Australia. Attribute as an external method, not Commerce Demo policy; do not transfer its examples or legal context as local thresholds.",
-      "ingestion_status": "indexed",
+      "ingestion_status": "archived",
       "notes": "Covers stock records, tracking, stocktakes, reorder points and inputs such as usual sales, supplier lead time, seasonality and reliability. Useful for the inventory review workflow; it cannot supply Commerce Demo's missing location, forecast or cost facts. The page is HTML, not a scanned PDF.",
       "last_fetched_on": "2026-10-04",
       "content_sha256": "85b995e83a08e74c4b07e93b5b4531b89b3d417c017d6dd768bc93902a41eee6",
@@ -504,7 +570,7 @@
     },
     {
       "source_id": "AUS-BUSINESS-MARKETING-PLAN",
-      "retrieval_status": "active",
+      "retrieval_status": "archived",
       "publisher": "Australian Government, business.gov.au",
       "title": "Develop your marketing plan",
       "url": "https://business.gov.au/planning/business-plans/develop-your-marketing-plan",
@@ -519,7 +585,7 @@
       "license": "CC BY 3.0 Australia; exclude third-party content and logos",
       "attribution": "© Commonwealth of Australia 2020",
       "applicability": "General small-business marketing-planning method published for Australia. Attribute as an external method, not Commerce Demo policy; examples are not observed Commerce outcomes or approved thresholds.",
-      "ingestion_status": "indexed",
+      "ingestion_status": "archived",
       "notes": "Covers goals, target market, promotion/channel plan, budget and review of results. Supports planning hygiene, but it does not establish causal uplift or Commerce Demo campaign ROI. The page is HTML, not a scanned PDF.",
       "last_fetched_on": "2026-10-04",
       "content_sha256": "c76f6c89651ec3bf2eb062bfa49c202725bc4a02b06101e8b385505aee0496c4",
@@ -528,7 +594,7 @@
     },
     {
       "source_id": "AUS-BUSINESS-ECOMMERCE-SHIPPING",
-      "retrieval_status": "active",
+      "retrieval_status": "archived",
       "publisher": "Australian Government, business.gov.au",
       "title": "Shipping",
       "url": "https://business.gov.au/Products-and-services/Shipping",
@@ -543,7 +609,7 @@
       "license": "CC BY 3.0 Australia; exclude third-party content and logos",
       "attribution": "© Commonwealth of Australia 2020",
       "applicability": "General small-business e-commerce shipping selection method published for Australia. Attribute as an external method, not Commerce Demo policy; do not transfer Australian consumer-law obligations or example pricing as Vietnam rules.",
-      "ingestion_status": "indexed",
+      "ingestion_status": "archived",
       "notes": "Covers parcel-provider selection by delivery time, express availability, parcel size/weight, pickup, loss/damage terms and reporting/integration, plus shipping-cost and customer-expectation considerations. Supports provider review, not route-capacity optimization. The page is HTML, not a scanned PDF.",
       "last_fetched_on": "2026-10-04",
       "content_sha256": "dba220017f2eddd524ab77c7491bb171243d69274ccfe87c360f26cceedce6de",
@@ -570,10 +636,11 @@
       "source_format": "pdf",
       "applicability": "Fictional Commerce Demo inventory scenario only. Explicitly synthetic; not an issued policy of a real retailer.",
       "ingestion_status": "indexed",
-      "notes": "Demo-only rules for category-level inventory review, overlap handling, and conditional SKU/location investigation. No invented numeric targets; requires matching demand, stock, lead-time and cost before transfers.",
+      "notes": "Trong demo, đọc cờ stockout/overstock ở mức product-snapshot; hai cờ có thể chồng lấp. Không tự đặt safety stock, reorder point, service-level target hoặc ngưỡng. Chỉ cân nhắc điều chuyển sau khi đối chiếu SKU gửi/nhận, tồn khả dụng, nhu cầu dự báo, lead time, chi phí và ràng buộc dịch vụ; thay đổi đặt hàng còn cần lịch sử nhu cầu, quy cách đặt hàng, chi phí lưu kho và mục tiêu dịch vụ đã được phê duyệt.",
+      "notes_en": "For this demo, stockout and overstock flags are product-snapshot indicators and may overlap. Do not invent safety stock, reorder point, service-level targets, or thresholds. Consider a transfer only after matching source and destination SKU, available stock, forecast demand, lead time, cost, and service constraints. Order changes also require demand history, order constraints, carrying cost, and an approved service target.",
       "ingested_format": "PDF",
-      "content_sha256": "116a03ef6da46505e44bc9da505e7c2a64695b341f4e74e5b1a46fbb9800b16b",
-      "last_fetched_on": "2026-10-05"
+      "content_sha256": "a254674f2419e6f6fe2952098737784f427227899e7ae241952347dd215260cd",
+      "last_fetched_on": "2026-10-08"
     },
     {
       "source_id": "CD-POL-PROMO-001",
@@ -595,10 +662,11 @@
       "source_format": "pdf",
       "applicability": "Fictional Commerce Demo promotion scenario only. Explicitly synthetic; not an issued policy of a real retailer.",
       "ingestion_status": "indexed",
-      "notes": "Demo-only rules distinguishing descriptive outcomes from incrementality and profitability. No invented ROI or uplift thresholds; requires holdout/control and campaign cost/margin evidence before budget expansion.",
+      "notes": "Quy tắc giả lập chỉ áp dụng trong demo: tách kết quả quan sát khỏi tác động tăng thêm và lợi nhuận. Không tự đặt ngưỡng ROI hoặc uplift; cần nhóm đối chứng cùng bằng chứng chi phí và biên lợi nhuận theo chiến dịch trước khi tăng ngân sách.",
+      "notes_en": "Demo rule only: separate observed outcomes from incrementality and profitability. Do not invent ROI or uplift thresholds; require a control or holdout plus campaign cost and margin evidence before increasing budget.",
       "ingested_format": "PDF",
-      "content_sha256": "076bd3402112c4f0ea5a5b134bda63a10412db9547978f4902053a5fa4772fe8",
-      "last_fetched_on": "2026-10-05"
+      "content_sha256": "76c433482dcd2d6fff7646e3d1d210b990478f3efadda5818122f4b53d7ac877",
+      "last_fetched_on": "2026-10-08"
     },
     {
       "source_id": "CD-POL-LOG-001",
@@ -620,10 +688,77 @@
       "source_format": "pdf",
       "applicability": "Fictional Commerce Demo logistics scenario only. Explicitly synthetic; not an issued policy of a real retailer.",
       "ingestion_status": "indexed",
-      "notes": "Demo-only rules for descriptive regional logistics comparison and evidence required before network redesign. No invented SLA or savings threshold; requires route, carrier, SLA, capacity and cost data.",
+      "notes": "Quy tắc giả lập chỉ áp dụng trong demo: so sánh logistics theo vùng ở mức mô tả và yêu cầu bằng chứng trước khi thiết kế lại mạng lưới. Không tự đặt ngưỡng SLA hoặc tiết kiệm; cần dữ liệu tuyến, hãng vận chuyển, SLA, năng lực và chi phí.",
+      "notes_en": "Demo-only rule: compare regional logistics descriptively and require evidence before redesigning the network. Do not invent SLA or savings thresholds; obtain route, carrier, SLA, capacity, and cost data.",
       "ingested_format": "PDF",
-      "content_sha256": "a32b3e7523a67c1c8dc2fcd5f40b7bfd33ab81de35c44d982229af404d694566",
-      "last_fetched_on": "2026-10-05"
+      "content_sha256": "0d50491509600ce1a25157f1b241eb3e9f8dc12680f1175fecda90389e6d90a5",
+      "last_fetched_on": "2026-10-08"
+    },
+    {
+      "source_id": "TIKI-FBT-INVENTORY-REPORT",
+      "retrieval_status": "active",
+      "publisher": "Tiki Seller Academy",
+      "title": "[Mô hình FBT] Hướng dẫn theo dõi báo cáo tồn kho",
+      "url": "https://hocvien.tiki.vn/faq/huong-dan-theo-doi-bao-cao-ton-kho-mo-hinh-fbt/",
+      "published_or_updated": "Undated; accessed 2026-10-08",
+      "domains": [
+        "inventory_allocation"
+      ],
+      "document_type": "platform_operating_guidance",
+      "evidence_class": "platform_operating_rule",
+      "external_policy_reference": true,
+      "source_format": "html",
+      "language": "vi",
+      "ingestion_status": "indexed",
+      "applicability": "Tiki Fulfillment by Tiki (FBT) sellers only. Treat age bands, fees, screens, and workflows as Tiki-specific; they are not Commerce Demo policy or thresholds. Use the report fields as an attributed example of evidence needed for SKU-, warehouse-, status-, and age-aware inventory review.",
+      "notes": "Official Tiki Seller Academy workflow for physical stock, in-process stock, stock by fulfillment warehouse, period movement reconciliation, inventory aging, and estimated storage cost. It describes how Tiki FBT sellers inspect and export reports. Tiki-specific fee bands and fulfillment states must not be transferred to Commerce Demo.",
+      "content_sha256": "161b86ad984a6d4d7f3cfa1acb299df134a6417ccbc0ea86d7e1cc15c3b81c69",
+      "last_fetched_on": "2026-10-08",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "TIKI-CATEGORY-DEAL-OPERATIONS",
+      "retrieval_status": "active",
+      "publisher": "Tiki Seller Academy",
+      "title": "Hướng dẫn đăng ký và quản lý chương trình Deal ngành hàng (Category Deal)",
+      "url": "https://hocvien.tiki.vn/faq/huong-dan-dang-ky-va-quan-ly-chuong-trinh-category-deal/",
+      "published_or_updated": "Undated; accessed 2026-10-08",
+      "domains": [
+        "promotion_planning"
+      ],
+      "document_type": "platform_operating_guidance",
+      "evidence_class": "platform_operating_rule",
+      "external_policy_reference": true,
+      "source_format": "html",
+      "language": "vi",
+      "ingestion_status": "indexed",
+      "applicability": "Tiki Category Deal workflow only. Eligibility rules, campaign overlap handling, platform allocation, suggested prices/quantities, and campaign priority are Tiki-specific and must not be applied as Commerce Demo policy or generic thresholds.",
+      "notes": "Official Tiki Seller Academy steps for choosing eligible products, checking overlapping campaign windows, setting campaign price/quantity/order limits, monitoring low-stock warnings, allocation/rejection, and reviewing campaign units and revenue. Useful as an attributed campaign-control example; it does not establish incremental lift or profitability.",
+      "content_sha256": "f6930e6336d68ef806d211cc5d41c4c4dc5b52dae6ff9d45c35ee831b52dc62c",
+      "last_fetched_on": "2026-10-08",
+      "ingested_format": "HTML"
+    },
+    {
+      "source_id": "TIKI-FBT-INVENTORY-TRANSFER",
+      "retrieval_status": "active",
+      "publisher": "Tiki Seller Academy",
+      "title": "[Mô hình FBT] Hướng dẫn luân chuyển hàng hóa lưu kho Tiki",
+      "url": "https://hocvien.tiki.vn/faq/mo-hinh-fbt-huong-dan-luan-chuyen-hang-hoa-luu-kho-tiki/",
+      "published_or_updated": "Undated; accessed 2026-10-08",
+      "domains": [
+        "nationwide_logistics"
+      ],
+      "document_type": "platform_operating_guidance",
+      "evidence_class": "platform_operating_rule",
+      "external_policy_reference": true,
+      "source_format": "html",
+      "language": "vi",
+      "ingestion_status": "indexed",
+      "applicability": "Tiki FBT stock transfers among Tiki fulfillment warehouses only. Tiki warehouse names, eligibility rules, fee formulas, and workflows are platform-specific; they are not routes, carrier costs, or policy for Commerce Demo.",
+      "notes": "Official Tiki Seller Academy guide to requesting stock movement between Tiki FBT warehouses. It requires an identified source warehouse, destination warehouse, SKU, quantity, eligibility, and route-dependent transfer cost. This illustrates the evidence required before evaluating a transfer; it does not prove a transfer is beneficial for Commerce Demo.",
+      "content_sha256": "9d8029b54ed0e9e02fa94a4c9bfde1060fc9a1554039b4b993cf73a29fc32289",
+      "last_fetched_on": "2026-10-08",
+      "ingested_format": "HTML"
     }
   ],
   "ocr_demo": {

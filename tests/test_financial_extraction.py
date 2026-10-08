@@ -81,9 +81,9 @@ class FinancialPageSelectionTests(unittest.TestCase):
         }, ensure_ascii=False))
         chunks = [{"text": page_text, "metadata": {"page_number": 3}}]
         document = {
-            "company": "Công ty Cổ phần Sữa Việt Nam",
+            "company": "Example Retailer",
             "fiscal_year": 2024,
-            "document_id": "VNM-AR-2024-VI",
+            "document_id": "EXAMPLE-AR-2024-VI",
             "source_url": "https://example.vn/report.pdf",
             "rbac": {"allowed_roles": ["finance_analyst"]},
         }
@@ -102,18 +102,18 @@ class FinancialPageSelectionTests(unittest.TestCase):
         self.assertIn("ignore comparison years", llm.prompts[0])
 
     def test_ocr_near_match_label_is_reviewable_but_native_and_ungrounded_values_fail(self):
-        quote = "Doanh thu bán hàng và cung cép dich vy | 22.070.557.490.766 | 16.081.466.183.586"
+        quote = "Doanh thu bán hàng và cung cép dich vy | 12.070.557.490.766 | 8.081.466.183.586"
         page_text = f"Đơn vị: VNĐ | 2011 | 2010\n{quote}"
         response = json.dumps({"metrics": [{
             "metric_name": "total_consolidated_revenue",
-            "metric_value": "22.070.557.490.766",
+            "metric_value": "12.070.557.490.766",
             "unit": "VNĐ",
             "fiscal_year": 2011,
             "source_quote": quote,
         }]}, ensure_ascii=False)
         document = {
-            "company": "Công ty Cổ phần Sữa Việt Nam", "fiscal_year": 2011,
-            "document_id": "VNM-FS-2011", "rbac": {"allowed_roles": ["finance_analyst"]},
+            "company": "Example Retailer", "fiscal_year": 2011,
+            "document_id": "EXAMPLE-FS-2011", "rbac": {"allowed_roles": ["finance_analyst"]},
         }
 
         ocr_candidates, _ = extract_financial_candidates(
@@ -125,7 +125,7 @@ class FinancialPageSelectionTests(unittest.TestCase):
             [], document, FakeLLM(response),
         )
         wrong_value = json.loads(response)
-        wrong_value["metrics"][0]["metric_value"] = "22.070.557.490.767"
+        wrong_value["metrics"][0]["metric_value"] = "12.070.557.490.767"
         wrong_value_response = json.dumps(wrong_value, ensure_ascii=False)
         ungrounded_candidates, _ = extract_financial_candidates(
             [{"text": page_text, "metadata": {"page_number": 10, "text_extraction_method": "tesseract"}}],
@@ -187,14 +187,14 @@ class FinancialPageSelectionTests(unittest.TestCase):
         self.assertEqual(candidates, [])
 
     def test_table_row_quote_can_use_year_from_column_header(self):
-        page_text = "Đơn vị: Triệu VND | 2024 | 2023\\nDoanh thu | 52.576.991 | 51.465.324\\nLợi nhuận trước thuế | 10.833.006 | 10.195.687"
+        page_text = "Đơn vị: Triệu VND | 2024 | 2023\\nDoanh thu | 32.576.991 | 31.465.324\\nLợi nhuận trước thuế | 4.833.006 | 3.195.687"
         llm = FakeLLM(json.dumps({
             "metrics": [{
                 "metric_name": "profit_before_tax",
-                "metric_value": "10.833.006",
+                "metric_value": "4.833.006",
                 "unit": "Triệu VND",
                 "fiscal_year": 2024,
-                "source_quote": "Lợi nhuận trước thuế | 10.833.006 | 10.195.687",
+                "source_quote": "Lợi nhuận trước thuế | 4.833.006 | 3.195.687",
             }],
         }, ensure_ascii=False))
         document = {
@@ -207,7 +207,7 @@ class FinancialPageSelectionTests(unittest.TestCase):
         )
 
         self.assertEqual(len(candidates), 1)
-        self.assertEqual(candidates[0]["candidate_values"], ["10.833.006"])
+        self.assertEqual(candidates[0]["candidate_values"], ["4.833.006"])
 
     def test_unexpected_json_shape_fails_closed_and_records_error(self):
         llm = FakeLLM('{"answer":"revenue is 10"}')

@@ -1,10 +1,5 @@
 import re
 
-from core.analytics.business_metric_catalog import (
-    BUSINESS_DECISION_PROFILES,
-    BUSINESS_METRIC_CATALOG,
-    resolve_business_metric_names,
-)
 from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES
 from core.agents.base import BaseAgent
 from core.models.agents import (
@@ -15,74 +10,9 @@ from core.models.agents import (
 from core.rag.rag_service import RAGResult, RAGService
 
 
-def _decision_evidence_score(context: dict, question: str, domain: str) -> tuple[int, int, float]:
-    """Return domain relevance and evidence-format scores for a retrieved passage."""
-    profile = BUSINESS_DECISION_PROFILES[domain]
-    primary = set(profile["primary_metrics"])
-    domain_metrics = {
-        name for name, definition in BUSINESS_METRIC_CATALOG.items()
-        if definition["domain"] == domain
-    }
-    requested = resolve_business_metric_names(question) & domain_metrics
-    metadata = context.get("metadata") or {}
-    text = " ".join((
-        str(context.get("content") or ""),
-        str(metadata.get("section_title") or ""),
-        str(metadata.get("table_title") or ""),
-    )).casefold()
-    matched = set()
-    for name in domain_metrics:
-        definition = BUSINESS_METRIC_CATALOG[name]
-        phrases = {name.replace("_", " "), definition["label"], *definition.get("aliases", ())}
-        if any(" ".join(phrase.casefold().split()) in text for phrase in phrases):
-            matched.add(name)
-
-    domain_score = (
-        6 * (metadata.get("business_decision_domain") == domain)
-        + 3 * len(matched & primary)
-        + len(matched - primary)
-    )
-    if not domain_score:
-        return 0, 0, 0.0
-
-    needs_values = bool(requested) or bool(re.search(r"\b(?:19|20)\d{2}\b|\d", question)) or any(
-        term in question.casefold() for term in (
-            "metric", "kpi", "value", "revenue", "growth", "compare", "trend",
-            "bao nhiêu", "chỉ số", "doanh thu", "tăng trưởng", "so sánh", "xu hướng",
-        )
-    )
-    has_number = bool(re.search(r"\d", str(context.get("content") or "")))
-    layout = str(metadata.get("layout_type") or metadata.get("element_type") or "").casefold()
-    evidence_score = float(needs_values and has_number)
-    if needs_values and layout in {"table", "table_chunk", "extracted_table"}:
-        evidence_score += 1.5
-    if layout in {"text", "paragraph", "narrative"} and any(
-        term in question.casefold() for term in ("why", "strategy", "risk", "decision", "vì sao", "chiến lược", "rủi ro", "quyết định")
-    ):
-        evidence_score += 0.5
-    return domain_score, len(requested & matched), evidence_score
-
-
-def _rank_business_decision_evidence(
-    contexts: list[dict], question: str, domain: str, limit: int,
-) -> list[dict]:
-    """Rerank an authorized candidate pool before the smaller report prompt."""
-    scored = [
-        (_decision_evidence_score(context, question, domain), index, context)
-        for index, context in enumerate(contexts)
-    ]
-    relevant = [item for item in scored if item[0][0] > 0]
-    # Sparse corpora may have no exact catalog phrase; retain the retriever's
-    # authorized ranking rather than returning an empty report context.
-    selected = sorted(
-        relevant or scored,
-        key=lambda item: (item[0][1], item[0][2], item[0][0], -item[1]),
-        reverse=True,
-    )[:limit]
-    ranked = [dict(context) for _, _, context in selected]
-    for index, context in enumerate(ranked, start=1):
-        context["source_id"] = f"S{index}"
-    return ranked
+def _requested_page_number(question: str) -> int | None:
+    match = re.search(r"\b(?:page|p\.|trang)\s*(\d+)\b", question.casefold())
+    return int(match.group(1)) if match else None
 
 
 def _rank_commerce_reference_evidence(
@@ -108,18 +38,15 @@ def _rank_commerce_reference_evidence(
             "management_cookbook_reference",
         }:
             continue
-        if evidence_class == "platform_operating_rule":
-            issuer = str(metadata.get("source_publisher") or "").casefold()
-            generic_terms = {"shop", "seller", "university", "help", "center", "marketplace", "vietnam", "education", "hub"}
-            issuer_terms = {
-                term for term in re.findall(r"[a-z0-9]+", issuer)
-                if len(term) > 3 and term not in generic_terms
-            }
-            if not issuer_terms.intersection(set(re.findall(r"[a-z0-9]+", question_text))):
-                continue
-            platform_named = True
-        else:
-            platform_named = False
+        issuer = str(metadata.get("source_publisher") or "").casefold()
+        generic_terms = {"shop", "seller", "university", "help", "center", "marketplace", "vietnam", "education", "hub", "guide"}
+        issuer_terms = {
+            term for term in re.findall(r"[a-z0-9]+", issuer)
+            if len(term) > 3 and term not in generic_terms
+        }
+        named_source = bool(issuer_terms.intersection(set(re.findall(r"[a-z0-9]+", question_text))))
+        if evidence_class == "platform_operating_rule" and not named_source:
+            continue
         if domain not in domains:
             continue
         content = " ".join((
@@ -173,9 +100,19 @@ def _rank_commerce_reference_evidence(
             "company_policy_reference": 100,
             "company_practice_reference": 0,
             "platform_operating_rule": 0,
-            "management_cookbook_reference": 25,
+            "management_cookbook_reference": 1,
         }.get(evidence_class, 0)
-        score = source_preference + topic_hits
+        # Section headings provide a small, generic signal that a passage is
+        # about the user's wording, without letting broad source categories
+        # outrank more directly relevant passages.
+        question_terms = set(re.findall(r"\w{4,}", question_text))
+        content_terms = set(re.findall(r"\w{4,}", content))
+        section_terms = set(re.findall(r"\w{4,}", str(metadata.get("section_title") or "").casefold()))
+        score = topic_hits + 2 * len(question_terms & content_terms) + 3 * len(question_terms & section_terms)
+        if context.get("retrieval_method") == "bm25":
+            # Preserve exact lexical matches when OCR tokenization weakens
+            # Vietnamese word overlap against the broad domain vocabulary.
+            score += 2 * float(context.get("retrieval_score") or 0)
         if domain == "inventory_allocation":
             asks_stock_state = any(term in question_text for term in (
                 "service target", "service-level target", "fill rate", "availability", "stockout",
@@ -192,10 +129,10 @@ def _rank_commerce_reference_evidence(
                 score += 25 * stock_state_hits
         asks_network_comparison = (
             domain == "nationwide_logistics"
-            and any(term in question_text for term in (
+            and any(re.search(rf"\b{re.escape(term)}\b", question_text) for term in (
                 "network", "logistics", "routing", "distribution network", "mạng lưới", "phân tuyến",
             ))
-            and any(term in question_text for term in (
+            and any(re.search(rf"\b{re.escape(term)}\b", question_text) for term in (
                 "compare", "comparison", "evaluate", "criteria", "guide", "choose", "select",
                 "priorities", "should guide", "so sánh", "tiêu chí", "ưu tiên",
             ))
@@ -239,14 +176,15 @@ def _rank_commerce_reference_evidence(
                 + 12 * supporting_priority_hits
             )
         if score:
-            scored.append((platform_named, score, -index, context))
-    ordered = sorted(scored, reverse=True, key=lambda item: (item[0], item[1], item[2]))
+            policy_priority = evidence_class == "company_policy_reference"
+        scored.append((named_source, policy_priority, score, source_preference, -index, context))
+    ordered = sorted(scored, reverse=True, key=lambda item: item[:5])
     # Keep the small prompt context useful across references; fill remaining
     # slots with additional passages only when there are fewer sources than slots.
     selected = []
     seen_documents = set()
     for item in ordered:
-        document_id = (item[3].get("metadata") or {}).get("document_id") or item[3].get("document_name")
+        document_id = (item[5].get("metadata") or {}).get("document_id") or item[5].get("document_name")
         if document_id in seen_documents:
             continue
         selected.append(item)
@@ -254,9 +192,9 @@ def _rank_commerce_reference_evidence(
         if len(selected) == limit:
             break
     if len(selected) < limit:
-        selected_ids = {id(item[3]) for item in selected}
-        selected.extend(item for item in ordered if id(item[3]) not in selected_ids and len(selected) < limit)
-    result = [dict(item[3]) for item in selected]
+        selected_ids = {id(item[5]) for item in selected}
+        selected.extend(item for item in ordered if id(item[5]) not in selected_ids and len(selected) < limit)
+    result = [dict(item[5]) for item in selected]
     for index, context in enumerate(result, start=1):
         context["source_id"] = f"S{index}"
     return result
@@ -281,11 +219,15 @@ class KnowledgeAgent(BaseAgent):
             "company": request.metadata.get("company"),
             "roles": [role],
         }
+        requested_page = _requested_page_number(request.question)
+        if requested_page is not None:
+            rag_options["metadata_filter"] = {"page_number": requested_page}
         if request.metadata.get("retrieval_method", "hybrid") != "hybrid":
             rag_options["retrieval_method"] = request.metadata["retrieval_method"]
         decision_domain = request.metadata.get("business_decision_domain")
         if decision_domain in COMMERCE_DECISION_PROFILES:
             rag_options["metadata_filter"] = {
+                **rag_options.get("metadata_filter", {}),
                 "commerce_reference_active": True,
                 "knowledge_domains": [decision_domain],
             }
@@ -295,22 +237,14 @@ class KnowledgeAgent(BaseAgent):
             # Report synthesis uses one generation over its evidence; keep its
             # ranked context small enough for the configured model's TPM cap.
             rag_options["limit"] = 3 if request.metadata.get("decision_support") else 5
-            if decision_domain in BUSINESS_DECISION_PROFILES:
-                # Retrieve a bounded authorized candidate pool, score domain
-                # and numeric/layout relevance, then send only report top-k.
-                rag_options["limit"] = 15
-            elif decision_domain in COMMERCE_DECISION_PROFILES:
+            if decision_domain in COMMERCE_DECISION_PROFILES:
                 rag_options["limit"] = 50
             if decision_domain in COMMERCE_DECISION_PROFILES:
                 retrieval_query = " ".join((request.question, COMMERCE_DECISION_PROFILES[decision_domain]["retrieval_query"]))
             else:
                 retrieval_query = request.question
             contexts = self.rag.retrieve_contexts(retrieval_query, **rag_options)
-            if decision_domain in BUSINESS_DECISION_PROFILES:
-                contexts = _rank_business_decision_evidence(
-                    contexts, request.question, decision_domain, 3,
-                )
-            elif decision_domain in COMMERCE_DECISION_PROFILES:
+            if decision_domain in COMMERCE_DECISION_PROFILES:
                 contexts = _rank_commerce_reference_evidence(
                     contexts, request.question, decision_domain, 3,
                 )
@@ -345,6 +279,8 @@ class KnowledgeAgent(BaseAgent):
                 content=context["content"],
                 metadata={
                     **context["metadata"],
+                    **({"retrieval_chunk_id": context["chunk_id"]}
+                       if context.get("chunk_id") else {}),
                     "chunk_index": context["chunk_index"],
                     "retrieval_score": context["retrieval_score"],
                     "retrieval_method": context["retrieval_method"],
@@ -357,7 +293,17 @@ class KnowledgeAgent(BaseAgent):
             answer=result.answer,
             agent="knowledge",
             evidence=evidence,
-            metadata={"insufficient_context": result.insufficient_context},
+            metadata={
+                "insufficient_context": result.insufficient_context,
+                **({"answer_fallback_reason": result.answer_fallback_reason}
+                   if result.answer_fallback_reason else {}),
+                **({"generation_provider": result.generation_provider}
+                   if result.generation_provider else {}),
+                **({"token_usage": {
+                    "answer_generation": result.token_usage,
+                    "total": result.token_usage,
+                }} if result.token_usage else {}),
+            },
         )
 
     def close(self) -> None:

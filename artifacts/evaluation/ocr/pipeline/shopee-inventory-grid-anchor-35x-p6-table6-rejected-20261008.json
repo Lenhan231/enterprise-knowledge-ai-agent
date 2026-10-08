@@ -1,0 +1,363 @@
+{
+  "created_at_utc": "2026-10-08T01:55:34.782216+00:00",
+  "dataset_id": "commerce-shopee-inventory-grid-page11-v1",
+  "dataset_sha256": "4f84e762c803c3caee25b2fa5496ebdb4ccd014faf8fedb188ba0661c94273d7",
+  "reference_quality": "single_agent_visual_transcription_unreviewed",
+  "reference_method": "One reviewer visually transcribed the two visible product rows and headers from a 4x render of page 11. Values and selected OCR text anchors were read from the source image, not OCR output; no independent review has been performed.",
+  "protocol": "Copy each selected region from its source PDF page, rasterize it to remove any embedded OCR text layer, then run the existing DocumentProcessor PDF path with separate page-text and table render scales. Score source text chunks without generated structured-table serialization; score tables separately against supplied row/cell anchors. This report was rescored with strict cell normalization so numeric values contaminated by action text do not count as exact.",
+  "limitations": "Production-parser OCR path only. Smoke fixtures verify extraction behavior but are not representative model-selection evidence or business evidence. This run has no explicitly annotated cell coordinates. There is no paired OCR-engine comparison. Throughput includes parser/OCR invocation but excludes application embedding and database persistence. Table structure failed its exact header/value quality gate: OCR found row-like text but did not recover the expected headers and merged action text into the final value cells. This exploratory configuration is not recommended for upload or benchmark selection.",
+  "render_dpi": 252.0,
+  "ocr_render_scale": 3.5,
+  "table_ocr_render_dpi": 252.0,
+  "ocr_table_render_scale": 3.5,
+  "tesseract_page_segmentation_mode": 6,
+  "tesseract_table_segmentation_mode": 6,
+  "tesseract_language": "vie+eng",
+  "tesseract_language_by_case": {
+    "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN-PDF-PAGE-11-GRID": "vie+eng"
+  },
+  "software": {
+    "python": "3.11.16",
+    "pymupdf": "1.27.2.3",
+    "tesseract": "tesseract 5.5.3"
+  },
+  "process_memory": {
+    "process_peak_rss_mb": 97.973,
+    "child_peak_rss_mb": 112.695
+  },
+  "aggregate": {
+    "ocr_pages": 1,
+    "text_scored_pages": 0,
+    "text_anchor_scored_pages": 1,
+    "expected_text_anchors": 4,
+    "matched_text_anchors": 4,
+    "text_anchor_recall": 1.0,
+    "annotated_cell_locations": 0,
+    "matched_cell_locations": 0,
+    "cell_location_recall": null,
+    "table_scored_pages": 1,
+    "expected_anchor_rows": 2,
+    "matched_anchor_rows": 2,
+    "anchor_row_recall": 1.0,
+    "exact_numeric_cells": 10,
+    "total_numeric_cells": 12,
+    "exact_numeric_cell_accuracy": 0.8333,
+    "micro_cer": null,
+    "micro_wer": null,
+    "mean_latency_seconds": 6.816,
+    "mean_pages_per_minute": 8.802,
+    "exact_header_matches": 0,
+    "header_recall": 0.0,
+    "table_anchor_quality_passes": 0,
+    "expected_value_headers": 7
+  },
+  "results": [
+    {
+      "id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN-PDF-PAGE-11-GRID",
+      "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+      "source_page_number": 11,
+      "language": "vie",
+      "layout_type": "embedded_seller_center_inventory_grid",
+      "physical_scan": false,
+      "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+      "cropped_pdf_sha256": "67d03c67b6cc7fdda83c6a0bf4f26ece2693d8d05d49720e6c377cf93cd675a1",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 6,
+      "tesseract_table_segmentation_mode": 6,
+      "ocr_render_scale": 3.5,
+      "ocr_table_render_scale": 3.5,
+      "ocr_used": true,
+      "chunk_count": 2,
+      "table_count": 1,
+      "extracted_tables": [
+        {
+          "page_number": 1,
+          "table_index": 0,
+          "columns": [
+            "Mã sản phẩm/ tin loại Thông phân",
+            "ỂềẳàIỊJảzẫ`uỊ\\ .",
+            "Egél;é:u:o:",
+            "tri kho Vi",
+            "sẵn kho có Ện",
+            "khuyén I;ho ẸT",
+            "tối thidu kho T:c\"m Hoạt động"
+          ],
+          "rows": [
+            {
+              "Mã sản phẩm/ tin loại Thông phân": "Khầu Loa My Nhập D",
+              "ỂềẳàIỊJảzẫ`uỊ\\ .": "0",
+              "Egél;é:u:o:": "0",
+              "tri kho Vi": "-",
+              "sẵn kho có Ện": "0",
+              "khuyén I;ho ẸT": "0",
+              "tối thidu kho T:c\"m Hoạt động": "Sira 0"
+            },
+            {
+              "Mã sản phẩm/ tin loại Thông phân": "Setquảnáocựccháất-t E est",
+              "ỂềẳàIỊJảzẫ`uỊ\\ .": "10",
+              "Egél;é:u:o:": "22",
+              "tri kho Vi": "sonatus",
+              "sẵn kho có Ện": "10",
+              "khuyén I;ho ẸT": "0",
+              "tối thidu kho T:c\"m Hoạt động": "Sửa 15"
+            }
+          ],
+          "metadata": {
+            "element_type": "table",
+            "layout_type": "table",
+            "table_extraction_method": "tesseract.tsv_two_row_header_columns",
+            "table_detection_strategy": "ocr_word_boxes_explicit_header",
+            "ocr": {
+              "engine": "tesseract",
+              "language": "vie+eng",
+              "table_psm": 6,
+              "render_scale": 3.5,
+              "mean_word_confidence": 81.9
+            },
+            "bbox": [
+              12.56774193548387,
+              9.135399673735726,
+              464.4351906158358,
+              156.72920065252856
+            ],
+            "bbox_coordinate_system": "pdf_points",
+            "row_cell_bboxes": [
+              {
+                "Mã sản phẩm/ tin loại Thông phân": [
+                  12.56774193548387,
+                  66.23164763458402,
+                  97.97126099706745,
+                  87.35725938009789
+                ],
+                "ỂềẳàIỊJảzẫ`uỊ\\ .": [
+                  124.24926686217009,
+                  68.80097879282219,
+                  127.67683284457478,
+                  73.6541598694943
+                ],
+                "Egél;é:u:o:": [
+                  169.37888563049853,
+                  68.80097879282219,
+                  172.80645161290323,
+                  73.6541598694943
+                ],
+                "tri kho Vi": [
+                  218.5073313782991,
+                  71.37030995106036,
+                  220.50674486803518,
+                  72.22675367047309
+                ],
+                "sẵn kho có Ện": [
+                  274.4909090909091,
+                  68.80097879282219,
+                  277.63284457478005,
+                  73.6541598694943
+                ],
+                "khuyén I;ho ẸT": [
+                  330.18885630498534,
+                  69.08646003262643,
+                  333.61642228739004,
+                  73.93964110929853
+                ],
+                "tối thidu kho T:c\"m Hoạt động": [
+                  384.45865102639294,
+                  63.3768352365416,
+                  446.72609970674483,
+                  76.22349102773246
+                ]
+              },
+              {
+                "Mã sản phẩm/ tin loại Thông phân": [
+                  15.424046920821114,
+                  131.32137030995108,
+                  113.10967741935484,
+                  156.72920065252856
+                ],
+                "ỂềẳàIỊJảzẫ`uỊ\\ .": [
+                  124.82052785923753,
+                  135.88907014681894,
+                  131.10439882697946,
+                  140.74225122349102
+                ],
+                "Egél;é:u:o:": [
+                  169.37888563049853,
+                  135.88907014681894,
+                  176.2340175953079,
+                  140.74225122349102
+                ],
+                "tri kho Vi": [
+                  217.3648093841642,
+                  134.74714518760197,
+                  240.5008797653959,
+                  143.59706362153344
+                ],
+                "sẵn kho có Ện": [
+                  274.7765395894428,
+                  135.88907014681894,
+                  281.34604105571844,
+                  140.74225122349102
+                ],
+                "khuyén I;ho ẸT": [
+                  330.18885630498534,
+                  136.17455138662316,
+                  333.61642228739004,
+                  141.02773246329528
+                ],
+                "tối thidu kho T:c\"m Hoạt động": [
+                  384.7442815249267,
+                  135.60358890701468,
+                  446.72609970674483,
+                  140.74225122349102
+                ]
+              }
+            ],
+            "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+            "filename": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN.pdf",
+            "format": "PDF"
+          }
+        }
+      ],
+      "table_anchor_score": {
+        "expected_headers": [
+          "Mã sản phẩm / Thông tin phân loại",
+          "Số bán 7 ngày qua",
+          "Số bán 30 ngày qua",
+          "Vị trí kho",
+          "Tồn kho có sẵn",
+          "Tồn kho khuyến mãi",
+          "Tồn kho tối thiểu"
+        ],
+        "extracted_headers": [
+          "ỂềẳàIỊJảzẫ`uỊ\\ .",
+          "Egél;é:u:o:",
+          "tri kho Vi",
+          "sẵn kho có Ện",
+          "khuyén I;ho ẸT",
+          "tối thidu kho T:c\"m Hoạt động"
+        ],
+        "comparison": {
+          "labels": "accent-folded character similarity; matched at >= 0.6",
+          "headers": "normalized text comparison or digits-only period comparison",
+          "numeric_cells": "sign and digit sequence; punctuation ignored"
+        },
+        "exact_header_matches": 0,
+        "expected_value_headers": 7,
+        "header_recall": 0.0,
+        "table_anchor_quality_pass": false,
+        "expected_anchor_rows": 2,
+        "matched_anchor_rows": 2,
+        "anchor_row_recall": 1.0,
+        "exact_numeric_cells": 10,
+        "total_numeric_cells": 12,
+        "exact_numeric_cell_accuracy": 0.8333,
+        "matched_cell_locations": 0,
+        "annotated_cell_locations": 0,
+        "cell_location_recall": null,
+        "cell_location_comparison": "PDF-point bounding-box IoU >= 0.3",
+        "row_matches": [
+          {
+            "expected_label": "Loa Mỹ Nhập Khẩu",
+            "extracted_label": "Khầu Loa My Nhập D",
+            "label_similarity": 0.7059,
+            "matched": true,
+            "expected_values": [
+              "0",
+              "0",
+              "-",
+              "0",
+              "0",
+              "0"
+            ],
+            "extracted_values": [
+              "0",
+              "0",
+              "-",
+              "0",
+              "0",
+              "Sira 0"
+            ],
+            "exact_value_matches": [
+              true,
+              true,
+              true,
+              true,
+              true,
+              false
+            ],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Set quần áo cực chất - test",
+            "extracted_label": "Setquảnáocựccháất-t E est",
+            "label_similarity": 0.84,
+            "matched": true,
+            "expected_values": [
+              "10",
+              "22",
+              "sonatus",
+              "10",
+              "0",
+              "15"
+            ],
+            "extracted_values": [
+              "10",
+              "22",
+              "sonatus",
+              "10",
+              "0",
+              "Sửa 15"
+            ],
+            "exact_value_matches": [
+              true,
+              true,
+              true,
+              true,
+              true,
+              false
+            ],
+            "cell_location_matches": {}
+          }
+        ]
+      },
+      "text_reference_scored": false,
+      "text_anchor_score": {
+        "expected_anchor_count": 4,
+        "matched_anchor_count": 4,
+        "anchor_recall": 1.0,
+        "matches": [
+          {
+            "anchor": "7811192512",
+            "matched": true
+          },
+          {
+            "anchor": "3505740268",
+            "matched": true
+          },
+          {
+            "anchor": "0 0 - 0 0 0",
+            "matched": true
+          },
+          {
+            "anchor": "10 22 sonatus 10 0 15",
+            "matched": true
+          }
+        ]
+      },
+      "text_score_scope": "source text chunks; generated table serialization excluded",
+      "reference_characters": null,
+      "reference_words": null,
+      "hypothesis_characters": 357,
+      "character_edit_distance": null,
+      "word_edit_distance": null,
+      "cer": null,
+      "wer": null,
+      "ocr_text": "Mã sản phẩm/ Thông tin phân loại ỂềẳàIỊJảzẫ`uỊ\\ . Egél;é:u:o: Vi tri kho Ện kho có sẵn ẸT I;ho khuyén T:c\"m kho tối thidu Hoạt động Mã sản phẩm: 7811192512 Q Múc độ cần bé sung hang @): . Bỗ sung hàng ngay lập tức D Loa My Nhập Khầu 0 0 - 0 0 0 Sira Mã san phẩm: 3505740268 G Mức độ cần bé sung hang @): . Bỗ sung kho hàng sớm E Setquảnáocựccháất-t 10 22 sonatus 10 0 15 Sửa est",
+      "latency_seconds": 6.816,
+      "pages_per_minute": 8.802,
+      "extracted_text": "Mã sản phẩm/ Thông tin phân loại ỂềẳàIỊJảzẫ`uỊ\\ . Egél;é:u:o: Vi tri kho Ện kho có sẵn ẸT I;ho khuyén T:c\"m kho tối thidu Hoạt động Mã sản phẩm: 7811192512 Q Múc độ cần bé sung hang @): . Bỗ sung hàng ngay lập tức D Loa My Nhập Khầu 0 0 - 0 0 0 Sira Mã san phẩm: 3505740268 G Mức độ cần bé sung hang @): . Bỗ sung kho hàng sớm E Setquảnáocựccháất-t 10 22 sonatus 10 0 15 Sửa est\nColumns: Mã sản phẩm/ tin loại Thông phân | ỂềẳàIỊJảzẫ`uỊ\\ . | Egél;é:u:o: | tri kho Vi | sẵn kho có Ện | khuyén I;ho ẸT | tối thidu kho T:c\"m Hoạt động\nRow 1: Mã sản phẩm/ tin loại Thông phân: Khầu Loa My Nhập D | ỂềẳàIỊJảzẫ`uỊ\\ .: 0 | Egél;é:u:o:: 0 | tri kho Vi: - | sẵn kho có Ện: 0 | khuyén I;ho ẸT: 0 | tối thidu kho T:c\"m Hoạt động: Sira 0\nRow 2: Mã sản phẩm/ tin loại Thông phân: Setquảnáocựccháất-t E est | ỂềẳàIỊJảzẫ`uỊ\\ .: 10 | Egél;é:u:o:: 22 | tri kho Vi: sonatus | sẵn kho có Ện: 10 | khuyén I;ho ẸT: 0 | tối thidu kho T:c\"m Hoạt động: Sửa 15",
+      "experimental_quality_note": "Exploratory parser output: 0 exact headers and merged action text contaminates the last value cell in both rows. Do not use as a successful table extraction."
+    }
+  ]
+}

@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # from pydantic import BaseModel
-from core.llm.llm_interface import LLMInterface
+from core.llm.llm_interface import EmptyLLMResponseError, LLMInterface
 
 
 class GroqProvider(LLMInterface):
@@ -19,9 +19,11 @@ class GroqProvider(LLMInterface):
         self.reasoning_effort = "none" if self.model_name.startswith("qwen/") else "low"
         self.last_usage = None
         self.client = OpenAI(
-                    api_key=self.groq_api_key,
-                    base_url="https://api.groq.com/openai/v1",
-                )
+            api_key=self.groq_api_key,
+            base_url="https://api.groq.com/openai/v1",
+            max_retries=0,
+            timeout=30.0,
+        )
         
     def generate(self, prompt: str, *, instructions: str | None = None) -> str:
         self.last_usage = None
@@ -48,7 +50,7 @@ class GroqProvider(LLMInterface):
         } if usage is not None else None
 
         if not answer:
-            raise RuntimeError(
+            raise EmptyLLMResponseError(
                 "Groq returned empty output "
                 f"(status={getattr(response, 'status', None)}, "
                 f"incomplete={getattr(response, 'incomplete_details', None)})"

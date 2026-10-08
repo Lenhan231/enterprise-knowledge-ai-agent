@@ -3,17 +3,22 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import httpx
+from openai import RateLimitError
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from core.rag.rag_service import (
     INSUFFICIENT_ANSWER,
+    MAX_CONTEXT_CHARS,
     RAGService,
     _RESPONSE_CACHE,
     _RESPONSE_CACHE_LOCK,
+    _format_contexts,
     _cache_response,
     _get_cached_response,
+    _source_only_fallback,
 )
 from core.retrieval.retrieval import RankedChunk, RetrievalResponse, SourceLocation, make_chunk_id
 
@@ -78,11 +83,11 @@ class RAGServiceTest(unittest.TestCase):
             _RESPONSE_CACHE.clear()
 
     def test_invoice_request_does_not_misstate_an_annual_report_as_an_invoice(self):
-        report = context("VNM-AR-2020-VI")
-        report["document_name"] = "Vinamilk_Annual_Report_2020.pdf"
+        report = context("EXAMPLE-AR-2020-VI")
+        report["document_name"] = "Example Retailer_Annual_Report_2020.pdf"
         report["metadata"].update({
             "document_type": "annual_report",
-            "source_document": "Vinamilk_Annual_Report_2020.pdf",
+            "source_document": "Example Retailer_Annual_Report_2020.pdf",
             "page_number": 87,
         })
         report["content"] = (
@@ -128,8 +133,24 @@ class RAGServiceTest(unittest.TestCase):
         self.assertIn("Inventory demo scenarios only.", prompt)
         self.assertIn("explicitly identify it as fictional demo guidance", prompt)
 
+    def test_qa_prompt_keeps_formatted_context_under_provider_budget(self):
+        sources = []
+        for index in range(10):
+            item = context(f"DOC-{index}")
+            item["content"] = f"Evidence {index}. " + ("Relevant business source text. " * 100)
+            item["chunk_index"] = index
+            sources.append(item)
+
+        llm = FakeLLM("The source supports this answer [S1].")
+        result = RAGService(FakeRetrieval(sources), llm).generate_answer(
+            "What does the source say?", roles=["analyst"], limit=10,
+        )
+
+        self.assertLessEqual(len(_format_contexts(result.contexts)), MAX_CONTEXT_CHARS)
+        self.assertEqual(result.source_ids, ["S1"])
+
     def test_invoice_request_abstains_when_wrong_document_has_no_narrow_disclosure(self):
-        report = context("VNM-AR-2020-VI")
+        report = context("EXAMPLE-AR-2020-VI")
         report["metadata"]["document_type"] = "annual_report"
         llm = FakeLLM("Should not be used")
         result = RAGService(FakeRetrieval([report]), llm).generate_answer(
@@ -152,50 +173,6 @@ class RAGServiceTest(unittest.TestCase):
         self.assertEqual(result.source_ids, ["S1"])
         self.assertEqual(len(llm.calls), 1)
 
-    def test_employee_access_query_quotes_code_and_discloses_referenced_policy_is_not_retrieved(self):
-        access = context("VNM-CODE-2025-EN")
-        access["metadata"].update({"document_type": "code_of_conduct", "page_number": 28})
-        access["content"] = (
-            "Employees are assigned rights to access and process information, which is appropriate for the execution of their employees. "
-            "For the exceptions, employees are required to obtain approvals from both their competent managers and IT Department. "
-            "Unauthorized access and processing will be treated as an act of infringement of property of VINAMILK."
-        )
-        reference = context("VNM-CODE-2025-EN")
-        reference["chunk_index"] = 8
-        reference["metadata"].update({"document_type": "code_of_conduct", "page_number": 27})
-        reference["content"] = (
-            "The Company stipulates the usage and protection of the Information System in Information System Policy."
-        )
-        llm = FakeLLM("The separate Information System Policy sets detailed rules [S1].")
-
-        result = RAGService(FakeRetrieval([access, reference]), llm).generate_answer(
-            "Search for the employee access policy", roles=["employee"],
-        )
-
-        self.assertIn("Code of Conduct", result.answer)
-        self.assertIn("competent managers and IT Department", result.answer)
-        self.assertIn("The separate Information System Policy is not included in the retrieved documents", result.answer)
-        self.assertEqual(result.source_ids, ["S1", "S2"])
-        self.assertEqual([item["metadata"]["page_number"] for item in result.contexts], [28, 27])
-        self.assertEqual(llm.calls, [])
-
-    def test_employee_access_disclosure_does_not_override_retrieved_policy_document(self):
-        access = context("VNM-CODE-2025-EN")
-        access["content"] = "Employees are assigned rights to access and process information. For the exceptions, approval is required. Unauthorized access is prohibited."
-        reference = context("VNM-CODE-2025-EN")
-        reference["chunk_index"] = 8
-        reference["content"] = "The Company stipulates protection in Information System Policy."
-        policy = context("VNM-INFO-SYSTEM-POLICY")
-        policy["metadata"].update({"document_type": "policy", "title": "Information System Policy"})
-        llm = FakeLLM("The retrieved policy gives the access rules [S3].")
-
-        result = RAGService(FakeRetrieval([access, reference, policy]), llm).generate_answer(
-            "Search for the employee access policy", roles=["employee"],
-        )
-
-        self.assertEqual(result.answer, "The retrieved policy gives the access rules [S3].")
-        self.assertEqual(len(llm.calls), 1)
-
     def test_retrieval_fails_closed_without_a_role(self):
         retrieval = FakeRetrieval([context()])
         service = RAGService(retrieval, FakeLLM("Should not be used"))
@@ -213,6 +190,7 @@ class RAGServiceTest(unittest.TestCase):
         )
 
         self.assertEqual(result[0]["source_id"], "S1")
+        self.assertEqual(result[0]["chunk_id"], "DOC-1::chunk::7")
         self.assertEqual(llm.calls, [])
 
     def test_retrieve_contexts_passes_json_metadata_filter_to_retrieval(self):
@@ -364,14 +342,159 @@ class RAGServiceTest(unittest.TestCase):
         self.assertEqual(result.answer, INSUFFICIENT_ANSWER)
         self.assertTrue(result.insufficient_context)
 
-    def test_unknown_citation(self):
-        service = RAGService(
-            FakeRetrieval([context()]),
-            FakeLLM("Unsupported claim [S9]."),
+    def test_provider_rate_limit_returns_retrieved_passages_with_source_citations(self):
+        class LimitedLLM:
+            def generate(self, prompt):
+                raise RateLimitError(
+                    "rate limited",
+                    response=httpx.Response(429, request=httpx.Request("POST", "https://llm.test")),
+                    body=None,
+                )
+
+        source = context()
+        source["content"] = "Only consider transfers after matching SKU, location, demand, and cost. " * 20
+        limited_llm = LimitedLLM()
+        with patch(
+            "core.rag.rag_service.generate_with_provider_fallback",
+            side_effect=lambda _provider, prompt: limited_llm.generate(prompt),
+        ):
+            result = RAGService(FakeRetrieval([source]), LimitedLLM()).generate_answer(
+                "Cần kiểm tra gì trước khi điều chuyển hàng?", roles=["analyst"],
+            )
+
+        self.assertIn("giới hạn token", result.answer)
+        self.assertIn("[S1] Only consider transfers", result.answer)
+        self.assertIn("…", result.answer)
+        self.assertEqual(result.source_ids, ["S1"])
+        self.assertEqual(result.answer_fallback_reason, "provider_rate_limited")
+        self.assertFalse(result.insufficient_context)
+
+    def test_provider_rate_limit_uses_curated_synthetic_policy_note_instead_of_ocr_text(self):
+        for question, note_key, note in (
+            (
+                "Cần kiểm tra gì trước khi thiết kế lại mạng lưới giao hàng?",
+                "source_notes",
+                "Chỉ so sánh theo vùng ở mức mô tả; cần dữ liệu tuyến, hãng vận chuyển, SLA, năng lực và chi phí.",
+            ),
+            (
+                "What should be checked before redesigning the delivery network?",
+                "source_notes_en",
+                "Compare regions descriptively; obtain route, carrier, SLA, capacity, and cost data.",
+            ),
+        ):
+            with self.subTest(question=question):
+                source = context()
+                source["content"] = "OCR GARBAGE: do not redesign network when average varies ???"
+                source["metadata"].update({
+                    "synthetic_company_policy": True,
+                    "source_notes": note if note_key == "source_notes" else "Ghi chú khác.",
+                    "source_notes_en": note if note_key == "source_notes_en" else "Other note.",
+                    "ocr": {"engine": "tesseract"},
+                    "text_extraction_method": "tesseract",
+                    "page_number": 2,
+                })
+                class LimitedLLM:
+                    def generate(self, prompt):
+                        raise RateLimitError(
+                            "rate limited",
+                            response=httpx.Response(429, request=httpx.Request("POST", "https://llm.test")),
+                            body=None,
+                        )
+
+                llm = LimitedLLM()
+                with patch(
+                    "core.rag.rag_service.generate_with_provider_fallback",
+                    side_effect=lambda _provider, prompt: llm.generate(prompt),
+                ):
+                    result = RAGService(FakeRetrieval([source]), llm).generate_answer(
+                        question, roles=["analyst"],
+                    )
+
+                self.assertIn(note, result.answer)
+                self.assertIn("[S1]", result.answer)
+                self.assertIn("PDF", result.answer)
+                self.assertNotIn("OCR GARBAGE", result.answer)
+                self.assertEqual(result.source_ids, ["S1"])
+                self.assertEqual(result.answer_fallback_reason, "provider_rate_limited")
+
+    def test_named_company_source_precedes_unrelated_synthetic_policy_note(self):
+        policy = context("CD-POL-LOG-001")
+        policy["content"] = "Synthetic logistics policy OCR text."
+        policy["metadata"].update({
+            "synthetic_company_policy": True,
+            "source_notes_en": "Demo policy note that does not answer the named Kroger question.",
+        })
+        kroger = context("KROGER-VENDOR-ROUTING-INSTRUCTIONS-2024")
+        kroger["document_name"] = "Kroger Vendor Standard Routing Instructions"
+        kroger["content"] = "Kroger routes parcel and LTL shipments according to package and shipment requirements."
+        kroger["metadata"].update({
+            "source_publisher": "The Kroger Co.",
+            "page_number": 1,
+        })
+
+        result = _source_only_fallback(
+            "What does Kroger require for parcel and LTL routing?",
+            [policy | {"source_id": "S1"}, kroger | {"source_id": "S2"}],
+            "provider_unavailable",
         )
 
-        with self.assertRaises(ValueError):
-            service.generate_answer("Question", roles=["employee"])
+        self.assertIn("[S2] Kroger routes parcel and LTL", result.answer)
+        self.assertNotIn("Demo policy note", result.answer)
+        self.assertEqual(result.source_ids, ["S2"])
+
+    def test_invalid_synthetic_policy_draft_uses_cited_catalog_note(self):
+        source = context()
+        source["content"] = "OCR typo text that must not be repeated."
+        source["metadata"].update({
+            "synthetic_company_policy": True,
+            "source_notes": "Chỉ thay đổi mạng lưới sau khi kiểm tra tuyến và chi phí.",
+            "ocr": {"engine": "tesseract"},
+        })
+        with patch(
+            "core.rag.rag_service.generate_with_provider_fallback",
+            return_value=("Uncited generated claim.", "test_provider"),
+        ):
+            result = RAGService(FakeRetrieval([source]), FakeLLM("unused")).generate_answer(
+                "Cần kiểm tra gì trước khi đổi mạng lưới?", roles=["analyst"],
+            )
+
+        self.assertIn("Bản nháp mô hình thiếu citation hợp lệ", result.answer)
+        self.assertIn("Chỉ thay đổi mạng lưới sau khi kiểm tra tuyến và chi phí.", result.answer)
+        self.assertIn("[S1]", result.answer)
+        self.assertNotIn("OCR typo text", result.answer)
+        self.assertEqual(result.answer_fallback_reason, "evidence_validation_failed")
+
+    def test_provider_rate_limit_uses_configured_fallback_and_validates_its_citation(self):
+        source = context()
+        llm = FakeLLM("should not be called directly")
+
+        def fallback(provider, prompt):
+            provider.last_usage = {"input_tokens": 24, "output_tokens": 8, "total_tokens": 32}
+            return "Check the cited source before transferring stock [S1].", "huggingface_inference"
+
+        with patch("core.rag.rag_service.generate_with_provider_fallback", side_effect=fallback) as generate:
+            result = RAGService(FakeRetrieval([source]), llm).generate_answer(
+                "What should be checked before a transfer?", roles=["analyst"],
+            )
+
+        generate.assert_called_once()
+        self.assertEqual(result.source_ids, ["S1"])
+        self.assertEqual(result.generation_provider, "huggingface_inference")
+        self.assertEqual(result.token_usage["total_tokens"], 32)
+        self.assertNotIn("temporarily unavailable", result.answer)
+
+    def test_missing_or_unknown_citations_return_source_only_fallback(self):
+        for draft in ("Uncited claim.", "Unsupported claim [S9]."):
+            with self.subTest(draft=draft):
+                result = RAGService(
+                    FakeRetrieval([context()]), FakeLLM(draft),
+                ).generate_answer("Question", roles=["employee"])
+
+                self.assertIn("did not contain valid citations", result.answer)
+                self.assertIn("[S1] Employees may report policy concerns.", result.answer)
+                self.assertNotIn("[S9]", result.answer)
+                self.assertEqual(result.source_ids, ["S1"])
+                self.assertEqual(result.answer_fallback_reason, "evidence_validation_failed")
 
 
 if __name__ == "__main__":

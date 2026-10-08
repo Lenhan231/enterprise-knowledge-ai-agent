@@ -10,7 +10,7 @@ from core.database.agent_run_repository import AgentRunRepository
 
 class AgentRunRepositoryTest(unittest.TestCase):
     @patch.dict(os.environ, {"DATABASE_URL": "postgresql://example"})
-    @patch("core.database.agent_run_repository.psycopg.connect")
+    @patch("core.database.agent_run_repository.connect_database")
     def test_record_event_persists_only_telemetry_fields(self, connect):
         connection = connect.return_value
         repository = AgentRunRepository()
@@ -28,7 +28,7 @@ class AgentRunRepositoryTest(unittest.TestCase):
         self.assertEqual(params, ("finance_analyst", "knowledge", "hybrid", "completed", 125, 2, None))
 
     @patch.dict(os.environ, {"DATABASE_URL": "postgresql://example"})
-    @patch("core.database.agent_run_repository.psycopg.connect")
+    @patch("core.database.agent_run_repository.connect_database")
     def test_monitoring_snapshot_reads_bounded_window_and_recent_limit(self, connect):
         connection = connect.return_value
         cursor = connection.cursor.return_value.__enter__.return_value
@@ -44,11 +44,13 @@ class AgentRunRepositoryTest(unittest.TestCase):
         self.assertEqual(snapshot["recent_runs"], [{"id": 2}])
 
     @patch.dict(os.environ, {"DATABASE_URL": "postgresql://example"})
-    @patch("core.database.agent_run_repository.psycopg.connect")
-    def test_close_closes_connection(self, connect):
+    @patch("core.database.agent_run_repository.close_database_connection")
+    @patch("core.database.agent_run_repository.connect_database")
+    def test_close_returns_connection_to_pool(self, connect, close):
+        connection = connect.return_value
         repository = AgentRunRepository()
         repository.close()
-        connect.return_value.close.assert_called_once()
+        close.assert_called_once_with(connection)
 
 
 if __name__ == "__main__":

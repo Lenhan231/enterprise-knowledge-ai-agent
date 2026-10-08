@@ -1,0 +1,180 @@
+{
+  "created_at_utc": "2026-10-08T02:01:51.322685+00:00",
+  "dataset_id": "commerce-shopee-inventory-grid-page11-v1",
+  "dataset_sha256": "4f84e762c803c3caee25b2fa5496ebdb4ccd014faf8fedb188ba0661c94273d7",
+  "reference_quality": "single_agent_visual_transcription_unreviewed",
+  "reference_method": "One reviewer visually transcribed the two visible product rows and headers from a 4x render of page 11. Values and selected OCR text anchors were read from the source image, not OCR output; no independent review has been performed.",
+  "protocol": "Copy each selected region from its source PDF page, rasterize it to remove any embedded OCR text layer, then run the existing DocumentProcessor PDF path with separate page-text and table render scales. Score source text chunks without generated structured-table serialization; score tables separately against supplied row/cell anchors.",
+  "limitations": "Production-parser OCR path only. Smoke fixtures verify extraction behavior but are not representative model-selection evidence or business evidence. This run has no explicitly annotated cell coordinates. There is no paired OCR-engine comparison. Throughput includes parser/OCR invocation but excludes application embedding and database persistence.",
+  "render_dpi": 108.0,
+  "ocr_render_scale": 1.5,
+  "table_ocr_render_dpi": 180.0,
+  "ocr_table_render_scale": 2.5,
+  "tesseract_page_segmentation_mode": 11,
+  "tesseract_table_segmentation_mode": 3,
+  "tesseract_language": "vie+eng",
+  "tesseract_language_by_case": {
+    "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN-PDF-PAGE-11-GRID": "vie+eng"
+  },
+  "software": {
+    "python": "3.11.16",
+    "pymupdf": "1.27.2.3",
+    "tesseract": "tesseract 5.5.3"
+  },
+  "process_memory": {
+    "process_peak_rss_mb": 93.293,
+    "child_peak_rss_mb": 112.621
+  },
+  "aggregate": {
+    "ocr_pages": 1,
+    "text_scored_pages": 0,
+    "text_anchor_scored_pages": 1,
+    "expected_text_anchors": 4,
+    "matched_text_anchors": 1,
+    "text_anchor_recall": 0.25,
+    "annotated_cell_locations": 0,
+    "matched_cell_locations": 0,
+    "cell_location_recall": null,
+    "table_scored_pages": 1,
+    "expected_anchor_rows": 2,
+    "matched_anchor_rows": 0,
+    "anchor_row_recall": 0.0,
+    "exact_numeric_cells": 0,
+    "total_numeric_cells": 12,
+    "exact_numeric_cell_accuracy": 0.0,
+    "expected_value_headers": 7,
+    "exact_header_matches": 0,
+    "header_recall": 0.0,
+    "table_anchor_quality_passes": 0,
+    "micro_cer": null,
+    "micro_wer": null,
+    "mean_latency_seconds": 1.565,
+    "mean_pages_per_minute": 38.35
+  },
+  "results": [
+    {
+      "id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN-PDF-PAGE-11-GRID",
+      "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+      "source_page_number": 11,
+      "language": "vie",
+      "layout_type": "embedded_seller_center_inventory_grid",
+      "physical_scan": false,
+      "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+      "cropped_pdf_sha256": "67d03c67b6cc7fdda83c6a0bf4f26ece2693d8d05d49720e6c377cf93cd675a1",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 1,
+      "table_count": 0,
+      "extracted_tables": [],
+      "table_anchor_score": {
+        "expected_headers": [
+          "Mã sản phẩm / Thông tin phân loại",
+          "Số bán 7 ngày qua",
+          "Số bán 30 ngày qua",
+          "Vị trí kho",
+          "Tồn kho có sẵn",
+          "Tồn kho khuyến mãi",
+          "Tồn kho tối thiểu"
+        ],
+        "extracted_headers": [],
+        "comparison": {
+          "labels": "accent-folded character similarity; matched at >= 0.6",
+          "headers": "normalized text comparison or digits-only period comparison",
+          "numeric_cells": "number formatting ignored; extra nonnumeric text makes a numeric cell incorrect"
+        },
+        "exact_header_matches": 0,
+        "expected_value_headers": 7,
+        "header_recall": 0.0,
+        "table_anchor_quality_pass": false,
+        "expected_anchor_rows": 2,
+        "matched_anchor_rows": 0,
+        "anchor_row_recall": 0.0,
+        "exact_numeric_cells": 0,
+        "total_numeric_cells": 12,
+        "exact_numeric_cell_accuracy": 0.0,
+        "matched_cell_locations": 0,
+        "annotated_cell_locations": 0,
+        "cell_location_recall": null,
+        "cell_location_comparison": "PDF-point bounding-box IoU >= 0.3",
+        "row_matches": [
+          {
+            "expected_label": "Loa Mỹ Nhập Khẩu",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "0",
+              "0",
+              "-",
+              "0",
+              "0",
+              "0"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Set quần áo cực chất - test",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "10",
+              "22",
+              "sonatus",
+              "10",
+              "0",
+              "15"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          }
+        ]
+      },
+      "text_reference_scored": false,
+      "text_anchor_score": {
+        "expected_anchor_count": 4,
+        "matched_anchor_count": 1,
+        "anchor_recall": 0.25,
+        "matches": [
+          {
+            "anchor": "7811192512",
+            "matched": false
+          },
+          {
+            "anchor": "3505740268",
+            "matched": true
+          },
+          {
+            "anchor": "0 0 - 0 0 0",
+            "matched": false
+          },
+          {
+            "anchor": "10 22 sonatus 10 0 15",
+            "matched": false
+          }
+        ]
+      },
+      "text_score_scope": "source text chunks; generated table serialization excluded",
+      "reference_characters": null,
+      "reference_words": null,
+      "hypothesis_characters": 249,
+      "character_edit_distance": null,
+      "word_edit_distance": null,
+      "cer": null,
+      "wer": null,
+      "ocr_text": "Ma sản phẩm Thông ín phân loại Số bán? Sốbán 30 HN Hoatdtng ngày qua ° ngày qua Tinktocssin Tùn ho khyên Tôneotk n Ma sản phẩm: 7811192612 85 sunghang nay E c Sử -mwwxm Ma sản phẩm: 3505740268 (=] Múc độ cần bỗ sung hing 85 sngkho hàng som 2 850905 0 M s E 10",
+      "latency_seconds": 1.565,
+      "pages_per_minute": 38.35,
+      "extracted_text": "Ma sản phẩm Thông ín phân loại Số bán? Sốbán 30 HN Hoatdtng ngày qua ° ngày qua Tinktocssin Tùn ho khyên Tôneotk n Ma sản phẩm: 7811192612 85 sunghang nay E c Sử -mwwxm Ma sản phẩm: 3505740268 (=] Múc độ cần bỗ sung hing 85 sngkho hàng som 2 850905 0 M s E 10"
+    }
+  ]
+}

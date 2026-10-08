@@ -54,11 +54,11 @@ class WebSocketQATest(unittest.TestCase):
 
     def test_generated_analytics_decimal_and_citation_are_json_safe_over_http_and_websocket(self):
         agent_result = AgentResult(
-            answer="Verified revenue was 61,824 billion VND [M1].", agent="analytics",
+            answer="Verified revenue was 18,624 billion VND [M1].", agent="analytics",
             evidence=[Evidence(
-                citation_id="M1", source_type="verified_metric", source="Vinamilk 2024 revenue",
-                content="Total consolidated revenue 61,824 billion VND",
-                metadata={"company": "Vinamilk", "document_id": "AR24", "page_number": 12,
+                citation_id="M1", source_type="verified_metric", source="Example Retailer 2024 revenue",
+                content="Total consolidated revenue 18,624 billion VND",
+                metadata={"company": "Example Retailer", "document_id": "AR24", "page_number": 12,
                           "source_url": "https://example.test/ar24"},
             )],
             data={"results": [{"total": Decimal("61824.00")} ]},

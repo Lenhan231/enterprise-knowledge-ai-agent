@@ -1,0 +1,185 @@
+{
+  "benchmark_id": "commerce-decision-support-discovery-v1",
+  "dataset": "Synthetic Kaggle Datathon 2026 Round 1 Commerce dataset",
+  "created_at_utc": "2026-10-07T12:50:10.835797+00:00",
+  "route": "POST /api/ask",
+  "principal_role": "admin",
+  "benchmark_sha256": "863aab455dee272c53d5b30b985a0a2c900b04b9c8db3d9cc1cae20b000c016f",
+  "manifest_sha256": "08dc89800e3094bd46736aa99c548a27ad1e999fe2f994a07ae2f0375c2708ac",
+  "manifest_corpus_id": "commerce-operations-reference-v1",
+  "case_count": 1,
+  "attempted_count": 1,
+  "unrun_case_ids": [],
+  "stop_reason": null,
+  "mechanically_passed": 1,
+  "failed": 0,
+  "citation_domain_checks_passed": 1,
+  "question_specific_sql_passed": 1,
+  "question_sql_fallback_reasons": {
+    "none": 1
+  },
+  "gold_numeric_coverage_passed": 1,
+  "gold_numeric_coverage_applicable": 1,
+  "gold_observation_coverage_passed": 1,
+  "gold_observation_coverage_applicable": 1,
+  "semantic_review_required": true,
+  "limitations": [
+    "Structured gold-observation checks verify that expected dimension/value groups occur together in cited SQL rows. This does not verify that the final answer associates each row correctly, causal interpretation, qualitative claims, or recommendation quality.",
+    "Review each answer against gold_observations and expected_behavior before reporting semantic benchmark scores.",
+    "Commerce observations and synthetic policy rules are demo-only, not facts or policies of a real retailer."
+  ],
+  "results": [
+    {
+      "case_id": "PROMO-02",
+      "domain": "promotion_planning",
+      "question": "Trong các campaign 2022, campaign nào có net sales gắn tag cao nhất trong thời gian chạy?",
+      "decision_analysis": "commerce_sql_and_operating_references",
+      "citation_validation_failed": false,
+      "passed": true,
+      "checks": {
+        "citation_integrity": true,
+        "citation_validation": true,
+        "domain_sql_evidence": true,
+        "question_specific_sql_available": true,
+        "question_specific_sql_requirement_met": true,
+        "sql_dataset_provenance": true,
+        "document_source_locations": true,
+        "document_scope_attribution": true,
+        "required_gold_numeric_facts_present": true,
+        "gold_observation_rows_present_in_cited_sql": true,
+        "answer_contract": true
+      },
+      "citation_domain_checks_passed": true,
+      "question_specific_sql_passed": true,
+      "gold_numeric_coverage_passed": true,
+      "gold_numeric_coverage_applicable": true,
+      "missing_gold_numeric_facts": [],
+      "gold_observation_coverage_passed": true,
+      "gold_observation_coverage_applicable": true,
+      "missing_gold_observation_rows": [],
+      "citations": [
+        {
+          "id": "C1",
+          "company": "Commerce Demo",
+          "title": "Commerce SQL aggregate: Promotion planning",
+          "source_publisher": null,
+          "evidence_class": null,
+          "reference_applicability": null,
+          "document_id": null,
+          "synthetic_company_policy": false,
+          "chunk_index": null,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": null,
+          "text_extraction_method": null,
+          "ocr": null,
+          "source_url": null,
+          "excerpt": "question_specific_query question-specific SQL observations: [{\"net_sales\": \"90345105.91\", \"promo_channel\": \"all_channels\", \"promo_id\": \"PROMO-0047\", \"promo_name\": \"Spring Sale 2022\"}, {\"net_sales\": \"55424932.90\", \"promo_channel\": \"all_channels\", \"promo_id\": \"PROMO-0049\", \"promo_name\": \"Fall Launch 2022\"}, {\"net_sales\": \"53901863.12\", \"promo_channel\": \"online\", \"promo_id\": \"PROMO-0048\", \"promo_name\": \"Mid-Year Sale 2022\"}, {\"net_sales\": \"42659548.34\", \"promo_channel\": \"all_channels\", \"promo_id\": \"PROMO-0050\", \"promo_name\": \"Year-End Sale 2022\"}]",
+          "score": null,
+          "retrieval_method": null,
+          "source_type": "commerce_sql",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": "promotion_planning",
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": "question_specific_query",
+          "commerce_observations": [
+            {
+              "promo_id": "PROMO-0047",
+              "promo_name": "Spring Sale 2022",
+              "promo_channel": "all_channels",
+              "net_sales": 90345105.91
+            },
+            {
+              "promo_id": "PROMO-0049",
+              "promo_name": "Fall Launch 2022",
+              "promo_channel": "all_channels",
+              "net_sales": 55424932.9
+            },
+            {
+              "promo_id": "PROMO-0048",
+              "promo_name": "Mid-Year Sale 2022",
+              "promo_channel": "online",
+              "net_sales": 53901863.12
+            },
+            {
+              "promo_id": "PROMO-0050",
+              "promo_name": "Year-End Sale 2022",
+              "promo_channel": "all_channels",
+              "net_sales": 42659548.34
+            }
+          ],
+          "source_tables": [
+            "commerce.promotions",
+            "commerce.order_items",
+            "commerce.orders"
+          ],
+          "sql_query": "SELECT p.promo_id, p.promo_name, p.promo_channel, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_sales FROM commerce.promotions AS p INNER JOIN commerce.order_items AS oi ON (oi.promo_id = p.promo_id OR oi.promo_id_2 = p.promo_id) INNER JOIN commerce.orders AS o ON o.order_id = oi.order_id WHERE o.order_status = 'delivered' AND o.order_date BETWEEN p.start_date AND p.end_date AND EXTRACT(YEAR FROM p.start_date) = 2022 GROUP BY p.promo_id, p.promo_name, p.promo_channel ORDER BY net_sales DESC LIMIT 100",
+          "sql_generation_provider": "groq",
+          "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+        },
+        {
+          "id": "S1",
+          "company": "Commerce Demo",
+          "title": "Chính sách giả lập: Đánh giá và lập kế hoạch khuyến mãi",
+          "source_publisher": "Commerce Demo (fictional organization)",
+          "evidence_class": "company_policy_reference",
+          "reference_applicability": "Fictional Commerce Demo promotion scenario only. Explicitly synthetic; not an issued policy of a real retailer.",
+          "document_id": "CD-POL-PROMO-001",
+          "synthetic_company_policy": true,
+          "chunk_index": 1,
+          "source_chunk_id": null,
+          "source_content_hash": null,
+          "page_number": 2,
+          "text_extraction_method": "tesseract",
+          "ocr": {
+            "engine": "tesseract",
+            "language": "vie+eng",
+            "page_psm": 11,
+            "render_scale": 1.5
+          },
+          "source_url": null,
+          "excerpt": "| SYNTHETIC DEMO POLICY - NOT A REAL COMPANY POLICY COMMERCE DEMO / CD-POL-PROMO-001 Chính sách giả lập: Đánh giá và lập kế hoạch khuyến mãi Điều kiện ngân sách và bảo vệ kết luận Điều kiện trước khi mở rộng ngân sách Có ước lượng incrementality từ thiết kế đo lường phù hợp, không chỉ so sánh doanh số của đơn có/không có tag. Có chi phí campaign, discount funding, giá vốn và contribution margin theo cùng phạm vi để đánh giá hiệu quả lợi nhuận. Có kiểm tra tính đầy đủ dữ liệu, thời gian đo, khả năng nhiễm chéo giữa nhóm và độ bất định của kết quả. Không được suy diễn Không gọi chênh lệch tagged/untagged là uplift hoặc tác động nhân quả. Không dùng ROAS thay ROI hoặc lợi nhuận tăng thêm; không",
+          "score": 24.3791379264141,
+          "retrieval_method": "bm25",
+          "source_type": "document",
+          "metric_name": null,
+          "fiscal_year": null,
+          "commerce_domain": null,
+          "commerce_aggregate_key": null,
+          "commerce_observation_group": null,
+          "commerce_observations": null,
+          "source_tables": null,
+          "sql_query": null,
+          "sql_generation_provider": null,
+          "dataset_note": null
+        }
+      ],
+      "question_specific_sql_used": true,
+      "sql_generation_provider": "groq",
+      "question_sql_fallback": null,
+      "answer_generation_provider": "groq",
+      "token_usage": {
+        "sql_generation": {
+          "input_tokens": 848,
+          "output_tokens": 251,
+          "total_tokens": 1099
+        },
+        "answer_generation": {
+          "input_tokens": 1776,
+          "output_tokens": 300,
+          "total_tokens": 2076
+        },
+        "total": {
+          "input_tokens": 2624,
+          "output_tokens": 551,
+          "total_tokens": 3175
+        }
+      },
+      "answer": "Các số liệu dưới đây thuộc bộ dữ liệu Commerce Demo giả lập, không phải kết quả của nhà bán lẻ có thật. [C1]\n\n## Campaign 2022 có net sales gắn tag cao nhất\n\n| Campaign | Net sales (đơn vị: USD) | ID promotion |\n|----------|------------------------|--------------|\n| Spring Sale 2022 | 90 345 105.91 | PROMO-0047 |\n| Fall Launch 2022 | 55 424 932.90 | PROMO-0049 |\n| Mid‑Year Sale 2022 | 53 901 863.12 | PROMO-0048 |\n| Year‑End Sale 2022 | 42 659 548.34 | PROMO-0050 |\n\n**Kết luận**  \nTrong các campaign diễn ra trong năm 2022, *Spring Sale 2022* (PROMO‑0047) có net sales gắn tag cao nhất với 90 345 105.91 USD.  \n\n> [C1]  \n\n**Phương pháp**  \nDữ liệu được lấy từ bảng `commerce.promotions`, `commerce.order_items` và `commerce.orders` và tính tổng net sales theo promotion ID trong khoảng thời gian chạy của từng campaign. Phương pháp này tuân thủ chính sách giả lập của Commerce Demo (được ghi trong [S1]) và không đưa ra bất kỳ ước tính tăng trưởng hay ROI nào.  \n\n> [S1]",
+      "semantic_review_required": true,
+      "http_status": 200,
+      "latency_seconds": 33.414
+    }
+  ]
+}

@@ -9,13 +9,23 @@ from unittest.mock import patch, MagicMock
 
 import fitz
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts/processing/evaluate_ocr.py"
+SCRIPT = Path(__file__).resolve().parents[1] / "tools/processing/evaluate_ocr.py"
 SPEC = importlib.util.spec_from_file_location("evaluate_ocr", SCRIPT)
 evaluate_ocr = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(evaluate_ocr)
 
 
 class OCREvaluationTest(unittest.TestCase):
+    def test_dataset_language_selects_matching_engine_language(self):
+        self.assertEqual(evaluate_ocr.ocr_language_for_dataset({"pages": [{"language": "en"}]}), "eng")
+        self.assertEqual(evaluate_ocr.ocr_language_for_dataset({"pages": [{"language": "vie"}]}), "vie+eng")
+
+    def test_dataset_language_rejects_missing_or_mixed_languages(self):
+        with self.assertRaisesRegex(ValueError, "declare a language"):
+            evaluate_ocr.ocr_language_for_dataset({"pages": []})
+        with self.assertRaisesRegex(ValueError, "One OCR language"):
+            evaluate_ocr.ocr_language_for_dataset({"pages": [{"language": "en"}, {"language": "vi"}]})
+
     def test_paddleocr_3_selects_cuda_when_available(self):
         paddle = MagicMock()
         paddle.is_compiled_with_cuda.return_value = True
@@ -39,6 +49,23 @@ class OCREvaluationTest(unittest.TestCase):
         with patch.dict(sys.modules, {"torch": None, "paddle": paddle, "paddleocr": paddleocr}):
             evaluate_ocr.create_engine("paddleocr", "vi")
         self.assertEqual(paddleocr.PaddleOCR.call_args.kwargs["device"], "cpu")
+
+    def test_paddleocr_uses_english_recognition_model_for_english_dataset(self):
+        paddle = MagicMock()
+        paddle.is_compiled_with_cuda.return_value = False
+        paddle.device.cuda.device_count.return_value = 0
+        paddleocr = MagicMock()
+        with patch.dict(sys.modules, {"torch": None, "paddle": paddle, "paddleocr": paddleocr}):
+            evaluate_ocr.create_engine("paddleocr", "eng")
+        self.assertEqual(paddleocr.PaddleOCR.call_args.kwargs["lang"], "en")
+
+    def test_easyocr_uses_only_english_recognition_model_for_english_dataset(self):
+        easyocr = MagicMock()
+        torch = MagicMock()
+        torch.cuda.is_available.return_value = False
+        with patch.dict(sys.modules, {"easyocr": easyocr, "torch": torch}):
+            evaluate_ocr.create_engine("easyocr", "eng")
+        easyocr.Reader.assert_called_once_with(["en"], gpu=False, verbose=False)
 
     def test_environment_gpu_reports_device_when_cuda_is_available(self):
         torch = MagicMock()
@@ -277,6 +304,19 @@ class OCREvaluationTest(unittest.TestCase):
             self.assertEqual(engine["aggregate"]["valid_pages"], 0)
             self.assertFalse(report["environment"]["cuda_available"])
 
+    def test_table_anchor_only_results_count_as_scored(self):
+        self.assertTrue(evaluate_ocr.has_scored_results({"tesseract": {"pages": [{
+            "error": None, "cer": None, "table_rows_expected": 1,
+        }]}}))
+
+    def test_failed_or_unreferenced_pages_do_not_count_as_scored(self):
+        self.assertFalse(evaluate_ocr.has_scored_results({"easyocr": {"pages": [{
+            "error": "model unavailable", "cer": None, "table_rows_expected": 1,
+        }]}}))
+        self.assertFalse(evaluate_ocr.has_scored_results({"easyocr": {"pages": [{
+            "error": None, "cer": None,
+        }]}}))
+
     def test_neural_engines_are_initialized_and_run_sequentially(self):
         events = []
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -291,19 +331,19 @@ class OCREvaluationTest(unittest.TestCase):
                 "limitations": "test only",
                 "pages": [{
                     "document_id": "fixture", "file": "fixture.pdf", "page": 1,
-                    "language": "vi", "reference_text": "fixture text",
+                    "language": "en", "reference_text": "fixture text",
                 }],
             }
             dataset_path = temp_root / "dataset.json"
             dataset_path.write_text(json.dumps(dataset), encoding="utf-8")
             output_path = temp_root / "report.json"
 
-            def create_engine(engine, _language):
-                events.append(("init", engine))
+            def create_engine(engine, language):
+                events.append(("init", engine, language))
                 return object()
 
-            def run_engine(engine, _model, _image, _language):
-                events.append(("run", engine))
+            def run_engine(engine, _model, _image, language):
+                events.append(("run", engine, language))
                 return "fixture text", 0.1, None
 
             torch = MagicMock()
@@ -325,8 +365,8 @@ class OCREvaluationTest(unittest.TestCase):
                 self.assertEqual(evaluate_ocr.main(), 0)
 
             self.assertEqual(events, [
-                ("init", "paddleocr"), ("run", "paddleocr"),
-                ("init", "easyocr"), ("run", "easyocr"),
+                ("init", "paddleocr", "eng"), ("run", "paddleocr", "eng"),
+                ("init", "easyocr", "eng"), ("run", "easyocr", "eng"),
             ])
             report = json.loads(output_path.read_text(encoding="utf-8"))
             self.assertEqual(report["engines"]["paddleocr"]["aggregate"]["valid_pages"], 1)

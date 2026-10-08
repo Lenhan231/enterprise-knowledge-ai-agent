@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.agents.qa_human_review import import_reviews, prepare_review  # noqa: E402
+from tools.agents.qa_human_review import import_reviews, prepare_review  # noqa: E402
 
 
 def write_run(path: Path, model: str, context_hash: str = "same-context"):
@@ -83,7 +83,7 @@ class BlindQAReviewTest(unittest.TestCase):
             self.assertEqual(faithfulness_agreement["weighted_cohen_kappa"], 1.0)
 
     def test_agreement_is_only_reported_for_paired_two_reviewer_scores(self):
-        from scripts.agents.score_qa_artifact import summarize_human_reviews
+        from tools.agents.score_qa_artifact import summarize_human_reviews
 
         summary = summarize_human_reviews([{
             "human_reviews": [

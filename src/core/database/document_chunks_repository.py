@@ -4,7 +4,6 @@ from psycopg.types.json import Jsonb
 
 import psycopg
 from dotenv import load_dotenv
-from pgvector.psycopg import register_vector
 from core.database.connection_limit import close_database_connection, connect_database
 from core.retrieval.retrieval import RetrievedChunk
 from core.retrieval.methods.common import (
@@ -21,12 +20,6 @@ class DocumentChunkRepository:
             raise ValueError("DATABASE_URL is not set")
         self.DATABASE_URL = DATABASE_URL
         self.conn = connect_database(self.DATABASE_URL)
-        try:
-            register_vector(self.conn)
-        except BaseException:
-            close_database_connection(self.conn)
-            raise
-        
 
     def insert_chunk(
         self,

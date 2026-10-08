@@ -212,10 +212,10 @@ class RetrievalServiceTest(unittest.TestCase):
 
         result = self.service.retrieve(
             RetrievalRequest(query="revenue", top_k=1),
-            company="Vinamilk", roles=["finance_analyst"], method="parent",
+            company="Example Retailer", roles=["finance_analyst"], method="parent",
         )
 
-        self.assertEqual(self.repository.search_args, ([0.1, 0.2], 5, "Vinamilk", ["finance_analyst"], "revenue", "dense", {}))
+        self.assertEqual(self.repository.search_args, ([0.1, 0.2], 5, "Example Retailer", ["finance_analyst"], "revenue", "dense", {}))
         self.assertEqual(result.method, "parent")
         self.assertEqual(len(result.results), 1)
         self.assertEqual(result.results[0].text, "Previous section passage\nRelevant policy text\nNext section passage")

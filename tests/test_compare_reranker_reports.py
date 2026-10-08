@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.retrieval.compare_reranker_reports import compare_reports
+from tools.retrieval.compare_reranker_reports import compare_reports
 
 
 def report(model, reranked_mrr, candidate_hash="candidate-hash"):

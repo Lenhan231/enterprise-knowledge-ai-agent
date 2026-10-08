@@ -35,12 +35,22 @@ class EmbeddingServiceTest(unittest.TestCase):
         self.assertEqual(self.service.embed_query("apple"), [5.0])
 
     def test_default_backend_is_shared_across_request_scoped_services(self):
-        with patch("langchain_huggingface.HuggingFaceEmbeddings") as constructor:
+        with patch.dict("os.environ", {"HUGGINGFACE_API_KEY": ""}), \
+             patch("langchain_huggingface.HuggingFaceEmbeddings") as constructor:
             first = EmbeddingService(model_name="cache-test-model", backend_name="local")
             second = EmbeddingService(model_name="cache-test-model", backend_name="local")
 
         self.assertIs(first._backend, second._backend)
         constructor.assert_called_once_with(model_name="cache-test-model")
+
+    def test_local_backend_passes_hugging_face_token_to_model_download(self):
+        with patch.dict("os.environ", {"HUGGINGFACE_API_KEY": "test-token"}), \
+             patch("langchain_huggingface.HuggingFaceEmbeddings") as constructor:
+            EmbeddingService(model_name="authenticated-model", backend_name="local")
+
+        constructor.assert_called_once_with(
+            model_name="authenticated-model", model_kwargs={"token": "test-token"},
+        )
 
     def test_hosted_backend_uses_feature_extraction_without_local_model(self):
         _load_backend.cache_clear()

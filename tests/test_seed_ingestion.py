@@ -35,13 +35,42 @@ class SeedIngestionTest(unittest.TestCase):
             self.assertNotIn("On this page", extracted)
             self.assertNotIn("Choose a tracking system", extracted)
             self.assertEqual(chunks[0].page_content, extracted)
+            self.assertEqual(chunks[0].metadata["section_title"], "Manage inventory")
+
+    def test_html_ingestion_keeps_chunks_within_their_heading_section(self):
+        with tempfile.TemporaryDirectory() as directory:
+            html_path = Path(directory) / "guide.html"
+            html_path.write_text(
+                "<article><h1>Guide</h1><h2>Choose options</h2>"
+                "<p>Compare speed and cost.</p><h2>Evaluate providers</h2>"
+                "<p>Check coverage.</p></article>",
+                encoding="utf-8",
+            )
+            with patch("core.document_processing.ingest_documents.TokenCounter") as counter, \
+                 patch("core.document_processing.ingest_documents.SemanticDocumentChunker"), \
+                 patch(
+                     "core.document_processing.ingest_documents.split_text",
+                     side_effect=lambda text, **kwargs: [text],
+                 ):
+                counter.return_value.count.side_effect = lambda text: len(text.split())
+                counter.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+                ingestor = Ingestion(embedding_service=type("Embedding", (), {"model_name": "test"})())
+                chunks = ingestor.ingestion(html_path, Path(directory) / "processed")
+
+            self.assertEqual(
+                [chunk.metadata["section_title"] for chunk in chunks],
+                ["Choose options", "Evaluate providers"],
+            )
+            self.assertIn("Compare speed and cost.", chunks[0].page_content)
+            self.assertIn("Check coverage.", chunks[1].page_content)
+            self.assertNotIn("Check coverage.", chunks[0].page_content)
 
     def test_html_seed_ingestion_preserves_manifest_metadata(self):
         with tempfile.TemporaryDirectory() as directory:
             html_path = Path(directory) / "policy.html"
             html_path.write_text("<main><h1>Policy</h1><p>Requirements apply.</p></main>", encoding="utf-8")
             expected = {
-                "company": "Vinamilk JSC", "document_type": "operating_policy",
+                "company": "Example Retailer JSC", "document_type": "operating_policy",
                 "source_type": "public_enterprise_document", "language": "en",
                 "allowed_roles": ["operations"],
             }

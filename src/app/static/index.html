@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=commerce-token-usage-1">
+  <link rel="stylesheet" href="/static/styles.css?v=ocr-review-stack-20261008">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -20,22 +20,12 @@
   </script>
 </head>
 <body>
-  <header class="topbar">
+  <aside id="login-brand-sidebar" class="login-brand-sidebar" aria-label="Application identity">
     <a class="brand" href="/" aria-label="Enterprise Knowledge home">
       <span class="brand-mark">EK</span>
       <span><strong>Enterprise Knowledge AI</strong><small>Commerce operations workspace</small></span>
     </a>
-    <div class="topbar-status">
-      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light and dark mode" title="Toggle theme">
-        <span class="theme-icon light-icon" aria-hidden="true">Light</span>
-        <span class="theme-icon dark-icon" aria-hidden="true">Dark</span>
-      </button>
-      <span class="status-dot"></span>
-      <span id="connection-status">Sign in required</span>
-      <span id="user-badge" hidden></span>
-      <button id="logout-button" class="logout-btn" hidden>Sign out</button>
-    </div>
-  </header>
+  </aside>
 
   <main id="login-view" class="login-view">
     <form id="login-form" class="login-card">
@@ -51,12 +41,39 @@
     </form>
   </main>
 
-  <main id="workspace" class="page" hidden>
+  <div id="workspace" class="app-shell" hidden>
+    <aside class="workspace-sidebar" aria-label="Workspace sidebar">
+      <a class="brand sidebar-brand" href="/" aria-label="Enterprise Knowledge home">
+        <span class="brand-mark">EK</span>
+        <span><strong>Enterprise Knowledge AI</strong><small>Commerce operations workspace</small></span>
+      </a>
+      <nav id="workspace-tabs" class="workspace-tabs" role="tablist" aria-label="Workspace navigation">
+        <button id="tab-button-knowledge" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="tab-knowledge" data-tab-target="knowledge">Knowledge Q&amp;A</button>
+        <button id="tab-button-analytics" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-analytics" data-tab-target="analytics" hidden>Commerce Dashboard</button>
+        <button id="tab-button-upload" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-upload" data-tab-target="upload" hidden>Upload Documents</button>
+        <button id="tab-button-processing" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-processing" data-tab-target="processing" hidden>Document Processing</button>
+        <button id="tab-button-ocr-lab" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-ocr-lab" data-tab-target="ocr-lab" hidden>OCR Lab</button>
+        <button id="tab-button-knowledge-management" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-knowledge-management" data-tab-target="knowledge-management" hidden>Knowledge Management</button>
+        <button id="tab-button-access" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-access" data-tab-target="access" hidden>Access Control</button>
+        <button id="tab-button-monitoring" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" data-tab-target="monitoring" hidden>Agent Monitoring</button>
+      </nav>
+      <div class="topbar-status sidebar-account">
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light and dark mode" title="Toggle theme">
+          <span class="theme-icon light-icon" aria-hidden="true">Light</span>
+          <span class="theme-icon dark-icon" aria-hidden="true">Dark</span>
+        </button>
+        <span class="status-dot"></span>
+        <span id="connection-status">Sign in required</span>
+        <span id="user-badge" hidden></span>
+        <button id="logout-button" class="logout-btn" hidden>Sign out</button>
+      </div>
+    </aside>
+    <main id="workspace-main" class="page">
     <section class="intro">
       <div>
         <p class="eyebrow">GROUNDED COMPANY INTELLIGENCE</p>
         <h1>Ask company documents.<br><span>Get answers with sources.</span></h1>
-        <p class="intro-copy">Search company-published commerce operating guidance and analyze the synthetic Commerce dataset. Answers cite their source and disclose evidence limits.</p>
+        <p class="intro-copy">Search attributed operating references and clearly labeled synthetic Demo policies. Analyze synthetic Commerce data; answers cite sources and state evidence limits.</p>
       </div>
       <div class="corpus-scope">
         <span>ENTERPRISE SCOPE</span>
@@ -95,30 +112,7 @@
       </article>
     </section>
 
-    <nav id="workspace-tabs" class="workspace-tabs" role="tablist" aria-label="Workspace navigation">
-      <button id="tab-button-knowledge" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="tab-knowledge" data-tab-target="knowledge">
-        Knowledge Q&amp;A
-      </button>
-      <button id="tab-button-analytics" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-analytics" data-tab-target="analytics" hidden>
-        Commerce Dashboard
-      </button>
-      <button id="tab-button-processing" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-processing" data-tab-target="processing" hidden>
-        Document Processing
-      </button>
-      <button id="tab-button-ocr-lab" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-ocr-lab" data-tab-target="ocr-lab" hidden>
-        OCR Lab
-      </button>
-      <button id="tab-button-knowledge-management" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-knowledge-management" data-tab-target="knowledge-management" hidden>
-        Knowledge Management
-      </button>
-      <button id="tab-button-access" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-access" data-tab-target="access" hidden>
-        Access Control
-      </button>
-      <button id="tab-button-monitoring" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" data-tab-target="monitoring" hidden>
-        Agent Monitoring
-      </button>
-    </nav>
-
+    <div class="workspace-content">
     <!-- TAB 1: KNOWLEDGE / Q&A -->
     <section id="tab-knowledge" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-knowledge">
       <section class="ask-panel" aria-labelledby="ask-title">
@@ -173,7 +167,7 @@
           <div class="loading-card">Loading decision-support sources…</div>
         </div>
       </section>
-      <p class="corpus-note">Company-published platform guidance is external reference material, not an internal policy of the synthetic Commerce dataset. Confirm current rules at the source before acting.</p>
+      <p class="corpus-note">External retailer and platform guidance applies only to its named publisher. Fictional Commerce Demo policies apply only to this mock dataset. Check each source’s scope before acting.</p>
     </section>
 
     <!-- TAB 2: ANALYTICS / BUSINESS ANALYSIS -->
@@ -190,15 +184,17 @@
             </div>
           </div>
           <p id="commerce-dashboard-status" class="loading-card" role="status" hidden></p>
-          <div class="commerce-dashboard-tabs" role="tablist" aria-label="Commerce decision domains">
-            <button type="button" role="tab" aria-selected="true" data-commerce-view="inventory">Inventory allocation</button>
-            <button type="button" role="tab" aria-selected="false" data-commerce-view="promotions">Promotion planning</button>
-            <button type="button" role="tab" aria-selected="false" data-commerce-view="logistics">Nationwide logistics</button>
-          </div>
-          <div id="commerce-domain-cards" class="commerce-kpi-grid" aria-live="polite"></div>
-          <details class="commerce-financial-context"><summary>Dataset sales context (not a decision-domain KPI)</summary>
-            <div id="commerce-sales-table" class="commerce-table-wrap"></div>
-          </details>
+          <div class="commerce-dashboard-layout">
+            <nav class="commerce-dashboard-tabs" role="tablist" aria-label="Commerce decision domains" aria-orientation="vertical">
+              <button type="button" role="tab" aria-selected="true" aria-controls="commerce-view-inventory" data-commerce-view="inventory">Inventory allocation</button>
+              <button type="button" role="tab" aria-selected="false" aria-controls="commerce-view-promotions" data-commerce-view="promotions">Promotion planning</button>
+              <button type="button" role="tab" aria-selected="false" aria-controls="commerce-view-logistics" data-commerce-view="logistics">Nationwide logistics</button>
+            </nav>
+            <div class="commerce-dashboard-content">
+              <div id="commerce-domain-cards" class="commerce-kpi-grid" aria-live="polite"></div>
+              <details class="commerce-financial-context"><summary>Dataset sales context (not a decision-domain KPI)</summary>
+                <div id="commerce-sales-table" class="commerce-table-wrap"></div>
+              </details>
           <section id="commerce-view-inventory" class="commerce-view" role="tabpanel">
             <h3>Inventory health by year</h3><p>2012 is a partial year. Fill rate is the mean of the dataset's source values. Stockout and overstock are product-snapshot flags, may overlap, and are not unique incidents. Anomalous days-of-supply values are omitted.</p>
             <div id="commerce-inventory-chart" class="commerce-chart-card"></div>
@@ -221,11 +217,13 @@
             <div id="commerce-logistics-chart" class="commerce-chart-card"></div>
             <div id="commerce-logistics-table" class="commerce-table-wrap"></div>
           </section>
+            </div>
+          </div>
           <details class="commerce-data-notes"><summary>Dataset scope and decision limits</summary><ul id="commerce-data-notes-list"></ul></details>
           <section class="analysis-section commerce-decision-question" aria-labelledby="business-question-title">
             <div class="analysis-section-heading">
               <div><p class="eyebrow">DATABASE + COMPANY REFERENCES</p><h3 id="business-question-title">Ask a Commerce decision question</h3></div>
-              <span>Answers combine aggregates from the synthetic Commerce schema with cited company-published practice references.</span>
+              <span>Answers combine synthetic Commerce data with domain-scoped operating references or clearly labeled Demo policies.</span>
             </div>
             <form id="business-question-form" class="business-question-form">
               <label class="visually-hidden" for="business-question">Analytical question</label>
@@ -243,7 +241,7 @@
               <div id="decision-domain-questions" class="decision-question-list"></div>
               <button type="button" data-decision-suggestions>
                 <strong>Generate conditional action recommendations</strong>
-                <small>The agent will combine Commerce SQL observations with relevant company references. Conditions and recommendations stay server-side.</small>
+                <small>The agent will combine Commerce SQL observations with domain-scoped references. Conditions and recommendations stay server-side.</small>
               </button>
             </div>
             <div id="business-answer-panel" class="answer-panel" hidden aria-live="polite"></div>
@@ -276,71 +274,130 @@
       </section>
     </section>
 
-    <!-- TAB 3: PROCESSING / PARSING & OCR -->
-    <section id="tab-processing" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-processing" hidden>
+    <!-- TAB: UPLOAD / KNOWLEDGE SOURCES -->
+    <section id="tab-upload" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-upload" hidden>
       <section id="upload-section" class="upload-section" hidden>
         <div class="section-heading">
           <div>
-            <p class="eyebrow">CORPUS MANAGEMENT</p>
-            <h2>Upload &amp; Classify Enterprise Document</h2>
+            <p class="eyebrow">KNOWLEDGE SOURCES</p>
+            <h2>Upload a knowledge source</h2>
+            <p class="corpus-note">Add a document for Q&amp;A, assign its readers, and optionally route it as guidance for a Commerce decision domain.</p>
           </div>
         </div>
         <form id="upload-form" class="upload-form">
-          <label for="upload-file">Document file</label>
-          <input id="upload-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff" required>
+          <section class="upload-step upload-document-step">
+            <h3><span>1</span> Document</h3>
+            <div class="upload-step-fields">
+              <div class="upload-field upload-field-wide">
+                <label for="upload-file">Document file</label>
+                <div id="upload-dropzone" class="upload-dropzone">
+                  <p><strong>Drop one file here</strong> or choose it from your device.</p>
+                  <input id="upload-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff" aria-describedby="upload-file-info" required>
+                  <small>PDF, DOCX, PPTX, XLSX, TXT, MD, PNG, JPG or TIF · up to 50 MiB.</small>
+                  <p id="upload-file-info" class="corpus-note" aria-live="polite">The original is stored privately. Scans use OCR and may need source-page review in Document Processing.</p>
+                </div>
+              </div>
+              <div class="upload-field upload-field-wide">
+                <label for="upload-title">Document title</label>
+                <input id="upload-title" name="title" required maxlength="200" placeholder="Filled from the filename; you can edit it">
+                <small class="upload-field-hint">This title is shown in search results and the knowledge list.</small>
+              </div>
+              <div class="upload-field upload-field-wide">
+                <label for="upload-ocr-language">OCR language for scans and images</label>
+                <select id="upload-ocr-language" name="ocr_language">
+                  <option value="vie+eng" selected>Vietnamese + English · default</option>
+                  <option value="eng">English only</option>
+                </select>
+                <small class="upload-field-hint">Choose the main language on scanned pages. The parser records this setting with OCR output.</small>
+              </div>
+            </div>
+          </section>
 
-          <label for="upload-title">Document title</label>
-          <input id="upload-title" name="title" required maxlength="200" placeholder="e.g. Annual Report 2024">
+          <fieldset class="upload-access-step">
+            <legend><span>2</span> Access</legend>
+            <small>Select who can retrieve this source in document Q&amp;A. This is the access control; Commerce tags below only route relevant guidance to decision support.</small>
+            <div id="upload-role-options" class="upload-role-options"></div>
+            <p id="upload-role-selection" class="upload-role-selection" aria-live="polite">No roles selected yet.</p>
+          </fieldset>
 
-          <label for="upload-type">Document type</label>
-          <input id="upload-type" name="document_type" required maxlength="80" placeholder="annual_report">
+          <section class="upload-step upload-commerce-step">
+            <h3><span>3</span> Optional: Commerce decision support</h3>
+            <label class="upload-use-option upload-reference-toggle">
+              <input id="upload-commerce-reference" name="commerce_decision_support" type="checkbox">
+              <span><strong>Use this source to guide Commerce decisions</strong><small>Choose this only when the source gives a method, attributed example, or scoped operating rule for inventory, promotions, or logistics. It remains available to document Q&amp;A either way.</small></span>
+            </label>
+            <p class="corpus-note upload-use-note">Decision tags route guidance; they do not grant access or change dashboard data.</p>
+          </section>
 
-          <label for="upload-domain">Domain</label>
-          <input id="upload-domain" name="domain" required maxlength="80" placeholder="finance_and_operations">
+          <details id="upload-commerce-details" class="upload-commerce-details" hidden>
+          <summary>Commerce classification details</summary>
+          <fieldset id="upload-reference-fields" hidden>
+            <legend>Commerce source details</legend>
+            <div class="upload-field">
+              <label for="upload-reference-type">Source type</label>
+              <select id="upload-reference-type" name="reference_type">
+                <option value="">Choose a source type</option>
+                <option value="management_cookbook_reference">Management method · general guidance</option>
+                <option value="company_practice_reference">Company practice · example only</option>
+                <option value="company_policy_reference">External company policy · stated scope only</option>
+                <option value="platform_operating_rule">Platform operating rule</option>
+              </select>
+            </div>
+            <div class="upload-field">
+              <label for="upload-publisher">Source publisher</label>
+              <input id="upload-publisher" name="source_publisher" maxlength="200" placeholder="e.g. Walmart Inc.">
+            </div>
 
-          <label for="upload-publisher">Source publisher</label>
-          <input id="upload-publisher" name="source_publisher" maxlength="200" placeholder="e.g. Walmart Inc.">
+            <div class="upload-field">
+              <label for="upload-reference-applicability">Applicability / scope</label>
+              <textarea id="upload-reference-applicability" name="reference_applicability" maxlength="1000" rows="2" placeholder="Who or what does this source apply to? State when it is only an external example."></textarea>
+            </div>
 
-          <label for="upload-reference-type">Commerce reference type</label>
-          <select id="upload-reference-type" name="reference_type">
-            <option value="">General document · not used as decision reference</option>
-            <option value="company_practice_reference">Company practice reference</option>
-            <option value="company_policy_reference">Company-issued policy</option>
-            <option value="platform_operating_rule">Platform operating rule</option>
-          </select>
-
-          <label for="upload-reference-applicability">Reference applicability / scope</label>
-          <textarea id="upload-reference-applicability" name="reference_applicability" maxlength="1000" rows="2" placeholder="e.g. Walmart suppliers only; not Commerce Demo policy"></textarea>
+            <fieldset id="upload-commerce-domains">
+              <legend>Use for these Commerce decisions</legend>
+              <label class="upload-domain-option"><input type="checkbox" name="knowledge_domains" value="inventory_allocation"><span><strong>Inventory allocation</strong><small>Stock levels, replenishment, and where to position inventory.</small></span></label>
+              <label class="upload-domain-option"><input type="checkbox" name="knowledge_domains" value="promotion_planning"><span><strong>Promotion planning</strong><small>Offer timing, discount depth, and promotion performance.</small></span></label>
+              <label class="upload-domain-option"><input type="checkbox" name="knowledge_domains" value="nationwide_logistics"><span><strong>Nationwide logistics</strong><small>Fulfilment, delivery capacity, and regional distribution.</small></span></label>
+            </fieldset>
+            <small class="upload-classification-help">Choose the source's real role: management methods are general guidance, company practices are attributed examples, and external policies apply only within their stated scope. An external policy never becomes a policy for the synthetic Commerce dataset.</small>
+          </fieldset>
 
           <fieldset id="upload-synthetic-policy-option" hidden>
             <legend>Fictional demo policy</legend>
-            <label><input id="upload-synthetic-policy" name="synthetic_company_policy" type="checkbox"> Register as a synthetic Commerce Demo policy (Admin only)</label>
+            <label><input id="upload-synthetic-policy" name="synthetic_company_policy" type="checkbox"> This is a fictional Commerce Demo policy (Admin only)</label>
             <small>Use only for fictional demo procedures. The document will be labeled synthetic in RAG and citations.</small>
           </fieldset>
+          </details>
 
-          <fieldset id="upload-commerce-domains">
-            <legend>Commerce decision domains</legend>
-            <label><input type="checkbox" name="knowledge_domains" value="inventory_allocation"> Inventory allocation</label>
-            <label><input type="checkbox" name="knowledge_domains" value="promotion_planning"> Promotion planning</label>
-            <label><input type="checkbox" name="knowledge_domains" value="nationwide_logistics"> Nationwide logistics</label>
-          </fieldset>
+          <details class="upload-optional-metadata">
+            <summary>Optional source details</summary>
+            <div class="upload-field">
+              <label for="upload-year">Fiscal year</label>
+              <input id="upload-year" name="fiscal_year" type="number" min="1900" max="2100" placeholder="2024">
+            </div>
+            <div class="upload-field">
+              <label for="upload-source-url">Public source URL</label>
+              <input id="upload-source-url" name="source_url" type="url" pattern="https://.*" placeholder="https://…">
+            </div>
+          </details>
 
-          <label for="upload-year">Fiscal year</label>
-          <input id="upload-year" name="fiscal_year" type="number" min="1900" max="2100" placeholder="2024">
+          <aside id="upload-plan-summary" class="upload-plan-summary" role="status" aria-live="polite"></aside>
 
-          <label for="upload-source-url">Official source URL (optional)</label>
-          <input id="upload-source-url" name="source_url" type="url" pattern="https://.*" placeholder="https://…">
-          <p class="corpus-note">A Commerce reference needs a publisher, reference type, applicability scope, and at least one decision domain. External references are attributed examples, not policy for the synthetic dataset. Parsed chunks retain source URL, publisher, scope, domain tags, and parser/OCR provenance.</p>
-
-          <fieldset>
-            <legend>Roles authorized to retrieve this document</legend>
-            <div id="upload-role-options" class="upload-role-options"></div>
-          </fieldset>
-          <button id="upload-button" type="submit" class="primary-button">Upload &amp; Process Document</button>
-          <p id="upload-status" class="corpus-note" aria-live="polite"></p>
+          <button id="upload-button" type="submit" class="primary-button">Upload and index document</button>
+          <div id="upload-status-wrap" class="upload-status-wrap" hidden>
+            <div id="upload-progress" class="upload-progress" role="progressbar" aria-label="Document processing" aria-valuetext="Processing">
+              <span></span>
+            </div>
+            <p id="upload-status" class="corpus-note" aria-live="polite"></p>
+            <small id="upload-elapsed" class="upload-elapsed" aria-live="off" hidden></small>
+          </div>
         </form>
       </section>
+    </section>
 
+    <!-- TAB: PROCESSING / PARSING & OCR -->
+    <section id="tab-processing" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-processing" hidden>
+      <p id="processing-upload-status" class="upload-result" role="status" aria-live="polite" hidden></p>
       <section id="parsed-chunk-inspector" class="candidate-review" hidden>
         <div class="section-heading">
           <div>
@@ -369,9 +426,28 @@
           <div><p class="eyebrow">ADMINISTRATION</p><h2>Knowledge-base files</h2></div>
           <button id="knowledge-documents-refresh" class="secondary-button" type="button">Refresh</button>
         </div>
-        <p>Remove a source from AI retrieval while keeping its original file, parser output, and verified metric history. Restore it any time.</p>
+        <p>Manage which roles can retrieve each file. Remove or restore a source from AI retrieval without deleting its original file or parser output.</p>
         <label class="knowledge-search-label" for="knowledge-documents-search">Find by title, publisher, domain, or ID</label>
         <input id="knowledge-documents-search" class="knowledge-search" type="search" autocomplete="off">
+        <div class="knowledge-filters">
+          <label for="knowledge-domain-filter">Decision domain
+            <select id="knowledge-domain-filter">
+              <option value="all">All domains</option>
+              <option value="inventory_allocation">Inventory allocation</option>
+              <option value="promotion_planning">Promotion planning</option>
+              <option value="nationwide_logistics">Nationwide logistics</option>
+              <option value="general">General / unclassified</option>
+            </select>
+          </label>
+          <label for="knowledge-state-filter">Source state
+            <select id="knowledge-state-filter">
+              <option value="all">All states</option>
+              <option value="available">Available to AI</option>
+              <option value="removed">Removed from AI retrieval</option>
+              <option value="attention">Needs attention</option>
+            </select>
+          </label>
+        </div>
         <p id="knowledge-documents-status" class="corpus-note" aria-live="polite"></p>
         <div id="knowledge-documents-list" class="knowledge-documents-list"></div>
       </section>
@@ -384,16 +460,18 @@
         </div>
         <p>Runs the same PDF parser configuration used by app uploads. Test files, page previews, chunks, and extracted tables stay outside the production corpus and are not embedded.</p>
         <form id="ocr-test-form" class="upload-form">
-          <label for="ocr-test-file">PDF to test (up to 20 MiB, 50 pages)</label>
-          <input id="ocr-test-file" name="file" type="file" accept="application/pdf,.pdf" required>
-          <label for="ocr-test-psm">Tesseract page segmentation (text)</label>
-          <select id="ocr-test-psm" name="tesseract_psm"><option value="11" selected>11 · sparse text (current upload default)</option><option value="3">3 · automatic page segmentation</option><option value="6">6 · uniform text block</option><option value="12">12 · sparse text with OSD</option></select>
-          <label for="ocr-test-table-psm">Tesseract page segmentation (table)</label>
-          <select id="ocr-test-table-psm" name="tesseract_table_psm"><option value="3" selected>3 · automatic (current upload default)</option><option value="4">4 · single column</option><option value="6">6 · uniform text block</option><option value="11">11 · sparse text</option><option value="12">12 · sparse text with OSD</option></select>
-          <label for="ocr-test-render-scale">Page OCR render scale</label>
-          <select id="ocr-test-render-scale" name="render_scale"><option value="1.5" selected>1.5 · current upload default (108 DPI)</option><option value="2.5">2.5 (180 DPI)</option><option value="3.5">3.5 · detailed scan pages (252 DPI)</option></select>
-          <label for="ocr-test-table-scale">Table OCR render scale</label>
-          <select id="ocr-test-table-scale" name="table_render_scale"><option value="2.5" selected>2.5 · current upload default (180 DPI)</option><option value="1.5">1.5 (108 DPI)</option><option value="3.5">3.5 · detailed scan tables (252 DPI)</option></select>
+          <div class="ocr-test-field"><label for="ocr-test-file">PDF to test (up to 20 MiB, 50 pages)</label>
+          <input id="ocr-test-file" name="file" type="file" accept="application/pdf,.pdf" required></div>
+          <div class="ocr-test-field"><label for="ocr-test-language">OCR language</label>
+          <select id="ocr-test-language" name="ocr_language"><option value="vie+eng" selected>Vietnamese + English · default</option><option value="eng">English only</option></select></div>
+          <div class="ocr-test-field"><label for="ocr-test-psm">Tesseract page segmentation (text)</label>
+          <select id="ocr-test-psm" name="tesseract_psm"><option value="11" selected>11 · sparse text (current upload default)</option><option value="3">3 · automatic page segmentation</option><option value="6">6 · uniform text block</option><option value="12">12 · sparse text with OSD</option></select></div>
+          <div class="ocr-test-field"><label for="ocr-test-table-psm">Tesseract page segmentation (table)</label>
+          <select id="ocr-test-table-psm" name="tesseract_table_psm"><option value="3" selected>3 · automatic (current upload default)</option><option value="4">4 · single column</option><option value="6">6 · uniform text block</option><option value="11">11 · sparse text</option><option value="12">12 · sparse text with OSD</option></select></div>
+          <div class="ocr-test-field"><label for="ocr-test-render-scale">Page OCR render scale</label>
+          <select id="ocr-test-render-scale" name="render_scale"><option value="1.5" selected>1.5 · current upload default (108 DPI)</option><option value="2.5">2.5 (180 DPI)</option><option value="3.5">3.5 · detailed scan pages (252 DPI)</option></select></div>
+          <div class="ocr-test-field"><label for="ocr-test-table-scale">Table OCR render scale</label>
+          <select id="ocr-test-table-scale" name="table_render_scale"><option value="2.5" selected>2.5 · current upload default (180 DPI)</option><option value="1.5">1.5 (108 DPI)</option><option value="3.5">3.5 · detailed scan tables (252 DPI)</option></select></div>
           <button id="ocr-test-button" type="submit" class="primary-button">Run OCR test</button>
           <p id="ocr-test-status" class="corpus-note" aria-live="polite"></p>
         </form>
@@ -410,7 +488,9 @@
           <div>
             <p class="eyebrow">ROLE-BASED ACCESS CONTROL (RBAC)</p>
             <h2>Role permissions matrix</h2>
+            <p class="corpus-note">This matrix shows workspace capabilities by role. To choose who can read an individual document, manage its reader roles in Knowledge Management.</p>
           </div>
+          <button class="secondary-button" type="button" data-open-tab="knowledge-management">Manage file access</button>
         </div>
         <div id="access-matrix" class="access-matrix"></div>
       </section>
@@ -450,7 +530,9 @@
         </section>
       </section>
     </section>
-  </main>
-  <script src="/static/app.js?v=commerce-answer-fallback-1" defer></script>
+    </div>
+    </main>
+  </div>
+  <script src="/static/app.js?v=ocr-review-stack-20261008" defer></script>
 </body>
 </html>

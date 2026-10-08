@@ -31,12 +31,12 @@ class ProcessedChunksRepositoryTest(unittest.TestCase):
         cursor = repository.connection.cursor.return_value.__enter__.return_value
         cursor.fetchall.return_value = [{"chunk_index": 3, "content": "parsed text", "metadata": {}}]
 
-        result = repository.get_document("UP-1", limit=10, offset=20, company="Vinamilk")
+        result = repository.get_document("UP-1", limit=10, offset=20, company="Example Retailer")
 
         repository.connection.transaction.assert_called_once_with()
         query, parameters = cursor.execute.call_args.args
         self.assertIn("join public.documents d using(document_id)", " ".join(query.lower().split()))
-        self.assertEqual(parameters, ("UP-1", "Vinamilk", "Vinamilk", 10, 20))
+        self.assertEqual(parameters, ("UP-1", "Example Retailer", "Example Retailer", 10, 20))
         self.assertEqual(result[0]["content"], "parsed text")
 
     def test_status_is_validated_before_database_write(self):

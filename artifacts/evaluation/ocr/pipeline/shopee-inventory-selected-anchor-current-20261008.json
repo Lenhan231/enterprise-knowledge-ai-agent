@@ -1,0 +1,110 @@
+{
+  "created_at_utc": "2026-10-07T21:36:09.934322+00:00",
+  "dataset_id": "commerce-shopee-inventory-image-page-anchors-v1",
+  "dataset_sha256": "f483a1344147721de85352780a1e8a8bd26bd6c81f2c50b8186d17e26b93320f",
+  "reference_quality": "human_reviewed_selected_phrase_anchors",
+  "reference_method": "Selected Vietnamese phrases were manually checked against the rendered source page; this is not a full-page transcription.",
+  "protocol": "Copy each selected region from its source PDF page, rasterize it to remove any embedded OCR text layer, then run the existing DocumentProcessor PDF path with separate page-text and table render scales. Score source text chunks without generated structured-table serialization; score tables separately against supplied row/cell anchors.",
+  "limitations": "Production-parser OCR path only. Smoke fixtures verify extraction behavior but are not representative model-selection evidence or business evidence. This run has no explicitly annotated cell coordinates. There is no paired OCR-engine comparison. Throughput includes parser/OCR invocation but excludes application embedding and database persistence.",
+  "render_dpi": 108.0,
+  "ocr_render_scale": 1.5,
+  "table_ocr_render_dpi": 180.0,
+  "ocr_table_render_scale": 2.5,
+  "tesseract_page_segmentation_mode": 11,
+  "tesseract_table_segmentation_mode": 3,
+  "tesseract_language": "vie+eng",
+  "tesseract_language_by_case": {
+    "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN-PDF-PAGE-11": "vie+eng"
+  },
+  "software": {
+    "python": "3.11.16",
+    "pymupdf": "1.27.2.3",
+    "tesseract": "tesseract 5.5.3"
+  },
+  "process_memory": {
+    "process_peak_rss_mb": 451.824,
+    "child_peak_rss_mb": 129.094
+  },
+  "aggregate": {
+    "ocr_pages": 1,
+    "text_scored_pages": 0,
+    "text_anchor_scored_pages": 1,
+    "expected_text_anchors": 4,
+    "matched_text_anchors": 4,
+    "text_anchor_recall": 1.0,
+    "annotated_cell_locations": 0,
+    "matched_cell_locations": 0,
+    "cell_location_recall": null,
+    "table_scored_pages": 0,
+    "expected_anchor_rows": 0,
+    "matched_anchor_rows": 0,
+    "anchor_row_recall": null,
+    "exact_numeric_cells": 0,
+    "total_numeric_cells": 0,
+    "exact_numeric_cell_accuracy": null,
+    "micro_cer": null,
+    "micro_wer": null,
+    "mean_latency_seconds": 3.248,
+    "mean_pages_per_minute": 18.471
+  },
+  "results": [
+    {
+      "id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN-PDF-PAGE-11",
+      "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+      "source_page_number": 11,
+      "language": "vie",
+      "layout_type": "mixed_vector_text_and_seller_center_screenshot",
+      "physical_scan": false,
+      "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+      "cropped_pdf_sha256": "fe3eeb59e808497135a254ba4b09a4731b92b03d3d220f3168e040f63a98a798",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 1,
+      "table_count": 0,
+      "extracted_tables": [],
+      "table_anchor_score": null,
+      "text_reference_scored": false,
+      "text_anchor_score": {
+        "expected_anchor_count": 4,
+        "matched_anchor_count": 4,
+        "anchor_recall": 1.0,
+        "matches": [
+          {
+            "anchor": "hết hàng",
+            "matched": true
+          },
+          {
+            "anchor": "Mức độ cần bổ sung hàng",
+            "matched": true
+          },
+          {
+            "anchor": "Bổ sung kho hàng sớm",
+            "matched": true
+          },
+          {
+            "anchor": "tồn kho tối thiểu",
+            "matched": true
+          }
+        ]
+      },
+      "text_score_scope": "source text chunks; generated table serialization excluded",
+      "reference_characters": null,
+      "reference_words": null,
+      "hypothesis_characters": 484,
+      "character_edit_distance": null,
+      "word_edit_distance": null,
+      "cer": null,
+      "wer": null,
+      "ocr_text": "© Giảm thiểu tình trạng hết hàng Kiểm tra trạng thái Mức độ cần bổ sung hàng để biết được thời gian sớm nhất Người bán nên bổ sung hàng tồn kho cho từng SKU. Mã sảnp o Tôn koc6 s Tổn ko khuyến Tôn ko i tiểu © Bổ sung kho hàng ngay cho biết SKU Mã sản phả 780192 2 85 sung Nng ey o e da hét hang o 0 ° s ị o NH K o Bổ sung kho hàng sớm cho biết SKU Mã o 85 sungkne Nng som. sắp hét hang nghĩa Setquẩn áo cực chất t 10 2 — 0 . sa là số lượng tồn kho i ot nam dưới Số lượng tồn kho tối thiểu. TỒN KHO",
+      "latency_seconds": 3.248,
+      "pages_per_minute": 18.471,
+      "extracted_text": "© Giảm thiểu tình trạng hết hàng Kiểm tra trạng thái Mức độ cần bổ sung hàng để biết được thời gian sớm nhất Người bán nên bổ sung hàng tồn kho cho từng SKU. Mã sảnp o Tôn koc6 s Tổn ko khuyến Tôn ko i tiểu © Bổ sung kho hàng ngay cho biết SKU Mã sản phả 780192 2 85 sung Nng ey o e da hét hang o 0 ° s ị o NH K o Bổ sung kho hàng sớm cho biết SKU Mã o 85 sungkne Nng som. sắp hét hang nghĩa Setquẩn áo cực chất t 10 2 — 0 . sa là số lượng tồn kho i ot nam dưới Số lượng tồn kho tối thiểu. TỒN KHO"
+    }
+  ]
+}

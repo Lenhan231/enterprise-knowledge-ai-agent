@@ -38,6 +38,12 @@ function uploadedSourcePageUrl(documentId, pageNumber) {
   return `/api/documents/${encodeURIComponent(documentId)}/source${Number.isInteger(page) && page > 0 ? `#page=${page}` : ""}`;
 }
 
+function syntheticPolicySourcePageUrl(source) {
+  if (source.synthetic_company_policy !== true || !source.document_id) return "";
+  const page = Number(source.page_number);
+  return `/api/documents/${encodeURIComponent(source.document_id)}/source${Number.isInteger(page) && page > 0 ? `#page=${page}` : ""}`;
+}
+
 function selectWorkspaceTab(name) {
   const button = $(`[data-tab-target="${name}"]`);
   if (!button || button.hidden) return;
@@ -58,12 +64,14 @@ function selectWorkspaceTab(name) {
 function syncWorkspaceTabs(user = currentUser) {
   const isTester = user?.role === "tester";
   const isAdmin = user?.role === "admin";
+  const canAskDocuments = !isTester && user?.role !== "document_uploader";
   const canViewAnalytics = ["operations", "finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user?.role);
   const canUpload = ["document_uploader", "admin"].includes(user?.role);
   const available = {
-    knowledge: !isTester,
+    knowledge: canAskDocuments,
     analytics: canViewAnalytics,
-    processing: canUpload,
+    upload: canUpload,
+    processing: isAdmin,
     "ocr-lab": isTester || isAdmin,
     "knowledge-management": isAdmin,
     access: isAdmin,
@@ -72,9 +80,22 @@ function syncWorkspaceTabs(user = currentUser) {
   document.querySelectorAll(".workspace-tab").forEach((button) => {
     button.hidden = !available[button.dataset.tabTarget];
   });
-  if (!available[activeTab]) activeTab = isTester ? "ocr-lab" : "knowledge";
+  if (!available[activeTab]) {
+    activeTab = isTester ? "ocr-lab" : available.knowledge ? "knowledge" : available.upload ? "upload" : "analytics";
+  }
   selectWorkspaceTab(activeTab);
 }
+
+const UPLOAD_ROLE_LABELS = {
+  employee: ["Employee", "General document Q&A"],
+  finance_analyst: ["Finance analyst", "Finance and analytics sources"],
+  sustainability_analyst: ["Sustainability analyst", "Sustainability sources and analytics"],
+  procurement: ["Procurement", "Procurement and supplier sources"],
+  operations: ["Operations", "Operations sources and analytics"],
+  legal_compliance: ["Legal and compliance", "Legal and compliance sources"],
+  executive: ["Executive", "Executive sources and analytics"],
+  admin: ["Administrator", "Administrative and review access"],
+};
 
 document.querySelectorAll("[data-open-tab]").forEach((button) => {
   button.addEventListener("click", () => selectWorkspaceTab(button.dataset.openTab));
@@ -87,8 +108,9 @@ function renderCorpus(data) {
     nationwide_logistics: "Nationwide logistics",
   };
   const referenceLabels = {
+    management_cookbook_reference: "Management method",
     company_practice_reference: "Company practice",
-    company_policy_reference: "Company policy reference",
+    company_policy_reference: "External policy · stated scope only",
     platform_operating_rule: "Platform operating rule",
   };
   const companies = new Set(data.documents.map((doc) => doc.company).filter(Boolean));
@@ -124,40 +146,81 @@ function renderCorpus(data) {
     </article>`).join("") || '<div class="loading-card">No company documents are indexed yet.</div>';
 }
 
-function renderParsedChunkInspector(data) {
-  const documents = data.documents;
+function renderParsedChunkInspector(documents) {
   const section = $("#parsed-chunk-inspector");
+  const select = $("#parsed-document");
+  const selectedDocument = select.value;
   section.hidden = documents.length === 0;
-  $("#parsed-document").innerHTML = documents.map((doc) =>
-    `<option value="${escapeHtml(doc.document_id)}">${escapeHtml(doc.title)} · ${escapeHtml(doc.processing_status || "unknown")}</option>`
+  select.innerHTML = documents.map((doc) =>
+    `<option value="${escapeHtml(doc.document_id)}">${escapeHtml(doc.title)} · ${escapeHtml(doc.processing_status || "unknown")}${doc.knowledge_base_active ? "" : " · removed from Q&A"}</option>`
   ).join("");
+  if (documents.some((doc) => doc.document_id === selectedDocument)) {
+    select.value = selectedDocument;
+  }
+}
+
+function knowledgeDocumentIsRetrievable(doc) {
+  return doc.knowledge_base_active && doc.processing_status === "ready" && Number(doc.chunk_count) > 0;
 }
 
 function renderKnowledgeDocuments() {
   const query = $("#knowledge-documents-search").value.trim().toLocaleLowerCase();
-  const matches = knowledgeDocuments.filter((doc) => [doc.title, doc.document_id, doc.source_publisher,
-    doc.domain, doc.evidence_class, doc.synthetic_company_policy ? "synthetic demo policy" : "",
-    ...(doc.knowledge_domains || [])].join(" ").toLocaleLowerCase().includes(query));
-  $("#knowledge-documents-status").textContent = `${formatNumber(knowledgeDocuments.filter((doc) => doc.knowledge_base_active).length)} active · ${formatNumber(knowledgeDocuments.length)} indexed sources`;
+  const selectedDomain = $("#knowledge-domain-filter").value;
+  const selectedState = $("#knowledge-state-filter").value;
+  const matches = knowledgeDocuments.filter((doc) => {
+    const domains = doc.knowledge_domains || [];
+    const retrievable = knowledgeDocumentIsRetrievable(doc);
+    const stateMatches = selectedState === "all"
+      || (selectedState === "available" && retrievable)
+      || (selectedState === "removed" && !doc.knowledge_base_active)
+      || (selectedState === "attention" && doc.knowledge_base_active && !retrievable);
+    const domainMatches = selectedDomain === "all"
+      || (selectedDomain === "general" && domains.length === 0)
+      || domains.includes(selectedDomain);
+    const textMatches = [doc.title, doc.document_id, doc.source_publisher,
+      doc.domain, doc.evidence_class, doc.synthetic_company_policy ? "synthetic demo policy" : "",
+      ...domains].join(" ").toLocaleLowerCase().includes(query);
+    return stateMatches && domainMatches && textMatches;
+  });
+  const retrievableCount = knowledgeDocuments.filter(knowledgeDocumentIsRetrievable).length;
+  const removedCount = knowledgeDocuments.filter((doc) => !doc.knowledge_base_active).length;
+  const attentionCount = knowledgeDocuments.filter((doc) => doc.knowledge_base_active && !knowledgeDocumentIsRetrievable(doc)).length;
+  $("#knowledge-documents-status").textContent = `Showing ${formatNumber(matches.length)} of ${formatNumber(knowledgeDocuments.length)} sources · ${formatNumber(retrievableCount)} retrievable · ${formatNumber(removedCount)} removed · ${formatNumber(attentionCount)} need attention`;
   $("#knowledge-documents-list").innerHTML = matches.map((doc) => {
     const domains = (doc.knowledge_domains || []).join(", ") || doc.domain || "General";
     const href = validSourceUrl(doc.source_url);
     const sourceKind = doc.synthetic_company_policy
       ? "Synthetic demo policy · fictional Commerce Demo only"
-      : ({ management_cookbook_reference: "Management method · external reference",
+      : ({ management_cookbook_reference: "Management method · general guidance",
           company_practice_reference: "Company practice · attributed example",
           platform_operating_rule: "Platform rule · scope-specific" }[doc.evidence_class] || "Knowledge source");
+    const uploadedSource = doc.source_type === "user_upload" && doc.processing_status === "ready"
+      ? uploadedSourcePageUrl(doc.document_id)
+      : "";
     const sourceLink = doc.synthetic_company_policy
       ? `<a href="/api/admin/knowledge-documents/${encodeURIComponent(doc.document_id)}/source" target="_blank" rel="noopener noreferrer">Open original PDF</a>`
-      : href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Open source</a>` : "";
+      : uploadedSource
+        ? `<a href="${escapeHtml(uploadedSource)}" target="_blank" rel="noopener noreferrer">Open uploaded file</a>`
+        : href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Open source</a>` : "";
+    const canRetryEmbedding = doc.source_type === "user_upload" && doc.processing_status === "failed";
     return `<article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
       <div class="knowledge-document-copy"><strong>${escapeHtml(doc.title)}</strong>
         <span class="knowledge-source-kind ${doc.synthetic_company_policy ? "is-synthetic" : ""}">${escapeHtml(sourceKind)}</span>
         <span>${escapeHtml(doc.source_publisher || doc.company || "Unknown publisher")} · ${escapeHtml(doc.format || "File")} · ${formatNumber(doc.chunk_count)} passages</span>
-        <small>${escapeHtml(domains)} · ${escapeHtml(doc.processing_status || "unknown")} · ${doc.knowledge_base_active ? "Available to AI" : "Removed from AI retrieval"}</small>
+        <small>${escapeHtml(domains)} · ${escapeHtml(doc.processing_status || "unknown")} · ${knowledgeDocumentIsRetrievable(doc) ? "Available to AI" : doc.knowledge_base_active ? "Not retrievable" : "Removed from AI retrieval"}</small>
         <code>${escapeHtml(doc.document_id)}</code>${sourceLink}
+        <details class="knowledge-access-editor"><summary>Access roles: ${escapeHtml((doc.allowed_roles || []).join(", ") || "none")}</summary>
+          <form class="knowledge-access-form" data-document-id="${escapeHtml(doc.document_id)}">
+            <div class="knowledge-access-options">${Object.entries(UPLOAD_ROLE_LABELS).map(([role, [label]]) => `<label><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}" ${(doc.allowed_roles || []).includes(role) ? "checked" : ""}><span>${escapeHtml(label)}</span></label>`).join("")}</div>
+            <button class="secondary-button" type="submit">Save access</button>
+            <small data-access-status aria-live="polite"></small>
+          </form>
+        </details>
       </div>
-      <button class="${doc.knowledge_base_active ? "danger-button" : "secondary-button"}" type="button" data-knowledge-toggle="${escapeHtml(doc.document_id)}" data-active="${doc.knowledge_base_active ? "true" : "false"}">${doc.knowledge_base_active ? "Remove from knowledge base" : "Restore to knowledge base"}</button>
+      <div class="knowledge-document-actions">
+        ${canRetryEmbedding ? `<button class="secondary-button" type="button" data-retry-embedding="${escapeHtml(doc.document_id)}">Retry embedding</button>` : ""}
+        <button class="${doc.knowledge_base_active ? "danger-button" : "secondary-button"}" type="button" data-knowledge-toggle="${escapeHtml(doc.document_id)}" data-active="${doc.knowledge_base_active ? "true" : "false"}">${doc.knowledge_base_active ? "Remove from knowledge base" : "Restore to knowledge base"}</button>
+      </div>
     </article>`;
   }).join("") || '<p class="loading-card">No matching indexed sources.</p>';
 }
@@ -167,6 +230,17 @@ async function refreshKnowledgeDocuments() {
   const result = await api("/api/admin/knowledge-documents");
   knowledgeDocuments = result.documents;
   renderKnowledgeDocuments();
+  renderParsedChunkInspector(knowledgeDocuments);
+}
+
+function renderOcrDiagnostics(diagnostics) {
+  if (!Array.isArray(diagnostics) || diagnostics.length === 0) return "";
+  return diagnostics.map((item) => {
+    const message = item.reason === "low_mean_word_confidence"
+      ? `Embedded image OCR skipped: confidence ${formatNumber(item.mean_word_confidence)}/100 was below the ${formatNumber(item.minimum_word_confidence)}/100 threshold.`
+      : `Embedded image OCR skipped: only ${formatNumber(item.word_count)} words were recognized.`;
+    return `<p class="ocr-diagnostic" role="note"><strong>OCR review needed.</strong> ${escapeHtml(message)} No OCR-derived text or table from this image region was added; inspect the original page.</p>`;
+  }).join("");
 }
 
 function renderParsedChunks(chunks, documentId) {
@@ -182,6 +256,7 @@ function renderParsedChunks(chunks, documentId) {
         <div class="candidate-heading"><strong>${pageNumber ? `Page ${formatNumber(pageNumber)} · ` : ""}Passage ${formatNumber(chunk.chunk_index + 1)}</strong><span>${escapeHtml(chunk.processing_status || "extracted")} · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")}</span></div>
       ${sourceUrl ? `<a class="document-link" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(sourceLabel)}</a>` : ""}
       ${chunk.processing_error ? `<p class="corpus-note">Processing error: ${escapeHtml(chunk.processing_error)}</p>` : ""}
+      ${renderOcrDiagnostics(chunk.metadata?.ocr_diagnostics)}
       <blockquote>${escapeHtml(chunk.content)}</blockquote>
       <details class="candidate-source"><summary>Parser metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details>
     </article>`;
@@ -198,8 +273,13 @@ function renderExtractedTables(tables, documentId) {
     const sourceUrl = uploadedSourcePageUrl(documentId, isPdf ? pageNumber : null)
       || sourcePageUrl(table.metadata?.source_url, isPdf ? pageNumber : null);
     const sourceLabel = isPdf && pageNumber ? `Open original PDF · page ${formatNumber(pageNumber)}` : "Open original document";
+    const continuation = [
+      table.metadata?.continued_from_page && `Continued from page ${formatNumber(table.metadata.continued_from_page)}`,
+      table.metadata?.continued_to_page && `Continues on page ${formatNumber(table.metadata.continued_to_page)}`,
+    ].filter(Boolean).join(" · ");
     return `<article class="candidate-row">
       <div class="candidate-heading"><strong>Page ${formatNumber(table.page_number)} · Table ${formatNumber(table.table_index + 1)}</strong><span>${formatNumber(table.row_count)} rows · showing ${formatNumber(rows.length)}</span></div>
+      ${continuation ? `<p class="corpus-note">${escapeHtml(continuation)}</p>` : ""}
       ${sourceUrl ? `<a class="document-link" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(sourceLabel)}</a>` : ""}
       <div class="extracted-table-wrap"><table class="extracted-table"><thead><tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
       <details class="candidate-source"><summary>Table metadata</summary><pre>${escapeHtml(JSON.stringify(table.metadata, null, 2))}</pre></details>
@@ -227,6 +307,7 @@ function renderOcrTestDetails(run) {
   const pageContent = allPages.map((pageNumber, pageIndex) => {
     const chunks = run.chunks.filter((chunk) => Number(chunk.metadata?.page_number) === pageNumber);
     const tables = run.tables.filter((table) => Number(table.page_number) === pageNumber);
+    const ocrDiagnostics = chunks.flatMap((chunk) => chunk.metadata?.ocr_diagnostics || []);
     const tablesHtml = tables.map((table) => {
       const data = table.structured_data || {};
       const context = table.context || {};
@@ -238,12 +319,17 @@ function renderOcrTestDetails(run) {
       const bbox = Array.isArray(metadata.bbox)
         ? metadata.bbox.map((value) => Number(value).toFixed(1)).join(" · ")
         : "Not available";
+      const continuation = [
+        metadata.continued_from_page && `from page ${formatNumber(metadata.continued_from_page)}`,
+        metadata.continued_to_page && `to page ${formatNumber(metadata.continued_to_page)}`,
+      ].filter(Boolean).join(" · ");
       const parserDetails = [
-        ["OCR", [ocr.engine, ocr.language && `language ${ocr.language}`, ocr.table_psm && `PSM ${ocr.table_psm}`, ocr.render_scale && `scale ${ocr.render_scale}×`].filter(Boolean).join(" · ") || "Not available"],
+        ["OCR", [ocr.engine, ocr.language && `language ${ocr.language}`, ocr.table_psm && `PSM ${ocr.table_psm}`, ocr.render_scale && `scale ${ocr.render_scale}×`, ocr.mean_word_confidence != null && `mean word confidence ${ocr.mean_word_confidence}/100`, ocr.orientation_correction_degrees && `rotation corrected ${ocr.orientation_correction_degrees}°`, ocr.deskew_correction_degrees && `deskew corrected ${ocr.deskew_correction_degrees}°`].filter(Boolean).join(" · ") || "Not available"],
         ["Extraction", metadata.table_extraction_method || "Not available"],
         ["Detection", metadata.table_detection_strategy || "Not available"],
         ["Table region", `${bbox}${metadata.bbox_coordinate_system ? ` (${metadata.bbox_coordinate_system})` : ""}`],
         ["Structure", `${formatNumber(rows.length)} rows · ${formatNumber(headers.length)} columns`],
+        ...(continuation ? [["Continuation", continuation]] : []),
       ];
       return `<article class="ocr-test-table"><h5>Table ${formatNumber(table.table_index + 1)} <span>${formatNumber(rows.length)} rows</span></h5>
         ${headers.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table"><thead><tr>${headers.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${headers.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
@@ -259,12 +345,15 @@ function renderOcrTestDetails(run) {
     }).join("");
     return `<details class="ocr-test-page" ${pageIndex === 0 ? "open" : ""}>
       <summary>Page ${formatNumber(pageNumber)} · ${formatNumber(chunks.length)} chunks · ${formatNumber(tables.length)} tables</summary>
+      <div class="ocr-test-page-content">
       <section class="ocr-test-raw"><h4>Raw page</h4><img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/ocr-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview"></section>
       <section class="ocr-test-extracted"><h4>Extracted output</h4>
+        ${renderOcrDiagnostics(ocrDiagnostics)}
         <details class="ocr-test-chunks"><summary>View ${formatNumber(chunks.length)} text chunks for this page</summary>${chunks.map((chunk) => `<article class="ocr-test-chunk"><div class="candidate-heading"><strong>Chunk ${formatNumber(chunk.chunk_index + 1)}</strong><span>${formatNumber(chunk.metadata?.actual_char_count ?? chunk.content.length)} chars actual · ${formatNumber(chunk.metadata?.chunk_size_chars ?? 0)} char limit · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")} · ${escapeHtml(chunk.metadata?.layout_type || "text")}</span></div><pre>${escapeHtml(chunk.content)}</pre><details class="candidate-source"><summary>Chunk metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No text chunks on this page.</p>'}</details>
         <h4 class="ocr-test-table-heading">Extracted tables</h4>
         ${tablesHtml || '<p class="ocr-test-empty">No structured table detected on this page.</p>'}
       </section>
+      </div>
     </details>`;
   }).join("");
   $("#ocr-test-results").innerHTML = `<article class="ocr-test-run">
@@ -545,10 +634,19 @@ document.querySelectorAll("[data-commerce-view]").forEach((button) => {
 $("#commerce-campaign-details").addEventListener("toggle", (event) => {
   if (event.currentTarget.open) loadCommerceCampaigns();
 });
-$(".commerce-dashboard-tabs").addEventListener("keydown", (event) => {
+const commerceTabList = $(".commerce-dashboard-tabs");
+const commerceTabsAreHorizontal = window.matchMedia("(max-width: 640px)");
+const syncCommerceTabOrientation = () => commerceTabList.setAttribute(
+  "aria-orientation", commerceTabsAreHorizontal.matches ? "horizontal" : "vertical",
+);
+syncCommerceTabOrientation();
+commerceTabsAreHorizontal.addEventListener("change", syncCommerceTabOrientation);
+commerceTabList.addEventListener("keydown", (event) => {
   const tabs = [...document.querySelectorAll("[data-commerce-view]")];
   const current = tabs.indexOf(event.target);
-  const next = { ArrowRight: (current + 1) % tabs.length, ArrowLeft: (current - 1 + tabs.length) % tabs.length,
+  const forward = commerceTabsAreHorizontal.matches ? "ArrowRight" : "ArrowDown";
+  const backward = commerceTabsAreHorizontal.matches ? "ArrowLeft" : "ArrowUp";
+  const next = { [forward]: (current + 1) % tabs.length, [backward]: (current - 1 + tabs.length) % tabs.length,
     Home: 0, End: tabs.length - 1 }[event.key];
   if (current < 0 || next === undefined) return;
   event.preventDefault();
@@ -563,21 +661,6 @@ function selectedQuestionSuggestionDomain() {
 $("#business-question-domain").addEventListener("change", () => {
   renderDecisionDomainQuestions(selectedQuestionSuggestionDomain());
 });
-
-function formatBusinessMetricValue(item) {
-  const prefix = {
-    approximately: "≈",
-    more_than: ">",
-    at_least: "≥",
-    less_than: "<",
-    at_most: "≤",
-  }[item.value_qualifier] || "";
-  return `${prefix}${formatFinancialValue(item.metric_value)}`;
-}
-
-function formatBusinessMetricPeriod(item) {
-  return `${item.reporting_period && item.reporting_period !== "FY" ? `${item.reporting_period} ` : "FY "}${item.fiscal_year}`;
-}
 
 const DECISION_DOMAIN_QUESTIONS = {
   inventory_allocation: [
@@ -732,11 +815,22 @@ function renderAnswer(data, panel = $("#answer-panel")) {
       ? '<p class="analysis-caveat answer-provenance-note" role="status"><strong>No analysis was run.</strong> Choose one decision domain or clarify the question.</p>'
       : "";
   const answerFallbackNotes = {
+    provider_rate_limited: "The answer model was rate-limited. This response uses a conservative, built-in evidence fallback; it is not a model-synthesized recommendation.",
     provider_unavailable: "The answer model was unavailable. This response uses a conservative, built-in evidence fallback; it is not a model-synthesized recommendation.",
     evidence_validation_failed: "The model draft did not pass grounding checks. This response uses a conservative, built-in evidence fallback instead.",
+    unsupported_measure: "The Commerce data cannot establish campaign ROI or incremental profit without campaign costs and a valid counterfactual; this response summarizes the available evidence without estimating either measure.",
   };
+  const fallbackNote = data.decision_suggestions_fallback && ["provider_rate_limited", "provider_unavailable"].includes(data.answer_fallback_reason)
+    ? `The model provider was ${data.answer_fallback_reason === "provider_rate_limited" ? "rate-limited" : "unavailable"}. One conservative next step is shown; the requested multi-action recommendation could not be generated.`
+    : data.decision_suggestions_fallback && data.answer_fallback_reason === "evidence_validation_failed"
+      ? "The model draft failed grounding checks. One conservative next step is shown; the requested multi-action recommendation could not be validated."
+    : data.agent === "knowledge" && ["provider_rate_limited", "provider_unavailable"].includes(data.answer_fallback_reason)
+    ? "The model provider was unavailable. Retrieved passages are shown verbatim; no synthesized answer was generated."
+    : data.agent === "knowledge" && data.answer_fallback_reason === "evidence_validation_failed"
+      ? "The model draft lacked valid source citations and was rejected. Retrieved passages are shown verbatim."
+      : answerFallbackNotes[data.answer_fallback_reason];
   const decisionModeNote = answerFallbackNotes[data.answer_fallback_reason]
-    ? `<p class="analysis-caveat answer-provenance-note" role="note"><strong>Decision-support fallback.</strong> ${answerFallbackNotes[data.answer_fallback_reason]}</p>`
+    ? `<p class="analysis-caveat answer-provenance-note" role="note"><strong>${data.agent === "knowledge" ? "Source-only fallback." : "Decision-support fallback."}</strong> ${fallbackNote}</p>`
     : "";
   const referenceRetrievalNote = data.decision_reference_retrieval_limited
     ? '<p class="analysis-caveat answer-provenance-note" role="note"><strong>Document retrieval was temporarily rate-limited.</strong> This recommendation uses SQL and schema evidence only; no operating document could be checked for this answer.</p>'
@@ -784,6 +878,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
         </div>
         ${citations.map((source) => {
           const href = uploadedSourcePageUrl(source.document_id, source.page_number)
+            || syntheticPolicySourcePageUrl(source)
             || validSourceUrl(source.source_url);
           const link = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View original</a>` : "";
           const chunk = Number.isInteger(source.chunk_index) ? ` · Indexed chunk ${source.chunk_index}` : "";
@@ -798,6 +893,13 @@ function renderAnswer(data, panel = $("#answer-panel")) {
             : "";
           const referenceScope = source.reference_applicability
             ? `<p class="citation-scope"><strong>Source scope:</strong> ${escapeHtml(source.reference_applicability)}</p>`
+            : "";
+          const ocrInfo = source.ocr && typeof source.ocr === "object" ? source.ocr : null;
+          const ocrMethod = String(source.text_extraction_method || "").toLocaleLowerCase();
+          const ocrDerived = Boolean(ocrInfo) || /(?:^|[_+])(?:tesseract|paddleocr|ocr)(?:$|[_+])/.test(ocrMethod);
+          const ocrLabel = ocrInfo?.engine ? ` · ${escapeHtml(ocrInfo.engine)}` : "";
+          const ocrNote = ocrDerived
+            ? `<p class="citation-ocr-note"><strong>OCR-extracted text${ocrLabel}.</strong> OCR may misread words; check the original page before treating this passage as a rule.</p>`
             : "";
           const sqlTrace = source.sql_query
             ? `<details class="citation-sql-trace"><summary>Inspect generated SQL</summary><pre>${escapeHtml(source.sql_query)}</pre></details>`
@@ -818,6 +920,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
                 <span>${escapeHtml(location)}</span>
               </div>
               ${referenceScope}
+              ${ocrNote}
               ${sourceExcerpt}
               ${observationTrace}
               ${sqlTrace}
@@ -847,7 +950,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
     });
   }
 
-  panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderAgentMonitoring(data) {
@@ -934,10 +1037,19 @@ async function api(path, options = {}) {
   if (response.status === 401) {
     $("#login-view").hidden = false;
     $("#workspace").hidden = true;
+    $("#login-brand-sidebar").hidden = false;
     throw new Error("Sign in to continue");
   }
   const data = await response.json();
-  if (!response.ok) throw Object.assign(new Error(data.detail || "Request failed"), { status: response.status });
+  if (!response.ok) {
+    const detail = Array.isArray(data.detail)
+      ? data.detail.map((issue) => {
+        const field = Array.isArray(issue.loc) ? issue.loc.at(-1) : "";
+        return [field, issue.msg].filter(Boolean).join(": ");
+      }).filter(Boolean).join("; ")
+      : data.detail;
+    throw Object.assign(new Error(detail || "Request failed"), { status: response.status });
+  }
   return data;
 }
 
@@ -1000,9 +1112,13 @@ async function loadCommerceCampaigns() {
 async function loadWorkspace(user) {
   currentUser = user;
   $("#login-view").hidden = true;
+  $("#login-brand-sidebar").hidden = true;
   $("#workspace").hidden = false;
   $("#analytics-section").hidden = true;
   $("#upload-section").hidden = true;
+  $("#processing-upload-status").hidden = true;
+  $("#processing-upload-status").textContent = "";
+  delete $("#processing-upload-status").dataset.state;
   $("#admin-section").hidden = true;
   $("#monitoring-section").hidden = true;
   syncWorkspaceTabs();
@@ -1022,21 +1138,38 @@ async function loadWorkspace(user) {
     }
     return;
   }
+  if (["admin", "document_uploader"].includes(user.role)) {
+    try {
+      const capability = await api("/api/documents/upload-capability");
+      if (capability.can_upload) {
+        const { roles } = await api("/api/documents/roles");
+        $("#upload-role-options").innerHTML = roles.map((role) => {
+          const [label, description] = UPLOAD_ROLE_LABELS[role] || [role.replaceAll("_", " "), "Document Q&A access"];
+          return `<label class="upload-role-option"><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}"><span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span></label>`;
+        }).join("");
+        $("#upload-role-options").querySelectorAll('input[name="allowed_roles"]').forEach((input) => {
+          input.addEventListener("change", () => {
+            updateUploadRoleSelection();
+            updateUploadPlanSummary();
+          });
+        });
+        updateUploadRoleSelection();
+        syncUploadReferenceFields();
+        $("#upload-button").disabled = false;
+        $("#upload-section").hidden = false;
+        $("#upload-status").textContent = "";
+        delete $("#upload-status").dataset.state;
+      }
+    } catch (error) {
+      $("#upload-section").hidden = false;
+      $("#upload-button").disabled = true;
+      $("#upload-status").dataset.state = "error";
+      $("#upload-status").textContent = `Upload permissions could not be loaded: ${error.message}`;
+    }
+  }
   try {
     const data = await api("/api/dashboard");
     renderCorpus(data);
-    if (user.role === "admin") renderParsedChunkInspector(data);
-    try {
-      const capability = await api("/api/documents/upload-capability");
-      $("#upload-section").hidden = !capability.can_upload;
-      if (capability.can_upload) {
-        $("#upload-synthetic-policy-option").hidden = user.role !== "admin";
-        const { roles } = await api("/api/documents/roles");
-        $("#upload-role-options").innerHTML = roles.map((role) => `<label><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}"> ${escapeHtml(role.replaceAll("_", " "))}</label>`).join("");
-      }
-    } catch {
-      $("#upload-section").hidden = true;
-    }
     if (["operations", "finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user.role)) {
       $("#commerce-dashboard").hidden = false;
       renderDecisionDomainQuestions(selectedQuestionSuggestionDomain());
@@ -1068,11 +1201,20 @@ $("#workspace-tabs").addEventListener("click", (event) => {
   if (button) selectWorkspaceTab(button.dataset.tabTarget);
 });
 
+const workspaceTabsAreHorizontal = window.matchMedia("(max-width: 780px)");
+const syncWorkspaceTabOrientation = () => $("#workspace-tabs").setAttribute(
+  "aria-orientation", workspaceTabsAreHorizontal.matches ? "horizontal" : "vertical",
+);
+syncWorkspaceTabOrientation();
+workspaceTabsAreHorizontal.addEventListener("change", syncWorkspaceTabOrientation);
 $("#workspace-tabs").addEventListener("keydown", (event) => {
   const tabs = [...document.querySelectorAll(".workspace-tab:not([hidden])")];
   const current = tabs.indexOf(event.target);
   if (current < 0) return;
-  const next = { ArrowRight: (current + 1) % tabs.length, ArrowLeft: (current - 1 + tabs.length) % tabs.length, Home: 0, End: tabs.length - 1 }[event.key];
+  const forward = workspaceTabsAreHorizontal.matches ? "ArrowRight" : "ArrowDown";
+  const backward = workspaceTabsAreHorizontal.matches ? "ArrowLeft" : "ArrowUp";
+  const next = { [forward]: (current + 1) % tabs.length, [backward]: (current - 1 + tabs.length) % tabs.length,
+    Home: 0, End: tabs.length - 1 }[event.key];
   if (next === undefined) return;
   event.preventDefault();
   tabs[next].focus();
@@ -1080,16 +1222,36 @@ $("#workspace-tabs").addEventListener("keydown", (event) => {
 });
 
 $("#knowledge-documents-search").addEventListener("input", renderKnowledgeDocuments);
+$("#knowledge-domain-filter").addEventListener("change", renderKnowledgeDocuments);
+$("#knowledge-state-filter").addEventListener("change", renderKnowledgeDocuments);
 $("#knowledge-documents-refresh").addEventListener("click", async () => {
   try { await refreshKnowledgeDocuments(); }
   catch (error) { $("#knowledge-documents-status").textContent = error.message; }
 });
 $("#knowledge-documents-list").addEventListener("click", async (event) => {
+  const retryButton = event.target.closest("[data-retry-embedding]");
+  if (retryButton) {
+    const documentId = retryButton.dataset.retryEmbedding;
+    retryButton.disabled = true;
+    retryButton.textContent = "Retrying embedding…";
+    try {
+      const result = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/retry-embedding`, {
+        method: "POST",
+      });
+      await refreshKnowledgeDocuments();
+      $("#knowledge-documents-status").textContent = `Embedding recovered · ${formatNumber(result.indexed_chunk_count)} passages indexed`;
+    } catch (error) {
+      $("#knowledge-documents-status").textContent = error.message;
+      retryButton.disabled = false;
+      retryButton.textContent = "Retry embedding";
+    }
+    return;
+  }
   const button = event.target.closest("[data-knowledge-toggle]");
   if (!button) return;
   const active = button.dataset.active === "true";
   const documentId = button.dataset.knowledgeToggle;
-  const action = active ? "Remove this source from AI retrieval? Its file and metrics will be retained." : "Restore this source to AI retrieval?";
+  const action = active ? "Remove this source from AI retrieval? Its original file and parser output will be retained." : "Restore this source to AI retrieval?";
   if (!window.confirm(action)) return;
   button.disabled = true;
   try {
@@ -1099,6 +1261,30 @@ $("#knowledge-documents-list").addEventListener("click", async (event) => {
     await refreshKnowledgeDocuments();
   } catch (error) {
     $("#knowledge-documents-status").textContent = error.message;
+    button.disabled = false;
+  }
+});
+
+$("#knowledge-documents-list").addEventListener("submit", async (event) => {
+  const form = event.target.closest(".knowledge-access-form");
+  if (!form) return;
+  event.preventDefault();
+  const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
+  const status = form.querySelector("[data-access-status]");
+  const button = form.querySelector('button[type="submit"]');
+  if (!roles.length) {
+    status.textContent = "Select at least one role.";
+    return;
+  }
+  button.disabled = true;
+  status.textContent = "Saving…";
+  try {
+    await api(`/api/admin/knowledge-documents/${encodeURIComponent(form.dataset.documentId)}/access`, {
+      method: "PATCH", body: JSON.stringify({allowed_roles: roles}),
+    });
+    await refreshKnowledgeDocuments();
+  } catch (error) {
+    status.textContent = error.message;
     button.disabled = false;
   }
 });
@@ -1177,6 +1363,7 @@ $("#logout-button").addEventListener("click", async () => {
   await api("/api/auth/logout", { method: "POST" });
   $("#workspace").hidden = true;
   $("#login-view").hidden = false;
+  $("#login-brand-sidebar").hidden = false;
   $("#user-badge").hidden = true;
   $("#logout-button").hidden = true;
   activeTab = "knowledge";
@@ -1312,73 +1499,271 @@ $("#analytics-section").addEventListener("click", (event) => {
 
 $("#monitoring-refresh").addEventListener("click", refreshAgentMonitoring);
 
-$("#upload-synthetic-policy").addEventListener("change", (event) => {
-  if (!event.currentTarget.checked) return;
+function syncUploadReferenceFields() {
   const form = $("#upload-form");
-  form.elements.reference_type.value = "company_policy_reference";
-  form.elements.source_publisher.value = "Commerce Demo (fictional organization)";
-  form.elements.reference_applicability.value = "Fictional Commerce Demo only; not a policy of a real company.";
+  const isReference = form.elements.commerce_decision_support.checked;
+  if (!isReference) {
+    form.elements.reference_type.value = "";
+    form.querySelectorAll('input[name="knowledge_domains"]').forEach((input) => { input.checked = false; });
+    form.elements.synthetic_company_policy.checked = false;
+    form.elements.source_publisher.value = "";
+    form.elements.reference_applicability.value = "";
+  } else if (form.elements.synthetic_company_policy.checked && form.elements.reference_type.value !== "company_policy_reference") {
+    form.elements.synthetic_company_policy.checked = false;
+    form.elements.source_publisher.value = "";
+    form.elements.reference_applicability.value = "";
+  }
+  $("#upload-reference-fields").hidden = !isReference;
+  $("#upload-commerce-details").hidden = !isReference;
+  $("#upload-commerce-details").open = isReference;
+  $("#upload-synthetic-policy-option").hidden = !isReference || currentUser?.role !== "admin";
+  form.elements.reference_type.required = isReference;
+  form.elements.source_publisher.required = isReference;
+  form.elements.reference_applicability.required = isReference;
+  updateUploadPlanSummary();
+}
+
+function updateUploadRoleSelection() {
+  const selectedRoles = [...$("#upload-role-options").querySelectorAll('input[name="allowed_roles"]:checked')];
+  const summary = $("#upload-role-selection");
+  summary.textContent = selectedRoles.length
+    ? `${selectedRoles.length} role${selectedRoles.length === 1 ? "" : "s"} can retrieve this document.`
+    : "No roles selected yet. Select at least one role to allow document Q&A access.";
+}
+
+function updateUploadPlanSummary() {
+  const form = $("#upload-form");
+  const referenceEnabled = form.elements.commerce_decision_support.checked;
+  const title = form.elements.title.value.trim() || $("#upload-file").files[0]?.name || "Selected file";
+  const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')]
+    .map((input) => input.closest("label")?.querySelector("strong")?.textContent.trim())
+    .filter(Boolean);
+  const lines = [
+    `Document Q&A: ${title} will be indexed after processing.`,
+    `Access: ${roles.length ? roles.join(", ") : "select at least one role above"}.`,
+  ];
+  if (referenceEnabled) {
+    const sourceType = form.elements.reference_type.selectedOptions[0]?.textContent.trim();
+    const domains = [...form.querySelectorAll('input[name="knowledge_domains"]:checked')]
+      .map((input) => input.closest("label")?.querySelector("strong")?.textContent.trim())
+      .filter(Boolean);
+    const missing = [
+      !sourceType || form.elements.reference_type.value === "" ? "source type" : "",
+      !form.elements.source_publisher.value.trim() ? "publisher" : "",
+      !form.elements.reference_applicability.value.trim() ? "scope" : "",
+      domains.length ? "" : "decision domain",
+    ].filter(Boolean);
+    lines.push(`Decision support: ${sourceType && form.elements.reference_type.value ? sourceType : "Commerce reference"}${domains.length ? ` · ${domains.join(", ")}` : ""}.`);
+    if (missing.length) lines.push(`Complete: ${missing.join(", ")}.`);
+  } else {
+    lines.push("Decision support: off; this file is for document Q&A only.");
+  }
+  lines.push("Commerce dashboard data: unchanged.");
+  $("#upload-plan-summary").textContent = lines.join("\n");
+}
+
+const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+const SUPPORTED_UPLOAD_EXTENSIONS = new Set([".pdf", ".docx", ".pptx", ".xlsx", ".txt", ".md", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
+
+function validateUploadFile(file) {
+  if (!file) return "Choose a document to upload.";
+  const extension = "." + file.name.split(".").pop().toLocaleLowerCase();
+  if (!SUPPORTED_UPLOAD_EXTENSIONS.has(extension)) return "This file type is not supported. Choose PDF, DOCX, PPTX, XLSX, TXT, MD, PNG, JPG or TIF.";
+  if (file.size > MAX_UPLOAD_BYTES) return "The file is larger than the 50 MiB upload limit.";
+  return "";
+}
+
+$("#upload-file").addEventListener("change", (event) => {
+  const file = event.currentTarget.files[0];
+  const title = $("#upload-title");
+  if (file && title.dataset.userEdited !== "true") {
+    title.value = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
+  }
+  const error = validateUploadFile(file);
+  $("#upload-file-info").textContent = error || file.name + " · " + (file.size / 1024 / 1024).toFixed(1) + " MiB. The original stays private; review OCR output in Document Processing.";
+  $("#upload-file-info").setAttribute("role", error ? "alert" : "status");
+  updateUploadPlanSummary();
+});
+
+const uploadDropzone = $("#upload-dropzone");
+uploadDropzone.addEventListener("dragover", (event) => {
+  event.preventDefault();
+  if ($("#upload-form").getAttribute("aria-busy") === "true") return;
+  uploadDropzone.classList.add("is-dragging");
+});
+uploadDropzone.addEventListener("dragleave", (event) => {
+  if (!event.relatedTarget || !uploadDropzone.contains(event.relatedTarget)) {
+    uploadDropzone.classList.remove("is-dragging");
+  }
+});
+uploadDropzone.addEventListener("drop", (event) => {
+  event.preventDefault();
+  uploadDropzone.classList.remove("is-dragging");
+  if ($("#upload-form").getAttribute("aria-busy") === "true") return;
+  const files = event.dataTransfer?.files;
+  if (!files?.length) return;
+  if (files.length !== 1) {
+    $("#upload-file").value = "";
+    $("#upload-file-info").textContent = "Upload one file at a time.";
+    $("#upload-file-info").setAttribute("role", "alert");
+    return;
+  }
+  const input = $("#upload-file");
+  input.files = files;
+  input.dispatchEvent(new Event("change", { bubbles: true }));
+});
+
+$("#upload-title").addEventListener("input", (event) => {
+  event.currentTarget.dataset.userEdited = "true";
+  updateUploadPlanSummary();
+});
+
+$("#upload-commerce-reference").addEventListener("change", syncUploadReferenceFields);
+$("#upload-reference-type").addEventListener("change", syncUploadReferenceFields);
+$("#upload-reference-fields").addEventListener("input", updateUploadPlanSummary);
+$("#upload-reference-fields").addEventListener("change", updateUploadPlanSummary);
+syncUploadReferenceFields();
+
+$("#upload-synthetic-policy").addEventListener("change", (event) => {
+  const form = $("#upload-form");
+  if (event.currentTarget.checked) {
+    form.elements.commerce_decision_support.checked = true;
+    form.elements.reference_type.value = "company_policy_reference";
+    form.elements.source_publisher.value = "Commerce Demo (fictional organization)";
+    form.elements.reference_applicability.value = "Fictional Commerce Demo only; not a policy of a real company.";
+  } else {
+    form.elements.reference_type.value = "";
+    form.elements.source_publisher.value = "";
+    form.elements.reference_applicability.value = "";
+  }
+  syncUploadReferenceFields();
 });
 
 $("#upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
-  const button = $("#upload-button");
   const file = $("#upload-file").files[0];
   const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
   const knowledgeDomains = [...form.querySelectorAll('input[name="knowledge_domains"]:checked')].map((input) => input.value);
+  const knowledgeUse = form.elements.commerce_decision_support.checked ? "commerce" : "general";
   const referenceType = form.elements.reference_type.value;
   const publisher = form.elements.source_publisher.value.trim();
   const applicability = form.elements.reference_applicability.value.trim();
   const syntheticPolicy = form.elements.synthetic_company_policy.checked;
-  if (!file || !roles.length) {
-    $("#upload-status").textContent = "Select a supported document and at least one access role.";
+  const fileError = validateUploadFile(file);
+  if (fileError || !roles.length) {
+    const status = $("#upload-status");
+    $("#upload-status-wrap").hidden = false;
+    $("#upload-progress").hidden = true;
+    status.dataset.state = "error";
+    status.textContent = fileError || "Select at least one role authorized to retrieve this document.";
     return;
   }
-  if ((referenceType || knowledgeDomains.length) && (!referenceType || !knowledgeDomains.length || !publisher || !applicability)) {
-    $("#upload-status").textContent = "Commerce references need a publisher, reference type, applicability scope, and at least one decision domain.";
+  if (knowledgeUse === "commerce" && (!referenceType || !knowledgeDomains.length || !publisher || !applicability)) {
+    const status = $("#upload-status");
+    $("#upload-status-wrap").hidden = false;
+    $("#upload-progress").hidden = true;
+    status.dataset.state = "error";
+    status.textContent = "Commerce references need a publisher, reference type, applicability scope, and at least one decision domain.";
     return;
   }
   if (syntheticPolicy && referenceType !== "company_policy_reference") {
-    $("#upload-status").textContent = "A synthetic Commerce Demo document must be classified as a company policy.";
+    const status = $("#upload-status");
+    $("#upload-status-wrap").hidden = false;
+    $("#upload-progress").hidden = true;
+    status.dataset.state = "error";
+    status.textContent = "A synthetic Commerce Demo document must be classified as a company policy.";
     return;
   }
   const body = new FormData();
   body.append("file", file);
-  for (const name of ["title", "document_type", "domain", "source_publisher", "reference_type", "reference_applicability", "fiscal_year", "source_url"]) {
+  for (const name of ["title", "source_publisher", "reference_type", "reference_applicability", "fiscal_year", "source_url", "ocr_language"]) {
     const value = form.elements[name].value.trim();
     if (value) body.append(name, value);
   }
+  body.append("document_type", knowledgeUse === "commerce" ? referenceType : "knowledge_document");
+  body.append("domain", knowledgeUse === "commerce"
+    ? knowledgeDomains.length === 1 ? knowledgeDomains[0] : "commerce_operations"
+    : "general_knowledge");
   body.append("synthetic_company_policy", syntheticPolicy ? "true" : "false");
   knowledgeDomains.forEach((domain) => body.append("knowledge_domains", domain));
   roles.forEach((role) => body.append("allowed_roles", role));
-  button.disabled = true;
-  $("#upload-status").textContent = "Uploading and processing the document…";
+  const controls = [...form.querySelectorAll("input, select, textarea, button")];
+  const controlsWereDisabled = controls.map((control) => control.disabled);
+  controls.forEach((control) => { control.disabled = true; });
+  form.setAttribute("aria-busy", "true");
+  const status = $("#upload-status");
+  const progress = $("#upload-progress");
+  const elapsedLabel = $("#upload-elapsed");
+  $("#upload-status-wrap").hidden = false;
+  progress.hidden = false;
+  elapsedLabel.hidden = false;
+  const processingStartedAt = Date.now();
+  const updateProcessingTime = () => {
+    const elapsedSeconds = Math.floor((Date.now() - processingStartedAt) / 1000);
+    elapsedLabel.textContent = "Elapsed: " + (elapsedSeconds < 60
+      ? `${elapsedSeconds}s`
+      : `${Math.floor(elapsedSeconds / 60)}m ${String(elapsedSeconds % 60).padStart(2, "0")}s`);
+  };
+  status.dataset.state = "processing";
+  status.textContent = "Uploading, extracting text/OCR, chunking and indexing. Keep this tab open.";
+  updateProcessingTime();
+  const processingTimer = window.setInterval(updateProcessingTime, 1000);
+  let result;
   try {
-    const result = await api("/api/documents/upload", { method: "POST", body, headers: {} });
-    const referenceStatus = referenceType
+    result = await api("/api/documents/upload", { method: "POST", body, headers: {} });
+    const referenceStatus = knowledgeUse === "commerce"
       ? syntheticPolicy
-        ? ` Registered as a synthetic Commerce Demo policy for ${knowledgeDomains.join(", ")} (scope: ${applicability}).`
-        : ` Classified as ${referenceType} for ${knowledgeDomains.join(", ")} (scope: ${applicability}); source is attributed, not treated as Commerce Demo policy.`
-      : " No Commerce decision domain was assigned; parsed content is available to general document search only.";
-    const traceStatus = result.business_metric_extraction_run_id
-      ? ` Extraction trace ${result.business_metric_extraction_run_id} is available in Document processing.`
-      : "";
+        ? ` Indexed as synthetic demo guidance for ${knowledgeDomains.join(", ")} (scope: ${applicability}); dashboard SQL is unchanged.`
+        : ` Indexed as ${referenceType} for ${knowledgeDomains.join(", ")} (scope: ${applicability}); dashboard SQL is unchanged.`
+      : " Indexed for document Q&A; Commerce dashboard SQL is unchanged.";
     const pageSummary = result.page_count ? `${formatNumber(result.page_count)} pages` : "File processed";
     const extractionSummary = `${formatNumber(result.parser_chunk_count)} parser passages · ${formatNumber(result.indexed_chunk_count)} indexed passages · ${formatNumber(result.ocr_chunk_count)} OCR passages · ${formatNumber(result.table_count)} tables`;
-    $("#upload-status").textContent = `Processed ${result.document_id}; status: ${result.processing_status}; ${pageSummary}; ${extractionSummary}.${referenceStatus}${traceStatus}`;
+    const uploadedTitle = form.elements.title.value || file.name;
+    status.dataset.state = "success";
+    progress.hidden = true;
+    elapsedLabel.hidden = true;
+    status.textContent = `Processed ${result.document_id}; status: ${result.processing_status}; ${pageSummary}; ${extractionSummary}.${referenceStatus}`;
     form.reset();
-    await loadWorkspace(await api("/api/auth/me"));
+    $("#upload-title").dataset.userEdited = "false";
+    updateUploadRoleSelection();
+    syncUploadReferenceFields();
+    $("#upload-file-info").textContent = "Choose one file. Scanned PDFs and images use OCR; Admins can review extracted text and tables in Document Processing.";
+    $("#upload-file-info").setAttribute("role", "status");
+    try {
+      const workspace = await api("/api/dashboard");
+      renderCorpus(workspace);
+      if (currentUser?.role === "admin") await refreshKnowledgeDocuments();
+    } catch (error) {
+      status.dataset.state = "warning";
+      status.textContent = `The file was processed successfully as ${result.document_id}, but the corpus overview could not refresh: ${error.message}`;
+    }
     const parsedDocument = $("#parsed-document");
-    if ([...parsedDocument.options].some((option) => option.value === result.document_id)) {
+    if (currentUser?.role === "admin") {
+      const processingStatus = $("#processing-upload-status");
+      processingStatus.dataset.state = status.dataset.state || "success";
+      processingStatus.textContent = status.textContent;
+      processingStatus.hidden = false;
+      if (![...parsedDocument.options].some((option) => option.value === result.document_id)) {
+        parsedDocument.add(new Option(`${uploadedTitle} · ready`, result.document_id));
+      }
       parsedDocument.value = result.document_id;
       selectWorkspaceTab("processing");
       $("#parsed-chunk-form").requestSubmit();
+    } else {
+      selectWorkspaceTab("upload");
     }
   } catch (error) {
-    $("#upload-status").textContent = error.message;
+    progress.hidden = true;
+    elapsedLabel.hidden = true;
+    status.dataset.state = result ? "warning" : "error";
+    status.textContent = result
+      ? `The file was processed successfully as ${result.document_id}, but the workspace could not refresh: ${error.message}`
+      : error.message;
   } finally {
-    button.disabled = false;
+    window.clearInterval(processingTimer);
+    controls.forEach((control, index) => { control.disabled = controlsWereDisabled[index]; });
+    form.removeAttribute("aria-busy");
   }
 });
 

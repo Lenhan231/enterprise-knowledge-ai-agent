@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
 
-from scripts.retrieval.evaluate_rerankers import (
+from tools.retrieval.evaluate_rerankers import (
     MODELS,
     _available_memory_mb,
     _candidate_sha256,
@@ -29,7 +29,7 @@ class RerankerEvaluationTest(unittest.TestCase):
             self.assertLess(value, 1024 * 1024)
 
     def test_available_memory_reader_converts_kib_to_mib(self):
-        with patch("scripts.retrieval.evaluate_rerankers.Path.read_text", return_value="MemAvailable: 2048 kB\n"):
+        with patch("tools.retrieval.evaluate_rerankers.Path.read_text", return_value="MemAvailable: 2048 kB\n"):
             self.assertEqual(_available_memory_mb(), 2)
 
     def test_chunk_ranking_collapses_to_first_document_occurrence(self):

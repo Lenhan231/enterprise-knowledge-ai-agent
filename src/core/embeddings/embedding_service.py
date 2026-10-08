@@ -52,6 +52,11 @@ def _load_backend(model_name: str, backend_name: str = EMBEDDING_BACKEND) -> Emb
     if backend_name == "local":
         from langchain_huggingface import HuggingFaceEmbeddings
 
+        token = os.getenv("HUGGINGFACE_API_KEY")
+        if token:
+            return HuggingFaceEmbeddings(
+                model_name=model_name, model_kwargs={"token": token},
+            )
         return HuggingFaceEmbeddings(model_name=model_name)
     if backend_name == "huggingface_inference":
         return HuggingFaceInferenceEmbeddings(model_name=model_name)

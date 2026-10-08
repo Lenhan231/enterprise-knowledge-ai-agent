@@ -1,0 +1,79 @@
+{
+  "evaluation_id": "commerce-promo-multi-metric-live-20261007",
+  "created_at": "2026-10-07T11:35:55.350337+00:00",
+  "verification": "Live POST /api/ask; question-specific SQL and citations checked. No recommendation was requested.",
+  "http_status": 200,
+  "question": "For 2022 campaigns, which campaign had the highest campaign-window tagged net sales, which had the highest merchandise gross-profit proxy using catalog COGS, and are they the same?",
+  "agent": "report",
+  "answer": "These figures come from the synthetic Commerce Demo dataset, not a real retailer. [C1]\n\nThe campaign with the highest campaign‑window tagged net sales in 2022 was **PROMO‑0047 (Spring Sale 2022)** with net sales of **90345105.91**【C1】.  \nThe campaign with the highest merchandise gross‑profit proxy (i.e., the least negative value) was **PROMO‑0049 (Fall Launch 2022)** with a proxy of **‑1234030.8472199556053**【C1】.  \nThese two campaigns are not the same.",
+  "generation_provider": "groq",
+  "question_sql_fallback": null,
+  "citations": [
+    {
+      "id": "C1",
+      "company": "Commerce Demo",
+      "title": "Commerce SQL aggregate: Promotion planning",
+      "source_publisher": null,
+      "evidence_class": null,
+      "reference_applicability": null,
+      "document_id": null,
+      "synthetic_company_policy": false,
+      "chunk_index": null,
+      "source_chunk_id": null,
+      "source_content_hash": null,
+      "page_number": null,
+      "text_extraction_method": null,
+      "ocr": null,
+      "source_url": null,
+      "excerpt": "question_specific_query question-specific SQL observations: [{\"merchandise_gross_profit_proxy\": \"-6503552.0779115857076\", \"net_sales\": \"90345105.91\", \"promo_channel\": \"all_channels\", \"promo_id\": \"PROMO-0047\", \"promo_name\": \"Spring Sale 2022\"}, {\"merchandise_gross_profit_proxy\": \"-12901341.3095637599929\", \"net_sales\": \"53901863.12\", \"promo_channel\": \"online\", \"promo_id\": \"PROMO-0048\", \"promo_name\": \"Mid-Year Sale 2022\"}, {\"merchandise_gross_profit_proxy\": \"-1234030.8472199556053\", \"net_sales\": \"55424932.90\", \"promo_channel\": \"all_channels\", \"promo_id\": \"PROMO-0049\", \"promo_name\": \"Fall Launch 2022\"}, {\"merchandise_gross_profit_proxy\": \"-12051833.4307337839384\", \"net_sales\": \"42659548.34\", \"pr",
+      "score": null,
+      "retrieval_method": null,
+      "source_type": "commerce_sql",
+      "metric_name": null,
+      "fiscal_year": null,
+      "commerce_domain": "promotion_planning",
+      "commerce_aggregate_key": null,
+      "commerce_observation_group": "question_specific_query",
+      "commerce_observations": [
+        {
+          "promo_id": "PROMO-0047",
+          "promo_name": "Spring Sale 2022",
+          "promo_channel": "all_channels",
+          "net_sales": 90345105.91,
+          "merchandise_gross_profit_proxy": -6503552.077911586
+        },
+        {
+          "promo_id": "PROMO-0048",
+          "promo_name": "Mid-Year Sale 2022",
+          "promo_channel": "online",
+          "net_sales": 53901863.12,
+          "merchandise_gross_profit_proxy": -12901341.30956376
+        },
+        {
+          "promo_id": "PROMO-0049",
+          "promo_name": "Fall Launch 2022",
+          "promo_channel": "all_channels",
+          "net_sales": 55424932.9,
+          "merchandise_gross_profit_proxy": -1234030.8472199556
+        },
+        {
+          "promo_id": "PROMO-0050",
+          "promo_name": "Year-End Sale 2022",
+          "promo_channel": "all_channels",
+          "net_sales": 42659548.34,
+          "merchandise_gross_profit_proxy": -12051833.430733783
+        }
+      ],
+      "source_tables": [
+        "commerce.promotions",
+        "commerce.order_items",
+        "commerce.orders",
+        "commerce.products"
+      ],
+      "sql_query": "SELECT p.promo_id, p.promo_name, p.promo_channel, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_sales, SUM(oi.quantity * oi.unit_price - oi.discount_amount - oi.quantity * pr.cogs) AS merchandise_gross_profit_proxy FROM commerce.promotions AS p INNER JOIN commerce.order_items AS oi ON (oi.promo_id = p.promo_id OR oi.promo_id_2 = p.promo_id) INNER JOIN commerce.orders AS o ON o.order_id = oi.order_id INNER JOIN commerce.products AS pr ON pr.product_id = oi.product_id WHERE o.order_status = 'delivered' AND o.order_date BETWEEN p.start_date AND p.end_date AND EXTRACT(YEAR FROM p.start_date) = 2022 GROUP BY p.promo_id, p.promo_name, p.promo_channel LIMIT 100",
+      "sql_generation_provider": "groq",
+      "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer."
+    }
+  ],
+  "semantic_review_required": true
+}

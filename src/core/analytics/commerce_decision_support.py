@@ -1,5 +1,7 @@
 """Decision domains and evidence scope for the synthetic Commerce dataset."""
 
+import re
+
 COMMERCE_DECISION_PROFILES = {
     "inventory_allocation": {
         "label": "Inventory allocation",
@@ -145,7 +147,13 @@ COMMERCE_UNAVAILABLE_DIMENSIONS = {
         "region": {"columns": ("region",), "aliases": ("region", "regional", "vùng", "khu vực")},
         "warehouse/location": {"columns": ("warehouse", "location", "fulfillment_center"), "aliases": ("warehouse", "warehouse location", "location", "fulfillment center", "kho hàng", "địa điểm", "trung tâm hoàn tất đơn")},
         "supplier": {"columns": ("supplier", "supplier_id", "vendor"), "aliases": ("supplier", "vendor", "nhà cung cấp")},
-        "demand forecast": {"columns": ("demand_forecast", "forecast_demand"), "aliases": ("demand forecast", "forecast demand", "dự báo nhu cầu")},
+        "demand forecast": {
+            "columns": ("demand_forecast", "forecast_demand"),
+            "aliases": (
+                "demand forecast", "forecast demand", "forecasted demand", "forecast",
+                "demand trend", "demand trends", "dự báo nhu cầu",
+            ),
+        },
         "supplier lead time": {"columns": ("supplier_lead_time",), "aliases": ("supplier lead time", "lead time nhà cung cấp", "thời gian cung ứng")},
     },
     "nationwide_logistics": {
@@ -159,19 +167,57 @@ COMMERCE_UNAVAILABLE_DIMENSIONS = {
 
 
 def unavailable_commerce_dimensions(question: str, domain: str, available_columns: set[str]) -> list[str]:
-    """Find explicitly requested schema dimensions that this domain cannot answer."""
+    """Find missing dimensions used to filter or group SQL, not fields named as decision inputs."""
     text = question.casefold()
     unavailable = []
     for dimension, definition in COMMERCE_UNAVAILABLE_DIMENSIONS.get(domain, {}).items():
-        if any(alias in text for alias in definition["aliases"]) and not set(definition["columns"]).intersection(available_columns):
+        if set(definition["columns"]).intersection(available_columns):
+            continue
+        requested_as_slice = any(
+            re.search(
+                rf"\b(?:by|per|each|across|between|among|for each|which|theo|mỗi|từng|giữa)\s+"
+                rf"(?:the\s+|các\s+)?{re.escape(alias)}s?\b",
+                text,
+            )
+            for alias in definition["aliases"]
+        )
+        if requested_as_slice:
             unavailable.append(dimension)
     return unavailable
 
 
+def _commerce_term_words(text: str) -> set[str]:
+    """Normalize common English inflections for the provider-free domain fallback."""
+    words = re.findall(r"[^\W_]+", text.casefold())
+    normalized = set()
+    for word in words:
+        stem = word
+        if len(word) >= 7 and word.endswith("ing"):
+            stem = word[:-3]
+            if len(stem) > 3 and stem[-1] == stem[-2]:
+                stem = stem[:-1]
+        elif len(word) >= 7 and word.endswith("ment"):
+            stem = word[:-4]
+        elif len(word) >= 6 and word.endswith("ed"):
+            stem = word[:-2]
+            if len(stem) > 3 and stem[-1] == stem[-2]:
+                stem = stem[:-1]
+        elif len(word) >= 5 and word.endswith("ies"):
+            stem = word[:-3] + "y"
+        elif len(word) >= 5 and word.endswith("s") and not word.endswith("ss"):
+            stem = word[:-1]
+        normalized.add(stem)
+    return normalized
+
+
 def resolve_commerce_decision_domain(question: str) -> str | None:
     text = " ".join(question.casefold().replace("_", " ").split())
+    normalized_words = _commerce_term_words(text)
     scores = {
-        domain: sum(term in text for term in profile["query_terms"])
+        domain: sum(
+            term in text or set(_commerce_term_words(term)).issubset(normalized_words)
+            for term in profile["query_terms"]
+        )
         for domain, profile in COMMERCE_DECISION_PROFILES.items()
     }
     best = max(scores.values(), default=0)

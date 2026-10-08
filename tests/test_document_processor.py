@@ -42,6 +42,13 @@ class DocumentProcessorTest(unittest.TestCase):
         self.assertEqual(pdf_processor.call_args.args[0]["ocr_render_scale"], 3.5)
         self.assertEqual(pdf_processor.call_args.args[0]["ocr_table_render_scale"], 2.5)
 
+    def test_pdf_ocr_language_override_reaches_pdf_processor(self):
+        with patch("core.document_processing.processors.document_processor.PDFProcessor") as pdf_processor:
+            pdf_processor.return_value.process.return_value = {"chunks": [], "tables": []}
+            DocumentProcessor({"ocr_language": "eng"}).process("scan.pdf", b"pdf", {})
+
+        self.assertEqual(pdf_processor.call_args.args[0]["ocr_language"], "eng")
+
     def test_unsupported_environment_ocr_scale_fails_clearly(self):
         with patch.dict("os.environ", {"DOCUMENT_OCR_RENDER_SCALE": "4"}):
             with self.assertRaisesRegex(ValueError, "ocr_render_scale must be one of"):
@@ -144,6 +151,7 @@ class DocumentProcessorTest(unittest.TestCase):
 
         settings = pdf_type.call_args.args[0]
         self.assertTrue(settings["paddle_layout"])
+        self.assertFalse(settings["paddle_chart_recognition"])
         self.assertTrue(settings["paddle_formula_recognition"])
 
     def test_pptx_preserves_slide_number(self):
@@ -320,7 +328,7 @@ class DocumentProcessorTest(unittest.TestCase):
     def test_word_box_table_recovers_left_aligned_values_with_variable_widths(self):
         words = []
         rows = (
-            ("Revenue", "61,824", "59,723", 48, 48),
+            ("Revenue", "18,624", "18,723", 48, 48),
             ("Profit", "9,453", "8,000", 39, 38),
             ("Assets", "44,000", "42,000", 53, 53),
         )
@@ -337,7 +345,7 @@ class DocumentProcessorTest(unittest.TestCase):
         self.assertEqual(len(tables), 1)
         self.assertEqual(tables[0]["metadata"]["column_alignment"], "left")
         self.assertEqual(tables[0]["rows"], [
-            {"label": "Revenue", "value_1": "61,824", "value_2": "59,723"},
+            {"label": "Revenue", "value_1": "18,624", "value_2": "18,723"},
             {"label": "Profit", "value_1": "9,453", "value_2": "8,000"},
             {"label": "Assets", "value_1": "44,000", "value_2": "42,000"},
         ])

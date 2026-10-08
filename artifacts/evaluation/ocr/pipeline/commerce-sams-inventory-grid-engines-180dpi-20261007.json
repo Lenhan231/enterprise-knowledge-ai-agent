@@ -1,0 +1,177 @@
+{
+  "created_at_utc": "2026-10-07T04:00:14.212177+00:00",
+  "dataset": "commerce-sams-supplier-inventory-grid-v1",
+  "dataset_sha256": "0cee205e902b6b10bd3d863a251098c9a7d6edede76360530e4ebb5f86438b29",
+  "reference_method": "The KETER item label and six visible values were transcribed from the rendered source page by one AI agent. This is one selected row, not a human-reviewed transcription or multi-reviewer gold standard.",
+  "reference_quality": "single_agent_visual_transcription_unreviewed",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "This is a born-digital 2022 Sam's Club supplier guide with an embedded low-resolution UI screenshot, not a physical scan.",
+    "The selected region is rasterized before processing to force the production upload OCR path; results do not measure OCR on the PDF's native text layer.",
+    "The guide applies only to the named Sam's Club supplier workflow and is not a Commerce Demo policy or data source.",
+    "Only one visible item row is labeled; a passing row score does not establish complete table extraction or general OCR accuracy."
+  ],
+  "render_dpi": 180,
+  "environment": {
+    "python": "3.11.16",
+    "platform": "Linux-7.2.6-arch2-1-x86_64-with-glibc2.44",
+    "gpu": "CPU; CUDA unavailable",
+    "cuda_available": false,
+    "process_peak_rss_mb": 1421.012,
+    "child_peak_rss_mb": 1421.012,
+    "cpu_peak_scope": "whole evaluator process; run one engine per invocation for engine-specific comparison",
+    "child_peak_scope": "maximum high-water RSS among completed child processes, where supported"
+  },
+  "ocr_configuration": {
+    "render_dpi": 180,
+    "tesseract_language": "eng",
+    "tesseract_page_segmentation_mode": 3
+  },
+  "engines": {
+    "easyocr": {
+      "available": true,
+      "engine_version": "1.7.2",
+      "pages": [
+        {
+          "document_id": "SAMS-SUPPLIER-HUB-USER-GUIDE-2022",
+          "page": 7,
+          "language": "eng",
+          "source_pdf_sha256": "7245b3afae1a2b2036e6272bc95c5da0672aca11b65ce81dec09c9c894173a14",
+          "rendered_image_sha256": "fb006ec1596200dbc78628d23152d763c3bf367781f0b02518ab4fe0e156f307",
+          "reference_source": "manual_table_anchors_only",
+          "hypothesis_text": "ALC\nItems 127 /4iulte\nEnter Item Id: separatedby commas (max 25)\nWem Natnt\"\nUPC\nIlem ID\nVendoi Slac [D\nAvailabke to S-Ill\nOn Ordet\nAv-ILbla Itatlony\nSEATING SET LIMOUSINE\n73116103093\n153175 17191806\nKETER\n73116102175\n610701 17181074\nOVAL FLEXTUBE 2 PACR\n40615975149\n597514 356630.3\nT5OGLDFCKDOX\n73116102874\n513057\n4X6 PLNI $ED\n7J16102661\n90612 ItJolOI\nWOODLAND SFED\n7311610366}\n513036 17197013\nIntinity \nResin Storge Shed\n73i1610jizb\n105640 17190649\nFEX-TUR ? PACK 43 [FR\n40610658969\n65896\nCORFU SEATING SET\n73116103472\n513010 17193504\nAali\"OnlIn Storiga Shed\n73116102864\n165665 17190650\nRAINDOM PLANTERS Spk\n7J11610J/JZ\n709395 171978J9\nFlex-TUB 2 PACK 43 LITER\n40610637489\n63748\nRotanu DJO\n1250/122",
+          "reference_characters": 0,
+          "reference_words": 0,
+          "hypothesis_characters": 687,
+          "character_edit_distance": 687,
+          "word_edit_distance": 106,
+          "cer": null,
+          "wer": null,
+          "latency_seconds": 9.577,
+          "error": null,
+          "table_rows_expected": 1,
+          "table_rows_exact": 0,
+          "table_row_recall": 0.0,
+          "exact_table_row_indices": [],
+          "table_cells_expected": 7,
+          "table_cells_text_matched": 3,
+          "table_cell_text_recall": 0.428571
+        }
+      ],
+      "model_initialization_seconds": 5.243,
+      "model_initialization_error": null,
+      "runtime_device": "cpu",
+      "memory_telemetry": {
+        "torch_cuda_peak_allocated_mb": null,
+        "torch_cuda_peak_reserved_mb": null,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "aggregate": {
+        "valid_pages": 0,
+        "ocr_pages": 1,
+        "macro_mean_page_cer": null,
+        "micro_cer": null,
+        "macro_mean_page_wer": null,
+        "micro_wer": null,
+        "mean_latency_seconds": 9.577,
+        "pages_per_minute": 6.265,
+        "table_rows_expected": 1,
+        "table_rows_exact": 0,
+        "table_row_recall": 0.0,
+        "table_cells_expected": 7,
+        "table_cells_text_matched": 3,
+        "table_cell_text_recall": 0.428571
+      },
+      "by_language": {
+        "eng": {
+          "valid_pages": 0,
+          "ocr_pages": 1,
+          "macro_mean_page_cer": null,
+          "micro_cer": null,
+          "macro_mean_page_wer": null,
+          "micro_wer": null,
+          "mean_latency_seconds": 9.577,
+          "pages_per_minute": 6.265,
+          "table_rows_expected": 1,
+          "table_rows_exact": 0,
+          "table_row_recall": 0.0,
+          "table_cells_expected": 7,
+          "table_cells_text_matched": 3,
+          "table_cell_text_recall": 0.428571
+        }
+      }
+    },
+    "tesseract": {
+      "available": true,
+      "engine_version": "tesseract 5.5.3",
+      "pages": [
+        {
+          "document_id": "SAMS-SUPPLIER-HUB-USER-GUIDE-2022",
+          "page": 7,
+          "language": "eng",
+          "source_pdf_sha256": "7245b3afae1a2b2036e6272bc95c5da0672aca11b65ce81dec09c9c894173a14",
+          "rendered_image_sha256": "fb006ec1596200dbc78628d23152d763c3bf367781f0b02518ab4fe0e156f307",
+          "reference_source": "manual_table_anchors_only",
+          "hypothesis_text": "[ re——\n\nRAINGOW PLANTERS 59K\nRN TUR 2PACK A3UTER\n\nL) TS\n\n760093\n\nTaneicars\n\naoaisorsias\n\nTmeicasrs\n\nTaneiozser\n\n7me06e:\n\nToneiosize\n\n7607\n\n7aneozses\n\nez\n\n15375\n\nVondorStock © e On Onder\nnaisos o\nw0 o\n566303 o\no\nen01 o\noo o\n790649 o\no 0\n9350 °\n7190650 o\no o\no o\n\n1250022\n\n]\n|\n\nAR S Y\n\nByl\n\n",
+          "reference_characters": 0,
+          "reference_words": 0,
+          "hypothesis_characters": 255,
+          "character_edit_distance": 255,
+          "word_edit_distance": 52,
+          "cer": null,
+          "wer": null,
+          "latency_seconds": 1.194,
+          "error": null,
+          "table_rows_expected": 1,
+          "table_rows_exact": 0,
+          "table_row_recall": 0.0,
+          "exact_table_row_indices": [],
+          "table_cells_expected": 7,
+          "table_cells_text_matched": 1,
+          "table_cell_text_recall": 0.142857
+        }
+      ],
+      "model_initialization_seconds": null,
+      "model_initialization_error": null,
+      "memory_telemetry": {
+        "torch_cuda_peak_allocated_mb": null,
+        "torch_cuda_peak_reserved_mb": null,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "aggregate": {
+        "valid_pages": 0,
+        "ocr_pages": 1,
+        "macro_mean_page_cer": null,
+        "micro_cer": null,
+        "macro_mean_page_wer": null,
+        "micro_wer": null,
+        "mean_latency_seconds": 1.194,
+        "pages_per_minute": 50.251,
+        "table_rows_expected": 1,
+        "table_rows_exact": 0,
+        "table_row_recall": 0.0,
+        "table_cells_expected": 7,
+        "table_cells_text_matched": 1,
+        "table_cell_text_recall": 0.142857
+      },
+      "by_language": {
+        "eng": {
+          "valid_pages": 0,
+          "ocr_pages": 1,
+          "macro_mean_page_cer": null,
+          "micro_cer": null,
+          "macro_mean_page_wer": null,
+          "micro_wer": null,
+          "mean_latency_seconds": 1.194,
+          "pages_per_minute": 50.251,
+          "table_rows_expected": 1,
+          "table_rows_exact": 0,
+          "table_row_recall": 0.0,
+          "table_cells_expected": 7,
+          "table_cells_text_matched": 1,
+          "table_cell_text_recall": 0.142857
+        }
+      }
+    }
+  }
+}

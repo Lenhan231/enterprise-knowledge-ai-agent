@@ -1,5 +1,5 @@
 {
-  "created_at_utc": "2026-10-03T18:49:05.113972+00:00",
+  "created_at_utc": "2026-10-07T11:37:19.466212+00:00",
   "dataset_id": "commerce-synthetic-image-only-scan-smoke-v1",
   "dataset_sha256": "57e656522d4cf8b327f1f4588f5d2d63293fa9fda3142fcae9fef3dfc3849ee9",
   "reference_quality": "visual_transcription_review",
@@ -19,12 +19,16 @@
     "tesseract": "tesseract 5.5.3"
   },
   "process_memory": {
-    "process_peak_rss_mb": 150.203,
-    "child_peak_rss_mb": 150.203
+    "process_peak_rss_mb": 104.941,
+    "child_peak_rss_mb": 125.141
   },
   "aggregate": {
     "ocr_pages": 2,
     "text_scored_pages": 2,
+    "text_anchor_scored_pages": 0,
+    "expected_text_anchors": 0,
+    "matched_text_anchors": 0,
+    "text_anchor_recall": null,
     "annotated_cell_locations": 0,
     "matched_cell_locations": 0,
     "cell_location_recall": null,
@@ -37,8 +41,8 @@
     "exact_numeric_cell_accuracy": 1.0,
     "micro_cer": 0.0,
     "micro_wer": 0.0,
-    "mean_latency_seconds": 1.955,
-    "mean_pages_per_minute": 32.136
+    "mean_latency_seconds": 2.22,
+    "mean_pages_per_minute": 27.969
   },
   "results": [
     {
@@ -49,7 +53,7 @@
       "layout_type": "text",
       "physical_scan": false,
       "source_pdf_sha256": "849440fde4b0b790ceba77c5a758186f608f944730860e9ce240a336d7a9a909",
-      "cropped_pdf_sha256": "fcf94f0c3b55ce6630645dcf542ee2efd3ba86a3b34dc27abc5d264a95d06095",
+      "cropped_pdf_sha256": "1f3fd3000232126281208e00bc7ffa4d3366216983e9f3502ea21caf6f102307",
       "text_extraction_methods": [
         "tesseract"
       ],
@@ -63,6 +67,7 @@
       "extracted_tables": [],
       "table_anchor_score": null,
       "text_reference_scored": true,
+      "text_anchor_score": null,
       "text_score_scope": "source text chunks; generated table serialization excluded",
       "reference_characters": 859,
       "reference_words": 129,
@@ -72,8 +77,8 @@
       "cer": 0.0,
       "wer": 0.0,
       "ocr_text": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY Commerce Operations Test Note This synthetic page exists only to verify the PDF upload and OCR inspection workflow. The sample values and rules below are invented for testing and must never be treated as business evidence. Inventory allocation: review sales velocity, stockout history, current units on hand, and supplier lead time before changing replenishment. This sample does not set a reorder threshold. Promotion planning: compare delivered orders and recorded discounts across comparable periods. Without a holdout group, a before-and-after difference is descriptive and does not prove promotion uplift. Nationwide logistics: compare actual transit time by region. Carrier, warehouse origin, route capacity, and promised delivery SLA are required before proposing network changes. OCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX",
-      "latency_seconds": 1.539,
-      "pages_per_minute": 38.978,
+      "latency_seconds": 1.812,
+      "pages_per_minute": 33.105,
       "extracted_text": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY Commerce Operations Test Note This synthetic page exists only to verify the PDF upload and OCR inspection workflow. The sample values and rules below are invented for testing and must never be treated as business evidence. Inventory allocation: review sales velocity, stockout history, current units on hand, and supplier lead time before changing replenishment. This sample does not set a reorder threshold. Promotion planning: compare delivered orders and recorded discounts across comparable periods. Without a holdout group, a before-and-after difference is descriptive and does not prove promotion uplift. Nationwide logistics: compare actual transit time by region. Carrier, warehouse origin, route capacity, and promised delivery SLA are required before proposing network changes. OCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX"
     },
     {
@@ -84,7 +89,7 @@
       "layout_type": "table",
       "physical_scan": false,
       "source_pdf_sha256": "849440fde4b0b790ceba77c5a758186f608f944730860e9ce240a336d7a9a909",
-      "cropped_pdf_sha256": "4576e80b5af503f91c1ee55ae22240b3a17e379f8d3e67198f8a26fb8d707813",
+      "cropped_pdf_sha256": "e383d530aa16082a45f037f85d0d9681a938b0364173d75f2b2fa525a4717332",
       "text_extraction_methods": [
         "tesseract"
       ],
@@ -100,29 +105,29 @@
           "page_number": 1,
           "table_index": 0,
           "columns": [
-            "label",
-            "value_1",
-            "value_2",
-            "value_3"
+            "Region",
+            "Delivered sample orders",
+            "Median transit days",
+            "Avg fee units"
           ],
           "rows": [
             {
-              "label": "East",
-              "value_1": "120",
-              "value_2": "3.0",
-              "value_3": "42.50"
+              "Region": "East",
+              "Delivered sample orders": "120",
+              "Median transit days": "3.0",
+              "Avg fee units": "42.50"
             },
             {
-              "label": "Central",
-              "value_1": "95",
-              "value_2": "4.0",
-              "value_3": "48.75"
+              "Region": "Central",
+              "Delivered sample orders": "95",
+              "Median transit days": "4.0",
+              "Avg fee units": "48.75"
             },
             {
-              "label": "West",
-              "value_1": "80",
-              "value_2": "5.0",
-              "value_3": "55.25"
+              "Region": "West",
+              "Delivered sample orders": "80",
+              "Median transit days": "5.0",
+              "Avg fee units": "55.25"
             }
           ],
           "metadata": {
@@ -146,25 +151,25 @@
             "bbox_coordinate_system": "pdf_points",
             "row_cell_bboxes": [
               {
-                "label": [
+                "Region": [
                   114.36155913978494,
                   301.2,
                   136.7540322580645,
                   310.0
                 ],
-                "value_1": [
+                "Delivered sample orders": [
                   245.9173387096774,
                   301.2,
                   264.7110215053763,
                   310.0
                 ],
-                "value_2": [
+                "Median transit days": [
                   372.2748655913978,
                   301.2,
                   387.869623655914,
                   310.0
                 ],
-                "value_3": [
+                "Avg fee units": [
                   477.43951612903226,
                   301.2,
                   507.429435483871,
@@ -172,61 +177,70 @@
                 ]
               },
               {
-                "label": [
+                "Region": [
                   105.16465053763442,
                   359.2,
                   144.35147849462368,
                   375.2
                 ],
-                "value_1": [
+                "Delivered sample orders": [
                   248.71639784946237,
                   361.2,
-                  261.51209677419354,
+                  261.1122311827957,
                   370.0
                 ],
-                "value_2": [
+                "Median transit days": [
                   371.875,
                   361.2,
                   387.869623655914,
                   370.0
                 ],
-                "value_3": [
+                "Avg fee units": [
                   477.43951612903226,
                   361.2,
-                  507.429435483871,
+                  507.0295698924731,
                   370.0
                 ]
               },
               {
-                "label": [
+                "Region": [
                   111.16263440860214,
                   419.6,
                   138.75336021505376,
                   434.40000000000003
                 ],
-                "value_1": [
+                "Delivered sample orders": [
                   248.71639784946237,
                   421.2,
                   261.51209677419354,
                   430.0
                 ],
-                "value_2": [
+                "Median transit days": [
                   372.2748655913978,
                   421.2,
                   387.869623655914,
                   430.0
                 ],
-                "value_3": [
+                "Avg fee units": [
                   477.8393817204301,
                   421.2,
-                  507.4294354838709,
+                  507.0295698924731,
                   430.0
                 ]
               }
             ],
+            "ocr_column_header_bbox": [
+              110.36290322580645,
+              235.6,
+              521.0248655913979,
+              245.6
+            ],
             "document_id": "COMMERCE-SYNTHETIC-OCR-DEMO",
             "filename": "commerce_synthetic_policy_scan_demo.pdf",
             "format": "PDF"
+          },
+          "context": {
+            "table_title": "Synthetic regional logistics sample"
           }
         }
       ],
@@ -238,16 +252,16 @@
           "Avg fee units"
         ],
         "extracted_headers": [
-          "value_1",
-          "value_2",
-          "value_3"
+          "Delivered sample orders",
+          "Median transit days",
+          "Avg fee units"
         ],
         "comparison": {
           "labels": "accent-folded character similarity; matched at >= 0.6",
-          "headers": "digits-only period comparison",
+          "headers": "normalized text comparison or digits-only period comparison",
           "numeric_cells": "sign and digit sequence; punctuation ignored"
         },
-        "exact_header_matches": 0,
+        "exact_header_matches": 3,
         "expected_anchor_rows": 3,
         "matched_anchor_rows": 3,
         "anchor_row_recall": 1.0,
@@ -328,6 +342,7 @@
         ]
       },
       "text_reference_scored": true,
+      "text_anchor_score": null,
       "text_score_scope": "source text chunks; generated table serialization excluded",
       "reference_characters": 344,
       "reference_words": 65,
@@ -337,9 +352,9 @@
       "cer": 0.0,
       "wer": 0.0,
       "ocr_text": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY Synthetic regional logistics sample Region Delivered sample orders Median transit days Avg fee units East 120 3.0 42.50 Central 95 4.0 48.75 West 80 5.0 55.25 Every record on this page is invented for OCR testing. Values are not from the Commerce database. OCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX",
-      "latency_seconds": 2.372,
-      "pages_per_minute": 25.295,
-      "extracted_text": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY Synthetic regional logistics sample Region Delivered sample orders Median transit days Avg fee units East 120 3.0 42.50 Central 95 4.0 48.75 West 80 5.0 55.25 Every record on this page is invented for OCR testing. Values are not from the Commerce database. OCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX\nColumns: label | value_1 | value_2 | value_3\nRow 1: label: East | value_1: 120 | value_2: 3.0 | value_3: 42.50\nRow 2: label: Central | value_1: 95 | value_2: 4.0 | value_3: 48.75\nRow 3: label: West | value_1: 80 | value_2: 5.0 | value_3: 55.25"
+      "latency_seconds": 2.628,
+      "pages_per_minute": 22.833,
+      "extracted_text": "SYNTHETIC OCR DEMO - NOT A REAL COMPANY POLICY Synthetic regional logistics sample Region Delivered sample orders Median transit days Avg fee units East 120 3.0 42.50 Central 95 4.0 48.75 West 80 5.0 55.25 Every record on this page is invented for OCR testing. Values are not from the Commerce database. OCR TEST ONLY - SYNTHETIC CONTENT - DO NOT INDEX\nTable: Synthetic regional logistics sample\nColumns: Region | Delivered sample orders | Median transit days | Avg fee units\nRow 1: Region: East | Delivered sample orders: 120 | Median transit days: 3.0 | Avg fee units: 42.50\nRow 2: Region: Central | Delivered sample orders: 95 | Median transit days: 4.0 | Avg fee units: 48.75\nRow 3: Region: West | Delivered sample orders: 80 | Median transit days: 5.0 | Avg fee units: 55.25"
     }
   ]
 }

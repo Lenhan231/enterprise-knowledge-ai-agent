@@ -1,0 +1,55 @@
+{
+  "dataset_id": "commerce-shopee-inventory-grid-page11-v1",
+  "purpose": "Score table detection, row association, and visible stock values in an embedded inventory screenshot from an active Vietnamese seller guide.",
+  "reference_quality": "single_agent_visual_transcription_unreviewed",
+  "reference_method": "One reviewer visually transcribed the two visible product rows and headers from a 4x render of page 11. Values and selected OCR text anchors were read from the source image, not OCR output; no independent review has been performed.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "The source is a 2019 Shopee Vietnam PowerPoint-exported PDF with an embedded low-resolution UI screenshot, not a physical scan.",
+    "Only two displayed product rows are labeled; this does not establish complete table extraction or general OCR accuracy.",
+    "The reference is single-reviewer and unadjudicated; it is exploratory evidence only.",
+    "The guide applies to Shopee sellers and is not policy or operating data for the synthetic Commerce dataset."
+  ],
+  "pages": [
+    {
+      "id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN-PDF-PAGE-11-GRID",
+      "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+      "file": "data/raw/commerce_knowledge/SHOPEE-UNI-INVENTORY-MANAGEMENT-VN.pdf",
+      "source_url": "https://cdngarenanow-a.akamaihd.net/shopee/seller/seller_cms/acf62e028643871447fd5886ed466a10/Qu%E1%BA%A3n%20L%C3%BD%20T%E1%BB%93n%20Kho.pdf",
+      "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+      "page": 11,
+      "printed_page_number": 9,
+      "language": "vie",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "embedded_seller_center_inventory_grid",
+      "clip_rect": [18, 127, 505, 302],
+      "reference_text": "",
+      "text_anchors": [
+        "7811192512",
+        "3505740268",
+        "0 0 - 0 0 0",
+        "10 22 sonatus 10 0 15"
+      ],
+      "table_columns": [
+        "Mã sản phẩm / Thông tin phân loại",
+        "Số bán 7 ngày qua",
+        "Số bán 30 ngày qua",
+        "Vị trí kho",
+        "Tồn kho có sẵn",
+        "Tồn kho khuyến mãi",
+        "Tồn kho tối thiểu"
+      ],
+      "table_rows": [
+        {
+          "label": "Loa Mỹ Nhập Khẩu",
+          "values": ["0", "0", "-", "0", "0", "0"]
+        },
+        {
+          "label": "Set quần áo cực chất - test",
+          "values": ["10", "22", "sonatus", "10", "0", "15"]
+        }
+      ]
+    }
+  ]
+}

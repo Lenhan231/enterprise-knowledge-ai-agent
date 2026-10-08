@@ -1,0 +1,157 @@
+{
+  "created_at_utc": "2026-10-08T00:17:45.313098+00:00",
+  "dataset": "commerce-shopee-inventory-page-ocr-v2",
+  "dataset_sha256": "9bde6ffc25ae51c442d2625c518a50ea62edb239d797203074df72f94ed133d8",
+  "reference_method": "The three full-page references were manually transcribed from rendered source pages 3, 5 and 13, which contain rasterized Vietnamese slide headings and no extractable text layer. The two selected page-11 regions and their replenishment-status callouts were also transcribed from rendered pages; the embedded seller-center screenshot is scored separately by phrase anchors. References were not copied from OCR output.",
+  "reference_quality": "single_reviewer_visual_transcription",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "The source is a 2019 Shopee Vietnam seller guide exported from PowerPoint. Its image-only pages are rasterized slide content, not physical scans; the selected pages and phrases are not a representative OCR benchmark.",
+    "The reference is transcribed by one reviewer and has no independent second-pass adjudication.",
+    "The source applies only to Shopee sellers and is not policy for the synthetic Commerce dataset."
+  ],
+  "render_dpi": 180,
+  "environment": {
+    "python": "3.13.15",
+    "platform": "Linux-6.18.48+-x86_64-with-glibc2.39",
+    "gpu": "Tesla T4",
+    "cuda_available": true,
+    "process_peak_rss_mb": 4385.559,
+    "child_peak_rss_mb": 1239.305,
+    "cpu_peak_scope": "whole evaluator process; run one engine per invocation for engine-specific comparison",
+    "child_peak_scope": "maximum high-water RSS among completed child processes, where supported"
+  },
+  "ocr_configuration": {
+    "render_dpi": 180,
+    "tesseract_language": "vie+eng",
+    "tesseract_page_segmentation_mode": 3
+  },
+  "engines": {
+    "surya": {
+      "available": true,
+      "engine_version": "0.17.1",
+      "pages": [
+        {
+          "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+          "page": 3,
+          "language": "vie",
+          "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+          "rendered_image_sha256": "c1c385d8b720cd74845f95ece64279f09c9d5345a0b551d1efd59378ee918756",
+          "reference_source": "manual_transcription",
+          "hypothesis_text": "LỢI ÍCH CỦA CÔNG CỤ QUẨN LÝ TỒN KHO",
+          "reference_characters": 35,
+          "reference_words": 9,
+          "hypothesis_characters": 35,
+          "character_edit_distance": 1,
+          "word_edit_distance": 1,
+          "cer": 0.028571,
+          "wer": 0.111111,
+          "latency_seconds": 5.802,
+          "error": null
+        },
+        {
+          "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+          "page": 5,
+          "language": "vie",
+          "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+          "rendered_image_sha256": "26dd01f5285425d02c27c703ad3740b5bffabd5c2b1dc08f36b785c9aed60e2f",
+          "reference_source": "manual_transcription",
+          "hypothesis_text": "CÁC TÍNH NĂNG CỦA QUẢN LÝ TỒN KHO",
+          "reference_characters": 33,
+          "reference_words": 8,
+          "hypothesis_characters": 33,
+          "character_edit_distance": 0,
+          "word_edit_distance": 0,
+          "cer": 0.0,
+          "wer": 0.0,
+          "latency_seconds": 1.176,
+          "error": null
+        },
+        {
+          "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+          "page": 13,
+          "language": "vie",
+          "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+          "rendered_image_sha256": "4c3331a82d0d29921c0af1fc737d7ca1e68683dfb024af329793da724acec617",
+          "reference_source": "manual_transcription",
+          "hypothesis_text": "CẬP NHẬT CHI TIẾT SKU",
+          "reference_characters": 21,
+          "reference_words": 5,
+          "hypothesis_characters": 21,
+          "character_edit_distance": 0,
+          "word_edit_distance": 0,
+          "cer": 0.0,
+          "wer": 0.0,
+          "latency_seconds": 0.872,
+          "error": null
+        },
+        {
+          "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+          "page": 11,
+          "language": "vie",
+          "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+          "rendered_image_sha256": "1b16378a0c6d5fd6a2753bd8a163a8dacc5587d2ba147c5d9b300c8e92ff0dbf",
+          "reference_source": "manual_transcription",
+          "hypothesis_text": "4 Giảm thiểu tình trạng hết hàng\nKiểm tra trạng thái <b>Mức độ cần bổ sung hàng</b> để biết được thời gian sớm nhất Người bán nên bổ\nsung hàng tồn kho cho từng SKU.",
+          "reference_characters": 156,
+          "reference_words": 35,
+          "hypothesis_characters": 160,
+          "character_edit_distance": 4,
+          "word_edit_distance": 2,
+          "cer": 0.025641,
+          "wer": 0.057143,
+          "latency_seconds": 6.017,
+          "error": null
+        },
+        {
+          "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+          "page": 11,
+          "language": "vie",
+          "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+          "rendered_image_sha256": "7054da634724c8f4954407b198de360f943ed9b81e9fe0c402581b7aa8bab365",
+          "reference_source": "manual_transcription",
+          "hypothesis_text": "Bổ sung kho hàng\nngay cho biết SKU\nđã hết hàng\nBổ sung kho hàng\nВ\nsớm cho biết SKU\nsắp hết hàng nghĩa\nlà số lượng tồn kho\nnằm dưới Số lượng\ntồn kho tối thiểu.",
+          "reference_characters": 159,
+          "reference_words": 38,
+          "hypothesis_characters": 157,
+          "character_edit_distance": 6,
+          "word_edit_distance": 3,
+          "cer": 0.037736,
+          "wer": 0.078947,
+          "latency_seconds": 0.914,
+          "error": null
+        }
+      ],
+      "model_initialization_seconds": 56.051,
+      "model_initialization_error": null,
+      "runtime_device": "cuda:0",
+      "memory_telemetry": {
+        "torch_cuda_peak_allocated_mb": 1768.635,
+        "torch_cuda_peak_reserved_mb": 1846.0,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "aggregate": {
+        "valid_pages": 5,
+        "ocr_pages": 5,
+        "macro_mean_page_cer": 0.01839,
+        "micro_cer": 0.027228,
+        "macro_mean_page_wer": 0.04944,
+        "micro_wer": 0.063158,
+        "mean_latency_seconds": 2.956,
+        "pages_per_minute": 20.296
+      },
+      "by_language": {
+        "vie": {
+          "valid_pages": 5,
+          "ocr_pages": 5,
+          "macro_mean_page_cer": 0.01839,
+          "micro_cer": 0.027228,
+          "macro_mean_page_wer": 0.04944,
+          "micro_wer": 0.063158,
+          "mean_latency_seconds": 2.956,
+          "pages_per_minute": 20.296
+        }
+      }
+    }
+  }
+}

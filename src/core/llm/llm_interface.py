@@ -3,6 +3,10 @@ from abc import ABC, abstractmethod
 from pydantic import BaseModel
 
 
+class EmptyLLMResponseError(RuntimeError):
+    """A provider completed a request without returning usable text."""
+
+
 class LLMInterface(ABC):
 
     @abstractmethod

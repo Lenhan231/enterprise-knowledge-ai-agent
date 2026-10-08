@@ -32,14 +32,14 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
             column.name = name
         self.cursor.fetchall.return_value = [(0, "indexed text", {"document_id": "DOC-1"}, "embedded", None)]
 
-        rows = self.repository.get_document_chunks("DOC-1", limit=10, offset=20, company="Vinamilk")
+        rows = self.repository.get_document_chunks("DOC-1", limit=10, offset=20, company="Example Retailer")
 
         self.assertEqual(rows[0]["content"], "indexed text")
         sql, params = self.cursor.execute.call_args.args
         normalized = " ".join(sql.lower().split())
         self.assertIn("join public.documents", normalized)
         self.assertIn("coalesce(d.processing_status, 'ready') = 'ready'", normalized)
-        self.assertEqual(params, ("DOC-1", "Vinamilk", "Vinamilk", 10, 20))
+        self.assertEqual(params, ("DOC-1", "Example Retailer", "Example Retailer", 10, 20))
 
     def test_exact_metric_source_chunk_lookup_checks_document_and_company(self):
         self.cursor.description = [
@@ -52,7 +52,7 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
             column.name = name
         self.cursor.fetchone.return_value = (413, "exact linked text", {"document_id": "DOC-1"}, "embedded", None)
 
-        row = self.repository.get_document_chunk(9021, "DOC-1", company="Vinamilk")
+        row = self.repository.get_document_chunk(9021, "DOC-1", company="Example Retailer")
 
         self.assertEqual(row["chunk_index"], 413)
         self.assertEqual(row["content"], "exact linked text")
@@ -60,7 +60,7 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
         normalized = " ".join(sql.lower().split())
         self.assertIn("where c.id = %s and d.document_id = %s", normalized)
         self.assertIn("d.company = %s::text", normalized)
-        self.assertEqual(params, (9021, "DOC-1", "Vinamilk", "Vinamilk"))
+        self.assertEqual(params, (9021, "DOC-1", "Example Retailer", "Example Retailer"))
 
     def test_replace_document_deletes_by_stable_id_and_keeps_source_filename(self):
         rows = [("report.pdf", 0, "content", {"document_id": "DOC-1"}, [0.1])]
@@ -144,8 +144,8 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
     def test_lexical_query_removes_question_scaffolding(self):
         from core.database.document_chunks_repository import _lexical_tsquery
         self.assertEqual(
-            _lexical_tsquery("Lợi nhuận sau thuế hợp nhất của Vinamilk năm 2024 là bao nhiêu?"),
-            "lợi | nhuận | sau | thuế | hợp | nhất | 2024",
+            _lexical_tsquery("Summarize Commerce promotion sales in 2024?"),
+            "commerce | promotion | sales | 2024",
         )
 
     def test_explicit_year_prefers_one_year_but_not_comparisons(self):
@@ -156,14 +156,14 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
 
     def test_query_filters_by_roles_before_ranking(self):
         self.cursor.fetchall.return_value = []
-        self.repository.similarity_search([0.1, 0.2], 4, company="Vinamilk", roles=["finance_analyst"])
+        self.repository.similarity_search([0.1, 0.2], 4, company="Example Retailer", roles=["finance_analyst"])
         sql, parameters = self.cursor.execute.call_args.args
         normalized = " ".join(sql.split())
         self.assertIn("d.allowed_roles && %s::text[]", normalized)
         self.assertLess(normalized.index("d.allowed_roles &&"), normalized.index("vector_candidates AS"))
         self.assertLess(normalized.index("d.allowed_roles &&"), normalized.index("bm25_candidates AS"))
         self.assertEqual(parameters[2:4], [None, None])
-        self.assertEqual(parameters[4:7], ["Vinamilk", ["finance_analyst"], ["finance_analyst"]])
+        self.assertEqual(parameters[4:7], ["Example Retailer", ["finance_analyst"], ["finance_analyst"]])
         self.assertEqual(parameters[7], "")
         self.repository.conn.commit.assert_not_called()
 
@@ -238,7 +238,7 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
         )
 
         result = self.repository.expand_parent_contexts(
-            [anchor], company="Vinamilk", roles=["finance_analyst"]
+            [anchor], company="Example Retailer", roles=["finance_analyst"]
         )
 
         context = result[("DOC-1", 4)]
@@ -253,7 +253,7 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
         self.assertIn("d.allowed_roles && %s::text[]", normalized)
         self.assertIn("coalesce(d.processing_status, 'ready') = 'ready'", normalized)
         self.assertEqual(parameters[1:3], [2, 2])
-        self.assertEqual(parameters[3:], ["Vinamilk", ["finance_analyst"], ["finance_analyst"]])
+        self.assertEqual(parameters[3:], ["Example Retailer", ["finance_analyst"], ["finance_analyst"]])
 
     def test_invalid_row_is_not_silently_skipped(self):
         self.cursor.fetchall.return_value = [

@@ -13,41 +13,62 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.agents.intent_classifier import IntentClassifier
 from core.analytics.metric_ontology import resolve_metric_names
-from core.analytics.business_metric_catalog import resolve_business_metric_domain, resolve_business_metric_names
 from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES, resolve_commerce_decision_domain
 from core.analytics.sql_safety import UnsafeAnalyticsQuery
+from core.llm.llm_interface import EmptyLLMResponseError
 from core.agents.knowledge_agent import (
     KnowledgeAgent,
-    _rank_business_decision_evidence,
     _rank_commerce_reference_evidence,
 )
 from core.agents.report_agent import (
-    ReportAgent, _commerce_safe_fallback, _commerce_question_safe_fallback,
-    _generate_conditional_draft,
+    ReportAgent, _commerce_safe_fallback, _commerce_question_safe_fallback, _format_commerce_number,
+    _asks_for_unavailable_promotion_roi,
+    _generate_conditional_draft, _ensure_commerce_dataset_disclosure,
+    _has_unsupported_campaign_causal_claim,
     _decision_numeric_facts_match_cited_evidence,
     _unsupported_decision_numeric_tokens,
     _commerce_schema_gap_citation_failure, _financial_facts_match_cited_evidence, _format_prompt_evidence,
     _has_untranslated_prose, _has_unsolicited_commerce_recommendation, _has_unsupported_logistics_intervention,
+    _claims_missing_commerce_dimension_is_available,
+    _suggests_unsupported_inventory_transfer,
     _has_unprovided_logistics_fields, _omits_cited_logistics_method,
     _report_validation_failure, _has_unsupported_monotonic_commerce_trend,
-    _is_decision_support_request,
+    _asks_for_operating_steps, _is_decision_support_request, _is_financial_summary,
+    _commerce_requested_observation_missing, _commerce_fill_rate_missing_percent,
+    _has_multiple_unrequested_actions,
 )
 from core.agents.router import AgentRouter
 from core.agents.sql_analytics_agent import SQLAnalyticsAgent
 from core.agents.report_agent import (
-    _has_undisclosed_approved_hurdle,
-    _has_uncited_environmental_intervention,
     _has_unsupported_numeric_decision_gate,
     _normalize_numeric_citations,
-    _is_business_metric_trend_question,
     _is_decision_suggestions_request,
 )
 from core.models.agents import AgentRequest, AgentResult, Evidence
 from core.models.intent import IntentResult
 from core.rag.rag_service import RAGResult
+from core.llm import provider_fallback
 
 
 class AgentFlowTest(unittest.TestCase):
+    def tearDown(self):
+        provider_fallback._huggingface_fallback_disabled = False
+
+    def test_transfer_guard_distinguishes_recommendations_from_negated_advice(self):
+        for answer in (
+            "Do not recommend a transfer from category aggregates.",
+            "The evidence does not support that we should transfer inventory.",
+            "Không nên điều chuyển hàng khi chưa đối chiếu SKU và địa điểm.",
+            "Chưa khuyến nghị phân bổ lại hàng dựa trên các aggregate này.",
+            "Chỉ cân nhắc điều chuyển sau khi đối chiếu SKU gửi/nhận, tồn khả dụng và nhu cầu.",
+            "Only consider a transfer after matching SKU-level stock and destination demand.",
+        ):
+            with self.subTest(answer=answer):
+                self.assertFalse(_suggests_unsupported_inventory_transfer(answer))
+
+        self.assertTrue(_suggests_unsupported_inventory_transfer("We should transfer stock."))
+        self.assertTrue(_suggests_unsupported_inventory_transfer("Nên điều chuyển hàng."))
+
     def test_decision_detector_catches_evidence_gaps_and_inflected_reallocation(self):
         self.assertTrue(_is_decision_support_request(
             "Which product categories have the most stockout-flagged SKUs, and what evidence is still needed before reallocating stock?"
@@ -55,8 +76,72 @@ class AgentFlowTest(unittest.TestCase):
         self.assertTrue(_is_decision_support_request("Should we be reallocating inventory?"))
         self.assertTrue(_is_decision_support_request("What data is needed before inventory reallocation?"))
         self.assertTrue(_is_decision_support_request("How can we reduce inventory stockouts?"))
+        self.assertTrue(_is_decision_support_request(
+            "Does the evidence justify increasing campaign budgets?"
+        ))
+        self.assertTrue(_is_decision_support_request(
+            "Tổng stock_on_hand theo danh mục có đủ căn cứ để điều chuyển hàng không?"
+        ))
+        self.assertTrue(_is_decision_support_request(
+            "Có đủ căn cứ để thay đổi kế hoạch giao hàng không?"
+        ))
         self.assertFalse(_is_decision_support_request("Did inventory stockouts reduce last year?"))
         self.assertFalse(_is_decision_support_request("Which category had the most stockout-flagged products?"))
+
+    def test_sufficiency_question_uses_dynamic_inventory_rows_and_withholds_transfer(self):
+        question = "Tổng stock_on_hand theo danh mục có đủ căn cứ để điều chuyển hàng không?"
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Inventory category totals",
+                content=("question-specific SQL observations: "
+                         '[{"category":"Outdoor","total_stock_on_hand":49929},'
+                         '{"category":"Streetwear","total_stock_on_hand":45085}]'),
+                metadata={
+                    "commerce_domain": "inventory_allocation",
+                    "commerce_observation_group": "question_specific_query",
+                    "commerce_observations": [
+                        {"category": "Outdoor", "total_stock_on_hand": 49929},
+                        {"category": "Streetwear", "total_stock_on_hand": 45085},
+                    ],
+                },
+            ),
+            Evidence(
+                citation_id="L1", source_type="commerce_schema", source="Inventory schema",
+                content="The dataset lacks SKU/location matches, demand, transfer costs, and service constraints.",
+            ),
+            Evidence(
+                citation_id="S1", source_type="document", source="Synthetic inventory policy",
+                content="Policy note",
+                metadata={
+                    "evidence_class": "company_policy_reference",
+                    "synthetic_company_policy": True,
+                    "source_publisher": "Commerce Demo (fictional organization)",
+                    "source_notes": "Match SKU, available stock, demand, lead time, transfer cost, and service constraints.",
+                },
+            ),
+        ]
+
+        answer = _commerce_question_safe_fallback(
+            question, evidence,
+            decision_request=_is_decision_support_request(question),
+        )
+
+        self.assertIn("Chưa điều chuyển tồn kho", answer)
+        self.assertIn("Outdoor", answer)
+        self.assertIn("49.929", answer)
+        self.assertIn("Tổng lượng tồn kho hiện có", answer)
+        self.assertIn("Chưa điều chuyển tồn kho", answer)
+        self.assertIn("[S1]", answer)
+
+    def test_operating_step_detector_recognizes_policy_prerequisite_questions(self):
+        for question in (
+            "Which checks does the policy require before transferring inventory?",
+            "What must be verified before moving stock between locations?",
+            "Trong snapshot mới nhất, danh mục nào có nhiều stockout nhất và policy giả lập yêu cầu kiểm tra gì trước khi điều chuyển?",
+            "Cần đối chiếu những gì trước khi phân bổ lại hàng?",
+        ):
+            with self.subTest(question=question):
+                self.assertTrue(_asks_for_operating_steps(question))
 
     def test_decision_fallback_includes_overlap_when_question_says_reallocating(self):
         evidence = [
@@ -91,6 +176,152 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("SKU-level demand", answer)
         self.assertIn("[L1]", answer)
         self.assertIn("[S1]", answer)
+
+    def test_dynamic_inventory_fallback_keeps_overlap_citation_with_fact(self):
+        question = (
+            "Should inventory be reallocated from overstocked categories to stockout categories? "
+            "Compare recent evidence, check whether the flags overlap, and state what is still needed before moving stock."
+        )
+        rows = [{
+            "snapshot_date": "2022-12-31", "category": "Streetwear",
+            "stockout_products": 134, "overstock_products": 162,
+        }]
+        overlap = [{"snapshot_date": "2022-12-31", "both_flagged_rows": 232}]
+        category_rows = [
+            {"snapshot_date": "2022-12-31", "category": "Streetwear", "stockout_products": 134, "overstock_products": 162},
+            {"snapshot_date": "2022-12-31", "category": "Outdoor", "stockout_products": 95, "overstock_products": 113},
+        ]
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Inventory question query",
+                content=f"question_specific_query observations: {json.dumps(rows)}",
+                metadata={"commerce_domain": "inventory_allocation", "commerce_observations": rows},
+            ),
+            Evidence(
+                citation_id="C2", source_type="commerce_sql", source="Inventory category aggregate",
+                content=f"inventory_latest_by_category aggregate observations: {json.dumps(category_rows)}",
+                metadata={
+                    "commerce_observation_group": "inventory_latest_by_category",
+                    "commerce_observations": category_rows,
+                },
+            ),
+            Evidence(
+                citation_id="C3", source_type="commerce_sql", source="Inventory flag-overlap aggregate",
+                content=f"inventory_latest_flag_overlap aggregate observations: {json.dumps(overlap)}",
+                metadata={
+                    "commerce_aggregate_key": "inventory_latest_flag_overlap",
+                    "commerce_observations": overlap,
+                },
+            ),
+            Evidence(citation_id="L1", source_type="commerce_schema", source="Schema limits",
+                     content="No SKU/location transfer evidence; lead time and transfer costs are absent."),
+            Evidence(citation_id="S1", source_type="document", source="Commerce Demo policy",
+                     content="Match demand, stock and location before transfer.", metadata={
+                         "evidence_class": "company_policy_reference", "synthetic_company_policy": True,
+                     }),
+        ]
+
+        answer = _commerce_question_safe_fallback(question, evidence, decision_request=True)
+
+        self.assertIn("232 rows with both flags", answer)
+        self.assertEqual(answer.count("232"), 1)
+        self.assertIn("not unique incidents [C3]", answer)
+        self.assertIn("stockout: Streetwear (134)", answer)
+        self.assertIn("overstock: Streetwear (162)", answer)
+        self.assertNotIn("None stockout", answer)
+        self.assertIsNone(_report_validation_failure(answer, evidence, {"C1", "C2", "C3", "L1", "S1"}, question))
+        self.assertFalse(_suggests_unsupported_inventory_transfer(answer))
+
+        localized_question = "Trong snapshot tồn kho mới nhất, nhóm hàng nào có nhiều sản phẩm bị gắn cờ stockout nhất? Có nên chuyển hàng từ nhóm overstock sang không?"
+        localized_answer = _commerce_question_safe_fallback(
+            localized_question, evidence, decision_request=True,
+        )
+        self.assertEqual(localized_answer.count("232"), 1)
+        self.assertIn("[C3]", localized_answer)
+
+    def test_operating_step_detector_recognizes_vietnamese_data_checks_before_action(self):
+        for question in (
+            "Trước khi chuyển hàng giữa các nhóm có stockout và overstock, cần kiểm tra dữ liệu nào?",
+            "Before transferring stock, what data should we check?",
+        ):
+            with self.subTest(question=question):
+                self.assertTrue(_asks_for_operating_steps(question))
+                self.assertTrue(_is_decision_support_request(question))
+
+    def test_english_inventory_fallback_keeps_overlap_fact_in_english(self):
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Inventory category aggregate",
+                content=('inventory_latest_by_category aggregate observations: '
+                         '[{"snapshot_date":"2022-12-31","category":"Streetwear","stockout_products":134}]'),
+            ),
+            Evidence(
+                citation_id="C2", source_type="commerce_sql", source="Inventory flag-overlap aggregate",
+                content=('inventory_latest_flag_overlap aggregate observations: '
+                         '[{"snapshot_date":"2022-12-31","both_flagged_rows":232}]'),
+                metadata={"commerce_aggregate_key": "inventory_latest_flag_overlap"},
+            ),
+            Evidence(citation_id="L1", source_type="commerce_schema", source="Schema limits",
+                     content="No SKU/location transfer evidence."),
+            Evidence(citation_id="S1", source_type="document", source="Commerce Demo policy",
+                     content="Match SKU, demand, stock and location before transfer.",
+                     metadata={"evidence_class": "company_policy_reference", "synthetic_company_policy": True}),
+        ]
+
+        answer = _commerce_safe_fallback(
+            "inventory_allocation",
+            "What evidence is needed before reallocating inventory from overstock to stockout categories?",
+            evidence,
+        )
+
+        self.assertIn("In snapshot 2022-12-31, 232 product rows", answer)
+        self.assertNotIn("Trong snapshot", answer)
+        self.assertIn("[C2]", answer)
+        self.assertIn("[S1]", answer)
+
+    def test_inventory_reallocation_fallback_reports_category_review_cues(self):
+        category_rows = [
+            {"snapshot_date": "2022-12-31", "category": "Streetwear", "stockout_products": 134, "overstock_products": 162},
+            {"snapshot_date": "2022-12-31", "category": "Outdoor", "stockout_products": 95, "overstock_products": 113},
+        ]
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Latest inventory flags",
+                content="inventory_latest_flag_overlap aggregate observations: [{\"snapshot_date\":\"2022-12-31\",\"both_flagged_rows\":232}]",
+                metadata={"commerce_aggregate_key": "inventory_latest_flag_overlap", "commerce_observations": [
+                    {"snapshot_date": "2022-12-31", "both_flagged_rows": 232},
+                ]},
+            ),
+            Evidence(
+                citation_id="C2", source_type="commerce_sql", source="Latest inventory by category",
+                content=f"inventory_latest_by_category aggregate observations: {json.dumps(category_rows)}",
+                metadata={"commerce_observation_group": "inventory_latest_by_category", "commerce_observations": category_rows},
+            ),
+            Evidence(citation_id="L1", source_type="commerce_schema", source="Schema limits",
+                     content="SKU/location matches, lead time, and transfer costs are unavailable."),
+        ]
+
+        answer = _commerce_safe_fallback(
+            "inventory_allocation",
+            "Which product categories should an operations manager review first for inventory reallocation using the latest available snapshot?",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertIn("Highest category flag counts (2022-12-31): stockout: Streetwear (134); overstock: Streetwear (162)", answer)
+        self.assertIn("use these only to select categories for review", answer)
+        self.assertIn("Do not rebalance inventory yet", answer)
+        self.assertIn("[C2]", answer)
+        self.assertIn("[L1]", answer)
+
+        localized = _commerce_safe_fallback(
+            "inventory_allocation",
+            "Nên rà soát nhóm hàng nào trước khi điều chuyển tồn kho?",
+            evidence,
+            decision_request=True,
+        )
+        self.assertIn("Danh mục có số cờ cao nhất (2022-12-31): stockout: Streetwear (134); overstock: Streetwear (162)", localized)
+        self.assertIn("chỉ dùng để chọn danh mục cần rà soát", localized)
 
     def test_depleted_huggingface_fallback_preserves_primary_rate_limit_for_safe_fallback(self):
         primary_error = RateLimitError(
@@ -130,18 +361,20 @@ class AgentFlowTest(unittest.TestCase):
         knowledge = Mock()
         knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[])
         llm = Mock()
-        llm.generate.return_value = "Shoes had 42 stockout flags in the bounded snapshot [C1]."
         report = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
-            question="Which unusual category pattern should we inspect?",
+            question="Which category has the most stockout flags, and what should we inspect before acting?",
             metadata={"business_decision_domain": "inventory_allocation", "role": "analyst"},
         ))
 
         analytics.commerce_question_observations.assert_called_once()
         analytics.commerce_decision_snapshot.assert_called_once_with("inventory_allocation")
         self.assertEqual(report.metadata["question_sql_fallback"], "provider_rate_limited")
+        self.assertEqual(report.metadata["answer_fallback_reason"], "provider_rate_limited")
+        self.assertEqual(report.metadata["generation_provider"], "deterministic_safety_fallback")
         self.assertFalse(report.metadata["citation_validation_failed"])
         self.assertIn("42", report.answer)
         self.assertIn("[C1]", report.answer)
+        llm.generate.assert_not_called()
         knowledge.run.assert_called_once()
 
     def test_inventory_method_fallback_explains_undefined_many_without_a_fake_gate(self):
@@ -187,6 +420,37 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("[S1]", answer)
         self.assertIn("[L1]", answer)
 
+    def test_vietnamese_inventory_fallback_localizes_overlap_observation(self):
+        question = "Trước khi chuyển hàng giữa các nhóm có stockout và overstock, cần kiểm tra dữ liệu nào?"
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Inventory flag overlap",
+                content=("inventory_latest_flag_overlap aggregate observations: "
+                         '[{"snapshot_date":"2022-12-31","product_rows":424,'
+                         '"stockout_flagged_rows":232,"overstock_flagged_rows":232,'
+                         '"both_flagged_rows":232}]'),
+                metadata={"commerce_domain": "inventory_allocation",
+                          "commerce_aggregate_key": "inventory_latest_flag_overlap",
+                          "commerce_observations": [{
+                              "snapshot_date": "2022-12-31", "product_rows": 424,
+                              "stockout_flagged_rows": 232, "overstock_flagged_rows": 232,
+                              "both_flagged_rows": 232,
+                          }]},
+            ),
+            Evidence(citation_id="L1", source_type="commerce_schema", source="Schema limits",
+                     content="SKU/location demand, lead time, transfer cost, and service constraints are absent."),
+            Evidence(citation_id="S1", source_type="document", source="Commerce Demo inventory policy",
+                     content="Match the same SKU at the source and destination before transferring stock.",
+                     metadata={"evidence_class": "company_policy_reference", "synthetic_company_policy": True}),
+        ]
+
+        answer = _commerce_safe_fallback("inventory_allocation", question, evidence, decision_request=True)
+
+        self.assertFalse(_has_untranslated_prose(answer, question))
+        self.assertIn("2022-12-31", answer)
+        self.assertIn("232", answer)
+        self.assertIn("[C1]", answer)
+
         dynamic_answer = _commerce_question_safe_fallback(
             "Explain the steps to review stockout and overstock flags before replenishment.",
             evidence,
@@ -194,6 +458,92 @@ class AgentFlowTest(unittest.TestCase):
         )
         self.assertIn("without defining a threshold", dynamic_answer)
         self.assertIn("not an automatic replenishment condition", dynamic_answer)
+
+    def test_provider_limited_inventory_fallback_discloses_unchecked_repeatability(self):
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Annual inventory aggregate",
+                content="inventory_by_year aggregate observations: [{\"year\":2022,\"stockout_snapshots\":3490}]",
+                metadata={"commerce_observation_group": "inventory_by_year",
+                          "commerce_observations": [{"year": 2022, "stockout_snapshots": 3490}]},
+            ),
+            Evidence(
+                citation_id="C2", source_type="commerce_sql", source="Latest category aggregate",
+                content="inventory_latest_by_category aggregate observations: [{\"category\":\"Shoes\",\"stockout_products\":42}]",
+                metadata={"commerce_observation_group": "inventory_latest_by_category",
+                          "commerce_observations": [{"category": "Shoes", "stockout_products": 42}]},
+            ),
+            Evidence(
+                citation_id="L1", source_type="commerce_schema", source="Schema coverage",
+                content="Warehouse location, demand forecast and transfer cost are unavailable.",
+            ),
+        ]
+
+        answer = _commerce_safe_fallback(
+            "inventory_allocation",
+            "Should inventory be reallocated toward products with repeated stockout signals?",
+            evidence,
+        )
+
+        self.assertIn("do not count repeated stockout snapshots by product", answer)
+        self.assertIn("persistently flagged products [C1][C2]", answer)
+        self.assertIn("Do not rebalance inventory yet", answer)
+
+    def test_inventory_transfer_fallback_does_not_treat_snapshot_counts_as_recurrence(self):
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Latest inventory flags",
+                content="Latest snapshot contains overlapping stockout and overstock rows.",
+                metadata={
+                    "commerce_aggregate_key": "inventory_latest_flag_overlap",
+                    "commerce_observations": [{
+                        "snapshot_date": "2022-12-31", "stockout_flagged_rows": 285,
+                        "overstock_flagged_rows": 341, "both_flagged_rows": 232,
+                    }],
+                },
+            ),
+            Evidence(
+                citation_id="C2", source_type="commerce_sql", source="Annual inventory aggregates",
+                content="Annual inventory counts are product-date snapshots.",
+                metadata={"commerce_aggregate_key": "inventory_by_year",
+                          "commerce_observations": [{"year": 2022, "stockout_snapshots": 3490}]},
+            ),
+            Evidence(
+                citation_id="L1", source_type="commerce_schema", source="Commerce schema",
+                content="Source and destination warehouse stock, lead time, and transfer cost are unavailable.",
+            ),
+            Evidence(
+                citation_id="S1", source_type="document", source="Synthetic inventory policy",
+                content="Check matched SKU and source/destination availability before a transfer.",
+                metadata={"evidence_class": "company_policy_reference", "synthetic_company_policy": True},
+            ),
+        ]
+
+        answer = _commerce_safe_fallback(
+            "inventory_allocation",
+            "Should we transfer inventory from overstocked categories to categories with repeated stockout snapshots? What should we check first?",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertIn("does not establish recurrence", answer)
+        self.assertIn("count distinct snapshot dates per product", answer)
+        self.assertIn("do not support a transfer decision", answer)
+        self.assertIn("same SKU at source and destination", answer)
+        self.assertIn("[C1]", answer)
+        self.assertIn("[C2]", answer)
+        self.assertIn("[S1]", answer)
+        self.assertIn("[L1]", answer)
+
+        vietnamese = _commerce_safe_fallback(
+            "inventory_allocation",
+            "Có nên điều chuyển từ danh mục tồn kho dư sang danh mục hết hàng lặp lại không? Cần kiểm tra gì trước?",
+            evidence,
+            decision_request=True,
+        )
+        self.assertIn("không chứng minh cờ lặp lại", vietnamese)
+        self.assertIn("chưa đủ căn cứ điều chuyển", vietnamese)
+        self.assertIn("[C2]", vietnamese)
 
     def test_commerce_query_connection_failure_uses_bounded_snapshot(self):
         connection_error = APIConnectionError(request=httpx.Request("POST", "https://llm.test"))
@@ -221,9 +571,28 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("42", result.answer)
         self.assertIn("[C1]", result.answer)
 
-    def test_missing_commerce_dimension_does_not_attach_unrelated_snapshot_rows(self):
+    def test_missing_commerce_dimension_keeps_supported_domain_snapshot_evidence(self):
         repository = Mock()
+        repository.commerce_decision_snapshot.return_value = {
+            "domain": "inventory_allocation", "domain_label": "Inventory allocation",
+            "source_tables": ["commerce.inventory"],
+            "observations": {
+                "inventory_latest_by_category": [{
+                    "snapshot_date": "2022-12-31", "category": "Shoes",
+                    "stockout_products": 42, "overstock_products": 31,
+                }],
+                "inventory_latest_flag_overlap": [{
+                    "snapshot_date": "2022-12-31", "stockout_flagged_rows": 42,
+                    "overstock_flagged_rows": 31, "both_flagged_rows": 8,
+                }],
+            },
+            "limitations": [], "dataset_note": "Synthetic Commerce data.",
+        }
         llm = Mock()
+        llm.generate.return_value = (
+            "Snapshot tổng hợp ghi nhận tín hiệu stockout và overstock ở danh mục Shoes [C1]. "
+            "Chưa thể đánh giá theo vùng hoặc quyết định điều chuyển vì schema không có chiều kho/vị trí [L1]."
+        )
         analytics = SQLAnalyticsAgent(repository=repository, llm=llm)
         knowledge = Mock()
         knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[])
@@ -233,17 +602,26 @@ class AgentFlowTest(unittest.TestCase):
             metadata={"business_decision_domain": "inventory_allocation", "role": "analyst"},
         ))
 
-        repository.commerce_decision_snapshot.assert_not_called()
+        repository.commerce_decision_snapshot.assert_called_once_with("inventory_allocation")
         repository.execute_commerce_analytics.assert_not_called()
-        llm.generate.assert_not_called()
+        llm.generate.assert_called_once()
         self.assertEqual(result.metadata["question_sql_fallback"], "requested_dimension_unavailable")
-        self.assertIn("not available in the approved inventory_allocation schema", result.evidence[0].content)
+        self.assertTrue(any(
+            item.source_type == "commerce_schema"
+            and "not available in the approved inventory_allocation schema" in item.content
+            for item in result.evidence
+        ))
+        self.assertTrue(any(item.source_type == "commerce_sql" for item in result.evidence))
         self.assertIn("[L1]", result.answer)
-        self.assertIn("không có chiều đó", result.answer)
-        self.assertFalse(any(item.source_type == "commerce_sql" for item in result.evidence))
+        self.assertIn("[C1]", result.answer)
 
     def test_missing_commerce_dimension_uses_retrieved_policy_before_abstaining(self):
         repository = Mock()
+        repository.commerce_decision_snapshot.return_value = {
+            "domain": "inventory_allocation", "domain_label": "Inventory allocation",
+            "source_tables": ["commerce.inventory"], "observations": {},
+            "limitations": [], "dataset_note": "Synthetic Commerce data.",
+        }
         llm = Mock()
         llm.generate.return_value = (
             "Chưa đủ dữ liệu theo vùng để quyết định điều chuyển [L1]. "
@@ -269,6 +647,65 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("[L1]", result.answer)
         self.assertIn("[S1]", result.answer)
         llm.generate.assert_called_once()
+
+    def test_schema_guard_rejects_claims_that_missing_dimensions_are_queryable(self):
+        unsafe = (
+            "Commerce Demo data can confirm that the same SKU exists at both locations [L1]. "
+            "The schema has no forecast field, but units_sold and units_received can be used to approximate "
+            "recent demand trends [L1]."
+        )
+        safe = (
+            "Commerce Demo data cannot confirm a regional SKU match or demand forecast because region, location, "
+            "and forecast fields are absent from the inventory schema [L1]."
+        )
+        safe_with_known_field = (
+            "Commerce data can confirm stock on hand, but it has no location column [C1][L1]."
+        )
+        self.assertTrue(_claims_missing_commerce_dimension_is_available(unsafe, "inventory_allocation"))
+        self.assertFalse(_claims_missing_commerce_dimension_is_available(safe, "inventory_allocation"))
+        self.assertFalse(_claims_missing_commerce_dimension_is_available(safe_with_known_field, "inventory_allocation"))
+
+    def test_missing_dimension_answer_is_repaired_without_substituting_a_proxy(self):
+        repository = Mock()
+        repository.commerce_decision_snapshot.return_value = {
+            "domain": "inventory_allocation", "domain_label": "Inventory allocation",
+            "source_tables": ["commerce.inventory"], "observations": {},
+            "limitations": [], "dataset_note": "Synthetic Commerce data.",
+        }
+        llm = Mock()
+        llm.generate.side_effect = [
+            "Commerce Demo data can confirm that the same SKU exists at both locations [L1]. "
+            "The schema has no forecast field, but units_sold and units_received can be used to approximate "
+            "recent demand trends [L1].",
+            "Commerce Demo data cannot confirm a regional SKU match or demand forecast because region, location, "
+            "and forecast fields are absent from the inventory schema [L1]. "
+            "The fictional Commerce Demo inventory policy asks the team to match SKU, available stock, and demand "
+            "before considering a transfer [S1]. Collect stock and demand by location, lead time, and transfer cost "
+            "before deciding [L1].",
+        ]
+        analytics = SQLAnalyticsAgent(repository=repository, llm=llm)
+        knowledge = Mock()
+        knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[Evidence(
+            citation_id="S1", source_type="document", source="Commerce Demo inventory policy",
+            content="Before transfer, match the same SKU, available stock, and demand at source and destination.",
+            metadata={"evidence_class": "company_policy_reference", "synthetic_company_policy": True,
+                      "reference_applicability": "Fictional Commerce Demo inventory scenario only."},
+        )])
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
+            question="Before rebalancing stock between regions, what evidence should the team check?",
+            metadata={"business_decision_domain": "inventory_allocation", "role": "analyst"},
+        ))
+
+        self.assertEqual(result.metadata["question_sql_fallback"], "requested_dimension_unavailable")
+        self.assertTrue(result.metadata["decision_validation_repair_attempted"])
+        self.assertFalse(result.metadata["citation_validation_failed"])
+        self.assertEqual(llm.generate.call_count, 2)
+        self.assertNotIn("can confirm", result.answer)
+        self.assertNotIn("approximate recent demand trends", result.answer)
+        self.assertIn("[L1]", result.answer)
+        self.assertIn("[S1]", result.answer)
+        self.assertIn("unvalidated proxy", llm.generate.call_args_list[1].args[0])
 
     def test_rejected_commerce_query_repair_uses_bounded_snapshot(self):
         repository = Mock()
@@ -305,6 +742,36 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("[C1]", result.answer)
         repository.commerce_decision_snapshot.assert_called_once_with("inventory_allocation")
 
+    def test_malformed_commerce_sql_falls_back_to_bounded_snapshot(self):
+        repository = Mock()
+        repository.commerce_decision_snapshot.return_value = {
+            "domain": "inventory_allocation", "domain_label": "Inventory allocation",
+            "source_tables": ["commerce.inventory"],
+            "observations": {"inventory_latest_by_category": [
+                {"category": "Shoes", "stockout_products": 42},
+            ]},
+            "limitations": ["Category aggregates do not identify SKU/location transfer matches."],
+            "dataset_note": "Synthetic Commerce data.",
+        }
+        llm = Mock()
+        llm.generate.side_effect = [
+            '{"sql":"SELECT product_i',
+            '{"sql":"SELECT product_i',
+            "The latest inventory aggregate contains 42 stockout-flagged products in Shoes [C1].",
+        ]
+        analytics = SQLAnalyticsAgent(repository=repository, llm=llm)
+
+        result = ReportAgent(knowledge=Mock(), analytics=analytics, llm=llm).run(AgentRequest(
+            question="Describe the latest inventory flag results.",
+            metadata={"business_decision_domain": "inventory_allocation", "role": "analyst"},
+        ))
+
+        self.assertEqual(result.metadata["question_sql_fallback"], "query_rejected")
+        self.assertIn("42", result.answer)
+        self.assertIn("[C1]", result.answer)
+        repository.commerce_decision_snapshot.assert_called_once_with("inventory_allocation")
+        repository.execute_commerce_analytics.assert_not_called()
+
     def test_dynamic_commerce_fallback_returns_query_rows_without_domain_template(self):
         evidence = [Evidence(
             citation_id="C1", source_type="commerce_sql", source="Commerce SQL",
@@ -338,31 +805,493 @@ class AgentFlowTest(unittest.TestCase):
         self.assertNotIn("30", answer)
         self.assertTrue(_decision_numeric_facts_match_cited_evidence(answer, evidence))
 
+    def test_promotion_incrementality_fallback_suppresses_irrelevant_campaign_baselines(self):
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Campaign outcomes",
+                content=("question-specific SQL observations: " + json.dumps([
+                    {"campaign": "Spring Sale", "orders_before": 0, "net_sales_before": None,
+                     "delivered_orders": 115, "net_item_sales": 728500.0},
+                ])),
+                metadata={"commerce_domain": "promotion_planning"},
+            ),
+            Evidence(
+                citation_id="L1", source_type="commerce_schema", source="Promotion data coverage",
+                content="The dataset has no randomized holdout or customer-level counterfactual.",
+            ),
+            Evidence(
+                citation_id="S1", source_type="document", source="Synthetic promotion policy",
+                content="Expand the campaign when sales are high.",
+                metadata={"evidence_class": "company_policy_reference", "synthetic_company_policy": True},
+            ),
+            Evidence(
+                citation_id="S2", source_type="document", source="Campaign measurement guide",
+                content="Use a treatment/control or holdout experiment to estimate incremental sales.",
+                metadata={"evidence_class": "management_cookbook_reference",
+                          "source_publisher": "Measurement Guide"},
+            ),
+        ]
+
+        answer = _commerce_question_safe_fallback(
+            "How can we test whether a campaign caused incremental sales before scaling it?",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertNotIn("Spring Sale", answer)
+        self.assertNotIn("orders_before", answer)
+        self.assertNotIn("115", answer)
+        self.assertIn("does not establish", answer)
+        self.assertIn("holdout", answer)
+        self.assertIn("[L1]", answer)
+        self.assertIn("[S2]", answer)
+        self.assertNotIn("[S1]", answer)
+
+    def test_promotion_incrementality_comparison_keeps_explicitly_requested_sql_measures(self):
+        question = (
+            "Should we expand discounts based on observed sales, or wait for an incrementality test? "
+            "Compare the available sales outcome and profit proxy."
+        )
+        rows = [
+            {"year": 2022, "used_promotion": True, "net_sales": 245344841.2,
+             "merchandise_gross_profit_proxy": -33563798.173748},
+            {"year": 2022, "used_promotion": False, "net_sales": 615242495.15,
+             "merchandise_gross_profit_proxy": 107063950.746632},
+        ]
+        evidence = [
+            Evidence(citation_id="C1", source_type="commerce_sql", source="Promotion outcomes",
+                     content="promotions_by_year aggregate observations: " + json.dumps(rows),
+                     metadata={"commerce_domain": "promotion_planning", "commerce_observations": rows,
+                               "commerce_observation_group": "promotions_by_year"}),
+            Evidence(citation_id="L1", source_type="commerce_schema", source="Promotion limitations",
+                     content="Promotion-tagged and untagged results are descriptive, not causal."),
+            Evidence(citation_id="S1", source_type="document", source="Measurement guide",
+                     content="A holdout experiment estimates incremental sales.",
+                     metadata={"evidence_class": "management_cookbook_reference",
+                               "source_publisher": "Measurement Guide"}),
+        ]
+
+        answer = _commerce_question_safe_fallback(question, evidence, decision_request=True)
+
+        self.assertIn("merchandise gross profit proxy", answer.casefold())
+        self.assertIn("-33,563,798.17", answer)
+        self.assertIn("107,063,950.75", answer)
+        self.assertIn("not causal", answer.casefold())
+        self.assertNotIn("SQL tagged-versus-untagged", answer)
+        self.assertIsNone(_commerce_requested_observation_missing(answer, evidence, question))
+
+    def test_commerce_fallback_rounds_average_columns_but_preserves_other_sql_precision(self):
+        rows = [{"avg_transit_days": 4.498636825538454, "net_sales": 245344841.2}]
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Logistics summary",
+            content="question-specific SQL observations: " + json.dumps(rows),
+            metadata={"commerce_domain": "nationwide_logistics"},
+        )]
+
+        answer = _commerce_question_safe_fallback("Compare transit and sales", evidence, decision_request=False)
+
+        self.assertIn("4.5", answer)
+        self.assertNotIn("4.498636825538454", answer)
+        self.assertIn("245,344,841.2", answer)
+
+    def test_commerce_number_format_uses_locale_grouping_without_claiming_currency(self):
+        self.assertEqual(_format_commerce_number(570817418.55, "net_sales", True), "570.817.418,55")
+        self.assertEqual(_format_commerce_number(570817418.55, "net_sales", False), "570,817,418.55")
+        self.assertEqual(_format_commerce_number(0.204015, "merchandise_gross_margin_proxy", True), "20,4%")
+        self.assertEqual(_format_commerce_number(2022, "year", False), "2022")
+
+    def test_dynamic_commerce_fallback_filters_to_explicit_years(self):
+        rows = [
+            {"year": 2020, "used_promotion": False, "net_sales": 570817418.55},
+            {"year": 2020, "used_promotion": True, "net_sales": 235597280.59},
+            {"year": 2021, "used_promotion": False, "net_sales": 493703251.83},
+        ]
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Promotion summary",
+            content="question-specific SQL observations: " + json.dumps(rows),
+            metadata={"commerce_domain": "promotion_planning"},
+        )]
+
+        answer = _commerce_question_safe_fallback(
+            "So sánh doanh thu thuần giữa nhóm gắn khuyến mãi và không gắn khuyến mãi năm 2020.",
+            evidence,
+            decision_request=False,
+        )
+
+        self.assertIn("570.817.418,55", answer)
+        self.assertIn("235.597.280,59", answer)
+        self.assertNotIn("493.703.251,83", answer)
+        self.assertNotIn("2021", answer)
+
+    def test_dynamic_commerce_fallback_uses_relevant_snapshot_group_and_abstains_for_missing_year(self):
+        annual_rows = [
+            {"year": 2020, "used_promotion": True, "net_sales": 235597280.59,
+             "merchandise_gross_profit_proxy": -21191181.87},
+            {"year": 2022, "used_promotion": True, "net_sales": 245344841.2,
+             "merchandise_gross_profit_proxy": -33563798.17},
+        ]
+        campaign_rows = [
+            {"year": 2020, "campaign": "Spring Sale 2020", "net_item_sales": 90175249.9,
+             "merchandise_gross_profit_proxy": -2095831.50},
+            {"year": 2022, "campaign": "Spring Sale 2022", "net_item_sales": 90345105.91,
+             "merchandise_gross_profit_proxy": -6503552.08},
+        ]
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Annual promotion observations",
+                content="promotions_by_year aggregate observations: " + json.dumps(annual_rows),
+                metadata={"commerce_domain": "promotion_planning", "commerce_observation_group": "promotions_by_year",
+                          "commerce_observations": annual_rows},
+            ),
+            Evidence(
+                citation_id="C2", source_type="commerce_sql", source="Campaign observations",
+                content="promotions_by_campaign aggregate observations: " + json.dumps(campaign_rows),
+                metadata={"commerce_domain": "promotion_planning", "commerce_observation_group": "promotions_by_campaign",
+                          "commerce_observations": campaign_rows},
+            ),
+            Evidence(citation_id="L1", source_type="commerce_schema", source="Promotion schema limits",
+                     content="Campaign spend and randomized holdout data are absent; observed promotion comparisons are not causal."),
+            Evidence(citation_id="S1", source_type="document", source="IAB measurement guide",
+                     content="Use a holdout or counterfactual to estimate incremental campaign outcomes.",
+                     metadata={"evidence_class": "management_cookbook_reference", "source_publisher": "IAB"}),
+        ]
+        question = (
+            "For 2024 campaigns, compare net item sales and the merchandise gross-profit proxy by campaign. "
+            "Does that evidence justify increasing campaign budgets?"
+        )
+
+        answer = _commerce_question_safe_fallback(question, evidence, decision_request=True)
+
+        self.assertIn("no sql observations matched", answer.casefold())
+        self.assertIn("2020", answer)
+        self.assertIn("2022", answer)
+        self.assertNotIn("2024", answer)
+        self.assertIn("[C2]", answer)
+        self.assertIn("[S1]", answer)
+        self.assertIsNone(_commerce_requested_observation_missing(answer, evidence, question))
+        self.assertIsNone(_report_validation_failure(answer, evidence, {"C1", "C2", "L1", "S1"}, question))
+
+    def test_dynamic_sql_fallback_limits_metrics_to_the_measures_in_the_question(self):
+        rows = [{
+            "year": 2022, "used_promotion": True, "delivered_orders": 10173,
+            "units": 48768, "net_sales": 245344841.2, "discounts": 41728464.79,
+            "catalog_cogs": 278908639.37,
+            "merchandise_gross_profit_proxy": -33563798.17,
+            "merchandise_gross_margin_proxy": -0.1368,
+        }]
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Promotion summary",
+            content="question-specific SQL observations: " + json.dumps(rows),
+            metadata={"commerce_domain": "promotion_planning", "commerce_observations": rows},
+        )]
+
+        answer = _commerce_question_safe_fallback(
+            "So sánh số đơn đã giao, số lượng, doanh thu thuần và giảm giá theo năm.",
+            evidence,
+            decision_request=False,
+        )
+
+        for expected in ("Năm", "Đơn có gắn khuyến mãi", "Đơn đã giao", "Số lượng", "Doanh thu thuần", "Giảm giá"):
+            self.assertIn(expected, answer)
+        self.assertNotIn("Giá vốn theo catalog", answer)
+        self.assertNotIn("Lợi nhuận gộp hàng hóa", answer)
+        self.assertNotIn("Biên lợi nhuận gộp hàng hóa", answer)
+
+    def test_commerce_fallback_formats_fill_rate_as_percentage_and_keeps_it_grounded(self):
+        rows = [
+            {"year": 2020, "avg_fill_rate": 0.9656, "stockout_snapshots": 3795, "total_snapshots": 5686},
+            {"year": 2021, "avg_fill_rate": 0.9619, "stockout_snapshots": 3788, "total_snapshots": 5609},
+        ]
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Inventory annual summary",
+            content="question-specific SQL observations: " + json.dumps(rows),
+            metadata={"commerce_domain": "inventory_allocation", "commerce_observations": rows},
+        )]
+
+        for question, fragments in (
+            ("So sánh tỷ lệ đáp ứng trung bình theo năm và có nên đặt mục tiêu mới không?",
+             ("Tỷ lệ đáp ứng TB", "96,56%")),
+            ("Compare annual average fill rate and should we set a new target?",
+             ("Avg Fill Rate", "96.56%")),
+        ):
+            with self.subTest(question=question):
+                answer = _commerce_question_safe_fallback(question, evidence, decision_request=False)
+                for fragment in fragments:
+                    self.assertIn(fragment, answer)
+                self.assertNotIn("0.9656", answer)
+                self.assertTrue(_decision_numeric_facts_match_cited_evidence(answer, evidence))
+                self.assertIsNone(_commerce_requested_observation_missing(
+                    answer, evidence, question,
+                ))
+
+    def test_inventory_snapshot_fallback_formats_fill_rate_as_percentage(self):
+        rows = [
+            {"year": 2020, "avg_fill_rate": 0.9656, "stockout_snapshots": 3795, "sku_snapshots": 5686},
+            {"year": 2021, "avg_fill_rate": 0.9619, "stockout_snapshots": 3788, "sku_snapshots": 5609},
+            {"year": 2022, "avg_fill_rate": 0.9635, "stockout_snapshots": 3490, "sku_snapshots": 5232},
+        ]
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Inventory annual summary",
+            content="inventory_by_year aggregate observations: " + json.dumps(rows),
+            metadata={"commerce_domain": "inventory_allocation", "commerce_observations": rows},
+        )]
+
+        for question, expected in (
+            ("Trong từng năm 2020–2022, fill rate thay đổi thế nào?", "Fill rate TB=96,56%"),
+            ("How did average fill rate change from 2020–2022?", "Avg fill rate=96.56%"),
+        ):
+            with self.subTest(question=question):
+                answer = _commerce_safe_fallback(
+                    "inventory_allocation", question, evidence, decision_request=False,
+                )
+                self.assertIn(expected, answer)
+                self.assertNotIn("0.9656", answer)
+                self.assertIn("3795", answer)
+                self.assertIn("5686", answer)
+
+    def test_logistics_decision_fallback_validation_accepts_rounded_sql_averages(self):
+        query_error = RateLimitError(
+            "rate limited", response=httpx.Response(429, request=httpx.Request("POST", "https://llm.test")), body=None,
+        )
+        analytics = object.__new__(SQLAnalyticsAgent)
+        analytics.commerce_question_observations = Mock(return_value={
+            "domain": "nationwide_logistics",
+            "domain_label": "Nationwide logistics",
+            "source_tables": ["commerce.shipments", "commerce.geography"],
+            "sql_query": "SELECT region, avg_transit_time_days, avg_shipping_fee FROM commerce.shipments",
+            "observations": [{
+                "year": 2024,
+                "region": "North",
+                "avg_transit_time_days": "4.5066761363636364",
+                "avg_shipping_fee": "4.244421",
+            }],
+            "limitations": ["Route, carrier, and promised-SLA dimensions are unavailable."],
+            "dataset_note": "Synthetic Commerce competition data.",
+        })
+        knowledge = Mock()
+        knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[])
+        llm = Mock()
+        llm.generate.side_effect = query_error
+        question = "Should we redesign the nationwide delivery network based on regional transit time and shipping fee?"
+
+        with patch.dict(os.environ, {"HUGGINGFACE_LLM_FALLBACK": "false"}):
+            result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
+                question=question,
+                metadata={"business_decision_domain": "nationwide_logistics", "role": "analyst"},
+            ))
+
+        self.assertIn("4.51", result.answer)
+        self.assertIn("4.24", result.answer)
+        self.assertTrue(result.metadata["decision_fallback_used"])
+        self.assertEqual(result.metadata["generation_provider"], "deterministic_safety_fallback")
+        self.assertFalse(result.metadata["citation_validation_failed"])
+        self.assertIn("[C1]", result.answer)
+
+    def test_commerce_fallback_rounds_serialized_decimal_average_columns(self):
+        rows = [{
+            "avg_stock_on_hand": "7.6333333333333333",
+            "avg_units_sold": "3.3333333333333333",
+            "total_products": 232,
+        }]
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Inventory summary",
+            content="question-specific SQL observations: " + json.dumps(rows),
+            metadata={"commerce_domain": "inventory_allocation"},
+        )]
+
+        answer = _commerce_question_safe_fallback(
+            "Tóm tắt lượng tồn và số bán trung bình", evidence, decision_request=False,
+        )
+
+        self.assertIn("7,63", answer)
+        self.assertIn("3,33", answer)
+        self.assertNotIn("7.6333333333333333", answer)
+        self.assertNotIn("3.3333333333333333", answer)
+        self.assertIn("232", answer)
+
     def test_dynamic_commerce_fallback_cites_retrieved_synthetic_policy(self):
         evidence = [
             Evidence(
                 citation_id="C1", source_type="commerce_sql", source="Commerce SQL",
                 content='question-specific SQL observations: [{"category": "Streetwear", "stockouts": 134}]',
+                metadata={"commerce_domain": "inventory_allocation"},
             ),
             Evidence(
                 citation_id="S1", source_type="document", source="Commerce Demo policy",
-                content="Chỉ xem xét điều chuyển khi có đối chiếu SKU, tồn khả dụng, nhu cầu, lead time và chi phí.",
+                content=(
+                    "Chính sách hướng dẫn rà soát tổng thể trước khi ra quyết định. "
+                    "Chỉ xem xét điều chuyển khi có đối chiếu SKU giữa nơi gửi và nơi nhận, tồn khả dụng, "
+                    "nhu cầu dự báo, thời gian bổ sung, chi phí vận chuyển và ràng buộc dịch vụ. "
+                    "Chỉ đề xuất thay đổi đặt hàng khi có lịch sử nhu cầu và lead time."
+                ),
                 metadata={
                     "evidence_class": "company_policy_reference",
                     "synthetic_company_policy": True,
                     "source_publisher": "Commerce Demo (fictional)",
+                    "ocr": {"engine": "tesseract", "language": "vie+eng"},
+                    "text_extraction_method": "tesseract",
                 },
             ),
         ]
 
         answer = _commerce_question_safe_fallback(
-            "Trong snapshot tồn kho mới nhất, nhóm nào cần ưu tiên kiểm tra?",
+            "Trước khi điều chuyển, cần đối chiếu SKU, tồn khả dụng, nhu cầu dự báo hay chi phí vận chuyển?",
             evidence,
             decision_request=True,
         )
 
         self.assertIn("[C1]", answer)
         self.assertIn("[S1]", answer)
+        self.assertIn("văn bản OCR chưa được xác minh", answer)
+        self.assertIn("Kiểm tra PDF gốc trước khi áp dụng", answer)
+        self.assertNotIn("đối chiếu SKU giữa nơi gửi và nơi nhận", answer)
+        self.assertNotIn("Chính sách hướng dẫn rà soát tổng thể", answer)
+        self.assertIn("không phải chính sách của doanh nghiệp thật", answer)
+
+    def test_dynamic_commerce_fallback_keeps_ocr_context_for_cross_language_question(self):
+        repeated_context = "Nguyên tắc chung là kiểm tra snapshot được chọn trước khi đề xuất phương án. " * 10
+        action_rule = (
+            "Chỉ xem xét điều chuyển khi có đối chiếu SKU giữa nơi gửi và nơi nhận, tồn khả dụng, "
+            "nhu cầu dự báo, thời gian bổ sung và chi phí vận chuyển."
+        )
+        evidence = [Evidence(
+            citation_id="S1", source_type="document", source="Commerce Demo inventory policy",
+            content=repeated_context + action_rule,
+            metadata={
+                "evidence_class": "company_policy_reference",
+                "synthetic_company_policy": True,
+                "ocr": {"engine": "tesseract"},
+                "text_extraction_method": "tesseract",
+            },
+        )]
+
+        answer = _commerce_safe_fallback(
+            "inventory_allocation",
+            "What should be checked before transferring inventory?",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertIn("OCR text is not verified", answer)
+        self.assertIn("Check the source PDF before relying on it", answer)
+        self.assertNotIn(action_rule, answer)
+
+    def test_synthetic_policy_fallback_uses_curated_source_note_not_ocr_text(self):
+        ocr_text = "Chỉ xem xét điều chuyến khi có dũ liêu phù hợp."
+        source_note = (
+            "Quy tắc giả lập chỉ áp dụng trong demo: cần ghép nhu cầu, tồn khả dụng, "
+            "lead time và chi phí trước khi điều chuyển."
+        )
+        evidence = [Evidence(
+            citation_id="S1", source_type="document", source="Commerce Demo inventory policy",
+            content=ocr_text,
+            metadata={
+                "evidence_class": "company_policy_reference",
+                "synthetic_company_policy": True,
+                "ocr": {"engine": "tesseract"},
+                "text_extraction_method": "tesseract",
+                "source_notes": source_note,
+            },
+        )]
+
+        answer = _commerce_safe_fallback(
+            "inventory_allocation", "Có nên điều chuyển hàng tồn kho không?", evidence,
+            decision_request=True,
+        )
+
+        self.assertIn(source_note, answer)
+        self.assertIn("Tóm tắt biên mục (không phải trích nguyên văn)", answer)
+        self.assertIn("đối chiếu trang PDF gốc", answer)
+        self.assertIn("[S1]", answer)
+        self.assertNotIn(ocr_text, answer)
+
+    def test_inventory_service_target_fallback_omits_unrelated_ocr_policy_notes(self):
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Inventory annual summary",
+                content="inventory_by_year aggregate observations: " + json.dumps([
+                    {"year": 2022, "avg_fill_rate": 0.9635},
+                ]),
+            ),
+            Evidence(
+                citation_id="L1", source_type="commerce_schema", source="Inventory schema",
+                content="The supplied data has no approved service-level target.",
+            ),
+            Evidence(
+                citation_id="S1", source_type="document", source="Commerce Demo inventory policy",
+                content="OCR policy text", metadata={
+                    "evidence_class": "company_policy_reference",
+                    "synthetic_company_policy": True,
+                    "ocr": {"engine": "tesseract"},
+                    "source_notes": (
+                        "Trong demo, hai cờ có thể chồng lấp. "
+                        "Không tự đặt service-level target hoặc ngưỡng. "
+                        "Chỉ cân nhắc điều chuyển sau khi ghép nhu cầu, tồn kho và chi phí."
+                    ),
+                },
+            ),
+        ]
+
+        answer = _commerce_safe_fallback(
+            "inventory_allocation",
+            "Có thể đặt service target mới từ fill rate lịch sử không?",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertIn("Dữ liệu không có service-level target đã được phê duyệt", answer)
+        self.assertIn("Kiểm tra PDF gốc trước khi áp dụng", answer)
+        self.assertNotIn("điều chuyển", answer)
+        self.assertNotIn("service-level target hoặc ngưỡng", answer)
+
+    def test_dynamic_inventory_fallback_ranks_each_returned_flag_for_unseen_imbalance_question(self):
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Commerce SQL",
+            content=("question-specific SQL observations: " + json.dumps([
+                {"category": "Streetwear", "stockout_count": 134, "overstock_count": 162},
+                {"category": "Outdoor", "stockout_count": 95, "overstock_count": 113},
+            ])),
+            metadata={"commerce_domain": "inventory_allocation"},
+        )]
+
+        answer = _commerce_question_safe_fallback(
+            "Which product categories should we inspect first for inventory imbalance?",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertIn("stockout: Streetwear (134)", answer)
+        self.assertIn("overstock: Streetwear (162)", answer)
+        self.assertIn("aggregate review order only", answer)
+        self.assertIn("[C1]", answer)
+
+    def test_unseen_replenishment_question_does_not_receive_transfer_only_advice(self):
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Commerce SQL",
+                content=("question-specific SQL observations: " + json.dumps([
+                    {"category": "Streetwear", "stockout_count": 134, "overstock_count": 162},
+                ])),
+                metadata={"commerce_domain": "inventory_allocation"},
+            ),
+            Evidence(
+                citation_id="L1", source_type="commerce_schema", source="Commerce schema",
+                content="SKU-level demand, available stock, lead time, order constraints, and approved service target are unavailable.",
+            ),
+        ]
+
+        answer = _commerce_question_safe_fallback(
+            "Which inventory categories should be investigated first before changing replenishment, and what evidence should we check?",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertIn("Streetwear", answer)
+        self.assertIn("Before adjusting replenishment", answer)
+        self.assertIn("SKU-level demand", answer)
+        self.assertIn("approved service target", answer)
+        self.assertNotIn("Do not rebalance inventory yet", answer)
+        self.assertNotIn("before considering a transfer", answer)
 
     def test_dynamic_promotion_fallback_honors_router_decision_metadata(self):
         evidence = [
@@ -456,11 +1385,104 @@ class AgentFlowTest(unittest.TestCase):
             decision_request=True,
         )
 
-        self.assertIn("Ưu tiên rà soát Streetwear", answer)
-        self.assertIn("134 số dòng có cờ stockout", answer)
-        self.assertIn("aggregate, chưa đủ căn cứ để điều chuyển", answer)
+        self.assertIn("Ưu tiên rà soát theo từng cờ", answer)
+        self.assertIn("stockout: Streetwear (134)", answer)
+        self.assertIn("chỉ là thứ tự rà soát theo aggregate", answer)
         self.assertIn("[C1]", answer)
         self.assertNotIn("[[C1]]", answer)
+
+    def test_dynamic_inventory_fallback_ranks_group_label_from_live_query_rows(self):
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Commerce SQL",
+            content=("question_specific_query question-specific SQL observations: "
+                     '[{"group_label":"GenZ","overstock_count":37,"stockout_count":25},'
+                     '{"group_label":"Casual","overstock_count":29,"stockout_count":31},'
+                     '{"group_label":"Streetwear","overstock_count":162,"stockout_count":134},'
+                     '{"group_label":"Outdoor","overstock_count":113,"stockout_count":95}]'),
+            metadata={"commerce_domain": "inventory_allocation"},
+        )]
+
+        answer = _commerce_question_safe_fallback(
+            "Nhóm hàng nào có nhiều sản phẩm bị gắn cờ stockout nhất?",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertIn("| Nhóm hàng |", answer)
+        self.assertIn("stockout: Streetwear (134)", answer)
+        self.assertIn("thứ tự rà soát theo aggregate [C1]", answer)
+
+    def test_dynamic_inventory_fallback_localizes_group_category_from_live_sql_rows(self):
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Commerce SQL",
+            content=("question_specific_query question-specific SQL observations: "
+                     '[{"group_category":"Outdoor","overstock_count":113,"stockout_count":95},'
+                     '{"group_category":"Streetwear","overstock_count":162,"stockout_count":134}]'),
+            metadata={"commerce_domain": "inventory_allocation"},
+        )]
+
+        answer = _commerce_question_safe_fallback(
+            "Nhóm hàng nào có nhiều sản phẩm bị gắn cờ stockout nhất?",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertIn("| Nhóm hàng |", answer)
+        self.assertNotIn("Group Category", answer)
+        self.assertIn("stockout: Streetwear (134)", answer)
+        self.assertIn("thứ tự rà soát theo aggregate [C1]", answer)
+
+    def test_report_agent_dynamic_inventory_sql_rate_limit_uses_group_label_fallback(self):
+        question = (
+            "Trong snapshot tồn kho mới nhất, nhóm hàng nào có nhiều sản phẩm bị gắn cờ stockout nhất? "
+            "Có nên chuyển hàng từ nhóm overstock sang không?"
+        )
+        analytics = SQLAnalyticsAgent(repository=Mock(), llm=Mock())
+        analytics.commerce_question_observations = Mock(return_value={
+            "domain": "inventory_allocation",
+            "source_tables": ["commerce.inventory"],
+            "sql_query": "SELECT group_label, stockout_count, overstock_count FROM commerce.inventory",
+            "observations": [
+                {"group_label": "GenZ", "overstock_count": 37, "stockout_count": 25},
+                {"group_label": "Casual", "overstock_count": 29, "stockout_count": 31},
+                {"group_label": "Streetwear", "overstock_count": 162, "stockout_count": 134},
+                {"group_label": "Outdoor", "overstock_count": 113, "stockout_count": 95},
+            ],
+            "limitations": ["Category aggregates do not match SKU, location, demand or transfer cost."],
+            "dataset_note": "Synthetic Commerce data.",
+        })
+        analytics.commerce_latest_inventory_flag_overlap = Mock(return_value=[{
+            "snapshot_date": "2022-12-31", "both_flagged_rows": 232,
+        }])
+        knowledge = Mock()
+        knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[Evidence(
+            citation_id="S1", source_type="document", source="Commerce Demo inventory policy",
+            content="Match SKU demand and available stock by location before transferring inventory.",
+            metadata={"evidence_class": "company_policy_reference", "synthetic_company_policy": True},
+        )])
+        llm = Mock()
+        llm.generate.side_effect = RateLimitError(
+            "rate limited",
+            response=httpx.Response(429, request=httpx.Request("POST", "https://llm.test")),
+            body=None,
+        )
+
+        with patch.dict(os.environ, {"HUGGINGFACE_LLM_FALLBACK": "false"}):
+            result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
+                question=question,
+                metadata={"business_decision_domain": "inventory_allocation", "role": "analyst"},
+            ))
+
+        analytics.commerce_question_observations.assert_called_once_with(question, "inventory_allocation")
+        analytics.commerce_latest_inventory_flag_overlap.assert_called_once_with()
+        self.assertIn("Streetwear (134)", result.answer)
+        self.assertIn("Nhóm hàng", result.answer)
+        self.assertIn("[C1]", result.answer)
+        self.assertIn("[C2]", result.answer)
+        self.assertIn("[S1]", result.answer)
+        self.assertFalse(_suggests_unsupported_inventory_transfer(result.answer))
+        self.assertEqual(result.metadata["generation_provider"], "deterministic_safety_fallback")
+        self.assertEqual(result.metadata["answer_fallback_reason"], "provider_rate_limited")
 
     def test_report_agent_uses_question_specific_commerce_sql_for_unseen_aggregate(self):
         analytics = SQLAnalyticsAgent(repository=Mock(), llm=Mock())
@@ -557,6 +1579,28 @@ class AgentFlowTest(unittest.TestCase):
             "Which campaign had the highest sales?",
         ))
 
+    def test_commerce_answer_language_check_treats_dynamic_sql_table_as_structured_data(self):
+        question = "Có nên mở rộng khuyến mãi dựa trên doanh số ghi nhận?"
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Promotion outcomes",
+            content="question-specific SQL observations: " + json.dumps([{
+                "applicable_category": None, "avg_discount_per_item": 2.2,
+                "gross_sales": 129.0, "net_sales": 125.0, "order_item_count": 160,
+                "promo_channel": "online", "promo_id": "PROMO-0001",
+                "promo_name": "Spring Sale 2013", "total_discount": 4.0,
+            }]),
+            metadata={"commerce_domain": "promotion_planning"},
+        )]
+
+        answer = _commerce_question_safe_fallback(question, evidence, decision_request=True)
+
+        self.assertIn("| Danh mục áp dụng |", answer)
+        self.assertIn("Kênh khuyến mãi", answer)
+        self.assertIn("Tên chiến dịch", answer)
+        self.assertNotIn("Applicable Category", answer)
+        self.assertIn("Quan sát SQL", answer)
+        self.assertFalse(_has_untranslated_prose(answer, question))
+
     def test_commerce_question_resolves_domain_before_reference_ranking(self):
         self.assertEqual(resolve_commerce_decision_domain("How should we allocate inventory to reduce stockouts?"), "inventory_allocation")
         self.assertEqual(resolve_commerce_decision_domain("Should we repeat the discount campaign?"), "promotion_planning")
@@ -600,6 +1644,74 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(len(ranked), 1)
         self.assertEqual(ranked[0]["metadata"]["evidence_class"], "management_cookbook_reference")
 
+    def test_commerce_reference_ranking_uses_matching_section_heading(self):
+        question = "What customer needs should guide logistics planning?"
+        contexts = [
+            {
+                "document_name": "General delivery guide", "chunk_index": 0,
+                "content": "Balance delivery speed and shipping cost against customer needs.",
+                "metadata": {
+                    "document_id": "GENERAL-GUIDE",
+                    "knowledge_domains": ["nationwide_logistics"],
+                    "evidence_class": "management_cookbook_reference",
+                    "commerce_reference_active": True,
+                },
+            },
+            {
+                "document_name": "Amazon supply-chain guide", "chunk_index": 4,
+                "content": "Balance delivery speed and shipping cost against customer needs.",
+                "metadata": {
+                    "document_id": "AMAZON-GUIDE",
+                    "section_title": "Customer needs",
+                    "knowledge_domains": ["nationwide_logistics"],
+                    "evidence_class": "company_practice_reference",
+                    "commerce_reference_active": True,
+                },
+            },
+        ]
+
+        ranked = _rank_commerce_reference_evidence(
+            contexts, question, "nationwide_logistics", 2,
+        )
+
+        self.assertEqual(ranked[0]["metadata"]["document_id"], "AMAZON-GUIDE")
+
+    def test_commerce_reference_ranking_prefers_question_topic_over_broad_domain_terms(self):
+        question = "Why are attributed campaign sales and ROAS insufficient to prove incremental sales?"
+        contexts = [
+            {
+                "document_name": "General marketing plan",
+                "content": (
+                    "Promotion campaigns should define a target market, marketing goals, campaign budget, "
+                    "measure campaign results, and review campaign results."
+                ),
+                "metadata": {
+                    "document_id": "GENERAL-MARKETING-PLAN",
+                    "knowledge_domains": ["promotion_planning"],
+                    "evidence_class": "management_cookbook_reference",
+                    "commerce_reference_active": True,
+                },
+            },
+            {
+                "document_name": "Incremental measurement guide",
+                "content": (
+                    "Incrementality asks what changed because of a campaign versus what would have happened "
+                    "without it. Attributed sales and ROAS do not prove incremental sales. Use holdout, "
+                    "treatment and control groups to estimate the difference."
+                ),
+                "metadata": {
+                    "document_id": "INCREMENTAL-MEASUREMENT-GUIDE",
+                    "knowledge_domains": ["promotion_planning"],
+                    "evidence_class": "management_cookbook_reference",
+                    "commerce_reference_active": True,
+                },
+            },
+        ]
+
+        ranked = _rank_commerce_reference_evidence(contexts, question, "promotion_planning", 1)
+
+        self.assertEqual(ranked[0]["metadata"]["document_id"], "INCREMENTAL-MEASUREMENT-GUIDE")
+
     def test_commerce_domain_queries_cover_management_cookbook_topics(self):
         expected_terms = {
             "inventory_allocation": ("reorder point", "stocktake", "supplier reliability"),
@@ -633,6 +1745,36 @@ class AgentFlowTest(unittest.TestCase):
         )
 
         self.assertEqual(ranked[0]["metadata"]["document_id"], "SHOPIFY-ROUTING")
+
+    def test_logistics_document_selection_question_is_not_misread_as_network_comparison(self):
+        context = {
+            "document_name": "Kroger Vendor General Routing Instructions",
+            "chunk_index": 0,
+            "content": (
+                "THE KROGER CO. VENDOR STANDARD ROUTING INSTRUCTIONS "
+                "(Parcel, LTL, & TL Routing). Suppliers must follow Kroger's "
+                "carrier and shipment requirements."
+            ),
+            "metadata": {
+                "document_id": "KROGER-VENDOR-ROUTING-INSTRUCTIONS-2024",
+                "section_title": "VENDOR STANDARD ROUTING INSTRUCTIONS",
+                "knowledge_domains": ["nationwide_logistics"],
+                "evidence_class": "company_practice_reference",
+                "commerce_reference_active": True,
+            },
+        }
+
+        ranked = _rank_commerce_reference_evidence(
+            [context],
+            "According to Kroger Vendor General Routing Instructions, what factors determine parcel versus LTL selection?",
+            "nationwide_logistics",
+            3,
+        )
+
+        self.assertEqual(
+            [item["metadata"]["document_id"] for item in ranked],
+            ["KROGER-VENDOR-ROUTING-INSTRUCTIONS-2024"],
+        )
 
     def test_verified_company_policy_ranks_before_external_practice_for_same_domain(self):
         policy = {
@@ -729,7 +1871,7 @@ class AgentFlowTest(unittest.TestCase):
         )
         self.assertIn("Policy giả lập Commerce Demo đã được truy xuất", answer)
         self.assertIn("không phải chính sách của doanh nghiệp thật", answer)
-        self.assertIn("đối chiếu nội dung OCR", answer)
+        self.assertIn("đối chiếu nguồn trước khi áp dụng", answer)
         self.assertNotIn("Dung dữ liệu", answer)
 
     def test_report_rejects_verbatim_quote_from_synthetic_scan_policy(self):
@@ -750,7 +1892,10 @@ class AgentFlowTest(unittest.TestCase):
         )
         policy = Evidence(
             source_type="document", source="Inventory policy scan", content=policy_text,
-            metadata={"evidence_class": "company_policy_reference", "synthetic_company_policy": True},
+            metadata={
+                "evidence_class": "company_policy_reference", "synthetic_company_policy": True,
+                "ocr": {"engine": "tesseract"}, "text_extraction_method": "tesseract",
+            },
         )
         knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[policy])
         llm.generate.return_value = (
@@ -764,8 +1909,10 @@ class AgentFlowTest(unittest.TestCase):
         ))
 
         self.assertEqual(llm.generate.call_count, 2)
+        self.assertIn("văn bản OCR chưa được xác minh", result.answer)
+        self.assertIn("Kiểm tra PDF gốc trước khi áp dụng", result.answer)
         self.assertNotIn(policy_text, result.answer)
-        self.assertIn("đối chiếu nội dung OCR", result.answer)
+        self.assertNotIn("không tự động điều chuyển", result.answer)
         self.assertIn("[S1]", result.answer)
         self.assertFalse(result.metadata["citation_validation_failed"])
 
@@ -1056,6 +2203,43 @@ class AgentFlowTest(unittest.TestCase):
             ["SHOPEE-INVENTORY", "SAMS-INVENTORY"],
         )
 
+    def test_named_company_reference_precedes_demo_policy_for_source_specific_question(self):
+        amazon = {
+            "document_name": "Amazon FBA Restock Tool Guide",
+            "content": "Review sales and inventory signals in the Amazon FBA Restock Tool before replenishing.",
+            "metadata": {
+                "document_id": "AMAZON-FBA",
+                "source_publisher": "Amazon",
+                "knowledge_domains": ["inventory_allocation"],
+                "evidence_class": "company_practice_reference",
+                "commerce_reference_active": True,
+            },
+        }
+        demo_policy = {
+            "document_name": "Commerce Demo inventory policy",
+            "content": "Before replenishing, review stock and inventory signals.",
+            "metadata": {
+                "document_id": "CD-POL-INV-001",
+                "source_publisher": "Commerce Demo",
+                "knowledge_domains": ["inventory_allocation"],
+                "evidence_class": "company_policy_reference",
+                "commerce_reference_active": True,
+                "synthetic_company_policy": True,
+            },
+        }
+
+        ranked = _rank_commerce_reference_evidence(
+            [demo_policy, amazon],
+            "What should an Amazon seller review in the FBA Restock Tool before replenishing?",
+            "inventory_allocation",
+            2,
+        )
+
+        self.assertEqual(
+            [item["metadata"]["document_id"] for item in ranked],
+            ["AMAZON-FBA", "CD-POL-INV-001"],
+        )
+
     def test_commerce_inventory_ranking_prefers_operating_steps_over_table_of_contents(self):
         toc = {
             "document_name": "Sam's Club Supplier Hub guide",
@@ -1089,6 +2273,55 @@ class AgentFlowTest(unittest.TestCase):
             3,
         )
         self.assertEqual(ranked[0]["metadata"]["page_number"], 23)
+
+    def test_commerce_bm25_ranking_preserves_the_more_relevant_ocr_page(self):
+        question = (
+            "Theo trang hướng dẫn Shopee, điều kiện nào khiến một SKU được đánh dấu "
+            "cần bổ sung kho hàng sớm?"
+        )
+        source = {
+            "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+            "knowledge_domains": ["inventory_allocation"],
+            "evidence_class": "platform_operating_rule",
+            "commerce_reference_active": True,
+            "source_publisher": "Shopee Vietnam Seller Education Hub (Shopee Uni)",
+        }
+        generic_page = {
+            "document_name": "Quản lý tồn kho",
+            "chunk_index": 3,
+            "content": (
+                "SELLER EDUCATION HUB Bổ sung hàng tồn kho - tăng doanh số. "
+                "Người bán có thể hiểu nhu cầu và chu kỳ bán hàng của sản phẩm "
+                "và theo dõi mức độ cần bổ sung hàng."
+            ),
+            "metadata": {**source, "page_number": 4, "section_title": "Bổ sung hàng tồn kho"},
+            "retrieval_score": 26.518,
+            "retrieval_method": "bm25",
+        }
+        relevant_ocr_page = {
+            "document_name": "Quản lý tồn kho",
+            "chunk_index": 10,
+            "content": (
+                "Kiểm tra trạng thái Mức độ cần bổ sung hàng cho từng SKU. "
+                "Bổ sung kho hàng sớm cho biết SKU sắp hết hàng, nghĩa là số lượng "
+                "tồn kho nằm dưới Số lượng tồn kho tối thiểu."
+            ),
+            "metadata": {
+                **source,
+                "page_number": 11,
+                "section_title": "Giảm thiểu tình trạng hết hàng",
+                "text_extraction_method": "pymupdf+tesseract",
+            },
+            "retrieval_score": 30.409,
+            "retrieval_method": "bm25",
+        }
+
+        ranked = _rank_commerce_reference_evidence(
+            [generic_page, relevant_ocr_page], question, "inventory_allocation", 1,
+        )
+
+        self.assertEqual(ranked[0]["metadata"]["page_number"], 11)
+        self.assertEqual(ranked[0]["metadata"]["text_extraction_method"], "pymupdf+tesseract")
 
     def test_commerce_inventory_reallocation_prefers_location_transfer_guidance(self):
         sams_ui = {
@@ -1425,6 +2658,13 @@ class AgentFlowTest(unittest.TestCase):
         self.assertFalse(_decision_numeric_facts_match_cited_evidence("Average fill rate was 0.96 [C1].", [sql_evidence]))
         self.assertEqual(_unsupported_decision_numeric_tokens("Average fill rate was 0.96 [C1].", [sql_evidence]), ["0.96"])
         self.assertTrue(_decision_numeric_facts_match_cited_evidence("Fill rate was 0.9635 [C1].", [sql_evidence]))
+        amount_evidence = Evidence(
+            citation_id="C2", source_type="commerce_sql", source="Promotion SQL",
+            content='promotion observations: [{"net_sales": 454361595.764106}]',
+        )
+        self.assertTrue(_decision_numeric_facts_match_cited_evidence(
+            "Doanh thu thuần là 454.361.595,76 [C2].", [amount_evidence],
+        ))
         self.assertTrue(_decision_numeric_facts_match_cited_evidence(
             "1. Collect location-level demand [C1].\n2. Review lead times [C1].", [sql_evidence],
         ))
@@ -1461,8 +2701,87 @@ class AgentFlowTest(unittest.TestCase):
         self.assertTrue(result.metadata["decision_validation_repair_attempted"])
         self.assertFalse(result.metadata["citation_validation_failed"])
         self.assertIn("Do not reallocate from category counts alone", result.answer)
+        self.assertIn("These figures come from the synthetic Commerce Demo dataset", result.answer)
         self.assertIn("[S1]", result.answer)
         self.assertIn("do not claim one SKU has both states", llm.generate.call_args_list[1].args[0])
+        self.assertIn("explicitly identify them as synthetic Commerce demo data", llm.generate.call_args_list[0].kwargs["instructions"])
+
+    def test_commerce_answers_present_requested_fill_rate_as_percent(self):
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Inventory query",
+            content="question-specific SQL observations",
+            metadata={"commerce_observations": [
+                {"year": 2020, "avg_fill_rate": 0.9656},
+                {"year": 2021, "avg_fill_rate": 0.9619},
+                {"year": 2022, "avg_fill_rate": 0.9635},
+            ]},
+        )]
+        question = "Trong từng năm 2020–2022, fill rate thay đổi thế nào?"
+
+        self.assertTrue(_commerce_fill_rate_missing_percent(
+            "Fill rate: 0.9656, 0.9619, 0.9635 [C1]", evidence, question,
+        ))
+        self.assertFalse(_commerce_fill_rate_missing_percent(
+            "Fill rate: 96,56%, 96,19%, 96,35% [C1]", evidence, question,
+        ))
+        self.assertFalse(_commerce_fill_rate_missing_percent(
+            "Fill rate: 0.9656, 0.9619, 0.9635 [C1]", evidence,
+            "Show the raw ratio (0-to-1) for fill rate in 2020–2022.",
+        ))
+        row_evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Inventory query",
+            metadata={"commerce_observations": [{"fill_rate": 0.95}]},
+        )]
+        self.assertTrue(_commerce_fill_rate_missing_percent(
+            "Fill rate: 0.95 [C1]", row_evidence, "What is the fill rate?",
+        ))
+
+    def test_commerce_answer_limits_unrequested_recommendation_list_to_one_action(self):
+        self.assertTrue(_has_multiple_unrequested_actions(
+            "### 3. Khuyến nghị hành động tiếp theo\n"
+            "- Thu thập dữ liệu vị trí.\n- So sánh chi phí.\n"
+        ))
+        self.assertFalse(_has_multiple_unrequested_actions(
+            "### Khuyến nghị hành động tiếp theo\n- Thu thập dữ liệu vị trí.\n"
+        ))
+
+    def test_commerce_dataset_disclosure_uses_a_cited_sql_source_and_question_language(self):
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Commerce SQL",
+            content="Read-only synthetic Commerce aggregate.",
+            metadata={"dataset_note": "Synthetic Kaggle Commerce data."},
+        )]
+
+        english = _ensure_commerce_dataset_disclosure("The campaign led the ranking [C1].", evidence, "Which campaign ranked highest?")
+        self.assertTrue(english.startswith("These figures come from the synthetic Commerce Demo dataset, not a real retailer. [C1]"))
+
+        vietnamese = _ensure_commerce_dataset_disclosure("Spring Sale đứng đầu [C1].", evidence, "Chiến dịch nào đứng đầu?")
+        self.assertTrue(vietnamese.startswith("Các số liệu dưới đây thuộc bộ dữ liệu Commerce Demo giả lập"))
+        self.assertIn("[C1]", vietnamese)
+
+        already_disclosed = "These figures come from the synthetic Commerce Demo dataset [C1]."
+        self.assertEqual(_ensure_commerce_dataset_disclosure(already_disclosed, evidence, "Which campaign ranked highest?"), already_disclosed)
+        self.assertEqual(_ensure_commerce_dataset_disclosure("Answer [C1].", [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Commerce SQL",
+            metadata={"dataset_note": "Observed production data."},
+        )], "Which campaign ranked highest?"), "Answer [C1].")
+
+    def test_commerce_campaign_guard_rejects_causal_ranking_language(self):
+        self.assertTrue(_has_unsupported_campaign_causal_claim(
+            "The campaign that generated the most tagged net sales also produced the highest profit proxy."
+        ))
+        self.assertTrue(_has_unsupported_campaign_causal_claim(
+            "Chiến dịch này mang lại doanh thu và lãi gộp cao nhất trong kỳ."
+        ))
+        self.assertFalse(_has_unsupported_campaign_causal_claim(
+            "Spring Sale recorded the highest campaign-window tagged net sales; this is descriptive, not causal."
+        ))
+        self.assertFalse(_has_unsupported_campaign_causal_claim(
+            "The data does not establish that the campaign produced incremental sales."
+        ))
+        self.assertFalse(_has_unsupported_campaign_causal_claim(
+            "Chưa thể kết luận chiến dịch tạo ra doanh thu tăng thêm."
+        ))
 
     def test_commerce_report_rejects_overlap_count_without_joint_sql_evidence(self):
         question = "Should we transfer inventory based on stockout and overstock flags?"
@@ -1484,6 +2803,90 @@ class AgentFlowTest(unittest.TestCase):
             "FROM commerce.inventory i"
         )
         self.assertIsNone(_report_validation_failure(answer, evidence, {"C1"}, question))
+
+    def test_commerce_sales_and_profit_proxy_use_commerce_numeric_validation(self):
+        question = (
+            "Should we expand discounts based on sales or wait for an incrementality test? "
+            "Compare the available outcome and profit proxy, then identify missing evidence."
+        )
+        answer = (
+            "The available outcome shows net sales of 728500 and a profit proxy of 107000 [C1]. "
+            "This supports monitoring the campaign, but does not establish incremental lift; "
+            "test against a holdout before scaling [L1][S1]."
+        )
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Promotion outcomes",
+                content='question-specific SQL observations: '
+                        '[{"net_sales": 728500, "gross_profit_proxy": 107000}]',
+                metadata={"commerce_domain": "promotion_planning"},
+            ),
+            Evidence(citation_id="L1", source_type="commerce_schema", source="Promotion coverage",
+                     content="The data has no randomized holdout."),
+            Evidence(citation_id="S1", source_type="document", source="Measurement guide",
+                     content="Use a holdout to estimate incrementality."),
+        ]
+
+        self.assertTrue(_is_financial_summary(question))
+        self.assertIsNone(_report_validation_failure(answer, evidence, {"C1", "L1", "S1"}, question))
+
+    def test_commerce_decision_validation_detects_an_omitted_requested_sql_measure(self):
+        question = "Compare campaign sales and the profit proxy before deciding whether to expand."
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Promotion outcomes",
+            content="Aggregate observations.",
+            metadata={"commerce_observations": [{
+                "net_sales": 728500.0, "merchandise_gross_profit_proxy": 107000.0,
+            }]},
+        )]
+        answer = "Observed campaign sales were 728500 [C1]."
+
+        self.assertEqual(
+            _commerce_requested_observation_missing(answer, evidence, question),
+            "merchandise_gross_profit_proxy",
+        )
+        self.assertIsNone(_commerce_requested_observation_missing(
+            answer + " The profit proxy was 107000 [C1].", evidence, question,
+        ))
+
+    def test_unavailable_incremental_profit_or_roi_does_not_require_profit_proxy(self):
+        question = (
+            "Should we make deeper discounts the default for campaigns? Compare the 2022 campaign "
+            "evidence and explain whether it proves incremental profit or ROI."
+        )
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Promotion outcomes",
+            content="Aggregate observations.",
+            metadata={"commerce_observations": [{
+                "year": 2022, "net_sales": 100.0, "merchandise_gross_profit_proxy": 5.0,
+            }]},
+        )]
+        abstention = (
+            "These campaign observations do not establish incremental profit or ROI because no "
+            "campaign cost or counterfactual is available [C1]."
+        )
+
+        self.assertIsNone(_commerce_requested_observation_missing(abstention, evidence, question))
+        explicit_proxy_question = question + " Also compare the merchandise gross profit proxy."
+        self.assertEqual(
+            _commerce_requested_observation_missing(abstention, evidence, explicit_proxy_question),
+            "merchandise_gross_profit_proxy",
+        )
+
+    def test_requested_net_sales_accepts_campaign_window_net_item_sales_field(self):
+        question = "Which campaign had the highest net sales during its campaign window?"
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Campaign window aggregate",
+            content="Campaign window outcomes.",
+            metadata={"commerce_observations": [{"net_item_sales": 90345105.91}]},
+        )]
+
+        self.assertIsNone(_commerce_requested_observation_missing(
+            "Spring Sale had net sales of 90345105.91 [C1].", evidence, question,
+        ))
+        self.assertEqual(_commerce_requested_observation_missing(
+            "Spring Sale was the highest by net sales [C1].", evidence, question,
+        ), "net_sales")
 
     def test_commerce_report_repairs_overlap_count_that_query_does_not_measure(self):
         analytics = SQLAnalyticsAgent(repository=Mock(), llm=Mock())
@@ -1589,6 +2992,84 @@ class AgentFlowTest(unittest.TestCase):
                     answer, evidence, {"C1", "C2", "S1"}, "Should we change the current approach?",
                 ))
 
+    def test_english_fallback_uses_catalog_summary_for_synthetic_ocr_policy(self):
+        cases = (
+            (
+                "inventory_allocation",
+                "Should inventory be transferred between categories?",
+                "Consider a transfer only after matching source and destination SKU",
+            ),
+            (
+                "promotion_planning",
+                "Should we increase promotion budget based on these outcomes?",
+                "separate observed outcomes from incrementality and profitability",
+            ),
+            (
+                "nationwide_logistics",
+                "Should we redesign the logistics network from regional averages?",
+                "require evidence before redesigning the network",
+            ),
+        )
+        for domain, question, summary in cases:
+            with self.subTest(domain=domain):
+                evidence = [
+                    Evidence(citation_id="C1", source_type="commerce_sql", source="Commerce SQL", content="Synthetic observations."),
+                    Evidence(citation_id="L1", source_type="commerce_schema", source="Commerce schema", content="Decision dimensions are incomplete."),
+                    Evidence(
+                        citation_id="S1", source_type="document", source="Commerce Demo policy page 2",
+                        content="OCR policy excerpt", metadata={
+                            "evidence_class": "company_policy_reference",
+                            "synthetic_company_policy": True,
+                            "source_publisher": "Commerce Demo",
+                            "ocr": {"engine": "tesseract"},
+                            "source_notes_en": summary,
+                        },
+                    ),
+                ]
+
+                answer = _commerce_safe_fallback(domain, question, evidence, decision_request=True)
+
+                self.assertIn(summary, answer)
+                self.assertIn("not a verbatim excerpt", answer)
+                self.assertIn("Check the original PDF page", answer)
+                self.assertIn("[S1]", answer)
+                self.assertNotIn("OCR text is not verified", answer)
+
+    def test_commerce_fallback_combines_synthetic_policy_and_ranked_external_method(self):
+        evidence = [
+            Evidence(citation_id="C1", source_type="commerce_sql", source="Commerce SQL", content="Regional delivery summaries."),
+            Evidence(citation_id="L1", source_type="commerce_schema", source="Commerce schema", content="No route, carrier, capacity, or promised SLA fields."),
+            Evidence(
+                citation_id="S1", source_type="document", source="Commerce Demo logistics policy",
+                content="Trước khi thay đổi mạng lưới cần đối chiếu mức dịch vụ và chi phí vận chuyển.",
+                metadata={
+                    "evidence_class": "company_policy_reference", "synthetic_company_policy": True,
+                    "ocr": {"engine": "tesseract"}, "text_extraction_method": "tesseract",
+                },
+            ),
+            Evidence(
+                citation_id="S2", source_type="document", source="Amazon supply-chain guide",
+                content="Customer needs: balance expectations for fast shipping and on-time delivery with business priorities before selecting logistics options.",
+                metadata={"evidence_class": "company_practice_reference", "source_publisher": "Amazon"},
+            ),
+        ]
+
+        answer = _commerce_safe_fallback(
+            "nationwide_logistics",
+            "Should we redesign the network based on customer needs and cost?",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertIn("[S1]", answer)
+        self.assertIn("[S2]", answer)
+        self.assertIn("Amazon", answer)
+        self.assertIn("A synthetic Commerce Demo policy was retrieved", answer)
+        self.assertIn("not Commerce Demo policy", answer)
+        self.assertIn("OCR text is not verified", answer)
+        self.assertNotIn("đối chiếu mức dịch vụ và chi phí vận chuyển", answer)
+        self.assertNotIn("Customer needs: balance expectations", answer)
+
     def test_commerce_safe_fallback_uses_named_platform_rule_before_generic_company_example(self):
         evidence = [
             Evidence(citation_id="C1", source_type="commerce_sql", source="Commerce SQL", content="Category aggregates."),
@@ -1647,10 +3128,10 @@ class AgentFlowTest(unittest.TestCase):
                  {"year": 2021, "used_promotion": True, "delivered_orders": 9, "net_sales": 220.0},
                  {"year": 2022, "used_promotion": True, "delivered_orders": 10, "net_sales": 250.5},
                  {"year": 2022, "used_promotion": False, "delivered_orders": 20, "net_sales": 400.0}],
-                ("FY2020 tagged: delivered orders=8; net sales=200.0",
-                 "FY2021 tagged: delivered orders=9; net sales=220.0",
-                 "FY2022 tagged: delivered orders=10; net sales=250.5",
-                 "FY2022 untagged", "not causal"),
+                ("Year 2020 tagged: delivered orders=8; net sales=200",
+                 "Year 2021 tagged: delivered orders=9; net sales=220",
+                 "Year 2022 tagged: delivered orders=10; net sales=250.5",
+                 "Year 2022 untagged", "not causal"),
             ),
             (
                 "nationwide_logistics",
@@ -1658,7 +3139,7 @@ class AgentFlowTest(unittest.TestCase):
                 "logistics_by_year_region",
                 [{"year": 2022, "region": "East", "avg_transit_days": 4.52},
                  {"year": 2022, "region": "West", "avg_transit_days": 4.51}],
-                ("FY2022 East: avg_transit_days=4.52", "FY2022 West: avg_transit_days=4.51", "East=4.52 days"),
+                ("Year 2022 East: avg_transit_days=4.52", "Year 2022 West: avg_transit_days=4.51", "East=4.52 days"),
             ),
         )
         for domain, question, observation, rows, expected in examples:
@@ -1671,6 +3152,44 @@ class AgentFlowTest(unittest.TestCase):
                 for fragment in expected:
                     self.assertIn(fragment, answer)
                 self.assertIn("[C1]", answer)
+
+    def test_inventory_fallback_preserves_dynamic_sql_category_aliases(self):
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Question-specific inventory SQL",
+                content=("question_specific_query question-specific SQL observations: " + json.dumps([
+                    {"group_label": "Streetwear", "stockout_count": 134, "overstock_count": 162},
+                    {"group_label": "Outdoor", "stockout_count": 95, "overstock_count": 113},
+                ])),
+                metadata={"sql_query": "SELECT category AS group_label, COUNT(*) FILTER (WHERE stockout_flag) AS stockout_count FROM commerce.inventory WHERE snapshot_date = '2022-12-31' GROUP BY category"},
+            ),
+            Evidence(
+                citation_id="C2", source_type="commerce_sql", source="Latest inventory overlap",
+                content=("inventory_latest_flag_overlap aggregate observations: " + json.dumps([
+                    {"snapshot_date": "2022-12-31", "both_flagged_rows": 232},
+                ])),
+            ),
+            Evidence(
+                citation_id="S1", source_type="document", source="Synthetic inventory policy",
+                content="OCR policy source",
+                metadata={"evidence_class": "company_policy_reference", "synthetic_company_policy": True,
+                          "text_extraction_method": "tesseract",
+                          "source_notes": "Đối chiếu SKU, tồn khả dụng, nhu cầu, lead time và chi phí."},
+            ),
+        ]
+
+        answer = _commerce_safe_fallback(
+            "inventory_allocation",
+            "Trong snapshot tồn kho mới nhất, nhóm hàng nào có nhiều sản phẩm bị gắn cờ stockout nhất? Có nên chuyển hàng từ nhóm overstock sang không?",
+            evidence,
+        )
+
+        self.assertIn("Streetwear=134", answer)
+        self.assertIn("Outdoor=95", answer)
+        self.assertIn("snapshot 2022-12-31", answer)
+        self.assertIn("232", answer)
+        self.assertIn("Chưa điều chuyển tồn kho", answer)
+        self.assertIn("[C1]", answer)
 
     def test_commerce_promotion_fallback_localizes_and_omits_unrequested_columns(self):
         evidence = [Evidence(
@@ -1689,12 +3208,41 @@ class AgentFlowTest(unittest.TestCase):
         )
 
         for fragment in (
-            "FY2020 gắn khuyến mãi", "đơn hàng đã giao=10305", "số lượng bán=49756",
-            "doanh thu thuần=235597280.59", "mức giảm giá=39488236.4", "không chứng minh quan hệ nhân quả",
+            "Năm 2020 gắn khuyến mãi", "đơn hàng đã giao=10.305", "số lượng bán=49.756",
+            "doanh thu thuần=235.597.280,59", "mức giảm giá=39.488.236,4", "không chứng minh quan hệ nhân quả",
         ):
             self.assertIn(fragment, answer)
         self.assertNotIn("catalog_cogs", answer)
         self.assertNotIn("gross-margin proxy", answer)
+        self.assertIn("[C1]", answer)
+
+    def test_promotion_outcome_fallback_handles_hyphenated_metrics_and_negated_roi(self):
+        question = (
+            "Compare campaign performance using available sales and gross-profit proxy. "
+            "Do not infer incrementality or ROI; what evidence is needed before reallocating budget?"
+        )
+        self.assertFalse(_asks_for_unavailable_promotion_roi(question))
+        self.assertTrue(_asks_for_unavailable_promotion_roi("Which campaign has the highest ROI?"))
+
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Commerce promotion SQL",
+            content=("promotions_by_year aggregate observations: " + json.dumps([{
+                "year": 2022, "used_promotion": True, "delivered_orders": 10173,
+                "units": 48768, "net_sales": 245344841.2, "discounts": 41728464.79,
+                "catalog_cogs": 278908639.37, "merchandise_gross_profit_proxy": -33563798.17,
+                "merchandise_gross_margin_proxy": -0.1368,
+            }])),
+            metadata={"commerce_domain": "promotion_planning"},
+        )]
+
+        answer = _commerce_question_safe_fallback(question, evidence, decision_request=True)
+
+        self.assertIn("Net Sales", answer)
+        self.assertIn("Merchandise Gross Profit Proxy", answer)
+        self.assertNotIn("Catalog Cogs", answer)
+        self.assertNotIn("Discounts", answer)
+        self.assertNotIn("Delivered Orders", answer)
+        self.assertNotIn("Gross Margin Proxy", answer)
         self.assertIn("[C1]", answer)
 
     def test_commerce_safe_fallback_does_not_substitute_stockout_for_low_stock(self):
@@ -1726,10 +3274,72 @@ class AgentFlowTest(unittest.TestCase):
             "inventory_allocation", "Tình trạng availability thay đổi trong 2020–2022 thế nào?", evidence,
         )
 
-        for fragment in ("FY2020", "avg_fill_rate=0.9656", "FY2021", "avg_fill_rate=0.9619",
-                         "FY2022", "avg_fill_rate=0.9635", "[C1]"):
+        for fragment in ("Năm 2020", "Fill rate TB=96,56%", "Năm 2021", "Fill rate TB=96,19%",
+                         "Năm 2022", "Fill rate TB=96,35%", "[C1]"):
             self.assertIn(fragment, answer)
+        self.assertNotIn("0.9656", answer)
         self.assertNotIn("service target", answer)
+
+    def test_service_target_fallback_explains_non_monotonic_fill_rate_and_snapshot_denominator(self):
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Commerce inventory SQL",
+            content=("inventory_by_year aggregate observations: " + json.dumps([
+                {"year": 2020, "avg_fill_rate": 0.9656, "stockout_snapshots": 3795, "sku_snapshots": 5686},
+                {"year": 2021, "avg_fill_rate": 0.9619, "stockout_snapshots": 3788, "sku_snapshots": 5609},
+                {"year": 2022, "avg_fill_rate": 0.9635, "stockout_snapshots": 3490, "sku_snapshots": 5232},
+            ])),
+        )]
+
+        answer = _commerce_safe_fallback(
+            "inventory_allocation",
+            "Trong từng năm 2020–2022, fill rate thay đổi thế nào; có thể đặt service target mới không?",
+            evidence,
+        )
+
+        self.assertIn("Fill rate không đơn điệu (giảm 2020–2021; tăng 2021–2022)", answer)
+        self.assertIn("Số snapshot có cờ stockout và tổng snapshot đều giảm", answer)
+        self.assertIn("quy mô snapshot cũng thay đổi", answer)
+        self.assertIn("Dữ liệu không có service-level target đã được phê duyệt", answer)
+        self.assertIn("[C1]. Số snapshot", answer)
+        self.assertIn("[C1]. Dữ liệu", answer)
+        self.assertIn("[C1]", answer)
+
+    def test_dynamic_service_target_fallback_formats_trend_citations_and_sentences(self):
+        rows = [
+            {"year": 2020, "avg_fill_rate": "0.9656", "stockout_snapshots": 3795, "total_snapshots": 5686},
+            {"year": 2021, "avg_fill_rate": "0.9619", "stockout_snapshots": 3788, "total_snapshots": 5609},
+            {"year": 2022, "avg_fill_rate": "0.9635", "stockout_snapshots": 3490, "total_snapshots": 5232},
+        ]
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Inventory query",
+                content=f"question_specific_query question-specific SQL observations: {json.dumps(rows)}",
+                metadata={"commerce_domain": "inventory_allocation", "commerce_observations": rows},
+            ),
+            Evidence(
+                citation_id="L1", source_type="commerce_schema", source="Schema limits",
+                content="No approved service-level target is available.",
+            ),
+            Evidence(
+                citation_id="S1", source_type="document", source="Synthetic Demo policy",
+                content="OCR policy excerpt", metadata={
+                    "evidence_class": "company_policy_reference", "synthetic_company_policy": True,
+                    "document_id": "CD-POL-INV-001", "page_number": 2,
+                    "text_extraction_method": "tesseract",
+                },
+            ),
+        ]
+
+        answer = _commerce_question_safe_fallback(
+            "Trong từng năm 2020–2022, fill rate thay đổi thế nào; có thể đặt service target mới không?",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertIn("[C1]. Fill rate không đơn điệu", answer)
+        self.assertIn("[C1]. Số snapshot", answer)
+        self.assertIn("[C1]. Kết luận:", answer)
+        self.assertNotIn("[[C1]]", answer)
 
     def test_commerce_inventory_transfer_question_does_not_add_unrequested_availability_history(self):
         evidence = [
@@ -1796,12 +3406,41 @@ class AgentFlowTest(unittest.TestCase):
         )
 
         self.assertIn("Spring Sale 2022", answer)
-        self.assertIn("net_item_sales=90345105.91", answer)
+        self.assertIn("doanh thu thuần=90.345.105,91", answer)
+        self.assertNotIn("net_item_sales", answer)
         self.assertNotIn("Fall Launch 2022", answer)
         self.assertIn("doanh thu thuần mặt hàng gắn tag trong thời gian chạy", answer)
         self.assertNotIn("delivered_orders", answer)
         self.assertNotIn("merchandise_gross_profit_proxy", answer)
         self.assertIn("[C1]", answer)
+
+    def test_commerce_campaign_fallback_respects_named_campaign_scope(self):
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Commerce campaign SQL",
+            content=("promotions_by_campaign aggregate observations: " + json.dumps([
+                {"year": 2020, "campaign": "Spring Sale 2020", "net_item_sales": 90175249.90},
+                {"year": 2021, "campaign": "Spring Sale 2021", "net_item_sales": 81474493.06},
+                {"year": 2022, "campaign": "Spring Sale 2022", "net_item_sales": 90345105.91},
+                {"year": 2022, "campaign": "Fall Launch 2022", "net_item_sales": 55424932.90},
+            ])),
+        )]
+
+        across_years = _commerce_safe_fallback(
+            "promotion_planning",
+            "Should we increase the Spring Sale promotion budget based on the available campaign evidence?",
+            evidence,
+        )
+        self.assertIn("Spring Sale 2020", across_years)
+        self.assertIn("Spring Sale 2021", across_years)
+        self.assertIn("Spring Sale 2022", across_years)
+        self.assertNotIn("Fall Launch", across_years)
+
+        one_year = _commerce_safe_fallback(
+            "promotion_planning", "What were Spring Sale 2022 campaign outcomes?", evidence,
+        )
+        self.assertIn("Spring Sale 2022", one_year)
+        self.assertNotIn("Spring Sale 2020", one_year)
+        self.assertNotIn("Fall Launch", one_year)
 
     def test_descriptive_commerce_answer_gate_flags_unsolicited_action_advice(self):
         self.assertTrue(_has_unsolicited_commerce_recommendation(
@@ -1824,7 +3463,7 @@ class AgentFlowTest(unittest.TestCase):
             "Historical observations do not establish an approved service target [L1].", evidence, question,
         ))
 
-    def test_descriptive_campaign_question_skips_rag_and_falls_back_without_unsolicited_advice(self):
+    def test_descriptive_campaign_question_keeps_hybrid_retrieval_but_rejects_unsolicited_advice(self):
         analytics = Mock()
         analytics.commerce_decision_snapshot.return_value = {
             "domain": "promotion_planning", "domain_label": "Promotion planning",
@@ -1839,17 +3478,22 @@ class AgentFlowTest(unittest.TestCase):
             "dataset_note": "Synthetic competition dataset.",
         }
         knowledge, llm = Mock(), Mock()
-        knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[])
+        knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[Evidence(
+            citation_id="S1", source_type="document", source="Campaign measurement method",
+            content="Use a holdout to estimate incremental campaign outcomes.", metadata={
+                "evidence_class": "management_cookbook_reference", "source_publisher": "IAB",
+            },
+        )])
         llm.generate.side_effect = [
             "Spring Sale had the highest net sales [C1]. Recommended next move: run a holdout test [C1].",
             "Spring Sale had the highest net sales [C1]. Recommended next move: run an experiment [C1].",
         ]
         result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
             question="Trong các campaign 2022, campaign nào có net sales cao nhất?",
-            metadata={"business_decision_domain": "promotion_planning", "role": "analyst"},
+            metadata={"business_decision_domain": "promotion_planning", "commerce_decision_support": True, "role": "analyst"},
         ))
 
-        knowledge.run.assert_not_called()
+        knowledge.run.assert_called_once()
         self.assertTrue(result.metadata["decision_fallback_used"])
         self.assertIn("Spring Sale", result.answer)
         self.assertNotIn("holdout", result.answer.casefold())
@@ -1888,7 +3532,10 @@ class AgentFlowTest(unittest.TestCase):
         }
         knowledge, llm = Mock(), Mock()
         knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[])
-        unsupported = "Historical observations do not establish an approved service target [C1]."
+        unsupported = (
+            "Fill rate không đơn điệu: 0.9656, 0.9619, 0.9635 [C1]. "
+            "Dữ liệu không có service-level target đã được phê duyệt [L1]."
+        )
         llm.generate.side_effect = [unsupported, unsupported]
         result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
             question="Tình trạng availability thay đổi trong 2020–2022 thế nào, có thể đặt service target mới không?",
@@ -1898,8 +3545,9 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(llm.generate.call_count, 2)
         self.assertTrue(result.metadata["decision_fallback_used"])
         self.assertFalse(result.metadata["citation_validation_failed"])
-        self.assertIn("avg_fill_rate=0.9656", result.answer)
+        self.assertIn("Fill rate TB=96,56%", result.answer)
         self.assertIn("Dữ liệu không có service-level target đã được phê duyệt [L1]", result.answer)
+        self.assertIn("ratio multiplied by 100", llm.generate.call_args_list[1].args[0])
 
     def test_commerce_safe_fallback_can_rank_campaigns_by_gross_profit_proxy(self):
         evidence = [Evidence(
@@ -1920,10 +3568,67 @@ class AgentFlowTest(unittest.TestCase):
 
         self.assertIn("Higher Proxy Profit", answer)
         self.assertNotIn("Largest Sales", answer)
-        self.assertIn("merchandise_gross_profit_proxy=35", answer)
+        self.assertIn("proxy lãi gộp hàng hóa=35", answer)
         self.assertIn("không phải biên lợi nhuận đóng góp, ROI", answer)
         self.assertIn("lợi nhuận tăng thêm do chiến dịch", answer)
         self.assertIn("[C1]", answer)
+
+    def test_campaign_winner_fallback_uses_a_localized_metric_label(self):
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Commerce campaign SQL",
+            content="promotions_by_campaign aggregate observations: " + json.dumps([
+                {"year": 2022, "campaign": "Spring Sale 2022", "campaign_start": "2022-03-18",
+                 "campaign_end": "2022-04-17", "net_item_sales": 90345105.91},
+            ]),
+        )]
+
+        answer = _commerce_safe_fallback(
+            "promotion_planning",
+            "Trong campaign 2022 nào doanh thu thuần cao nhất?",
+            evidence,
+            decision_request=False,
+        )
+
+        self.assertIn("doanh thu thuần=90.345.105,91", answer)
+        self.assertNotIn("net_item_sales", answer)
+
+    def test_commerce_safe_fallback_compares_winners_for_multiple_campaign_metrics(self):
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Commerce campaign SQL",
+            content=("promotions_by_campaign aggregate observations: " + json.dumps([
+                {"year": 2021, "campaign": "Old Winner", "net_item_sales": 9000,
+                 "merchandise_gross_profit_proxy": 900},
+                {"year": 2022, "campaign": "Largest Sales", "net_item_sales": 1000,
+                 "merchandise_gross_profit_proxy": -20},
+                {"year": 2022, "campaign": "Higher Proxy Profit", "net_item_sales": 700,
+                 "merchandise_gross_profit_proxy": 35},
+            ])),
+        )]
+
+        questions = (
+            "Trong 2022, campaign nào cao nhất về net sales và campaign nào có proxy lãi gộp cao nhất? Hai bên có cùng campaign không?",
+            "In 2022, does the campaign with the highest net sales also have the highest gross-profit proxy?",
+        )
+        for question in questions:
+            with self.subTest(question=question):
+                answer = _commerce_safe_fallback("promotion_planning", question, evidence)
+
+                self.assertIn("Largest Sales", answer)
+                self.assertIn("1000", answer)
+                self.assertIn("Higher Proxy Profit", answer)
+                self.assertIn("35", answer)
+                self.assertIn("different campaigns" if question.startswith("In 2022") else "khác nhau", answer.casefold())
+                self.assertNotIn("Old Winner", answer)
+                self.assertIn("[C1]", answer)
+
+        comparison = _commerce_safe_fallback(
+            "promotion_planning", "Compare net sales and gross-profit proxy for campaigns in 2022.", evidence,
+        )
+        self.assertIn("Largest Sales: campaign-window tagged net item sales=1,000", comparison)
+        self.assertIn("merchandise gross-profit proxy=-20", comparison)
+        self.assertIn("Higher Proxy Profit", comparison)
+        self.assertNotIn("Old Winner", comparison)
+        self.assertIn("[C1]", comparison)
 
     def test_commerce_safe_fallback_keeps_year_and_both_requested_logistics_metrics(self):
         evidence = [Evidence(
@@ -1939,11 +3644,11 @@ class AgentFlowTest(unittest.TestCase):
             "nationwide_logistics", "Trong 2020–2022, shipping fee và transit time theo vùng thay đổi ra sao?", evidence,
         )
 
-        for fragment in ("East", "FY2020 4.5 → FY2022 4.52 (tăng)",
-                         "FY2020 4.27 → FY2022 3.98 (giảm)",
+        for fragment in ("East", "Năm 2020 4.5 → Năm 2022 4.52 (tăng)",
+                         "Năm 2020 4.27 → Năm 2022 3.98 (giảm)",
                          "không cho biết nguyên nhân", "[C1]"):
             self.assertIn(fragment, answer)
-        self.assertNotIn("FY2021", answer)
+        self.assertNotIn("Năm 2021", answer)
         self.assertNotIn("Highest average transit time", answer)
         self.assertIsNone(_report_validation_failure(answer, evidence, {"C1"},
                                                       "Trong 2020–2022, shipping fee và transit time theo vùng thay đổi ra sao?"))
@@ -1967,6 +3672,41 @@ class AgentFlowTest(unittest.TestCase):
         self.assertNotIn("net_sales=245344841.2", answer)
         self.assertIn("[C1]", answer)
 
+    def test_commerce_roi_request_skips_generated_sql_when_campaign_cost_is_unavailable(self):
+        analytics = object.__new__(SQLAnalyticsAgent)
+        analytics.commerce_decision_snapshot = Mock(return_value={
+            "domain": "promotion_planning", "domain_label": "Promotion planning",
+            "source_tables": ["commerce.orders", "commerce.order_items", "commerce.promotions"],
+            "observations": {"promotions_by_year": [{"year": 2022, "net_sales": 200.0, "total_discount": 10.0}]},
+            "limitations": ["Campaign spend and campaign-attributed traffic are unavailable; ROI cannot be established."],
+            "dataset_note": "Synthetic competition data.",
+        })
+        analytics.commerce_question_observations = Mock()
+        knowledge = Mock()
+        knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[Evidence(
+            citation_id="S1", source_type="document", source="Promotion measurement guide",
+            content="Estimate incremental outcomes with a valid holdout before changing campaign budgets.",
+            metadata={"evidence_class": "management_cookbook_reference", "source_publisher": "Example Publisher"},
+        )])
+        llm = Mock()
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
+            question="Kênh khuyến mãi nào có ROI cao nhất để dồn ngân sách?",
+            metadata={"business_decision_domain": "promotion_planning", "role": "analyst"},
+        ))
+
+        analytics.commerce_decision_snapshot.assert_called_once_with("promotion_planning")
+        analytics.commerce_question_observations.assert_not_called()
+        llm.generate.assert_not_called()
+        self.assertEqual(result.metadata["question_sql_fallback"], "unsupported_measure")
+        self.assertEqual(result.metadata["answer_fallback_reason"], "unsupported_measure")
+        self.assertTrue(result.metadata["decision_fallback_used"])
+        self.assertIn("Không thể tính ROI", result.answer)
+        self.assertIn("campaign", result.answer.casefold())
+        self.assertIn("[C1]", result.answer)
+        self.assertIn("[L1]", result.answer)
+        self.assertIn("[S1]", result.answer)
+
     def test_commerce_logistics_decision_uses_latest_year_without_unasked_ranking(self):
         evidence = [Evidence(
             citation_id="C1", source_type="commerce_sql", source="Commerce logistics SQL",
@@ -1981,9 +3721,30 @@ class AgentFlowTest(unittest.TestCase):
             "nationwide_logistics", "Should delivery capacity be moved between regions?", evidence,
         )
 
-        self.assertIn("FY2022 East", answer)
-        self.assertNotIn("FY2020", answer)
+        self.assertIn("Year 2022 East", answer)
+        self.assertNotIn("Year 2020", answer)
         self.assertNotIn("Highest average transit time", answer)
+
+    def test_commerce_logistics_fallback_ranks_requested_delivery_delay_signal(self):
+        evidence = [Evidence(
+            citation_id="C1", source_type="commerce_sql", source="Commerce logistics SQL",
+            content=("logistics_by_year_region aggregate observations: " + json.dumps([
+                {"year": 2022, "region": "Central", "avg_transit_days": 4.51},
+                {"year": 2022, "region": "East", "avg_transit_days": 4.52},
+                {"year": 2022, "region": "West", "avg_transit_days": 4.51},
+            ])),
+        )]
+
+        answer = _commerce_safe_fallback(
+            "nationwide_logistics",
+            "Which region shows the strongest delivery-delay signal in the latest available data?",
+            evidence,
+            decision_request=True,
+        )
+
+        self.assertIn("Highest average transit time in 2022: East=4.52 days", answer)
+        self.assertIn("[C1]", answer)
+        self.assertNotIn("unacceptable", answer.casefold())
 
     def test_commerce_report_uses_cited_safe_fallback_after_unsupported_network_actions(self):
         analytics = Mock()
@@ -2017,6 +3778,44 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("[C1]", result.answer)
         self.assertIn("[S1]", result.answer)
 
+    def test_logistics_fallback_uses_catalog_note_without_repeating_ocr_as_advice(self):
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="Commerce SQL",
+                content='logistics_by_year_region question-specific SQL observations: [{"year":2022,"region":"East","avg_transit_days":4.52}]',
+                metadata={"commerce_domain": "nationwide_logistics", "commerce_observations": [
+                    {"year": 2022, "region": "East", "avg_transit_days": 4.52},
+                ]},
+            ),
+            Evidence(
+                citation_id="L1", source_type="commerce_schema", source="Commerce schema",
+                content="Route and carrier dimensions are unavailable.",
+            ),
+            Evidence(
+                citation_id="S1", source_type="document", source="Commerce Demo policy page 1",
+                content="OCR policy excerpt", metadata={
+                    "evidence_class": "company_policy_reference",
+                    "synthetic_company_policy": True,
+                    "source_publisher": "Commerce Demo",
+                    "ocr": {"engine": "tesseract"},
+                    "source_notes": (
+                        "Yêu cầu bằng chứng trước khi thiết kế lại mạng lưới. "
+                        "Không đề xuất đổi carrier chỉ từ trung bình vùng."
+                    ),
+                },
+            ),
+        ]
+
+        answer = _commerce_safe_fallback(
+            "nationwide_logistics", "Có nên thiết kế lại mạng lưới giao hàng?", evidence,
+        )
+
+        self.assertIn("Tóm tắt biên mục", answer)
+        self.assertIn("Yêu cầu bằng chứng trước khi thiết kế lại mạng lưới", answer)
+        self.assertIn("Không đề xuất đổi carrier chỉ từ trung bình vùng", answer)
+        self.assertIn("đối chiếu trang PDF gốc", answer)
+        self.assertFalse(_has_unsupported_logistics_intervention(answer, evidence))
+
     def test_logistics_intervention_guard_allows_refusal_but_rejects_specific_actions(self):
         self.assertTrue(_has_unsupported_logistics_intervention(
             "Add a warehouse in West or change carriers to reduce delivery time."
@@ -2033,6 +3832,16 @@ class AgentFlowTest(unittest.TestCase):
         self.assertFalse(_has_unprovided_logistics_fields(
             "Thu thập origin/destination, carrier, service type, SLA, route capacity, and cost."
         ))
+
+    def test_logistics_intervention_guard_ignores_only_a_cited_verbatim_source_quote(self):
+        answer = "Chưa chuyển năng lực vùng. Shopify mô tả: “Move fulfillment to the nearest location in the network.” [S1]"
+        source = Evidence(
+            citation_id="S1", source_type="document", source="Shopify routing guide",
+            content="Move fulfillment to the nearest location in the network.",
+        )
+        self.assertFalse(_has_unsupported_logistics_intervention(answer, [source]))
+        self.assertTrue(_has_unsupported_logistics_intervention(answer))
+        self.assertTrue(_has_unsupported_logistics_intervention(answer.replace("[S1]", "[C1]"), [source]))
 
     def test_logistics_recommendation_must_explain_the_cited_source_method(self):
         reference = Evidence(
@@ -2064,6 +3873,36 @@ class AgentFlowTest(unittest.TestCase):
 
         self.assertIn("closest location", answer)
         self.assertIn("[S1]", answer)
+
+    def test_commerce_fallback_does_not_quote_unverified_ocr_reference_text(self):
+        malformed_ocr = "Bổsung kho hàng sớm cho biết SKU sắp hết hàng."
+        evidence = [
+            Evidence(
+                citation_id="C1", source_type="commerce_sql", source="SQL",
+                content="Category aggregates do not identify SKU/location mismatches.",
+            ),
+            Evidence(
+                citation_id="S1", source_type="document", source="Shopee Uni inventory guide",
+                content=malformed_ocr,
+                metadata={
+                    "evidence_class": "company_practice_reference",
+                    "source_publisher": "Shopee Uni",
+                    "ocr": {"engine": "tesseract"},
+                    "text_extraction_method": "pymupdf+tesseract",
+                },
+            ),
+        ]
+
+        answer = _commerce_safe_fallback(
+            "inventory_allocation", "Có nên điều chuyển hàng theo cảnh báo tồn kho?",
+            evidence, decision_request=True,
+        )
+
+        self.assertIn("Shopee Uni", answer)
+        self.assertIn("OCR chưa được xác minh", answer)
+        self.assertIn("trang PDF gốc", answer)
+        self.assertIn("[S1]", answer)
+        self.assertNotIn(malformed_ocr, answer)
 
     def test_commerce_promotion_expansion_rejects_invented_pilot_duration_and_threshold(self):
         analytics = Mock()
@@ -2109,7 +3948,7 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("do not claim that the experiment alone measures contribution margin", llm.generate.call_args.kwargs["instructions"])
         self.assertIn("do not assume the marketing team already has one", llm.generate.call_args.kwargs["instructions"])
 
-    def test_commerce_decision_returns_cited_fallback_when_llm_is_rate_limited(self):
+    def test_commerce_decision_returns_cited_fallback_when_llm_returns_no_text(self):
         analytics = Mock()
         analytics.commerce_decision_snapshot.return_value = {
             "domain": "promotion_planning", "domain_label": "Promotion planning",
@@ -2128,9 +3967,7 @@ class AgentFlowTest(unittest.TestCase):
             metadata={"evidence_class": "company_practice_reference", "source_publisher": "DoorDash Ads"},
         )])
         llm = Mock()
-        llm.generate.side_effect = RateLimitError(
-            "rate limited", response=httpx.Response(429, request=httpx.Request("POST", "https://llm.test")), body=None,
-        )
+        llm.generate.side_effect = EmptyLLMResponseError("Groq returned empty output")
 
         with patch.dict(os.environ, {"HUGGINGFACE_LLM_FALLBACK": "false"}):
             result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
@@ -2199,6 +4036,40 @@ class AgentFlowTest(unittest.TestCase):
         self.assertFalse(result.metadata["citation_validation_failed"])
         self.assertNotIn("[S1]", result.answer)
         self.assertIn("document-backed", llm.generate.call_args.kwargs["instructions"])
+
+    def test_commerce_suggestion_prompt_allows_multiple_conditional_actions(self):
+        analytics = object.__new__(SQLAnalyticsAgent)
+        analytics.commerce_decision_snapshot = Mock(return_value={
+            "domain": "promotion_planning", "domain_label": "Promotion planning",
+            "source_tables": ["commerce.promotions"],
+            "observations": {"promotions_by_year": [{"year": 2022, "net_sales": 200}]},
+            "limitations": ["Campaign cost and holdout outcomes are unavailable."],
+            "dataset_note": "Synthetic Commerce competition data.",
+        })
+        analytics.commerce_question_observations = Mock()
+        knowledge = Mock()
+        knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[Evidence(
+            citation_id="S1", source_type="document", source="Promotion measurement guide",
+            content="Use a holdout to estimate incremental campaign outcomes.",
+            metadata={"evidence_class": "management_cookbook_reference", "source_publisher": "Example Publisher"},
+        )])
+        llm = Mock()
+        llm.generate.return_value = (
+            "If a future holdout supports the approved business hurdle, then run a bounded follow-up; "
+            "otherwise retain current spend and collect cost data. [C1][S1][L1]"
+        )
+
+        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
+            question="Suggest up to three conditional actions for promotion planning.",
+            metadata={"business_decision_domain": "promotion_planning"},
+        ))
+
+        analytics.commerce_decision_snapshot.assert_called_once_with("promotion_planning")
+        analytics.commerce_question_observations.assert_not_called()
+        self.assertTrue(result.metadata["decision_suggestions"])
+        instructions = llm.generate.call_args.kwargs["instructions"]
+        self.assertIn("unless the user explicitly asks for multiple suggestions", instructions)
+        self.assertIn("Generate at most three distinct conditional actions", instructions)
 
     def test_intent_classified_decision_support_retrieves_operating_reference(self):
         analytics = object.__new__(SQLAnalyticsAgent)
@@ -2335,7 +4206,7 @@ class AgentFlowTest(unittest.TestCase):
 
     def test_natural_language_conditional_recommendation_stays_a_question(self):
         question = (
-            "Should Vinamilk prioritize preventing waste at source or improving recovery? "
+            "Should Example Retailer prioritize preventing waste at source or improving recovery? "
             "Give a conditional recommendation: test prevention where avoidable loss is confirmed."
         )
         self.assertFalse(_is_decision_suggestions_request(question))
@@ -2345,7 +4216,7 @@ class AgentFlowTest(unittest.TestCase):
 
     def test_report_prompt_formats_verified_metrics_compactly(self):
         item = Evidence(
-            citation_id="M1", source_type="verified_metric", source="Vinamilk 2025 · OEE target",
+            citation_id="M1", source_type="verified_metric", source="Example Retailer 2025 · OEE target",
             content="x" * 10000,
             metadata={"metric_label": "OEE target", "fiscal_year": 2025,
                       "metric_value": 99, "unit": "%", "page_number": 86,
@@ -2385,88 +4256,7 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(resolve_metric_names("Total revenue"), {"total_consolidated_revenue"})
         self.assertEqual(resolve_metric_names("Net revenue"), {"net_revenue"})
         self.assertEqual(resolve_metric_names("Tổng doanh thu hợp nhất năm 2024"), {"total_consolidated_revenue"})
-        self.assertEqual(resolve_metric_names("Doanh thu 2024 là 52.576.991"), {"net_revenue"})
-
-    def test_business_metric_resolver_unions_multi_domain_terms_with_exact_metric_matches(self):
-        metrics = resolve_business_metric_names(
-            "Across 2023–2025 water, emissions and waste, summarize the annual performance"
-        )
-        self.assertTrue({
-            "total_raw_water_intake", "total_water_consumption", "scope_1_2_ghg_emissions",
-            "dairy_product_ghg_intensity", "sugar_product_ghg_intensity",
-            "total_waste_generated", "waste_recovered_recycled",
-        }.issubset(metrics))
-        environmental_question = (
-            "Across the reported 2023–2025 water, emissions and waste indicators, which environmental priorities "
-            "appear to be improving? Account for changes in reporting scope and identify what is not comparable."
-        )
-        self.assertTrue(_is_business_metric_trend_question(environmental_question))
-        focused = resolve_business_metric_names(
-            "Compare Scope 1 and 2 emissions per tonne of dairy products and sugar products from 2023 to 2025"
-        )
-        self.assertEqual(focused, {
-            "scope_1_2_ghg_emissions", "dairy_product_ghg_intensity", "sugar_product_ghg_intensity",
-        })
-        intent = IntentClassifier.fallback(
-            "Across the reported 2023–2025 water, emissions and waste indicators, summarize the trend"
-        )
-        self.assertEqual(intent.intent, "report")
-        self.assertTrue(intent.needs_sql)
-        self.assertTrue(intent.needs_knowledge)
-
-        factory = resolve_business_metric_names(
-            "Given OEE, estimated production cost savings and purchasing savings in FY2024, what should management review?"
-        )
-        self.assertTrue({
-            "production_lines_meeting_oee_target", "production_cost_savings", "purchasing_cost_savings",
-        }.issubset(factory))
-
-    def test_business_metric_resolver_understands_vietnamese_market_position_questions(self):
-        self.assertEqual(
-            resolve_business_metric_names(
-                "Vinamilk có khoảng cách thị phần với đối thủ đứng thứ hai bao nhiêu?"
-            ),
-            {"market_share_lead_over_runner_up"},
-        )
-        self.assertEqual(
-            resolve_business_metric_names("Compare domestic consolidated net revenue growth with domestic consolidated net revenue"),
-            {"domestic_consolidated_net_revenue", "domestic_consolidated_net_revenue_growth"},
-        )
-        market_question = "Vinamilk nên ưu tiên đầu tư vào thị trường trong nước hay nước ngoài?"
-        self.assertEqual(resolve_business_metric_domain(market_question), "market_performance")
-        market_metrics = resolve_business_metric_names(market_question)
-        self.assertTrue({
-            "domestic_consolidated_net_revenue", "domestic_consolidated_net_revenue_growth",
-            "overseas_market_net_revenue", "overseas_market_net_revenue_growth",
-        }.issubset(market_metrics))
-        self.assertFalse({
-            "total_raw_water_intake", "recycled_reused_water", "total_water_consumption", "wastewater_discharge",
-        } & market_metrics)
-
-    def test_business_metric_trend_summary_uses_analytics_and_prohibits_unsupported_causes(self):
-        knowledge = Mock()
-        knowledge.run.return_value = AgentResult(answer="", agent="knowledge", evidence=[
-            Evidence(citation_id="S1", source_type="document", source="SR25 p.139",
-                     content="Total water consumption m³ 4,130,388 4,122,231 3,785,482. "
-                             "Waste assurance scope expanded in 2025.")
-        ])
-        analytics = Mock()
-        analytics.run.return_value = AgentResult(
-            answer="", agent="analytics", evidence=[], data={"business_metrics": []},
-        )
-        llm = Mock()
-        question = "Summarize Vinamilk water consumption trend from 2023 to 2025"
-
-        self.assertTrue(_is_business_metric_trend_question(question))
-        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
-            AgentRequest(question=question)
-        )
-
-        self.assertEqual(result.metadata["decision_analysis"], "missing_role_visible_verified_metrics")
-        self.assertTrue(result.metadata["insufficient_context"])
-        analytics.run.assert_called_once()
-        knowledge.run.assert_not_called()
-        llm.generate.assert_not_called()
+        self.assertEqual(resolve_metric_names("Doanh thu 2024 là 32.576.991"), {"net_revenue"})
 
     def test_generic_how_many_question_stays_document_qa(self):
         intent = IntentClassifier.fallback("Trong 100 ml sữa có bao nhiêu năng lượng và protein?")
@@ -2479,12 +4269,12 @@ class AgentFlowTest(unittest.TestCase):
 
         self.assertEqual(policy_intent.intent, "knowledge")
         self.assertFalse(policy_intent.needs_sql)
-        self.assertEqual(metric_intent.intent, "hybrid")
+        self.assertEqual(metric_intent.intent, "analytics")
         self.assertTrue(metric_intent.needs_sql)
-        self.assertTrue(metric_intent.needs_knowledge)
+        self.assertFalse(metric_intent.needs_knowledge)
 
-    def test_business_metric_decision_question_routes_to_hybrid_without_llm(self):
-        intent = IntentClassifier.fallback("Should we scale Green Farm given sales growth and consumer loyalty?")
+    def test_commerce_inventory_decision_question_gets_hybrid_intent(self):
+        intent = IntentClassifier.fallback("Should we rebalance inventory based on stockout and overstock indicators?")
         self.assertEqual(intent.intent, "hybrid")
         self.assertTrue(intent.needs_sql)
         self.assertTrue(intent.needs_knowledge)
@@ -2497,8 +4287,8 @@ class AgentFlowTest(unittest.TestCase):
                          "evidence_metric_ids": [1]}],
             "evidence": [{"metric_name": "total_consolidated_revenue", "metric_label": "Doanh thu hợp nhất",
                           "fiscal_year": 2024, "metric_value": 61824, "unit": "tỷ đồng",
-                          "company": "Vinamilk", "metric_id": 1, "document_id": "AR24", "page_number": 12,
-                          "source_url": "https://example.test/ar24", "source_quote": "Doanh thu 61.824 tỷ đồng"}],
+                          "company": "Example Retailer", "metric_id": 1, "document_id": "AR24", "page_number": 12,
+                          "source_url": "https://example.test/ar24", "source_quote": "Doanh thu 18.624 tỷ đồng"}],
             "documents": [],
         }
         llm = Mock()
@@ -2536,136 +4326,8 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("metric_value, unit, and document_id directly", prompt)
         self.assertIn("without summing or averaging values", prompt)
 
-    def test_catalog_matched_business_query_uses_validated_sql_for_all_metrics_and_years(self):
-        repository = Mock()
-        repository.execute_authorized_analytics.return_value = {
-            "results": [{"metric_name": "domestic_consolidated_net_revenue", "fiscal_year": 2022,
-                         "metric_value": 50704.403447753, "unit": "VND billion",
-                         "evidence_business_metric_ids": [1]}],
-            "evidence": [],
-            "business_evidence": [{"business_metric_id": 1, "company": "Vinamilk", "metric_domain": "market_performance",
-                                   "metric_name": "domestic_consolidated_net_revenue", "metric_label": "Domestic net revenue",
-                                   "fiscal_year": 2022, "metric_value": 50704.403447753, "unit": "VND billion",
-                                   "scope": "Domestic segment", "document_id": "VNM-AR-2023-EN", "page_number": 170,
-                                   "source_url": "https://example.test/ar23", "source_quote": "Net revenue 50,704",
-                                   "source_chunk_id": 21605, "source_chunk_index": 385,
-                                   "source_content_hash": "hash", "extraction_method": "parser_rule",
-                                   "extractor_version": "vinamilk-page-anchors-v3"}],
-            "documents": [],
-        }
-        llm = Mock()
-        question = "Compare domestic and overseas segment net revenue and gross profit in 2022 and 2023. What decision could this inform?"
-
-        result = SQLAnalyticsAgent(repository, llm).run(AgentRequest(question=question, metadata={"role": "admin"}))
-
-        query = repository.execute_authorized_analytics.call_args.args[0]
-        for metric in ("domestic_consolidated_net_revenue", "overseas_market_net_revenue",
-                       "domestic_segment_gross_profit", "overseas_segment_gross_profit"):
-            self.assertIn(metric, query)
-        self.assertIn("fiscal_year IN (2022, 2023)", query)
-        self.assertIn("authorized_business_metrics", query)
-        llm.generate.assert_not_called()
-        self.assertEqual(result.evidence[0].metadata["chunk_id"], 21605)
-        self.assertEqual(result.evidence[0].metadata["chunk_index"], 385)
-
-    def test_market_growth_query_also_fetches_revenue_scale_for_prior_year(self):
-        repository = Mock()
-        repository.execute_authorized_analytics.return_value = {
-            "results": [], "evidence": [], "business_evidence": [], "documents": [],
-        }
-        llm = Mock()
-
-        SQLAnalyticsAgent(repository, llm).run(AgentRequest(
-            question="Should we prioritize overseas or domestic investment based on 2025 revenue growth?",
-            metadata={"role": "admin"},
-        ))
-
-        query = repository.execute_authorized_analytics.call_args.args[0]
-        for metric in ("domestic_consolidated_net_revenue_growth", "overseas_market_net_revenue_growth",
-                       "domestic_consolidated_net_revenue", "overseas_market_net_revenue"):
-            self.assertIn(f"'{metric}'", query)
-        self.assertIn("fiscal_year IN (2024, 2025)", query)
-
-    def test_vietnamese_domestic_vs_overseas_decision_stays_in_market_domain(self):
-        repository = Mock()
-        repository.execute_authorized_analytics.return_value = {
-            "results": [], "evidence": [], "business_evidence": [], "documents": [],
-        }
-        question = "Vinamilk nên ưu tiên đầu tư vào thị trường trong nước hay nước ngoài?"
-
-        SQLAnalyticsAgent(repository, Mock()).run(AgentRequest(
-            question=question, metadata={"role": "admin"},
-        ))
-
-        query = repository.execute_authorized_analytics.call_args.args[0]
-        for metric in (
-            "domestic_consolidated_net_revenue", "domestic_consolidated_net_revenue_growth",
-            "overseas_market_net_revenue", "overseas_market_net_revenue_growth",
-        ):
-            self.assertIn(f"'{metric}'", query)
-        self.assertIn("FROM authorized_business_metrics", query)
-        for unrelated in ("total_raw_water_intake", "recycled_reused_water", "wastewater_discharge"):
-            self.assertNotIn(unrelated, query)
-
-    def test_export_market_question_requests_country_growth_metrics_from_sql(self):
-        repository = Mock()
-        repository.execute_authorized_analytics.return_value = {
-            "results": [], "evidence": [], "business_evidence": [], "documents": [],
-        }
-        llm = Mock()
-
-        SQLAnalyticsAgent(repository, llm).run(AgentRequest(
-            question="Which export markets should Vinamilk prioritize for investment based on growth?",
-            metadata={"role": "admin"},
-        ))
-
-        query = repository.execute_authorized_analytics.call_args.args[0]
-        for metric in ("guinea_export_revenue_growth", "hong_kong_export_revenue_growth",
-                       "japan_export_revenue_growth"):
-            self.assertIn(metric, query)
-        self.assertIn("FROM authorized_business_metrics", query)
-
-    def test_business_summary_query_includes_contiguous_year_span_and_all_domain_metrics(self):
-        repository = Mock()
-        repository.execute_authorized_analytics.return_value = {
-            "results": [], "evidence": [], "business_evidence": [], "documents": [],
-        }
-        llm = Mock()
-        question = "Across the reported 2023–2025 water, emissions and waste indicators, summarize the trend"
-
-        SQLAnalyticsAgent(repository, llm).run(AgentRequest(question=question, metadata={"role": "admin"}))
-
-        query = repository.execute_authorized_analytics.call_args.args[0]
-        self.assertIn("fiscal_year IN (2023, 2024, 2025)", query)
-        for metric in ("total_raw_water_intake", "total_water_consumption", "scope_1_2_ghg_emissions",
-                       "total_waste_generated", "waste_recovered_recycled"):
-            self.assertIn(metric, query)
-        llm.generate.assert_not_called()
-
-    def test_focused_business_question_does_not_expand_to_every_environmental_metric(self):
-        repository = Mock()
-        repository.execute_authorized_analytics.return_value = {
-            "results": [], "evidence": [], "business_evidence": [], "documents": [],
-        }
-        llm = Mock()
-        question = (
-            "Compare Scope 1 and 2 emissions per tonne of dairy products and sugar products "
-            "from 2023 to 2025. What operational review should these trends inform?"
-        )
-
-        SQLAnalyticsAgent(repository, llm).run(AgentRequest(question=question, metadata={"role": "admin"}))
-
-        query = repository.execute_authorized_analytics.call_args.args[0]
-        self.assertIn("reporting_period", query)
-        self.assertIn("value_qualifier", query)
-        for metric in ("scope_1_2_ghg_emissions", "dairy_product_ghg_intensity", "sugar_product_ghg_intensity"):
-            self.assertIn(metric, query)
-        for unrelated in ("total_raw_water_intake", "total_waste_generated", "electricity_saved"):
-            self.assertNotIn(unrelated, query)
-        self.assertIn("fiscal_year IN (2023, 2024, 2025)", query)
-
     def test_classifier_fallback_routes_summary_request_to_report_agent(self):
-        intent = IntentClassifier.fallback("Summarize Vinamilk revenue and profit for 2024")
+        intent = IntentClassifier.fallback("Summarize Example Retailer revenue and profit for 2024")
         self.assertEqual(intent.intent, "report")
         self.assertTrue(intent.needs_sql)
         self.assertTrue(intent.needs_knowledge)
@@ -2704,6 +4366,15 @@ class AgentFlowTest(unittest.TestCase):
             resolve_commerce_decision_domain("What changes could reduce products being unavailable for customers?"),
             "inventory_allocation",
         )
+
+    def test_domain_fallback_matches_common_english_inflections_without_guessing_ambiguous_questions(self):
+        self.assertEqual(
+            resolve_commerce_decision_domain(
+                "Which products repeatedly appear at risk, and what should we verify before replenishing?"
+            ),
+            "inventory_allocation",
+        )
+        self.assertIsNone(resolve_commerce_decision_domain("What should the business prioritize next quarter?"))
 
     def test_report_intent_falls_back_to_hybrid_when_report_agent_is_not_configured(self):
         classifier = Mock()
@@ -2782,26 +4453,26 @@ class AgentFlowTest(unittest.TestCase):
         report.run.assert_not_called()
 
     def test_financial_fact_questions_use_both_verified_analytics_and_documents(self):
-        intent = IntentClassifier.fallback("What was Vinamilk's revenue in 2024?")
+        intent = IntentClassifier.fallback("What was Example Retailer's revenue in 2024?")
         self.assertEqual(intent.intent, "hybrid")
         self.assertTrue(intent.needs_sql)
         self.assertTrue(intent.needs_knowledge)
 
     def test_single_period_revenue_and_profit_summary_uses_guarded_report_agent(self):
         summary = IntentClassifier.fallback(
-            "What were Vinamilk's revenue and profit after tax in 2024?"
+            "What were Example Retailer's revenue and profit after tax in 2024?"
         )
         self.assertEqual(summary.intent, "report")
         comparison = IntentClassifier.fallback(
-            "Compare Vinamilk's revenue and profit after tax across years"
+            "Compare Example Retailer's revenue and profit after tax across years"
         )
         self.assertEqual(comparison.intent, "hybrid")
         year_comparison = IntentClassifier.fallback(
-            "What were Vinamilk's revenue and profit after tax in 2024 vs 2023?"
+            "What were Example Retailer's revenue and profit after tax in 2024 vs 2023?"
         )
         self.assertEqual(year_comparison.intent, "hybrid")
         multiple_periods = IntentClassifier.fallback(
-            "What were Vinamilk's revenue and profit after tax in 2024 and 2023?"
+            "What were Example Retailer's revenue and profit after tax in 2024 and 2023?"
         )
         self.assertEqual(multiple_periods.intent, "hybrid")
 
@@ -2825,6 +4496,8 @@ class AgentFlowTest(unittest.TestCase):
         rag = Mock()
         rag.generate_answer.return_value = RAGResult(
             answer="Reported result [S1]", source_ids=["S1"],
+            generation_provider="huggingface_inference",
+            token_usage={"input_tokens": 24, "output_tokens": 8, "total_tokens": 32},
             contexts=[{"source_id": "S1", "document_name": "Annual report", "chunk_index": 2,
                        "content": "Net revenue 100", "metadata": {"page_number": 4},
                        "retrieval_score": 0.9, "retrieval_method": "hybrid"}],
@@ -2833,6 +4506,8 @@ class AgentFlowTest(unittest.TestCase):
         result = agent.run(AgentRequest(question="revenue", user_id="analyst", metadata={"role": "finance_analyst"}))
         rag.generate_answer.assert_called_once_with("revenue", limit=10, company=None, roles=["finance_analyst"])
         self.assertEqual(result.evidence[0].citation_id, "S1")
+        self.assertEqual(result.metadata["generation_provider"], "huggingface_inference")
+        self.assertEqual(result.metadata["token_usage"]["total"]["total_tokens"], 32)
 
     def test_policy_qa_retrieval_is_limited_to_the_resolved_commerce_domain(self):
         rag = Mock()
@@ -2852,6 +4527,23 @@ class AgentFlowTest(unittest.TestCase):
             "evidence_class": "company_policy_reference",
         })
         self.assertEqual(rag.generate_answer.call_args.kwargs["retrieved_contexts"], [])
+
+    def test_knowledge_agent_filters_explicit_page_before_ranking(self):
+        rag = Mock()
+        rag.retrieve_contexts.return_value = []
+        rag.generate_answer.return_value = RAGResult(answer="No matching passage [S1]")
+        question = "What exact restocking prompt appears in the screenshot on page 11 of the Shopee inventory guide?"
+
+        KnowledgeAgent(rag).run(AgentRequest(
+            question=question,
+            metadata={"role": "analyst", "business_decision_domain": "inventory_allocation"},
+        ))
+
+        self.assertEqual(rag.retrieve_contexts.call_args.kwargs["metadata_filter"], {
+            "page_number": 11,
+            "commerce_reference_active": True,
+            "knowledge_domains": ["inventory_allocation"],
+        })
 
     def test_commerce_document_qa_reranks_scoped_policy_before_external_methods(self):
         policy = {
@@ -2904,13 +4596,13 @@ class AgentFlowTest(unittest.TestCase):
     def test_knowledge_agent_preserves_uncited_retrieved_context_for_report_stage(self):
         rag = Mock()
         rag.generate_answer.return_value = RAGResult(
-            answer="Revenue was 52.6 trillion VND [S1]", source_ids=["S1"],
+            answer="Revenue was 32.6 trillion VND [S1]", source_ids=["S1"],
             contexts=[
-                {"source_id": "S1", "document_name": "Annual report", "chunk_index": 2,
-                 "content": "Audited statement revenue 52.6T", "metadata": {"page_number": 92},
+                {"source_id": "S1", "chunk_id": "AR-2024::chunk::2", "document_name": "Annual report", "chunk_index": 2,
+                 "content": "Audited statement revenue 32.6T", "metadata": {"page_number": 92},
                  "retrieval_score": 0.9, "retrieval_method": "hybrid"},
                 {"source_id": "S7", "document_name": "Annual report", "chunk_index": 27,
-                 "content": "Headline total consolidated revenue 61.824T", "metadata": {"page_number": 12},
+                 "content": "Headline total consolidated revenue 18.624T", "metadata": {"page_number": 12},
                  "retrieval_score": 0.8, "retrieval_method": "hybrid"},
             ],
         )
@@ -2918,6 +4610,7 @@ class AgentFlowTest(unittest.TestCase):
             question="Summarize revenue", metadata={"role": "finance_analyst"}
         ))
         self.assertEqual([item.citation_id for item in result.evidence], ["S1", "S7"])
+        self.assertEqual(result.evidence[0].metadata["retrieval_chunk_id"], "AR-2024::chunk::2")
 
     def test_report_knowledge_path_retrieves_evidence_without_first_generation(self):
         rag = Mock()
@@ -2940,7 +4633,7 @@ class AgentFlowTest(unittest.TestCase):
         rag.retrieve_contexts.return_value = []
 
         KnowledgeAgent(rag).run(AgentRequest(
-            question="Should Vinamilk allocate more capital to overseas markets?",
+            question="Should Example Retailer allocate more capital to overseas markets?",
             metadata={"role": "admin", "evidence_only": True, "decision_support": True},
         ))
 
@@ -2960,55 +4653,6 @@ class AgentFlowTest(unittest.TestCase):
             "commerce_reference_active": True,
             "knowledge_domains": ["inventory_allocation"],
         })
-
-    def test_decision_domain_reranking_filters_other_domains_and_prefers_numeric_tables(self):
-        contexts = [
-            {"source_id": "S1", "content": "Employee headcount: 8,000.",
-             "metadata": {"layout_type": "table"}},
-            {"source_id": "S2", "content": "Approximate market share lead over the second player: 30 percentage points.",
-             "metadata": {"layout_type": "text"}},
-            {"source_id": "S3", "content": "Domestic consolidated net revenue 2024: VND 25,000 billion.",
-             "metadata": {"layout_type": "table"}},
-            {"source_id": "S4", "content": "Market share and domestic revenue are discussed without values.",
-             "metadata": {"layout_type": "text"}},
-        ]
-
-        ranked = _rank_business_decision_evidence(
-            contexts,
-            "Compare market share lead and domestic revenue in 2024",
-            "market_performance",
-            3,
-        )
-
-        self.assertEqual(len(ranked), 3)
-        self.assertNotIn("Employee headcount", " ".join(item["content"] for item in ranked))
-        self.assertEqual(ranked[0]["content"], contexts[2]["content"])
-        self.assertEqual(ranked[1]["content"], contexts[1]["content"])
-        self.assertEqual([item["source_id"] for item in ranked], ["S1", "S2", "S3"])
-
-    def test_decision_domain_fetches_authorized_candidate_pool_then_limits_prompt_context(self):
-        rag = Mock()
-        rag.retrieve_contexts.return_value = [
-            {"source_id": "S1", "document_name": "HR report", "chunk_index": 1,
-             "content": "Employee headcount: 8,000.", "metadata": {"layout_type": "table"},
-             "retrieval_score": 0.99, "retrieval_method": "hybrid"},
-            {"source_id": "S2", "document_name": "Annual report", "chunk_index": 2,
-             "content": "Domestic consolidated net revenue 2024: VND 25,000 billion.",
-             "metadata": {"layout_type": "table"}, "retrieval_score": 0.7, "retrieval_method": "hybrid"},
-        ]
-
-        result = KnowledgeAgent(rag).run(AgentRequest(
-            question="Compare domestic consolidated net revenue in 2024",
-            user_id="analyst",
-            metadata={"role": "finance_analyst", "company": "Vinamilk",
-                      "evidence_only": True, "decision_support": True,
-                      "business_decision_domain": "market_performance"},
-        ))
-
-        self.assertEqual(rag.retrieve_contexts.call_args.kwargs["limit"], 15)
-        self.assertEqual(rag.retrieve_contexts.call_args.kwargs["roles"], ["finance_analyst"])
-        self.assertEqual(len(result.evidence), 1)
-        self.assertIn("Domestic consolidated net revenue", result.evidence[0].content)
 
     def test_knowledge_agent_routes_explicit_parent_retrieval(self):
         rag = Mock()
@@ -3047,6 +4691,18 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(router.last_destination, "report")
         classifier.classify.assert_not_called()
         report.run.assert_called_once()
+
+    def test_router_marks_natural_conditional_actions_as_suggestion_mode(self):
+        question = "Suggest up to three conditional next actions for nationwide logistics."
+        classifier, report = Mock(), Mock()
+        report.run.return_value = AgentResult(answer="bounded actions", agent="report")
+        unused = Mock()
+        request = AgentRequest(question=question)
+        result = AgentRouter(classifier, unused, unused, unused, unused, report).route(request)
+
+        self.assertEqual(result.agent, "report")
+        self.assertTrue(report.run.call_args.args[0].metadata["decision_suggestions"])
+        classifier.classify.assert_not_called()
 
     def test_router_auto_detects_domain_before_commerce_decision_analysis(self):
         classifier, report = Mock(), Mock()
@@ -3096,6 +4752,64 @@ class AgentFlowTest(unittest.TestCase):
         self.assertTrue(knowledge.run.call_args.args[0].metadata["policy_reference_only"])
         report.run.assert_not_called()
 
+    def test_source_framed_promotion_planning_question_uses_knowledge_agent(self):
+        question = "Theo tài liệu, nên lập và theo dõi kế hoạch khuyến mãi như thế nào?"
+        classifier, knowledge, report = Mock(), Mock(), Mock()
+        knowledge.run.return_value = AgentResult(answer="Review the planning guidance [S1]", agent="knowledge")
+        unused = Mock()
+        router = AgentRouter(classifier, knowledge, unused, unused, unused, report)
+
+        result = router.route(AgentRequest(question=question, metadata={
+            "business_decision_domain": "promotion_planning",
+        }))
+
+        self.assertEqual(result.agent, "knowledge")
+        self.assertEqual(router.last_destination, "knowledge")
+        self.assertEqual(
+            knowledge.run.call_args.args[0].metadata["business_decision_domain"],
+            "promotion_planning",
+        )
+        report.run.assert_not_called()
+        classifier.classify.assert_not_called()
+
+    def test_source_framed_decision_criteria_question_stays_on_knowledge_path(self):
+        question = "Theo tài liệu, cần so sánh những yếu tố nào trước khi đổi mạng lưới giao hàng toàn quốc?"
+        classifier, knowledge, report = Mock(), Mock(), Mock()
+        knowledge.run.return_value = AgentResult(answer="Compare published criteria [S1]", agent="knowledge")
+        unused = Mock()
+        router = AgentRouter(classifier, knowledge, unused, unused, unused, report)
+
+        result = router.route(AgentRequest(question=question, metadata={
+            "business_decision_domain": "nationwide_logistics",
+        }))
+
+        self.assertEqual(result.agent, "knowledge")
+        self.assertEqual(router.last_destination, "knowledge")
+        self.assertEqual(
+            knowledge.run.call_args.args[0].metadata["business_decision_domain"],
+            "nationwide_logistics",
+        )
+        report.run.assert_not_called()
+        classifier.classify.assert_not_called()
+
+    def test_explicit_commerce_decision_form_keeps_how_to_question_on_report_path(self):
+        question = "Theo tài liệu, cần làm gì để đánh giá hiệu quả trước khi mở rộng khuyến mãi?"
+        classifier, knowledge, report = Mock(), Mock(), Mock()
+        report.run.return_value = AgentResult(answer="SQL plus source guidance [C1][S1]", agent="report")
+        unused = Mock()
+        router = AgentRouter(classifier, knowledge, unused, unused, unused, report)
+
+        result = router.route(AgentRequest(question=question, metadata={
+            "business_decision_domain": "promotion_planning",
+            "commerce_decision_support": True,
+        }))
+
+        self.assertEqual(result.agent, "report")
+        self.assertEqual(router.last_destination, "report")
+        report.run.assert_called_once()
+        knowledge.run.assert_not_called()
+        classifier.classify.assert_not_called()
+
     def test_unseen_commerce_method_question_uses_shared_intent_and_domain_filtered_knowledge(self):
         question = "Explain how regional delivery coordination works."
         classifier, knowledge, report = Mock(), Mock(), Mock()
@@ -3131,6 +4845,22 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(result.agent, "report")
         classifier.classify.assert_not_called()
         self.assertTrue(report.run.call_args.args[0].metadata["decision_support"])
+        knowledge.run.assert_not_called()
+
+    def test_pre_action_data_question_routes_through_commerce_report_without_special_ui_mode(self):
+        question = "Trước khi chuyển hàng giữa các nhóm có stockout và overstock, cần kiểm tra dữ liệu nào?"
+        classifier, knowledge, report = Mock(), Mock(), Mock()
+        classifier.classify.return_value = IntentClassifier.fallback(question)
+        report.run.return_value = AgentResult(answer="Cần đối chiếu dữ liệu theo SKU [C1][L1]", agent="report")
+        unused = Mock()
+
+        result = AgentRouter(classifier, knowledge, unused, unused, unused, report).route(
+            AgentRequest(question=question),
+        )
+
+        self.assertEqual(result.agent, "report")
+        self.assertEqual(result.metadata["business_decision_domain"], "inventory_allocation")
+        report.run.assert_called_once()
         knowledge.run.assert_not_called()
 
     def test_router_keeps_general_inventory_method_question_on_knowledge_path(self):
@@ -3223,6 +4953,43 @@ class AgentFlowTest(unittest.TestCase):
         knowledge.run.assert_called_once()
         report.run.assert_not_called()
 
+    def test_router_keeps_exact_source_page_text_question_on_knowledge_path(self):
+        question = "What exact restocking prompt appears in the screenshot on page 11 of the Shopee inventory guide?"
+        classifier, knowledge, report = Mock(), Mock(), Mock()
+        classifier.classify.return_value = IntentResult(
+            intent="report", needs_knowledge=True, needs_sql=True,
+            output_mode="answer", confidence=0.9,
+        )
+        knowledge.run.return_value = AgentResult(answer="The screenshot says ... [S1]", agent="knowledge")
+        report.run.return_value = AgentResult(answer="Unexpected SQL route [C1]", agent="report")
+        unused = Mock()
+        router = AgentRouter(classifier, knowledge, unused, unused, unused, report)
+
+        result = router.route(AgentRequest(question=question))
+
+        self.assertEqual(result.agent, "knowledge")
+        self.assertEqual(router.last_destination, "knowledge")
+        self.assertEqual(
+            knowledge.run.call_args.args[0].metadata["business_decision_domain"],
+            "inventory_allocation",
+        )
+        classifier.classify.assert_not_called()
+        report.run.assert_not_called()
+
+    def test_source_method_applied_to_current_inventory_data_still_uses_report(self):
+        question = "According to Amazon, based on current inventory flags, what should we verify before replenishing?"
+        classifier, knowledge, report = Mock(), Mock(), Mock()
+        report.run.return_value = AgentResult(answer="Check the current data with the guide [C1][S1]", agent="report")
+        unused = Mock()
+        router = AgentRouter(classifier, knowledge, unused, unused, unused, report)
+
+        result = router.route(AgentRequest(question=question))
+
+        self.assertEqual(result.agent, "report")
+        self.assertEqual(router.last_destination, "report")
+        report.run.assert_called_once()
+        knowledge.run.assert_not_called()
+
     def test_router_sends_policy_only_questions_to_knowledge_not_commerce_sql(self):
         question = "Theo chính sách giả lập về tồn kho, cần kiểm tra điều gì trước khi đề xuất điều chuyển?"
         classifier, knowledge, report = Mock(), Mock(), Mock()
@@ -3252,307 +5019,6 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(result.agent, "report")
         report.run.assert_called_once()
         knowledge.run.assert_not_called()
-
-    def test_business_decision_hybrid_uses_report_agent_to_synthesize_evidence(self):
-        question = "Vinamilk nên ưu tiên đầu tư vào thị trường trong nước hay nước ngoài?"
-        report = Mock()
-        report.run.return_value = AgentResult(answer="decision synthesis", agent="report")
-        unused = Mock()
-        classifier = Mock()
-        classifier.classify.return_value = IntentClassifier.fallback(question)
-        router = AgentRouter(classifier, unused, unused, unused, unused, report)
-
-        result = router.route(AgentRequest(question=question))
-
-        self.assertEqual(result.agent, "report")
-        report.run.assert_called_once()
-        unused.run.assert_not_called()
-
-    def test_router_keeps_multi_year_business_metric_questions_on_report_path(self):
-        question = (
-            "Compare FY2023–FY2025 total Scope 1 and 2 emissions, Scope 1 emissions and Scope 2 emissions, "
-            "and dairy product emissions intensity and sugar product emissions intensity. Which energy or process "
-            "review is best supported by the reported trend?"
-        )
-        report, unused, classifier = Mock(), Mock(), Mock()
-        report.run.return_value = AgentResult(answer="decision report", agent="report")
-        classifier.classify.return_value = IntentResult(
-            intent="analytics", needs_knowledge=False, needs_sql=True,
-            output_mode="answer", confidence=0.9,
-        )
-        router = AgentRouter(classifier, unused, unused, unused, unused, report)
-
-        result = router.route(AgentRequest(question=question))
-
-        self.assertEqual(result.agent, "report")
-        self.assertEqual(router.last_destination, "report")
-        classifier.classify.assert_not_called()
-        report.run.assert_called_once()
-        unused.run.assert_not_called()
-
-    def test_router_directs_waste_pilot_question_to_report_without_intent_provider(self):
-        question = (
-            "Use FY2023–FY2025 total waste generated, waste recovered/recycled, and waste treated/disposed "
-            "to frame a source-reduction or recovery pilot. Do not choose a plant from group totals. "
-            "Specify the measurable evidence a pilot must establish before management considers scaling it."
-        )
-        report, classifier = Mock(), Mock()
-        report.run.return_value = AgentResult(answer="waste decision", agent="report")
-        unused = Mock()
-        router = AgentRouter(classifier, unused, unused, unused, unused, report)
-
-        result = router.route(AgentRequest(question=question))
-
-        self.assertEqual(result.agent, "report")
-        self.assertEqual(router.last_destination, "report")
-        classifier.classify.assert_not_called()
-        report.run.assert_called_once()
-
-    def test_business_decisions_share_one_dynamic_evidence_synthesis(self):
-        rows, evidence = [], []
-        for index, (year, value) in enumerate(((2024, 100), (2025, 95)), start=1):
-            rows.append({
-                "business_metric_id": index,
-                "metric_name": "farmer_raw_milk_purchased",
-                "metric_label": "Raw fresh milk purchased from farming households",
-                "fiscal_year": year,
-                "metric_value": value,
-                "unit": "tonnes",
-            })
-            evidence.append(Evidence(
-                citation_id=f"M{index}",
-                source_type="verified_metric",
-                source=f"Sustainability report FY{year}",
-                content=f"Raw fresh milk purchased was {value} tonnes.",
-                metadata={**rows[-1], "page_number": 20},
-            ))
-
-        analytics, knowledge, llm = Mock(), Mock(), Mock()
-        analytics.run.return_value = AgentResult(
-            answer="", agent="analytics", evidence=evidence,
-            data={"business_metrics": rows},
-        )
-        llm.generate.return_value = (
-            "Recommended next move: compare accepted milk by source and year before recommending a change "
-            "[M1] [M2]."
-        )
-
-        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
-            question="Should management review farmer raw milk purchased across FY2024 and FY2025?",
-            metadata={"role": "admin"},
-        ))
-
-        prompt = llm.generate.call_args.args[0]
-        self.assertIn("Use the reporting periods present in the supplied evidence", prompt)
-        self.assertNotIn("FY2023", prompt)
-        self.assertIn("Recommended next move:", result.answer)
-        self.assertEqual(result.metadata["decision_analysis"], "shared_evidence_synthesis")
-        analytics_request = analytics.run.call_args.args[0]
-        self.assertEqual(analytics_request.metadata["business_decision_domain"], "milk_supply")
-        knowledge.run.assert_not_called()
-
-    def test_router_keeps_explicit_metric_visualization_on_dashboard_route(self):
-        question = "Create a chart of FY2023–FY2025 total waste generated and waste recovered."
-        report, dashboard, classifier = Mock(), Mock(), Mock()
-        dashboard.run.return_value = AgentResult(answer="chart", agent="dashboard")
-        classifier.classify.return_value = IntentResult(
-            intent="dashboard", needs_knowledge=False, needs_sql=True,
-            output_mode="dashboard", confidence=0.9,
-        )
-        unused = Mock()
-        router = AgentRouter(classifier, unused, unused, unused, dashboard, report)
-
-        result = router.route(AgentRequest(question=question))
-
-        self.assertEqual(result.agent, "dashboard")
-        classifier.classify.assert_called_once()
-        dashboard.run.assert_called_once()
-        report.run.assert_not_called()
-
-    def test_decision_report_abstains_when_requested_segment_metrics_are_incomplete(self):
-        question = "Compare domestic and overseas segment net revenue and gross profit. What decision could this inform?"
-        knowledge = Mock()
-        analytics = Mock()
-        analytics.run.return_value = AgentResult(answer="metrics", agent="analytics", evidence=[
-            Evidence(citation_id="M1", source_type="verified_metric", source="FY2023 segment gross profit",
-                     content="Audited segment gross profit was reported.")
-        ], data={"business_metrics": [{"metric_name": "domestic_segment_gross_profit"}]})
-        llm = Mock()
-
-        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
-            AgentRequest(question=question)
-        )
-
-        analytics.run.assert_called_once()
-        self.assertTrue(result.metadata["insufficient_context"])
-        self.assertIn("could not find verified", result.answer)
-        knowledge.run.assert_not_called()
-        llm.generate.assert_not_called()
-
-
-
-
-
-    def test_decision_suggestions_use_latest_verified_years_and_require_conditional_gates(self):
-        rows, evidence = [], []
-        metric_id = 0
-        for name, label, unit, values in (
-            ("total_raw_milk_supply", "Total raw-milk supply", "tonnes", (2022, 2023, 2024, 2025)),
-            ("farmer_raw_milk_purchased", "Farmer-purchased raw milk", "tonnes", (2023, 2024, 2025)),
-        ):
-            for year in values:
-                metric_id += 1
-                rows.append({"metric_name": name, "metric_label": label, "fiscal_year": year,
-                             "reporting_period": "FY", "metric_value": year * 100,
-                             "unit": unit, "business_metric_id": metric_id, "scope": "Consolidated"})
-                evidence.append(Evidence(citation_id=f"M{metric_id}", source_type="verified_metric",
-                                         source=f"FY{year} {label}", content=f"{year * 100} {unit}",
-                                         metadata={"business_metric_id": metric_id}))
-
-        knowledge, analytics, llm = Mock(), Mock(), Mock()
-        analytics.run.return_value = AgentResult(answer="metrics", agent="analytics", evidence=evidence,
-                                                 data={"business_metrics": rows})
-        llm.generate.return_value = (
-            "If farmer-sourced supply is reliable and its approved cost-and-quality hurdle is met, not supplied in these sources, "
-            "run a bounded sourcing pilot; otherwise collect supplier, quality, and delivered-cost data. [M6]"
-        )
-        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
-            question="Generate conditional management actions from verified annual KPIs.",
-            metadata={"role": "admin", "business_decision_domain": "milk_supply",
-                      "decision_suggestions": True},
-        ))
-
-        prompt = llm.generate.call_args.args[0]
-        instructions = llm.generate.call_args.kwargs["instructions"]
-        self.assertIn("latest available annual periods [2023, 2024, 2025]", prompt)
-        self.assertNotIn("FY2022", prompt)
-        self.assertNotIn("You are a source-grounded", prompt)
-        self.assertIn("Write every action in this exact form", instructions)
-        self.assertIn("literal words If, then and otherwise in every action", instructions)
-        self.assertIn("Do not put a number, percentage, or comparison of prior-year values inside a condition", instructions)
-        self.assertIn("Never use an increase, decrease, greater-than/lower-than comparison", instructions)
-        self.assertIn("do not invent a threshold", instructions)
-        self.assertIn("management-approved operational hurdle", instructions)
-        self.assertIn("[M6]", result.answer)
-        self.assertEqual(result.metadata["analysis_periods"], [2023, 2024, 2025])
-        self.assertEqual(result.metadata["decision_analysis"], "conditional_recommendations_from_recent_verified_kpis")
-        self.assertEqual(len(result.evidence), 6)
-        knowledge.run.assert_not_called()
-
-        llm.reset_mock()
-        llm.generate.side_effect = RateLimitError(
-            "quota", response=httpx.Response(429, request=httpx.Request("POST", "https://groq.example")), body={},
-        )
-        with patch.dict(os.environ, {
-            "HUGGINGFACE_LLM_FALLBACK": "true", "HUGGINGFACE_API_KEY": "test-token",
-        }), patch("core.llm.provider_fallback.HuggingFaceProvider") as fallback_factory:
-            fallback = fallback_factory.return_value
-            fallback.generate.return_value = (
-            "If farmer-sourced supply remains reliable and the approved hurdle, not supplied by the evidence, is met, run a bounded pilot; "
-            "otherwise collect delivered-cost data. [M6]"
-            )
-            fallback_result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
-                question="Generate conditional management actions from verified annual KPIs.",
-                metadata={"role": "admin", "business_decision_domain": "milk_supply",
-                          "decision_suggestions": True},
-            ))
-        fallback.generate.assert_called_once()
-        fallback.close.assert_called_once()
-        self.assertIn("[M6]", fallback_result.answer)
-        self.assertEqual(fallback_result.metadata["generation_provider"], "huggingface_inference")
-
-        llm.reset_mock()
-        llm.generate.side_effect = None
-        llm.generate.return_value = (
-            "If farmer-sourced supply is reliable and its approved cost-and-quality hurdle is met, not supplied in these sources, "
-            "run a bounded sourcing pilot; otherwise collect supplier, quality, and delivered-cost data. [M6]"
-        )
-
-        llm.reset_mock()
-        llm.generate.side_effect = [
-            "If the trend continues, run a bounded market pilot.",
-            "If the trend continues, run a bounded market pilot after management sets the approved hurdle, not supplied in the evidence. [M6]",
-        ]
-        repaired = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
-            question="Generate conditional management actions from verified annual KPIs.",
-            metadata={"role": "admin", "business_decision_domain": "milk_supply",
-                      "decision_suggestions": True},
-        ))
-        self.assertIn("[M6]", repaired.answer)
-        self.assertTrue(repaired.metadata["citation_repair_attempted"])
-        self.assertEqual(llm.generate.call_count, 2)
-
-        llm.reset_mock()
-        llm.generate.side_effect = None
-        llm.generate.return_value = "If supplier quality exceeds 15.5%, then expand the program. [M7]"
-        rejected = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
-            question="Generate conditional management actions from verified annual KPIs.",
-            metadata={"role": "admin", "business_decision_domain": "milk_supply",
-                      "decision_suggestions": True},
-        ))
-        self.assertTrue(rejected.metadata["decision_threshold_validation_failed"])
-        self.assertEqual(rejected.metadata["decision_analysis"], "unsupported_numeric_decision_gate")
-        self.assertIn("khuyến nghị", rejected.answer.casefold())
-        self.assertEqual(llm.generate.call_count, 2)
-        self.assertIn("historical values as a comparison gate", llm.generate.call_args.args[0])
-
-        analytics.run.return_value = AgentResult(answer="metrics", agent="analytics", evidence=evidence,
-                                                 data={"business_metrics": rows[:-1]})
-        llm.reset_mock()
-        incomplete = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
-            question="Generate conditional management actions from verified annual KPIs.",
-            metadata={"role": "admin", "business_decision_domain": "milk_supply",
-                      "decision_suggestions": True},
-        ))
-        self.assertTrue(incomplete.metadata["insufficient_context"])
-        self.assertEqual(incomplete.metadata["decision_analysis"], "insufficient_recent_metric_coverage")
-        llm.generate.assert_not_called()
-
-    def test_environmental_decision_suggestions_cover_distinct_available_topics(self):
-        analytics, knowledge, llm = Mock(), Mock(), Mock()
-        analytics.run.return_value = AgentResult(
-            answer="", agent="analytics", evidence=[], data={"business_metrics": []},
-        )
-        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(AgentRequest(
-            question="Generate conditional management actions from verified annual KPIs.",
-            metadata={"role": "admin", "business_decision_domain": "environmental_performance",
-                      "decision_suggestions": True},
-        ))
-
-        self.assertTrue(result.metadata["insufficient_context"])
-        self.assertEqual(result.metadata["decision_analysis"], "insufficient_recent_metric_coverage")
-        analytics.run.assert_called_once()
-        knowledge.run.assert_not_called()
-        llm.generate.assert_not_called()
-
-    def test_decision_hurdle_disclosure_can_be_shared_in_a_preface(self):
-        disclosure = (
-            "The cited reports do not provide a management-approved operational hurdle; "
-            "management must set one before judging any pilot."
-        )
-        actions = (
-            "If a future audit confirms a controllable opportunity and the management-approved hurdle is met, "
-            "then run a bounded pilot; otherwise gather site data. Evidence: [M1]"
-        )
-
-        self.assertFalse(_has_undisclosed_approved_hurdle(disclosure + "\n\n" + actions))
-        self.assertTrue(_has_undisclosed_approved_hurdle(actions))
-
-    def test_named_environmental_intervention_must_be_in_cited_source(self):
-        answer = "If a site audit confirms a waste opportunity, then pilot composting; otherwise assess options [M1]."
-        evidence = [Evidence(citation_id="M1", source_type="verified_metric", source="SR25 p.139",
-                             content="Total waste generated was reported.")]
-        self.assertTrue(_has_uncited_environmental_intervention(answer, evidence))
-        supported_evidence = [Evidence(
-            citation_id="M1", source_type="verified_metric", source="SR25 p.139",
-            content="Total waste generated was reported. The report describes composting as an existing practice.",
-        )]
-        self.assertFalse(_has_uncited_environmental_intervention(answer, supported_evidence))
-        illustrative = (
-            "If an audit confirms an emissions opportunity (e.g., improved energy efficiency or fuel switching), "
-            "then conduct a pilot; otherwise gather evidence [M1]."
-        )
-        self.assertTrue(_has_uncited_environmental_intervention(illustrative, evidence))
 
     def test_decision_suggestion_rejects_numeric_comparator_not_reported_as_a_hurdle(self):
         evidence = [Evidence(citation_id="M1", source_type="verified_metric",
@@ -3619,44 +5085,6 @@ class AgentFlowTest(unittest.TestCase):
         )
         self.assertIsNone(_report_validation_failure(reported_values, evidence, {"M1"}, question))
 
-    def test_decision_report_prompt_preserves_metric_definitions_and_blocks_unsupported_calculations(self):
-        knowledge, llm = Mock(), Mock()
-        knowledge.run.return_value = AgentResult(answer="[M1]", agent="hybrid", evidence=[
-            Evidence(citation_id="M1", source_type="verified_metric", source="FY2025 segment revenue",
-                     content="Domestic net revenue was reported."),
-        ])
-        llm.generate.return_value = "Recommended next move: compare like-for-like evidence before reallocating. [M1]"
-
-        ReportAgent(knowledge=knowledge, llm=llm).run(AgentRequest(
-            question="Should we reallocate investment between the domestic and overseas markets?",
-        ))
-
-        prompt = llm.generate.call_args.args[0]
-        self.assertIn("similarly named measures are not interchangeable", prompt)
-        self.assertIn("Do not calculate ratios, growth rates, shares, or changes from raw observations", prompt)
-        self.assertIn("Never turn a historical observation into a future threshold", prompt)
-
-    def test_decision_report_repairs_an_unsourced_numeric_gate_before_returning(self):
-        knowledge, llm = Mock(), Mock()
-        knowledge.run.return_value = AgentResult(answer="Channel revenue evidence [M1]", agent="hybrid", evidence=[
-            Evidence(citation_id="M1", source_type="verified_metric", source="FY2025 revenue",
-                     content="Direct export revenue grew 16.5%; overseas subsidiary revenue grew 12.9%."),
-        ])
-        llm.generate.side_effect = [
-            "If subsidiary growth exceeds exports by 5% for two years, then shift resources. [M1]",
-            "Recommended next move: compare like-for-like profit, cost and capital evidence before shifting "
-            "resources. [M1]",
-        ]
-
-        result = ReportAgent(knowledge=knowledge, llm=llm).run(AgentRequest(
-            question="Should we prioritize one international sales channel over another?",
-        ))
-
-        self.assertEqual(llm.generate.call_count, 2)
-        self.assertIn("approved target or hurdle", llm.generate.call_args.args[0])
-        self.assertIn("Recommended next move", result.answer)
-        self.assertTrue(result.metadata["decision_validation_repair_attempted"])
-
     def test_decision_threshold_must_be_in_the_cited_evidence_for_that_action(self):
         evidence = [
             Evidence(citation_id="M1", source_type="verified_metric", source="FY2025 waste",
@@ -3679,29 +5107,6 @@ class AgentFlowTest(unittest.TestCase):
         self.assertTrue(_has_unsupported_numeric_decision_gate(
             "If OEE exceeds 96%, then expand the program. [M3]", observed_target_result,
         ))
-
-
-
-
-
-    def test_report_does_not_substitute_document_passages_when_role_cannot_see_metrics(self):
-        question = (
-            "Compare raw fresh milk purchased from farming households in 2023, 2024 and 2025. "
-            "What should leadership investigate before changing procurement?"
-        )
-        knowledge, analytics, llm = Mock(), Mock(), Mock()
-        analytics.run.return_value = AgentResult(answer="No verified rows", agent="analytics", evidence=[],
-                                                 data={"business_metrics": []})
-
-        result = ReportAgent(knowledge=knowledge, analytics=analytics, llm=llm).run(
-            AgentRequest(question=question, metadata={"role": "finance_analyst"})
-        )
-
-        self.assertTrue(result.metadata["insufficient_context"])
-        self.assertEqual(result.metadata["decision_analysis"], "missing_role_visible_verified_metrics")
-        self.assertIn("I will not substitute a similar figure", result.answer)
-        knowledge.run.assert_not_called()
-        llm.generate.assert_not_called()
 
 
 
@@ -3739,36 +5144,12 @@ class AgentFlowTest(unittest.TestCase):
             ("Compare document counts by domain", "analytics"),
             ("What was revenue in 2024?", "hybrid"),
             ("Show the dashboard", "dashboard"),
+            ("Generate conditional management actions for inventory allocation", "report"),
         ]
         for question, selected_agent in cases:
             with self.subTest(selected_agent=selected_agent):
                 classifier = Mock()
                 classifier.classify.return_value = IntentClassifier.fallback(question)
-                agents = {
-                    name: Mock(run=Mock(return_value=AgentResult(answer=name, agent=name)))
-                    for name in ("knowledge", "analytics", "hybrid", "dashboard")
-                }
-                router = AgentRouter(
-                    classifier,
-                    agents["knowledge"],
-                    agents["analytics"],
-                    agents["hybrid"],
-                    agents["dashboard"],
-                )
-                result = router.route(AgentRequest(question=question))
-                self.assertEqual(result.agent, selected_agent)
-                agents[selected_agent].run.assert_called_once()
-                for name, agent in agents.items():
-                    if name != selected_agent:
-                        agent.run.assert_not_called()
-
-    def test_all_twelve_proposal_business_cases_reach_the_expected_route(self):
-        dataset = json.loads((Path(__file__).resolve().parents[1] / "data/evaluation/archive/agents/proposal_business_route_cases.json").read_text())
-        for case in dataset["cases"]:
-            business_case, question, expected_route = case["id"], case["question"], case["expected_route"]
-            with self.subTest(business_case=business_case):
-                classifier = Mock()
-                classifier.classify.side_effect = IntentClassifier.fallback
                 agents = {
                     name: Mock(run=Mock(return_value=AgentResult(answer=name, agent=name)))
                     for name in ("knowledge", "analytics", "hybrid", "dashboard", "report")
@@ -3779,15 +5160,13 @@ class AgentFlowTest(unittest.TestCase):
                     agents["analytics"],
                     agents["hybrid"],
                     agents["dashboard"],
-                    agents["report"],
+                    report_agent=agents["report"],
                 )
-
                 result = router.route(AgentRequest(question=question))
-
-                self.assertEqual(result.agent, expected_route)
-                agents[expected_route].run.assert_called_once()
+                self.assertEqual(result.agent, selected_agent)
+                agents[selected_agent].run.assert_called_once()
                 for name, agent in agents.items():
-                    if name != expected_route:
+                    if name != selected_agent:
                         agent.run.assert_not_called()
 
     def test_report_rejects_unprovided_citation_ids(self):
@@ -3856,7 +5235,7 @@ class AgentFlowTest(unittest.TestCase):
         ])
         analytics = Mock()
         analytics.run.return_value = AgentResult(answer="", agent="analytics", evidence=[
-            Evidence(citation_id="M1", source_type="verified_metric", source="Vinamilk 2021 · Total assets",
+            Evidence(citation_id="M1", source_type="verified_metric", source="Example Retailer 2021 · Total assets",
                      content="Total assets increased from 10 to 12 billion VND.",
                      metadata={"metric_name": "total_assets", "fiscal_year": 2021})
         ], data={"financial": []})
@@ -3876,13 +5255,13 @@ class AgentFlowTest(unittest.TestCase):
     def test_report_financial_summary_uses_matching_metric_without_inventing_reconciliation(self):
         hybrid = Mock()
         hybrid.run.return_value = AgentResult(answer="Revenue [S1]", agent="hybrid", evidence=[
-            Evidence(citation_id="S1", source_type="document", source="report", content="Audited-statement revenue 52.6T"),
-            Evidence(citation_id="S7", source_type="document", source="report", content="Headline total consolidated revenue 61.824T and consolidated profit after tax 9.453T"),
+            Evidence(citation_id="S1", source_type="document", source="report", content="Audited-statement revenue 32.6T"),
+            Evidence(citation_id="S7", source_type="document", source="report", content="Headline total consolidated revenue 18.624T and consolidated profit after tax 2.453T"),
         ])
         llm = Mock()
-        llm.generate.return_value = "Vinamilk reported total consolidated revenue of 61.824 trillion VND and consolidated profit after tax of 9.453 trillion VND [1]."
+        llm.generate.return_value = "Example Retailer reported total consolidated revenue of 18.624 trillion VND and consolidated profit after tax of 2.453 trillion VND [1]."
         result = ReportAgent(knowledge=hybrid, llm=llm).run(AgentRequest(question="Summarize revenue and profit"))
-        self.assertIn("61.824T", llm.generate.call_args.args[0])
+        self.assertIn("18.624T", llm.generate.call_args.args[0])
         self.assertIn("return exactly two concise bullets", llm.generate.call_args.args[0])
         self.assertIn("do not invent an accounting basis or reconciliation", llm.generate.call_args.args[0])
         self.assertIn("never convert or rescale values", llm.generate.call_args.args[0])
@@ -3890,26 +5269,26 @@ class AgentFlowTest(unittest.TestCase):
         self.assertNotIn("Include both headline and statement figures for every requested metric", llm.generate.call_args.args[0])
         self.assertIn("Vietnamese periods group thousands", llm.generate.call_args.args[0])
         self.assertIn("Priority IDs: [S7]", llm.generate.call_args.args[0])
-        self.assertEqual(result.answer, "Vinamilk reported total consolidated revenue of 61.824 trillion VND and consolidated profit after tax of 9.453 trillion VND [S7].")
+        self.assertEqual(result.answer, "Example Retailer reported total consolidated revenue of 18.624 trillion VND and consolidated profit after tax of 2.453 trillion VND [S7].")
         self.assertTrue(hybrid.run.call_args.args[0].metadata["evidence_only"])
 
     def test_financial_report_rejects_rescaled_or_rounded_cited_values(self):
         evidence = [Evidence(
             citation_id="S3", source_type="document", source="annual report",
-            content="Total consolidated revenue 2024; profit after tax 2024; tỷ đồng tỷ đồng 9.453 61.824",
+            content="Total consolidated revenue 2024; profit after tax 2024; tỷ đồng tỷ đồng 2.453 18.624",
         )]
 
         self.assertTrue(_financial_facts_match_cited_evidence(
-            "Revenue 61.824 tỷ đồng and profit 9.453 tỷ đồng [S3]", evidence,
+            "Revenue 18.624 tỷ đồng and profit 2.453 tỷ đồng [S3]", evidence,
         ))
         self.assertFalse(_financial_facts_match_cited_evidence(
-            "Revenue 61.824 triệu đồng and profit 9.453 triệu đồng [S3]", evidence,
+            "Revenue 18.624 triệu đồng and profit 2.453 triệu đồng [S3]", evidence,
         ))
         self.assertFalse(_financial_facts_match_cited_evidence(
-            "Revenue 61.8 tỷ đồng and profit 9.453 tỷ đồng [S3]", evidence,
+            "Revenue 61.8 tỷ đồng and profit 2.453 tỷ đồng [S3]", evidence,
         ))
         self.assertFalse(_financial_facts_match_cited_evidence(
-            "Revenue 61.824 billion USD and profit 9.453 billion USD [S3]", evidence,
+            "Revenue 18.624 billion USD and profit 2.453 billion USD [S3]", evidence,
         ))
 
     def test_report_withholds_a_financial_answer_with_a_cited_unit_mismatch(self):
@@ -3917,11 +5296,11 @@ class AgentFlowTest(unittest.TestCase):
         hybrid.run.return_value = AgentResult(answer="Revenue [S1]", agent="hybrid", evidence=[
             Evidence(
                 citation_id="S1", source_type="document", source="annual report",
-                content="Revenue 2024; profit 2024; tỷ đồng tỷ đồng 9.453 61.824",
+                content="Revenue 2024; profit 2024; tỷ đồng tỷ đồng 2.453 18.624",
             )
         ])
         llm = Mock()
-        llm.generate.return_value = "Revenue 61.824 triệu đồng and profit 9.453 triệu đồng [S1]"
+        llm.generate.return_value = "Revenue 18.624 triệu đồng and profit 2.453 triệu đồng [S1]"
 
         result = ReportAgent(knowledge=hybrid, llm=llm).run(
             AgentRequest(question="Summarize revenue and profit")

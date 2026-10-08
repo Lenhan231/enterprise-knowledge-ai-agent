@@ -24,6 +24,7 @@ class DocumentProcessor:
         self.config = config or {}
         self.chunking_strategy = self.config.get("chunking_strategy", "sentence")
         self.paddle_formula_recognition = bool(self.config.get("paddle_formula_recognition", False))
+        self.paddle_chart_recognition = bool(self.config.get("paddle_chart_recognition", False))
         self.paddle_layout = bool(self.config.get("paddle_layout", False) or self.paddle_formula_recognition)
         self.vision_captioning = bool(self.config.get("vision_captioning", False))
         if self.chunking_strategy not in {"fixed", "sentence", "semantic"}:
@@ -41,10 +42,12 @@ class DocumentProcessor:
         if suffix == ".pdf":
             result = PDFProcessor({
                 "paddle_layout": self.paddle_layout,
+                "paddle_chart_recognition": self.paddle_chart_recognition,
                 "paddle_formula_recognition": self.paddle_formula_recognition,
                 "vision_captioning": self.vision_captioning,
                 "ocr_fallback": True,
-                "ocr_language": "vie+eng",
+                "ocr_language": self.config.get("ocr_language", "vie+eng"),
+                "ocr_deskew": self.config.get("ocr_deskew", True),
                 "tesseract_psm": self.config.get("tesseract_psm", 11),
                 "tesseract_table_psm": self.config.get("tesseract_table_psm", 3),
                 "ocr_render_scale": self.config.get(

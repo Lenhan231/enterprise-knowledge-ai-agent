@@ -2,7 +2,7 @@ import importlib.util
 from pathlib import Path
 import unittest
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts/operations/evaluate_api_load.py"
+SCRIPT = Path(__file__).resolve().parents[1] / "tools/operations/evaluate_api_load.py"
 SPEC = importlib.util.spec_from_file_location("evaluate_api_load", SCRIPT)
 evaluate_api_load = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(evaluate_api_load)

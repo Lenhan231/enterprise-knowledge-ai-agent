@@ -15,11 +15,11 @@ these records are not observed results from a real retailer.
   `evaluation/commerce_retrieval_cases.json` define the active SQL + RAG cases.
 - `evaluation/ocr/` contains synthetic scan PDFs and transcription references
   for upload/OCR robustness checks, not business evidence or real-scan accuracy.
-- `evaluation/archive/` is historical experiment material and is not loaded by
-  the app or active benchmark.
+- Current OCR and agent run reports live in `artifacts/evaluation/`; older
+  superseded outputs are removed rather than archived in the repository.
 
 The structured Commerce dataset is loaded separately into the private
-PostgreSQL `commerce` schema. See [scripts/README.md](../scripts/README.md) for
+PostgreSQL `commerce` schema. See [tools/README.md](../tools/README.md) for
 the importer, policy generation, indexing, and evaluation commands. See
 [Commerce knowledge sources](commerce_knowledge/README.md) for document scope,
 synthetic-policy labeling, and OCR limitations.

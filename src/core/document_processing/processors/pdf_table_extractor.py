@@ -16,7 +16,7 @@ class PDFTableExtractor:
 
     @staticmethod
     def _extract_page_tables(
-        page, page_number: int, ocr_words=None, ocr_metadata=None,
+        page, page_number: int, ocr_words=None, ocr_metadata=None, ocr_page_rect=None,
     ) -> List[Dict[str, Any]]:
         """Return detected page tables as column names and row dictionaries."""
         words = page.get_text("words")
@@ -30,10 +30,25 @@ class PDFTableExtractor:
             any(right[0] - left[1] >= 40 for left, right in zip(sorted(row), sorted(row)[1:]))
             for row in numeric_rows.values()
         )
+        line_starts: Dict[Tuple[int, int], float] = {}
+        for word in words:
+            line_id = (
+                (int(word[5]), int(word[6]))
+                if len(word) >= 7
+                else (0, round((float(word[1]) + float(word[3])) / 2))
+            )
+            line_starts[line_id] = min(line_starts.get(line_id, float("inf")), float(word[0]))
+        start_clusters: List[List[float]] = []
+        for start in sorted(line_starts.values()):
+            if not start_clusters or start - start_clusters[-1][-1] > 18:
+                start_clusters.append([start])
+            else:
+                start_clusters[-1].append(start)
+        repeated_text_columns = sum(len(cluster) >= 3 for cluster in start_clusters)
         # find_tables is costly on long born-digital reports. Only run it on
-        # pages with repeated aligned numeric columns; scanned-page OCR has its
+        # pages with repeated numeric or text columns; scanned-page OCR has its
         # own word-box path below.
-        if aligned_rows < 3 and not ocr_words:
+        if aligned_rows < 3 and repeated_text_columns < 3 and not ocr_words:
             return []
         try:
             found_tables = page.find_tables().tables
@@ -63,24 +78,94 @@ class PDFTableExtractor:
             else:
                 data_rows = matrix if getattr(header, "external", False) else matrix[1:]
 
+            # PyMuPDF can mistake slide labels, screenshot footers, and aligned
+            # prose for tables. The text/OCR table paths also require at least
+            # three populated rows; apply the same floor here so weak native
+            # candidates do not block OCR fallback or become empty table records.
+            populated_rows = sum(
+                sum(value is not None and bool(str(value).strip()) for value in row) >= 2
+                for row in data_rows
+            )
+            if populated_rows < 3:
+                continue
+
+            table_context = {}
+            header_cells = getattr(header, "cells", None) or (
+                getattr(getattr(table, "rows", [None])[0], "cells", None)
+                if getattr(table, "rows", None) else None
+            )
+            table_bbox = getattr(table, "bbox", None)
+            first_header_cell = next((cell for cell in header_cells or [] if cell), None)
+            merged_title_row = (
+                len(columns) > 1
+                and len(matrix) > 2
+                and len([name for name in header_names if name]) == 1
+                and first_header_cell is not None
+                and table_bbox is not None
+                and abs(first_header_cell[0] - table_bbox[0]) <= 1
+                and abs(first_header_cell[2] - table_bbox[2]) <= 1
+                and sum(bool(value and str(value).strip()) for value in matrix[1]) >= 2
+            )
+            if merged_title_row:
+                title = str(header_names[0]).strip()
+                subheaders = list(matrix[1]) + [None] * max(0, width - len(matrix[1]))
+                rows = getattr(table, "rows", [])
+                subheader_cells = getattr(rows[1], "cells", []) if len(rows) > 1 else []
+                data_cells = getattr(rows[2], "cells", []) if len(rows) > 2 else []
+                columns = []
+                for column_index in range(width):
+                    label = str(subheaders[column_index] or "").strip()
+                    if not label and column_index < len(data_cells) and data_cells[column_index]:
+                        target = data_cells[column_index]
+                        label = next((
+                            str(subheaders[parent_index]).strip()
+                            for parent_index in range(column_index - 1, -1, -1)
+                            if parent_index < len(subheader_cells)
+                            and subheader_cells[parent_index]
+                            and str(subheaders[parent_index] or "").strip()
+                            and subheader_cells[parent_index][0] <= target[0] + 1
+                            and subheader_cells[parent_index][2] >= target[2] - 1
+                        ), "")
+                    label = label or f"column_{column_index + 1}"
+                    duplicate_number = 2
+                    unique_label = label
+                    while unique_label in columns:
+                        unique_label = f"{label} ({duplicate_number})"
+                        duplicate_number += 1
+                    columns.append(unique_label)
+                table_context["table_title"] = title
+                data_rows = []
+                for row_index, row in enumerate(matrix[2:], start=2):
+                    values = [str(value).strip() for value in row if value and str(value).strip()]
+                    row_cells = getattr(rows[row_index], "cells", []) if row_index < len(rows) else []
+                    full_width_note = len(values) == 1 and any(
+                        cell
+                        and abs(cell[0] - table_bbox[0]) <= 1
+                        and abs(cell[2] - table_bbox[2]) <= 1
+                        for cell in row_cells
+                    )
+                    if full_width_note:
+                        table_context.setdefault("notes", []).extend(values)
+                    else:
+                        data_rows.append(row)
+
             rows = []
             for row in data_rows:
                 values = list(row) + [None] * max(0, len(columns) - len(row))
                 rows.append(dict(zip(columns, values)))
 
-            extracted.append(
-                {
-                    "page_number": page_number,
-                    "table_index": table_index,
-                    "columns": columns,
-                    "rows": rows,
-                    "metadata": {
-                        "element_type": "table",
-                        "layout_type": "table",
-                        "table_extraction_method": "pymupdf.find_tables",
-                    },
-                }
-            )
+            extracted.append({
+                "page_number": page_number,
+                "table_index": table_index,
+                "columns": columns,
+                "rows": rows,
+                **({"context": table_context} if table_context else {}),
+                "metadata": {
+                    "element_type": "table",
+                    "layout_type": "table",
+                    "table_extraction_method": "pymupdf.find_tables",
+                },
+            })
         if not extracted:
             if aligned_rows >= 3:
                 try:
@@ -108,7 +193,7 @@ class PDFTableExtractor:
                     )
         if not extracted and ocr_words:
             extracted = PDFTableExtractor._tables_from_aligned_words(
-                ocr_words, page.rect, page_number, ocr_metadata=ocr_metadata,
+                ocr_words, ocr_page_rect or page.rect, page_number, ocr_metadata=ocr_metadata,
             )
         return extracted
 
@@ -389,7 +474,7 @@ class PDFTableExtractor:
     def _split_aligned_text_table(
         table, page, page_number: int, first_index: int, words=None,
     ) -> List[Dict[str, Any]]:
-        """Rebuild borderless tables from repeated numeric columns in text grids."""
+        """Rebuild borderless numeric tables from text grids."""
         matrix = table.extract()
         if not matrix:
             return []

@@ -1,0 +1,54 @@
+{
+  "dataset_id": "commerce-amazon-fba-restock-selected-page-anchors-v1",
+  "purpose": "Check whether the upload parser preserves selected inventory-planning instructions on two image-heavy pages from an official Amazon Seller Central guide.",
+  "reference_quality": "single-reviewer-selected-phrase-anchors",
+  "reference_method": "Each phrase was visually checked against the rendered source page. This is not a full-page transcription or independent adjudication.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "The 2020 Amazon FBA guide is an attributed platform example, not policy for the synthetic Commerce dataset or another retailer.",
+    "The selected pages have a partial text layer and embedded imagery; they are not physical scans.",
+    "Phrase-anchor recall does not measure CER/WER, reading order, structured table extraction, or decision-answer quality.",
+    "The sampled phrases are selected and do not represent every visible label or quantity on either page."
+  ],
+  "pages": [
+    {
+      "id": "AMAZON-FBA-RESTOCK-TOOL-GUIDE-2020-PAGE-6",
+      "document_id": "AMAZON-FBA-RESTOCK-TOOL-GUIDE-2020",
+      "file": "data/raw/commerce_knowledge/AMAZON-FBA-RESTOCK-TOOL-GUIDE-2020.pdf",
+      "source_url": "https://m.media-amazon.com/images/G/01/sell/pdf/FBA-Restock-Guide-EN.pdf",
+      "source_pdf_sha256": "eec930cb60b86c69506cc54b15249518204b1f5cb55d6afdbafe166f16b6fa44",
+      "page": 6,
+      "language": "eng",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "image-heavy infographic with partial text layer",
+      "clip_rect": [0, 0, 792, 612],
+      "text_anchors": [
+        "Understanding How the Restock Tool Works",
+        "sales history, demand forecast and seasonality",
+        "free to use, customizable"
+      ]
+    },
+    {
+      "id": "AMAZON-FBA-RESTOCK-TOOL-GUIDE-2020-PAGE-7",
+      "document_id": "AMAZON-FBA-RESTOCK-TOOL-GUIDE-2020",
+      "file": "data/raw/commerce_knowledge/AMAZON-FBA-RESTOCK-TOOL-GUIDE-2020.pdf",
+      "source_url": "https://m.media-amazon.com/images/G/01/sell/pdf/FBA-Restock-Guide-EN.pdf",
+      "source_pdf_sha256": "eec930cb60b86c69506cc54b15249518204b1f5cb55d6afdbafe166f16b6fa44",
+      "page": 7,
+      "language": "eng",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "image-heavy seller workflow screenshot with partial text layer",
+      "clip_rect": [0, 0, 792, 612],
+      "text_anchors": [
+        "How to Find the Restock Tool",
+        "select inventory planning, click restock inventory",
+        "Recommended Replenishment QTY",
+        "Recommended Ship Date",
+        "240",
+        "7/8/2020"
+      ]
+    }
+  ]
+}

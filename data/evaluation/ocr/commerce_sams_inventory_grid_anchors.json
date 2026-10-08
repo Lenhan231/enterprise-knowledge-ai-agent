@@ -1,0 +1,45 @@
+{
+  "dataset_id": "commerce-sams-supplier-inventory-grid-v1",
+  "purpose": "Evaluate OCR and table extraction on one embedded inventory-grid screenshot in an attributed Commerce operating reference.",
+  "reference_quality": "single_agent_visual_transcription_unreviewed",
+  "reference_method": "The KETER item label and six visible values were transcribed from the rendered source page by one AI agent. This is one selected row, not a human-reviewed transcription or multi-reviewer gold standard.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "This is a born-digital 2022 Sam's Club supplier guide with an embedded low-resolution UI screenshot, not a physical scan.",
+    "The selected region is rasterized before processing to force the production upload OCR path; results do not measure OCR on the PDF's native text layer.",
+    "The guide applies only to the named Sam's Club supplier workflow and is not a Commerce Demo policy or data source.",
+    "Only one visible item row is labeled; a passing row score does not establish complete table extraction or general OCR accuracy."
+  ],
+  "pages": [
+    {
+      "id": "SAMS-SUPPLIER-HUB-2022-PAGE-7-INVENTORY-GRID-KETER",
+      "document_id": "SAMS-SUPPLIER-HUB-USER-GUIDE-2022",
+      "file": "data/raw/commerce_knowledge/SAMS-SUPPLIER-HUB-USER-GUIDE-2022.pdf",
+      "source_url": "https://corporate.walmart.com/content/dam/corporate/sams-club/documents/sams-club-suppliers/dsv-tutorial/edi/Supplier-Hub-Guide.pdf",
+      "source_pdf_sha256": "7245b3afae1a2b2036e6272bc95c5da0672aca11b65ce81dec09c9c894173a14",
+      "page": 7,
+      "printed_page_number": null,
+      "language": "eng",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "embedded_inventory_grid_screenshot",
+      "clip_rect": [65, 105, 545, 325],
+      "reference_text": "",
+      "table_columns": [
+        "Item Name",
+        "UPC",
+        "Item ID",
+        "Vendor Stock ID",
+        "Available to Sell",
+        "On Order",
+        "Available Inventory"
+      ],
+      "table_rows": [
+        {
+          "label": "KETER",
+          "values": ["73116102375", "610701", "17181074", "0", "0", "0"]
+        }
+      ]
+    }
+  ]
+}

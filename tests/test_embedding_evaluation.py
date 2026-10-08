@@ -9,9 +9,9 @@ from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import scripts.retrieval.evaluate_embeddings as evaluate_embeddings
+import tools.retrieval.evaluate_embeddings as evaluate_embeddings
 from app.main import ROLE_PERMISSIONS
-from scripts.retrieval.evaluate_embeddings import MODELS, _load_public_corpus, _sample_per_document, _visible
+from tools.retrieval.evaluate_embeddings import MODELS, _load_public_corpus, _sample_per_document, _visible
 
 
 class EmbeddingEvaluationTest(unittest.TestCase):
@@ -130,7 +130,7 @@ class EmbeddingEvaluationTest(unittest.TestCase):
                 patch.dict(os.environ, {"DATABASE_URL": ""}),
                 patch.object(evaluate_embeddings, "REPO_ROOT", Path(__file__).resolve().parents[1]),
                 patch.object(sys, "argv", [
-                    "scripts.retrieval.evaluate_embeddings.py", "--model", "bge-m3", "--cases", str(cases_fixture),
+                    "tools.retrieval.evaluate_embeddings.py", "--model", "bge-m3", "--cases", str(cases_fixture),
                     "--corpus", str(corpus_path), "--device", "cpu", "--output", str(output_path),
                 ]),
             ):

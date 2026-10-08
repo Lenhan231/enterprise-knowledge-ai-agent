@@ -1,7 +1,7 @@
 [project]
 name = "enterprise-knowledge-ai-agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "Source-grounded enterprise document QA and Commerce decision support"
 readme = "README.md"
 authors = [
     { name = "Lenhan231", email = "nhanle221199@gmail.com" }
@@ -14,33 +14,26 @@ dependencies = [
     "langchain-core==1.4.0",
     "langchain-experimental==0.4.2",
     "langchain-huggingface>=1.2.2",
-    "langchain-openai==1.2.2",
-    "langchain-text-splitters==1.1.2",
     "openai==2.41.0",
-    "psycopg[binary]>=3.3.5",
-    "psycopg2-binary==2.9.10",
+    "psycopg[binary,pool]>=3.3.5",
     "pydantic==2.11.7",
     "pymupdf==1.27.2.3",
     "python-dotenv==1.1.1",
     "python-multipart==0.0.32",
     "sentence-transformers>=6.0.1",
-    "sqlalchemy==2.0.50",
     "supabase>=2.31.0",
     "uvicorn==0.35.0",
     "pgvector>=0.5.0",
     "numpy>=2.4.6",
     "groq>=1.7.0",
-    "pypdf>=6.19.0",
     "pyjwt==2.14.0",
     "langgraph>=1.2.4",
     "sqlglot>=30.19.0",
+    "pillow==12.3.0",
 ]
 
 [project.optional-dependencies]
-ocr-paddle = ["paddleocr>=3.0.3", "paddlepaddle>=3.3.1"]
-
-[project.scripts]
-enterprise-knowledge-ai-agent = "enterprise_knowledge_ai_agent:main"
+ocr-paddle = ["paddleocr>=3.0.3", "paddlepaddle>=3.3.1", "paddlex[ocr]==3.4.3"]
 
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13.0"]

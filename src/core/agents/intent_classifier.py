@@ -2,7 +2,6 @@ import json
 import re
 
 from core.analytics.metric_ontology import resolve_metric_names
-from core.analytics.business_metric_catalog import resolve_business_metric_names
 from core.analytics.commerce_decision_support import (
     COMMERCE_DECISION_PROFILES,
     resolve_commerce_decision_domain,
@@ -78,9 +77,6 @@ class IntentClassifier:
     def fallback(question: str) -> IntentResult:
         text = question.casefold()
         financial_metrics = resolve_metric_names(text)
-        business_metrics = resolve_business_metric_names(text)
-        years_found = [int(year) for year in re.findall(r"\b((?:19|20)\d{2})\b", text)]
-        multi_year_span = len(years_found) >= 2 and max(years_found) - min(years_found) >= 2
         metadata_counts = _is_document_count_request(text)
         financial_summary = (
             any(term in text for term in ("revenue", "sales", "doanh thu"))
@@ -98,7 +94,7 @@ class IntentClassifier:
             and len(financial_metrics) >= 1
             and len(set(re.findall(r"\b(?:19|20)\d{2}\b", text))) >= 2
         )
-        analytics = metadata_counts or bool(financial_metrics) or bool(business_metrics) or any(term in text for term in (
+        analytics = metadata_counts or bool(financial_metrics) or any(term in text for term in (
             "trend", "compare", "growth", "tăng trưởng", "so sánh", "thống kê"
         )) or any(term in text for term in (
             "by year", "by region", "by category", "by campaign", "highest", "lowest", "most", "fewest",
@@ -107,18 +103,14 @@ class IntentClassifier:
             "nhiều nhất", "ít nhất", "trung bình", "cao nhất", "thấp nhất",
         ))
         dashboard = any(term in text for term in ("dashboard", "chart", "visualize", "biểu đồ", "đồ thị"))
-        report = not metadata_counts and (financial_summary or why_financial_change or
-            (bool(business_metrics) and multi_year_span and any(term in text for term in (
-                "summarize", "summarise", "summary", "trend", "performance", "compare", "across",
-                "tóm tắt", "xu hướng", "so sánh", "hiệu quả",
-            ))) or any(term in text for term in (
+        report = not metadata_counts and (financial_summary or why_financial_change or any(term in text for term in (
             "summarize", "summarise", "summary of", "tóm tắt", "write a report",
             "draft a report", "generate a report", "prepare a report", "create a report",
             "viết báo cáo", "lập báo cáo", "tạo báo cáo",
         )))
         financial_metric = bool(financial_metrics) or any(term in text for term in ("financial", "tài chính", "biên lợi nhuận"))
         asks_decision = any(term in text for term in ("should we", "recommend", "decision", "decide", "strategy", "what should", "nên", "đề xuất", "quyết định", "chiến lược", "có nên"))
-        needs_source_context = financial_metric or bool(business_metrics)
+        needs_source_context = financial_metric
         intent = "dashboard" if dashboard else "report" if report else "hybrid" if analytics and (needs_source_context or asks_decision) else "analytics" if analytics else "knowledge"
         return IntentResult(intent=intent, needs_knowledge=intent in {"knowledge", "hybrid", "report"} or needs_source_context,
                             needs_sql=intent in {"analytics", "hybrid", "report"},

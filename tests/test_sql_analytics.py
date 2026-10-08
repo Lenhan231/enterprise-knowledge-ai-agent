@@ -11,11 +11,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.agents.sql_analytics_agent import (
     SQLAnalyticsAgent, UnsupportedCommerceDimension, _asks_for_promotion_tag_comparison,
-    _validate_campaign_outcome_query, _validate_requested_year_filter,
+    _asks_for_campaign_scoped_outcomes,
+    _inventory_question_needs_latest_snapshot, _validate_repeated_inventory_flags,
+    _validate_campaign_outcome_query,
+    _validate_requested_year_filter,
 )
 from core.analytics.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql, validate_commerce_sql
-from core.analytics.commerce_decision_support import COMMERCE_QUERY_TABLES
-from core.analytics.business_metric_catalog import BUSINESS_DECISION_PROFILES
+from core.analytics.commerce_decision_support import COMMERCE_QUERY_TABLES, unavailable_commerce_dimensions
 from core.database.document_repository import DocumentRepository
 from core.models.agents import AgentRequest
 
@@ -93,6 +95,25 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         self.assertIn("database's latest snapshot date", llm.generate.call_args.args[0])
         repository.execute_commerce_analytics.assert_called_once()
 
+    def test_malformed_json_sql_reply_is_repaired_instead_of_leaking_sqlglot_error(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = [{"category": "Shoes", "sku_count": 42}]
+        llm = Mock()
+        llm.generate.side_effect = [
+            '{"sql":"SELECT p.category, COUNT(DISTINCT p.product_id) AS sku_count FROM commerce.products p',
+            '{"sql":"SELECT p.category, COUNT(DISTINCT p.product_id) AS sku_count '
+            'FROM commerce.products p GROUP BY p.category ORDER BY sku_count DESC LIMIT 100"}',
+        ]
+
+        result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            "Which product categories have the most SKUs?", "inventory_allocation",
+        )
+
+        self.assertEqual(result["observations"], [{"category": "Shoes", "sku_count": 42}])
+        self.assertEqual(llm.generate.call_count, 2)
+        self.assertIn("could not be parsed as one valid PostgreSQL SELECT", llm.generate.call_args.args[0])
+        repository.execute_commerce_analytics.assert_called_once_with(result["sql_query"], "inventory_allocation")
+
     def test_question_specific_commerce_query_normalizes_unambiguous_columns_before_execution(self):
         repository = Mock()
         repository.execute_commerce_analytics.return_value = [{"region": "East", "zip_count": 4}]
@@ -145,6 +166,100 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
                 llm.generate.assert_not_called()
                 repository.execute_commerce_analytics.assert_not_called()
 
+    def test_missing_dimension_is_not_treated_as_sql_group_when_listed_as_required_evidence(self):
+        available = {column for columns in COMMERCE_QUERY_TABLES["inventory_allocation"].values()
+                     for column in columns}
+        question = (
+            "What should be checked before reallocating stock? State the warehouse-level stock, "
+            "forecast demand, replenishment lead time, transfer cost, and service target needed before moving stock."
+        )
+
+        self.assertEqual(
+            unavailable_commerce_dimensions(question, "inventory_allocation", available),
+            [],
+        )
+        self.assertEqual(
+            unavailable_commerce_dimensions(
+                "How should we compare inventory by warehouse?", "inventory_allocation", available,
+            ),
+            ["warehouse/location"],
+        )
+
+    def test_repeated_inventory_signal_uses_history_instead_of_latest_snapshot(self):
+        question = (
+            "Should inventory be reallocated toward products with repeated stockout signals? "
+            "Use only the Commerce inventory aggregates and company references. State the warehouse-level "
+            "stock, forecast demand, replenishment lead time, transfer cost, and target service level needed."
+        )
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = [{"product_id": 11, "stockout_snapshots": 4}]
+        llm = Mock()
+        llm.generate.return_value = (
+            '{"sql":"SELECT i.product_id, COUNT(DISTINCT i.snapshot_date) '
+            'FILTER (WHERE i.stockout_flag) AS stockout_snapshots FROM commerce.inventory i '
+            'GROUP BY i.product_id HAVING COUNT(DISTINCT i.snapshot_date) '
+            'FILTER (WHERE i.stockout_flag) >= 2 ORDER BY stockout_snapshots DESC LIMIT 100"}'
+        )
+
+        result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            question, "inventory_allocation",
+        )
+
+        self.assertFalse(_inventory_question_needs_latest_snapshot(question))
+        self.assertEqual(result["observations"], [{"product_id": 11, "stockout_snapshots": 4}])
+        self.assertIn("repeated, recurring, or persistent require historical", llm.generate.call_args.args[0])
+        self.assertIn("inspect historical product-snapshot rows", llm.generate.call_args.args[0])
+        self.assertIn("COUNT(DISTINCT", result["sql_query"])
+        repository.latest_commerce_inventory_snapshot.assert_not_called()
+
+    def test_repeated_inventory_query_repairs_latest_only_aggregate(self):
+        question = "Should we act on products with repeated stockout signals?"
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = [
+            {"product_id": 11, "stockout_snapshots": 4},
+        ]
+        llm = Mock()
+        llm.generate.side_effect = [
+            '{"sql":"SELECT i.category, AVG(i.fill_rate) AS avg_fill_rate '
+            'FROM commerce.inventory i GROUP BY i.category LIMIT 100"}',
+            '{"sql":"SELECT i.product_id, COUNT(DISTINCT i.snapshot_date) '
+            'FILTER (WHERE i.stockout_flag) AS stockout_snapshots '
+            'FROM commerce.inventory i GROUP BY i.product_id HAVING COUNT(DISTINCT i.snapshot_date) '
+            'FILTER (WHERE i.stockout_flag) >= 2 LIMIT 100"}',
+        ]
+
+        result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(
+            question, "inventory_allocation",
+        )
+
+        self.assertEqual(result["observations"], repository.execute_commerce_analytics.return_value)
+        self.assertEqual(llm.generate.call_count, 2)
+        self.assertIn("COUNT(DISTINCT snapshot_date)", llm.generate.call_args.args[0])
+        self.assertIn("Rejected SQL:", llm.generate.call_args.args[0])
+        self.assertIn("For repeated inventory flags", llm.generate.call_args.args[0])
+        self.assertIn("grouped by i.product_id", llm.generate.call_args.args[0])
+        self.assertIn("add HAVING for each requested count >= 2", llm.generate.call_args.args[0])
+
+    def test_repeated_inventory_query_rejects_single_snapshot_filter(self):
+        sql = (
+            "SELECT i.product_id, COUNT(DISTINCT i.snapshot_date) "
+            "FILTER (WHERE i.stockout_flag) AS stockout_snapshots "
+            "FROM commerce.inventory i WHERE i.snapshot_date = '2022-12-31' "
+            "GROUP BY i.product_id LIMIT 100"
+        )
+
+        with self.assertRaisesRegex(UnsafeAnalyticsQuery, "cannot be restricted to one snapshot_date"):
+            _validate_repeated_inventory_flags("Repeated stockout signals", sql)
+
+    def test_repeated_inventory_query_requires_two_flagged_snapshots(self):
+        sql = (
+            "SELECT i.product_id, COUNT(DISTINCT i.snapshot_date) "
+            "FILTER (WHERE i.stockout_flag) AS stockout_snapshots "
+            "FROM commerce.inventory i GROUP BY i.product_id LIMIT 100"
+        )
+
+        with self.assertRaisesRegex(UnsafeAnalyticsQuery, "HAVING COUNT\(DISTINCT snapshot_date\).+>= 2"):
+            _validate_repeated_inventory_flags("Repeated stockout signals", sql)
     def test_question_specific_query_keeps_region_available_for_logistics_schema(self):
         repository = Mock()
         repository.execute_commerce_analytics.return_value = [{"region": "East", "shipment_count": 4}]
@@ -300,10 +415,50 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
             "Which campaign had the highest net sales during its 2022 campaign window?", "promotion_planning",
         )
 
+        initial_prompt = llm.generate.call_args_list[0].args[0]
+        self.assertIn("orders.order_status = 'delivered'", initial_prompt)
+        self.assertIn("EXTRACT(YEAR FROM promotions.start_date)", initial_prompt)
+        self.assertIn("Place the year predicate in WHERE", initial_prompt)
         repair_prompt = llm.generate.call_args_list[1].args[0]
         self.assertIn("filter to delivered orders", repair_prompt)
+        self.assertIn("Preserve every requested metric and campaign dimension", repair_prompt)
+        self.assertIn("year(s) in WHERE, not in a JOIN ON clause", repair_prompt)
         self.assertIn("Campaign outcome SQL must", repair_prompt)
         self.assertIn("promo_id_2", result["sql_query"])
+        repository.execute_commerce_analytics.assert_called_once()
+
+    def test_campaign_profit_proxy_prompt_uses_product_catalog_cost_and_exact_campaign_window(self):
+        repository = Mock()
+        repository.execute_commerce_analytics.return_value = []
+        llm = Mock()
+        llm.generate.return_value = (
+            '{"sql":"SELECT p.promo_name AS campaign, '
+            'SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_sales, '
+            'SUM(oi.quantity * oi.unit_price - oi.discount_amount - oi.quantity * pr.cogs) '
+            'AS merchandise_gross_profit_proxy FROM commerce.promotions p '
+            'JOIN commerce.order_items oi ON (oi.promo_id = p.promo_id OR oi.promo_id_2 = p.promo_id) '
+            'JOIN commerce.orders o ON o.order_id = oi.order_id '
+            'JOIN commerce.products pr ON pr.product_id = oi.product_id '
+            'WHERE o.order_status = \'delivered\' '
+            'AND o.order_date BETWEEN p.start_date AND p.end_date '
+            'AND EXTRACT(YEAR FROM p.start_date) = 2022 '
+            'GROUP BY p.promo_name ORDER BY net_sales DESC LIMIT 100"}'
+        )
+        question = (
+            "Which 2022 campaign led in campaign-window net sales and merchandise gross-profit proxy? "
+            "Are they the same campaign?"
+        )
+
+        result = SQLAnalyticsAgent(repository, llm).commerce_question_observations(question, "promotion_planning")
+
+        prompt = llm.generate.call_args.args[0]
+        self.assertIn("join commerce.products", prompt)
+        self.assertIn("products.cogs", prompt)
+        self.assertIn("AS merchandise_gross_profit_proxy", prompt)
+        self.assertIn("orders.order_status = 'delivered'", prompt)
+        self.assertIn("order_date BETWEEN promotions.start_date AND promotions.end_date", prompt)
+        self.assertIn("EXTRACT(YEAR FROM promotions.start_date)", prompt)
+        self.assertIn("merchandise_gross_profit_proxy", result["sql_query"])
         repository.execute_commerce_analytics.assert_called_once()
 
     def test_campaign_guard_rejects_recorded_left_join_query_that_sums_unmatched_orders(self):
@@ -360,6 +515,14 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
             ),
             query,
         )
+
+    def test_campaign_scope_requires_an_explicit_campaign_breakdown(self):
+        self.assertFalse(_asks_for_campaign_scoped_outcomes(
+            "Should we expand a campaign based on sales? Compare the sales outcome and profit proxy."
+        ))
+        self.assertTrue(_asks_for_campaign_scoped_outcomes(
+            "Compare sales and profit by campaign."
+        ))
 
     def test_promotion_decision_question_does_not_require_campaign_window_join(self):
         repository = Mock()
@@ -663,123 +826,6 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         with self.assertRaisesRegex(UnsafeAnalyticsQuery, "metric_name and fiscal_year"):
             validate_analytics_sql(sql)
 
-    def test_business_metric_analytics_requires_exact_business_metric_citations(self):
-        sql = """SELECT metric_name, fiscal_year, SUM(metric_value) AS total,
-                         ARRAY_AGG(DISTINCT business_metric_id) AS evidence_business_metric_ids
-                  FROM authorized_business_metrics
-                  GROUP BY metric_name, fiscal_year"""
-        self.assertIn("authorized_business_metrics", validate_analytics_sql(sql))
-        with self.assertRaises(UnsafeAnalyticsQuery):
-            validate_analytics_sql(
-                "SELECT metric_name, fiscal_year, SUM(metric_value) AS total, "
-                "ARRAY_AGG(DISTINCT business_metric_id) AS evidence_metric_ids "
-                "FROM authorized_business_metrics GROUP BY metric_name, fiscal_year"
-            )
-
-    def test_export_market_question_fetches_optional_company_level_context(self):
-        repository = Mock()
-        repository.execute_authorized_analytics.return_value = {
-            "results": [], "evidence": [], "business_evidence": [], "documents": [],
-        }
-        agent = SQLAnalyticsAgent(repository, Mock())
-
-        agent.run(AgentRequest(
-            question="Which export markets should Vinamilk prioritize for investment based on growth?",
-            user_id="analyst", metadata={"role": "finance_analyst", "company": "Vinamilk"},
-        ))
-
-        query = repository.execute_authorized_analytics.call_args.args[0]
-        for name in (
-            "guinea_export_revenue_growth", "hong_kong_export_revenue_growth",
-            "japan_export_revenue_growth", "export_net_revenue",
-            "export_net_revenue_growth", "commercial_export_revenue",
-            "commercial_export_revenue_growth", "export_volume_teu",
-        ):
-            self.assertIn(f"'{name}'", query)
-
-    def test_selected_decision_domain_scopes_query_and_prompt_to_that_domain(self):
-        repository = Mock()
-        repository.execute_authorized_analytics.return_value = {
-            "results": [], "evidence": [], "business_evidence": [], "documents": [],
-        }
-        llm = Mock()
-        agent = SQLAnalyticsAgent(repository, llm)
-
-        agent.run(AgentRequest(
-            question="Which measures should management review before prioritizing market investment?",
-            user_id="analyst",
-            metadata={"role": "finance_analyst", "company": "Vinamilk",
-                      "business_decision_domain": "market_performance"},
-        ))
-
-        query = repository.execute_authorized_analytics.call_args.args[0]
-        self.assertIn("FROM authorized_business_metrics", query)
-        self.assertIn("'domestic_consolidated_net_revenue'", query)
-        self.assertIn("'overseas_market_net_revenue'", query)
-        self.assertIn("'market_share_lead_over_runner_up'", query)
-        self.assertNotIn("'employee_headcount'", query)
-        self.assertNotIn("'total_water_consumption'", query)
-        self.assertFalse(llm.generate.called)
-
-    def test_vietnamese_market_position_question_uses_verified_metric_sql_without_llm(self):
-        repository = Mock()
-        repository.execute_authorized_analytics.return_value = {
-            "results": [], "evidence": [], "business_evidence": [], "documents": [],
-        }
-        llm = Mock()
-
-        SQLAnalyticsAgent(repository, llm).run(AgentRequest(
-            question="Khoảng cách thị phần với đối thủ đứng thứ hai của Vinamilk năm 2024 là bao nhiêu?",
-            user_id="analyst",
-            metadata={"role": "finance_analyst", "company": "Vinamilk",
-                      "business_decision_domain": "market_performance"},
-        ))
-
-        query = repository.execute_authorized_analytics.call_args.args[0]
-        self.assertIn("'market_share_lead_over_runner_up'", query)
-        self.assertIn("fiscal_year IN (2024)", query)
-        self.assertFalse(llm.generate.called)
-
-    def test_domain_question_keeps_supporting_market_metrics_in_scope(self):
-        repository = Mock()
-        repository.execute_authorized_analytics.return_value = {
-            "results": [], "evidence": [], "business_evidence": [], "documents": [],
-        }
-        agent = SQLAnalyticsAgent(repository, Mock())
-
-        agent.run(AgentRequest(
-            question="Compare domestic and overseas segment gross profit for 2023.",
-            user_id="analyst",
-            metadata={"role": "finance_analyst", "company": "Vinamilk",
-                      "business_decision_domain": "market_performance"},
-        ))
-
-        query = repository.execute_authorized_analytics.call_args.args[0]
-        self.assertIn("'domestic_segment_gross_profit'", query)
-        self.assertIn("'overseas_segment_gross_profit'", query)
-
-    def test_decision_suggestions_query_only_domain_primary_metrics(self):
-        repository = Mock()
-        llm = Mock()
-        repository.execute_authorized_analytics.return_value = {
-            "results": [], "evidence": [], "business_evidence": [], "documents": [],
-        }
-
-        SQLAnalyticsAgent(repository, llm).run(AgentRequest(
-            question="", user_id="admin",
-            metadata={"role": "admin", "business_decision_domain": "environmental_performance",
-                      "decision_suggestions": True},
-        ))
-
-        query = repository.execute_authorized_analytics.call_args.args[0]
-        expected_metrics = BUSINESS_DECISION_PROFILES["environmental_performance"]["primary_metrics"]
-        for metric_name in expected_metrics:
-            with self.subTest(metric_name=metric_name):
-                self.assertIn(f"'{metric_name}'", query)
-        self.assertNotIn("'green_energy_share_manufacturing'", query)
-        self.assertIn("FROM authorized_business_metrics", query)
-        llm.generate.assert_not_called()
-
     def test_rejects_duplicate_result_names_that_could_hide_citation_array(self):
         sql = (
             "SELECT ARRAY_AGG(document_id) AS evidence_document_ids, "
@@ -793,11 +839,11 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         repository.execute_authorized_analytics.return_value = {
             "results": [{"metric_name": "net_revenue", "fiscal_year": 2024,
                          "total": 61824, "evidence_metric_ids": [1]}],
-            "evidence": [{"company": "Vinamilk", "fiscal_year": 2024,
+            "evidence": [{"company": "Example Retailer", "fiscal_year": 2024,
                           "metric_name": "net_revenue", "metric_label": "Net revenue",
                           "metric_value": 61824, "unit": "billion VND", "document_id": "AR24",
                           "metric_id": 1, "page_number": 12, "source_url": "https://example.test/ar24",
-                          "source_quote": "Total revenue 61,824 billion VND", "source_chunk_id": 90,
+                          "source_quote": "Total revenue 18,624 billion VND", "source_chunk_id": 90,
                           "source_chunk_index": 4, "source_content_hash": "chunk-sha256"}],
             "documents": [],
         }
@@ -811,7 +857,7 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         agent = SQLAnalyticsAgent(repository, llm)
         result = agent.run(AgentRequest(
             question="Total verified revenue in 2024?", user_id="analyst",
-            metadata={"role": "finance_analyst", "company": "Vinamilk"},
+            metadata={"role": "finance_analyst", "company": "Example Retailer"},
         ))
         self.assertIn("total: 61824", result.answer)
         self.assertIn("[M1]", result.answer)
@@ -821,13 +867,13 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         self.assertEqual(result.evidence[0].metadata["source_content_hash"], "chunk-sha256")
         repository.execute_authorized_analytics.assert_called_once()
         self.assertEqual(repository.execute_authorized_analytics.call_args.args[1:],
-                         ("finance_analyst", "analyst", "Vinamilk"))
+                         ("finance_analyst", "analyst", "Example Retailer"))
         self.assertIn("LIMIT 100", repository.execute_authorized_analytics.call_args.args[0])
         prompt = llm.generate.call_args.args[0]
         self.assertIn("total_consolidated_revenue", prompt)
         self.assertIn("profit_after_tax", prompt)
         self.assertIn("project metric_name and fiscal_year directly", prompt)
-        self.assertIn("Do not add a company equality filter", prompt)
+        self.assertIn("do not add a company equality filter", prompt.lower())
 
     def test_empty_aggregate_result_with_null_evidence_is_reported_as_no_verified_data(self):
         repository = Mock()
@@ -844,7 +890,7 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         )
         result = SQLAnalyticsAgent(repository, llm).run(AgentRequest(
             question="Total verified revenue?", user_id="viewer",
-            metadata={"role": "employee", "company": "Vinamilk"},
+            metadata={"role": "employee", "company": "Example Retailer"},
         ))
 
         self.assertEqual(result.answer, "No verified, role-visible data matched this analytics request.")
@@ -861,7 +907,7 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
             "SELECT COUNT(document_id) AS matched_rows, "
             "ARRAY_AGG(DISTINCT document_id) AS evidence_document_ids FROM authorized_documents"
         )
-        result = repository.execute_authorized_analytics(query, "employee", "viewer", "Vinamilk")
+        result = repository.execute_authorized_analytics(query, "employee", "viewer", "Example Retailer")
         executed = [call.args[0] for call in cursor.execute.call_args_list]
         self.assertIn("SET TRANSACTION READ ONLY", executed)
         self.assertIn("SET LOCAL statement_timeout = '3s'", executed)
@@ -871,9 +917,8 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         self.assertIn("case when d.fiscal_year ~ '^[0-9]{4}$' then d.fiscal_year::integer end as fiscal_year", " ".join(cte_call.args[0].lower().split()))
         self.assertIn("company = %s", cte_call.args[0])
         self.assertEqual(cte_call.args[1], (
-            ["employee"], "employee", "Vinamilk", "Vinamilk",
-            ["employee"], "employee", "Vinamilk", "Vinamilk",
-            ["employee"], "employee", "employee", "viewer", "Vinamilk", "Vinamilk",
+            ["employee"], "employee", "Example Retailer", "Example Retailer",
+            ["employee"], "employee", "employee", "viewer", "Example Retailer", "Example Retailer",
         ))
         self.assertEqual(result["results"][0]["matched_rows"], 0)
 
@@ -893,15 +938,15 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
             "results": [{"metric_name": "net_revenue", "fiscal_year": 2024,
                          "total": 61824, "evidence_metric_ids": [1]}],
             "evidence": [
-                {"company": "Vinamilk", "fiscal_year": 2024, "metric_name": "net_revenue",
+                {"company": "Example Retailer", "fiscal_year": 2024, "metric_name": "net_revenue",
                  "metric_label": "Consolidated revenue", "metric_value": 61824, "unit": "billion VND",
                  "document_id": "AR24", "metric_id": 1, "page_number": 12, "source_url": "https://example.test/ar24",
-                 "source_quote": "Consolidated revenue 61,824 billion VND"},
-                {"company": "Vinamilk", "fiscal_year": 2024, "metric_name": "profit_after_tax",
+                 "source_quote": "Consolidated revenue 18,624 billion VND"},
+                {"company": "Example Retailer", "fiscal_year": 2024, "metric_name": "profit_after_tax",
                  "metric_label": "Profit after tax", "metric_value": 9453, "unit": "billion VND",
                  "document_id": "AR24", "page_number": 12, "source_url": "https://example.test/ar24",
                  "source_quote": "Profit after tax 9,453 billion VND"},
-                {"company": "Vinamilk", "fiscal_year": 2023, "metric_name": "net_revenue",
+                {"company": "Example Retailer", "fiscal_year": 2023, "metric_name": "net_revenue",
                  "metric_label": "Consolidated revenue", "metric_value": 60479, "unit": "billion VND",
                  "document_id": "AR24", "page_number": 12, "source_url": "https://example.test/ar24",
                  "source_quote": "Prior-year consolidated revenue 60,479 billion VND"},
@@ -931,11 +976,11 @@ class AnalyticsSqlSafetyTest(unittest.TestCase):
         repository.execute_authorized_analytics.return_value = {
             "results": [{"domain": "finance", "document_count": 1,
                          "evidence_document_ids": ["AR24"]}],
-            "evidence": [{"company": "Vinamilk", "fiscal_year": 2024, "metric_name": "net_revenue",
+            "evidence": [{"company": "Example Retailer", "fiscal_year": 2024, "metric_name": "net_revenue",
                           "metric_label": "Revenue", "metric_value": 61824, "unit": "billion VND",
                           "document_id": "AR24", "page_number": 12, "source_url": "https://example.test/ar24",
-                          "source_quote": "Revenue 61,824 billion VND"}],
-            "documents": [{"document_id": "AR24", "company": "Vinamilk", "domain": "finance",
+                          "source_quote": "Revenue 18,624 billion VND"}],
+            "documents": [{"document_id": "AR24", "company": "Example Retailer", "domain": "finance",
                            "title": "Annual report 2024", "source_url": "https://example.test/ar24"}],
         }
         llm = Mock()

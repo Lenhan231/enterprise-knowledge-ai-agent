@@ -61,7 +61,7 @@
       "question": "How should attributed campaign sales and advertising spend be interpreted when comparing campaigns?",
       "relevant_document_ids": [
         "AMAZON-ADS-CAMPAIGN-REPORTING",
-        "AUS-BUSINESS-MARKETING-PLAN"
+        "SHOPIFY-HELP-DEVELOPING-MARKETING-PLAN"
       ],
       "domain": "promotion_planning"
     },
@@ -74,7 +74,7 @@
       "question": "What evidence should be checked before repeating or expanding a promotion when contribution margin and a counterfactual are missing?",
       "relevant_document_ids": [
         "DD-ADS-SALES-LIFT-MEASUREMENT-2026",
-        "AUS-BUSINESS-MARKETING-PLAN"
+        "SHOPIFY-HELP-DEVELOPING-MARKETING-PLAN"
       ],
       "domain": "promotion_planning"
     },
@@ -110,8 +110,7 @@
       ],
       "question": "What route, capacity, service, and business-priority information should be gathered before choosing a carrier or logistics option?",
       "relevant_document_ids": [
-        "AMAZON-SCS-LOGISTICS-DECISIONS-2026",
-        "AUS-BUSINESS-ECOMMERCE-SHIPPING"
+        "AMAZON-SCS-LOGISTICS-DECISIONS-2026"
       ],
       "domain": "nationwide_logistics"
     },
@@ -121,9 +120,9 @@
       "allowed_roles": [
         "operations"
       ],
-      "question": "What sales, supplier lead-time, seasonality, recordkeeping and stocktake inputs should a manager use to review a SKU reorder point?",
+      "question": "What should an Amazon seller review in the FBA Restock Tool before deciding whether to replenish inventory?",
       "relevant_document_ids": [
-        "AUS-BUSINESS-INVENTORY-MANAGEMENT"
+        "AMAZON-FBA-RESTOCK-TOOL-GUIDE-2020"
       ],
       "domain": "inventory_allocation"
     },
@@ -133,9 +132,9 @@
       "allowed_roles": [
         "operations"
       ],
-      "question": "How should a small business structure a promotion plan so it specifies the target market, goals, channel activity, budget, success measure and review date?",
+      "question": "What should a Shopify store owner include in a marketing plan before committing campaign budget and choosing success measures?",
       "relevant_document_ids": [
-        "AUS-BUSINESS-MARKETING-PLAN"
+        "SHOPIFY-HELP-DEVELOPING-MARKETING-PLAN"
       ],
       "domain": "promotion_planning"
     },
@@ -145,9 +144,9 @@
       "allowed_roles": [
         "operations"
       ],
-      "question": "What practical criteria should a small business compare when selecting an e-commerce parcel delivery provider, including speed, parcel size, pickup, coverage, loss and damage terms, and reporting?",
+      "question": "How does Amazon describe choosing a supply-chain option based on inventory availability, destination, customer needs, speed, and cost?",
       "relevant_document_ids": [
-        "AUS-BUSINESS-ECOMMERCE-SHIPPING"
+        "AMAZON-SCS-LOGISTICS-DECISIONS-2026"
       ],
       "domain": "nationwide_logistics"
     }

@@ -3,6 +3,7 @@ PDF processor module for extracting and processing text from PDF documents.
 """
 
 import logging
+import math
 import os
 import re
 import statistics
@@ -10,9 +11,11 @@ import shutil
 import subprocess
 import csv
 import unicodedata
+from io import BytesIO
 from difflib import SequenceMatcher
 from collections import Counter, defaultdict
 from typing import Dict, List, Optional, Any, Tuple
+import numpy as np
 import fitz  # PyMuPDF
 from .pdf_layout_processor import PaddleLayoutProcessor, _HEADING_PATTERNS
 from .pdf_table_extractor import PDFTableExtractor
@@ -41,10 +44,13 @@ class PDFProcessor:
         }
         self.config.setdefault("extract_tables", True)
         self.config.setdefault("paddle_layout", True)
+        self.config.setdefault("paddle_chart_recognition", False)
         self.config.setdefault("paddle_formula_recognition", False)
         self.config.setdefault("tesseract_psm", 11)
         self.config.setdefault("tesseract_table_psm", 3)
         self.config.setdefault("ocr_language", "vie+eng")
+        self.config.setdefault("ocr_orientation_detection", True)
+        self.config.setdefault("ocr_deskew", True)
         self.config.setdefault("ocr_render_scale", float(os.getenv("DOCUMENT_OCR_RENDER_SCALE", "1.5")))
         self.config.setdefault("ocr_table_render_scale", float(os.getenv("DOCUMENT_OCR_TABLE_RENDER_SCALE", "2.5")))
         for setting in ("ocr_render_scale", "ocr_table_render_scale"):
@@ -104,9 +110,12 @@ class PDFProcessor:
             except Exception:
                 logger.exception("Paddle layout processing failed; using the existing PDF/OCR path")
 
-        pdf_text, pdf_metadata, tables, ocr_pages, page_headings = self._extract_pdf(
+        pdf_text, pdf_metadata, tables, ocr_pages, page_headings, ocr_rotations, ocr_deskews = self._extract_pdf(
             pdf_source, file_path=file_path
         )
+        ocr_render_scales = pdf_metadata.pop("_ocr_render_scales", {})
+        ocr_details = pdf_metadata.pop("_ocr_details", {})
+        ocr_diagnostics = pdf_metadata.pop("_ocr_diagnostics", {})
 
         # Merge extracted metadata with document metadata
         metadata = document.get("metadata", {}).copy()
@@ -138,6 +147,7 @@ class PDFProcessor:
             chunk_size = int(self.config.get("chunk_size", 800))
             overlap = int(self.config.get("chunk_overlap", 120))
             chunking_strategy = self.config.get("chunking_strategy", "sentence")
+            diagnostics_attached = False
             for start, end in split_ranges(
                 page_text,
                 size=chunk_size,
@@ -167,18 +177,48 @@ class PDFProcessor:
                             "layout_type": "text",
                             "section_title": current_section_title,
                             "parser": "pymupdf",
+                            **({"ocr_diagnostics": ocr_diagnostics[page_number]}
+                               if page_number in ocr_diagnostics and not diagnostics_attached else {}),
                             **({
                                 "ocr": {
                                     "engine": "tesseract",
                                     "language": self.config["ocr_language"],
-                                    "page_psm": self.config["tesseract_psm"],
-                                    "render_scale": self.config["ocr_render_scale"],
+                                    "page_psm": ocr_details.get(page_number, {}).get(
+                                        "page_psm", self.config["tesseract_psm"],
+                                    ),
+                                    "render_scale": ocr_render_scales.get(
+                                        page_number, self.config["ocr_render_scale"],
+                                    ),
+                                    **ocr_details.get(page_number, {}),
+                                    **({"orientation_correction_degrees": ocr_rotations[page_number]}
+                                       if page_number in ocr_rotations else {}),
+                                    **({"deskew_correction_degrees": ocr_deskews[page_number]}
+                                       if page_number in ocr_deskews else {}),
                                 },
                             } if page_number in ocr_pages else {}),
                         },
                     })
+                    if page_number in ocr_diagnostics:
+                        diagnostics_attached = True
         chunks = self._replace_flat_table_chunks(chunks, tables)
         return self._caption_pdf_images({"chunks": chunks, "tables": tables}, pdf_source, document)
+
+    @staticmethod
+    def _remove_page_counter_footer(text: str) -> str:
+        """Drop a standalone trailing page counter while preserving page provenance."""
+        lines = text.splitlines()
+        for index in range(len(lines) - 1, -1, -1):
+            line = lines[index].strip()
+            if not line:
+                continue
+            if len(line) <= 180 and re.search(
+                r"\b(?:page|trang)\s+\d+\s*(?:/|of|trên)\s*\d+\s*$",
+                line,
+                re.IGNORECASE,
+            ):
+                lines.pop(index)
+            break
+        return "\n".join(lines).strip()
 
     def _replace_flat_table_chunks(self, chunks: List[Dict[str, Any]], tables: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Use row/column-aware table text when it safely matches a same-page chunk.
@@ -193,8 +233,10 @@ class PDFProcessor:
 
         for table in tables:
             page_number = int(table.get("page_number") or 0)
+            table_context = table.get("context") or {}
+            table_title = str(table_context.get("table_title") or "").strip()
             fragments = self._structured_table_fragments(
-                table, int(self.config.get("chunk_size", 800)),
+                table, int(self.config.get("chunk_size", 800)), table_title=table_title,
             )
             for fragment_index, fragment in enumerate(fragments):
                 best = None
@@ -238,6 +280,7 @@ class PDFProcessor:
                     "table_index": table.get("table_index"),
                     "table_fragment_index": fragment_index,
                     "table_fragment_count": len(fragments),
+                    **({"table_title": table_title} if table_title else {}),
                     "table_extraction_method": table.get("metadata", {}).get("table_extraction_method"),
                     "parser": "pymupdf.structured_table_chunk",
                     "table_chunk_match_threshold": threshold,
@@ -280,7 +323,9 @@ class PDFProcessor:
         return result
 
     @staticmethod
-    def _structured_table_fragments(table: Dict[str, Any], max_chars: int) -> List[Dict[str, str]]:
+    def _structured_table_fragments(
+        table: Dict[str, Any], max_chars: int, *, table_title: str = "",
+    ) -> List[Dict[str, str]]:
         columns = [str(column or f"column_{index + 1}").strip() for index, column in enumerate(table.get("columns", []))]
         rows = table.get("rows", [])
         if not columns and rows:
@@ -289,6 +334,8 @@ class PDFProcessor:
             return []
 
         column_line = "Columns: " + " | ".join(columns)
+        title_line = f"Table: {table_title}" if table_title else ""
+        context_length = len(title_line) + (1 if title_line else 0)
         row_lines = []
         for row_index, row in enumerate(rows, start=1):
             cells = [str(row.get(column) if row.get(column) is not None else "").strip() for column in columns]
@@ -301,12 +348,12 @@ class PDFProcessor:
 
         groups = []
         current = []
-        current_length = len(column_line)
+        current_length = context_length + len(column_line)
         for line, cells in row_lines:
             if current and current_length + len(line) + 1 > max_chars:
                 groups.append(current)
                 current = []
-                current_length = len(column_line)
+                current_length = context_length + len(column_line)
             current.append((line, cells))
             current_length += len(line) + 1
         if current:
@@ -314,88 +361,15 @@ class PDFProcessor:
 
         return [
             {
-                "text": column_line + "\n" + "\n".join(line for line, _ in group),
+                "text": "\n".join(part for part in (
+                    title_line, column_line, *(line for line, _ in group),
+                ) if part),
                 "match_text": " ".join([
                     *columns, *(value for _, cells in group for value in cells),
                 ]),
             }
             for group in groups
         ]
-
-    @staticmethod
-    def _logical_table_fragments(
-        table: Dict[str, Any], *, table_title: str, unit: str,
-        column_labels: Dict[str, str],
-    ) -> List[Dict[str, Any]]:
-        """Serialize account-code row groups while retaining each group's structured rows."""
-        source_columns = [str(column) for column in table.get("columns", [])]
-        rows = table.get("rows", [])
-        columns = [column_labels.get(column, column) for column in source_columns]
-        groups: List[List[Dict[str, Any]]] = []
-        roots: List[Dict[str, Any]] = []
-        current: List[Dict[str, Any]] = []
-
-        def flush() -> None:
-            if current:
-                groups.append(current.copy())
-                current.clear()
-
-        for row in rows:
-            label = str(row.get("label") or "").strip()
-            code_match = re.match(r"^(\d{3})\b", label)
-            if not code_match:
-                # Repeated OCR column headers (for example "Mã Thuyết huyết 2011")
-                # are not account rows and must not leak into retrieval text.
-                continue
-            code = int(code_match.group(1))
-            if code % 100 == 0:
-                flush()
-                roots = [row]
-            elif code % 10 == 0:
-                flush()
-                current.append(row)
-            else:
-                current.append(row)
-        flush()
-
-        fragments = []
-        for index, group in enumerate(groups):
-            structured_rows = [*roots, *group]
-            lines = [
-                f"Bảng: {table_title}", f"Đơn vị: {unit}",
-                "Cột: " + " | ".join(columns),
-            ]
-            lines.extend(
-                " | ".join(
-                    f"{column_labels.get(source_column, source_column)}: "
-                    f"{str(row.get(source_column) or '').strip()}"
-                    for source_column in source_columns
-                )
-                for row in structured_rows
-            )
-            fragments.append({
-                "retrieval_text": "\n".join(lines),
-                "structured_data": {
-                    "columns": columns,
-                    "rows": [
-                        {
-                            column_labels.get(source_column, source_column): row.get(source_column)
-                            for source_column in source_columns
-                        }
-                        for row in structured_rows
-                    ],
-                },
-                "metadata": {
-                    "page_number": table.get("page_number"),
-                    "table_index": table.get("table_index"),
-                    "table_chunk_index": index,
-                    "table_chunk_count": len(groups),
-                    "table_extraction_method": table.get("metadata", {}).get(
-                        "table_extraction_method"
-                    ),
-                },
-            })
-        return fragments
 
     @staticmethod
     def _table_match_coverage(chunk_text: str, table_text: str) -> Tuple[float, float]:
@@ -507,7 +481,7 @@ class PDFProcessor:
         """
         if not os.path.isfile(file_path):
             raise ValueError(f"PDF file not found: {file_path}")
-        text, metadata, _, _, _ = self._extract_pdf(file_path, file_path=file_path)
+        text, metadata, *_ = self._extract_pdf(file_path, file_path=file_path)
         return text, metadata
 
     def extract_text_from_binary(self, pdf_binary: bytes) -> Tuple[str, Dict[str, Any]]:
@@ -520,12 +494,12 @@ class PDFProcessor:
         Returns:
             Tuple of (extracted text, metadata dictionary)
         """
-        text, metadata, _, _, _ = self._extract_pdf(pdf_binary)
+        text, metadata, *_ = self._extract_pdf(pdf_binary)
         return text, metadata
 
     def _extract_pdf(
         self, source: Any, file_path: Optional[str] = None
-    ) -> Tuple[str, Dict[str, Any], List[Dict[str, Any]], Dict[int, str], Dict[int, List[str]]]:
+    ) -> Tuple[str, Dict[str, Any], List[Dict[str, Any]], Dict[int, str], Dict[int, List[str]], Dict[int, int], Dict[int, float]]:
         """Extract page text and table rows during one PDF traversal."""
         if isinstance(source, bytes):
             pdf_document = fitz.open(stream=source, filetype="pdf")
@@ -536,6 +510,12 @@ class PDFProcessor:
         tables = []
         ocr_pages = {}
         ocr_table_words = {}
+        ocr_page_rects = {}
+        ocr_rotations = {}
+        ocr_deskews = {}
+        ocr_render_scales = {}
+        ocr_details = {}
+        ocr_diagnostics = {}
         page_headings = {}
         metadata = {
             "page_count": len(pdf_document),
@@ -559,56 +539,183 @@ class PDFProcessor:
                 native_text = page_text.strip()
                 ocr_headings = []
                 ocr_text = ""
-                if (
-                    self.ocr_available
-                    and self.config.get("ocr_fallback", False)
-                    and self._needs_ocr(page, native_text)
-                ):
+                page_needs_ocr = self._needs_ocr(page, native_text)
+                if self.ocr_available and self.config.get("ocr_fallback", False) and page_needs_ocr:
                     ocr_pixmap = page.get_pixmap(
                         matrix=fitz.Matrix(self.config["ocr_render_scale"], self.config["ocr_render_scale"]),
                         alpha=False,
                     )
+                    ocr_rotation = self._detect_ocr_rotation(ocr_pixmap)
+                    if ocr_rotation:
+                        try:
+                            ocr_pixmap = self._rotate_ocr_pixmap(ocr_pixmap, ocr_rotation)
+                        except (OSError, ValueError) as error:
+                            logger.warning("Could not rotate OCR image for page %d: %s", page_num + 1, error)
+                            ocr_rotation = 0
+                        if ocr_rotation:
+                            ocr_page_rects[page_num + 1] = self._oriented_page_rect(page.rect, ocr_rotation)
+                            ocr_rotations[page_num + 1] = ocr_rotation
                     ocr_text = self._ocr_page(page, ocr_pixmap).strip()
+                    if not ocr_rotation:
+                        ocr_rotation, ocr_pixmap, ocr_text = self._recover_sparse_landscape_orientation(
+                            page, ocr_pixmap, ocr_text,
+                        )
+                        if ocr_rotation:
+                            ocr_page_rects[page_num + 1] = self._oriented_page_rect(page.rect, ocr_rotation)
+                            ocr_rotations[page_num + 1] = ocr_rotation
+                    table_pixmap_source = ocr_pixmap
+                    if self.config.get("ocr_deskew", True) and ocr_text:
+                        deskew = self._estimate_ocr_skew(ocr_pixmap)
+                        if deskew:
+                            try:
+                                deskewed_pixmap = self._rotate_ocr_pixmap_by_angle(ocr_pixmap, deskew)
+                                ocr_pixmap = deskewed_pixmap
+                                ocr_text = self._ocr_page(page, ocr_pixmap).strip()
+                                ocr_deskews[page_num + 1] = deskew
+                            except (OSError, ValueError) as error:
+                                logger.debug("Could not deskew OCR image for page %d: %s", page_num + 1, error)
                     if ocr_text:
                         if self.config.get("extract_tables", False) and self._looks_like_numeric_table(ocr_text):
                             table_render_scale = self.config["ocr_table_render_scale"]
                             table_pixmap = (
-                                ocr_pixmap
+                                table_pixmap_source
                                 if table_render_scale == self.config["ocr_render_scale"]
                                 else page.get_pixmap(
                                     matrix=fitz.Matrix(table_render_scale, table_render_scale),
                                     alpha=False,
                                 )
                             )
-                            ocr_table_words[page_num + 1] = self._ocr_page_words(page, table_pixmap)
+                            if ocr_rotation and table_render_scale != self.config["ocr_render_scale"]:
+                                table_pixmap = self._rotate_ocr_pixmap(table_pixmap, ocr_rotation)
+                            table_deskew = ocr_deskews.get(page_num + 1, 0.0)
+                            if table_deskew:
+                                table_pixmap = self._rotate_ocr_pixmap_by_angle(table_pixmap, table_deskew)
+                            ocr_table_words[page_num + 1] = self._ocr_page_words(
+                                page, table_pixmap, page_rect=ocr_page_rects.get(page_num + 1),
+                            )
                         if len(native_text) < 50:
                             page_text = ocr_text
                             ocr_pages[page_num + 1] = "tesseract"
                         else:
-                            page_text = f"{page_text}\n{self._remove_ocr_duplicates(native_text, ocr_text)}"
+                            additions = self._remove_ocr_duplicates(native_text, ocr_text)
+                            if additions and self._has_meaningful_ocr_additions(native_text, ocr_text):
+                                page_text = f"{page_text}\n{additions}"
+                                ocr_pages[page_num + 1] = "pymupdf+tesseract"
+                            else:
+                                ocr_text = ""
+                elif self.ocr_available and self.config.get("ocr_fallback", False):
+                    image_scale = self.config["ocr_table_render_scale"]
+                    image_texts = []
+                    image_words = []
+                    for image_rect in self._embedded_image_regions(page):
+                        image_pixmap = page.get_pixmap(
+                            matrix=fitz.Matrix(image_scale, image_scale),
+                            clip=image_rect,
+                            alpha=False,
+                        )
+                        words = self._ocr_page_words(page, image_pixmap, page_rect=image_rect)
+                        if len(words) < 4:
+                            ocr_diagnostics.setdefault(page_num + 1, []).append({
+                                "scope": "embedded_image_region",
+                                "status": "rejected",
+                                "reason": "insufficient_ocr_words",
+                                "word_count": len(words),
+                            })
+                            continue
+                        confidences = [word[8] for word in words if len(word) > 8 and word[8] >= 0]
+                        mean_confidence = statistics.mean(confidences) if confidences else 0.0
+                        # ponytail: reject weak embedded-image OCR rather than index a
+                        # malformed table; lower this only with reviewed mixed-page labels.
+                        if mean_confidence < 60:
+                            ocr_diagnostics.setdefault(page_num + 1, []).append({
+                                "scope": "embedded_image_region",
+                                "status": "rejected",
+                                "reason": "low_mean_word_confidence",
+                                "mean_word_confidence": round(mean_confidence, 1),
+                                "minimum_word_confidence": 60,
+                            })
+                            logger.info(
+                                "Skipping embedded image OCR on page %d (mean confidence %.1f)",
+                                page_num + 1, mean_confidence,
+                            )
+                            continue
+                        image_words.extend(words)
+                        image_texts.append(self._ocr_words_to_text(words))
+                    image_text = "\n".join(text for text in image_texts if text).strip()
+                    if image_text:
+                        additions = self._remove_ocr_duplicates(native_text, image_text)
+                        if additions and self._has_meaningful_ocr_additions(native_text, image_text):
+                            page_text = f"{page_text}\n{additions}"
+                            ocr_text = image_text
                             ocr_pages[page_num + 1] = "pymupdf+tesseract"
+                            ocr_render_scales[page_num + 1] = image_scale
+                            ocr_details[page_num + 1] = {
+                                "page_psm": self.config["tesseract_table_psm"],
+                                "scope": "embedded_image_regions",
+                                "mean_word_confidence": round(mean_confidence, 1),
+                            }
+                        if self.config.get("extract_tables", False) and image_words:
+                            ocr_table_words[page_num + 1] = image_words
 
-                extracted_text.append(f"\n--- Page {page_num + 1} ---\n{page_text}")
+                page_text = self._remove_page_counter_footer(page_text)
 
                 if self.config.get("extract_tables", False):
+                    table_words = ocr_table_words.get(page_num + 1, [])
+                    table_confidences = [
+                        word[8] for word in table_words
+                        if len(word) > 8 and word[8] >= 0
+                    ]
+                    mean_word_confidence = (
+                        round(statistics.mean(table_confidences), 1)
+                        if table_confidences else None
+                    )
                     tables.extend(self._extract_page_tables(
-                        page, page_num + 1, ocr_table_words.get(page_num + 1),
-                        ocr_metadata=self._ocr_table_metadata(),
+                        page, page_num + 1, table_words,
+                        ocr_metadata=self._ocr_table_metadata(
+                            ocr_rotations.get(page_num + 1, 0),
+                            ocr_deskews.get(page_num + 1, 0.0),
+                            mean_word_confidence,
+                        ),
+                        ocr_page_rect=ocr_page_rects.get(page_num + 1),
                     ))
+
+                    # On scan-only pages, keep table content in its structured
+                    # row-aware chunks. Rebuild the prose chunk from the same
+                    # word boxes outside extracted table regions so a noisy
+                    # full-page OCR value cannot conflict with the table value.
+                    page_tables = [
+                        table for table in tables
+                        if table.get("page_number") == page_num + 1
+                    ]
+                    if (
+                        ocr_pages.get(page_num + 1) == "tesseract"
+                        and table_words
+                        and page_tables
+                    ):
+                        prose_words = self._exclude_table_words(table_words, page_tables)
+                        prose_text = self._ocr_words_to_text(prose_words).strip()
+                        if prose_text:
+                            page_text = self._remove_page_counter_footer(prose_text)
+                            ocr_render_scales[page_num + 1] = self.config["ocr_table_render_scale"]
+                            ocr_details[page_num + 1] = {
+                                "page_psm": self.config["tesseract_table_psm"],
+                                "scope": "page_words_outside_structured_tables",
+                            }
 
                 table_bboxes = [
                     table["metadata"]["bbox"] for table in tables
                     if table.get("page_number") == page_num + 1
                     and table.get("metadata", {}).get("bbox")
                 ]
+                headings = self._extract_page_headings(page, table_bboxes)
                 if ocr_text:
                     has_ocr_table = any(
                         table.get("page_number") == page_num + 1 for table in tables
                     )
                     ocr_headings = self._extract_ocr_page_headings(
-                        ocr_text, allow_unstructured=not has_ocr_table,
+                        ocr_text,
+                        allow_unstructured=not has_ocr_table and not headings,
                     )
-                headings = self._extract_page_headings(page, table_bboxes)
                 headings.extend(heading for heading in ocr_headings if heading not in headings)
                 if headings:
                     page_headings[page_num + 1] = headings
@@ -620,15 +727,28 @@ class PDFProcessor:
                         if table_title:
                             table.setdefault("context", {})["table_title"] = table_title
 
+                extracted_text.append(f"\n--- Page {page_num + 1} ---\n{page_text}")
+
                 if self.config.get("extract_images", False) and file_path:
                     self._extract_images(page, page_num, file_path)
+
+            for table in tables:
+                rotation = ocr_rotations.get(table.get("page_number"), 0)
+                deskew = ocr_deskews.get(table.get("page_number"), 0.0)
+                if rotation or deskew:
+                    source_page = pdf_document[table["page_number"] - 1]
+                    self._restore_table_coordinates(table, source_page.rect, rotation, deskew)
+            self._link_continued_tables(tables, pdf_document)
         except Exception as e:
             logger.error("Error extracting PDF content: %s", str(e))
             raise
         finally:
             pdf_document.close()
 
-        return "\n".join(extracted_text), metadata, tables, ocr_pages, page_headings
+        metadata["_ocr_render_scales"] = ocr_render_scales
+        metadata["_ocr_details"] = ocr_details
+        metadata["_ocr_diagnostics"] = ocr_diagnostics
+        return "\n".join(extracted_text), metadata, tables, ocr_pages, page_headings, ocr_rotations, ocr_deskews
 
     @staticmethod
     def _extract_page_headings(page, excluded_bboxes=()) -> List[str]:
@@ -655,7 +775,7 @@ class PDFProcessor:
         headings = []
         for _, text, size in sorted(lines):
             numbered_heading = any(pattern.match(text) for pattern in _HEADING_PATTERNS.values())
-            visually_prominent = size >= body_size * 1.2
+            visually_prominent = size >= body_size * 1.5
             uppercase_title = (
                 text == text.upper()
                 and any(char.isalpha() for char in text)
@@ -669,9 +789,23 @@ class PDFProcessor:
                 and (numbered_heading or visually_prominent or uppercase_title)
                 and not re.fullmatch(r"[\d\W]+", text)
             ):
-                if not headings or headings[-1] != text:
-                    headings.append(text)
-        return headings
+                if not headings or headings[-1][1] != text:
+                    headings.append((_, text, size, visually_prominent))
+
+        merged = []
+        for y, text, size, visually_prominent in headings:
+            if (
+                merged
+                and visually_prominent
+                and merged[-1][3]
+                and abs(size - merged[-1][2]) <= max(size, merged[-1][2]) * 0.05
+                and y - merged[-1][0] <= max(size, merged[-1][2]) * 1.2
+            ):
+                previous = merged[-1]
+                merged[-1] = (y, f"{previous[1]} {text}", size, visually_prominent)
+            else:
+                merged.append((y, text, size, visually_prominent))
+        return [heading for _, heading, _, _ in merged]
 
     @staticmethod
     def _extract_ocr_page_headings(
@@ -768,37 +902,98 @@ class PDFProcessor:
         return image_area / max(page.rect.get_area(), 1) >= 0.25
 
     @staticmethod
-    def _remove_ocr_duplicates(native_text: str, ocr_text: str) -> str:
-        """Drop OCR sentences already represented by native PDF text."""
-        def normalized_sentences(text: str) -> list[str]:
-            compact = " ".join(text.split())
-            return [
-                "".join(
-                    character for character in unicodedata.normalize("NFD", sentence.casefold())
-                    if unicodedata.category(character) != "Mn" and character.isalnum()
-                )
-                for sentence in re.split(r"(?<=[.!?])\s+", compact)
-                if len(sentence.strip()) >= 30
-            ]
+    def _embedded_image_regions(page):
+        """Return a small set of large raster regions on otherwise text-rich pages."""
+        regions = []
+        seen = set()
+        page_area = max(page.rect.get_area(), 1)
+        for image in page.get_image_info():
+            rect = fitz.Rect(image.get("bbox", (0, 0, 0, 0))).intersect(page.rect)
+            key = tuple(round(value, 1) for value in rect)
+            if (
+                key in seen
+                or rect.width < 96
+                or rect.height < 48
+                or rect.get_area() / page_area < 0.10
+            ):
+                continue
+            seen.add(key)
+            regions.append(rect)
+        # ponytail: OCR only the two largest embedded images per text-rich page;
+        # expand after a labeled fixture shows that smaller images carry needed text.
+        return sorted(regions, key=lambda rect: rect.get_area(), reverse=True)[:2]
 
-        native_sentences = normalized_sentences(native_text)
-        if not native_sentences:
+    @staticmethod
+    def _ocr_words_to_text(words) -> str:
+        """Rebuild reading lines from the word boxes already returned by Tesseract TSV."""
+        lines = defaultdict(list)
+        for word in words:
+            lines[(word[5], word[6])].append(word)
+        return "\n".join(
+            " ".join(item[4] for item in sorted(line, key=lambda item: (item[0], item[7])))
+            for _, line in sorted(lines.items())
+        )
+
+    @staticmethod
+    def _exclude_table_words(words, tables):
+        """Remove OCR words inside extracted table and column-header boxes."""
+        boxes = []
+        for table in tables:
+            metadata = table.get("metadata") or {}
+            boxes.extend(
+                box for box in (metadata.get("bbox"), metadata.get("ocr_column_header_bbox"))
+                if isinstance(box, (list, tuple)) and len(box) == 4
+            )
+        if not boxes:
+            return list(words)
+        return [
+            word for word in words
+            if not any(
+                box[0] <= (word[0] + word[2]) / 2 <= box[2]
+                and box[1] <= (word[1] + word[3]) / 2 <= box[3]
+                for box in boxes
+            )
+        ]
+
+    @staticmethod
+    def _remove_ocr_duplicates(native_text: str, ocr_text: str) -> str:
+        """Drop OCR lines and sentences already represented by native PDF text."""
+        def fragments(text: str) -> list[tuple[str, str]]:
+            result = []
+            for line in text.splitlines() or [text]:
+                for fragment in re.split(r"(?<=[.!?])\s+", " ".join(line.split())):
+                    normalized = "".join(
+                        character for character in unicodedata.normalize("NFD", fragment.casefold())
+                        if unicodedata.category(character) != "Mn" and character.isalnum()
+                    )
+                    if normalized:
+                        result.append((fragment, normalized))
+            return result
+
+        native_fragments = fragments(native_text)
+        native_exact = {normalized for _, normalized in native_fragments if len(normalized) >= 8}
+        if not native_fragments:
             return ocr_text
 
         kept = []
-        for sentence in re.split(r"(?<=[.!?])\s+", " ".join(ocr_text.split())):
-            normalized = "".join(
-                character for character in unicodedata.normalize("NFD", sentence.casefold())
-                if unicodedata.category(character) != "Mn" and character.isalnum()
-            )
-            duplicate = len(normalized) >= 30 and any(
+        for sentence, normalized in fragments(ocr_text):
+            duplicate = normalized in native_exact or (len(normalized) >= 30 and any(
                 min(len(normalized), len(native)) / max(len(normalized), len(native)) >= 0.65
                 and SequenceMatcher(None, normalized, native, autojunk=False).ratio() >= 0.82
-                for native in native_sentences
-            )
+                for _, native in native_fragments
+            ))
             if not duplicate:
                 kept.append(sentence)
         return " ".join(kept)
+
+    @staticmethod
+    def _has_meaningful_ocr_additions(native_text: str, ocr_text: str) -> bool:
+        """Ignore OCR noise when little of the OCR token stream is new to native text."""
+        pattern = re.compile(r"(?u)\b(?:\d{2,}(?:[.,]\d+)*|[^\W\d_][\w-]{2,})\b")
+        native_tokens = set(pattern.findall(native_text.casefold()))
+        ocr_tokens = pattern.findall(ocr_text.casefold())
+        new_tokens = [token for token in ocr_tokens if token not in native_tokens]
+        return len(set(new_tokens)) >= 3 and len(new_tokens) / max(len(ocr_tokens), 1) >= 0.08
 
     @staticmethod
     def _looks_like_numeric_table(text: str) -> bool:
@@ -809,18 +1004,283 @@ class PDFProcessor:
         split_cell_rows = sum(bool(numeric_cell.fullmatch(line)) for line in lines)
         return multi_value_rows >= 3 or split_cell_rows >= 8
 
-    def _ocr_table_metadata(self) -> Dict[str, Any]:
-        return {
+    def _ocr_table_metadata(
+        self, orientation_correction_degrees: int = 0,
+        deskew_correction_degrees: float = 0.0,
+        mean_word_confidence: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        metadata = {
             "engine": "tesseract",
             "language": self.config.get("ocr_language", "vie+eng"),
             "table_psm": self.config["tesseract_table_psm"],
             "render_scale": self.config["ocr_table_render_scale"],
         }
+        if orientation_correction_degrees:
+            metadata["orientation_correction_degrees"] = orientation_correction_degrees
+        if deskew_correction_degrees:
+            metadata["deskew_correction_degrees"] = deskew_correction_degrees
+        if mean_word_confidence is not None:
+            metadata["mean_word_confidence"] = mean_word_confidence
+        return metadata
+
+    def _detect_ocr_rotation(self, pixmap) -> int:
+        """Return a confident Tesseract OSD quarter-turn correction, if any."""
+        if not self.config.get("ocr_orientation_detection", True) or not self.ocr_available:
+            return 0
+        try:
+            result = subprocess.run(
+                ["tesseract", "stdin", "stdout", "-l", "osd", "--psm", "0"],
+                input=pixmap.tobytes("png"), capture_output=True, check=True, timeout=30,
+            )
+        except (OSError, subprocess.SubprocessError) as error:
+            logger.debug("Tesseract orientation detection unavailable: %s", error)
+            return 0
+
+        output = result.stdout.decode("utf-8", errors="replace")
+        rotation = re.search(r"^Rotate:\s*(\d+)\s*$", output, re.MULTILINE)
+        confidence = re.search(r"^Orientation confidence:\s*([\d.]+)\s*$", output, re.MULTILINE)
+        if not rotation or not confidence:
+            return 0
+        degrees = int(rotation.group(1))
+        if degrees not in {90, 180, 270} or float(confidence.group(1)) < 2.5:
+            return 0
+        return degrees
+
+    def _estimate_ocr_skew(self, pixmap) -> float:
+        """Estimate small page skew from horizontal text-line projections."""
+        from PIL import Image
+
+        try:
+            with Image.open(BytesIO(pixmap.tobytes("png"))) as source:
+                image = source.convert("L")
+                image.thumbnail((420, 600), Image.Resampling.LANCZOS)
+
+            def projection_score(angle: float) -> float:
+                rotated = image.rotate(
+                    angle, resample=Image.Resampling.BILINEAR,
+                    expand=False, fillcolor=255,
+                )
+                pixels = np.asarray(rotated, dtype=np.uint8)
+                row_ink = np.count_nonzero(pixels < 190, axis=1).astype(np.float64)
+                return float(np.square(row_ink - row_ink.mean()).sum())
+
+            baseline = projection_score(0.0)
+            if baseline <= 0:
+                return 0.0
+            coarse = max(
+                ((projection_score(float(angle)), float(angle))
+                 for angle in np.arange(-6.0, 6.01, 0.5)),
+                key=lambda item: item[0],
+            )[1]
+            best_score, correction = max(
+                ((projection_score(float(angle)), float(angle))
+                 for angle in np.arange(coarse - 0.5, coarse + 0.501, 0.1)),
+                key=lambda item: item[0],
+            )
+            if abs(correction) < 0.5 or best_score < baseline * 1.1:
+                return 0.0
+            return round(correction, 1)
+        except (OSError, ValueError):
+            return 0.0
+
+    @staticmethod
+    def _rotate_ocr_pixmap_by_angle(pixmap, correction_degrees: float):
+        """Apply a small counterclockwise correction without changing raster bounds."""
+        from PIL import Image
+
+        with Image.open(BytesIO(pixmap.tobytes("png"))) as image:
+            corrected = image.rotate(
+                correction_degrees, resample=Image.Resampling.BICUBIC,
+                expand=False, fillcolor=(255, 255, 255),
+            ).convert("RGB")
+            output = BytesIO()
+            corrected.save(output, format="PNG")
+        return fitz.Pixmap(output.getvalue())
+
+    @staticmethod
+    def _rotate_ocr_pixmap(pixmap, clockwise_degrees: int):
+        """Rotate a rendered page to the orientation reported by Tesseract OSD."""
+        from PIL import Image
+
+        with Image.open(BytesIO(pixmap.tobytes("png"))) as image:
+            upright = image.rotate(-clockwise_degrees, expand=True).convert("RGB")
+            output = BytesIO()
+            upright.save(output, format="PNG")
+        return fitz.Pixmap(output.getvalue())
+
+    def _recover_sparse_landscape_orientation(self, page, pixmap, ocr_text: str):
+        """Try sideways candidates only when OSD and upright OCR yield little text."""
+        if (
+            not self.config.get("ocr_orientation_detection", True)
+            or not self.ocr_available
+            or pixmap.width <= pixmap.height
+            or sum(character.isalnum() for character in ocr_text) >= 40
+        ):
+            return 0, pixmap, ocr_text
+        from PIL import Image, ImageStat
+
+        try:
+            with Image.open(BytesIO(pixmap.tobytes("png"))) as image:
+                thumbnail = image.convert("L")
+                thumbnail.thumbnail((48, 48))
+                if ImageStat.Stat(thumbnail).stddev[0] <= 1.5:
+                    return 0, pixmap, ocr_text
+        except (OSError, ValueError) as error:
+            logger.debug("Could not inspect sparse OCR page for rotation: %s", error)
+            return 0, pixmap, ocr_text
+
+        def score(text):
+            return (
+                int(self._looks_like_numeric_table(text)),
+                sum(character.isalpha() for character in text),
+                sum(character.isdigit() for character in text),
+            )
+
+        best_score = score(ocr_text)
+        best = (0, pixmap, ocr_text)
+        for degrees in (90, 270):
+            try:
+                candidate_pixmap = self._rotate_ocr_pixmap(pixmap, degrees)
+            except (OSError, ValueError) as error:
+                logger.debug("Could not try %d-degree OCR rotation: %s", degrees, error)
+                continue
+            candidate_text = self._ocr_page(page, candidate_pixmap, timeout=30).strip()
+            candidate_score = score(candidate_text)
+            if candidate_score > best_score and (
+                self._looks_like_numeric_table(candidate_text)
+                or sum(character.isalpha() for character in candidate_text) >= 24
+            ):
+                best_score = candidate_score
+                best = (degrees, candidate_pixmap, candidate_text)
+        return best
+
+    @staticmethod
+    def _oriented_page_rect(page_rect, clockwise_degrees: int):
+        if clockwise_degrees in {90, 270}:
+            return fitz.Rect(0, 0, page_rect.height, page_rect.width)
+        return fitz.Rect(0, 0, page_rect.width, page_rect.height)
+
+    @staticmethod
+    def _restore_table_coordinates(
+        table: Dict[str, Any], page_rect, clockwise_degrees: int,
+        deskew_correction_degrees: float = 0.0,
+    ) -> None:
+        """Map OCR boxes from the corrected raster back to the source PDF page."""
+        metadata = table.get("metadata", {})
+        oriented_rect = PDFProcessor._oriented_page_rect(page_rect, clockwise_degrees)
+
+        def restore(box):
+            if not box or len(box) != 4:
+                return box
+            x0, y0, x1, y1 = map(float, box)
+            if deskew_correction_degrees:
+                angle = math.radians(deskew_correction_degrees)
+                cosine, sine = math.cos(angle), math.sin(angle)
+                center_x = oriented_rect.x0 + oriented_rect.width / 2
+                center_y = oriented_rect.y0 + oriented_rect.height / 2
+                points = []
+                for x, y in ((x0, y0), (x1, y0), (x0, y1), (x1, y1)):
+                    dx, dy = x - center_x, y - center_y
+                    points.append((
+                        center_x + cosine * dx - sine * dy,
+                        center_y + sine * dx + cosine * dy,
+                    ))
+                x0 = max(oriented_rect.x0, min(point[0] for point in points))
+                x1 = min(oriented_rect.x1, max(point[0] for point in points))
+                y0 = max(oriented_rect.y0, min(point[1] for point in points))
+                y1 = min(oriented_rect.y1, max(point[1] for point in points))
+            if clockwise_degrees == 90:
+                points = ((page_rect.width - y, x) for x in (x0, x1) for y in (y0, y1))
+            elif clockwise_degrees == 180:
+                points = ((page_rect.width - x, page_rect.height - y) for x in (x0, x1) for y in (y0, y1))
+            elif clockwise_degrees == 270:
+                points = ((y, page_rect.height - x) for x in (x0, x1) for y in (y0, y1))
+            else:
+                return box
+            xs, ys = zip(*points)
+            return [
+                max(page_rect.x0, min(page_rect.x1, page_rect.x0 + min(xs))),
+                max(page_rect.y0, min(page_rect.y1, page_rect.y0 + min(ys))),
+                max(page_rect.x0, min(page_rect.x1, page_rect.x0 + max(xs))),
+                max(page_rect.y0, min(page_rect.y1, page_rect.y0 + max(ys))),
+            ]
+
+        metadata["bbox"] = restore(metadata.get("bbox"))
+        if metadata.get("ocr_column_header_bbox"):
+            metadata["ocr_column_header_bbox"] = restore(metadata["ocr_column_header_bbox"])
+        for row in metadata.get("row_cell_bboxes", []):
+            for column, box in row.items():
+                if box:
+                    row[column] = restore(box)
+
+    @staticmethod
+    def _link_continued_tables(tables: List[Dict[str, Any]], pdf_document) -> None:
+        """Link unambiguous page-edge table segments without merging their provenance."""
+        by_page: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+        for table in tables:
+            by_page[int(table.get("page_number") or 0)].append(table)
+
+        for page_number in sorted(by_page):
+            previous_tables = by_page.get(page_number - 1, [])
+            current_tables = by_page[page_number]
+            if not previous_tables:
+                continue
+            previous_rect = pdf_document[page_number - 2].rect
+            current_rect = pdf_document[page_number - 1].rect
+            matches = []
+            for previous in previous_tables:
+                previous_columns = tuple(
+                    " ".join(str(column).casefold().split())
+                    for column in previous.get("columns", [])
+                )
+                previous_bbox = (previous.get("metadata") or {}).get("bbox")
+                if not previous_columns or not previous_bbox or previous_bbox[3] < previous_rect.y0 + previous_rect.height * 0.75:
+                    continue
+                previous_title = str((previous.get("context") or {}).get("table_title") or "").strip().casefold()
+                for current in current_tables:
+                    current_columns = tuple(
+                        " ".join(str(column).casefold().split())
+                        for column in current.get("columns", [])
+                    )
+                    current_bbox = (current.get("metadata") or {}).get("bbox")
+                    if current_columns != previous_columns or not current_bbox:
+                        continue
+                    if current_bbox[1] > current_rect.y0 + current_rect.height * 0.25:
+                        continue
+                    current_title = str((current.get("context") or {}).get("table_title") or "").strip().casefold()
+                    if previous_title and current_title and previous_title != current_title:
+                        continue
+                    matches.append((previous, current))
+
+            if len(matches) != 1:
+                continue
+            previous, current = matches[0]
+            previous_metadata = previous.setdefault("metadata", {})
+            current_metadata = current.setdefault("metadata", {})
+            group_id = previous_metadata.get("continuation_group_id") or (
+                f"page:{page_number - 1}:table:{previous.get('table_index', 0)}"
+            )
+            previous_metadata.update({
+                "continuation_group_id": group_id,
+                "continued_to_page": page_number,
+            })
+            current_metadata.update({
+                "continuation_group_id": group_id,
+                "continued_from_page": page_number - 1,
+            })
+            previous_context = previous.setdefault("context", {})
+            current_context = current.setdefault("context", {})
+            inherited_title = previous_context.get("table_title") or current_context.get("table_title")
+            if inherited_title:
+                previous_context.setdefault("table_title", inherited_title)
+                current_context.setdefault("table_title", inherited_title)
 
 
     @staticmethod
-    def _extract_page_tables(page, page_number: int, ocr_words=None, ocr_metadata=None):
-        return PDFTableExtractor._extract_page_tables(page, page_number, ocr_words, ocr_metadata)
+    def _extract_page_tables(page, page_number: int, ocr_words=None, ocr_metadata=None, ocr_page_rect=None):
+        return PDFTableExtractor._extract_page_tables(
+            page, page_number, ocr_words, ocr_metadata, ocr_page_rect,
+        )
 
     @staticmethod
     def _tables_from_aligned_words(words, page_rect, page_number: int, ocr_metadata=None):
@@ -834,7 +1294,7 @@ class PDFProcessor:
     def _split_aligned_text_table(table, page, page_number: int, first_index: int, words=None):
         return PDFTableExtractor._split_aligned_text_table(table, page, page_number, first_index, words)
 
-    def _ocr_page(self, page, pixmap=None) -> str:
+    def _ocr_page(self, page, pixmap=None, *, timeout: int = 90) -> str:
         """
         Perform OCR on a PDF page.
 
@@ -855,13 +1315,15 @@ class PDFProcessor:
                 )
             return subprocess.run(
                 ["tesseract", "stdin", "stdout", "-l", self.config.get("ocr_language", "vie+eng"), "--psm", str(self.config["tesseract_psm"])],
-                input=pixmap.tobytes("png"), capture_output=True, check=True, timeout=90,
+                input=pixmap.tobytes("png"), capture_output=True, check=True, timeout=timeout,
             ).stdout.decode("utf-8", errors="replace").strip()
         except (OSError, subprocess.SubprocessError) as e:
             logger.error("OCR error: %s", str(e))
             return ""
 
-    def _ocr_page_words(self, page, pixmap=None) -> List[Tuple[float, float, float, float, str, int, int, int]]:
+    def _ocr_page_words(
+        self, page, pixmap=None, *, page_rect=None,
+    ) -> List[Tuple[float, float, float, float, str, int, int, int, float]]:
         """Return Tesseract word boxes in PDF points for scanned-table layout."""
         if not self.ocr_available:
             return []
@@ -876,19 +1338,24 @@ class PDFProcessor:
                 input=pixmap.tobytes("png"), capture_output=True,
                 check=True, timeout=90,
             ).stdout.decode("utf-8", errors="replace")
-            scale_x = pixmap.width / page.rect.width
-            scale_y = pixmap.height / page.rect.height
+            coordinate_rect = page_rect or page.rect
+            scale_x = pixmap.width / coordinate_rect.width
+            scale_y = pixmap.height / coordinate_rect.height
             words = []
             for row in csv.DictReader(output.splitlines(), delimiter="\t"):
                 if row.get("level") != "5" or not row.get("text", "").strip():
                     continue
-                x0 = page.rect.x0 + int(row["left"]) / scale_x
-                y0 = page.rect.y0 + int(row["top"]) / scale_y
-                x1 = x0 + int(row["width"]) / scale_x
-                y1 = y0 + int(row["height"]) / scale_y
+                left, top = int(row["left"]), int(row["top"])
+                right = left + int(row["width"])
+                bottom = top + int(row["height"])
+                x0 = coordinate_rect.x0 + left / scale_x
+                y0 = coordinate_rect.y0 + top / scale_y
+                x1 = coordinate_rect.x0 + right / scale_x
+                y1 = coordinate_rect.y0 + bottom / scale_y
                 words.append((
                     x0, y0, x1, y1, row["text"],
                     int(row["block_num"]), int(row["line_num"]), int(row["word_num"]),
+                    float(row.get("conf") or -1),
                 ))
             return words
         except (OSError, ValueError, KeyError, subprocess.SubprocessError) as e:

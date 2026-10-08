@@ -4,12 +4,8 @@ import json
 import re
 
 from sqlglot import exp, parse_one
+from sqlglot.errors import ParseError, TokenError
 
-from core.analytics.business_metric_catalog import (
-    BUSINESS_DECISION_PROFILES,
-    BUSINESS_METRIC_CATALOG,
-    resolve_business_metric_names,
-)
 from core.analytics.commerce_decision_support import (
     COMMERCE_DECISION_PROFILES,
     COMMERCE_QUERY_TABLES,
@@ -73,10 +69,91 @@ def _inventory_question_needs_latest_snapshot(question: str) -> bool:
     if re.search(r"\b(?:19|20)\d{2}\b", text):
         return False
     historical = (
-        r"\b(trend|historical|over time|year.over.year|by year|by month|across years|all years|all.time)\b"
+        r"\b(trend|historical|over time|year.over.year|by year|by month|across years|all years|all.time|"
+        r"repeated(?:ly)?|recurring|persistent|across snapshots|multiple snapshots)\b"
         r"|qua các năm|theo năm|theo tháng|thay đổi theo thời gian|xu hướng|toàn bộ dữ liệu|tất cả các năm"
+        r"|lặp lại|tái diễn|nhiều snapshot|nhiều kỳ|liên tiếp"
     )
     return not re.search(historical, text)
+
+
+def _asks_repeated_inventory_flags(question: str) -> bool:
+    return bool(re.search(
+        r"\b(repeated(?:ly)?|recurring|persistent|across snapshots|multiple snapshots)\b"
+        r"|lặp lại|tái diễn|nhiều snapshot|nhiều kỳ|liên tiếp",
+        question,
+        re.IGNORECASE,
+    ))
+
+
+def _validate_repeated_inventory_flags(question: str, sql: str) -> str:
+    """Require repeated inventory flags to be counted across snapshots per product."""
+    text = question.casefold()
+    if not _asks_repeated_inventory_flags(text):
+        return sql
+    requested_flags = []
+    if re.search(r"\b(stock.?out|out of stock)\b|hết hàng|thiếu hàng", text):
+        requested_flags.append("stockout_flag")
+    if re.search(r"\b(over.?stock|excess stock)\b|tồn kho dư|tồn kho quá mức", text):
+        requested_flags.append("overstock_flag")
+    if not requested_flags:
+        return sql
+
+    query = parse_one(sql, read="postgres")
+    if any(
+        {column.name.casefold() for column in predicate.find_all(exp.Column)} == {"snapshot_date"}
+        and any(isinstance(value, exp.Literal) for value in predicate.find_all(exp.Literal))
+        for predicate in query.find_all(exp.EQ)
+    ):
+        raise UnsafeAnalyticsQuery(
+            "Repeated inventory flags cannot be restricted to one snapshot_date; count historical snapshots"
+        )
+    grouped_columns = {
+        column.name.casefold()
+        for expression in (query.args.get("group").expressions if query.args.get("group") else ())
+        for column in expression.find_all(exp.Column)
+    }
+
+    def is_flagged_snapshot_count(expression: exp.Expression, flag: str) -> bool:
+        if isinstance(expression, exp.Alias):
+            expression = expression.this
+        filter_node = expression if isinstance(expression, exp.Filter) else expression.find_ancestor(exp.Filter)
+        count = filter_node.this if filter_node else expression
+        return (
+            isinstance(count, exp.Count)
+            and isinstance(count.args.get("this"), exp.Distinct)
+            and {column.name.casefold() for column in count.find_all(exp.Column)} == {"snapshot_date"}
+            and filter_node is not None
+            and {column.name.casefold() for column in filter_node.expression.find_all(exp.Column)} == {flag}
+        )
+
+    for flag in requested_flags:
+        if "product_id" not in grouped_columns:
+            raise UnsafeAnalyticsQuery(
+                f"Repeated {flag.removesuffix('_flag')} evidence must group by product_id and count "
+                f"COUNT(DISTINCT snapshot_date) FILTER (WHERE {flag})"
+            )
+        counts = [selection for selection in query.expressions if is_flagged_snapshot_count(selection, flag)]
+        if not counts:
+            raise UnsafeAnalyticsQuery(
+                f"Repeated {flag.removesuffix('_flag')} evidence must count distinct snapshot_date "
+                f"per product with COUNT(DISTINCT snapshot_date) FILTER (WHERE {flag})"
+            )
+        having = query.args.get("having")
+        has_repeat_gate = bool(having) and any(
+            isinstance(condition, exp.GTE)
+            and is_flagged_snapshot_count(condition.this, flag)
+            and isinstance(condition.expression, exp.Literal)
+            and condition.expression.is_int
+            and int(condition.expression.this) == 2
+            for condition in having.find_all(exp.GTE)
+        )
+        if not has_repeat_gate:
+            raise UnsafeAnalyticsQuery(
+                f"Repeated {flag.removesuffix('_flag')} products must be filtered with "
+                f"HAVING COUNT(DISTINCT snapshot_date) FILTER (WHERE {flag}) >= 2"
+            )
+    return sql
 
 
 def _commerce_sql_from_model(raw: str) -> str:
@@ -219,10 +296,9 @@ def _asks_for_campaign_scoped_outcomes(question: str) -> bool:
     scope = re.search(
         r"\bwhich\s+(?:\d{4}\s+)?campaigns?\b|"
         r"\b(?:compare|rank|ranking)\b[^.!?\n]{0,80}\bcampaigns?\b|"
-        r"\bcampaigns?\b[^.!?\n]{0,50}\b(?:sales|revenue|orders?|units?|discounts?|performance|outcomes?|results?|window)\b|"
         r"\b(?:each|per|by|during|within)\s+(?:the\s+)?campaigns?\b|"
         r"\bcampaign[- ]window\b|"
-        r"(?:chiến dịch nào|từng chiến dịch|theo chiến dịch|trong thời gian chạy chiến dịch|kết quả từng chiến dịch)",
+        r"(?:campaign nào|chiến dịch nào|từng chiến dịch|theo chiến dịch|trong thời gian chạy chiến dịch|kết quả từng chiến dịch)",
         text,
     )
     return bool(outcome and scope)
@@ -366,11 +442,25 @@ class SQLAnalyticsAgent(BaseAgent):
                 "through either order_items.promo_id or promo_id_2 (use one OR join condition so a line tagged "
                 "with the same campaign in both slots is not double-counted). Use only delivered orders whose "
                 "order_date falls between that campaign's start_date and end_date; apply a requested campaign "
-                "year to the campaign dates as well as the order dates. Use INNER JOINs for eligible order items "
+                "year to the campaign dates as well as the order dates. In SQL, explicitly require "
+                "orders.order_status = 'delivered', order_date BETWEEN promotions.start_date AND promotions.end_date, "
+                "and EXTRACT(YEAR FROM promotions.start_date) = the requested year (use BETWEEN for a year range). "
+                "Place the year predicate in WHERE, not in a JOIN ON clause. "
+                "Use INNER JOINs for eligible order items "
                 "and orders, or filter every order-derived aggregate to matched orders if a LEFT JOIN is needed. "
                 "Calculate net item sales as quantity * unit_price - discount_amount. Preserve the requested "
                 "campaign/channel/year dimensions in grouped results."
             )
+            if any(term in question.casefold() for term in (
+                "gross profit", "gross-profit", "profit proxy", "merchandise gross", "lãi gộp", "lợi nhuận gộp",
+            )):
+                schema_note += (
+                    " For a requested merchandise gross-profit proxy, join commerce.products on "
+                    "products.product_id = order_items.product_id and calculate "
+                    "SUM(order_items.quantity * order_items.unit_price - order_items.discount_amount "
+                    "- order_items.quantity * products.cogs) AS merchandise_gross_profit_proxy. "
+                    "The products table owns cogs; promotions.cogs does not exist. Preserve this requested measure."
+                )
             if _asks_for_promotion_tag_comparison(question):
                 schema_note += (
                     " For a with/without promotion comparison, return both groups using "
@@ -383,6 +473,10 @@ class SQLAnalyticsAgent(BaseAgent):
                 "\nBoolean-column note: inventory.stockout_flag, overstock_flag and reorder_flag are BOOLEAN. "
                 "Filter with boolean predicates and count with COUNT(*) FILTER (WHERE flag); do not compare "
                 "these columns with integer 1/0 or sum them."
+                " When a question asks whether an inventory flag is repeated, recurring, or persistent, "
+                "inspect historical product-snapshot rows instead of only the latest snapshot. Count flagged "
+                "snapshot dates per product, include only products with at least two flagged dates, and do not "
+                "describe those rows as distinct incidents."
             )
         prompt = (
             "Translate the user's Commerce question into one PostgreSQL SELECT and return JSON only: "
@@ -396,9 +490,11 @@ class SQLAnalyticsAgent(BaseAgent):
             "Do not reduce a multi-measure comparison to only one available measure; if a requested measure is not in the approved schema, omit it and let the answer state that it is unavailable. "
             "Hard SQL constraints: one SELECT only; no CTEs, nested queries, scalar subqueries, or window functions. "
             "Every selected non-aggregate expression must appear in GROUP BY; use only allowlisted SQL functions. "
-            "Inventory questions without an explicit year or historical-trend request are scoped by the server "
-            "to the database's latest snapshot date. Group only by the requested dimensions; do not guess dates "
-            "or add time dimensions. "
+            "Inventory questions that ask whether flags are repeated, recurring, or persistent require historical "
+            "product-snapshot rows, grouped by product and filtered to at least two distinct flagged snapshot dates. "
+            "Other inventory questions without an explicit year or historical-trend request "
+            "are scoped by the server to the database's latest snapshot date. Group only by requested dimensions; "
+            "do not guess dates or add time dimensions. "
             "For ranking or prioritization among categories, groups, regions, or other peer dimensions, include all "
             "peer groups with comparable measures and order them; do not use HAVING to remove competitors unless "
             "the user explicitly asks for a threshold-defined subset. "
@@ -414,21 +510,28 @@ class SQLAnalyticsAgent(BaseAgent):
         token_usage = None
 
         def validated_query(raw: str) -> str:
-            query = _validate_comparison_groups(question, _commerce_sql_from_model(raw))
-            query = _validate_requested_year_filter(question, query)
-            reads_inventory = any(
-                table.name.casefold() == "inventory"
-                for table in parse_one(query, read="postgres").find_all(exp.Table)
-            )
-            if (domain == "inventory_allocation" and reads_inventory
-                    and _inventory_question_needs_latest_snapshot(question)):
-                query = _scope_inventory_query_to_latest_snapshot(
-                    query, self.repository.latest_commerce_inventory_snapshot(),
+            try:
+                query = _validate_comparison_groups(question, _commerce_sql_from_model(raw))
+                query = _validate_requested_year_filter(question, query)
+                if domain == "inventory_allocation":
+                    query = _validate_repeated_inventory_flags(question, query)
+                reads_inventory = any(
+                    table.name.casefold() == "inventory"
+                    for table in parse_one(query, read="postgres").find_all(exp.Table)
                 )
-            safe_query = validate_commerce_sql(query, tables)
-            if domain == "promotion_planning":
-                safe_query = _validate_campaign_outcome_query(question, safe_query)
-            return safe_query
+                if (domain == "inventory_allocation" and reads_inventory
+                        and _inventory_question_needs_latest_snapshot(question)):
+                    query = _scope_inventory_query_to_latest_snapshot(
+                        query, self.repository.latest_commerce_inventory_snapshot(),
+                    )
+                safe_query = validate_commerce_sql(query, tables)
+                if domain == "promotion_planning":
+                    safe_query = _validate_campaign_outcome_query(question, safe_query)
+                return safe_query
+            except (ParseError, TokenError) as error:
+                raise UnsafeAnalyticsQuery(
+                    "The model response could not be parsed as one valid PostgreSQL SELECT"
+                ) from error
 
         try:
             raw, generation_provider = generate_with_provider_fallback(self.llm, prompt)
@@ -448,6 +551,22 @@ class SQLAnalyticsAgent(BaseAgent):
                 "do not filter competitors with HAVING unless the user explicitly requested a threshold-defined subset.\n"
                 f"Rejected SQL: {rejected_sql}"
             )
+            if domain == "promotion_planning" and _asks_for_campaign_scoped_outcomes(question):
+                correction += (
+                    " Preserve every requested metric and campaign dimension. For each campaign outcome query, "
+                    "include orders.order_status = 'delivered', order_date BETWEEN promotions.start_date AND "
+                    "promotions.end_date, and EXTRACT(YEAR FROM promotions.start_date) constrained to the requested "
+                    "year(s) in WHERE, not in a JOIN ON clause. When a merchandise gross-profit proxy is requested, join commerce.products by product_id "
+                    "and use SUM(quantity * unit_price - discount_amount - quantity * products.cogs); do not read cogs "
+                    "from promotions or omit the proxy."
+                )
+            if domain == "inventory_allocation" and _asks_repeated_inventory_flags(question):
+                correction += (
+                    " For repeated inventory flags, query historical commerce.inventory rows grouped by i.product_id. "
+                    "Select COUNT(DISTINCT i.snapshot_date) FILTER (WHERE i.stockout_flag) and/or "
+                    "COUNT(DISTINCT i.snapshot_date) FILTER (WHERE i.overstock_flag), matching the flags asked about; "
+                    "add HAVING for each requested count >= 2. Do not group only by category or restrict to one snapshot."
+                )
             raw, generation_provider = generate_with_provider_fallback(self.llm, prompt + correction)
             token_usage = accumulate_token_usage(token_usage, self.llm)
             text = validated_query(raw)
@@ -478,216 +597,87 @@ class SQLAnalyticsAgent(BaseAgent):
             "Group by those exact fields and keep every fiscal year separate."
             if request.metadata.get("dashboard_visualization") else ""
         )
-        decision_domain = request.metadata.get("business_decision_domain")
-        decision_profile = BUSINESS_DECISION_PROFILES.get(decision_domain)
-        scoped_business_names = {
-            name for name, definition in BUSINESS_METRIC_CATALOG.items()
-            if not decision_profile or definition["domain"] == decision_domain
-        }
-        business_catalog = "; ".join(
-            f"{name} ({definition['label']}; domain={definition['domain']}; unit={definition['unit_guidance']}; "
-            f"aliases={', '.join(definition.get('aliases', ()))})"
-            for name, definition in BUSINESS_METRIC_CATALOG.items()
-            if name in scoped_business_names
-        )
-        matched_business_metrics = sorted(
-            resolve_business_metric_names(request.question) & scoped_business_names
-        )
-        query_business_metrics = set(matched_business_metrics)
-        export_market_metrics = {
-            "guinea_export_revenue_growth", "hong_kong_export_revenue_growth",
-            "japan_export_revenue_growth",
-        }
-        if export_market_metrics.issubset(query_business_metrics):
-            # Provide company-level scale alongside country growth for decision context.
-            query_business_metrics.update({
-                "export_net_revenue", "export_net_revenue_growth",
-                "commercial_export_revenue", "commercial_export_revenue_growth",
-                "export_volume_teu",
-            })
-        growth_pair = {
-            "domestic_consolidated_net_revenue_growth",
-            "overseas_market_net_revenue_growth",
-        }
-        growth_amounts = {
-            "domestic_consolidated_net_revenue",
-            "overseas_market_net_revenue",
-        }
-        if growth_pair.issubset(matched_business_metrics):
-            # Decision comparisons need growth and scale, including prior-year revenue
-            # so the report can calculate the absolute change from source observations.
-            matched_business_metrics = sorted(set(matched_business_metrics) | growth_amounts)
-            query_business_metrics.update(growth_amounts)
-        mapped_metrics_instruction = (
-            "Canonical business metric codes matching this question: "
-            + ", ".join(sorted(query_business_metrics))
-            + ". Include every listed metric_name in the result; do not omit a requested segment or measure. "
-            if matched_business_metrics else ""
-        )
-        decision_scope_instruction = (
-            f"The user selected decision domain {decision_domain} ({decision_profile['label']}). "
-            f"Its management question is: {decision_profile['management_question']} "
-            f"Only use verified business metrics from this domain; its primary decision metrics are "
-            f"{', '.join(decision_profile['primary_metrics'])}. Other metrics in the same domain may be used "
-            "only as supporting evidence when the question calls for them. Do not substitute another domain. "
-            if decision_profile else ""
-        )
         prompt = (
             "Translate the analytics request into exactly one PostgreSQL SELECT. Return JSON only: "
             '{"sql":"..."}. You may read only one source: authorized_financial_metrics '
-            "(company, fiscal_year, metric_name, metric_label, metric_value, unit, document_id, "
-            "page_number, source_url, source_quote) or authorized_documents (document_id, company, "
-            "domain, title, document_type, format, fiscal_year (integer or NULL), processing_status, source_url). They are already "
-            "filtered for this user's role and requested company. Do not add a company equality filter. "
-            "authorized_business_metrics (business_metric_id, company, metric_domain, fiscal_year, metric_name, "
-            "metric_label, metric_value, unit, value_qualifier, reporting_period, scope, document_id, "
-            "page_number, source_url, source_quote). "
-            "All are already filtered for this user's role and company; verified business rows only. "
-            "Use only these columns. No joins, nested queries, CTEs, "
-            "comments, semicolons, or functions other than COUNT, SUM, AVG, MIN, MAX, ARRAY_AGG. "
-            "Do not pivot multiple metric names into one row with CASE expressions. "
-            "For metric_name filters, use only canonical codes: net_revenue, total_consolidated_revenue, "
-            "profit_after_tax, total_assets, cost_of_goods_sold, gross_profit, cash_and_equivalents, "
-            "inventory, employees, state_budget_contribution. Map consolidated revenue to "
-            "total_consolidated_revenue, net revenue to net_revenue, and after-tax profit to "
-            "profit_after_tax; do not use display words such as 'Revenue' or 'Profit' as codes. "
-            "For authorized_financial_metrics, select ARRAY_AGG(DISTINCT metric_id) AS evidence_metric_ids. "
-            "For authorized_business_metrics, select ARRAY_AGG(DISTINCT business_metric_id) AS evidence_business_metric_ids. "
-            "For authorized_documents, select ARRAY_AGG(DISTINCT document_id) AS evidence_document_ids. "
-            "For business metric queries, preserve value_qualifier and reporting_period in the result. "
-            "Never treat values qualified as more_than, at_least, less_than, at_most, or approximately as exact. "
-            f"{decision_scope_instruction}"
-            f"Business metric catalog (filter metric_name using these codes): {business_catalog}. "
-            f"{mapped_metrics_instruction}"
-            "For either metric CTE, also project metric_name and fiscal_year directly and never "
-            "combine different metric names or years in one result row; group by them when aggregating. "
-            "This keeps each result tied to the exact source KPI. Use a numeric LIMIT at most 100. "
-            "Do not invent data." + chart_instruction + "\n\n"
-            f"Request: {request.question}"
+            "(metric_id, company, fiscal_year, metric_name, metric_label, metric_value, unit, document_id, "
+            "page_number, source_url, source_quote) or authorized_documents (document_id, company, domain, title, "
+            "document_type, format, fiscal_year, processing_status, source_url). They are already filtered "
+            "for this user's role and company; do not add a company equality filter. "
+            "Use only these columns. No joins, nested queries, CTEs, comments, semicolons, or functions other than "
+            "COUNT, SUM, AVG, MIN, MAX, ARRAY_AGG. For metric_name filters use canonical codes such as "
+            "net_revenue, total_consolidated_revenue, profit_after_tax, total_assets, cost_of_goods_sold, "
+            "gross_profit, cash_and_equivalents, inventory, employees, or state_budget_contribution. "
+            "For financial metrics, project metric_name and fiscal_year directly and return "
+            "ARRAY_AGG(DISTINCT metric_id) AS evidence_metric_ids. For documents, return "
+            "ARRAY_AGG(DISTINCT document_id) AS evidence_document_ids. Group by metric_name and fiscal_year "
+            "when aggregating. Use a numeric LIMIT at most 100. Do not invent data."
+            + chart_instruction + f"\n\nRequest: {request.question}"
         )
-        if matched_business_metrics or decision_profile:
-            # A selected decision scope always runs against its verified business
-            # metrics, even when the question uses wording outside the alias map.
-            # This prevents fallback SQL from crossing into an unrelated domain.
-            if decision_profile and not query_business_metrics:
-                if request.metadata.get("decision_suggestions"):
-                    query_business_metrics.update(decision_profile["primary_metrics"])
-                else:
-                    query_business_metrics.update(scoped_business_names)
-            metric_names = ", ".join(f"'{name}'" for name in sorted(query_business_metrics))
-            years = sorted(set(re.findall(r"(?<!\d)(?:FY\s*)?((?:19|20)\d{2})\b", request.question, re.I)))
-            if len(years) >= 2 and max(map(int, years)) - min(map(int, years)) >= 2:
-                years = [str(year) for year in range(int(years[0]), int(years[-1]) + 1)]
-            elif len(years) == 1 and growth_pair.issubset(matched_business_metrics):
-                years = sorted(set(years) | {str(int(year) - 1) for year in years})
-            year_filter = f" AND fiscal_year IN ({', '.join(years)})" if years else ""
-            query = validate_analytics_sql(
-                "SELECT metric_name, fiscal_year, reporting_period, metric_value, unit, value_qualifier, "
-                "ARRAY_AGG(DISTINCT business_metric_id) AS evidence_business_metric_ids "
-                "FROM authorized_business_metrics "
-                f"WHERE metric_name IN ({metric_names}){year_filter} "
-                "GROUP BY metric_name, fiscal_year, reporting_period, metric_value, unit, value_qualifier LIMIT 100"
-            )
-        else:
-            query = _sql_from_model(self.llm.generate(prompt))
+        query = _sql_from_model(self.llm.generate(prompt))
         data = self.repository.execute_authorized_analytics(
             query, role, request.user_id or "", request.metadata.get("company")
         )
-        source_name = next((name for name in (
-            "authorized_financial_metrics", "authorized_business_metrics", "authorized_documents"
-        ) if f"from {name}" in query.casefold()), "authorized_documents")
-        is_metric_query = source_name != "authorized_documents"
-        is_business_query = source_name == "authorized_business_metrics"
-        evidence_key = ("evidence_business_metric_ids" if is_business_query else
-                        "evidence_metric_ids" if is_metric_query else "evidence_document_ids")
-        evidence_rows = data.get("business_evidence", []) if is_business_query else data["evidence"]
-        rows = [
-            row for row in data["results"]
-            if isinstance(row.get(evidence_key), (list, tuple))
-            and row[evidence_key]
+        source_name = "authorized_financial_metrics" if "from authorized_financial_metrics" in query.casefold() else "authorized_documents"
+        is_metric_query = source_name == "authorized_financial_metrics"
+        evidence_key = "evidence_metric_ids" if is_metric_query else "evidence_document_ids"
+        evidence_rows = data["evidence"] if is_metric_query else data["documents"]
+        evidence = [
+            Evidence(
+                citation_id=f"M{index}" if is_metric_query else f"D{index}",
+                source_type="verified_metric" if is_metric_query else "document",
+                source=(
+                    f"{row['company']} {row.get('reporting_period', 'FY')} {row['fiscal_year']} · {row['metric_label']}"
+                    if is_metric_query else row["title"]
+                ),
+                content=(row.get("source_quote") or row.get("source_note")) if is_metric_query else None,
+                metadata=(
+                    {"metric_id": row.get("metric_id"), "document_id": row.get("document_id"),
+                     "page_number": row.get("page_number"), "chunk_index": row.get("source_chunk_index"),
+                     "source_chunk_id": row.get("source_chunk_id"), "source_content_hash": row.get("source_content_hash"),
+                     "extraction_method": row.get("extraction_method"), "extractor_version": row.get("extractor_version"),
+                     "source_url": row.get("source_url"), "metric_name": row["metric_name"],
+                     "company": row["company"], "fiscal_year": row["fiscal_year"],
+                     "metric_label": row["metric_label"], "metric_value": row["metric_value"], "unit": row["unit"]}
+                    if is_metric_query else
+                    {"document_id": row["document_id"], "company": row["company"],
+                     "domain": row["domain"], "source_url": row["source_url"]}
+                ),
+            )
+            for index, row in enumerate(evidence_rows, 1)
         ]
-        answer = "No verified, role-visible data matched this analytics request."
-        metric_evidence = [Evidence(
-            citation_id=f"M{index}", source_type="verified_metric",
-            source=(f"{row['company']} {row.get('reporting_period', 'FY')} {row['fiscal_year']} · "
-                    f"{row['metric_label']}"),
-            content=row.get("source_quote") or row.get("source_note"),
-            metadata={"metric_id": row.get("metric_id"), "document_id": row.get("document_id"), "page_number": row.get("page_number"),
-                      "chunk_index": row.get("source_chunk_index"),
-                      "source_chunk_id": row.get("source_chunk_id"), "chunk_id": row.get("source_chunk_id"),
-                      "source_content_hash": row.get("source_content_hash"),
-                      "extraction_method": row.get("extraction_method"),
-                      "extractor_version": row.get("extractor_version"),
-                      "source_url": row.get("source_url"), "metric_name": row["metric_name"],
-                      "metric_domain": row.get("metric_domain"), "scope": row.get("scope"),
-                      "value_qualifier": row.get("value_qualifier", "exact"),
-                      "reporting_period": row.get("reporting_period", "FY"),
-                      "source_reference": row.get("source_reference"), "entry_method": row.get("entry_method", "extracted"),
-                      "company": row["company"], "fiscal_year": row["fiscal_year"],
-                      "business_metric_id": row.get("business_metric_id"),
-                      "metric_domain": row.get("metric_domain"), "scope": row.get("scope"),
-                      "metric_label": row["metric_label"], "metric_value": row["metric_value"],
-                      "unit": row["unit"],
-                      "value_qualifier": row.get("value_qualifier", "exact"),
-                      "reporting_period": row.get("reporting_period", "FY")},
-        ) for index, row in enumerate(evidence_rows, 1)]
-        document_evidence = [Evidence(
-            citation_id=f"D{index}", source_type="document",
-            source=row["title"], content=None,
-            metadata={"document_id": row["document_id"], "company": row["company"],
-                      "domain": row["domain"], "source_url": row["source_url"]},
-        ) for index, row in enumerate(data["documents"], 1)]
-        source_evidence = metric_evidence if is_metric_query else document_evidence
-        financial_rows_by_citation = {
-            f"M{index}": row for index, row in enumerate(evidence_rows, 1)
+        evidence_by_id = {
+            (item.metadata.get("metric_id") if is_metric_query else item.metadata["document_id"]): item
+            for item in evidence
         }
-        selected_evidence = {}
-        if rows:
-            lines = ["Analytics results (computed from role-visible verified data):"]
-            for row in rows:
-                values = [f"{key}: {value}" for key, value in row.items() if key != evidence_key]
-                source_ids = set(row.get(evidence_key, []))
-                matching_evidence = [
-                    item for item in source_evidence
-                    if item.metadata.get("business_metric_id" if is_business_query else
-                                         "metric_id" if is_metric_query else "document_id") in source_ids
-                    and (not is_metric_query or all(
-                        key not in row or str(row[key]) == str(item.metadata.get(key))
-                        for key in ("metric_name", "fiscal_year", "company", "unit", "metric_domain",
-                                    "value_qualifier", "reporting_period")
-                    ))
-                ]
-                if not matching_evidence:
-                    return AgentResult(
-                        answer="Analytics results could not be matched to exact role-visible source evidence.",
-                        agent="analytics",
-                        metadata={"insufficient_context": True},
-                    )
-                selected_evidence.update((item.citation_id, item) for item in matching_evidence)
-                citations = [item.citation_id for item in matching_evidence]
-                citation_text = " ".join(f"[{citation}]" for citation in citations)
-                lines.append("- " + "; ".join(values) + (f" {citation_text}" if citation_text else ""))
-            answer = "\n".join(lines)
-        evidence = list(selected_evidence.values())
-        selected_metric_rows = [
-            financial_rows_by_citation[citation_id]
-            for citation_id in selected_evidence
-            if citation_id in financial_rows_by_citation
+        result_rows = [
+            row for row in data["results"]
+            if isinstance(row.get(evidence_key), (list, tuple)) and row[evidence_key]
         ]
-        selected_financial_rows = selected_metric_rows if not is_business_query else []
-        selected_business_rows = selected_metric_rows if is_business_query else []
-        if is_business_query:
-            evidence_by_id = {row["business_metric_id"]: row for row in evidence_rows}
-            for result_row in selected_business_rows:
-                source_ids = result_row.get(evidence_key, [])
-                match = next((evidence_by_id[source_id] for source_id in source_ids
-                              if source_id in evidence_by_id), None)
-                if match is not None:
-                    result_row["business_metric_id"] = match["business_metric_id"]
-        return AgentResult(answer=answer, agent="analytics", evidence=evidence,
-                           data={"results": rows, "financial": selected_financial_rows,
-                                 "business_metrics": selected_business_rows,
-                                 "documents": data["documents"], "query_sql": query})
+        lines = ["Analytics results (computed from role-visible verified data):"]
+        selected_ids = set()
+        for row in result_rows:
+            source_ids = row[evidence_key]
+            matches = [evidence_by_id[source_id] for source_id in source_ids if source_id in evidence_by_id]
+            if not matches:
+                return AgentResult(
+                    answer="Analytics results could not be matched to exact role-visible source evidence.",
+                    agent="analytics", metadata={"insufficient_context": True},
+                )
+            selected_ids.update(item.citation_id for item in matches)
+            values = [f"{key}: {value}" for key, value in row.items() if key != evidence_key]
+            lines.append("- " + "; ".join(values) + " " + " ".join(f"[{item.citation_id}]" for item in matches))
+        selected_evidence = [item for item in evidence if item.citation_id in selected_ids]
+        answer = "\n".join(lines) if result_rows else "No verified, role-visible data matched this analytics request."
+        return AgentResult(
+            answer=answer,
+            agent="analytics",
+            evidence=selected_evidence,
+            data={"results": result_rows, "financial": [
+                next(row for row in evidence_rows if row.get("metric_id") == item.metadata.get("metric_id"))
+                for item in selected_evidence if is_metric_query
+            ], "documents": data["documents"], "query_sql": query},
+        )
 
     def close(self) -> None:
         self.repository.close()

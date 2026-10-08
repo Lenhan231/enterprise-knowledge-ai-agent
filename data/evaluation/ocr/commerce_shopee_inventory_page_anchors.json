@@ -1,0 +1,34 @@
+{
+  "dataset_id": "commerce-shopee-inventory-image-page-anchors-v1",
+  "purpose": "Check a small set of inventory phrases in one mixed vector/image page of an official Shopee Uni guide using the production document processor.",
+  "reference_quality": "human_reviewed_selected_phrase_anchors",
+  "reference_method": "Selected Vietnamese phrases were manually checked against the rendered source page; this is not a full-page transcription.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "This is one mixed vector-text and embedded-screenshot page from a historical 2019 Shopee Vietnam seller guide, not a physical scan and not a representative OCR benchmark.",
+    "Anchor recall measures only the selected phrases; CER and WER are intentionally not scored from a partial transcription.",
+    "The guide applies to Shopee sellers only and is not current policy for the synthetic Commerce dataset."
+  ],
+  "pages": [
+    {
+      "id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN-PDF-PAGE-11",
+      "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+      "file": "data/raw/commerce_knowledge/SHOPEE-UNI-INVENTORY-MANAGEMENT-VN.pdf",
+      "source_url": "https://cdngarenanow-a.akamaihd.net/shopee/seller/seller_cms/acf62e028643871447fd5886ed466a10/Qu%E1%BA%A3n%20L%C3%BD%20T%E1%BB%93n%20Kho.pdf",
+      "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+      "page": 11,
+      "printed_page_number": 9,
+      "language": "vie",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_vector_text_and_seller_center_screenshot",
+      "clip_rect": [0, 0, 720, 405],
+      "text_anchors": [
+        "hết hàng",
+        "Mức độ cần bổ sung hàng",
+        "Bổ sung kho hàng sớm",
+        "tồn kho tối thiểu"
+      ]
+    }
+  ]
+}

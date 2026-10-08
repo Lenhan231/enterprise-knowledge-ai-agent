@@ -3,8 +3,6 @@ from typing import TypedDict
 from langgraph.graph import END, START, StateGraph
 
 from core.agents.report_agent import (
-    _is_business_metric_decision_question,
-    _is_business_metric_trend_question,
     _is_decision_suggestions_request,
     _is_decision_support_request,
 )
@@ -17,10 +15,23 @@ from core.models.agents import AgentRequest, AgentResult
 
 def _is_method_only_question(question: str) -> bool:
     text = " ".join(question.casefold().split())
-    return text.startswith((
+    starts_with_method = text.startswith((
         "how to ", "how do i ", "how do you ", "what are the steps", "steps to ",
         "explain how to ", "explain the steps", "cách ", "các bước", "hướng dẫn", "quy trình", "làm thế nào",
-    )) and not _is_decision_support_request(text)
+    ))
+    asks_for_source_method = (
+        text.startswith(("theo tài liệu", "theo hướng dẫn", "theo guide", "according to the document", "according to the guide"))
+        and any(term in text for term in (
+            "như thế nào", "các bước", "quy trình", "hướng dẫn", "cần làm gì", "cần những gì",
+            "yếu tố nào", "tiêu chí nào", "nên làm gì", "how to", "how should", "what steps",
+            "what factors", "which factors", "what criteria", "which criteria",
+        ))
+    )
+    # Generic advice language often contains "should" / "nên". The router
+    # checks separately whether this method is being applied to current data.
+    if asks_for_source_method:
+        return True
+    return starts_with_method and not _is_decision_support_request(text)
 
 
 def _applies_method_to_commerce_data(question: str) -> bool:
@@ -88,10 +99,9 @@ class AgentRouter:
 
     def _classify(self, state: _AgentWorkflowState) -> dict[str, str]:
         request = state["request"]
-        if self.report_agent and (
-            request.metadata.get("decision_suggestions")
-            or _is_decision_suggestions_request(request.question)
-        ):
+        if self.report_agent and (request.metadata.get("decision_suggestions")
+                                  or _is_decision_suggestions_request(request.question)):
+            request.metadata["decision_suggestions"] = True
             self.last_destination = "report"
             return {"destination": "report"}
         commerce_domain = request.metadata.get("business_decision_domain")
@@ -105,6 +115,11 @@ class AgentRouter:
             request.metadata["business_decision_domain"] = commerce_domain
             self.last_destination = "dashboard"
             return {"destination": "dashboard"}
+        # The dedicated Commerce decision form explicitly asks for SQL + RAG.
+        # Honor that UI contract even when the question is phrased as a method question.
+        if self.report_agent and commerce_domain and request.metadata.get("commerce_decision_support"):
+            self.last_destination = "report"
+            return {"destination": "report"}
         policy_question = any(term in question_text for term in (
             "policy", "policies", "chính sách",
         )) and not any(term in question_text for term in (
@@ -123,18 +138,26 @@ class AgentRouter:
         source_how_to_question = named_external_source and any(term in request.question.casefold() for term in (
             "what does", "what do", "according to", "how does", "how do", "what guidance", "the guide",
             "what policy", "nói gì", "hướng dẫn", "theo tài liệu",
+            "what exact", "what text", "which text", "what phrase", "which phrase",
+            "what label", "which label", "what wording", "what appears", "what is shown",
+            "screenshot", "on page",
         ))
-        if self.report_agent and commerce_domain and source_how_to_question:
+        if (self.report_agent and commerce_domain and source_how_to_question
+                and not _applies_method_to_commerce_data(request.question)):
             request.metadata["business_decision_domain"] = commerce_domain
             self.last_destination = "knowledge"
             return {"destination": "knowledge"}
         if self.report_agent and commerce_domain in COMMERCE_DECISION_PROFILES:
-            if (request.metadata.get("commerce_decision_support")
-                    or _is_decision_support_request(request.question)):
-                self.last_destination = "report"
-                return {"destination": "report"}
             if _is_method_only_question(request.question) and _applies_method_to_commerce_data(request.question):
                 request.metadata["decision_support"] = True
+                self.last_destination = "report"
+                return {"destination": "report"}
+            if _is_method_only_question(request.question):
+                request.metadata["business_decision_domain"] = commerce_domain
+                self.last_destination = "knowledge"
+                return {"destination": "knowledge"}
+            if (request.metadata.get("commerce_decision_support")
+                    or _is_decision_support_request(request.question)):
                 self.last_destination = "report"
                 return {"destination": "report"}
             # Let the shared intent model identify new document-only questions;
@@ -153,21 +176,12 @@ class AgentRouter:
         if self.report_agent and commerce_domain:
             self.last_destination = "report"
             return {"destination": "report"}
-        if (self.report_agent and not dashboard_request
-                and (_is_business_metric_decision_question(request.question)
-                     or _is_business_metric_trend_question(request.question))):
-            self.last_destination = "report"
-            return {"destination": "report"}
         intent = self.classifier.classify(request.question)
 
         if intent.intent == "report" and self.report_agent:
             destination = "report"
         elif intent.output_mode == "dashboard":
             destination = "dashboard"
-        elif (self.report_agent and
-              (_is_business_metric_decision_question(request.question)
-               or _is_business_metric_trend_question(request.question))):
-            destination = "report"
         elif (self.report_agent and intent.intent == "hybrid"
               and _is_decision_support_request(request.question)):
             destination = "report"

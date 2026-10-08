@@ -1,0 +1,90 @@
+{
+  "dataset_id": "commerce-shopee-inventory-page-ocr-v2",
+  "dataset_title": "Shopee Inventory OCR Exploratory Set",
+  "purpose": "Measure production-parser OCR against manually transcribed image-only pages and selected text regions from an active Vietnamese inventory reference.",
+  "reference_quality": "single_reviewer_visual_transcription",
+  "reference_method": "The three full-page references were manually transcribed from rendered source pages 3, 5 and 13, which contain rasterized Vietnamese slide headings and no extractable text layer. The two selected page-11 regions and their replenishment-status callouts were also transcribed from rendered pages; the embedded seller-center screenshot is scored separately by phrase anchors. References were not copied from OCR output.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "The source is a 2019 Shopee Vietnam seller guide exported from PowerPoint. Its image-only pages are rasterized slide content, not physical scans; the selected pages and phrases are not a representative OCR benchmark.",
+    "The reference is transcribed by one reviewer and has no independent second-pass adjudication.",
+    "The source applies only to Shopee sellers and is not policy for the synthetic Commerce dataset."
+  ],
+  "pages": [
+    {
+      "id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN-PDF-PAGE-3-TITLE",
+      "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+      "file": "data/raw/commerce_knowledge/SHOPEE-UNI-INVENTORY-MANAGEMENT-VN.pdf",
+      "source_url": "https://cdngarenanow-a.akamaihd.net/shopee/seller/seller_cms/acf62e028643871447fd5886ed466a10/Qu%E1%BA%A3n%20L%C3%BD%20T%E1%BB%93n%20Kho.pdf",
+      "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+      "page": 3,
+      "printed_page_number": null,
+      "language": "vie",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "rasterized_slide_title",
+      "clip_rect": [0, 0, 720, 405],
+      "reference_text": "LỢI ÍCH CỦA CÔNG CỤ QUẢN LÝ TỒN KHO"
+    },
+    {
+      "id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN-PDF-PAGE-5-TITLE",
+      "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+      "file": "data/raw/commerce_knowledge/SHOPEE-UNI-INVENTORY-MANAGEMENT-VN.pdf",
+      "source_url": "https://cdngarenanow-a.akamaihd.net/shopee/seller/seller_cms/acf62e028643871447fd5886ed466a10/Qu%E1%BA%A3n%20L%C3%BD%20T%E1%BB%93n%20Kho.pdf",
+      "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+      "page": 5,
+      "printed_page_number": null,
+      "language": "vie",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "rasterized_slide_title",
+      "clip_rect": [0, 0, 720, 405],
+      "reference_text": "CÁC TÍNH NĂNG CỦA QUẢN LÝ TỒN KHO"
+    },
+    {
+      "id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN-PDF-PAGE-13-TITLE",
+      "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+      "file": "data/raw/commerce_knowledge/SHOPEE-UNI-INVENTORY-MANAGEMENT-VN.pdf",
+      "source_url": "https://cdngarenanow-a.akamaihd.net/shopee/seller/seller_cms/acf62e028643871447fd5886ed466a10/Qu%E1%BA%A3n%20L%C3%BD%20T%E1%BB%93n%20Kho.pdf",
+      "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+      "page": 13,
+      "printed_page_number": null,
+      "language": "vie",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "rasterized_slide_title",
+      "clip_rect": [0, 0, 720, 405],
+      "reference_text": "CẬP NHẬT CHI TIẾT SKU"
+    },
+    {
+      "id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN-PDF-PAGE-11-HEADING",
+      "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+      "file": "data/raw/commerce_knowledge/SHOPEE-UNI-INVENTORY-MANAGEMENT-VN.pdf",
+      "source_url": "https://cdngarenanow-a.akamaihd.net/shopee/seller/seller_cms/acf62e028643871447fd5886ed466a10/Qu%E1%BA%A3n%20L%C3%BD%20T%E1%BB%93n%20Kho.pdf",
+      "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+      "page": 11,
+      "printed_page_number": 9,
+      "language": "vie",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_vector_text_rendered_heading_and_instruction",
+      "clip_rect": [30, 25, 690, 116],
+      "reference_text": "4 Giảm thiểu tình trạng hết hàng\nKiểm tra trạng thái Mức độ cần bổ sung hàng để biết được thời gian sớm nhất Người bán nên bổ sung hàng tồn kho cho từng SKU."
+    },
+    {
+      "id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN-PDF-PAGE-11-STATUS-CALLOUTS",
+      "document_id": "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN",
+      "file": "data/raw/commerce_knowledge/SHOPEE-UNI-INVENTORY-MANAGEMENT-VN.pdf",
+      "source_url": "https://cdngarenanow-a.akamaihd.net/shopee/seller/seller_cms/acf62e028643871447fd5886ed466a10/Qu%E1%BA%A3n%20L%C3%BD%20T%E1%BB%93n%20Kho.pdf",
+      "source_pdf_sha256": "ea5208021ab5aa17875e116f2e4d21722bd0eec5cb01859106125c3d1c9c9c11",
+      "page": 11,
+      "printed_page_number": 9,
+      "language": "vie",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_vector_text_rendered_replenishment_status_callouts",
+      "clip_rect": [510, 125, 698, 302],
+      "reference_text": "A Bổ sung kho hàng ngay cho biết SKU đã hết hàng\nB Bổ sung kho hàng sớm cho biết SKU sắp hết hàng nghĩa là số lượng tồn kho nằm dưới Số lượng tồn kho tối thiểu."
+    }
+  ]
+}

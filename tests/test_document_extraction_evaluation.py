@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.processing.evaluate_document_extraction import (
+from tools.processing.evaluate_document_extraction import (
     anchor_present,
     compact_result,
     evaluate_table_strategies,
@@ -24,11 +24,11 @@ from scripts.processing.evaluate_document_extraction import (
 
 
 class DocumentExtractionEvaluationTest(unittest.TestCase):
-    @patch("scripts.processing.evaluate_document_extraction.extract_financial_candidates")
+    @patch("tools.processing.evaluate_document_extraction.extract_financial_candidates")
     def test_llm_candidate_score_keeps_page_validation_trace(self, extract_candidates):
         candidate = {
             "metric_name": "profit_after_tax",
-            "candidate_values": ["9,019"],
+            "candidate_values": ["3,019"],
         }
         extract_candidates.return_value = ([candidate], [{
             "page_number": 1,
@@ -38,10 +38,10 @@ class DocumentExtractionEvaluationTest(unittest.TestCase):
             "validation_rejections": {"quote_not_verbatim_or_missing_label_value_year": 1},
         }])
         case = {
-            "document_id": "VNM-AR-2023-EN",
+            "document_id": "TEST-AR-2023-EN",
             "source_url": "https://example.test/report.pdf",
             "fields": [{
-                "id": "profit", "metric_names": ["profit_after_tax"], "values": ["9,019"],
+                "id": "profit", "metric_names": ["profit_after_tax"], "values": ["3,019"],
             }],
         }
 
@@ -52,22 +52,22 @@ class DocumentExtractionEvaluationTest(unittest.TestCase):
         self.assertEqual(result["page_extraction"][0]["metrics_accepted"], 1)
         self.assertEqual(extract_candidates.call_args.kwargs["max_pages"], 1)
 
-    @patch("scripts.processing.evaluate_document_extraction.extract_metric_candidates")
-    @patch("scripts.processing.evaluate_document_extraction.select_financial_pages")
+    @patch("tools.processing.evaluate_document_extraction.extract_metric_candidates")
+    @patch("tools.processing.evaluate_document_extraction.select_financial_pages")
     def test_kpi_candidate_score_checks_metric_and_source_value(self, select_pages, extract_candidates):
         select_pages.return_value = [{
             "page_number": 1,
             "selection_signals": {"summary_area_with_metric": True},
         }]
         extract_candidates.return_value = [
-            {"metric_name": "total_consolidated_revenue", "candidate_values": ["61,012"]},
+            {"metric_name": "total_consolidated_revenue", "candidate_values": ["17,012"]},
             {"metric_name": "profit_after_tax", "candidate_values": ["10,000"]},
         ]
         case = {
-            "document_id": "VNM-AR-2021-VI",
+            "document_id": "TEST-AR-2021-VI",
             "fields": [{
                 "id": "revenue", "metric_names": ["total_consolidated_revenue"],
-                "values": ["61,012"],
+                "values": ["17,012"],
             }],
         }
         parsed = {
@@ -183,7 +183,7 @@ class DocumentExtractionEvaluationTest(unittest.TestCase):
     def test_table_value_score_survives_label_ocr_errors_but_preserves_value_order(self):
         case = {"id": "scan", "fields": [{
             "id": "revenue", "label": "Revenue from sales 01 VI.1",
-            "values": ["61,012,074,147,764", "59,722,908,393,236"],
+            "values": ["17.012.074.147.764", "16.722.908.393.236"],
         }]}
         parsed = {
             "chunks": [{"text": "page", "metadata": {"page_number": 1}}],
@@ -192,7 +192,7 @@ class DocumentExtractionEvaluationTest(unittest.TestCase):
                 "columns": ["label", "account", "2021", "2020"],
                 "rows": [{
                     "label": "garbled OCR row label", "account": "01",
-                    "2021": "61.012.074.147.764", "2020": "59.722.908.393.236",
+                    "2021": "17.012.074.147.764", "2020": "16.722.908.393.236",
                 }],
             }],
         }
@@ -202,7 +202,7 @@ class DocumentExtractionEvaluationTest(unittest.TestCase):
         self.assertEqual(result["table_anchor_normalized_match_count"], 0)
         self.assertEqual(result["table_values_ordered_match_count"], 1)
         self.assertFalse(ordered_table_values_match(
-            {"label": "Revenue", "2021": "59.722.908.393.236", "2020": "61.012.074.147.764"},
+            {"label": "Revenue", "2021": "16.722.908.393.236", "2020": "17.012.074.147.764"},
             ["label", "2021", "2020"], case["fields"][0]["values"],
         ))
 

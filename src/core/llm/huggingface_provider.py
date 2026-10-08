@@ -4,7 +4,7 @@ import os
 
 from openai import OpenAI
 
-from core.llm.llm_interface import LLMInterface
+from core.llm.llm_interface import EmptyLLMResponseError, LLMInterface
 
 
 class HuggingFaceProvider(LLMInterface):
@@ -44,7 +44,7 @@ class HuggingFaceProvider(LLMInterface):
         choice = response.choices[0]
         answer = (choice.message.content or "").strip()
         if not answer:
-            raise RuntimeError(
+            raise EmptyLLMResponseError(
                 "Hugging Face Inference Providers returned empty output "
                 f"(model={response.model}, finish_reason={choice.finish_reason})"
             )

@@ -28,7 +28,7 @@ PYTHONPATH=src uv run uvicorn app.main:app --env-file .env --host 127.0.0.1 --po
 ```
 
 Check `GET /health`, sign in with each configured demo role, and verify role-
-scoped Q&A, upload, admin metric review and analytics against the target
+scoped Q&A, upload, admin source review and Commerce analytics against the target
 database. A healthy process response does not prove that database, embeddings,
 LLM, storage or RBAC are healthy; exercise those flows as well.
 
@@ -39,7 +39,7 @@ files in timestamp order with `npx supabase db push --db-url "$DATABASE_URL"`.
 Set `DATABASE_URL` in the shell from the local environment; never commit or
 print it. Before deploying, inspect `npx supabase migration list` and compare
 it with the target database. The read-only catalog check
-`.venv/bin/python scripts/retrieval/check_vector_repository_integration.py` validates the
+`.venv/bin/python tools/retrieval/check_vector_repository_integration.py` validates the
 pgvector tables and repository mapping.
 
 The configured project predates complete migration tracking. Several schema
@@ -54,7 +54,7 @@ The read-only integration check also compares the exact timestamped versions
 in the local directory with `supabase_migrations.schema_migrations`. On
 2026-09-28 it found 13 local and 13 remote versions with no missing or unknown
 entries; the vector schema and repository mapping passed on 5,052 rows. Run
-`uv run python scripts/retrieval/check_vector_repository_integration.py` after migration
+`uv run python tools/retrieval/check_vector_repository_integration.py` after migration
 changes to repeat both checks. It never applies SQL or writes test rows.
 
 ## Docker

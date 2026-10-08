@@ -8,6 +8,7 @@ class Intent(str, Enum):
     ANALYTICS = "analytics"
     DASHBOARD = "dashboard"
     HYBRID = "hybrid"
+    REPORT = "report"
     
 
 class AgentRequest(BaseModel):

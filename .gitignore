@@ -16,7 +16,7 @@ build/
 
 ponytail.md
 /rules
-/graphify-out
+/*graphify-out
 
 /node_modules
 /package-lock.json
@@ -28,3 +28,10 @@ ponytail.md
 /.rovodev
 /.vibe
 /skills-lock.json
+
+/.claude    
+/.continue
+/.qwen
+/.rovodev
+/.vibe
+/.pytest_cache

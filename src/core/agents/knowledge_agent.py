@@ -26,7 +26,7 @@ class KnowledgeAgent(BaseAgent):
 
         evidence = [
             Evidence(
-                citation_id=context["citation_id"],
+                citation_id=context["source_id"],
                 source_type="document",
                 source=context["document_name"],
                 content=context["content"],
@@ -39,7 +39,7 @@ class KnowledgeAgent(BaseAgent):
                 },
             )
             for context in result.contexts
-            if context["citation_id"] in cited
+            if context["source_id"] in cited
         ]
 
         return AgentResult(

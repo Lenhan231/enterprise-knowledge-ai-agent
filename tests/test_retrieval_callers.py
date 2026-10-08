@@ -55,7 +55,7 @@ class RetrievalCallersTest(unittest.TestCase):
         llm.generate.assert_called_once()
         self.assertEqual(answer.answer, "answer [S1]")
         prompt = llm.generate.call_args.args[0]
-        context = prompt.split("Sources:\n", 1)[1].split("\n\nQuestion:", 1)[0]
+        context = prompt.split("Nguồn:\n", 1)[1].split("\n\nCâu hỏi:", 1)[0]
         self.assertEqual(len(context), 24_000)
         self.assertTrue(context.startswith("[S1]"))
         self.assertEqual(self.response.model_dump(), original)

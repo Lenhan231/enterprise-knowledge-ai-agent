@@ -65,6 +65,11 @@ def context(document_id="DOC-1", rank=1):
 
 
 class RAGServiceTest(unittest.TestCase):
+    def test_empty_retrieval_uses_vietnamese_message(self):
+        result = RAGService(FakeRetrieval([]), FakeLLM("unused")).generate_answer("Câu hỏi")
+
+        self.assertEqual(result.answer, "Không đủ thông tin trong các tài liệu được truy xuất.")
+
     def test_grounded_answer(self):
         result = RAGService(
             FakeRetrieval([context()]),
@@ -90,6 +95,29 @@ class RAGServiceTest(unittest.TestCase):
 
         self.assertEqual(result.answer, "The result is supported by [S1].")
         self.assertEqual(result.source_ids, ["S1"])
+
+    def test_normalizes_localized_and_zero_width_source_citations(self):
+        for answer in ("Claim [Nguồn: S1].", "Claim [\u200bS1].", "Claim 【Nguồn: S1】."):
+            with self.subTest(answer=answer):
+                result = RAGService(
+                    FakeRetrieval([context()]),
+                    FakeLLM(answer),
+                ).generate_answer("Question")
+                self.assertEqual(result.source_ids, ["S1"])
+
+    def test_prompt_fingerprint_is_recorded(self):
+        result = RAGService(
+            FakeRetrieval([context()]),
+            FakeLLM("Concerns may be reported [S1]."),
+        ).generate_answer("How are concerns reported?")
+
+        self.assertEqual(len(result.prompt_sha256), 64)
+
+    def test_role_scoped_retrieval_fails_closed_when_backend_cannot_enforce_roles(self):
+        service = RAGService(FakeRetrieval([context()]), FakeLLM("Should not be called"))
+
+        with self.assertRaisesRegex(ValueError, "role-scoped retrieval"):
+            service.generate_answer("Restricted question", roles=["employee"])
 
     def test_empty_retrieval(self):
         result = RAGService(

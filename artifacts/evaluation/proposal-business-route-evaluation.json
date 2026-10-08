@@ -1,0 +1,395 @@
+{
+  "created_at_utc": "2026-10-07T13:46:27.747516+00:00",
+  "dataset": "data\\evaluation\\proposal_business_route_cases.json",
+  "dataset_id": "commerce-vi-route-v2",
+  "dataset_sha256": "0a751d90df84b4e3f7c45a458e1da7aabb48f6dc0d2737db660cdb0e81fd23ac",
+  "selected_case_ids": [
+    "enterprise-knowledge-management",
+    "internal-document-search",
+    "hr-policy-consultation",
+    "contract-analysis",
+    "commerce-report-analysis",
+    "invoice-information-retrieval",
+    "inventory-analytics",
+    "customer-service-knowledge",
+    "commerce-dashboard",
+    "compliance-management",
+    "executive-decision-support",
+    "business-intelligence-analytics"
+  ],
+  "label_method": "Nhãn định tuyến được gán thủ công theo hợp đồng tác tử hiện tại; chỉ đánh giá định tuyến, không đánh giá chất lượng câu trả lời.",
+  "classifier_model": "openai/gpt-oss-20b",
+  "provider": "Groq Responses API",
+  "software_version": "17513c0911e11fb75433934f1c005ea6bb4de151",
+  "working_tree_dirty": true,
+  "implementation_sha256": {
+    "scripts\\agents\\evaluate_agent_routes.py": "429291a19dffdba9821dc2880e615eb23c88d56560c8da8ce83bd71ab479741f",
+    "src\\core\\agents\\intent_classifier.py": "04019b4cbc698939a96394129fabb2319c1266da6db4a1c6a6abbde329eceb0c",
+    "src\\core\\agents\\router.py": "36f1486d2ffdc29cdb6c1b853ae04c3f283e1436cdce19fd1f785cdfcda18614",
+    "src\\core\\prompts\\intent.py": "56754584d07c0bed9289c2fce3164590743df65480045610173d5022953caf34"
+  },
+  "environment": {
+    "python": "3.11.16",
+    "platform": "Windows-10-10.0.26200-SP0"
+  },
+  "route_metrics": {
+    "case_count": 12,
+    "correct": 12,
+    "accuracy": 1.0,
+    "confusion_matrix": {
+      "knowledge": {
+        "knowledge": 7,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "analytics": {
+        "knowledge": 0,
+        "analytics": 2,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "hybrid": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "dashboard": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 1,
+        "report": 0
+      },
+      "report": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 2
+      }
+    },
+    "per_route": {
+      "knowledge": {
+        "support": 7,
+        "predicted": 7,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "analytics": {
+        "support": 2,
+        "predicted": 2,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "hybrid": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      },
+      "dashboard": {
+        "support": 1,
+        "predicted": 1,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "report": {
+        "support": 2,
+        "predicted": 2,
+        "precision": 1.0,
+        "recall": 1.0
+      }
+    }
+  },
+  "direct_model_route_metrics": {
+    "case_count": 0,
+    "correct": 0,
+    "accuracy": null,
+    "confusion_matrix": {
+      "knowledge": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "analytics": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "hybrid": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "dashboard": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "report": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      }
+    },
+    "per_route": {
+      "knowledge": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      },
+      "analytics": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      },
+      "hybrid": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      },
+      "dashboard": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      },
+      "report": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      }
+    }
+  },
+  "fallback_route_metrics": {
+    "case_count": 12,
+    "correct": 12,
+    "accuracy": 1.0,
+    "confusion_matrix": {
+      "knowledge": {
+        "knowledge": 7,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "analytics": {
+        "knowledge": 0,
+        "analytics": 2,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "hybrid": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "dashboard": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 1,
+        "report": 0
+      },
+      "report": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 2
+      }
+    },
+    "per_route": {
+      "knowledge": {
+        "support": 7,
+        "predicted": 7,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "analytics": {
+        "support": 2,
+        "predicted": 2,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "hybrid": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      },
+      "dashboard": {
+        "support": 1,
+        "predicted": 1,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "report": {
+        "support": 2,
+        "predicted": 2,
+        "precision": 1.0,
+        "recall": 1.0
+      }
+    }
+  },
+  "fallback_count": 12,
+  "provider_error_count": 0,
+  "mean_latency_seconds": 1.246,
+  "limitations": "Measures classifier/router selection against manually mapped proposal-task labels only. Agent tools and answer generation are stubbed; it does not establish task completion, answer quality, domain evidence, or coverage for private enterprise cases.",
+  "results": [
+    {
+      "id": "enterprise-knowledge-management",
+      "category": "Quản trị tri thức doanh nghiệp",
+      "expected_route": "knowledge",
+      "actual_route": "knowledge",
+      "model_intent": "knowledge",
+      "passed": true,
+      "fallback_used": true,
+      "provider_error_type": null,
+      "latency_seconds": 6.818
+    },
+    {
+      "id": "internal-document-search",
+      "category": "Tìm kiếm tài liệu nội bộ",
+      "expected_route": "knowledge",
+      "actual_route": "knowledge",
+      "model_intent": "knowledge",
+      "passed": true,
+      "fallback_used": true,
+      "provider_error_type": null,
+      "latency_seconds": 0.528
+    },
+    {
+      "id": "hr-policy-consultation",
+      "category": "Tư vấn chính sách nhân sự",
+      "expected_route": "knowledge",
+      "actual_route": "knowledge",
+      "model_intent": "knowledge",
+      "passed": true,
+      "fallback_used": true,
+      "provider_error_type": null,
+      "latency_seconds": 0.68
+    },
+    {
+      "id": "contract-analysis",
+      "category": "Phân tích hợp đồng",
+      "expected_route": "knowledge",
+      "actual_route": "knowledge",
+      "model_intent": "knowledge",
+      "passed": true,
+      "fallback_used": true,
+      "provider_error_type": null,
+      "latency_seconds": 0.867
+    },
+    {
+      "id": "commerce-report-analysis",
+      "category": "Phân tích báo cáo thương mại",
+      "expected_route": "report",
+      "actual_route": "report",
+      "model_intent": "analytics",
+      "passed": true,
+      "fallback_used": true,
+      "provider_error_type": null,
+      "latency_seconds": 0.55
+    },
+    {
+      "id": "invoice-information-retrieval",
+      "category": "Tra cứu hóa đơn",
+      "expected_route": "knowledge",
+      "actual_route": "knowledge",
+      "model_intent": "knowledge",
+      "passed": true,
+      "fallback_used": true,
+      "provider_error_type": null,
+      "latency_seconds": 0.523
+    },
+    {
+      "id": "inventory-analytics",
+      "category": "Phân tích tồn kho",
+      "expected_route": "analytics",
+      "actual_route": "analytics",
+      "model_intent": "analytics",
+      "passed": true,
+      "fallback_used": true,
+      "provider_error_type": null,
+      "latency_seconds": 0.456
+    },
+    {
+      "id": "customer-service-knowledge",
+      "category": "Tri thức chăm sóc khách hàng",
+      "expected_route": "knowledge",
+      "actual_route": "knowledge",
+      "model_intent": "knowledge",
+      "passed": true,
+      "fallback_used": true,
+      "provider_error_type": null,
+      "latency_seconds": 0.691
+    },
+    {
+      "id": "commerce-dashboard",
+      "category": "Bảng điều khiển thương mại",
+      "expected_route": "dashboard",
+      "actual_route": "dashboard",
+      "model_intent": "dashboard",
+      "passed": true,
+      "fallback_used": true,
+      "provider_error_type": null,
+      "latency_seconds": 0.353
+    },
+    {
+      "id": "compliance-management",
+      "category": "Quản trị tuân thủ",
+      "expected_route": "knowledge",
+      "actual_route": "knowledge",
+      "model_intent": "knowledge",
+      "passed": true,
+      "fallback_used": true,
+      "provider_error_type": null,
+      "latency_seconds": 0.697
+    },
+    {
+      "id": "executive-decision-support",
+      "category": "Hỗ trợ quyết định điều hành",
+      "expected_route": "report",
+      "actual_route": "report",
+      "model_intent": "report",
+      "passed": true,
+      "fallback_used": true,
+      "provider_error_type": null,
+      "latency_seconds": 1.016
+    },
+    {
+      "id": "business-intelligence-analytics",
+      "category": "Phân tích kinh doanh",
+      "expected_route": "analytics",
+      "actual_route": "analytics",
+      "model_intent": "analytics",
+      "passed": true,
+      "fallback_used": true,
+      "provider_error_type": null,
+      "latency_seconds": 1.767
+    }
+  ]
+}

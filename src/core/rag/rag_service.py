@@ -1,21 +1,39 @@
+import hashlib
+import inspect
+import re
+import unicodedata
+
+from pydantic import BaseModel, Field
+
 from core.llm.groq_provider import GroqProvider
+from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT
 from core.retrieval.retrieval import RetrievalRequest
 from core.retrieval.retrieval_service import RetrievalService
-from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT
-from pydantic import BaseModel, Field
-import re
+
 
 MAX_CONTEXT_CHARS = 24_000
-
-INSUFFICIENT_ANSWER = (
-    "Insufficient information in the retrieved documents."
+INSUFFICIENT_ANSWER = "Không đủ thông tin trong các tài liệu được truy xuất."
+CITATION_PATTERN = re.compile(
+    r"\[\s*(?:(?:source|nguồn)\s*:\s*)?([A-Z]\d+)\s*\]"
+    r"|【\s*(?:(?:source|nguồn)\s*:\s*)?([A-Z]\d+)\s*】",
+    re.IGNORECASE,
 )
-
-CITATION_PATTERN = re.compile(r"(?:\[|【)(S\d+)(?:\]|】)")
 
 
 def _normalize_source_citations(answer: str) -> str:
-    return CITATION_PATTERN.sub(r"[\1]", answer)
+    visible = "".join(char for char in answer if unicodedata.category(char) != "Cf")
+    return CITATION_PATTERN.sub(
+        lambda match: f"[{next(source for source in match.groups() if source).upper()}]",
+        visible,
+    )
+
+
+def extract_source_ids(answer: str) -> list[str]:
+    normalized = _normalize_source_citations(answer)
+    return list(dict.fromkeys(
+        next(source for source in match if source).upper()
+        for match in CITATION_PATTERN.findall(normalized)
+    ))
 
 
 class RAGResult(BaseModel):
@@ -23,39 +41,28 @@ class RAGResult(BaseModel):
     contexts: list[dict] = Field(default_factory=list)
     source_ids: list[str] = Field(default_factory=list)
     insufficient_context: bool = False
+    prompt_sha256: str | None = None
 
 
 def _format_contexts(contexts: list[dict]) -> str:
     blocks = []
-
     for context in contexts:
         metadata = context.get("metadata") or {}
-
+        score = context.get("retrieval_score", context.get("similarity_score", 0.0))
         lines = [
             f"[{context['source_id']}]",
-            (
-                "Document: "
-                f"{metadata.get('source_document', context['document_name'])}"
-            ),
-            f"Document ID: {metadata.get('document_id', 'unknown')}",
-            f"Chunk: {context['chunk_index']}",
-            f"Similarity: {context['similarity_score']:.4f}",
+            f"Tài liệu: {metadata.get('source_document', context['document_name'])}",
+            f"Mã tài liệu: {metadata.get('document_id', 'không rõ')}",
+            f"Đoạn: {context['chunk_index']}",
+            f"Độ tương đồng: {score:.4f}",
         ]
-
         if metadata.get("page_number") is not None:
-            lines.append(f"Page: {metadata['page_number']}")
-
+            lines.append(f"Trang: {metadata['page_number']}")
         if metadata.get("section_title"):
-            lines.append(f"Section: {metadata['section_title']}")
-
-        lines.append(f"Content: {context['content']}")
+            lines.append(f"Mục: {metadata['section_title']}")
+        lines.append(f"Nội dung: {context['content']}")
         blocks.append("\n".join(lines))
-
     return "\n\n".join(blocks)
-
-
-def _extract_source_ids(answer: str) -> list[str]:
-    return list(dict.fromkeys(CITATION_PATTERN.findall(answer)))
 
 
 class RAGService:
@@ -67,50 +74,71 @@ class RAGService:
         self.retrieval_service = retrieval_service or RetrievalService()
         self.llm = llm or GroqProvider()
 
-
-    def generate_answer(
+    def retrieve_contexts(
         self,
         question: str,
         limit: int = 5,
-    ) -> RAGResult:
-        retrieved = self.retrieval_service.retrieve(
-            RetrievalRequest(query=question, top_k=limit)
-        )
+        company: str | None = None,
+        roles: list[str] | None = None,
+        retrieval_method: str = "dense",
+    ) -> list[dict]:
+        request = RetrievalRequest(query=question, top_k=limit)
+        parameters = inspect.signature(self.retrieval_service.retrieve).parameters
+        options = {}
+        if roles is not None and "roles" not in parameters:
+            raise ValueError("The configured retrieval backend cannot enforce role-scoped retrieval")
+        if company is not None and "company" not in parameters:
+            raise ValueError("The configured retrieval backend cannot enforce company-scoped retrieval")
+        if "company" in parameters:
+            options["company"] = company
+        if "roles" in parameters:
+            options["roles"] = roles
+        if "method" in parameters:
+            options["method"] = retrieval_method
+        retrieved = self.retrieval_service.retrieve(request, **options)
 
-        contexts = [
+        return [
             {
                 "document_name": context.source,
                 "chunk_index": context.location.chunk_index,
                 "content": context.text,
                 "metadata": context.metadata,
+                # Preserve the benchmark's existing key while exposing main's
+                # evaluation contract alongside it.
                 "similarity_score": context.score,
+                "retrieval_score": context.score,
+                "retrieval_method": getattr(context, "retrieval_method", retrieved.method),
                 "source_id": f"S{index}",
             }
-            for index, context in enumerate(
-                retrieved.results,
-                start=1,
-            )
+            for index, context in enumerate(retrieved.results, start=1)
         ]
 
-        return self.generate_from_contexts(question, contexts)
-
-    def generate_from_contexts(
+    def generate_answer(
         self,
         question: str,
-        contexts: list[dict],
+        limit: int = 5,
+        company: str | None = None,
+        roles: list[str] | None = None,
+        retrieval_method: str = "dense",
     ) -> RAGResult:
+        contexts = self.retrieve_contexts(
+            question,
+            limit=limit,
+            company=company,
+            roles=roles,
+            retrieval_method=retrieval_method,
+        )
+        return self.generate_from_contexts(question, contexts)
 
+    def generate_from_contexts(self, question: str, contexts: list[dict]) -> RAGResult:
         if not contexts:
-            return RAGResult(
-                answer=INSUFFICIENT_ANSWER,
-                insufficient_context=True,
-            )
+            return RAGResult(answer=INSUFFICIENT_ANSWER, insufficient_context=True)
 
         prompt = ENTERPRISE_ASSISTANT_PROMPT.format(
             context=_format_contexts(contexts)[:MAX_CONTEXT_CHARS],
             question=question,
         )
-
+        prompt_sha256 = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
         answer = _normalize_source_citations(self.llm.generate(prompt).strip())
 
         if answer == INSUFFICIENT_ANSWER:
@@ -118,22 +146,15 @@ class RAGService:
                 answer=INSUFFICIENT_ANSWER,
                 contexts=contexts,
                 insufficient_context=True,
+                prompt_sha256=prompt_sha256,
             )
-        source_ids = _extract_source_ids(answer)
 
+        source_ids = extract_source_ids(answer)
         if not source_ids:
-            raise ValueError(
-                f"Generated answer contains no source citations. Answer: {answer}"
-)
+            raise ValueError(f"Generated answer contains no source citations. Answer: {answer}")
 
-        allowed_source_ids = {
-            context["source_id"]
-            for context in contexts
-        }
-        unknown_source_ids = (
-            set(source_ids) - allowed_source_ids
-        )
-
+        allowed_source_ids = {context["source_id"] for context in contexts}
+        unknown_source_ids = set(source_ids) - allowed_source_ids
         if unknown_source_ids:
             raise ValueError(
                 "Generated answer contains unknown citations: "
@@ -144,6 +165,7 @@ class RAGService:
             answer=answer,
             contexts=contexts,
             source_ids=source_ids,
+            prompt_sha256=prompt_sha256,
         )
 
     def close(self) -> None:

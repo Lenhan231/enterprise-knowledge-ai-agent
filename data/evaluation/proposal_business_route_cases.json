@@ -1,0 +1,18 @@
+{
+  "dataset_id": "commerce-vi-route-v2",
+  "label_method": "Nhãn định tuyến được gán thủ công theo hợp đồng tác tử hiện tại; chỉ đánh giá định tuyến, không đánh giá chất lượng câu trả lời.",
+  "cases": [
+    {"id": "enterprise-knowledge-management", "category": "Quản trị tri thức doanh nghiệp", "question": "Tìm quy định lưu trữ tài liệu của công ty", "expected_route": "knowledge"},
+    {"id": "internal-document-search", "category": "Tìm kiếm tài liệu nội bộ", "question": "Tìm chính sách phân quyền truy cập của nhân viên", "expected_route": "knowledge"},
+    {"id": "hr-policy-consultation", "category": "Tư vấn chính sách nhân sự", "question": "Chính sách nghỉ phép quy định thế nào về phép năm?", "expected_route": "knowledge"},
+    {"id": "contract-analysis", "category": "Phân tích hợp đồng", "question": "Hợp đồng này nêu những nghĩa vụ nào khi chấm dứt?", "expected_route": "knowledge"},
+    {"id": "commerce-report-analysis", "category": "Phân tích báo cáo thương mại", "question": "Tóm tắt doanh thu và giá vốn năm 2025", "expected_route": "report"},
+    {"id": "invoice-information-retrieval", "category": "Tra cứu hóa đơn", "question": "Tìm điều khoản thanh toán ghi trên hóa đơn", "expected_route": "knowledge"},
+    {"id": "inventory-analytics", "category": "Phân tích tồn kho", "question": "So sánh tỷ lệ hết hàng theo danh mục sản phẩm", "expected_route": "analytics"},
+    {"id": "customer-service-knowledge", "category": "Tri thức chăm sóc khách hàng", "question": "Nhân viên hỗ trợ cần thực hiện những bước trả hàng nào?", "expected_route": "knowledge"},
+    {"id": "commerce-dashboard", "category": "Bảng điều khiển thương mại", "question": "Tạo bảng điều khiển doanh thu và đơn hàng theo tháng", "expected_route": "dashboard"},
+    {"id": "compliance-management", "category": "Quản trị tuân thủ", "question": "Chính sách tuân thủ quy định những biện pháp kiểm soát nào?", "expected_route": "knowledge"},
+    {"id": "executive-decision-support", "category": "Hỗ trợ quyết định điều hành", "question": "Lập báo cáo về các lựa chọn và rủi ro cho ban lãnh đạo", "expected_route": "report"},
+    {"id": "business-intelligence-analytics", "category": "Phân tích kinh doanh", "question": "So sánh doanh thu theo khu vực năm 2025", "expected_route": "analytics"}
+  ]
+}

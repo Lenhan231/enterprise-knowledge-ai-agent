@@ -203,7 +203,8 @@ class AnalyticsAgentModelBoundaryTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.agent, "analytics")
         self.assertEqual(result.data["metrics"][0]["gross_profit"], 40)
         self.assertEqual(result.evidence[0].citation_id, "S1")
-        self.assertIn("lợi nhuận gộp dương", result.answer)
+        self.assertIn("Doanh thu: 100.00", result.answer)
+        self.assertNotIn("Lợi nhuận gộp", result.answer)
 
 
 if __name__ == "__main__":

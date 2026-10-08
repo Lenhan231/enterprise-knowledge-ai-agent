@@ -40,3 +40,22 @@ class AgentRouter:
             result = await result
         return AgentResult.model_validate(result)
 
+    async def run(self, request: AgentRequest) -> AgentResult:
+        return await self.route(request)
+
+    async def close(self) -> None:
+        seen = set()
+        for agent in (self.knowledge_agent, self.analytics_agent, self.hybrid_agent,
+                      self.dashboard_agent, self.report_agent):
+            if agent is None or id(agent) in seen:
+                continue
+            seen.add(id(agent))
+            close = getattr(agent, "close", None)
+            if close:
+                result = close()
+                if inspect.isawaitable(result):
+                    await result
+        close_classifier = getattr(self.classifier, "close", None)
+        if close_classifier:
+            close_classifier()
+

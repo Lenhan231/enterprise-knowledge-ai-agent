@@ -35,6 +35,15 @@ METRIC_ONTOLOGY = {
         "currency": "dataset_currency_unknown",
         "limitations": ("Chỉ là COGS cấp toàn công ty.",),
     },
+    "gross_profit": {
+        "aliases": ("gross profit", "lợi nhuận gộp"),
+        "source": "commerce.sales",
+        "formula": "SUM(revenue) - SUM(cogs)",
+        "grain": "day",
+        "aggregation": "derived",
+        "unit": "currency",
+        "dimensions": ("date",),
+    },
     # Metric riêng để tránh nhầm với sales.Revenue khi cần phân tích vùng.
     "regional_revenue": {
         "aliases": ("regional revenue", "revenue by region", "doanh thu theo khu vực"),

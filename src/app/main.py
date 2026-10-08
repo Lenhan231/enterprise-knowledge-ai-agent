@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -13,6 +14,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import ConfigDict, Field, field_validator
 
 from core.agents.analytics_agent import AnalyticsAgent
+from core.agents.intent_classifier import IntentClassifier
+from core.agents.knowledge_agent import KnowledgeAgent
+from core.agents.router import AgentRouter
 from core.agents.sql_analytics_agent import SQLAnalyticsAgent
 from core.database.commerce_repository import create_repository_from_env
 from core.models.agents import AgentRequest, AgentResult
@@ -22,6 +26,42 @@ LOGGER = logging.getLogger(__name__)
 APP_DIR = Path(__file__).resolve().parent
 REPO_ROOT = APP_DIR.parents[1]
 STATIC_DIR = APP_DIR / "static"
+
+
+class _FallbackClassifier:
+    """Use the local deterministic classifier for the chat entrypoint."""
+
+    @staticmethod
+    def classify(question: str):
+        intent = IntentClassifier.fallback(question)
+        text = question.casefold()
+        if intent.needs_knowledge and any(term in text for term in
+                ("chính sách", "quy trình", "tài liệu", "policy", "procedure", "document")) and not (
+                re.search(r"\b(?:19|20)\d{2}\b", text) or
+                any(term in text for term in ("bao nhiêu", "so sánh", "tính toán", "thống kê"))):
+            return intent.model_copy(update={"intent": "knowledge", "needs_sql": False,
+                                             "needs_knowledge": True})
+        return intent
+
+
+class _LazyKnowledgeAgent:
+    def __init__(self) -> None:
+        self.agent: KnowledgeAgent | None = None
+
+    async def run(self, request: AgentRequest) -> AgentResult:
+        if self.agent is None:
+            self.agent = KnowledgeAgent()
+        return await self.agent.run(request)
+
+    async def close(self) -> None:
+        if self.agent is not None:
+            await self.agent.close()
+
+
+class _UnsupportedRoute:
+    async def run(self, _request: AgentRequest) -> AgentResult:
+        return AgentResult(answer="Loại yêu cầu này chưa được hỗ trợ trong trò chuyện.",
+                           agent="unsupported", metadata={"ok": False})
 
 
 class ChatRequest(AgentRequest):
@@ -47,15 +87,20 @@ class ChatRequest(AgentRequest):
         return value
 
 
-def create_app(*, chat_agent: Any | None = None) -> FastAPI:
+def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None = None,
+               knowledge_agent: Any | None = None, classifier: Any | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         runtime_agent = chat_agent
         owns_agent = runtime_agent is None
         if runtime_agent is None:
             load_dotenv(REPO_ROOT / ".env", override=False)
-            repository = await create_repository_from_env()
-            runtime_agent = AnalyticsAgent(SQLAnalyticsAgent(repository))
+            repository = commerce_repository or await create_repository_from_env()
+            analytics_agent = AnalyticsAgent(SQLAnalyticsAgent(repository))
+            runtime_agent = AgentRouter(
+                classifier or _FallbackClassifier(), knowledge_agent or _LazyKnowledgeAgent(),
+                analytics_agent, _UnsupportedRoute(), _UnsupportedRoute(),
+            )
         application.state.chat_agent = runtime_agent
         try:
             yield

@@ -36,6 +36,33 @@ class FakeChatAgent:
 
 
 class ChatAPITest(unittest.TestCase):
+    def test_default_chat_routes_analytics_and_knowledge(self):
+        class Repository:
+            async def revenue_cogs_by_month(self, start, end):
+                return [{"month": "2022-12-01", "revenue": 100, "cogs": 60}]
+
+            async def close(self):
+                pass
+
+        class Knowledge:
+            async def run(self, request):
+                return AgentResult(answer="Theo tài liệu: có quy trình phê duyệt.", agent="knowledge")
+
+            async def close(self):
+                pass
+
+        with TestClient(create_app(commerce_repository=Repository(),
+                                   knowledge_agent=Knowledge())) as client:
+            analytics = client.post("/api/chat", json={"question": "Doanh thu tháng 12/2022"})
+            knowledge = client.post("/api/chat", json={"question": "Quy trình phê duyệt là gì?"})
+            policy = client.post("/api/chat", json={"question": "Chính sách tồn kho quy định gì?"})
+
+        self.assertEqual(analytics.status_code, 200)
+        self.assertEqual(analytics.json()["agent"], "analytics")
+        self.assertEqual(knowledge.status_code, 200)
+        self.assertEqual(knowledge.json()["agent"], "knowledge")
+        self.assertEqual(policy.json()["agent"], "knowledge")
+
     def test_chat_returns_agent_result_and_evidence(self):
         agent = FakeChatAgent()
 

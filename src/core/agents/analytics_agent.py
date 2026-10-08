@@ -1,22 +1,37 @@
-"""Deterministic business interpretation over SQLAnalyticsAgent results."""
+"""Explain approved commerce aggregates using only requested ontology metrics."""
 
 from __future__ import annotations
 
+import re
 from decimal import Decimal
 from typing import Any
 
-try:
-    from core.agents.base import BaseAgent
-    from core.agents.sql_analytics_agent import SQLAnalyticsAgent, payload_to_agent_result
-    from core.models.agents import AgentResult
-except ModuleNotFoundError:  # Support importing the package as ``src.core``.
-    from src.core.agents.base import BaseAgent
-    from src.core.agents.sql_analytics_agent import SQLAnalyticsAgent, payload_to_agent_result
-    from src.core.models.agents import AgentResult
+from core.agents.base import BaseAgent
+from core.agents.sql_analytics_agent import SQLAnalyticsAgent, payload_to_agent_result
+from core.analytics.metric_ontology import resolve_metric_names
+from core.models.agents import AgentResult
 
 
-def _decimal(value: Any) -> Decimal:
+def _number(value: Any) -> Decimal:
     return Decimal(str(value or 0))
+
+
+def _format(value: Decimal, percent: bool = False) -> str:
+    return f"{value * 100:,.2f}%" if percent else f"{value:,.2f}"
+
+
+LABELS = {
+    "revenue": "Doanh thu", "cogs": "Giá vốn", "gross_profit": "Lợi nhuận gộp",
+    "regional_revenue": "Doanh thu", "stock_on_hand": "Tồn kho",
+    "stockout_rate": "Tỷ lệ hết hàng", "sell_through_rate": "Tỷ lệ bán hết",
+    "fill_rate": "Tỷ lệ đáp ứng", "days_of_supply": "Số ngày đủ hàng",
+}
+INVENTORY_FIELDS = {
+    "stock_on_hand": "stock_on_hand", "stockout_rate": "stockout_rate",
+    "sell_through_rate": "avg_sell_through_rate", "fill_rate": "avg_fill_rate",
+    "days_of_supply": "avg_days_of_supply",
+}
+PERCENT_METRICS = {"stockout_rate", "sell_through_rate", "fill_rate"}
 
 
 class AnalyticsAgent(BaseAgent):
@@ -27,101 +42,164 @@ class AnalyticsAgent(BaseAgent):
         return payload_to_agent_result(await self.run_payload(request))
 
     async def run_payload(self, request: Any) -> dict[str, Any]:
+        question = SQLAnalyticsAgent._query_text(request)
         result = await self.sql_agent.run_payload(request)
         if not result.get("ok"):
             return result
 
         operation = result["operation"]
-        rows = result["rows"]
+        requested = resolve_metric_names(question)
+        filters = result.get("metadata", {}).get("filters", {})
         if operation == "revenue_cogs_by_month":
-            analysis = self._analyze_sales(rows)
+            analysis = self._sales(result["rows"], requested, question)
         elif operation == "revenue_by_region":
-            analysis = self._analyze_regions(rows)
-        elif operation == "inventory_by_category":
-            analysis = self._analyze_inventory(rows)
+            analysis = self._regions(result["rows"], question, filters.get("region", []),
+                                     result.get("metadata", {}).get("total_revenue"))
         else:
-            return {**result, "ok": False, "limitations": ["Phép phân tích chưa được hỗ trợ."]}
-
+            analysis = self._inventory(result["rows"], requested, question, filters.get("category", []))
         return {**result, **analysis}
 
     async def close(self) -> None:
         await self.sql_agent.close()
 
     @staticmethod
-    def _analyze_sales(rows: list[dict[str, Any]]) -> dict[str, Any]:
-        metrics: list[dict[str, Any]] = []
-        findings: list[str] = []
-        for row in rows:
-            revenue = _decimal(row.get("revenue"))
-            cogs = _decimal(row.get("cogs"))
-            gross_profit = revenue - cogs
-            gross_margin = gross_profit / revenue if revenue else None
-            metrics.append({
-                "period": row.get("month"),
-                "revenue": revenue,
-                "cogs": cogs,
-                "gross_profit": gross_profit,
-                "gross_margin": gross_margin,
-            })
-            if gross_profit < 0:
-                findings.append(f"{row.get('month')}: lợi nhuận gộp âm {abs(gross_profit)}.")
+    def _sales(rows: list[dict[str, Any]], requested: set[str], question: str) -> dict[str, Any]:
+        metrics = [{"period": row.get("month"), "revenue": _number(row.get("revenue")),
+                    "cogs": _number(row.get("cogs")),
+                    "gross_profit": _number(row.get("revenue")) - _number(row.get("cogs"))}
+                   for row in rows]
+        selected = [name for name in ("revenue", "cogs", "gross_profit") if name in requested]
+        if not selected:
+            return AnalyticsAgent._clarify_metric()
+        monthly = bool(re.search(r"theo tháng|tháng nào|mỗi tháng|từng tháng|các tháng", question.casefold()))
+        ranking = bool(re.search(r"thấp nhất|ít nhất|nhỏ nhất|cao nhất|nhiều nhất|lớn nhất|lowest|highest",
+                                 question.casefold()))
+        if monthly:
+            if ranking and len(selected) != 1:
+                return AnalyticsAgent._clarify_metric()
+            display = []
+            for row in metrics:
+                year, month = str(row["period"])[:7].split("-")
+                display.append({"month": f"Tháng {month}/{year}", **{
+                    name: _format(row[name]) for name in selected}})
+            if len(selected) == 1:
+                name = selected[0]
+                values = [{"month": shown["month"], "value": raw[name]}
+                          for raw, shown in zip(metrics, display)]
+                _, answer = AnalyticsAgent._evaluate(values, "month", "value", LABELS[name], question, [])
             else:
-                findings.append(f"{row.get('month')}: lợi nhuận gộp dương {gross_profit}.")
+                answer = "; ".join(
+                    f"{row['month']} — " + ", ".join(f"{LABELS[name]}: {row[name]}" for name in selected)
+                    for row in display) + "."
+            if "gross_profit" in selected:
+                answer += " gross_profit = revenue - cogs."
+            return {
+                "answer": answer, "analysis": "sales_performance", "metrics": metrics,
+                "table": {"columns": [{"key": "month", "label": "Tháng"}] +
+                          [{"key": name, "label": LABELS[name]} for name in selected], "rows": display},
+                "findings": [answer], "recommendations": [],
+            }
+        if ranking and len(metrics) > 1:
+            return {"ok": False, "answer": "Vui lòng làm rõ muốn xếp hạng theo tháng hay kỳ khác.",
+                    "limitations": ["Chưa xác định được mức thời gian cho phép so sánh."]}
+        revenue = sum((_number(row.get("revenue")) for row in rows), Decimal(0))
+        cogs = sum((_number(row.get("cogs")) for row in rows), Decimal(0))
+        values = {"revenue": revenue, "cogs": cogs, "gross_profit": revenue - cogs}
+        answer = "; ".join(f"{LABELS[name]}: {_format(values[name])}" for name in selected)
+        if "gross_profit" in selected:
+            answer += " (gross_profit = revenue - cogs)"
+        table = {
+            "columns": [{"key": "metric", "label": "Chỉ số"}, {"key": "value", "label": "Giá trị"}],
+            "rows": [{"metric": LABELS[name], "value": _format(values[name])} for name in selected],
+        }
         return {
-            "analysis": "sales_performance",
+            "answer": answer + ".", "analysis": "sales_performance", "table": table,
             "metrics": metrics,
-            "findings": findings,
-            "recommendations": [
-                "Kiểm tra giá vốn, chiết khấu và chính sách giá khi lợi nhuận gộp âm."
-            ] if any(item["gross_profit"] < 0 for item in metrics) else [],
+            "findings": [answer + "."], "recommendations": [],
         }
 
     @staticmethod
-    def _analyze_regions(rows: list[dict[str, Any]]) -> dict[str, Any]:
-        if not rows:
-            return {"analysis": "regional_revenue", "metrics": [], "findings": ["Không có dữ liệu trong kỳ."], "recommendations": []}
-        values = [(row.get("region"), _decimal(row.get("revenue"))) for row in rows]
-        total = sum(value for _, value in values)
-        metrics = [
-            {"region": region, "revenue": revenue, "share": revenue / total if total else None}
-            for region, revenue in values
-        ]
-        highest = max(values, key=lambda item: item[1])
+    def _regions(rows: list[dict[str, Any]], question: str, groups: list[str],
+                 total_revenue: Any = None) -> dict[str, Any]:
+        values = [{"region": row["region"], "revenue": _number(row["revenue"])} for row in rows]
+        total = _number(total_revenue) if total_revenue is not None else sum(
+            (row["revenue"] for row in values), Decimal(0))
+        values, answer = AnalyticsAgent._evaluate(values, "region", "revenue", "Doanh thu", question, groups)
+        metrics = [{**row, "share": row["revenue"] / total if total else None} for row in values]
+        display = [{"region": row["region"], "revenue": _format(row["revenue"]),
+                    "share": _format(row["share"], True) if row["share"] is not None else "—"}
+                   for row in metrics]
         return {
-            "analysis": "regional_revenue",
-            "metrics": metrics,
-            "findings": [f"{highest[0]} có doanh thu cao nhất: {highest[1]}."],
-            "recommendations": [
-                "So sánh thêm số lượng đơn hàng và giá trị đơn hàng trung bình trước khi kết luận nguyên nhân chênh lệch vùng."
-            ],
-            "limitations": [
-                "Doanh thu theo khu vực được tái dựng từ đơn hàng và chi tiết đơn hàng, không lấy từ commerce.sales."
-            ],
+            "answer": answer, "analysis": "regional_revenue", "metrics": metrics,
+            "table": {"columns": [{"key": "region", "label": "Khu vực"},
+                                  {"key": "revenue", "label": "Doanh thu"},
+                                  {"key": "share", "label": "Tỷ trọng"}], "rows": display},
+            "findings": [answer], "recommendations": [],
+            "limitations": ["Doanh thu khu vực tính từ đơn đã giao; có thể khác commerce.sales."],
         }
 
     @staticmethod
-    def _analyze_inventory(rows: list[dict[str, Any]]) -> dict[str, Any]:
-        metrics: list[dict[str, Any]] = []
+    def _inventory(rows: list[dict[str, Any]], requested: set[str], question: str,
+                   groups: list[str]) -> dict[str, Any]:
+        selected = [name for name in INVENTORY_FIELDS if name in requested]
+        if not selected:
+            return AnalyticsAgent._clarify_metric()
+        metrics = []
         for row in rows:
-            observed = int(row.get("products_observed") or 0)
-            stockout = int(row.get("stockout_products") or 0)
-            metrics.append({
-                **row,
-                "stockout_rate": stockout / observed if observed else None,
-                "reorder_rate": int(row.get("reorder_products") or 0) / observed if observed else None,
-            })
-        highest = max(metrics, key=lambda row: row["stockout_rate"] or 0, default=None)
-        findings = [
-            f"{highest['category']} có tỷ lệ hết hàng cao nhất: {highest['stockout_rate']:.2%}."
-        ] if highest else ["Không có dữ liệu tồn kho tại thời điểm này."]
+            observed = _number(row.get("products_observed"))
+            metric = {**row, "stockout_rate": _number(row.get("stockout_products")) / observed if observed else None,
+                      "reorder_rate": _number(row.get("reorder_products")) / observed if observed else None}
+            metrics.append(metric)
+        primary = selected[0]
+        field = INVENTORY_FIELDS[primary]
+        values = [{"category": row["category"], "value": _number(row.get(field))} for row in metrics]
+        values, answer = AnalyticsAgent._evaluate(values, "category", "value", LABELS[primary],
+                                                   question, groups, percent=primary in PERCENT_METRICS)
+        if groups:
+            metrics = [row for row in metrics if row["category"] in groups]
+        if len(selected) > 1:
+            answer = "; ".join(
+                f"{row['category']} — " + ", ".join(
+                    f"{LABELS[name]}: {_format(_number(row.get(INVENTORY_FIELDS[name])), name in PERCENT_METRICS)}"
+                    for name in selected) for row in metrics) + "."
+        columns = [{"key": "category", "label": "Danh mục"}]
+        columns += [{"key": name, "label": LABELS[name]} for name in selected]
+        if primary == "stock_on_hand":
+            columns += [{"key": name, "label": label} for name, label in
+                        (("stockout_products", "SKU hết hàng"), ("reorder_products", "SKU cần nhập"),
+                         ("overstock_products", "SKU dư tồn"))]
+        display = []
+        for row in metrics:
+            entry = {"category": row["category"]}
+            for name in selected:
+                entry[name] = _format(_number(row.get(INVENTORY_FIELDS[name])), name in PERCENT_METRICS)
+            if primary == "stock_on_hand":
+                entry.update({name: row.get(name, 0) for name in
+                              ("stockout_products", "reorder_products", "overstock_products")})
+            display.append(entry)
         return {
-            "analysis": "inventory_by_category",
-            "metrics": metrics,
-            "findings": findings,
-            "recommendations": [
-                "Kiểm tra các SKU được đánh dấu hết hàng trước khi thay đổi lượng đặt hàng."
-            ] if highest else [],
-            "limitations": [
-                "Tỷ lệ hết hàng được tính bằng số SKU được đánh dấu hết hàng chia cho số SKU quan sát; không phải tỷ lệ theo số ngày-sản phẩm."
-            ],
+            "answer": answer, "analysis": "inventory_by_category", "metrics": metrics,
+            "table": {"columns": columns, "rows": display}, "findings": [answer],
+            "recommendations": [],
+            "limitations": ["Tỷ lệ hết hàng = số SKU gắn cờ hết hàng / số SKU quan sát."]
+            if primary == "stockout_rate" else [],
         }
+
+    @staticmethod
+    def _evaluate(rows: list[dict[str, Any]], dimension: str, metric: str, label: str,
+                  question: str, groups: list[str], *, percent: bool = False) -> tuple[list[dict[str, Any]], str]:
+        if groups:
+            rows = [row for row in rows if row[dimension] in groups]
+        text = question.casefold()
+        direction = "min" if re.search(r"thấp nhất|ít nhất|nhỏ nhất|lowest|minimum", text) else (
+            "max" if re.search(r"cao nhất|nhiều nhất|lớn nhất|highest|maximum", text) else None)
+        if direction:
+            winner = (min if direction == "min" else max)(rows, key=lambda row: row[metric])
+            rank = "thấp nhất" if direction == "min" else "cao nhất"
+            return rows, f"{winner[dimension]} có {label.casefold()} {rank}: {_format(winner[metric], percent)}."
+        return rows, "; ".join(f"{row[dimension]} — {label}: {_format(row[metric], percent)}" for row in rows) + "."
+
+    @staticmethod
+    def _clarify_metric() -> dict[str, Any]:
+        return {"ok": False, "answer": "Vui lòng làm rõ chỉ số cần phân tích.",
+                "limitations": ["Không xác định chắc chỉ số được hỏi."]}

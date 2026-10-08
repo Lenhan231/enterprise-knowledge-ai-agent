@@ -37,6 +37,9 @@ Content-Type: application/json
 ```
 
 Response tuân theo model `AgentResult`, bao gồm `answer`, `agent`, `evidence`, `data` và `metadata`.
+`/api/chat` đi qua `AgentRouter`: câu hỏi số liệu dùng analytics; câu hỏi về nội dung tài liệu dùng knowledge/RAG. Knowledge cần `DATABASE_URL` trỏ tới kho `document_chunks` và `GROQ_API_KEY`. Yêu cầu kết hợp đồng thời tài liệu với SQL hoặc tạo dashboard hiện trả thông báo chưa hỗ trợ.
+
+Với analytics, `data.table` chứa `columns` và `rows`; giao diện hiển thị bảng này. Chỉ số được chọn từ ontology, còn giá trị như `gross_profit = revenue - cogs` được tính trong code. Có thể hỏi cao nhất/thấp nhất, so sánh vùng hoặc các tháng trong năm, chọn vùng hoặc danh mục, và hỏi theo tháng hay năm. Kỳ hợp lệ nhưng không có hàng trả về thông báo “Không có dữ liệu”; yêu cầu thiếu thời gian hoặc tên nhóm không rõ sẽ được yêu cầu làm rõ.
 
 Các truy vấn analytics hiện được hỗ trợ:
 

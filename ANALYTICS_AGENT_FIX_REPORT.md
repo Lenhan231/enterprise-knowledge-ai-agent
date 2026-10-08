@@ -274,3 +274,36 @@ JavaScript syntax check: pass
 Full unittest suite: 103/103 pass
 ```
 
+## 9. Diễn giải theo metric và định tuyến knowledge — 2026-10-08
+
+### Vì sao thay đổi
+
+Kiểm tra A1–A10 cho thấy các hàng SQL đúng nhưng lời đáp theo operation còn cố định: câu hỏi sell-through lại nhận finding stockout, câu hỏi lợi nhuận gộp bị báo unsupported, còn năm 2025 bị nhận nhầm là thiếu tháng. Câu hỏi doanh thu thấp nhất cũng trả vùng cao nhất. Vì vậy operation hiện chỉ chọn nguồn; metric, bộ lọc và phép so sánh quyết định lời đáp.
+
+### Thay đổi
+
+- `SQLAnalyticsAgent` nhận kỳ tháng hoặc năm, kể cả năm ngoài dữ liệu; kỳ không có hàng được báo là “không có dữ liệu”. Agent nhận diện tên vùng/danh mục từ các hàng Supabase và yêu cầu làm rõ khi tên nhóm được nêu rõ nhưng không khớp.
+- Ontology có thêm `gross_profit = SUM(revenue) - SUM(cogs)`. `AnalyticsAgent` chọn metric qua `resolve_metric_names`, tính bằng `Decimal`, dùng một luồng chung để lọc nhóm, chọn cao nhất/thấp nhất hoặc liệt kê so sánh.
+- `AgentResult.data.table` gồm `columns` và `rows`. Giao diện tạo bảng HTML có caption/header bằng DOM và `textContent`, giúp A1 trình bày cả Revenue/COGS, A4 hiện đủ ba vùng và A5 hiện stockout/reorder/overstock.
+- `/api/chat` dùng `AgentRouter`. Knowledge agent được khởi tạo khi gặp câu hỏi tài liệu; câu hỏi policy/procedure không có yêu cầu số liệu được đưa tới knowledge. Hybrid và dashboard vẫn trả lời rõ là chưa hỗ trợ.
+
+### Xác minh
+
+- Unit test hành vi: một/hai/ba vùng, nhóm được gọi tên, cao nhất/thấp nhất, từng metric inventory, gross profit, năm không có dữ liệu và tên vùng không rõ.
+- Toàn bộ suite: **112 test pass**; `node --check` và `git diff --check` pass.
+- Smoke Supabase live: **3/3 pass**, transaction read-only và write probe bị chặn bằng SQLSTATE `25006`.
+- Gọi live A1–A10: cả mười trả đúng dạng kết quả/limitation mong đợi. Câu “doanh thu thấp nhất” trả **West: 7,549,686.86**.
+- Gọi live knowledge: HTTP 200, `agent="knowledge"`, có citation từ `document_chunks`. Lần gọi đầu tải embedding model nên chậm hơn analytics.
+
+### Giới hạn hiện tại
+
+Hệ thống analytics vẫn chỉ có ba nguồn truy vấn được phê duyệt. Metric không có operation tương ứng, ví dụ return rate, được báo chưa hỗ trợ. Các câu hỏi cần kết hợp đồng thời tài liệu và số liệu, hoặc dựng dashboard, chưa có agent thực thi.
+
+## 10. Sửa xếp hạng doanh thu theo tháng trong năm 2022
+
+Câu hỏi “doanh thu thấp nhất theo tháng trong năm 2022” từng trả `1,169,748,831.69` vì SQL đã trả 12 hàng tổng hợp theo tháng, nhưng `AnalyticsAgent._sales()` cộng toàn bộ 12 hàng thành doanh thu năm và bỏ qua ý “thấp nhất theo tháng”. Bảng hiển thị khi đó chỉ có một dòng tổng, nên citation `commerce.sales` đúng nguồn nhưng không chứng minh kết luận theo tháng.
+
+Lớp diễn giải nay phân biệt câu hỏi tổng năm với câu hỏi theo tháng. Khi người dùng yêu cầu so sánh hoặc xếp hạng các tháng, nó dùng chính 12 hàng tháng, chọn metric được hỏi bằng `Decimal`, rồi áp dụng hàm xếp hạng chung. Bảng trả đủ các tháng để có thể kiểm tra kết luận. Nếu yêu cầu xếp hạng mà không rõ mức thời gian, agent yêu cầu làm rõ.
+
+Truy vấn live xác nhận **tháng 11/2022 thấp nhất: `52,200,081.64`**. Tháng 12/2022 là `52,454,936.20`; tổng năm `1,169,748,831.69` là một phép tổng khác, không phải đáp án cho câu hỏi trên.
+

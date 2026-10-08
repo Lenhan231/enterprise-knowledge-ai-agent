@@ -134,6 +134,11 @@ button:focus-visible, textarea:focus-visible, summary:focus-visible {
 .avatar { width: 38px; height: 38px; display: grid; place-items: center; color: #fff; background: var(--green); font-size: 11px; font-weight: 800; }
 .message strong { font-size: 13px; }
 .message p { margin: 5px 0 0; line-height: 1.65; white-space: pre-wrap; }
+.table-scroll { max-width: 100%; margin-top: 12px; overflow-x: auto; }
+.message table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.message caption { text-align: left; font-weight: 700; padding-bottom: 6px; }
+.message th, .message td { padding: 8px 10px; border: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.message th { background: #f7f9fa; }
 .message details { margin-top: 12px; padding: 10px 12px; background: #f7f9fa; border: 1px solid var(--line); }
 .message summary { color: var(--navy-soft); cursor: pointer; font-size: 12px; font-weight: 700; }
 .message ul { margin: 9px 0 0; padding-left: 20px; color: var(--muted); font-size: 12px; line-height: 1.6; }

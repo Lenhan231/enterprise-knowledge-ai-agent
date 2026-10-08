@@ -4,7 +4,7 @@ const submit = document.querySelector('#submit');
 const messages = document.querySelector('#messages');
 const formStatus = document.querySelector('#form-status');
 
-function addMessage(role, text, evidence = []) {
+function addMessage(role, text, evidence = [], tableData = null) {
   const article = document.createElement('article');
   article.className = `message ${role}`;
 
@@ -19,6 +19,36 @@ function addMessage(role, text, evidence = []) {
   const content = document.createElement('p');
   content.textContent = text;
   body.append(author, content);
+
+  if (tableData?.columns?.length && tableData?.rows?.length) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'table-scroll';
+    const table = document.createElement('table');
+    const caption = document.createElement('caption');
+    caption.textContent = 'Số liệu phân tích';
+    const header = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    tableData.columns.forEach((column) => {
+      const cell = document.createElement('th');
+      cell.scope = 'col';
+      cell.textContent = column.label;
+      headerRow.append(cell);
+    });
+    header.append(headerRow);
+    const tbody = document.createElement('tbody');
+    tableData.rows.forEach((item) => {
+      const row = document.createElement('tr');
+      tableData.columns.forEach((column) => {
+        const cell = document.createElement('td');
+        cell.textContent = String(item[column.key] ?? '—');
+        row.append(cell);
+      });
+      tbody.append(row);
+    });
+    table.append(caption, header, tbody);
+    wrapper.append(table);
+    body.append(wrapper);
+  }
 
   if (evidence.length) {
     const details = document.createElement('details');
@@ -61,7 +91,7 @@ async function sendQuestion(text) {
     if (!response.ok) {
       throw new Error(payload.detail || 'Không thể xử lý yêu cầu.');
     }
-    addMessage('assistant', payload.answer, payload.evidence || []);
+    addMessage('assistant', payload.answer, payload.evidence || [], payload.data?.table);
   } catch (error) {
     addMessage('error', error.message || 'Không thể kết nối đến hệ thống.');
   } finally {

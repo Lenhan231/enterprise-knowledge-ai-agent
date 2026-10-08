@@ -10,6 +10,7 @@ import calendar
 import re
 from collections.abc import Mapping
 from datetime import date, timedelta
+from decimal import Decimal
 from typing import Any
 
 try:
@@ -126,20 +127,32 @@ class SQLAnalyticsAgent(BaseAgent):
                 if snapshot_date is None:
                     return self._missing_period(query, "ngày snapshot, ví dụ 2022-12-31")
                 rows = await self.repository.inventory_by_category(snapshot_date)
+                if not rows:
+                    return self._success(operation, rows, source=["commerce.inventory"], period=str(snapshot_date))
+                selected = self._mentioned_groups(query, rows, "category")
+                if self._unknown_group(query, rows, "category"):
+                    return self._unclear_group("danh mục")
                 return self._success(
                     operation,
                     rows,
                     source=["commerce.inventory"],
                     period=str(snapshot_date),
+                    filters={"category": selected} if selected else {},
                 )
 
-            period = self._month_period(query)
+            period = self._date_period(query)
             if period is None:
                 return self._missing_period(query, "tháng/năm, ví dụ tháng 12/2022")
             start_date, end_date = period
 
+            regional_rows = None
+            if operation == "revenue_cogs_by_month" and resolve_metric_names(query) == {"revenue"}:
+                regional_rows = await self.repository.revenue_by_region(start_date, end_date)
+                if self._mentioned_groups(query, regional_rows, "region"):
+                    operation = "revenue_by_region"
+
             if operation == "revenue_by_region":
-                rows = await self.repository.revenue_by_region(start_date, end_date)
+                rows = regional_rows if regional_rows is not None else await self.repository.revenue_by_region(start_date, end_date)
                 source = [
                     "commerce.orders",
                     "commerce.order_items",
@@ -149,11 +162,22 @@ class SQLAnalyticsAgent(BaseAgent):
                 rows = await self.repository.revenue_cogs_by_month(start_date, end_date)
                 source = ["commerce.sales"]
 
+            if not rows:
+                return self._success(operation, rows, source=source,
+                                     period=f"{start_date.isoformat()}:{end_date.isoformat()}")
+
+            dimension = "region" if operation == "revenue_by_region" else None
+            selected = self._mentioned_groups(query, rows, dimension) if dimension else []
+            if dimension and self._unknown_group(query, rows, dimension):
+                return self._unclear_group("khu vực")
+            total_revenue = sum((Decimal(str(row["revenue"])) for row in rows), Decimal(0)) if dimension else None
             return self._success(
                 operation,
                 rows,
                 source=source,
                 period=f"{start_date.isoformat()}:{end_date.isoformat()}",
+                filters={dimension: selected} if selected else {},
+                total_revenue=total_revenue,
             )
         except Exception as error:
             return self._database_error(operation, error)
@@ -183,15 +207,13 @@ class SQLAnalyticsAgent(BaseAgent):
             "sell_through_rate",
         }
         if metrics & inventory_metrics:
-            if any(term in text for term in ("category", "danh mục", "loại sản phẩm", "segment")):
-                return "inventory_by_category"
-            return None
+            return "inventory_by_category"
         if "regional_revenue" in metrics or (
             "revenue" in metrics
             and any(term in text for term in ("region", "regional", "khu vực", "vùng"))
         ):
             return "revenue_by_region"
-        if metrics & {"revenue", "cogs"}:
+        if metrics & {"revenue", "cogs", "gross_profit"}:
             return "revenue_cogs_by_month"
         return None
 
@@ -211,6 +233,17 @@ class SQLAnalyticsAgent(BaseAgent):
         return start, date(year, month, end_month) + timedelta(days=1)
 
     @staticmethod
+    def _date_period(query: str) -> tuple[date, date] | None:
+        month = SQLAnalyticsAgent._month_period(query)
+        if month:
+            return month
+        match = re.search(r"(?:năm|year)\s+(20\d{2})(?!\d)", query, re.I)
+        if match:
+            year = int(match.group(1))
+            return date(year, 1, 1), date(year + 1, 1, 1)
+        return None
+
+    @staticmethod
     def _snapshot_date(query: str) -> date | None:
         match = re.search(r"(?<!\d)(20\d{2})[-/](0?[1-9]|1[0-2])[-/](0?[1-9]|[12]\d|3[01])(?!\d)", query)
         if match:
@@ -219,13 +252,44 @@ class SQLAnalyticsAgent(BaseAgent):
         return period[1].fromordinal(period[1].toordinal() - 1) if period else None
 
     @staticmethod
-    def _success(operation: str, rows: list[dict[str, Any]], *, source: list[str], period: str) -> dict[str, Any]:
+    def _mentioned_groups(query: str, rows: list[dict[str, Any]], dimension: str | None) -> list[str]:
+        if not dimension:
+            return []
+        return [str(row[dimension]) for row in rows if row.get(dimension) and
+                re.search(rf"(?<!\w){re.escape(str(row[dimension]))}(?!\w)", query, re.I)]
+
+    @staticmethod
+    def _unknown_group(query: str, rows: list[dict[str, Any]], dimension: str) -> bool:
+        marker = "khu vực" if dimension == "region" else "danh mục"
+        match = re.search(rf"(?i:{marker})\s+([\w-]+)", query)
+        return bool(match and match.group(1)[0].isupper() and match.group(1).casefold() not in {
+            str(row[dimension]).casefold() for row in rows
+        })
+
+    @staticmethod
+    def _unclear_group(dimension: str) -> dict[str, Any]:
+        return {"ok": False, "operation": None, "rows": [],
+                "answer": f"Không xác định được {dimension} được hỏi. Vui lòng nêu tên có trong dữ liệu.",
+                "limitations": [f"{dimension} không khớp với các hàng tổng hợp hiện có."]}
+
+    @staticmethod
+    def _success(operation: str, rows: list[dict[str, Any]], *, source: list[str], period: str,
+                 filters: dict[str, list[str]] | None = None,
+                 total_revenue: Any | None = None) -> dict[str, Any]:
+        if not rows:
+            return {
+                "ok": False, "operation": operation, "rows": [], "evidence": [],
+                "answer": f"Không có dữ liệu cho kỳ {period}.",
+                "limitations": [f"Không có hàng tổng hợp trong nguồn dữ liệu cho kỳ {period}."],
+                "metadata": {"period": period},
+            }
         return {
             "ok": True,
             "operation": operation,
             "rows": rows,
             "evidence": [{"source": table, "period": period} for table in source],
-            "metadata": {"source": source, "period": period, "currency": "dataset_currency_unknown"},
+            "metadata": {"source": source, "period": period, "currency": "dataset_currency_unknown",
+                         "filters": filters or {}, "total_revenue": total_revenue},
         }
 
     @staticmethod

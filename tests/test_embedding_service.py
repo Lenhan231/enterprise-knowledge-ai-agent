@@ -27,7 +27,7 @@ class EmbeddingServiceTest(unittest.TestCase):
         self.assertEqual(self.service.embed_documents(["a", "abcd"]), [[1.0], [4.0]])
 
     def test_embed_query_delegates_one_query(self):
-        self.assertEqual(self.service.embed_query("apple"), [5.0])
+        self.assertEqual(self.service.embed_query("commerce"), [8.0])
 
 
 if __name__ == "__main__":

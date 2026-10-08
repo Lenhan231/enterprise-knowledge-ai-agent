@@ -1,85 +1,98 @@
+from __future__ import annotations
+
+import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Any
 
-from fastapi import FastAPI, File, Query, UploadFile
-from fastapi.responses import FileResponse, JSONResponse
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import ConfigDict, Field, field_validator
 
-app = FastAPI(title="Enterprise Knowledge AI Agent")
+from core.agents.analytics_agent import AnalyticsAgent
+from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+from core.database.commerce_repository import create_repository_from_env
+from core.models.agents import AgentRequest, AgentResult
 
+
+LOGGER = logging.getLogger(__name__)
 APP_DIR = Path(__file__).resolve().parent
+REPO_ROOT = APP_DIR.parents[1]
 STATIC_DIR = APP_DIR / "static"
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
-@app.get("/", include_in_schema=False)
-async def dashboard():
-    return FileResponse(STATIC_DIR / "index.html")
+class ChatRequest(AgentRequest):
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(min_length=1, max_length=2_000)
+    user_id: str | None = Field(default=None, max_length=128)
+    conversation_id: str | None = Field(default=None, max_length=128)
+
+    @field_validator("question")
+    @classmethod
+    def normalize_question(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Câu hỏi không được để trống")
+        return normalized
+
+    @field_validator("metadata")
+    @classmethod
+    def bound_metadata(cls, value: dict[str, Any]) -> dict[str, Any]:
+        if len(value) > 20:
+            raise ValueError("metadata không được vượt quá 20 trường")
+        return value
 
 
-@app.get("/health")
-async def health():
-    return {"status": "ok"}
+def create_app(*, chat_agent: Any | None = None) -> FastAPI:
+    @asynccontextmanager
+    async def lifespan(application: FastAPI) -> AsyncIterator[None]:
+        runtime_agent = chat_agent
+        owns_agent = runtime_agent is None
+        if runtime_agent is None:
+            load_dotenv(REPO_ROOT / ".env", override=False)
+            repository = await create_repository_from_env()
+            runtime_agent = AnalyticsAgent(SQLAnalyticsAgent(repository))
+        application.state.chat_agent = runtime_agent
+        try:
+            yield
+        finally:
+            if owns_agent:
+                await runtime_agent.close()
+
+    application = FastAPI(
+        title="Trợ lý tri thức doanh nghiệp",
+        version="0.1.0",
+        lifespan=lifespan,
+    )
+    application.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+    @application.get("/", include_in_schema=False)
+    async def home() -> FileResponse:
+        return FileResponse(STATIC_DIR / "index.html")
+
+    @application.get("/health")
+    async def health() -> dict[str, str]:
+        return {"status": "ok"}
+
+    @application.post("/api/chat", response_model=AgentResult)
+    async def chat(payload: ChatRequest, request: Request) -> AgentResult:
+        try:
+            result = await request.app.state.chat_agent.run(
+                AgentRequest.model_validate(payload.model_dump())
+            )
+            return AgentResult.model_validate(result)
+        except Exception as error:
+            LOGGER.error("api_chat_failed error_type=%s", type(error).__name__)
+            raise HTTPException(
+                status_code=503,
+                detail="Hệ thống tạm thời không thể xử lý yêu cầu.",
+            ) from None
+
+    return application
 
 
-@app.get("/api/dashboard")
-async def dashboard_data(
-    fiscal_year: str = Query("FY2025", pattern=r"^FY20\d{2}$"),
-    source: str = Query("apple-public-corporate-corpus"),
-):
-    """Mock dashboard contract. Replace this body with service calls later."""
-    return {
-        "filters": {"fiscalYear": fiscal_year, "source": source},
-        "kpis": [
-            {"id": "net-sales", "label": "Net Sales (FY2025)", "value": "$416.161B", "detail": "vs. $391.035B in FY2024", "change": "+6.4%", "tone": "positive", "icon": "chart"},
-            {"id": "iphone", "label": "iPhone Sales (FY2025)", "value": "$209.586B", "detail": "of total net sales", "change": "50.4%", "tone": "neutral", "icon": "phone"},
-            {"id": "services", "label": "Services Sales (FY2025)", "value": "$109.158B", "detail": "of total net sales", "change": "26.2%", "tone": "neutral", "icon": "layers"},
-            {"id": "employees", "label": "Full-time Equivalent Employees", "value": "166,000", "detail": "vs. 164,000 in FY2024", "change": "As of FY2025", "tone": "neutral", "icon": "users"},
-        ],
-        "salesTrend": [
-            {"year": "FY2021", "value": 365.817}, {"year": "FY2022", "value": 394.328},
-            {"year": "FY2023", "value": 383.285}, {"year": "FY2024", "value": 391.035},
-            {"year": "FY2025", "value": 416.161},
-        ],
-        "products": [
-            {"name": "iPhone", "value": 209.586, "share": 50.4, "color": "#2878f4"},
-            {"name": "Mac", "value": 33.708, "share": 8.1, "color": "#9b62df"},
-            {"name": "iPad", "value": 28.023, "share": 6.7, "color": "#6fc088"},
-            {"name": "Wearables, Home & Accessories", "value": 35.686, "share": 8.6, "color": "#ff9638"},
-            {"name": "Services", "value": 109.158, "share": 26.2, "color": "#f33f5c"},
-        ],
-        "regions": [
-            {"name": "Americas", "value": 178.353, "share": 42.9, "color": "#3470be"},
-            {"name": "Europe", "value": 111.032, "share": 26.7, "color": "#65a9f4"},
-            {"name": "Greater China", "value": 64.377, "share": 15.5, "color": "#8c5de0"},
-            {"name": "Rest of Asia Pacific", "value": 33.696, "share": 8.1, "color": "#7ab57e"},
-            {"name": "Japan", "value": 28.703, "share": 6.9, "color": "#f7a344"},
-        ],
-        "insights": [
-            {"title": "Services grew faster than total sales", "body": "Services revenue increased 13.9% year over year, outpacing total net sales growth of 6.4%, indicating continued diversification and strong growth in the Services business.", "source": "FY2025 10-K"},
-            {"title": "Greater China sales declined year over year", "body": "Greater China net sales decreased 2.3% compared to FY2024, primarily due to a challenging macroeconomic environment in the region.", "source": "FY2025 10-K"},
-            {"title": "Wearables, Home and Accessories declined year over year", "body": "Wearables, Home and Accessories net sales decreased 6.7% compared to FY2024, reflecting lower sales of Apple Watch, AirPods and related products.", "source": "FY2025 10-K"},
-            {"title": "Strong installed base supports long-term opportunities", "body": "With a large and growing installed base across devices, Apple is well positioned to expand Services and drive long-term value.", "source": "FY2025 10-K"},
-        ],
-        "coverage": {"documents": 30, "chunks": 12846, "categories": [
-            {"name": "Finance", "count": 8, "icon": "file", "tone": "blue"},
-            {"name": "Compliance", "count": 5, "icon": "shield", "tone": "green"},
-            {"name": "Procurement", "count": 6, "icon": "clipboard", "tone": "purple"},
-            {"name": "Supply Chain", "count": 5, "icon": "network", "tone": "orange"},
-            {"name": "Environment", "count": 6, "icon": "leaf", "tone": "green"}
-        ]},
-        "recentSources": [
-            {"title": "Apple Inc. Form 10-K (FY2025)", "category": "Finance", "date": "Jan 2025"},
-            {"title": "Apple Environmental Progress Report 2025", "category": "Environment", "date": "Apr 2025"},
-            {"title": "Supplier Code of Conduct and Supplier Responsibility Standards", "category": "Supply Chain", "date": "Jan 2025"},
-            {"title": "Business Conduct Policy (2026)", "category": "Compliance", "date": "Jan 2026"},
-            {"title": "Apple Purchase Order Terms", "category": "Procurement", "date": "2024"},
-        ],
-    }
-
-
-@app.post("/upload")
-async def upload_document(file: UploadFile = File(...)):
-    # placeholder: save file and enqueue processing
-    content = await file.read()
-    # TODO: route to DocumentProcessor
-    return JSONResponse({"filename": file.filename, "size": len(content)})
+app = create_app()

@@ -1,0 +1,270 @@
+{
+  "passed": true,
+  "summary": {
+    "case_count": 3,
+    "passed_cases": 3
+  },
+  "read_only": {
+    "transaction_read_only": "on",
+    "write_probe_blocked": true,
+    "write_probe_sqlstate": "25006"
+  },
+  "cases": [
+    {
+      "id": "revenue_cogs_2022_12",
+      "passed": true,
+      "agent_result": true,
+      "agent": "analytics",
+      "operation": "revenue_cogs_by_month",
+      "row_count": 1,
+      "evidence_valid": true,
+      "expected_values_valid": true,
+      "expected_row": {
+        "match": {
+          "month": "2022-12-01"
+        },
+        "values": {
+          "revenue": "52454936.20",
+          "cogs": "53489673.44"
+        }
+      },
+      "evidence_sources": [
+        "commerce.sales"
+      ],
+      "answer": "2022-12-01: lợi nhuận gộp âm 1034737.24.",
+      "data": {
+        "ok": true,
+        "operation": "revenue_cogs_by_month",
+        "rows": [
+          {
+            "month": "2022-12-01",
+            "revenue": "52454936.20",
+            "cogs": "53489673.44"
+          }
+        ],
+        "analysis": "sales_performance",
+        "metrics": [
+          {
+            "period": "2022-12-01",
+            "revenue": "52454936.20",
+            "cogs": "53489673.44",
+            "gross_profit": "-1034737.24",
+            "gross_margin": "-0.01972621291644998702715036378"
+          }
+        ],
+        "findings": [
+          "2022-12-01: lợi nhuận gộp âm 1034737.24."
+        ],
+        "recommendations": [
+          "Kiểm tra giá vốn, chiết khấu và chính sách giá khi lợi nhuận gộp âm."
+        ]
+      }
+    },
+    {
+      "id": "revenue_by_region_2022_12",
+      "passed": true,
+      "agent_result": true,
+      "agent": "analytics",
+      "operation": "revenue_by_region",
+      "row_count": 3,
+      "evidence_valid": true,
+      "expected_values_valid": true,
+      "expected_row": {
+        "match": {
+          "region": "East"
+        },
+        "values": {
+          "revenue": "14079268.92"
+        }
+      },
+      "evidence_sources": [
+        "commerce.geography",
+        "commerce.order_items",
+        "commerce.orders"
+      ],
+      "answer": "East có doanh thu cao nhất: 14079268.92.",
+      "data": {
+        "ok": true,
+        "operation": "revenue_by_region",
+        "rows": [
+          {
+            "region": "East",
+            "revenue": "14079268.92"
+          },
+          {
+            "region": "Central",
+            "revenue": "10258958.39"
+          },
+          {
+            "region": "West",
+            "revenue": "7549686.86"
+          }
+        ],
+        "analysis": "regional_revenue",
+        "metrics": [
+          {
+            "region": "East",
+            "revenue": "14079268.92",
+            "share": "0.4415236708472362273672038048"
+          },
+          {
+            "region": "Central",
+            "revenue": "10258958.39",
+            "share": "0.3217193302549584728764967069"
+          },
+          {
+            "region": "West",
+            "revenue": "7549686.86",
+            "share": "0.2367569988978052997562994883"
+          }
+        ],
+        "findings": [
+          "East có doanh thu cao nhất: 14079268.92."
+        ],
+        "recommendations": [
+          "So sánh thêm số lượng đơn hàng và giá trị đơn hàng trung bình trước khi kết luận nguyên nhân chênh lệch vùng."
+        ],
+        "limitations": [
+          "Doanh thu theo khu vực được tái dựng từ đơn hàng và chi tiết đơn hàng, không lấy từ commerce.sales."
+        ]
+      }
+    },
+    {
+      "id": "inventory_2022_12_31",
+      "passed": true,
+      "agent_result": true,
+      "agent": "analytics",
+      "operation": "inventory_by_category",
+      "row_count": 4,
+      "evidence_valid": true,
+      "expected_values_valid": true,
+      "expected_row": {
+        "match": {
+          "category": "Casual"
+        },
+        "values": {
+          "products_observed": "40",
+          "stockout_products": "31"
+        }
+      },
+      "evidence_sources": [
+        "commerce.inventory"
+      ],
+      "answer": "Casual có tỷ lệ hết hàng cao nhất: 77.50%.",
+      "data": {
+        "ok": true,
+        "operation": "inventory_by_category",
+        "rows": [
+          {
+            "category": "Casual",
+            "products_observed": 40,
+            "stock_on_hand": 4095,
+            "stockout_products": 31,
+            "reorder_products": 0,
+            "overstock_products": 29,
+            "avg_days_of_supply": "830.9525000000000000",
+            "avg_fill_rate": "0.96083250000000000000",
+            "avg_sell_through_rate": "0.13919500000000000000"
+          },
+          {
+            "category": "GenZ",
+            "products_observed": 44,
+            "stock_on_hand": 5126,
+            "stockout_products": 25,
+            "reorder_products": 0,
+            "overstock_products": 37,
+            "avg_days_of_supply": "1019.4159090909090909",
+            "avg_fill_rate": "0.97197045454545454545",
+            "avg_sell_through_rate": "0.11745000000000000000"
+          },
+          {
+            "category": "Outdoor",
+            "products_observed": 144,
+            "stock_on_hand": 49929,
+            "stockout_products": 95,
+            "reorder_products": 0,
+            "overstock_products": 113,
+            "avg_days_of_supply": "2196.0048611111111111",
+            "avg_fill_rate": "0.95671527777777777778",
+            "avg_sell_through_rate": "0.11831458333333333333"
+          },
+          {
+            "category": "Streetwear",
+            "products_observed": 196,
+            "stock_on_hand": 45085,
+            "stockout_products": 134,
+            "reorder_products": 0,
+            "overstock_products": 162,
+            "avg_days_of_supply": "2031.8173469387755102",
+            "avg_fill_rate": "0.96224744897959183673",
+            "avg_sell_through_rate": "0.11431224489795918367"
+          }
+        ],
+        "analysis": "inventory_by_category",
+        "metrics": [
+          {
+            "category": "Casual",
+            "products_observed": 40,
+            "stock_on_hand": 4095,
+            "stockout_products": 31,
+            "reorder_products": 0,
+            "overstock_products": 29,
+            "avg_days_of_supply": "830.9525000000000000",
+            "avg_fill_rate": "0.96083250000000000000",
+            "avg_sell_through_rate": "0.13919500000000000000",
+            "stockout_rate": 0.775,
+            "reorder_rate": 0.0
+          },
+          {
+            "category": "GenZ",
+            "products_observed": 44,
+            "stock_on_hand": 5126,
+            "stockout_products": 25,
+            "reorder_products": 0,
+            "overstock_products": 37,
+            "avg_days_of_supply": "1019.4159090909090909",
+            "avg_fill_rate": "0.97197045454545454545",
+            "avg_sell_through_rate": "0.11745000000000000000",
+            "stockout_rate": 0.5681818181818182,
+            "reorder_rate": 0.0
+          },
+          {
+            "category": "Outdoor",
+            "products_observed": 144,
+            "stock_on_hand": 49929,
+            "stockout_products": 95,
+            "reorder_products": 0,
+            "overstock_products": 113,
+            "avg_days_of_supply": "2196.0048611111111111",
+            "avg_fill_rate": "0.95671527777777777778",
+            "avg_sell_through_rate": "0.11831458333333333333",
+            "stockout_rate": 0.6597222222222222,
+            "reorder_rate": 0.0
+          },
+          {
+            "category": "Streetwear",
+            "products_observed": 196,
+            "stock_on_hand": 45085,
+            "stockout_products": 134,
+            "reorder_products": 0,
+            "overstock_products": 162,
+            "avg_days_of_supply": "2031.8173469387755102",
+            "avg_fill_rate": "0.96224744897959183673",
+            "avg_sell_through_rate": "0.11431224489795918367",
+            "stockout_rate": 0.6836734693877551,
+            "reorder_rate": 0.0
+          }
+        ],
+        "findings": [
+          "Casual có tỷ lệ hết hàng cao nhất: 77.50%."
+        ],
+        "recommendations": [
+          "Kiểm tra các SKU được đánh dấu hết hàng trước khi thay đổi lượng đặt hàng."
+        ],
+        "limitations": [
+          "Tỷ lệ hết hàng được tính bằng số SKU được đánh dấu hết hàng chia cho số SKU quan sát; không phải tỷ lệ theo số ngày-sản phẩm."
+        ]
+      }
+    }
+  ]
+}

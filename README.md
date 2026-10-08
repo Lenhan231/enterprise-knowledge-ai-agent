@@ -1,35 +1,71 @@
-Enterprise Knowledge AI Agent (Scaffold)
+# Enterprise Knowledge AI Agent
 
-Minimal scaffold for the Enterprise Knowledge AI Agent project.
+Trợ lý phân tích dữ liệu doanh nghiệp bằng tiếng Việt, sử dụng schema `commerce` trên Supabase PostgreSQL.
 
-Quick start
+## Cài đặt
 
-1. Create a Python virtualenv and install dependencies:
-
-```bash
+```powershell
 uv sync
 ```
 
-2. Run the FastAPI app:
+Tạo `.env` và cấu hình một trong hai biến:
 
-```bash
+```text
+SUPABASE_DB_URL=postgresql://...
+DATABASE_URL=postgresql://...
+```
+
+Không đưa chuỗi kết nối vào frontend hoặc commit vào Git.
+
+## Chạy ứng dụng
+
+```powershell
 uvicorn src.app.main:app --reload --port 8000
 ```
 
-Open `http://localhost:8000` for the Enterprise Intelligence dashboard.
-The UI currently reads mock data from `GET /api/dashboard`; keep that response
-shape when replacing the mock implementation with live analytics services.
+Mở `http://localhost:8000` để sử dụng giao diện chat tiếng Việt.
 
-Project layout
+### API chat
 
-- src/app: FastAPI application entrypoint and API routes
-- src/core: document processing, retrieval, and agent router stubs
-- docker-compose.yml: local dev services (Postgres)
+```http
+POST /api/chat
+Content-Type: application/json
 
-See the source files for implementation stubs.
+{
+  "question": "Doanh thu và giá vốn tháng 12/2022"
+}
+```
 
-## Dataset
+Response tuân theo model `AgentResult`, bao gồm `answer`, `agent`, `evidence`, `data` và `metadata`.
 
-The reproducible Apple corpus workflow is documented in
-[`data/README.md`](data/README.md). Raw PDFs and generated Markdown are not
-committed.
+Các truy vấn analytics hiện được hỗ trợ:
+
+- Doanh thu và giá vốn theo tháng.
+- Doanh thu theo khu vực theo tháng.
+- Tồn kho theo danh mục tại một ngày snapshot.
+
+## Smoke test Supabase
+
+Script sau chạy ba truy vấn thật, kiểm tra `AgentResult`/`Evidence` và xác minh transaction chỉ đọc:
+
+```powershell
+$env:PYTHONIOENCODING='utf-8'
+.venv\Scripts\python.exe scripts/smoke_test_supabase_analytics.py
+```
+
+Ghi báo cáo JSON tái lập:
+
+```powershell
+.venv\Scripts\python.exe scripts/smoke_test_supabase_analytics.py `
+  --output artifacts/smoke/supabase_analytics_smoke.json
+```
+
+Write probe sử dụng `UPDATE ... WHERE FALSE` bên trong transaction `readonly=True`. Câu lệnh không thể sửa hàng nào và smoke test chỉ pass khi PostgreSQL chặn nó với SQLSTATE `25006`.
+
+## Chạy test
+
+```powershell
+.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_*.py'
+```
+
+Các test mặc định không gọi dịch vụ bên ngoài. Kiểm tra Supabase thật chỉ chạy khi chủ động gọi smoke-test script.

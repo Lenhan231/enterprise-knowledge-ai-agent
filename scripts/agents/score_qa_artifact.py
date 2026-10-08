@@ -116,7 +116,11 @@ def summarize_human_reviews(results: list[dict]) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("artifact", type=Path)
-    parser.add_argument("--cases", type=Path, default=REPO_ROOT / "data/evaluation/vinamilk_qa_cases.json")
+    parser.add_argument(
+        "--cases",
+        type=Path,
+        default=REPO_ROOT / "data/evaluation/commerce_analytics_cases.json",
+    )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     report = json.loads(args.artifact.read_text(encoding="utf-8"))

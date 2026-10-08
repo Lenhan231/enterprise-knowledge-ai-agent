@@ -229,3 +229,48 @@ Các vấn đề trong review analytics đã được xử lý. Tuy nhiên repos
 
 > `KnowledgeAgent`, `SQLAnalyticsAgent`, `AnalyticsAgent` và luồng async router liên quan đã có contract hoạt động; các agent hybrid/dashboard/report vẫn cần implementation riêng nếu sản phẩm yêu cầu chạy thật.
 
+## 8. Cập nhật API chat và smoke test Supabase — 2026-10-08
+
+### Dọn test dataset cũ
+
+- Loại test gọi script retrieval của corpus cũ.
+- Thay các ID và expected facts trong test QA bằng số liệu `commerce` tháng 12/2022.
+- Thay `data/evaluation/vinamilk_qa_cases.json` bằng `data/evaluation/commerce_analytics_cases.json`.
+- Giữ các fixture retrieval tổng quát vì chúng không gắn với thương hiệu hoặc dataset cũ.
+- Toàn bộ thư mục `tests/` không còn chuỗi nhận diện dataset Apple/Vinamilk.
+
+### Smoke test Supabase tái lập
+
+Script mới: `scripts/smoke_test_supabase_analytics.py`.
+
+Script xác minh:
+
+1. `commerce.sales` tháng 12/2022: revenue `52454936.20`, COGS `53489673.44`.
+2. Doanh thu khu vực East tháng 12/2022: `14079268.92`.
+3. Inventory category Casual tại `2022-12-31`: 40 SKU quan sát, 31 SKU hết hàng.
+4. Mỗi case trả `AgentResult` cùng `Evidence(source_type="database")` hợp lệ.
+5. Transaction báo `transaction_read_only=on` và chặn write probe với SQLSTATE `25006`.
+
+Báo cáo live được ghi tại `artifacts/smoke/supabase_analytics_smoke.json`; kết quả `3/3` case pass.
+
+### FastAPI `/api/chat`
+
+- Xóa `/api/dashboard` chứa dữ liệu hard-code và endpoint upload placeholder.
+- Thêm app factory để production dùng Supabase thật còn test inject agent giả.
+- Thêm `POST /api/chat` với response model `AgentResult`.
+- Chặn câu hỏi rỗng, câu hỏi quá 2.000 ký tự, field lạ và metadata quá 20 trường.
+- Lỗi nội bộ trả HTTP 503 bằng thông báo tiếng Việt và không lộ exception.
+- Lifespan đóng asyncpg pool khi ứng dụng dừng.
+- Thay dashboard cũ bằng giao diện chat tiếng Việt gọi API thật; model output được render bằng `textContent`.
+
+### Kết quả xác minh cuối
+
+```text
+Live Supabase smoke: 3/3 pass
+Read-only write probe: blocked, SQLSTATE 25006
+Live POST /api/chat: HTTP 200, analytics, commerce.sales evidence
+Python compileall: pass
+JavaScript syntax check: pass
+Full unittest suite: 103/103 pass
+```
+

@@ -8,10 +8,7 @@ import psycopg
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.analytics.sql_safety import UnsafeAnalyticsQuery
-from core.database.document_repository import (
-    DocumentRepository,
-    link_financial_metric_source_chunk,
-)
+from core.database.document_repository import DocumentRepository
 from core.agents.dashboard_agent import DashboardAgent
 from core.models.agents import AgentRequest, AgentResult, Evidence
 
@@ -433,128 +430,6 @@ class DocumentDashboardTest(unittest.TestCase):
                 question="Show a chart of revenue by year",
             ))
         repository.corpus_dashboard.assert_not_called()
-
-    def test_candidate_review_requires_fully_processed_document(self):
-        repository = DocumentRepository.__new__(DocumentRepository)
-        repository.conn = MagicMock()
-        cursor = repository.conn.cursor.return_value.__enter__.return_value
-        cursor.fetchone.return_value = None
-
-        reviewed = repository.review_metric_candidate(
-            7, "verified", 42.0, "billion VND", "admin", "Example Retailer Ltd."
-        )
-
-        query = " ".join(cursor.execute.call_args.args[0].lower().split())
-        self.assertFalse(reviewed)
-        self.assertIn("from documents d", query)
-        self.assertIn("d.processing_status='ready'", query)
-        self.assertIn("candidate.status='needs_review'", query)
-        self.assertIn("d.company=%s::text", query)
-        self.assertEqual(cursor.execute.call_args.args[1][-2:], ("Example Retailer Ltd.", "Example Retailer Ltd."))
-
-    def test_candidate_upsert_refreshes_pending_evidence_for_admin_queue(self):
-        repository = DocumentRepository.__new__(DocumentRepository)
-        repository.conn = MagicMock()
-        rows = [{
-            "metric_name": "net_revenue",
-            "metric_label": "Net revenue",
-            "candidate_values": ["60,479"],
-            "fiscal_year": 2023,
-            "page_number": 2,
-            "source_quote": "Net revenue 60,479 billion VND",
-            "source_quote_hash": "hash",
-            "unit": "billion VND",
-        }]
-
-        repository.save_metric_candidates("EXAMPLE-AR-2023-EN", rows)
-
-        cursor = repository.conn.cursor.return_value.__enter__.return_value
-        upsert = " ".join(cursor.executemany.call_args.args[0].lower().split())
-        self.assertIn("on conflict", upsert)
-        self.assertIn("created_at = now()", upsert)
-        self.assertIn("selection_evidence = excluded.selection_evidence", upsert)
-        self.assertEqual(upsert.count("unit = excluded.unit"), 1)
-        self.assertNotIn("unit = null", upsert)
-        candidate_values = cursor.executemany.call_args.args[1]
-        self.assertEqual(candidate_values[0][8], "billion VND")
-        self.assertEqual(candidate_values[0][9], "rule_based_page_evidence")
-        self.assertEqual(candidate_values[0][12].obj, {})
-        self.assertIn("status in ('needs_review', 'superseded')", upsert)
-        supersede, params = cursor.execute.call_args.args
-        supersede = " ".join(supersede.lower().split())
-        self.assertIn("set status = 'superseded'", supersede)
-        self.assertIn("old.status = 'needs_review'", supersede)
-        self.assertIn("from unnest(%s::text[], %s::text[])", supersede)
-        self.assertEqual(params, ("EXAMPLE-AR-2023-EN", ["net_revenue"], ["hash"]))
-
-    def test_financial_candidate_links_to_unique_source_chunk_and_hash(self):
-        import hashlib
-
-        repository = DocumentRepository.__new__(DocumentRepository)
-        repository.conn = MagicMock()
-        cursor = repository.conn.cursor.return_value.__enter__.return_value
-        content = "Total revenue 63,724 billion VND"
-        cursor.fetchall.return_value = [{
-            "id": 991, "chunk_index": 7, "content": content, "page_number": "48",
-        }]
-        row = {
-            "metric_name": "total_consolidated_revenue",
-            "metric_label": "Total consolidated revenue",
-            "candidate_values": ["63,724"], "fiscal_year": 2025,
-            "page_number": 48, "source_quote": "In 2025, consolidated total revenue | 63,724",
-            "source_quote_hash": "quote-hash", "unit": "billion VND",
-        }
-
-        repository.save_metric_candidates("EXAMPLE-AR-2025-EN", [row])
-
-        values = cursor.executemany.call_args.args[1][0]
-        self.assertEqual(values[13:15], (991, 7))
-        self.assertEqual(values[15], hashlib.sha256(content.encode()).hexdigest())
-
-    def test_financial_metric_link_prefers_structured_table_chunk_on_text_tie(self):
-        import hashlib
-
-        shared_content = "Gross profit 8.166.269 7.503.136"
-        row = {
-            "metric_name": "gross_profit", "metric_label": "Gross profit",
-            "candidate_values": ["8.166.269"], "page_number": 92,
-            "source_quote": "label: Lợi nhuận gộp | value_1: 8.166.269",
-        }
-        chunks = [
-            {"id": 11, "chunk_index": 4, "content": shared_content,
-             "page_number": "92", "metadata": {"layout_type": "text"}},
-            {"id": 12, "chunk_index": 5, "content": shared_content,
-             "page_number": "92", "metadata": {"layout_type": "table", "element_type": "table"}},
-        ]
-
-        self.assertEqual(
-            link_financial_metric_source_chunk(row, chunks),
-            (12, 5, hashlib.sha256(shared_content.encode()).hexdigest()),
-        )
-
-    def test_financial_metric_link_does_not_fallback_to_a_different_page(self):
-        row = {
-            "metric_name": "gross_profit", "metric_label": "Gross profit",
-            "candidate_values": ["8,166,269"], "page_number": 92,
-            "source_quote": "Gross profit 8,166,269",
-        }
-
-        self.assertEqual(link_financial_metric_source_chunk(row, [{
-            "id": 1, "chunk_index": 0, "content": "Gross profit 8,166,269",
-            "page_number": "91", "metadata": {"layout_type": "table"},
-        }]), (None, None, None))
-
-    def test_empty_reprocess_supersedes_pending_rows_without_deleting_history(self):
-        repository = DocumentRepository.__new__(DocumentRepository)
-        repository.conn = MagicMock()
-
-        repository.save_metric_candidates("DOC-EMPTY", [])
-
-        cursor = repository.conn.cursor.return_value.__enter__.return_value
-        supersede, params = cursor.execute.call_args.args
-        self.assertIn("set status = 'superseded'", supersede.lower())
-        self.assertEqual(params, ("DOC-EMPTY", [], []))
-
 
 if __name__ == "__main__":
     unittest.main()

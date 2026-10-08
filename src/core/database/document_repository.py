@@ -1,5 +1,4 @@
 # src/core/database/documents_repository.py
-import hashlib
 import os
 import re
 
@@ -9,54 +8,9 @@ from psycopg.rows import dict_row
 
 from core.database.connection_limit import close_database_connection, connect_database
 from core.analytics.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql, validate_commerce_sql
-from core.analytics.metric_ontology import METRIC_ONTOLOGY
 from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES, COMMERCE_QUERY_TABLES
 
 load_dotenv()
-
-
-def link_financial_metric_source_chunk(
-    row: dict, source_chunks: list[dict],
-) -> tuple[int | None, int | None, str | None]:
-    """Return one exact or uniquely best source chunk; prefer structured table chunks on ties."""
-    quote = " ".join(str(row.get("source_quote") or "").casefold().split())
-    page = str(row.get("page_number") or "")
-    page_chunks = [chunk for chunk in source_chunks if str(chunk.get("page_number") or "") == page]
-    if not page_chunks:
-        return None, None, None
-    exact = [chunk for chunk in page_chunks
-             if quote and quote in " ".join(chunk["content"].casefold().split())]
-    if len(exact) == 1:
-        match = exact[0]
-    else:
-        definition = METRIC_ONTOLOGY.get(row["metric_name"], {})
-        labels = {str(row.get("metric_label") or ""), *definition.get("source_labels", ())}
-        labels.update(definition.get("aliases", ()))
-        labels = {" ".join(label.casefold().split()) for label in labels if label}
-        values = [re.sub(r"\D", "", str(value)) for value in row.get("candidate_values", ())]
-        values = [value for value in values if len(value) >= 2]
-        quote_tokens = set(re.findall(r"[a-z]+|\d+", quote))
-        matched = []
-        for chunk in page_chunks:
-            content = " ".join(chunk["content"].casefold().split())
-            digits = re.sub(r"\D", "", content)
-            if values and all(value in digits for value in values):
-                label_score = max((len(label) for label in labels if label in content), default=0)
-                if label_score:
-                    content_tokens = set(re.findall(r"[a-z]+|\d+", content))
-                    quote_score = len(quote_tokens & content_tokens)
-                    metadata = chunk.get("metadata") or {}
-                    layout_score = int(
-                        metadata.get("element_type") == "table"
-                        or metadata.get("layout_type") == "table"
-                    )
-                    matched.append((label_score, quote_score, layout_score, chunk))
-        matched.sort(key=lambda item: (item[0], item[1], item[2]), reverse=True)
-        if not matched or (len(matched) > 1 and matched[0][:3] == matched[1][:3]):
-            return None, None, None
-        match = matched[0][3]
-    return (match["id"], match["chunk_index"],
-            hashlib.sha256(match["content"].encode()).hexdigest())
 
 
 class DocumentRepository:
@@ -536,142 +490,6 @@ class DocumentRepository:
             cursor.execute("SELECT max(snapshot_date)::text AS snapshot_date FROM commerce.inventory")
             row = cursor.fetchone()
             return row["snapshot_date"] if row else None
-
-    def save_metric_candidates(self, document_id: str, candidates: list[dict]) -> None:
-        with self.conn.transaction(), self.conn.cursor() as cursor:
-            cursor.execute(
-                """SELECT id, chunk_index, content, metadata,
-                          metadata->>'page_number' AS page_number
-                   FROM public.document_chunks
-                   WHERE metadata->>'document_id' = %s
-                   ORDER BY chunk_index""",
-                (document_id,),
-            )
-            source_chunks = cursor.fetchall()
-
-            cursor.executemany(
-                """INSERT INTO extracted_metric_candidates (
-                       document_id, metric_name, metric_label, candidate_values,
-                       fiscal_year, page_number, source_quote, source_quote_hash, unit,
-                       extraction_method, extractor_model, prompt_version, selection_evidence,
-                       source_chunk_id, source_chunk_index, source_content_hash
-                   ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                   ON CONFLICT (document_id, metric_name, page_number, source_quote_hash)
-                   DO UPDATE SET candidate_values = EXCLUDED.candidate_values,
-                                 metric_label = EXCLUDED.metric_label,
-                                 fiscal_year = EXCLUDED.fiscal_year,
-                                 source_quote = EXCLUDED.source_quote,
-                                 unit = EXCLUDED.unit,
-                                 extraction_method = EXCLUDED.extraction_method,
-                                 extractor_model = EXCLUDED.extractor_model,
-                                 prompt_version = EXCLUDED.prompt_version,
-                                 selection_evidence = EXCLUDED.selection_evidence,
-                                 source_chunk_id = EXCLUDED.source_chunk_id,
-                                 source_chunk_index = EXCLUDED.source_chunk_index,
-                                 source_content_hash = EXCLUDED.source_content_hash,
-                                 status = 'needs_review', normalized_value = NULL,
-                                 reviewed_by = NULL, reviewed_at = NULL, created_at = now()
-                   WHERE extracted_metric_candidates.status IN ('needs_review', 'superseded')""",
-                [(document_id, row["metric_name"], row["metric_label"],
-                  psycopg.types.json.Jsonb(row["candidate_values"]), row["fiscal_year"],
-                  row["page_number"], row["source_quote"], row["source_quote_hash"],
-                  row.get("unit"),
-                  row.get("extraction_method", "rule_based_page_evidence"),
-                  row.get("extractor_model"), row.get("prompt_version"),
-                  psycopg.types.json.Jsonb(row.get("selection_evidence", {})),
-                  *link_financial_metric_source_chunk(row, source_chunks))
-                 for row in candidates],
-            )
-            cursor.execute(
-                """UPDATE extracted_metric_candidates AS old
-                   SET status = 'superseded'
-                   WHERE old.document_id = %s AND old.status = 'needs_review'
-                     AND NOT EXISTS (
-                         SELECT 1
-                         FROM unnest(%s::text[], %s::text[]) AS incoming(metric_name, source_quote_hash)
-                         WHERE incoming.metric_name = old.metric_name
-                           AND incoming.source_quote_hash = old.source_quote_hash
-                     )""",
-                (document_id,
-                 [row["metric_name"] for row in candidates],
-                 [row["source_quote_hash"] for row in candidates]),
-            )
-
-    def create_manual_metric_candidate(
-        self, *, company: str, metric_name: str, metric_label: str,
-        metric_value: str, fiscal_year: int, unit: str,
-        source_reference: str | None, source_note: str, allowed_roles: list[str],
-    ) -> int:
-        with self.conn.transaction(), self.conn.cursor() as cursor:
-            cursor.execute(
-                """INSERT INTO public.extracted_metric_candidates (
-                       company, metric_name, metric_label, candidate_values,
-                       fiscal_year, unit, status, extraction_method, entry_method,
-                       source_reference, source_note, allowed_roles, selection_evidence
-                   ) VALUES (%s, %s, %s, %s, %s, %s, 'needs_review', 'manual_entry',
-                             'manual', %s, %s, %s, %s)
-                   RETURNING id""",
-                (company, metric_name, metric_label,
-                 psycopg.types.json.Jsonb([metric_value]), fiscal_year, unit,
-                 source_reference, source_note, allowed_roles,
-                 psycopg.types.json.Jsonb({"entry_method": "manual"})),
-            )
-            return cursor.fetchone()[0]
-
-    def review_metric_candidate(
-        self, candidate_id: int, status: str, value: float | None,
-        unit: str | None, reviewer: str, company: str | None = None,
-    ) -> bool:
-        if status not in {"verified", "rejected"} or (status == "verified" and (value is None or not unit)):
-            raise ValueError("Verified metrics require a normalized value and unit")
-        with self.conn.transaction(), self.conn.cursor(row_factory=psycopg.rows.dict_row) as cursor:
-            cursor.execute(
-                """UPDATE extracted_metric_candidates AS candidate
-                   SET status=%s, normalized_value=%s, unit=%s, reviewed_by=%s, reviewed_at=now()
-                   WHERE candidate.id=%s AND candidate.status='needs_review'
-                     AND (candidate.document_id IS NULL OR EXISTS (
-                         SELECT 1 FROM documents d
-                         WHERE d.document_id=candidate.document_id
-                           AND d.processing_status='ready'
-                           AND (%s::text IS NULL OR d.company=%s::text)
-                     ))
-                     AND (candidate.document_id IS NOT NULL OR
-                          (%s::text IS NULL OR candidate.company=%s::text))
-                   RETURNING candidate.*""",
-                (status, value if status == "verified" else None,
-                 unit if status == "verified" else None, reviewer, candidate_id,
-                 company, company, company, company),
-            )
-            candidate = cursor.fetchone()
-            if candidate is None:
-                return False
-            if status == "verified":
-                cursor.execute(
-                    """INSERT INTO extracted_financial_metrics (
-                           company, fiscal_year, metric_name, metric_label, metric_value,
-                           unit, document_id, page_number, source_quote, source_quote_hash,
-                           source_url, allowed_roles, status, entry_method,
-                           source_reference, source_note, verified_by, verified_at,
-                           source_chunk_id, source_chunk_index, source_content_hash
-                       ) SELECT coalesce(c.company, d.company), coalesce(c.fiscal_year,
-                                CASE WHEN d.fiscal_year ~ '^[0-9]{4}$' THEN d.fiscal_year::integer END),
-                                c.metric_name, c.metric_label, c.normalized_value, c.unit,
-                                d.document_id, c.page_number, c.source_quote,
-                                c.source_quote_hash, d.source_url,
-                                coalesce(nullif(c.allowed_roles, '{}'::text[]), d.allowed_roles),
-                                'verified', c.entry_method, c.source_reference, c.source_note,
-                                %s, now(), c.source_chunk_id, c.source_chunk_index,
-                                c.source_content_hash
-                         FROM extracted_metric_candidates c
-                         LEFT JOIN documents d USING(document_id)
-                   WHERE c.id=%s
-                         ON CONFLICT (company, fiscal_year, metric_name)
-                             WHERE status = 'verified' DO NOTHING""",
-                    (reviewer, candidate_id),
-                )
-                if cursor.rowcount == 0:
-                    raise ValueError("A verified value already exists for this company, year, and metric")
-        return True
 
     def update_processing_status(self, document_id: str, status: str) -> None:
         if status not in {"uploaded", "processing", "ready", "failed"}:

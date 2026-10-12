@@ -56,6 +56,13 @@ class AgentRoutingTest(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(intent.needs_knowledge)
         self.assertEqual(intent.reason, "Phân loại dự phòng theo quy tắc")
 
+    def test_classifier_routes_approved_product_lookup_to_analytics(self):
+        intent = IntentClassifier.fallback("Thông tin sản phẩm mã 42")
+
+        self.assertEqual(intent.intent, "analytics")
+        self.assertTrue(intent.needs_sql)
+        self.assertFalse(intent.needs_knowledge)
+
     def test_intent_prompt_requires_vietnamese_output(self):
         self.assertIn("tiếng Việt", INTENT_CLASSIFIER_PROMPT)
 

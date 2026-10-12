@@ -28,6 +28,12 @@ class GroqProviderTest(unittest.TestCase):
         self.assertNotIn("test-secret", repr(environment_provider))
 
     @patch("core.llm.groq_provider.OpenAI")
+    def test_explicit_benchmark_key_overrides_default_key(self, openai):
+        with patch.dict(os.environ, {"GROQ_API_KEY": "default-secret"}):
+            GroqProvider(model="qwen/qwen3.8-27b", api_key="second-secret")
+        self.assertEqual(openai.call_args.kwargs["api_key"], "second-secret")
+
+    @patch("core.llm.groq_provider.OpenAI")
     def test_generate_uses_configured_model_and_records_usage(self, openai):
         openai.return_value.responses.create.return_value = MagicMock(
             output_text="grounded answer",

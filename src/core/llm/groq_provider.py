@@ -12,8 +12,8 @@ load_dotenv()
 class GroqProvider(LLMInterface):
     """OpenAI-compatible Groq provider with benchmark-safe model overrides."""
 
-    def __init__(self, model: str | None = None, temperature: float = 0):
-        api_key = os.getenv("GROQ_API_KEY")
+    def __init__(self, model: str | None = None, temperature: float = 0, api_key: str | None = None):
+        api_key = api_key if api_key is not None else os.getenv("GROQ_API_KEY")
         if not api_key:
             raise ValueError("GROQ_API_KEY is not set")
 

@@ -10,6 +10,8 @@ import os
 from datetime import date
 from typing import Any
 
+from core.analytics.text_to_sql import APPROVED_COLUMNS, validate_commerce_sql
+
 try:
     import asyncpg
 except ImportError:  # Keep imports usable before the optional DB dependency is installed.
@@ -19,6 +21,34 @@ except ImportError:  # Keep imports usable before the optional DB dependency is 
 MAX_LIMIT = 1_000
 MAX_RANGE_DAYS = 3_660
 DEFAULT_TIMEOUT_MS = 5_000
+
+
+ROLE_CHECK_SQL = """
+SELECT
+    current_user AS role_name,
+    role.rolsuper,
+    role.rolcreaterole,
+    role.rolcreatedb,
+    role.rolreplication,
+    role.rolbypassrls,
+    has_schema_privilege(current_user, 'commerce', 'USAGE') AS schema_usage,
+    has_schema_privilege(current_user, 'commerce', 'CREATE') AS schema_create,
+    bool_and(has_any_column_privilege(
+        current_user,
+        format('%I.%I', 'commerce', approved.table_name),
+        'SELECT'
+    )) AS can_select,
+    bool_or(has_table_privilege(
+        current_user,
+        format('%I.%I', 'commerce', approved.table_name),
+        'INSERT,UPDATE,DELETE,TRUNCATE'
+    )) AS can_write
+FROM pg_roles AS role
+CROSS JOIN unnest($1::text[]) AS approved(table_name)
+WHERE role.rolname = current_user
+GROUP BY role.rolsuper, role.rolcreaterole, role.rolcreatedb,
+         role.rolreplication, role.rolbypassrls
+"""
 
 
 REVENUE_COGS_BY_MONTH = """
@@ -109,6 +139,11 @@ class CommerceRepository:
     ) -> list[dict[str, Any]]:
         return await self._fetch(INVENTORY_BY_CATEGORY, snapshot_date, self._limit(limit))
 
+    async def execute_approved_query(self, query: str, *args: Any) -> list[dict[str, Any]]:
+        """Revalidate and execute one bounded allowlisted SELECT."""
+        validated = validate_commerce_sql(query)
+        return await self._fetch(validated.sql, *args)
+
     async def close(self) -> None:
         """Close the underlying asyncpg pool during application shutdown."""
         await self.pool.close()
@@ -139,13 +174,13 @@ class CommerceRepository:
 
 
 async def create_repository_from_env() -> CommerceRepository:
-    """Create a repository using ``SUPABASE_DB_URL`` or ``DATABASE_URL``."""
+    """Create a repository using the dedicated least-privilege analytics URL."""
     if asyncpg is None:
         raise RuntimeError("Install asyncpg before connecting to Supabase PostgreSQL")
 
-    database_url = os.getenv("SUPABASE_DB_URL") or os.getenv("DATABASE_URL")
+    database_url = os.getenv("ANALYTICS_DATABASE_URL")
     if not database_url:
-        raise RuntimeError("Set SUPABASE_DB_URL or DATABASE_URL")
+        raise RuntimeError("Set ANALYTICS_DATABASE_URL to a least-privilege commerce reader")
 
     pool = await asyncpg.create_pool(
         dsn=database_url,
@@ -153,4 +188,29 @@ async def create_repository_from_env() -> CommerceRepository:
         max_size=5,
         command_timeout=DEFAULT_TIMEOUT_MS / 1_000,
     )
+    try:
+        await verify_analytics_role(pool)
+    except Exception:
+        await pool.close()
+        raise
     return CommerceRepository(pool)
+
+
+async def verify_analytics_role(pool: Any) -> None:
+    """Fail closed unless the connection role can only read approved sources."""
+    table_names = sorted(source.split(".", 1)[1] for source in APPROVED_COLUMNS)
+    async with pool.acquire() as connection:
+        info = await connection.fetchrow(ROLE_CHECK_SQL, table_names)
+    if info is None:
+        raise RuntimeError("Analytics database role could not be verified")
+    values = dict(info)
+    privileged = any(values.get(flag) for flag in (
+        "rolsuper", "rolcreaterole", "rolcreatedb", "rolreplication", "rolbypassrls",
+        "schema_create", "can_write",
+    ))
+    if privileged:
+        raise RuntimeError("ANALYTICS_DATABASE_URL must use a least-privilege read-only role")
+    if not values.get("schema_usage"):
+        raise RuntimeError("Analytics role lacks USAGE on schema commerce")
+    if not values.get("can_select"):
+        raise RuntimeError("Analytics role lacks SELECT on one or more approved commerce tables")

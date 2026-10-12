@@ -7,7 +7,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.agents.analytics_agent import AnalyticsAgent
 from core.agents.sql_analytics_agent import SQLAnalyticsAgent
-from core.models.agents import AgentRequest
+from core.models.agents import AgentRequest, VerifiedIdentity
+
+
+ANALYST = VerifiedIdentity(subject="test-analyst", permissions={"analytics:read"})
 
 
 class RowsRepository:
@@ -54,7 +57,7 @@ class AnalyticsBehaviorTest(unittest.IsolatedAsyncioTestCase):
         self.agent = AnalyticsAgent(SQLAnalyticsAgent(self.repository))
 
     async def ask(self, question):
-        return await self.agent.run(AgentRequest(question=question))
+        return await self.agent.run(AgentRequest(question=question, identity=ANALYST))
 
     async def test_revenue_cogs_and_derived_profit_answer_the_requested_metric(self):
         both = await self.ask("Doanh thu và giá vốn tháng 12/2022 là bao nhiêu?")
@@ -128,6 +131,16 @@ class AnalyticsBehaviorTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn("01/2022", highest.answer)
         self.assertIn("100.00", highest.answer)
         self.assertIn("190.00", annual.answer)
+        self.assertIn("SUM(revenue)", lowest.answer)
+        self.assertIn("Mức thời gian: tháng", lowest.answer)
+        self.assertIn("Nguồn: commerce.sales", lowest.answer)
+
+    async def test_regional_revenue_keeps_reconstructed_source_distinct_from_company_sales(self):
+        result = await self.ask("So sánh doanh thu East và West tháng 12/2022")
+
+        self.assertIn("commerce.orders", result.answer)
+        self.assertIn("có thể khác commerce.sales", result.answer.casefold())
+        self.assertNotIn("$", result.answer)
 
     async def test_missing_period_and_unsupported_metric_have_distinct_reasons(self):
         missing = await self.ask("Doanh thu theo khu vực là bao nhiêu?")

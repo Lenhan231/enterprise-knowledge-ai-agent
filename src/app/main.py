@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
+import inspect
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -11,21 +13,33 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from core.agents.analytics_agent import AnalyticsAgent
 from core.agents.intent_classifier import IntentClassifier
 from core.agents.knowledge_agent import KnowledgeAgent
 from core.agents.router import AgentRouter
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+from core.agents.sql_analytics_agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
 from core.database.commerce_repository import create_repository_from_env
-from core.models.agents import AgentRequest, AgentResult
+from core.models.agents import AgentRequest, AgentResult, VerifiedIdentity
 
 
 LOGGER = logging.getLogger(__name__)
 APP_DIR = Path(__file__).resolve().parent
 REPO_ROOT = APP_DIR.parents[1]
 STATIC_DIR = APP_DIR / "static"
+
+
+def _local_development_identity() -> VerifiedIdentity | None:
+    """Return an explicitly opted-in local identity; never use this in production."""
+    if os.getenv("APP_ENV", "").casefold() != "development":
+        return None
+    if os.getenv("ALLOW_DEV_ANALYTICS", "").casefold() != "true":
+        return None
+    subject = os.getenv("DEV_ANALYTICS_IDENTITY", "").strip()
+    if not subject:
+        return None
+    return VerifiedIdentity(subject=subject, permissions={"analytics:read"})
 
 
 class _FallbackClassifier:
@@ -64,12 +78,12 @@ class _UnsupportedRoute:
                            agent="unsupported", metadata={"ok": False})
 
 
-class ChatRequest(AgentRequest):
+class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     question: str = Field(min_length=1, max_length=2_000)
-    user_id: str | None = Field(default=None, max_length=128)
     conversation_id: str | None = Field(default=None, max_length=128)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("question")
     @classmethod
@@ -88,7 +102,8 @@ class ChatRequest(AgentRequest):
 
 
 def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None = None,
-               knowledge_agent: Any | None = None, classifier: Any | None = None) -> FastAPI:
+               knowledge_agent: Any | None = None, classifier: Any | None = None,
+               identity_resolver: Any | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         runtime_agent = chat_agent
@@ -126,10 +141,32 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
     @application.post("/api/chat", response_model=AgentResult)
     async def chat(payload: ChatRequest, request: Request) -> AgentResult:
         try:
+            identity = None
+            if identity_resolver is not None:
+                identity = identity_resolver(request)
+                if inspect.isawaitable(identity):
+                    identity = await identity
+            else:
+                identity = getattr(request.state, "verified_identity", None)
+                if identity is None:
+                    identity = _local_development_identity()
+            if identity is not None and not isinstance(identity, VerifiedIdentity):
+                raise AnalyticsPermissionDenied("Request identity was not verified")
             result = await request.app.state.chat_agent.run(
-                AgentRequest.model_validate(payload.model_dump())
+                AgentRequest(
+                    question=payload.question,
+                    conversation_id=payload.conversation_id,
+                    metadata=payload.metadata,
+                    user_id=identity.subject if identity else None,
+                    identity=identity,
+                )
             )
             return AgentResult.model_validate(result)
+        except AnalyticsPermissionDenied:
+            raise HTTPException(
+                status_code=403,
+                detail="Bạn không có quyền truy cập dữ liệu phân tích.",
+            ) from None
         except Exception as error:
             LOGGER.error("api_chat_failed error_type=%s", type(error).__name__)
             raise HTTPException(

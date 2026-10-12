@@ -49,6 +49,11 @@ class IntentClassifier:
         text = question.casefold()
         commerce_metrics = resolve_metric_names(text)
         metadata_counts = _is_document_count_request(text)
+        structured_lookup = bool(re.search(
+            r"(?:sản phẩm|product)\s*(?:mã|id)\s*#?\s*\d+",
+            text,
+            re.I,
+        ))
         years = set(re.findall(r"\b(?:19|20)\d{2}\b", text))
         commerce_summary = (
             {"revenue", "cogs"}.issubset(commerce_metrics)
@@ -64,7 +69,7 @@ class IntentClassifier:
             and bool(commerce_metrics)
             and len(years) >= 2
         )
-        analytics = metadata_counts or bool(commerce_metrics) or any(
+        analytics = metadata_counts or structured_lookup or bool(commerce_metrics) or any(
             term in text for term in ("trend", "compare", "growth", "tăng trưởng", "so sánh", "thống kê")
         )
         dashboard = any(term in text for term in (

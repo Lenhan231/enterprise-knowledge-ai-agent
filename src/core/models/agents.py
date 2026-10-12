@@ -11,11 +11,19 @@ class Intent(str, Enum):
     REPORT = "report"
     
 
+class VerifiedIdentity(BaseModel):
+    """Server-verified principal; never populate this model from a request body."""
+
+    subject: str
+    permissions: frozenset[str] = Field(default_factory=frozenset)
+
+
 class AgentRequest(BaseModel):
     question: str
     user_id: str | None = None
     conversation_id: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
+    identity: VerifiedIdentity | None = None
 
 class Evidence(BaseModel):
     citation_id: str | None = None

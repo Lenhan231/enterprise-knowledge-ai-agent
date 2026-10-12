@@ -12,7 +12,14 @@ from core.agents.base import BaseAgent
 from core.agents.intent_classifier import IntentClassifier
 from core.agents.router import AgentRouter
 from core.agents.sql_analytics_agent import SQLAnalyticsAgent, payload_to_agent_result
-from core.models.agents import AgentRequest, AgentResult, Evidence
+from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity
+
+
+ANALYST = VerifiedIdentity(subject="test-analyst", permissions={"analytics:read"})
+
+
+def analytics_request(question: str) -> AgentRequest:
+    return AgentRequest(question=question, identity=ANALYST)
 
 
 class FakeCommerceRepository:
@@ -111,7 +118,7 @@ class AnalyticsAgentModelBoundaryTest(unittest.IsolatedAsyncioTestCase):
     async def test_sql_agent_accepts_agent_request_and_returns_agent_result(self):
         agent = SQLAnalyticsAgent(FakeCommerceRepository())
 
-        result = await agent.run(AgentRequest(question="Doanh thu và giá vốn tháng 12/2022"))
+        result = await agent.run(analytics_request("Doanh thu và giá vốn tháng 12/2022"))
 
         self.assertIsInstance(result, AgentResult)
         self.assertEqual(result.agent, "sql_analytics")
@@ -121,7 +128,7 @@ class AnalyticsAgentModelBoundaryTest(unittest.IsolatedAsyncioTestCase):
     async def test_revenue_by_region_for_december_2022(self):
         agent = SQLAnalyticsAgent(FakeCommerceRepository())
 
-        result = await agent.run(AgentRequest(question="Doanh thu theo khu vực tháng 12/2022"))
+        result = await agent.run(analytics_request("Doanh thu theo khu vực tháng 12/2022"))
 
         self.assertEqual(result.data["operation"], "revenue_by_region")
         self.assertEqual(result.data["rows"], [{"region": "Miền Nam", "revenue": 100}])
@@ -135,7 +142,7 @@ class AnalyticsAgentModelBoundaryTest(unittest.IsolatedAsyncioTestCase):
         agent = SQLAnalyticsAgent(repository)
 
         result = await agent.run(
-            AgentRequest(question="Tỷ lệ bán hết theo danh mục tại ngày 2022-12-31")
+            analytics_request("Tỷ lệ bán hết theo danh mục tại ngày 2022-12-31")
         )
 
         self.assertEqual(result.data["operation"], "inventory_by_category")
@@ -144,7 +151,7 @@ class AnalyticsAgentModelBoundaryTest(unittest.IsolatedAsyncioTestCase):
     async def test_missing_date_returns_vietnamese_agent_result(self):
         agent = SQLAnalyticsAgent(FakeCommerceRepository())
 
-        result = await agent.run(AgentRequest(question="Doanh thu và giá vốn"))
+        result = await agent.run(analytics_request("Doanh thu và giá vốn"))
 
         self.assertFalse(result.metadata["ok"])
         self.assertIn("Vui lòng cung cấp tháng/năm", result.answer)
@@ -152,7 +159,7 @@ class AnalyticsAgentModelBoundaryTest(unittest.IsolatedAsyncioTestCase):
     async def test_unsupported_metric_returns_vietnamese_agent_result(self):
         agent = SQLAnalyticsAgent(FakeCommerceRepository())
 
-        result = await agent.run(AgentRequest(question="Tỷ lệ hoàn hàng tháng 12/2022"))
+        result = await agent.run(analytics_request("Tỷ lệ hoàn hàng tháng 12/2022"))
 
         self.assertFalse(result.metadata["ok"])
         self.assertIn("chưa được hỗ trợ", result.answer)
@@ -162,7 +169,7 @@ class AnalyticsAgentModelBoundaryTest(unittest.IsolatedAsyncioTestCase):
         repository.revenue_cogs_by_month = AsyncMock(side_effect=RuntimeError("secret database detail"))
         agent = SQLAnalyticsAgent(repository)
 
-        result = await agent.run(AgentRequest(question="Doanh thu tháng 12/2022"))
+        result = await agent.run(analytics_request("Doanh thu tháng 12/2022"))
 
         self.assertFalse(result.metadata["ok"])
         self.assertEqual(result.metadata["error_type"], "RuntimeError")
@@ -186,7 +193,7 @@ class AnalyticsAgentModelBoundaryTest(unittest.IsolatedAsyncioTestCase):
         router = AgentRouter(classifier, unused, analytics_agent, unused, unused)
 
         result = await router.route(
-            AgentRequest(question="Doanh thu và giá vốn tháng 12/2022")
+            analytics_request("Doanh thu và giá vốn tháng 12/2022")
         )
 
         self.assertIsInstance(result, AgentResult)
@@ -197,7 +204,7 @@ class AnalyticsAgentModelBoundaryTest(unittest.IsolatedAsyncioTestCase):
     async def test_analytics_agent_maps_enriched_payload_to_agent_result(self):
         agent = AnalyticsAgent(FakeSQLAgent())
 
-        result = await agent.run(AgentRequest(question="Doanh thu tháng 12/2022"))
+        result = await agent.run(analytics_request("Doanh thu tháng 12/2022"))
 
         self.assertIsInstance(result, AgentResult)
         self.assertEqual(result.agent, "analytics")

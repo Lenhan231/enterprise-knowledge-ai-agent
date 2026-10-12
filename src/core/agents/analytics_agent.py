@@ -8,7 +8,7 @@ from typing import Any
 
 from core.agents.base import BaseAgent
 from core.agents.sql_analytics_agent import SQLAnalyticsAgent, payload_to_agent_result
-from core.analytics.metric_ontology import resolve_metric_names
+from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
 from core.models.agents import AgentResult
 
 
@@ -55,9 +55,14 @@ class AnalyticsAgent(BaseAgent):
         elif operation == "revenue_by_region":
             analysis = self._regions(result["rows"], question, filters.get("region", []),
                                      result.get("metadata", {}).get("total_revenue"))
-        else:
+        elif operation == "inventory_by_category":
             analysis = self._inventory(result["rows"], requested, question, filters.get("category", []))
-        return {**result, **analysis}
+        else:
+            return result
+        enriched = {**result, **analysis}
+        if not enriched.get("ok", True):
+            return enriched
+        return self._add_answer_context(enriched, operation, requested, question)
 
     async def close(self) -> None:
         await self.sql_agent.close()
@@ -203,3 +208,58 @@ class AnalyticsAgent(BaseAgent):
     def _clarify_metric() -> dict[str, Any]:
         return {"ok": False, "answer": "Vui lòng làm rõ chỉ số cần phân tích.",
                 "limitations": ["Không xác định chắc chỉ số được hỏi."]}
+
+    @staticmethod
+    def _add_answer_context(
+        payload: dict[str, Any],
+        operation: str,
+        requested: set[str],
+        question: str,
+    ) -> dict[str, Any]:
+        if operation == "revenue_by_region":
+            metric_names = ["regional_revenue"]
+        elif operation == "inventory_by_category":
+            metric_names = [name for name in INVENTORY_FIELDS if name in requested]
+        else:
+            metric_names = [name for name in ("revenue", "cogs", "gross_profit") if name in requested]
+
+        definitions = [get_metric_definition(name) for name in metric_names]
+        formula_text = "; ".join(
+            f"{name} = {definition['formula']}"
+            for name, definition in zip(metric_names, definitions)
+        )
+        source = payload.get("metadata", {}).get("source", [])
+        text = question.casefold()
+        if operation == "inventory_by_category":
+            time_grain = "snapshot"
+        elif re.search(r"theo tháng|từng tháng|các tháng|tháng nào", text):
+            time_grain = "tháng"
+        elif SQLAnalyticsAgent._month_period(question):
+            time_grain = "tháng"
+        else:
+            time_grain = "năm"
+
+        limitations = list(payload.get("limitations", []))
+        for definition in definitions:
+            for limitation in definition.get("limitations", ()):
+                if limitation not in limitations:
+                    limitations.append(limitation)
+
+        context = (
+            f" Định nghĩa chỉ số: {formula_text}. Mức thời gian: {time_grain}. "
+            f"Nguồn: {', '.join(source)}."
+        )
+        if limitations:
+            context += f" Giới hạn: {' '.join(limitations)}"
+        metadata = dict(payload.get("metadata", {}))
+        metadata.update({
+            "metric_definition": formula_text,
+            "time_grain": time_grain,
+            "source": source,
+        })
+        return {
+            **payload,
+            "answer": payload["answer"] + context,
+            "limitations": limitations,
+            "metadata": metadata,
+        }

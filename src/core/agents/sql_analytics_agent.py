@@ -15,14 +15,16 @@ from typing import Any
 
 try:
     from core.agents.base import BaseAgent
+    from core.analytics.text_to_sql import CommerceQuestionInterpreter, QueryPlan
     from core.analytics.metric_ontology import resolve_metric_names
     from core.database.commerce_repository import CommerceRepository
-    from core.models.agents import AgentResult, Evidence
+    from core.models.agents import AgentResult, Evidence, VerifiedIdentity
 except ModuleNotFoundError:  # Support importing the package as ``src.core``.
     from src.core.agents.base import BaseAgent
+    from src.core.analytics.text_to_sql import CommerceQuestionInterpreter, QueryPlan
     from src.core.analytics.metric_ontology import resolve_metric_names
     from src.core.database.commerce_repository import CommerceRepository
-    from src.core.models.agents import AgentResult, Evidence
+    from src.core.models.agents import AgentResult, Evidence, VerifiedIdentity
 
 
 SUPPORTED_OPERATIONS = {
@@ -30,6 +32,10 @@ SUPPORTED_OPERATIONS = {
     "revenue_by_region",
     "inventory_by_category",
 }
+
+
+class AnalyticsPermissionDenied(PermissionError):
+    """The request has no server-verified permission to query commerce data."""
 
 
 def payload_to_agent_result(
@@ -105,8 +111,14 @@ def payload_to_agent_result(
 
 
 class SQLAnalyticsAgent(BaseAgent):
-    def __init__(self, repository: CommerceRepository) -> None:
+    def __init__(
+        self,
+        repository: CommerceRepository,
+        *,
+        interpreter: CommerceQuestionInterpreter | None = None,
+    ) -> None:
         self.repository = repository
+        self.interpreter = interpreter or CommerceQuestionInterpreter()
 
     async def run(self, request: Any) -> AgentResult:
         return payload_to_agent_result(
@@ -115,11 +127,24 @@ class SQLAnalyticsAgent(BaseAgent):
         )
 
     async def run_payload(self, request: Any) -> dict[str, Any]:
+        self._authorize(request)
         query = self._query_text(request)
+        interpretation = self.interpreter.interpret(query)
+        if interpretation.clarification:
+            return {
+                "ok": False,
+                "operation": None,
+                "rows": [],
+                "answer": interpretation.clarification,
+                "limitations": ["Cần xác định time grain trước khi tạo truy vấn."],
+                "metadata": {"clarification_required": True},
+            }
+        if interpretation.plan:
+            return await self._run_generated_plan(interpretation.plan)
         operation = self._resolve_operation(query)
 
         if operation is None:
-            return self._unsupported(query)
+            return self._unsupported(query, interpretation.unsupported_reason)
 
         try:
             if operation == "inventory_by_category":
@@ -184,6 +209,72 @@ class SQLAnalyticsAgent(BaseAgent):
 
     async def close(self) -> None:
         await self.repository.close()
+
+    def _authorize(self, request: Any) -> None:
+        identity = request.get("identity") if isinstance(request, dict) else getattr(request, "identity", None)
+        if not isinstance(identity, VerifiedIdentity) or "analytics:read" not in identity.permissions:
+            raise AnalyticsPermissionDenied("Verified analytics:read permission is required")
+
+    async def _run_generated_plan(self, plan: QueryPlan) -> dict[str, Any]:
+        try:
+            rows = await self.repository.execute_approved_query(plan.sql, *plan.parameters)
+        except Exception as error:
+            return self._database_error("text_to_sql", error)
+        period = "not_applicable" if plan.time_grain is None else plan.time_grain
+        if not rows:
+            return {
+                "ok": False,
+                "operation": "text_to_sql",
+                "rows": [],
+                "evidence": [],
+                "answer": "Không tìm thấy dữ liệu phù hợp trong nguồn đã phê duyệt.",
+                "limitations": list(plan.limitations),
+                "metadata": {
+                    "metric_definition": plan.metric_definition,
+                    "time_grain": plan.time_grain,
+                    "source": list(plan.sources),
+                    "output_shape": plan.output_shape,
+                },
+            }
+        if plan.output_shape == "records" and plan.sources == ("commerce.products",):
+            descriptions = []
+            for row in rows:
+                descriptions.append(
+                    f"Sản phẩm {row.get('product_id')}: {row.get('product_name')}"
+                    f"; danh mục: {row.get('category')}; phân khúc: {row.get('segment')}"
+                    f"; kích cỡ: {row.get('size')}; màu: {row.get('color')}"
+                    f"; price: {row.get('price')}; cogs: {row.get('cogs')}."
+                )
+            answer = " ".join(descriptions) + " Nguồn: commerce.products."
+        else:
+            row_text = "; ".join(
+                ", ".join(f"{key}: {value}" for key, value in row.items())
+                for row in rows
+            )
+            grain = {"day": "ngày", "month": "tháng", "year": "năm"}.get(
+                plan.time_grain, plan.time_grain or "không áp dụng"
+            )
+            answer = (
+                f"{row_text}. Định nghĩa chỉ số: {plan.metric_definition}. "
+                f"Mức thời gian: {grain}. Nguồn: {', '.join(plan.sources)}."
+            )
+        if plan.limitations:
+            answer += f" Giới hạn: {' '.join(plan.limitations)}"
+        return {
+            "ok": True,
+            "operation": "text_to_sql",
+            "rows": rows,
+            "answer": answer,
+            "evidence": [{"source": source, "period": period} for source in plan.sources],
+            "limitations": list(plan.limitations),
+            "metadata": {
+                "metric": plan.metric,
+                "metric_definition": plan.metric_definition,
+                "time_grain": plan.time_grain,
+                "source": list(plan.sources),
+                "output_shape": plan.output_shape,
+            },
+        }
 
     @staticmethod
     def _query_text(request: Any) -> str:
@@ -293,7 +384,7 @@ class SQLAnalyticsAgent(BaseAgent):
         }
 
     @staticmethod
-    def _unsupported(query: str) -> dict[str, Any]:
+    def _unsupported(query: str, reason: str | None = None) -> dict[str, Any]:
         return {
             "ok": False,
             "operation": None,
@@ -302,7 +393,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 "Truy vấn chưa được hỗ trợ. Hiện hệ thống hỗ trợ doanh thu/giá vốn theo tháng, "
                 "doanh thu theo khu vực và tồn kho theo danh mục tại một snapshot."
             ),
-            "limitations": [f"Yêu cầu phân tích thương mại chưa được hỗ trợ: {query}"],
+            "limitations": [reason or f"Yêu cầu phân tích thương mại chưa được hỗ trợ: {query}"],
         }
 
     @staticmethod

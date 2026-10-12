@@ -22,7 +22,10 @@ from core.database.commerce_repository import (  # noqa: E402
     CommerceRepository,
     create_repository_from_env,
 )
-from core.models.agents import AgentRequest, AgentResult, Evidence  # noqa: E402
+from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity  # noqa: E402
+
+
+ANALYST = VerifiedIdentity(subject="supabase-smoke", permissions={"analytics:read"})
 
 
 CASES = (
@@ -145,7 +148,7 @@ async def run_smoke(
     try:
         rows = []
         for case in CASES:
-            result = await agent.run(AgentRequest(question=case["question"]))
+            result = await agent.run(AgentRequest(question=case["question"], identity=ANALYST))
             rows.append(_case_result(case, result))
         read_only = await verify_read_only(repository)
     finally:

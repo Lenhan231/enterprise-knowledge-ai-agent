@@ -12,6 +12,6 @@ BENCHMARK_MODELS = {
     "qwen3": {
         "model": "qwen/qwen3.8-27b",
         "base_url": "https://api.groq.com/openai/v1",
-        "api_key_env": ("GROQ_API_KEY",),
+        "api_key_env": ("GROQ_API_KEY_2",),
     },
 }

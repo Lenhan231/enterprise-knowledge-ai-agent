@@ -35,3 +35,4 @@ ponytail.md
 /.rovodev
 /.vibe
 /.pytest_cache
+/artifacts/benchmark/

@@ -1,0 +1,2086 @@
+{
+  "generated_at": "2026-10-15T05:09:06.968675+00:00",
+  "dataset": "evaluation\\long_hau_2008_cases_en.json",
+  "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "top_k": 10,
+  "source_document_ids": {
+    "annual_report": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+    "long_hau_fs": "UPLOAD-5149fb823530440da1a2f09704c695d6"
+  },
+  "model_names": [
+    "gpt_oss_20b",
+    "gemini_flash",
+    "qwen3"
+  ],
+  "metric_notes": {
+    "recall_at_k": "fraction of gold chunk IDs present in top K chunks",
+    "precision_at_k": "fraction of retrieved top K chunks matching gold chunk IDs",
+    "mrr": "reciprocal rank of first gold chunk",
+    "ndcg_at_k": "binary gold-chunk relevance in original retrieval order",
+    "generation": "Faithfulness, answer relevancy, context precision and hallucination rate require human review against retrieved content",
+    "observed_throughput_requests_per_second": "sequential completed model calls divided by elapsed benchmark time; not a load-test throughput"
+  },
+  "results": [
+    {
+      "id": "Q01",
+      "question": "What are the mission and vision of PetroVietnam Fertilizer and Chemicals Corporation (PVFCCo)?",
+      "expected_sources": [
+        "annual_report"
+      ],
+      "type": "Semantic / multi-fact",
+      "evidence": [
+        {
+          "source": "annual_report",
+          "chunk_index": 4,
+          "page_number": 5
+        }
+      ],
+      "expected_document_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1"
+      ],
+      "expected_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4"
+      ],
+      "gold_evidence": [
+        {
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 4,
+          "page_number": 5,
+          "content": "3 Annual Report 2008 MISSION Undertake the responsibility of providing a sufficient and reliable source of fertilizer supply, making contribution to the stabilization of domestic fertilizer market and creating a solid foundation for the country’s agriculture development while ensuring the best return for shareholders. VISION Constantly expanding to become a top - ranking enterprise of multi-sector businesses in Vietnam and in South East Asia, specializing in fertilizer and chemical production."
+        }
+      ],
+      "retrieval_latency_ms": 782.86,
+      "retrieval_metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      },
+      "retrieved_contexts": [
+        {
+          "source_id": "S1",
+          "rank": 1,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 9,
+          "page_number": 8,
+          "section_title": "‘‘PVFCCo continues sustainable development.’’",
+          "similarity_score": 0.773337376706251,
+          "content": "6 PetroVietnam Fertilizer and Chemicals Corporation"
+        },
+        {
+          "source_id": "S2",
+          "rank": 2,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::21",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 21,
+          "page_number": 18,
+          "section_title": "DEVELOPMENT ORIENTATION",
+          "similarity_score": 0.767560810929077,
+          "content": "16 PetroVietnam Fertilizer and Chemicals Corporation"
+        },
+        {
+          "source_id": "S3",
+          "rank": 3,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 66,
+          "page_number": 46,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.764176596990225,
+          "content": "44 PetroVietnam Fertilizer and Chemicals Corporation"
+        },
+        {
+          "source_id": "S4",
+          "rank": 4,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 54,
+          "page_number": 38,
+          "section_title": "Performance overview of the corporation",
+          "similarity_score": 0.764097689799654,
+          "content": "36 PetroVietnam Fertilizer and Chemicals Corporation 2008 marked an important milestone for PVFCCo, as the Corporation successfully transformed its business model from a joint stock company into a parent corporation with its subsidiaries, which includes the Phu My Fertilizer Plant, the Construction Management Board of Phu My Industrial Zone, six member trading companies and two representative offices in Morocco and Russia. The Corporation also performed excellently as Phu My Fertilizer Plant rolled out an output far exceeding the designed capacity, and the gross revenue hit a record-high of more than 6,500 billion VND achieving 170% of target result. In 2008, PVFCCo faced many difficulties as unpredicted fluctuation of the domestic and international fertilizer market severely affected the market forecast and implementation of business plan. However, the business results remains satisfactory and even exceeded its target. REPORT OF THE EXECUTIVE BOARD Performance overview of the corporation"
+        },
+        {
+          "source_id": "S5",
+          "rank": 5,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::44",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 44,
+          "page_number": 32,
+          "section_title": "TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008",
+          "similarity_score": 0.763482620577845,
+          "content": "30 PetroVietnam Fertilizer and Chemicals Corporation"
+        },
+        {
+          "source_id": "S6",
+          "rank": 6,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::99",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 99,
+          "page_number": 66,
+          "section_title": "STATISTICAL DATA OF SHAREHOLDERS",
+          "similarity_score": 0.762986582981706,
+          "content": "64 PetroVietnam Fertilizer and Chemicals Corporation"
+        },
+        {
+          "source_id": "S7",
+          "rank": 7,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 11,
+          "page_number": 10,
+          "section_title": "MAIN EVENTS",
+          "similarity_score": 0.759175942729675,
+          "content": "8 PetroVietnam Fertilizer and Chemicals Corporation Founding PetroVietnam Fertilizer and Chemicals Corporation (PVFCCo), formerly Petrovietnam Fertilizer and Chemical Joint Stock Company, a member of Vietnam National Oil & Gas Group (PVN), was established under the Decision No. 02/2003/QĐ-VPCP dated 28 March 2003. The Company formally came into operation on 19 January 2004. Taking over the Phu My Fertilizer Plant The Phu My Fertilizer Plant project was inaugurated on March 12, 2001. On 21 September 2004, after more than three years of construction, the Technip-Samsung Contractors transferred the Phu My Fertilizer Plant to the PetroVietnam Fertilizer and Chemicals Company to be managed and operated. It formally introduced its products under its own brand name - Dam Phu My (Phu My Fertilizer) - to the market.. CORPORATION HISTORY AND DEVELOPMENT MAIN EVENTS"
+        },
+        {
+          "source_id": "S8",
+          "rank": 8,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::106",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 106,
+          "page_number": 72,
+          "section_title": "WNổỆ SAVHOGH",
+          "similarity_score": 0.757032115740321,
+          "content": "70 PetroVietnam Fertilizer and Chemicals Corporation"
+        },
+        {
+          "source_id": "S9",
+          "rank": 9,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 41,
+          "page_number": 30,
+          "section_title": "TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008",
+          "similarity_score": 0.755452471857406,
+          "content": "28 PetroVietnam Fertilizer and Chemicals Corporation On 15 May 2008, PVFCCo transformed into a corporation operating under the mechanism of a parent company and subsidiary by the establishment of four fertilizer trading companies in the North, the Central, the Southeast, Southwest and the PVFCCo Trading company. The Corporation has successfully installed a distribution network of more than 2,100 retailing outlets. Phu My Fertilizer Plant accomplished a big periodical maintenance five days earlier than projected. Moreover, the plant reached the production of 740,000 tons of urea seven days earlier than planned in 2008. Launching a campaign of selling Phu My urea at one-fixed price in the whole network nationwide, making significant contribution to the effort of the Government to harness the inflation of the economy. TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008 TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008"
+        },
+        {
+          "source_id": "S10",
+          "rank": 10,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::3",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 3,
+          "page_number": 4,
+          "section_title": "Contents",
+          "similarity_score": 0.751216666138625,
+          "content": "2 PetroVietnam Fertilizer and Chemicals Corporation"
+        }
+      ],
+      "models": {
+        "gpt_oss_20b": {
+          "answer": "Không đủ thông tin trong các tài liệu được truy xuất.",
+          "source_ids": [],
+          "insufficient_context": true,
+          "prompt_sha256": "afd87c80c46c112e634d3630f901b599a57164fcc99b7be243e7a7d3263865f9",
+          "generation_latency_ms": 8044.52,
+          "human_reviews": []
+        },
+        "gemini_flash": {
+          "answer": "Không đủ thông tin trong các tài liệu được truy xuất.",
+          "source_ids": [],
+          "insufficient_context": true,
+          "prompt_sha256": "afd87c80c46c112e634d3630f901b599a57164fcc99b7be243e7a7d3263865f9",
+          "generation_latency_ms": 3164.27,
+          "human_reviews": []
+        },
+        "qwen3": {
+          "answer": "Không đủ thông tin trong các tài liệu được truy xuất.",
+          "source_ids": [],
+          "insufficient_context": true,
+          "prompt_sha256": "afd87c80c46c112e634d3630f901b599a57164fcc99b7be243e7a7d3263865f9",
+          "generation_latency_ms": 1005.3,
+          "human_reviews": []
+        }
+      }
+    },
+    {
+      "id": "Q02",
+      "question": "What is PVFCCo's stock ticker, and how many shares were listed on November 5, 2007?",
+      "expected_sources": [
+        "annual_report"
+      ],
+      "type": "Direct factual",
+      "evidence": [
+        {
+          "source": "annual_report",
+          "chunk_index": 13,
+          "page_number": 11
+        }
+      ],
+      "expected_document_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1"
+      ],
+      "expected_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13"
+      ],
+      "gold_evidence": [
+        {
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 13,
+          "page_number": 11,
+          "content": "On 5 November 2007, 380 million shares of the Company were formally listed and traded at HOSE with share symbol DPM. Kind of shares Common shares Share symbol DPM Price 10,000 VND/share Number of listed shares 380,000,000 shares Transforming into a corporation On 5 April 2008, the Annual Shareholder Meeting gave approval to transform PVFCCo into a corporation operating under the “Parent company and subsidiary” model. On 15 May 2008, PVFCCo was granted the Adjusted Business License No. 4103007696 by Ho Chi Minh City’s Planning and Investment Department to officially become a corporation."
+        }
+      ],
+      "retrieval_latency_ms": 667.09,
+      "retrieval_metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      },
+      "retrieved_contexts": [
+        {
+          "source_id": "S1",
+          "rank": 1,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 13,
+          "page_number": 11,
+          "section_title": "MAIN EVENTS",
+          "similarity_score": 0.674355796964745,
+          "content": "On 5 November 2007, 380 million shares of the Company were formally listed and traded at HOSE with share symbol DPM. Kind of shares Common shares Share symbol DPM Price 10,000 VND/share Number of listed shares 380,000,000 shares Transforming into a corporation On 5 April 2008, the Annual Shareholder Meeting gave approval to transform PVFCCo into a corporation operating under the “Parent company and subsidiary” model. On 15 May 2008, PVFCCo was granted the Adjusted Business License No. 4103007696 by Ho Chi Minh City’s Planning and Investment Department to officially become a corporation."
+        },
+        {
+          "source_id": "S2",
+          "rank": 2,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 36,
+          "page_number": 26,
+          "section_title": "MEMBER COMPANIES AND SUBSIDIARIES",
+          "similarity_score": 0.648193519315857,
+          "content": "Tel 84 - 71 - 3765079 Fax 84 - 71 - 3765078 Chartered Capital VND 100 billion MEMBER COMPANIES AND SUBSIDIARIES On 27 December 2007, the Branch became Southwest PVFCCo under Decision No. 80/ QĐ-HĐQT. On 27 August 2008, Southwest PVFCCo One-member Limited Liability Company was established under Decision No. 114/QĐ-HĐQT by the Board of Directors of PVFCCo and Business License dated 1 September 2008 by Can Tho City’s Planning and Investment Department. Development orientation Southwest PVFCCo operates in the largest area of rice and various crops in Vietnam. The Company always strives to become the leading supplier of urea brand-name Dam Phu My and variable products of PVFCCo. As a representative of PVFCCo in the area, Southwest PVFCCo commits to provide the market with high quality products at reasonable prices. Within a short period of time, the Company has successfully installed a distribution network throughout Mekong Delta and gradually expanded to the Cambodian market. Trading of various fertilizer products."
+        },
+        {
+          "source_id": "S3",
+          "rank": 3,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 58,
+          "page_number": 41,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.640534192819353,
+          "content": "39 Annual Report 2008 Changes in share capital There was no change in share capital in 2008. PVFCCo has a chartered capital of VND3,800 billion divided into 380,000,000 common shares, of which the Government shares account for 61.37%. PVFCCo bought 721,820 shares of its fund. As such, at December 31, 2008, the number of shares in circulation is 379,278,180. Dividend PVFCCo had twice advanced dividends to shareholders. The first time was 10% or VND1,000/share, and the second was 5% or VND500/share. The total dividends to be received by shareholders for fiscal year 2008 will be allocated based on the profit plan approved during the Annual Shareholder Meeting in 2009. Book value at December 31, 2008 (According to 2008 audited financial report) Changes in DPM share price and VN Index in 2008 Item 2 Jan. 2008 31 Dec. 2008 Up/down (%) VN Index 925.66 315.62 ↓ 65.90% Share price of DPM 74,000 34,500 ↓ 53.37%"
+        },
+        {
+          "source_id": "S4",
+          "rank": 4,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 95,
+          "page_number": 64,
+          "section_title": "BOARD OF DIRECTORS’ ACTIVITIES",
+          "similarity_score": 0.578535024590335,
+          "content": "62 PetroVietnam Fertilizer and Chemicals Corporation BOARD OF DIRECTORS’ ACTIVITIES Information about stock transactions of members of board of directors, board of executives, board of supervisors, chief accountant, major shareholders and related people On February 20, 2008, PetroVietnam, founding shareholder and representative for the State’s stake of PVFCCo, purchased 5,000,000 DPM shares from BIDV. After the deal, PetroVietnam holds 233,204,253 shares, or 61.37% stake meanwhile BIDV holds 14,000,000 shares, or 3.68% stake. On July 31, 2008, Mr. Nguyen Duc Hien, younger brother of Mr. Nguyen Duc Hoa – Deputy General Director of PVFCCo, sold 5,000 DPM shares."
+        },
+        {
+          "source_id": "S5",
+          "rank": 5,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 39,
+          "page_number": 28,
+          "section_title": "JOINT VENTURE AND PARTNERSHIP",
+          "similarity_score": 0.576428936709014,
+          "content": "26 PetroVietnam Fertilizer and Chemicals Corporation Drilling Mud Corporation (DMC) Chartered capital VND145,199,980,000 PVFCCo’s stake 8.25% or VND11,978,630,000 PVTEX Dinh Vu joint stock company Chartered capital VND1,700,000,000,000 PVFCCo’s stake 15% or VND255,000,000,000 PetroVietnam Information Technology, Telecommunication and Automation Joint Stock Company Chartered capital VND36,000,000,000 PVFCCo’s stake 10% or VND3,600,000,000 PetroLEUM Sport and Culture CORPORATION Chartered capital VND 10,000,000,000 PVFCCo’s stake 10% or VND1,000,000,000 JOINT VENTURE AND PARTNERSHIP"
+        },
+        {
+          "source_id": "S6",
+          "rank": 6,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 41,
+          "page_number": 30,
+          "section_title": "TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008",
+          "similarity_score": 0.567455597747521,
+          "content": "28 PetroVietnam Fertilizer and Chemicals Corporation On 15 May 2008, PVFCCo transformed into a corporation operating under the mechanism of a parent company and subsidiary by the establishment of four fertilizer trading companies in the North, the Central, the Southeast, Southwest and the PVFCCo Trading company. The Corporation has successfully installed a distribution network of more than 2,100 retailing outlets. Phu My Fertilizer Plant accomplished a big periodical maintenance five days earlier than projected. Moreover, the plant reached the production of 740,000 tons of urea seven days earlier than planned in 2008. Launching a campaign of selling Phu My urea at one-fixed price in the whole network nationwide, making significant contribution to the effort of the Government to harness the inflation of the economy. TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008 TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008"
+        },
+        {
+          "source_id": "S7",
+          "rank": 7,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 48,
+          "page_number": 35,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.559790657318483,
+          "content": "33 Annual Report 2008 big corporation, with Government’s dominant stake, PVFCCo owns a dominant stake, PVFCCo and its parent company, Vietnam National Oil and Gas Group, had undertaken the responsibility to support the Government’s effort to stabilize the fertilizer market with concrete solutions, among which are: to operate the Phu My Fertilizer Plant at full capacity and to import fertilizers from overseas to meet domestic demands and provide the market fertilizer products at lower than market price. The Company also launched new policies to meet the market situation and implemented strong solutions to push up the installation of an effective distribution network to facilitate delivery of fertilizers to consumers. However, the market reversed severely in the later part of the year when the global market of crude oil and fertilizer plunged deeply. In addition, domestic demands were heavily affected by natural disasters. All these factors attributed to the dramatic drop in fertilizer price, which in turn severely affected the results of PVFCCo business."
+        },
+        {
+          "source_id": "S8",
+          "rank": 8,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 176,
+          "page_number": 91,
+          "section_title": "Notes to the Consolidated Financial Statements",
+          "similarity_score": 0.554498011112039,
+          "content": "89 Annual Report 2008 14. OWNERS’ EQUITY (Continued) Charter capital is in detail: Shareholders Proportion 31/12/2008 31/12/2007 (%) VND VND Vietnam Oil & Gas Group 61.37 2,332,042,530,000 2,282,042,530,000 Others 38.63 1,467,957,470,000 1,517,957,470,000 100 3,800,000,000,000 3,800,000,000,000 The number of shares registered and issued to public by the Corporation as at 31 December 2008 was 380,000,000, in which the Corporation was holding 721,820 treasury shares (equivalent to 721,820 shares). The par value is VND10,000 per share. 15. BUSINESS SEGMENTS The Corporation reports its business activities by two business segments: locally-produced products and imported goods."
+        },
+        {
+          "source_id": "S9",
+          "rank": 9,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::32",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 32,
+          "page_number": 24,
+          "section_title": "MEMBER COMPANIES AND SUBSIDIARIES",
+          "similarity_score": 0.546378371555185,
+          "content": "Strengthen the role of representative for PVFCCo to promote its name in Central Vietnam. CENTRAL PVFCCo TRADING ONE-MEMBER LIMITED LIABILITY COMPANY Short name Central PVFCCo Head Office 3 Nguyen Huu Tho St., Thi Nai Ward, Quy Nho City, Binh Dinh Tel 84 - 56 - 3822733 Fax 84 - 56 - 3826969 Chartered Capital VND 80 billion MEMBER COMPANIES AND SUBSIDIARIES"
+        },
+        {
+          "source_id": "S10",
+          "rank": 10,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 82,
+          "page_number": 58,
+          "section_title": "BOARD OF DIRECTORS’ ACTIVITIES",
+          "similarity_score": 0.534448567416298,
+          "content": "56 PetroVietnam Fertilizer and Chemicals Corporation BOARD OF DIRECTORS’ ACTIVITIES In 2008, the Board of Directors decided the following issues during its regular and extraordinary meetings: Issued of economic series – technical system of production and trade activities »» for PVFCCo including labor, material diminution, fuel consumption and drafting the norm for material and spare… in usage and maintenance. Approved the payroll and salary policy, as well as important regulations for »» PVFCCo including Finance Management, PVFCCo’s Representative at Enterprises, Employment Policy, and Recruiting and Training. Decided to invest and approve the bidding plan and result of the Project of »» CO2 Recovery from the primary reformer at Phu My Fertilizer Plant to increase annual production of urea by 60.000 tons/year. Changed members of the BOD, and submitted to the Great Shareholder »» Meeting for approval. Transformed PVFCCo into a corporation and set up subsidiaries. Decided advanced dividends payments for the first and the second time (15% »» in total)."
+        }
+      ],
+      "models": {
+        "gpt_oss_20b": {
+          "answer": "- Ticker cổ phiếu của PVFCCo là **DPM**.  \n- Vào ngày 5 tháng 11 năm 2007, **380 000 000 cổ phiếu** của công ty đã được niêm yết và giao dịch trên sàn HOSE. [S1]",
+          "source_ids": [
+            "S1"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "37452c287fefedda627027734b99fdf706a5d8338ffa8eb2bc30513383b32278",
+          "generation_latency_ms": 800.2,
+          "human_reviews": []
+        },
+        "gemini_flash": {
+          "error": "RateLimitError"
+        },
+        "qwen3": {
+          "answer": "Mã cổ phiếu của PVFCCo là DPM và số lượng cổ phiếu được niêm yết vào ngày 5 tháng 11 năm 2007 là 380.000.000 cổ phiếu [S1].",
+          "source_ids": [
+            "S1"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "37452c287fefedda627027734b99fdf706a5d8338ffa8eb2bc30513383b32278",
+          "generation_latency_ms": 831.79,
+          "human_reviews": []
+        }
+      }
+    },
+    {
+      "id": "Q03",
+      "question": "What were PVFCCo's main business sectors according to the 2008 Annual Report?",
+      "expected_sources": [
+        "annual_report"
+      ],
+      "type": "Multi-fact",
+      "evidence": [
+        {
+          "source": "annual_report",
+          "chunk_index": 14,
+          "page_number": 12
+        }
+      ],
+      "expected_document_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1"
+      ],
+      "expected_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14"
+      ],
+      "gold_evidence": [
+        {
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 14,
+          "page_number": 12,
+          "content": "10 PetroVietnam Fertilizer and Chemicals Corporation Business sectors Manufacturing and trading prilled urea and other fertilizers, liquid ammonia, industrial gases, and other chemical products. Providing technical services in manufacturing and trading fertilizers and chemicals. Producing and trading electricity. Operating status Since the first lot of products was put on the market under the brand name of Dam Phu My more than four years in the market, the Company has always maintained strong and stable growth, with the manufacturing and trading situation regularly meeting or exceeding plans. Currently, the Company provides the domestic market with 40% of the demand for prilled urea and 40% for liquid ammonia. In 2007, the Phu My Fertilizer Plant, for the first time, exceeded its designed capacity to produce more than 760,000 tons of urea and this performance continued to be a highlight in 2008 with the roll out of 750,000 tons. CORPORATION HISTORY AND DEVELOPMENT Operating History"
+        }
+      ],
+      "retrieval_latency_ms": 602.71,
+      "retrieval_metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      },
+      "retrieved_contexts": [
+        {
+          "source_id": "S1",
+          "rank": 1,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 48,
+          "page_number": 35,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.726771458131896,
+          "content": "33 Annual Report 2008 big corporation, with Government’s dominant stake, PVFCCo owns a dominant stake, PVFCCo and its parent company, Vietnam National Oil and Gas Group, had undertaken the responsibility to support the Government’s effort to stabilize the fertilizer market with concrete solutions, among which are: to operate the Phu My Fertilizer Plant at full capacity and to import fertilizers from overseas to meet domestic demands and provide the market fertilizer products at lower than market price. The Company also launched new policies to meet the market situation and implemented strong solutions to push up the installation of an effective distribution network to facilitate delivery of fertilizers to consumers. However, the market reversed severely in the later part of the year when the global market of crude oil and fertilizer plunged deeply. In addition, domestic demands were heavily affected by natural disasters. All these factors attributed to the dramatic drop in fertilizer price, which in turn severely affected the results of PVFCCo business."
+        },
+        {
+          "source_id": "S2",
+          "rank": 2,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 82,
+          "page_number": 58,
+          "section_title": "BOARD OF DIRECTORS’ ACTIVITIES",
+          "similarity_score": 0.710527842953188,
+          "content": "56 PetroVietnam Fertilizer and Chemicals Corporation BOARD OF DIRECTORS’ ACTIVITIES In 2008, the Board of Directors decided the following issues during its regular and extraordinary meetings: Issued of economic series – technical system of production and trade activities »» for PVFCCo including labor, material diminution, fuel consumption and drafting the norm for material and spare… in usage and maintenance. Approved the payroll and salary policy, as well as important regulations for »» PVFCCo including Finance Management, PVFCCo’s Representative at Enterprises, Employment Policy, and Recruiting and Training. Decided to invest and approve the bidding plan and result of the Project of »» CO2 Recovery from the primary reformer at Phu My Fertilizer Plant to increase annual production of urea by 60.000 tons/year. Changed members of the BOD, and submitted to the Great Shareholder »» Meeting for approval. Transformed PVFCCo into a corporation and set up subsidiaries. Decided advanced dividends payments for the first and the second time (15% »» in total)."
+        },
+        {
+          "source_id": "S3",
+          "rank": 3,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 6,
+          "page_number": 6,
+          "section_title": "THE CHAIRMAN",
+          "similarity_score": 0.705429406231409,
+          "content": "In 2009, in the context of domestic and global economy depression, PVFCCo focuses on its goals of sustainable development, affirmation of market leading position, meeting the market demands and ensuring shareholders’ benefits. The Board of Directors has approved the business plan of 2009 with objectives and duties as follows: Continue to operate the factory safely to produce 750,000 tons of urea. Import 250,000 tons of fertilizers and chemicals to supply domestic and international markets. Strengthen investment projects to diversify PVFCCo’s fertilizers and chemical products. Improve distribution network and production system via subsidiaries to minimize the costs and maximize the profits. Enhance corporate social responsibilities to promote the brand name of DPM in the market as well as the reputation of The Corporation in the community. MESSAGE FROM THE CHAIRMAN"
+        },
+        {
+          "source_id": "S4",
+          "rank": 4,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 88,
+          "page_number": 61,
+          "section_title": "ACTIVITES OF BOARD OF SUPERVISORS",
+          "similarity_score": 0.665090473983085,
+          "content": "59 Annual Report 2008 PVFCCo implemented development strategies for the year 2015 and 2025. PVFCCo completed the amendments to the Charter of PVFCCo in accordance with the sample charter of a listed company by Decision No, 15/2007/QĐ-BTC dated 19 March 2007 of the Ministry of Finance. Based on the results business practice in 2008, PVFCCo has temporarily paid advanced dividends during stage 1 and stage 2 in 2008, Based on the 2008 business results, PVFCCo has paid 2 batches of dividends for 2008. PVFCCo has changed its head office, replaced BOD members according to BOD resolution."
+        },
+        {
+          "source_id": "S5",
+          "rank": 5,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 61,
+          "page_number": 43,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.650806632199441,
+          "content": "41 Annual Report 2008 In financial management PVFCCo implement effective financial management to ensure a stable cash flow for business operation and reserve of foreign currency for import activities. Loans for the construction of Phu My Fertilizer Plant were paid off in December 2008. The accounting activities were implemented in accordance with the priciples and laws required for business management of PVFCCo: issuance of guidance document for inventory process, circulation process of accouting documents using for sales activities nationwide (August 2008); issuance of financial management regulations for the Corporation and subsidiaries in October 2008. In organization management PVFCCo completed the transformation into a “parent company and subsidiary” model and set up five one-member limited liability companies, acquired the majority stake of Dam Phu My Bagging Joint Stock Company and rearranged the management structure at the head office."
+        },
+        {
+          "source_id": "S6",
+          "rank": 6,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 42,
+          "page_number": 31,
+          "section_title": "TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008",
+          "similarity_score": 0.649171633008365,
+          "content": "29 Annual Report 2008 The Corporation’s brand name and position is strengthened in the international market by the establishment of trade relation with big local and foreign fertilizer producers and trading companies, among which are the project of building a DAP Plant in Morocco and Urea Plant in Russia. Introducing on 4 September 2008 the PVFCCo Corporate Identity Profile (CIP) with brand name of PVFCCo which associates with the core values of “development”, “sustainability”, “timely” and “reliability”. The CIP is considered a foundation for marketing management and promotion of the PVFCCo brand name to the public, shareholders and consumers. Ground breaking of Cuu Long Commercial Center in Ca Mau Province, which will provide commercial services when Ca Mau commercial complex of gas - power - fertilizer goes into business. Strengthening social investment to confirm PVFCCo mission of accompanying farmers for the development of the country’s agriculture. In 2008, the Corporation granted VND25 billion to build 2,500 houses for the poor in 25 provinces throughout the country."
+        },
+        {
+          "source_id": "S7",
+          "rank": 7,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 36,
+          "page_number": 26,
+          "section_title": "MEMBER COMPANIES AND SUBSIDIARIES",
+          "similarity_score": 0.64439936791107,
+          "content": "Tel 84 - 71 - 3765079 Fax 84 - 71 - 3765078 Chartered Capital VND 100 billion MEMBER COMPANIES AND SUBSIDIARIES On 27 December 2007, the Branch became Southwest PVFCCo under Decision No. 80/ QĐ-HĐQT. On 27 August 2008, Southwest PVFCCo One-member Limited Liability Company was established under Decision No. 114/QĐ-HĐQT by the Board of Directors of PVFCCo and Business License dated 1 September 2008 by Can Tho City’s Planning and Investment Department. Development orientation Southwest PVFCCo operates in the largest area of rice and various crops in Vietnam. The Company always strives to become the leading supplier of urea brand-name Dam Phu My and variable products of PVFCCo. As a representative of PVFCCo in the area, Southwest PVFCCo commits to provide the market with high quality products at reasonable prices. Within a short period of time, the Company has successfully installed a distribution network throughout Mekong Delta and gradually expanded to the Cambodian market. Trading of various fertilizer products."
+        },
+        {
+          "source_id": "S8",
+          "rank": 8,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 10,
+          "page_number": 9,
+          "section_title": "CORPORATION HISTORY AND DEVELOPMENT",
+          "similarity_score": 0.642060185972782,
+          "content": "7 Annual Report 2008 CORPORATION HISTORY AND DEVELOPMENT"
+        },
+        {
+          "source_id": "S9",
+          "rank": 9,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 41,
+          "page_number": 30,
+          "section_title": "TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008",
+          "similarity_score": 0.638591071805449,
+          "content": "28 PetroVietnam Fertilizer and Chemicals Corporation On 15 May 2008, PVFCCo transformed into a corporation operating under the mechanism of a parent company and subsidiary by the establishment of four fertilizer trading companies in the North, the Central, the Southeast, Southwest and the PVFCCo Trading company. The Corporation has successfully installed a distribution network of more than 2,100 retailing outlets. Phu My Fertilizer Plant accomplished a big periodical maintenance five days earlier than projected. Moreover, the plant reached the production of 740,000 tons of urea seven days earlier than planned in 2008. Launching a campaign of selling Phu My urea at one-fixed price in the whole network nationwide, making significant contribution to the effort of the Government to harness the inflation of the economy. TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008 TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008"
+        },
+        {
+          "source_id": "S10",
+          "rank": 10,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 46,
+          "page_number": 34,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.637521609149758,
+          "content": "32 PetroVietnam Fertilizer and Chemicals Corporation REPORT FROM THE BOARD OF DIRECTORS Overview of 2008 2008 was an outstanding year for Petrovietnam Fertilizer and Chemicals Corporation (PVFCCo). 2007 witnessed the transformation of PVFCCo in term of the ownership model and business management mechanism, and in 2008 is the first year of implementation of the PVFCCo’s development strategy in context of the uncertainties experienced by the domestic and world economy. The main business of PVFCCo, the production and trading of fertilizers and chemicals, has been strongly affected by both the fevers and the economic recession. Phu My urea, the core product of PVFCCo, and other fertilizers imported by PVFCCo are consumed locally are both vulnerable to external factors such as the volatile prices of fertilizers and oil in the global market, the change of local demand and Government’s macro policies. During the first eight months of the year, there was a sharp increase in the global nitrogenous fertilizer market. This uptrend was a favorable condition to the PVFCCo business."
+        }
+      ],
+      "models": {
+        "gpt_oss_20b": {
+          "answer": "PVFCCo’s chính các lĩnh vực kinh doanh chính trong năm 2008 là **sản xuất và giao dịch phân bón và hóa chất**.  \n- “The main business of PVFCCo, the production and trading of fertilizers and chemicals, has been strongly affected by both the fevers and the economic recession” [S10].",
+          "source_ids": [
+            "S10"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "5fd211d809cfba9418061295bad0dfa53831c11082db7e20b2b328e9e89fe2f0",
+          "generation_latency_ms": 700.94,
+          "human_reviews": []
+        },
+        "gemini_flash": {
+          "error": "RateLimitError"
+        },
+        "qwen3": {
+          "answer": "Theo Báo cáo thường niên 2008, lĩnh vực kinh doanh chính của PVFCCo là sản xuất và thương mại phân bón và hóa chất [S10].",
+          "source_ids": [
+            "S10"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "5fd211d809cfba9418061295bad0dfa53831c11082db7e20b2b328e9e89fe2f0",
+          "generation_latency_ms": 11791.86,
+          "human_reviews": []
+        }
+      }
+    },
+    {
+      "id": "Q04",
+      "question": "In 2008, how many tons of imported fertilizer did PVFCCo import and distribute in the domestic market?",
+      "expected_sources": [
+        "annual_report"
+      ],
+      "type": "Numeric",
+      "evidence": [
+        {
+          "source": "annual_report",
+          "chunk_index": 15,
+          "page_number": 13
+        }
+      ],
+      "expected_document_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1"
+      ],
+      "expected_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "gold_evidence": [
+        {
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 15,
+          "page_number": 13,
+          "content": "11 Annual Report 2008 All products are well received by the local market, making significant contribution to stabilize the price and supply of fertilizers in the country, which in return, created profits to the owners and investors. In 2008, PVFCCo confirmed its leading role in the fertilizer market by importing 268,000 tons and distributing 198,000 tons of imported fertilizers into the local market. The Corporation will continue the implementation of strategic researches and deployment of investment projects to increase the capability of urea production and diversify products. In 2008, PVFCCo finished all bidding procedures to select qualified contractors to start the project of CO2 collection from exhaust fumes of Phu My Fertilizer Plant to produce urea. The project will start in the first quarter of 2009. After completion, the production capacity of the plant will increase by 60,000 tons to 800,000 tons of urea per year."
+        }
+      ],
+      "retrieval_latency_ms": 604.05,
+      "retrieval_metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      },
+      "retrieved_contexts": [
+        {
+          "source_id": "S1",
+          "rank": 1,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 15,
+          "page_number": 13,
+          "section_title": "Operating History",
+          "similarity_score": 0.772860657769323,
+          "content": "11 Annual Report 2008 All products are well received by the local market, making significant contribution to stabilize the price and supply of fertilizers in the country, which in return, created profits to the owners and investors. In 2008, PVFCCo confirmed its leading role in the fertilizer market by importing 268,000 tons and distributing 198,000 tons of imported fertilizers into the local market. The Corporation will continue the implementation of strategic researches and deployment of investment projects to increase the capability of urea production and diversify products. In 2008, PVFCCo finished all bidding procedures to select qualified contractors to start the project of CO2 collection from exhaust fumes of Phu My Fertilizer Plant to produce urea. The project will start in the first quarter of 2009. After completion, the production capacity of the plant will increase by 60,000 tons to 800,000 tons of urea per year."
+        },
+        {
+          "source_id": "S2",
+          "rank": 2,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 41,
+          "page_number": 30,
+          "section_title": "TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008",
+          "similarity_score": 0.721306917770548,
+          "content": "28 PetroVietnam Fertilizer and Chemicals Corporation On 15 May 2008, PVFCCo transformed into a corporation operating under the mechanism of a parent company and subsidiary by the establishment of four fertilizer trading companies in the North, the Central, the Southeast, Southwest and the PVFCCo Trading company. The Corporation has successfully installed a distribution network of more than 2,100 retailing outlets. Phu My Fertilizer Plant accomplished a big periodical maintenance five days earlier than projected. Moreover, the plant reached the production of 740,000 tons of urea seven days earlier than planned in 2008. Launching a campaign of selling Phu My urea at one-fixed price in the whole network nationwide, making significant contribution to the effort of the Government to harness the inflation of the economy. TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008 TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008"
+        },
+        {
+          "source_id": "S3",
+          "rank": 3,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 46,
+          "page_number": 34,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.677859210510805,
+          "content": "32 PetroVietnam Fertilizer and Chemicals Corporation REPORT FROM THE BOARD OF DIRECTORS Overview of 2008 2008 was an outstanding year for Petrovietnam Fertilizer and Chemicals Corporation (PVFCCo). 2007 witnessed the transformation of PVFCCo in term of the ownership model and business management mechanism, and in 2008 is the first year of implementation of the PVFCCo’s development strategy in context of the uncertainties experienced by the domestic and world economy. The main business of PVFCCo, the production and trading of fertilizers and chemicals, has been strongly affected by both the fevers and the economic recession. Phu My urea, the core product of PVFCCo, and other fertilizers imported by PVFCCo are consumed locally are both vulnerable to external factors such as the volatile prices of fertilizers and oil in the global market, the change of local demand and Government’s macro policies. During the first eight months of the year, there was a sharp increase in the global nitrogenous fertilizer market. This uptrend was a favorable condition to the PVFCCo business."
+        },
+        {
+          "source_id": "S4",
+          "rank": 4,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 6,
+          "page_number": 6,
+          "section_title": "THE CHAIRMAN",
+          "similarity_score": 0.670888258294538,
+          "content": "In 2009, in the context of domestic and global economy depression, PVFCCo focuses on its goals of sustainable development, affirmation of market leading position, meeting the market demands and ensuring shareholders’ benefits. The Board of Directors has approved the business plan of 2009 with objectives and duties as follows: Continue to operate the factory safely to produce 750,000 tons of urea. Import 250,000 tons of fertilizers and chemicals to supply domestic and international markets. Strengthen investment projects to diversify PVFCCo’s fertilizers and chemical products. Improve distribution network and production system via subsidiaries to minimize the costs and maximize the profits. Enhance corporate social responsibilities to promote the brand name of DPM in the market as well as the reputation of The Corporation in the community. MESSAGE FROM THE CHAIRMAN"
+        },
+        {
+          "source_id": "S5",
+          "rank": 5,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 59,
+          "page_number": 42,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.614506632254986,
+          "content": "40 PetroVietnam Fertilizer and Chemicals Corporation In production PVFCCo performed a major maintenance and repair to Phu My Fetilizer Plant in April 2008, which was completed five days ahead of schedule. This reduced operation downtime for the Plant thereby enabling it to exceed its 2008 production capacity with 750,000 tons of urea. In addition, PVFCCo established an economic-technical system to effectively control production costs of the Plant. In trading operation PVFCCo successfully installed a distribution network for Phu My urea products by setting up five one-member limited liability companies in the country’s four key regions. Through these regional trading companies, long-term contracts were signed with 74 distributor agencies and nine outlets, from which PVFCCo’s products will be distributed to consumers through these 2.115 retail points. In 2008, PVFCCo also imported all kinds of fertilizers to increase the market share and to help stabilize the market."
+        },
+        {
+          "source_id": "S6",
+          "rank": 6,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 31,
+          "page_number": 24,
+          "section_title": "ONE-MEMBER LIMITED LIABILITY COMPANY",
+          "similarity_score": 0.611440269397547,
+          "content": "22 PetroVietnam Fertilizer and Chemicals Corporation Scope of Business Trading of agriculture and forestry products, fertilizers, and chemical products (except prohibited chemicals). Providing technical services and materials for production of fertilizers and related chemicals. Providing transport services of roadway, local waterway. Providing warehouse services. Establishment and development Central PVFCCo was established under Decision No. 116/QĐ-HĐQT dated 7 August 2008 by the BOD of PVFCCo and Business License No. 3504000294 dated 15 August 2008 by Binh Dinh Province’s Planning and Investment Department. Central PVFCCo officially commenced operations on 1 September 2008. Development direction Build a highly qualified workforce to fit the job requirements. Ensure safe and effective business activities Make contribution to develop a reputable brand-name for the PVFCCo by providing high quality fertilizers and chemical products to the Central market. Develop a distribution network of fertilizers and chemicals in Central and the Highland."
+        },
+        {
+          "source_id": "S7",
+          "rank": 7,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 48,
+          "page_number": 35,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.605138751355005,
+          "content": "33 Annual Report 2008 big corporation, with Government’s dominant stake, PVFCCo owns a dominant stake, PVFCCo and its parent company, Vietnam National Oil and Gas Group, had undertaken the responsibility to support the Government’s effort to stabilize the fertilizer market with concrete solutions, among which are: to operate the Phu My Fertilizer Plant at full capacity and to import fertilizers from overseas to meet domestic demands and provide the market fertilizer products at lower than market price. The Company also launched new policies to meet the market situation and implemented strong solutions to push up the installation of an effective distribution network to facilitate delivery of fertilizers to consumers. However, the market reversed severely in the later part of the year when the global market of crude oil and fertilizer plunged deeply. In addition, domestic demands were heavily affected by natural disasters. All these factors attributed to the dramatic drop in fertilizer price, which in turn severely affected the results of PVFCCo business."
+        },
+        {
+          "source_id": "S8",
+          "rank": 8,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::50",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 50,
+          "page_number": 35,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.59262011773208,
+          "content": "The corporation also entered the import - export fertilizer market to ensure a steady supply of fertilizers, making significant contribution to the market stabilization."
+        },
+        {
+          "source_id": "S9",
+          "rank": 9,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 54,
+          "page_number": 38,
+          "section_title": "Performance overview of the corporation",
+          "similarity_score": 0.588082104332556,
+          "content": "36 PetroVietnam Fertilizer and Chemicals Corporation 2008 marked an important milestone for PVFCCo, as the Corporation successfully transformed its business model from a joint stock company into a parent corporation with its subsidiaries, which includes the Phu My Fertilizer Plant, the Construction Management Board of Phu My Industrial Zone, six member trading companies and two representative offices in Morocco and Russia. The Corporation also performed excellently as Phu My Fertilizer Plant rolled out an output far exceeding the designed capacity, and the gross revenue hit a record-high of more than 6,500 billion VND achieving 170% of target result. In 2008, PVFCCo faced many difficulties as unpredicted fluctuation of the domestic and international fertilizer market severely affected the market forecast and implementation of business plan. However, the business results remains satisfactory and even exceeded its target. REPORT OF THE EXECUTIVE BOARD Performance overview of the corporation"
+        },
+        {
+          "source_id": "S10",
+          "rank": 10,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 56,
+          "page_number": 40,
+          "section_title": "(6,493.48/3,803.91 billion VND) compared to 2007",
+          "similarity_score": 0.581029230254761,
+          "content": "38 PetroVietnam Fertilizer and Chemicals Corporation Compared to the same business in the Asia region (Middle East, Inida, Pakistan) Profitability ratio 11.95% Profitability 20.76% Current ratio 1.99 Quick ratio 1.64 Analysis of changes and their causes The dramatic change of fertilizer prices in 2008 and the implementation of import and trade activities contributed to an increase of 49% in revenue (6,493.48/3,803.91 billion VND) compared to 2007. However, the implementation of import and trade activities did not create adequate profits. The profit did not rise in tandem with the turnover gain due to: Profits gained from trading activities were less than that from production as PVFCCo is subjected to the market forces which affects the costs and selling prices of the goods. Losses caused by sudden decline of domestic fertilizer price. In the first eight months of 2008, fertilizers and chemicals prices hit a record-high, but spiraled down rapidly in the fourth quarter."
+        }
+      ],
+      "models": {
+        "gpt_oss_20b": {
+          "answer": "Trong năm 2008, PVFCCo đã nhập khẩu 268 000 tấn phân bón và phân phối 198 000 tấn phân bón nhập khẩu vào thị trường nội địa. [S1]",
+          "source_ids": [
+            "S1"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "bf1eca7afbd648f1dc15de70c7b5ca32f965f3992599ec9abf3b205018a0e108",
+          "generation_latency_ms": 5551.68,
+          "human_reviews": []
+        },
+        "gemini_flash": {
+          "error": "RateLimitError"
+        },
+        "qwen3": {
+          "answer": "Năm 2008, PVFCCo đã nhập khẩu 268.000 tấn và phân phối 198.000 tấn phân bón nhập khẩu vào thị trường nội địa [S1].",
+          "source_ids": [
+            "S1"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "bf1eca7afbd648f1dc15de70c7b5ca32f965f3992599ec9abf3b205018a0e108",
+          "generation_latency_ms": 15514.2,
+          "human_reviews": []
+        }
+      }
+    },
+    {
+      "id": "Q05",
+      "question": "By how many tons per year was the urea production capacity expected to increase through the CO2 recovery project at the Phu My Fertilizer Plant?",
+      "expected_sources": [
+        "annual_report"
+      ],
+      "type": "Numeric",
+      "evidence": [
+        {
+          "source": "annual_report",
+          "chunk_index": 15,
+          "page_number": 13
+        }
+      ],
+      "expected_document_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1"
+      ],
+      "expected_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "gold_evidence": [
+        {
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 15,
+          "page_number": 13,
+          "content": "11 Annual Report 2008 All products are well received by the local market, making significant contribution to stabilize the price and supply of fertilizers in the country, which in return, created profits to the owners and investors. In 2008, PVFCCo confirmed its leading role in the fertilizer market by importing 268,000 tons and distributing 198,000 tons of imported fertilizers into the local market. The Corporation will continue the implementation of strategic researches and deployment of investment projects to increase the capability of urea production and diversify products. In 2008, PVFCCo finished all bidding procedures to select qualified contractors to start the project of CO2 collection from exhaust fumes of Phu My Fertilizer Plant to produce urea. The project will start in the first quarter of 2009. After completion, the production capacity of the plant will increase by 60,000 tons to 800,000 tons of urea per year."
+        }
+      ],
+      "retrieval_latency_ms": 609.48,
+      "retrieval_metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      },
+      "retrieved_contexts": [
+        {
+          "source_id": "S1",
+          "rank": 1,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 89,
+          "page_number": 61,
+          "section_title": "ACTIVITES OF BOARD OF SUPERVISORS",
+          "similarity_score": 0.674069987060482,
+          "content": "Business situation of 2008 • Production output Urea - Dam Phu My : 749,460 tons, gaining 101% of the plan, Surplus of ammonia : 26,687 tons, gaining 76% of the plan, Surplus power : 4,716 Mwh, gaining 30% of the plan, * Consumption Urea - Dam Phu My : 741,189 tons, gaining 100,2% of the plan, Surplus of ammonia : 24,555 tons, gaining 70% of the plan, Surplus power : 5,390 Mwh, gaining 30% of the plan, NK fertilizer : 197,538 tons * Business results of 2008 Target Result of 2008 Plan of 2008 (*) Result/Planned in 2008 (%) Gross Revenue 6,625 4,405 150% Profit before tax 1,495 1,190 126% Net profit after tax 1,379 1,100 125% Return on Equity Ratio 36% 29% 124% (*) approved by the Annual Shareholder Meeting 2008 Supervising results of the BOD and the Board of Executive’s management Implementation of the BOD and the Board of Executive’s management In addition to the transformation of PVFCCo and growth in 2008, the implementation of production and trade plan faced many difficulties due to the global economic crisis."
+        },
+        {
+          "source_id": "S2",
+          "rank": 2,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 63,
+          "page_number": 44,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.637681397395087,
+          "content": "42 PetroVietnam Fertilizer and Chemicals Corporation Targets Production Urea 750,000 tons Surplus Ammonia 32,000 tons NPK 50,000 tons Bagging 25,900,000 units Trading Urea 780,000 tons Surplus Ammonia 32,000 tons NPK 50,000 tons Bagging 25,900 thousand bags Import of Fertilizers and Chemicals 250,000 tons 2009 PRODUCTION AND TRADING PLAN REPORT OF THE EXECUTIVE BOARD"
+        },
+        {
+          "source_id": "S3",
+          "rank": 3,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 49,
+          "page_number": 35,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.633828714250601,
+          "content": "Highlights from the year’s operating results As mentioned above, with strong effort to overcome difficulties, PVFCCo ended the year 2008 with results as follows: 750,000 tons of Phu My urea produced. »» 741,000 tons of Phu My urea sold. »» 268,000 tons of urea imported, in which 198,000 tons was sold out »» Total revenue reached a record high of VND 6,625 billion, equivalent to 150% of »» planned target and 49% up compared with previous year. Net profit before tax hit VND 1,501 billion, reached 126% of planned target and »» 12.86% up from previous year. Redemption of Phu My Fertilizer Plant investment loans. »» Principal changes in the year The principal change of PVFCCo in the year 2008 was the transformation of the Corporation from a joint stock company to a corporation, operating as a parent company with its subsidiaries as member companies. The Board of Directors discussed with and directed the Executive Board to implement the business plan focusing on the setting up of a distribution network via the subsidiaries."
+        },
+        {
+          "source_id": "S4",
+          "rank": 4,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 23,
+          "page_number": 20,
+          "section_title": "PHU MY FERTILIZER PLANT",
+          "similarity_score": 0.587996458475148,
+          "content": "18 PetroVietnam Fertilizer and Chemicals Corporation The Phu My Fertilizer Plant, the result of about 370 milion US dollar investment project, is located on an area of 63 hectare in Phu My 1 Industrial Zone, Tan Thanh District, Ba Ria – Vung Tau Province. The plant was engineered and constructed with licensed technologies from Danish Haldor Topsoe and Italian Snamproghetti to produce ammonia (1,350 MT/day capacity) and prilled urea (2,200 MT/day capacity). These are world leading technologies with the closed manufacturing process using natural gas, air as feedstock to produce ammonia and urea. By virtue of such the process and the faculty to produce electricity power and moisture by itself, the plant can keep its operation uninterrupted even in the case of disruption of the national electricity power grid. The plant comprises three main units: Ammonia, Urea and Utility Offsite and other departments/units. PHU MY FERTILIZER PLANT"
+        },
+        {
+          "source_id": "S5",
+          "rank": 5,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 59,
+          "page_number": 42,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.553474344923777,
+          "content": "40 PetroVietnam Fertilizer and Chemicals Corporation In production PVFCCo performed a major maintenance and repair to Phu My Fetilizer Plant in April 2008, which was completed five days ahead of schedule. This reduced operation downtime for the Plant thereby enabling it to exceed its 2008 production capacity with 750,000 tons of urea. In addition, PVFCCo established an economic-technical system to effectively control production costs of the Plant. In trading operation PVFCCo successfully installed a distribution network for Phu My urea products by setting up five one-member limited liability companies in the country’s four key regions. Through these regional trading companies, long-term contracts were signed with 74 distributor agencies and nine outlets, from which PVFCCo’s products will be distributed to consumers through these 2.115 retail points. In 2008, PVFCCo also imported all kinds of fertilizers to increase the market share and to help stabilize the market."
+        },
+        {
+          "source_id": "S6",
+          "rank": 6,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 19,
+          "page_number": 16,
+          "section_title": "DEVELOPMENT ORIENTATION",
+          "similarity_score": 0.553304414591674,
+          "content": "14 PetroVietnam Fertilizer and Chemicals Corporation Main targets for 2009 Gross revenue 5,815 VND billion Profit before tax 1,084 VND billion Tax Payment 240 VND billion 2009 PRODUCT REVENUE CHART DEVELOPMENT ORIENTATION DEVELOPMENT ORIENTATION urea NPK Imported fertilizer Surplus ammonia Bagging Others 64% 3% 11% 1% 20% 1%"
+        },
+        {
+          "source_id": "S7",
+          "rank": 7,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 189,
+          "page_number": 94,
+          "section_title": "Notes to the Consolidated Financial Statements",
+          "similarity_score": 0.546473944660632,
+          "content": "033/DQ-HDQT dated 24 March 2008, the Corporation’s Board of Management approved on a construction project of the system for CO2 production from Primary Reformer exhaust fumes at Phu My Fertilizer Plant with the total investment amount of VND368,757,439,000 and as amended being VND606,869,000,000 in the Decision No. 164/QD-HDQT dated 16 October 2008. According to the Document No. 4155/DKVN – CBDK , Vietnam Oil and Gas Group approved on the Corporation’s investment into a construction project of DAP producing plant in Maroc with total investment amount of USD600 million. Other commitments As per the contract for purchasing gas No.188/2006-2007/PVGAS/TM-PVFCCO/B1 dated 31 March 2006 and appendum added thereto signed with PetroVietnam Gas Corporation, the purchase price of gas at Cuu Long gas tank in 2009 is 2.2 USD/MMBTU (2008:2.2USD/MMBTU) and the price of gas at Nam Con Son is 3.41USD/MMBTU applicable up to 31 March 2009 and 3.48USD/MMBTU applicable up to 31 December 2009 (2008: 3.41USD/MMBTU). 20."
+        },
+        {
+          "source_id": "S8",
+          "rank": 8,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 26,
+          "page_number": 21,
+          "section_title": "PHU MY FERTILIZER PLANT",
+          "similarity_score": 0.512159249574507,
+          "content": "The system for recovery of ammonia from waste water before draining off to the environment; Development of new/auxiliary products: Production of pure liquid CO2 from the Plant’s exhaust fumes, methanol, formaldehyde and several industrial gases such as nitrogene, oxygene, argon, etc. Installation of the air cleaning system by suction to reduce the dust of urea to maintain the healthy working environment; Construction of bagged urea storages at the plant and distribution regions."
+        },
+        {
+          "source_id": "S9",
+          "rank": 9,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::180",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 180,
+          "page_number": 92,
+          "section_title": "Notes to the Consolidated Financial Statements",
+          "similarity_score": 0.505006153415457,
+          "content": "90 PetroVietnam Fertilizer and Chemicals Corporation 15. BUSINESS SEGMENTS (Continued) Revenue from locally-produced products is as follows: 2008 From 1/9/2007 to 31/12/2007 VND VND Sale of Urea 4,804,480,889,454 1,342,764,893,566 Sale of Ammonia 181,747,777,527 87,537,105,963 Sale of electricity 2,890,547,806 698,924,100 Sale of packaging 25,512,902,335 - Other 86,680,484 540,252,614 5,014,718,797,606 1,431,541,176,243 Sale discounts (18,116,840,523) (8,792,724,689) Net sales 4,996,601,957,083 1,422,748,451,554 16. FINANCIAL INCOME AND EXPENSES 2008 From 1/9/2007 to 31/12/2007 VND VND Financial income Interest income 135,775,188,874 37,285,229,290 Dividend 3,068,900,000 - Others 4,282,553,021 7,183,615,914 143,126,641,895 44,468,845,204 Financial expense Loan interest 30,989,544,667 20,936,742,592 Others 22,590,208,190 193,099,246 53,579,752,857 21,129,841,838 Profit from financial activities 89,546,889,038 23,339,003,366 Notes to the Consolidated Financial Statements (continued)"
+        },
+        {
+          "source_id": "S10",
+          "rank": 10,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::20",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 20,
+          "page_number": 17,
+          "section_title": "DEVELOPMENT ORIENTATION",
+          "similarity_score": 0.496811637373299,
+          "content": "15 Annual Report 2008 Long-term development targets To become the leading supplier of fertilizers in the domestic market with 50-60% market-share for urea demand, 30% for DAP, 20% for SA and 50% for imported fertilizers. To become one of the five leading companies in the field of chemical production and trading. To become the main supplier of basic chemical products providing to the domestic markets of chemical refinery industry. Medium and long-term strategies. Applying the criteria of business administration for a joint stock company to the Corporation which operates under the “Parent company and subsidiary” model. Regularly upgrading and employing advanced technology of quality control system to protect the environment in accordance to ISO 9001, ISO 14001 and OHSAS 18001 standards."
+        }
+      ],
+      "models": {
+        "gpt_oss_20b": {
+          "answer": "Không đủ thông tin trong các tài liệu được truy xuất.",
+          "source_ids": [],
+          "insufficient_context": true,
+          "prompt_sha256": "08597bd9d041861b7212f7c18efba48d7251283dd77e7686f6b2a6227ac2da4d",
+          "generation_latency_ms": 1542.27,
+          "human_reviews": []
+        },
+        "gemini_flash": {
+          "error": "RateLimitError"
+        },
+        "qwen3": {
+          "answer": "Không đủ thông tin trong các tài liệu được truy xuất.",
+          "source_ids": [],
+          "insufficient_context": true,
+          "prompt_sha256": "08597bd9d041861b7212f7c18efba48d7251283dd77e7686f6b2a6227ac2da4d",
+          "generation_latency_ms": 28466.47,
+          "human_reviews": []
+        }
+      }
+    },
+    {
+      "id": "Q06",
+      "question": "What were PVFCCo's total revenue, profit before tax, and tax payment in 2008?",
+      "expected_sources": [
+        "annual_report"
+      ],
+      "type": "Table / numeric",
+      "evidence": [
+        {
+          "source": "annual_report",
+          "chunk_index": 17,
+          "page_number": 14
+        }
+      ],
+      "expected_document_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1"
+      ],
+      "expected_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "gold_evidence": [
+        {
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 17,
+          "page_number": 14,
+          "content": "12 PetroVietnam Fertilizer and Chemicals Corporation KEY TARGETS FROM 2005 AND 2008 Year Total sale Gross Revenue (VND billion) Net Profit before tax (VND billion) Tax Payment (VND billion) 2005 616,021 2,615 792 85 2006 715,671 3,204 1,161 107 2007 746,814 4,454 1,330 151 2008 741,189 6,643 1,501 283 Total 2,819,695 16,916 4,784 626 Gross revenue (VND billion) Net Profit before tax (VND billion) Total sale (thousand tons) Tax Payment 7,000 6,000 5,000 4,000 3,000 2,000 1,000 0 2005 2006 2007 2008 CORPORATION HISTORY AND DEVELOPMENT"
+        }
+      ],
+      "retrieval_latency_ms": 877.17,
+      "retrieval_metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.1111,
+        "ndcg_at_k": 0.301
+      },
+      "retrieved_contexts": [
+        {
+          "source_id": "S1",
+          "rank": 1,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 152,
+          "page_number": 84,
+          "section_title": "Notes to the Consolidated Financial Statements",
+          "similarity_score": 0.644648273539347,
+          "content": "The year 2008 is the Corporation’s fifth profit - making year (since the Corporation’s commencement of operation) so is also the first year the Corporation has taxable income. During the year, losses from other activities have been offset against profit gained from activities under tax incentive and the taxable income remaining after such offsetting will continue to enjoy a 50 % reduction in tax payable. For other business activites: the Corporation’s corporate income tax rate is applied 28% of its taxable income. The determination of corporate income tax due is based on the current interpretation of tax regulations. However, these regulations are subject to periodic variation and its ultimate determination depends on the results of tax authorities’ examination. Deferred tax is recognised on significant differences between carrying amounts of assets and liabilities in the consolidated financial statements and the corresponding tax bases used in the computation of taxable profit and is accounted for using balance sheet liability method."
+        },
+        {
+          "source_id": "S2",
+          "rank": 2,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 88,
+          "page_number": 61,
+          "section_title": "ACTIVITES OF BOARD OF SUPERVISORS",
+          "similarity_score": 0.619800594235668,
+          "content": "59 Annual Report 2008 PVFCCo implemented development strategies for the year 2015 and 2025. PVFCCo completed the amendments to the Charter of PVFCCo in accordance with the sample charter of a listed company by Decision No, 15/2007/QĐ-BTC dated 19 March 2007 of the Ministry of Finance. Based on the results business practice in 2008, PVFCCo has temporarily paid advanced dividends during stage 1 and stage 2 in 2008, Based on the 2008 business results, PVFCCo has paid 2 batches of dividends for 2008. PVFCCo has changed its head office, replaced BOD members according to BOD resolution."
+        },
+        {
+          "source_id": "S3",
+          "rank": 3,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 130,
+          "page_number": 79,
+          "section_title": "FROM B 02 - DN",
+          "similarity_score": 0.606369399792633,
+          "content": "Profit before tax 50 1,500,872,913,895 570,775,902,376 15. Corporate income tax 51 122,577,274,515 71,897,749 16. Deferred corporate income tax 52 (6,996,279,876) - 17. Net profit after corporate income tax (60=50-51-52)\" 60 1,385,291,919,256 570,704,004,627 18. Attributable to minority interest 61 1,411,781,591 - 19. Attributable to equity holders of the parent 62 1,383,880,137,665 570,704,004,627 20. Earning per share 70 17 3,646 1,502 _____________________________ ______________________________ Phan Dinh Duc Huynh Kim Nhan General Director Chief Accountant 9 March 2009 The notes set out on pages 79 to 92 are an integral part of these consolidated financial statements"
+        },
+        {
+          "source_id": "S4",
+          "rank": 4,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 46,
+          "page_number": 34,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.595187354555441,
+          "content": "32 PetroVietnam Fertilizer and Chemicals Corporation REPORT FROM THE BOARD OF DIRECTORS Overview of 2008 2008 was an outstanding year for Petrovietnam Fertilizer and Chemicals Corporation (PVFCCo). 2007 witnessed the transformation of PVFCCo in term of the ownership model and business management mechanism, and in 2008 is the first year of implementation of the PVFCCo’s development strategy in context of the uncertainties experienced by the domestic and world economy. The main business of PVFCCo, the production and trading of fertilizers and chemicals, has been strongly affected by both the fevers and the economic recession. Phu My urea, the core product of PVFCCo, and other fertilizers imported by PVFCCo are consumed locally are both vulnerable to external factors such as the volatile prices of fertilizers and oil in the global market, the change of local demand and Government’s macro policies. During the first eight months of the year, there was a sharp increase in the global nitrogenous fertilizer market. This uptrend was a favorable condition to the PVFCCo business."
+        },
+        {
+          "source_id": "S5",
+          "rank": 5,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 172,
+          "page_number": 90,
+          "section_title": "Notes to the Consolidated Financial Statements",
+          "similarity_score": 0.590258089155479,
+          "content": "During the year, the Corporation has distributed to Investment and Development funds, Financial Reserve funds and bonus and welfare funds at respective rates of 15%, 10% and 5% out of the profit after tax for the year ended 31 December 2007 according to the Resolution of the annual shareholders’meeting on 05 April 2008. On 05 April 2008, the Corporation declared and paid dividends for the period from 1 September 2007 to 31 December 2007 with the amount of VND379,630,000,000 (VND1,000/share) according to the Resolution of the annual shareholders’meeting on 05 April 2008. On 12 September 2008 and 05 December 2008, the Corporation declared and temporarily paid the dividends of the year with the respective amounts of VND397,320,000,000 (VND1,000/share) and VND189,655,000,000 (VND500/ share) according to the Resolution No.145/NQ-HDQT and the Resolution No. 209/NQ-HDQT of the Board of Management. Notes to the Consolidated Financial Statements (continued)"
+        },
+        {
+          "source_id": "S6",
+          "rank": 6,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 82,
+          "page_number": 58,
+          "section_title": "BOARD OF DIRECTORS’ ACTIVITIES",
+          "similarity_score": 0.586838799851036,
+          "content": "56 PetroVietnam Fertilizer and Chemicals Corporation BOARD OF DIRECTORS’ ACTIVITIES In 2008, the Board of Directors decided the following issues during its regular and extraordinary meetings: Issued of economic series – technical system of production and trade activities »» for PVFCCo including labor, material diminution, fuel consumption and drafting the norm for material and spare… in usage and maintenance. Approved the payroll and salary policy, as well as important regulations for »» PVFCCo including Finance Management, PVFCCo’s Representative at Enterprises, Employment Policy, and Recruiting and Training. Decided to invest and approve the bidding plan and result of the Project of »» CO2 Recovery from the primary reformer at Phu My Fertilizer Plant to increase annual production of urea by 60.000 tons/year. Changed members of the BOD, and submitted to the Great Shareholder »» Meeting for approval. Transformed PVFCCo into a corporation and set up subsidiaries. Decided advanced dividends payments for the first and the second time (15% »» in total)."
+        },
+        {
+          "source_id": "S7",
+          "rank": 7,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 6,
+          "page_number": 6,
+          "section_title": "THE CHAIRMAN",
+          "similarity_score": 0.584329779905391,
+          "content": "In 2009, in the context of domestic and global economy depression, PVFCCo focuses on its goals of sustainable development, affirmation of market leading position, meeting the market demands and ensuring shareholders’ benefits. The Board of Directors has approved the business plan of 2009 with objectives and duties as follows: Continue to operate the factory safely to produce 750,000 tons of urea. Import 250,000 tons of fertilizers and chemicals to supply domestic and international markets. Strengthen investment projects to diversify PVFCCo’s fertilizers and chemical products. Improve distribution network and production system via subsidiaries to minimize the costs and maximize the profits. Enhance corporate social responsibilities to promote the brand name of DPM in the market as well as the reputation of The Corporation in the community. MESSAGE FROM THE CHAIRMAN"
+        },
+        {
+          "source_id": "S8",
+          "rank": 8,
+          "chunk_id": "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+          "document_id": "UPLOAD-5149fb823530440da1a2f09704c695d6",
+          "document_name": "HPT - To trinh thong qua danh sach Cong ty Kiem toan signed1.pdf",
+          "chunk_index": 51,
+          "page_number": 20,
+          "section_title": "Thuế thu nhập hoãn lại",
+          "similarity_score": 0.580852779369576,
+          "content": "Ngàn VNĐ Năm nay Năm trước Lợi nhuận trước thué 172.820.359 61.592.023 Các diéu chinh tăng (giảm) lợi nhuận theo ké toán Doanh thu đã ghi nhận nhưng chịu thuế theo thời gian còn lại của đắt cho thuê (473.607.718) (153.344.059) Giá vón đã ghi nhận nhưng được khầu trừ theo thời gian còn lại của đắt cho thuê 225.420.690 87.221.864 (Lỗ) lợi nhuận tính thuế (77.234.611) (3.619.300) Thuế TNDN ước tính năm hiện hành l % Thuế TNDN phai trả năm hiện hành - - Thuế TNDN phải trả đầu năm - s Thuế TNDN đã trả trong năm - - Thué TNDN phải trả cudi năm - - 17.3 Thuế thu nhập doanh nghiệp hoãn lai Ngàn VNĐ Anh hưởng dén Báo cáo kết Bảng cân đói kế toán quả hoạt động kinh doanh Nămnay Nămtrước Năm nay Năm trước Thu nhập từ doanh thu đã ghi nhận nhưng chịu thuế theo thời gian của đắt đã cho thuê 46.004.322 16294376 (29.709.946) (16.294.376) 18 Y"
+        },
+        {
+          "source_id": "S9",
+          "rank": 9,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 17,
+          "page_number": 14,
+          "section_title": "CORPORATION HISTORY AND DEVELOPMENT",
+          "similarity_score": 0.57804074545425,
+          "content": "12 PetroVietnam Fertilizer and Chemicals Corporation KEY TARGETS FROM 2005 AND 2008 Year Total sale Gross Revenue (VND billion) Net Profit before tax (VND billion) Tax Payment (VND billion) 2005 616,021 2,615 792 85 2006 715,671 3,204 1,161 107 2007 746,814 4,454 1,330 151 2008 741,189 6,643 1,501 283 Total 2,819,695 16,916 4,784 626 Gross revenue (VND billion) Net Profit before tax (VND billion) Total sale (thousand tons) Tax Payment 7,000 6,000 5,000 4,000 3,000 2,000 1,000 0 2005 2006 2007 2008 CORPORATION HISTORY AND DEVELOPMENT"
+        },
+        {
+          "source_id": "S10",
+          "rank": 10,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 61,
+          "page_number": 43,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.576214834631248,
+          "content": "41 Annual Report 2008 In financial management PVFCCo implement effective financial management to ensure a stable cash flow for business operation and reserve of foreign currency for import activities. Loans for the construction of Phu My Fertilizer Plant were paid off in December 2008. The accounting activities were implemented in accordance with the priciples and laws required for business management of PVFCCo: issuance of guidance document for inventory process, circulation process of accouting documents using for sales activities nationwide (August 2008); issuance of financial management regulations for the Corporation and subsidiaries in October 2008. In organization management PVFCCo completed the transformation into a “parent company and subsidiary” model and set up five one-member limited liability companies, acquired the majority stake of Dam Phu My Bagging Joint Stock Company and rearranged the management structure at the head office."
+        }
+      ],
+      "models": {
+        "gpt_oss_20b": {
+          "answer": "PVFCCo trong năm 2008 có **doanh thu tổng cộng 741,189 triệu VND**, **lợi nhuận trước thuế 6,643 triệu VND** và **số tiền thuế phải trả 1,501 triệu VND**. [S9]",
+          "source_ids": [
+            "S9"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "72a115b24b7ed53f835140e2a2b8ec5b7cf4a8569f77823bf0d6716edc852649",
+          "generation_latency_ms": 890.47,
+          "human_reviews": []
+        },
+        "gemini_flash": {
+          "error": "RateLimitError"
+        },
+        "qwen3": {
+          "answer": "Theo tài liệu được cung cấp, trong năm 2008, doanh thu gộp (Gross Revenue) của PVFCCo là 6.643 tỷ VND, lợi nhuận trước thuế (Net Profit before tax) là 1.501 tỷ VND và số thuế đã nộp (Tax Payment) là 283 tỷ VND [S9].",
+          "source_ids": [
+            "S9"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "72a115b24b7ed53f835140e2a2b8ec5b7cf4a8569f77823bf0d6716edc852649",
+          "generation_latency_ms": 27658.9,
+          "human_reviews": []
+        }
+      }
+    },
+    {
+      "id": "Q07",
+      "question": "Compare PVFCCo's total revenue in 2007 and 2008.",
+      "expected_sources": [
+        "annual_report"
+      ],
+      "type": "Comparative reasoning",
+      "evidence": [
+        {
+          "source": "annual_report",
+          "chunk_index": 17,
+          "page_number": 14
+        }
+      ],
+      "expected_document_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1"
+      ],
+      "expected_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "gold_evidence": [
+        {
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 17,
+          "page_number": 14,
+          "content": "12 PetroVietnam Fertilizer and Chemicals Corporation KEY TARGETS FROM 2005 AND 2008 Year Total sale Gross Revenue (VND billion) Net Profit before tax (VND billion) Tax Payment (VND billion) 2005 616,021 2,615 792 85 2006 715,671 3,204 1,161 107 2007 746,814 4,454 1,330 151 2008 741,189 6,643 1,501 283 Total 2,819,695 16,916 4,784 626 Gross revenue (VND billion) Net Profit before tax (VND billion) Total sale (thousand tons) Tax Payment 7,000 6,000 5,000 4,000 3,000 2,000 1,000 0 2005 2006 2007 2008 CORPORATION HISTORY AND DEVELOPMENT"
+        }
+      ],
+      "retrieval_latency_ms": 607.72,
+      "retrieval_metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      },
+      "retrieved_contexts": [
+        {
+          "source_id": "S1",
+          "rank": 1,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 88,
+          "page_number": 61,
+          "section_title": "ACTIVITES OF BOARD OF SUPERVISORS",
+          "similarity_score": 0.665475175116552,
+          "content": "59 Annual Report 2008 PVFCCo implemented development strategies for the year 2015 and 2025. PVFCCo completed the amendments to the Charter of PVFCCo in accordance with the sample charter of a listed company by Decision No, 15/2007/QĐ-BTC dated 19 March 2007 of the Ministry of Finance. Based on the results business practice in 2008, PVFCCo has temporarily paid advanced dividends during stage 1 and stage 2 in 2008, Based on the 2008 business results, PVFCCo has paid 2 batches of dividends for 2008. PVFCCo has changed its head office, replaced BOD members according to BOD resolution."
+        },
+        {
+          "source_id": "S2",
+          "rank": 2,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 6,
+          "page_number": 6,
+          "section_title": "THE CHAIRMAN",
+          "similarity_score": 0.644535703237665,
+          "content": "In 2009, in the context of domestic and global economy depression, PVFCCo focuses on its goals of sustainable development, affirmation of market leading position, meeting the market demands and ensuring shareholders’ benefits. The Board of Directors has approved the business plan of 2009 with objectives and duties as follows: Continue to operate the factory safely to produce 750,000 tons of urea. Import 250,000 tons of fertilizers and chemicals to supply domestic and international markets. Strengthen investment projects to diversify PVFCCo’s fertilizers and chemical products. Improve distribution network and production system via subsidiaries to minimize the costs and maximize the profits. Enhance corporate social responsibilities to promote the brand name of DPM in the market as well as the reputation of The Corporation in the community. MESSAGE FROM THE CHAIRMAN"
+        },
+        {
+          "source_id": "S3",
+          "rank": 3,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 46,
+          "page_number": 34,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.618829251814156,
+          "content": "32 PetroVietnam Fertilizer and Chemicals Corporation REPORT FROM THE BOARD OF DIRECTORS Overview of 2008 2008 was an outstanding year for Petrovietnam Fertilizer and Chemicals Corporation (PVFCCo). 2007 witnessed the transformation of PVFCCo in term of the ownership model and business management mechanism, and in 2008 is the first year of implementation of the PVFCCo’s development strategy in context of the uncertainties experienced by the domestic and world economy. The main business of PVFCCo, the production and trading of fertilizers and chemicals, has been strongly affected by both the fevers and the economic recession. Phu My urea, the core product of PVFCCo, and other fertilizers imported by PVFCCo are consumed locally are both vulnerable to external factors such as the volatile prices of fertilizers and oil in the global market, the change of local demand and Government’s macro policies. During the first eight months of the year, there was a sharp increase in the global nitrogenous fertilizer market. This uptrend was a favorable condition to the PVFCCo business."
+        },
+        {
+          "source_id": "S4",
+          "rank": 4,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 61,
+          "page_number": 43,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.598177075964465,
+          "content": "41 Annual Report 2008 In financial management PVFCCo implement effective financial management to ensure a stable cash flow for business operation and reserve of foreign currency for import activities. Loans for the construction of Phu My Fertilizer Plant were paid off in December 2008. The accounting activities were implemented in accordance with the priciples and laws required for business management of PVFCCo: issuance of guidance document for inventory process, circulation process of accouting documents using for sales activities nationwide (August 2008); issuance of financial management regulations for the Corporation and subsidiaries in October 2008. In organization management PVFCCo completed the transformation into a “parent company and subsidiary” model and set up five one-member limited liability companies, acquired the majority stake of Dam Phu My Bagging Joint Stock Company and rearranged the management structure at the head office."
+        },
+        {
+          "source_id": "S5",
+          "rank": 5,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 15,
+          "page_number": 13,
+          "section_title": "Operating History",
+          "similarity_score": 0.595246752843263,
+          "content": "11 Annual Report 2008 All products are well received by the local market, making significant contribution to stabilize the price and supply of fertilizers in the country, which in return, created profits to the owners and investors. In 2008, PVFCCo confirmed its leading role in the fertilizer market by importing 268,000 tons and distributing 198,000 tons of imported fertilizers into the local market. The Corporation will continue the implementation of strategic researches and deployment of investment projects to increase the capability of urea production and diversify products. In 2008, PVFCCo finished all bidding procedures to select qualified contractors to start the project of CO2 collection from exhaust fumes of Phu My Fertilizer Plant to produce urea. The project will start in the first quarter of 2009. After completion, the production capacity of the plant will increase by 60,000 tons to 800,000 tons of urea per year."
+        },
+        {
+          "source_id": "S6",
+          "rank": 6,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 48,
+          "page_number": 35,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.58577479863574,
+          "content": "33 Annual Report 2008 big corporation, with Government’s dominant stake, PVFCCo owns a dominant stake, PVFCCo and its parent company, Vietnam National Oil and Gas Group, had undertaken the responsibility to support the Government’s effort to stabilize the fertilizer market with concrete solutions, among which are: to operate the Phu My Fertilizer Plant at full capacity and to import fertilizers from overseas to meet domestic demands and provide the market fertilizer products at lower than market price. The Company also launched new policies to meet the market situation and implemented strong solutions to push up the installation of an effective distribution network to facilitate delivery of fertilizers to consumers. However, the market reversed severely in the later part of the year when the global market of crude oil and fertilizer plunged deeply. In addition, domestic demands were heavily affected by natural disasters. All these factors attributed to the dramatic drop in fertilizer price, which in turn severely affected the results of PVFCCo business."
+        },
+        {
+          "source_id": "S7",
+          "rank": 7,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 58,
+          "page_number": 41,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.583736654614078,
+          "content": "39 Annual Report 2008 Changes in share capital There was no change in share capital in 2008. PVFCCo has a chartered capital of VND3,800 billion divided into 380,000,000 common shares, of which the Government shares account for 61.37%. PVFCCo bought 721,820 shares of its fund. As such, at December 31, 2008, the number of shares in circulation is 379,278,180. Dividend PVFCCo had twice advanced dividends to shareholders. The first time was 10% or VND1,000/share, and the second was 5% or VND500/share. The total dividends to be received by shareholders for fiscal year 2008 will be allocated based on the profit plan approved during the Annual Shareholder Meeting in 2009. Book value at December 31, 2008 (According to 2008 audited financial report) Changes in DPM share price and VN Index in 2008 Item 2 Jan. 2008 31 Dec. 2008 Up/down (%) VN Index 925.66 315.62 ↓ 65.90% Share price of DPM 74,000 34,500 ↓ 53.37%"
+        },
+        {
+          "source_id": "S8",
+          "rank": 8,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 82,
+          "page_number": 58,
+          "section_title": "BOARD OF DIRECTORS’ ACTIVITIES",
+          "similarity_score": 0.578154141564812,
+          "content": "56 PetroVietnam Fertilizer and Chemicals Corporation BOARD OF DIRECTORS’ ACTIVITIES In 2008, the Board of Directors decided the following issues during its regular and extraordinary meetings: Issued of economic series – technical system of production and trade activities »» for PVFCCo including labor, material diminution, fuel consumption and drafting the norm for material and spare… in usage and maintenance. Approved the payroll and salary policy, as well as important regulations for »» PVFCCo including Finance Management, PVFCCo’s Representative at Enterprises, Employment Policy, and Recruiting and Training. Decided to invest and approve the bidding plan and result of the Project of »» CO2 Recovery from the primary reformer at Phu My Fertilizer Plant to increase annual production of urea by 60.000 tons/year. Changed members of the BOD, and submitted to the Great Shareholder »» Meeting for approval. Transformed PVFCCo into a corporation and set up subsidiaries. Decided advanced dividends payments for the first and the second time (15% »» in total)."
+        },
+        {
+          "source_id": "S9",
+          "rank": 9,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 7,
+          "page_number": 7,
+          "section_title": "THE CHAIRMAN",
+          "similarity_score": 0.570558024947364,
+          "content": "5 Annual Report 2008 We strongly believe that with the strategic vision and leadership of the Board of Directors, the experienced managerial skills of the Executive Board, and the high level of determination and responsibility of all the managers, technicians and workers at PVFCCo, all planned targets for 2009 will be excellently achieved, bringing in direct benefits for shareholders and positively contributing to the development process of the country. On behalf of the Board of Directors, we would like to express our sincere appreciation to the shareholders for their trust in investing in PVFCCo. We also thank the timely and effective support of the Vietnam National Oil and Gas Group as well as its related agencies. We thank the managers, technicians and workers of PVFCCo for their all-out and continued efforts to bring about PVFCCo’s development. On behalf of the Corporation, we promise to try our best to exceed the manufacturing plan and business targets for 2009 and translate into reality the core values of PVFCCo: “Development”, Sustainability”, “Timely” and “Reliability”."
+        },
+        {
+          "source_id": "S10",
+          "rank": 10,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 54,
+          "page_number": 38,
+          "section_title": "Performance overview of the corporation",
+          "similarity_score": 0.557853097837749,
+          "content": "36 PetroVietnam Fertilizer and Chemicals Corporation 2008 marked an important milestone for PVFCCo, as the Corporation successfully transformed its business model from a joint stock company into a parent corporation with its subsidiaries, which includes the Phu My Fertilizer Plant, the Construction Management Board of Phu My Industrial Zone, six member trading companies and two representative offices in Morocco and Russia. The Corporation also performed excellently as Phu My Fertilizer Plant rolled out an output far exceeding the designed capacity, and the gross revenue hit a record-high of more than 6,500 billion VND achieving 170% of target result. In 2008, PVFCCo faced many difficulties as unpredicted fluctuation of the domestic and international fertilizer market severely affected the market forecast and implementation of business plan. However, the business results remains satisfactory and even exceeded its target. REPORT OF THE EXECUTIVE BOARD Performance overview of the corporation"
+        }
+      ],
+      "models": {
+        "gpt_oss_20b": {
+          "answer": "Không đủ thông tin trong các tài liệu được truy xuất.",
+          "source_ids": [],
+          "insufficient_context": true,
+          "prompt_sha256": "13e27aeaef13f13299b55d78cbaa45c996929975a82908de4f14fb5631670c30",
+          "generation_latency_ms": 807.64,
+          "human_reviews": []
+        },
+        "gemini_flash": {
+          "error": "RateLimitError"
+        },
+        "qwen3": {
+          "answer": "Không đủ thông tin trong các tài liệu được truy xuất.",
+          "source_ids": [],
+          "insufficient_context": true,
+          "prompt_sha256": "13e27aeaef13f13299b55d78cbaa45c996929975a82908de4f14fb5631670c30",
+          "generation_latency_ms": 25187.47,
+          "human_reviews": []
+        }
+      }
+    },
+    {
+      "id": "Q08",
+      "question": "What were PVFCCo's planned urea production and fertilizer imports for 2009?",
+      "expected_sources": [
+        "annual_report"
+      ],
+      "type": "Multi-fact",
+      "evidence": [
+        {
+          "source": "annual_report",
+          "chunk_index": 6,
+          "page_number": 6
+        }
+      ],
+      "expected_document_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1"
+      ],
+      "expected_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6"
+      ],
+      "gold_evidence": [
+        {
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 6,
+          "page_number": 6,
+          "content": "In 2009, in the context of domestic and global economy depression, PVFCCo focuses on its goals of sustainable development, affirmation of market leading position, meeting the market demands and ensuring shareholders’ benefits. The Board of Directors has approved the business plan of 2009 with objectives and duties as follows: Continue to operate the factory safely to produce 750,000 tons of urea. Import 250,000 tons of fertilizers and chemicals to supply domestic and international markets. Strengthen investment projects to diversify PVFCCo’s fertilizers and chemical products. Improve distribution network and production system via subsidiaries to minimize the costs and maximize the profits. Enhance corporate social responsibilities to promote the brand name of DPM in the market as well as the reputation of The Corporation in the community. MESSAGE FROM THE CHAIRMAN"
+        }
+      ],
+      "retrieval_latency_ms": 610.76,
+      "retrieval_metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      },
+      "retrieved_contexts": [
+        {
+          "source_id": "S1",
+          "rank": 1,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 6,
+          "page_number": 6,
+          "section_title": "THE CHAIRMAN",
+          "similarity_score": 0.727542306251022,
+          "content": "In 2009, in the context of domestic and global economy depression, PVFCCo focuses on its goals of sustainable development, affirmation of market leading position, meeting the market demands and ensuring shareholders’ benefits. The Board of Directors has approved the business plan of 2009 with objectives and duties as follows: Continue to operate the factory safely to produce 750,000 tons of urea. Import 250,000 tons of fertilizers and chemicals to supply domestic and international markets. Strengthen investment projects to diversify PVFCCo’s fertilizers and chemical products. Improve distribution network and production system via subsidiaries to minimize the costs and maximize the profits. Enhance corporate social responsibilities to promote the brand name of DPM in the market as well as the reputation of The Corporation in the community. MESSAGE FROM THE CHAIRMAN"
+        },
+        {
+          "source_id": "S2",
+          "rank": 2,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 15,
+          "page_number": 13,
+          "section_title": "Operating History",
+          "similarity_score": 0.707921150000227,
+          "content": "11 Annual Report 2008 All products are well received by the local market, making significant contribution to stabilize the price and supply of fertilizers in the country, which in return, created profits to the owners and investors. In 2008, PVFCCo confirmed its leading role in the fertilizer market by importing 268,000 tons and distributing 198,000 tons of imported fertilizers into the local market. The Corporation will continue the implementation of strategic researches and deployment of investment projects to increase the capability of urea production and diversify products. In 2008, PVFCCo finished all bidding procedures to select qualified contractors to start the project of CO2 collection from exhaust fumes of Phu My Fertilizer Plant to produce urea. The project will start in the first quarter of 2009. After completion, the production capacity of the plant will increase by 60,000 tons to 800,000 tons of urea per year."
+        },
+        {
+          "source_id": "S3",
+          "rank": 3,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 51,
+          "page_number": 36,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.704116804654343,
+          "content": "34 PetroVietnam Fertilizer and Chemicals Corporation Future Perspectives and Plans PVFCCo aims to achieve the strategic targets set. The strategic plan 2015 was approved during the Annual Shareholder Meeting 2008. PVFCCo currently holds a strong position in the domestic urea market of fertilizer production and trading. Moving forward, the domestic fertilizer demands will stabilize. There will be a robust increase in domestic urea supply after 2010 as Ca Mau Fertilizer Plant and other projects designed to increase capacity start operations. As such, the domestic fertilizer market is poised to face a difficult outlook from 2010 due to oversupply. PVFCCo with its stable market share, reputable brand name and competitive production cost is expected to maintain its sales volume. Meanwhile, PVFCCo plans to export urea in 2009 to promote its brand in the international markets to ensure future consumption. The domestic demands of other fertilizer products such as NPK, DAP is predicted to increase in the upcoming years."
+        },
+        {
+          "source_id": "S4",
+          "rank": 4,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 41,
+          "page_number": 30,
+          "section_title": "TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008",
+          "similarity_score": 0.644654734061305,
+          "content": "28 PetroVietnam Fertilizer and Chemicals Corporation On 15 May 2008, PVFCCo transformed into a corporation operating under the mechanism of a parent company and subsidiary by the establishment of four fertilizer trading companies in the North, the Central, the Southeast, Southwest and the PVFCCo Trading company. The Corporation has successfully installed a distribution network of more than 2,100 retailing outlets. Phu My Fertilizer Plant accomplished a big periodical maintenance five days earlier than projected. Moreover, the plant reached the production of 740,000 tons of urea seven days earlier than planned in 2008. Launching a campaign of selling Phu My urea at one-fixed price in the whole network nationwide, making significant contribution to the effort of the Government to harness the inflation of the economy. TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008 TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008"
+        },
+        {
+          "source_id": "S5",
+          "rank": 5,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 46,
+          "page_number": 34,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.630243427713416,
+          "content": "32 PetroVietnam Fertilizer and Chemicals Corporation REPORT FROM THE BOARD OF DIRECTORS Overview of 2008 2008 was an outstanding year for Petrovietnam Fertilizer and Chemicals Corporation (PVFCCo). 2007 witnessed the transformation of PVFCCo in term of the ownership model and business management mechanism, and in 2008 is the first year of implementation of the PVFCCo’s development strategy in context of the uncertainties experienced by the domestic and world economy. The main business of PVFCCo, the production and trading of fertilizers and chemicals, has been strongly affected by both the fevers and the economic recession. Phu My urea, the core product of PVFCCo, and other fertilizers imported by PVFCCo are consumed locally are both vulnerable to external factors such as the volatile prices of fertilizers and oil in the global market, the change of local demand and Government’s macro policies. During the first eight months of the year, there was a sharp increase in the global nitrogenous fertilizer market. This uptrend was a favorable condition to the PVFCCo business."
+        },
+        {
+          "source_id": "S6",
+          "rank": 6,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 49,
+          "page_number": 35,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.615693316391377,
+          "content": "Highlights from the year’s operating results As mentioned above, with strong effort to overcome difficulties, PVFCCo ended the year 2008 with results as follows: 750,000 tons of Phu My urea produced. »» 741,000 tons of Phu My urea sold. »» 268,000 tons of urea imported, in which 198,000 tons was sold out »» Total revenue reached a record high of VND 6,625 billion, equivalent to 150% of »» planned target and 49% up compared with previous year. Net profit before tax hit VND 1,501 billion, reached 126% of planned target and »» 12.86% up from previous year. Redemption of Phu My Fertilizer Plant investment loans. »» Principal changes in the year The principal change of PVFCCo in the year 2008 was the transformation of the Corporation from a joint stock company to a corporation, operating as a parent company with its subsidiaries as member companies. The Board of Directors discussed with and directed the Executive Board to implement the business plan focusing on the setting up of a distribution network via the subsidiaries."
+        },
+        {
+          "source_id": "S7",
+          "rank": 7,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 59,
+          "page_number": 42,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.615080781313585,
+          "content": "40 PetroVietnam Fertilizer and Chemicals Corporation In production PVFCCo performed a major maintenance and repair to Phu My Fetilizer Plant in April 2008, which was completed five days ahead of schedule. This reduced operation downtime for the Plant thereby enabling it to exceed its 2008 production capacity with 750,000 tons of urea. In addition, PVFCCo established an economic-technical system to effectively control production costs of the Plant. In trading operation PVFCCo successfully installed a distribution network for Phu My urea products by setting up five one-member limited liability companies in the country’s four key regions. Through these regional trading companies, long-term contracts were signed with 74 distributor agencies and nine outlets, from which PVFCCo’s products will be distributed to consumers through these 2.115 retail points. In 2008, PVFCCo also imported all kinds of fertilizers to increase the market share and to help stabilize the market."
+        },
+        {
+          "source_id": "S8",
+          "rank": 8,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 31,
+          "page_number": 24,
+          "section_title": "ONE-MEMBER LIMITED LIABILITY COMPANY",
+          "similarity_score": 0.610431419852791,
+          "content": "22 PetroVietnam Fertilizer and Chemicals Corporation Scope of Business Trading of agriculture and forestry products, fertilizers, and chemical products (except prohibited chemicals). Providing technical services and materials for production of fertilizers and related chemicals. Providing transport services of roadway, local waterway. Providing warehouse services. Establishment and development Central PVFCCo was established under Decision No. 116/QĐ-HĐQT dated 7 August 2008 by the BOD of PVFCCo and Business License No. 3504000294 dated 15 August 2008 by Binh Dinh Province’s Planning and Investment Department. Central PVFCCo officially commenced operations on 1 September 2008. Development direction Build a highly qualified workforce to fit the job requirements. Ensure safe and effective business activities Make contribution to develop a reputable brand-name for the PVFCCo by providing high quality fertilizers and chemical products to the Central market. Develop a distribution network of fertilizers and chemicals in Central and the Highland."
+        },
+        {
+          "source_id": "S9",
+          "rank": 9,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 29,
+          "page_number": 23,
+          "section_title": "ONE-MEMBER LIMITED LIABILITY COMPANY",
+          "similarity_score": 0.608086138550238,
+          "content": "21 Annual Report 2008 NORTHERN PVFFCCo TRADING ONE-MEMBER LIMITED LIABILITY COMPANY Scope of Business: Trading of fertilizers and chemical products (except items prohibited by laws) Trading of agriculture and forestry products (except items prohibited by laws) Technical services for trading of fertilizers and related chemicals (except forbidden chemicals) Transport services of roadway and local waterway. Warehouse services. Establishment and development Northern PVFCCo was established on 27 December 2007 to serve for the development strategies of PVFCCo: Reaching and expanding to Northern market (from Quang Binh Province to northwards) Making contribution to stabilization of fertilizer market, especially in the Northern area. Proposing solutions for business development to expand the business sectors of the mother company in line with PVFCCo development stratergy. Northern PVFCCo was officially transformed into Northern PetroVietnam Fertilizer & Chemicals One-member Limited Liability Company on 19 August 2008."
+        },
+        {
+          "source_id": "S10",
+          "rank": 10,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 48,
+          "page_number": 35,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.602719341134889,
+          "content": "33 Annual Report 2008 big corporation, with Government’s dominant stake, PVFCCo owns a dominant stake, PVFCCo and its parent company, Vietnam National Oil and Gas Group, had undertaken the responsibility to support the Government’s effort to stabilize the fertilizer market with concrete solutions, among which are: to operate the Phu My Fertilizer Plant at full capacity and to import fertilizers from overseas to meet domestic demands and provide the market fertilizer products at lower than market price. The Company also launched new policies to meet the market situation and implemented strong solutions to push up the installation of an effective distribution network to facilitate delivery of fertilizers to consumers. However, the market reversed severely in the later part of the year when the global market of crude oil and fertilizer plunged deeply. In addition, domestic demands were heavily affected by natural disasters. All these factors attributed to the dramatic drop in fertilizer price, which in turn severely affected the results of PVFCCo business."
+        }
+      ],
+      "models": {
+        "gpt_oss_20b": {
+          "answer": "PVFCCo đã lập kế hoạch sản xuất 750 000 tấn urea và nhập khẩu 250 000 tấn phân bón và hóa chất vào năm 2009. [S1]",
+          "source_ids": [
+            "S1"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "bdb9462334fe6575a8dd4b54be6066fd2593f88ebb357ab15e663316abca3375",
+          "generation_latency_ms": 2187.89,
+          "human_reviews": []
+        },
+        "gemini_flash": {
+          "error": "RateLimitError"
+        },
+        "qwen3": {
+          "answer": "Theo kế hoạch kinh doanh năm 2009 đã được Hội đồng Quản trị phê duyệt, PVFCCo đặt mục tiêu sản xuất 750.000 tấn urê và nhập khẩu 250.000 tấn phân bón cùng hóa chất [S1].",
+          "source_ids": [
+            "S1"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "bdb9462334fe6575a8dd4b54be6066fd2593f88ebb357ab15e663316abca3375",
+          "generation_latency_ms": 29862.44,
+          "human_reviews": []
+        }
+      }
+    },
+    {
+      "id": "Q09",
+      "question": "What revenue, profit-before-tax, and state-budget tax-payment targets did PVFCCo set for 2009?",
+      "expected_sources": [
+        "annual_report"
+      ],
+      "type": "Table / numeric",
+      "evidence": [
+        {
+          "source": "annual_report",
+          "chunk_index": 19,
+          "page_number": 16
+        }
+      ],
+      "expected_document_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1"
+      ],
+      "expected_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+      ],
+      "gold_evidence": [
+        {
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 19,
+          "page_number": 16,
+          "content": "14 PetroVietnam Fertilizer and Chemicals Corporation Main targets for 2009 Gross revenue 5,815 VND billion Profit before tax 1,084 VND billion Tax Payment 240 VND billion 2009 PRODUCT REVENUE CHART DEVELOPMENT ORIENTATION DEVELOPMENT ORIENTATION urea NPK Imported fertilizer Surplus ammonia Bagging Others 64% 3% 11% 1% 20% 1%"
+        }
+      ],
+      "retrieval_latency_ms": 636.03,
+      "retrieval_metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.1111,
+        "ndcg_at_k": 0.301
+      },
+      "retrieved_contexts": [
+        {
+          "source_id": "S1",
+          "rank": 1,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 88,
+          "page_number": 61,
+          "section_title": "ACTIVITES OF BOARD OF SUPERVISORS",
+          "similarity_score": 0.642441699741175,
+          "content": "59 Annual Report 2008 PVFCCo implemented development strategies for the year 2015 and 2025. PVFCCo completed the amendments to the Charter of PVFCCo in accordance with the sample charter of a listed company by Decision No, 15/2007/QĐ-BTC dated 19 March 2007 of the Ministry of Finance. Based on the results business practice in 2008, PVFCCo has temporarily paid advanced dividends during stage 1 and stage 2 in 2008, Based on the 2008 business results, PVFCCo has paid 2 batches of dividends for 2008. PVFCCo has changed its head office, replaced BOD members according to BOD resolution."
+        },
+        {
+          "source_id": "S2",
+          "rank": 2,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 6,
+          "page_number": 6,
+          "section_title": "THE CHAIRMAN",
+          "similarity_score": 0.61578179545638,
+          "content": "In 2009, in the context of domestic and global economy depression, PVFCCo focuses on its goals of sustainable development, affirmation of market leading position, meeting the market demands and ensuring shareholders’ benefits. The Board of Directors has approved the business plan of 2009 with objectives and duties as follows: Continue to operate the factory safely to produce 750,000 tons of urea. Import 250,000 tons of fertilizers and chemicals to supply domestic and international markets. Strengthen investment projects to diversify PVFCCo’s fertilizers and chemical products. Improve distribution network and production system via subsidiaries to minimize the costs and maximize the profits. Enhance corporate social responsibilities to promote the brand name of DPM in the market as well as the reputation of The Corporation in the community. MESSAGE FROM THE CHAIRMAN"
+        },
+        {
+          "source_id": "S3",
+          "rank": 3,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 51,
+          "page_number": 36,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.587399915742911,
+          "content": "34 PetroVietnam Fertilizer and Chemicals Corporation Future Perspectives and Plans PVFCCo aims to achieve the strategic targets set. The strategic plan 2015 was approved during the Annual Shareholder Meeting 2008. PVFCCo currently holds a strong position in the domestic urea market of fertilizer production and trading. Moving forward, the domestic fertilizer demands will stabilize. There will be a robust increase in domestic urea supply after 2010 as Ca Mau Fertilizer Plant and other projects designed to increase capacity start operations. As such, the domestic fertilizer market is poised to face a difficult outlook from 2010 due to oversupply. PVFCCo with its stable market share, reputable brand name and competitive production cost is expected to maintain its sales volume. Meanwhile, PVFCCo plans to export urea in 2009 to promote its brand in the international markets to ensure future consumption. The domestic demands of other fertilizer products such as NPK, DAP is predicted to increase in the upcoming years."
+        },
+        {
+          "source_id": "S4",
+          "rank": 4,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 46,
+          "page_number": 34,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.577264287464088,
+          "content": "32 PetroVietnam Fertilizer and Chemicals Corporation REPORT FROM THE BOARD OF DIRECTORS Overview of 2008 2008 was an outstanding year for Petrovietnam Fertilizer and Chemicals Corporation (PVFCCo). 2007 witnessed the transformation of PVFCCo in term of the ownership model and business management mechanism, and in 2008 is the first year of implementation of the PVFCCo’s development strategy in context of the uncertainties experienced by the domestic and world economy. The main business of PVFCCo, the production and trading of fertilizers and chemicals, has been strongly affected by both the fevers and the economic recession. Phu My urea, the core product of PVFCCo, and other fertilizers imported by PVFCCo are consumed locally are both vulnerable to external factors such as the volatile prices of fertilizers and oil in the global market, the change of local demand and Government’s macro policies. During the first eight months of the year, there was a sharp increase in the global nitrogenous fertilizer market. This uptrend was a favorable condition to the PVFCCo business."
+        },
+        {
+          "source_id": "S5",
+          "rank": 5,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 17,
+          "page_number": 14,
+          "section_title": "CORPORATION HISTORY AND DEVELOPMENT",
+          "similarity_score": 0.576642038635748,
+          "content": "12 PetroVietnam Fertilizer and Chemicals Corporation KEY TARGETS FROM 2005 AND 2008 Year Total sale Gross Revenue (VND billion) Net Profit before tax (VND billion) Tax Payment (VND billion) 2005 616,021 2,615 792 85 2006 715,671 3,204 1,161 107 2007 746,814 4,454 1,330 151 2008 741,189 6,643 1,501 283 Total 2,819,695 16,916 4,784 626 Gross revenue (VND billion) Net Profit before tax (VND billion) Total sale (thousand tons) Tax Payment 7,000 6,000 5,000 4,000 3,000 2,000 1,000 0 2005 2006 2007 2008 CORPORATION HISTORY AND DEVELOPMENT"
+        },
+        {
+          "source_id": "S6",
+          "rank": 6,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 82,
+          "page_number": 58,
+          "section_title": "BOARD OF DIRECTORS’ ACTIVITIES",
+          "similarity_score": 0.56706653824667,
+          "content": "56 PetroVietnam Fertilizer and Chemicals Corporation BOARD OF DIRECTORS’ ACTIVITIES In 2008, the Board of Directors decided the following issues during its regular and extraordinary meetings: Issued of economic series – technical system of production and trade activities »» for PVFCCo including labor, material diminution, fuel consumption and drafting the norm for material and spare… in usage and maintenance. Approved the payroll and salary policy, as well as important regulations for »» PVFCCo including Finance Management, PVFCCo’s Representative at Enterprises, Employment Policy, and Recruiting and Training. Decided to invest and approve the bidding plan and result of the Project of »» CO2 Recovery from the primary reformer at Phu My Fertilizer Plant to increase annual production of urea by 60.000 tons/year. Changed members of the BOD, and submitted to the Great Shareholder »» Meeting for approval. Transformed PVFCCo into a corporation and set up subsidiaries. Decided advanced dividends payments for the first and the second time (15% »» in total)."
+        },
+        {
+          "source_id": "S7",
+          "rank": 7,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 61,
+          "page_number": 43,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.56322047548362,
+          "content": "41 Annual Report 2008 In financial management PVFCCo implement effective financial management to ensure a stable cash flow for business operation and reserve of foreign currency for import activities. Loans for the construction of Phu My Fertilizer Plant were paid off in December 2008. The accounting activities were implemented in accordance with the priciples and laws required for business management of PVFCCo: issuance of guidance document for inventory process, circulation process of accouting documents using for sales activities nationwide (August 2008); issuance of financial management regulations for the Corporation and subsidiaries in October 2008. In organization management PVFCCo completed the transformation into a “parent company and subsidiary” model and set up five one-member limited liability companies, acquired the majority stake of Dam Phu My Bagging Joint Stock Company and rearranged the management structure at the head office."
+        },
+        {
+          "source_id": "S8",
+          "rank": 8,
+          "chunk_id": "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+          "document_id": "UPLOAD-5149fb823530440da1a2f09704c695d6",
+          "document_name": "HPT - To trinh thong qua danh sach Cong ty Kiem toan signed1.pdf",
+          "chunk_index": 35,
+          "page_number": 13,
+          "section_title": "Thuế thu nhập hoãn lại",
+          "similarity_score": 0.555921715703318,
+          "content": "- Thué — Thuế hiện hành Tài sản thuế và thuế phải nộp cho năm hiện hành và các năm trước được xác định bằng giá = tri dự kién phải nộp cho (hoặc được thu héi từ) co quan thué, sử dung các mức thué su. và các luật thuế có hiệu lực đền ngày kết thúc năm tài chinh. l Thuế thu nhập hoãn lại Thué thu nhập hoãn lại được xác định cho các khoản chênh lệch tạm thời tại ngày két thúc c năm tài chinh giữa cơ sở tinh thué thu nhập của các tài sản và nợ phải trả va giá trị ghi số. N = của chúng cho mục dich báo cáo tài chính. Giá trị ghi số của tài sản thuế thu nhập doanh nghiệp hoãn lại được xem xét lại vào ngày két thúc năm tai chinh và được ghi giảm dén mức bảo đảm chắc chắn có đủ lợi nhuận tính thué = cho phép lợi ich của một phân hoặc toàn bộ tai sản thuế thu nhap hoãn lại được sử dụng. = Các tài sản thué thu nhập doanh nghiệp hoăn lại chưa ghi nhận trước đây được xem xét lại vào ngay kết thúc năm tài chính và được ghi nhận khi chắc chắn có đủ lợi nhuận tính thué - d& có thé sử dung các tai sản thuế thu nhap hoãn lai chưa ghi nhận nay."
+        },
+        {
+          "source_id": "S9",
+          "rank": 9,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 19,
+          "page_number": 16,
+          "section_title": "DEVELOPMENT ORIENTATION",
+          "similarity_score": 0.554001575275707,
+          "content": "14 PetroVietnam Fertilizer and Chemicals Corporation Main targets for 2009 Gross revenue 5,815 VND billion Profit before tax 1,084 VND billion Tax Payment 240 VND billion 2009 PRODUCT REVENUE CHART DEVELOPMENT ORIENTATION DEVELOPMENT ORIENTATION urea NPK Imported fertilizer Surplus ammonia Bagging Others 64% 3% 11% 1% 20% 1%"
+        },
+        {
+          "source_id": "S10",
+          "rank": 10,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 152,
+          "page_number": 84,
+          "section_title": "Notes to the Consolidated Financial Statements",
+          "similarity_score": 0.539797835234472,
+          "content": "The year 2008 is the Corporation’s fifth profit - making year (since the Corporation’s commencement of operation) so is also the first year the Corporation has taxable income. During the year, losses from other activities have been offset against profit gained from activities under tax incentive and the taxable income remaining after such offsetting will continue to enjoy a 50 % reduction in tax payable. For other business activites: the Corporation’s corporate income tax rate is applied 28% of its taxable income. The determination of corporate income tax due is based on the current interpretation of tax regulations. However, these regulations are subject to periodic variation and its ultimate determination depends on the results of tax authorities’ examination. Deferred tax is recognised on significant differences between carrying amounts of assets and liabilities in the consolidated financial statements and the corresponding tax bases used in the computation of taxable profit and is accounted for using balance sheet liability method."
+        }
+      ],
+      "models": {
+        "gpt_oss_20b": {
+          "answer": "PVFCCo đã đặt ra các mục tiêu tài chính cho năm 2009 như sau:  \n- Doanh thu (Gross revenue) 5 815 triệu VND.  \n- Lợi nhuận trước thuế (Profit before tax) 1 084 triệu VND.  \n- Phí thuế ngân sách nhà nước (Tax Payment) 240 triệu VND.  \n\n[S5]",
+          "source_ids": [
+            "S5"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "acefebb52a33b96783413a21af28a5d8700fcc5a85371ee726207f52671c5ade",
+          "generation_latency_ms": 1385.03,
+          "human_reviews": []
+        },
+        "gemini_flash": {
+          "error": "RateLimitError"
+        },
+        "qwen3": {
+          "answer": "Theo tài liệu được cung cấp, các chỉ tiêu mà PVFCCo đặt ra cho năm 2009 bao gồm: doanh thu gộp là 5.815 tỷ VND, lợi nhuận trước thuế là 1.084 tỷ VND và nộp ngân sách nhà nước là 240 tỷ VND [S9].",
+          "source_ids": [
+            "S9"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "acefebb52a33b96783413a21af28a5d8700fcc5a85371ee726207f52671c5ade",
+          "generation_latency_ms": 17681.08,
+          "human_reviews": []
+        }
+      }
+    },
+    {
+      "id": "Q10",
+      "question": "Where was the Phu My Fertilizer Plant located, and what were its designed daily ammonia and urea production capacities?",
+      "expected_sources": [
+        "annual_report"
+      ],
+      "type": "Multi-fact",
+      "evidence": [
+        {
+          "source": "annual_report",
+          "chunk_index": 23,
+          "page_number": 20
+        }
+      ],
+      "expected_document_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1"
+      ],
+      "expected_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23"
+      ],
+      "gold_evidence": [
+        {
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 23,
+          "page_number": 20,
+          "content": "18 PetroVietnam Fertilizer and Chemicals Corporation The Phu My Fertilizer Plant, the result of about 370 milion US dollar investment project, is located on an area of 63 hectare in Phu My 1 Industrial Zone, Tan Thanh District, Ba Ria – Vung Tau Province. The plant was engineered and constructed with licensed technologies from Danish Haldor Topsoe and Italian Snamproghetti to produce ammonia (1,350 MT/day capacity) and prilled urea (2,200 MT/day capacity). These are world leading technologies with the closed manufacturing process using natural gas, air as feedstock to produce ammonia and urea. By virtue of such the process and the faculty to produce electricity power and moisture by itself, the plant can keep its operation uninterrupted even in the case of disruption of the national electricity power grid. The plant comprises three main units: Ammonia, Urea and Utility Offsite and other departments/units. PHU MY FERTILIZER PLANT"
+        }
+      ],
+      "retrieval_latency_ms": 621.85,
+      "retrieval_metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      },
+      "retrieved_contexts": [
+        {
+          "source_id": "S1",
+          "rank": 1,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 23,
+          "page_number": 20,
+          "section_title": "PHU MY FERTILIZER PLANT",
+          "similarity_score": 0.792809651785838,
+          "content": "18 PetroVietnam Fertilizer and Chemicals Corporation The Phu My Fertilizer Plant, the result of about 370 milion US dollar investment project, is located on an area of 63 hectare in Phu My 1 Industrial Zone, Tan Thanh District, Ba Ria – Vung Tau Province. The plant was engineered and constructed with licensed technologies from Danish Haldor Topsoe and Italian Snamproghetti to produce ammonia (1,350 MT/day capacity) and prilled urea (2,200 MT/day capacity). These are world leading technologies with the closed manufacturing process using natural gas, air as feedstock to produce ammonia and urea. By virtue of such the process and the faculty to produce electricity power and moisture by itself, the plant can keep its operation uninterrupted even in the case of disruption of the national electricity power grid. The plant comprises three main units: Ammonia, Urea and Utility Offsite and other departments/units. PHU MY FERTILIZER PLANT"
+        },
+        {
+          "source_id": "S2",
+          "rank": 2,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::106",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 106,
+          "page_number": 72,
+          "section_title": "WNổỆ SAVHOGH",
+          "similarity_score": 0.623936144039161,
+          "content": "70 PetroVietnam Fertilizer and Chemicals Corporation"
+        },
+        {
+          "source_id": "S3",
+          "rank": 3,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 63,
+          "page_number": 44,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.622627999432341,
+          "content": "42 PetroVietnam Fertilizer and Chemicals Corporation Targets Production Urea 750,000 tons Surplus Ammonia 32,000 tons NPK 50,000 tons Bagging 25,900,000 units Trading Urea 780,000 tons Surplus Ammonia 32,000 tons NPK 50,000 tons Bagging 25,900 thousand bags Import of Fertilizers and Chemicals 250,000 tons 2009 PRODUCTION AND TRADING PLAN REPORT OF THE EXECUTIVE BOARD"
+        },
+        {
+          "source_id": "S4",
+          "rank": 4,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 59,
+          "page_number": 42,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.619047815885258,
+          "content": "40 PetroVietnam Fertilizer and Chemicals Corporation In production PVFCCo performed a major maintenance and repair to Phu My Fetilizer Plant in April 2008, which was completed five days ahead of schedule. This reduced operation downtime for the Plant thereby enabling it to exceed its 2008 production capacity with 750,000 tons of urea. In addition, PVFCCo established an economic-technical system to effectively control production costs of the Plant. In trading operation PVFCCo successfully installed a distribution network for Phu My urea products by setting up five one-member limited liability companies in the country’s four key regions. Through these regional trading companies, long-term contracts were signed with 74 distributor agencies and nine outlets, from which PVFCCo’s products will be distributed to consumers through these 2.115 retail points. In 2008, PVFCCo also imported all kinds of fertilizers to increase the market share and to help stabilize the market."
+        },
+        {
+          "source_id": "S5",
+          "rank": 5,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::99",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 99,
+          "page_number": 66,
+          "section_title": "STATISTICAL DATA OF SHAREHOLDERS",
+          "similarity_score": 0.618327999582485,
+          "content": "64 PetroVietnam Fertilizer and Chemicals Corporation"
+        },
+        {
+          "source_id": "S6",
+          "rank": 6,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 66,
+          "page_number": 46,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.618146560072544,
+          "content": "44 PetroVietnam Fertilizer and Chemicals Corporation"
+        },
+        {
+          "source_id": "S7",
+          "rank": 7,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::21",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 21,
+          "page_number": 18,
+          "section_title": "DEVELOPMENT ORIENTATION",
+          "similarity_score": 0.609937197706686,
+          "content": "16 PetroVietnam Fertilizer and Chemicals Corporation"
+        },
+        {
+          "source_id": "S8",
+          "rank": 8,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 9,
+          "page_number": 8,
+          "section_title": "‘‘PVFCCo continues sustainable development.’’",
+          "similarity_score": 0.606868400505454,
+          "content": "6 PetroVietnam Fertilizer and Chemicals Corporation"
+        },
+        {
+          "source_id": "S9",
+          "rank": 9,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::44",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 44,
+          "page_number": 32,
+          "section_title": "TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008",
+          "similarity_score": 0.604604367543599,
+          "content": "30 PetroVietnam Fertilizer and Chemicals Corporation"
+        },
+        {
+          "source_id": "S10",
+          "rank": 10,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::158",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 158,
+          "page_number": 86,
+          "section_title": "CASH AND CASH EQUIVALENTS",
+          "similarity_score": 0.601366712553618,
+          "content": "84 PetroVietnam Fertilizer and Chemicals Corporation 6."
+        }
+      ],
+      "models": {
+        "gpt_oss_20b": {
+          "answer": "Phu My Fertilizer Plant được đặt tại khu công nghiệp Phú Mỹ 1, quận Tân Thanh, tỉnh Bà Rịa‑Vũng Tàu. Thiết kế công suất sản xuất hàng ngày là 1 350 tấn amoniac và 2 200 tấn urea. [S1]",
+          "source_ids": [
+            "S1"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "e8969d794497e5a59f2c1eb76e556e1f5d9cd947dc1ab3a254bfda9382d3b819",
+          "generation_latency_ms": 933.06,
+          "human_reviews": []
+        },
+        "gemini_flash": {
+          "error": "RateLimitError"
+        },
+        "qwen3": {
+          "answer": "Nhà máy Phân bón Phú Mỹ được đặt tại Khu công nghiệp Phú Mỹ 1, huyện Tân Thành, tỉnh Bà Rịa – Vũng Tàu [S1].\nCông suất thiết kế hàng ngày của nhà máy là 1.350 tấn amoniac và 2.200 tấn urê dạng hạt [S1].",
+          "source_ids": [
+            "S1"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "e8969d794497e5a59f2c1eb76e556e1f5d9cd947dc1ab3a254bfda9382d3b819",
+          "generation_latency_ms": 13336.94,
+          "human_reviews": []
+        }
+      }
+    },
+    {
+      "id": "Q11",
+      "question": "What technical solutions did PVFCCo implement to improve urea quality and plant operating efficiency?",
+      "expected_sources": [
+        "annual_report"
+      ],
+      "type": "Summarization",
+      "evidence": [
+        {
+          "source": "annual_report",
+          "chunk_index": 25,
+          "page_number": 21
+        },
+        {
+          "source": "annual_report",
+          "chunk_index": 26,
+          "page_number": 21
+        }
+      ],
+      "expected_document_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1"
+      ],
+      "expected_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26"
+      ],
+      "gold_evidence": [
+        {
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 25,
+          "page_number": 21,
+          "content": "In addition to the initial configuration, in order to enhance the quality, diversify products, take full advantage of the Company’s resources, serve effectively the production and trading and improve the working environment, the Company has initiated and implemented projects in upgrading and preserving the newly invested equipment and technologies as follows: Bently Nevada Machinery Monitoring System (MMS) motive equipment management program with System I, the most advanced equipment in the GE Energy group: based on the temperature and stir level of equipment, the program allows the Plant to accurately keep control of the real situation of the equipment and predict possible problems to timely plan the maintenance and replacement; Anti-caking agent injection system for urea product: the system makes the prilled urea polished to protect it against a called caking phenomenon – urea solid prills adhere to each other; The vibrating screen system project that minimizes the amount of powder or small prilled urea contained in the end-product."
+        },
+        {
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 26,
+          "page_number": 21,
+          "content": "The system for recovery of ammonia from waste water before draining off to the environment; Development of new/auxiliary products: Production of pure liquid CO2 from the Plant’s exhaust fumes, methanol, formaldehyde and several industrial gases such as nitrogene, oxygene, argon, etc. Installation of the air cleaning system by suction to reduce the dust of urea to maintain the healthy working environment; Construction of bagged urea storages at the plant and distribution regions."
+        }
+      ],
+      "retrieval_latency_ms": 619.64,
+      "retrieval_metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      },
+      "retrieved_contexts": [
+        {
+          "source_id": "S1",
+          "rank": 1,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 6,
+          "page_number": 6,
+          "section_title": "THE CHAIRMAN",
+          "similarity_score": 0.658951771567483,
+          "content": "In 2009, in the context of domestic and global economy depression, PVFCCo focuses on its goals of sustainable development, affirmation of market leading position, meeting the market demands and ensuring shareholders’ benefits. The Board of Directors has approved the business plan of 2009 with objectives and duties as follows: Continue to operate the factory safely to produce 750,000 tons of urea. Import 250,000 tons of fertilizers and chemicals to supply domestic and international markets. Strengthen investment projects to diversify PVFCCo’s fertilizers and chemical products. Improve distribution network and production system via subsidiaries to minimize the costs and maximize the profits. Enhance corporate social responsibilities to promote the brand name of DPM in the market as well as the reputation of The Corporation in the community. MESSAGE FROM THE CHAIRMAN"
+        },
+        {
+          "source_id": "S2",
+          "rank": 2,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 59,
+          "page_number": 42,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.648494169369943,
+          "content": "40 PetroVietnam Fertilizer and Chemicals Corporation In production PVFCCo performed a major maintenance and repair to Phu My Fetilizer Plant in April 2008, which was completed five days ahead of schedule. This reduced operation downtime for the Plant thereby enabling it to exceed its 2008 production capacity with 750,000 tons of urea. In addition, PVFCCo established an economic-technical system to effectively control production costs of the Plant. In trading operation PVFCCo successfully installed a distribution network for Phu My urea products by setting up five one-member limited liability companies in the country’s four key regions. Through these regional trading companies, long-term contracts were signed with 74 distributor agencies and nine outlets, from which PVFCCo’s products will be distributed to consumers through these 2.115 retail points. In 2008, PVFCCo also imported all kinds of fertilizers to increase the market share and to help stabilize the market."
+        },
+        {
+          "source_id": "S3",
+          "rank": 3,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 51,
+          "page_number": 36,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.628813542020394,
+          "content": "34 PetroVietnam Fertilizer and Chemicals Corporation Future Perspectives and Plans PVFCCo aims to achieve the strategic targets set. The strategic plan 2015 was approved during the Annual Shareholder Meeting 2008. PVFCCo currently holds a strong position in the domestic urea market of fertilizer production and trading. Moving forward, the domestic fertilizer demands will stabilize. There will be a robust increase in domestic urea supply after 2010 as Ca Mau Fertilizer Plant and other projects designed to increase capacity start operations. As such, the domestic fertilizer market is poised to face a difficult outlook from 2010 due to oversupply. PVFCCo with its stable market share, reputable brand name and competitive production cost is expected to maintain its sales volume. Meanwhile, PVFCCo plans to export urea in 2009 to promote its brand in the international markets to ensure future consumption. The domestic demands of other fertilizer products such as NPK, DAP is predicted to increase in the upcoming years."
+        },
+        {
+          "source_id": "S4",
+          "rank": 4,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 82,
+          "page_number": 58,
+          "section_title": "BOARD OF DIRECTORS’ ACTIVITIES",
+          "similarity_score": 0.620611291918702,
+          "content": "56 PetroVietnam Fertilizer and Chemicals Corporation BOARD OF DIRECTORS’ ACTIVITIES In 2008, the Board of Directors decided the following issues during its regular and extraordinary meetings: Issued of economic series – technical system of production and trade activities »» for PVFCCo including labor, material diminution, fuel consumption and drafting the norm for material and spare… in usage and maintenance. Approved the payroll and salary policy, as well as important regulations for »» PVFCCo including Finance Management, PVFCCo’s Representative at Enterprises, Employment Policy, and Recruiting and Training. Decided to invest and approve the bidding plan and result of the Project of »» CO2 Recovery from the primary reformer at Phu My Fertilizer Plant to increase annual production of urea by 60.000 tons/year. Changed members of the BOD, and submitted to the Great Shareholder »» Meeting for approval. Transformed PVFCCo into a corporation and set up subsidiaries. Decided advanced dividends payments for the first and the second time (15% »» in total)."
+        },
+        {
+          "source_id": "S5",
+          "rank": 5,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 88,
+          "page_number": 61,
+          "section_title": "ACTIVITES OF BOARD OF SUPERVISORS",
+          "similarity_score": 0.613367694207327,
+          "content": "59 Annual Report 2008 PVFCCo implemented development strategies for the year 2015 and 2025. PVFCCo completed the amendments to the Charter of PVFCCo in accordance with the sample charter of a listed company by Decision No, 15/2007/QĐ-BTC dated 19 March 2007 of the Ministry of Finance. Based on the results business practice in 2008, PVFCCo has temporarily paid advanced dividends during stage 1 and stage 2 in 2008, Based on the 2008 business results, PVFCCo has paid 2 batches of dividends for 2008. PVFCCo has changed its head office, replaced BOD members according to BOD resolution."
+        },
+        {
+          "source_id": "S6",
+          "rank": 6,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 41,
+          "page_number": 30,
+          "section_title": "TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008",
+          "similarity_score": 0.598250508035228,
+          "content": "28 PetroVietnam Fertilizer and Chemicals Corporation On 15 May 2008, PVFCCo transformed into a corporation operating under the mechanism of a parent company and subsidiary by the establishment of four fertilizer trading companies in the North, the Central, the Southeast, Southwest and the PVFCCo Trading company. The Corporation has successfully installed a distribution network of more than 2,100 retailing outlets. Phu My Fertilizer Plant accomplished a big periodical maintenance five days earlier than projected. Moreover, the plant reached the production of 740,000 tons of urea seven days earlier than planned in 2008. Launching a campaign of selling Phu My urea at one-fixed price in the whole network nationwide, making significant contribution to the effort of the Government to harness the inflation of the economy. TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008 TOP-TEN EVENTS AND ACTIVITIES OF THE YEAR 2008"
+        },
+        {
+          "source_id": "S7",
+          "rank": 7,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::60",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 60,
+          "page_number": 42,
+          "section_title": "REPORT OF THE EXECUTIVE BOARD",
+          "similarity_score": 0.598177210666279,
+          "content": "ACCOMPLISHMENTS PVFCCo successfully installed a distribution network for Phu My urea products by setting up five one-member limited liability companies in the country’s four key regions REPORT OF THE EXECUTIVE BOARD"
+        },
+        {
+          "source_id": "S8",
+          "rank": 8,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 48,
+          "page_number": 35,
+          "section_title": "REPORT FROM THE BOARD OF DIRECTORS",
+          "similarity_score": 0.596826286398103,
+          "content": "33 Annual Report 2008 big corporation, with Government’s dominant stake, PVFCCo owns a dominant stake, PVFCCo and its parent company, Vietnam National Oil and Gas Group, had undertaken the responsibility to support the Government’s effort to stabilize the fertilizer market with concrete solutions, among which are: to operate the Phu My Fertilizer Plant at full capacity and to import fertilizers from overseas to meet domestic demands and provide the market fertilizer products at lower than market price. The Company also launched new policies to meet the market situation and implemented strong solutions to push up the installation of an effective distribution network to facilitate delivery of fertilizers to consumers. However, the market reversed severely in the later part of the year when the global market of crude oil and fertilizer plunged deeply. In addition, domestic demands were heavily affected by natural disasters. All these factors attributed to the dramatic drop in fertilizer price, which in turn severely affected the results of PVFCCo business."
+        },
+        {
+          "source_id": "S9",
+          "rank": 9,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 15,
+          "page_number": 13,
+          "section_title": "Operating History",
+          "similarity_score": 0.582503215143408,
+          "content": "11 Annual Report 2008 All products are well received by the local market, making significant contribution to stabilize the price and supply of fertilizers in the country, which in return, created profits to the owners and investors. In 2008, PVFCCo confirmed its leading role in the fertilizer market by importing 268,000 tons and distributing 198,000 tons of imported fertilizers into the local market. The Corporation will continue the implementation of strategic researches and deployment of investment projects to increase the capability of urea production and diversify products. In 2008, PVFCCo finished all bidding procedures to select qualified contractors to start the project of CO2 collection from exhaust fumes of Phu My Fertilizer Plant to produce urea. The project will start in the first quarter of 2009. After completion, the production capacity of the plant will increase by 60,000 tons to 800,000 tons of urea per year."
+        },
+        {
+          "source_id": "S10",
+          "rank": 10,
+          "chunk_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+          "document_id": "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "document_name": "AnnualReport_2008.pdf",
+          "chunk_index": 54,
+          "page_number": 38,
+          "section_title": "Performance overview of the corporation",
+          "similarity_score": 0.571538646992165,
+          "content": "36 PetroVietnam Fertilizer and Chemicals Corporation 2008 marked an important milestone for PVFCCo, as the Corporation successfully transformed its business model from a joint stock company into a parent corporation with its subsidiaries, which includes the Phu My Fertilizer Plant, the Construction Management Board of Phu My Industrial Zone, six member trading companies and two representative offices in Morocco and Russia. The Corporation also performed excellently as Phu My Fertilizer Plant rolled out an output far exceeding the designed capacity, and the gross revenue hit a record-high of more than 6,500 billion VND achieving 170% of target result. In 2008, PVFCCo faced many difficulties as unpredicted fluctuation of the domestic and international fertilizer market severely affected the market forecast and implementation of business plan. However, the business results remains satisfactory and even exceeded its target. REPORT OF THE EXECUTIVE BOARD Performance overview of the corporation"
+        }
+      ],
+      "models": {
+        "gpt_oss_20b": {
+          "answer": "PVFCCo đã triển khai một số giải pháp kỹ thuật nhằm nâng cao chất lượng urea và hiệu quả vận hành của nhà máy:\n\n- **Hệ thống kinh tế‑kỹ thuật** được thiết lập để kiểm soát chi phí sản xuất, từ đó giúp tối ưu hoá quy trình và nâng cao chất lượng sản phẩm urea.  \n  [S2]  \n- **Dự án thu hồi CO₂** từ khói thoát khí của nhà máy Phú Mỹ, giúp tăng năng suất urea lên 60 000 tấn/ năm và cải thiện hiệu suất vận hành của nhà máy.  \n  [S4]  \n- **Bảo trì và sửa chữa định kỳ** của nhà máy Phú Mỹ, được hoàn thành sớm hơn dự kiến, giúp giảm thời gian ngừng hoạt động và duy trì chất lượng sản phẩm.  \n  [S6]",
+          "source_ids": [
+            "S2",
+            "S4",
+            "S6"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "0eadc28af4d067e8e132e9064dd8f6a2e5103e95803a2e677445cd497749fb99",
+          "generation_latency_ms": 1963.4,
+          "human_reviews": []
+        },
+        "gemini_flash": {
+          "error": "RateLimitError"
+        },
+        "qwen3": {
+          "answer": "Dựa trên các tài liệu được cung cấp, PVFCCo đã thực hiện các giải pháp kỹ thuật sau để cải thiện hiệu quả vận hành nhà máy và năng suất sản xuất:\n\n*   PVFCCo đã thực hiện bảo trì và sửa chữa lớn cho Nhà máy Phân bón Phú Mỹ vào tháng 4 năm 2008, hoàn thành sớm 5 ngày so với kế hoạch, giúp giảm thời gian ngừng hoạt động của nhà máy [S2].\n*   PVFCCo đã thiết lập một hệ thống kinh tế - kỹ thuật để kiểm soát hiệu quả chi phí sản xuất của nhà máy [S2].\n*   Hội đồng Quản trị đã quyết định đầu tư và phê duyệt kế hoạch đấu thầu cho Dự án thu hồi CO2 từ bộ cải tạo sơ cấp tại Nhà máy Phân bón Phú Mỹ nhằm tăng sản lượng urea hàng năm thêm 60.000 tấn/năm [S4].\n*   Dự án thu hồi CO2 từ khí thải của Nhà máy Phân bón Phú Mỹ để sản xuất urea đã hoàn tất các thủ tục đấu thầu chọn nhà thầu và dự kiến bắt đầu vào quý I năm 2009, sau khi hoàn thành, công suất sản xuất của nhà máy sẽ tăng thêm 60.000 tấn lên 800.000 tấn urea mỗi năm [S9].\n*   Hội đồng Quản trị đã ban hành hệ thống kinh tế - kỹ thuật cho các hoạt động sản xuất và thương mại, bao gồm các quy định về lao động, giảm thiểu vật tư, tiêu thụ nhiên liệu và xây dựng định mức sử dụng và bảo trì vật tư, phụ tùng [S4].\n\nLưu ý: Các tài liệu được cung cấp không chứa thông tin cụ thể về các giải pháp kỹ thuật nhằm cải thiện **chất lượng** (quality) của urea, mà chỉ tập trung vào hiệu quả vận hành, giảm chi phí và tăng năng suất sản xuất.",
+          "source_ids": [
+            "S2",
+            "S4",
+            "S9"
+          ],
+          "insufficient_context": false,
+          "prompt_sha256": "0eadc28af4d067e8e132e9064dd8f6a2e5103e95803a2e677445cd497749fb99",
+          "generation_latency_ms": 22781.84,
+          "human_reviews": []
+        }
+      }
+    }
+  ],
+  "summary": {
+    "question_count": 11,
+    "generation_completed": 23,
+    "average_retrieval_latency_ms": 658.12,
+    "average_response_time_ms": 10319.62,
+    "observed_throughput_requests_per_second": 0.0885,
+    "retrieval_metrics_mean": {
+      "recall_at_k": 0.5455,
+      "precision_at_k": 0.0545,
+      "mrr": 0.3838,
+      "ndcg_at_k": 0.4184
+    },
+    "gpu_utilization": null,
+    "scalability": null
+  }
+}

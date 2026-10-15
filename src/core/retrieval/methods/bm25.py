@@ -70,10 +70,11 @@ def search(
     limit: int,
     *, query: str | None = None, company: str | None = None,
     roles: list[str] | None = None,
+    document_ids: list[str] | None = None,
 ) -> list[RetrievedChunk]:
     eligible, parameters = eligible_cte(
         None, query, company, roles,
-        include_vector=False, include_lexical=True,
+        include_vector=False, include_lexical=True, document_ids=document_ids,
     )
     parameters.extend((lexical_tsquery(query), limit * 10, limit))
     sql = "WITH " + eligible + "," + BM25_CTES + """,

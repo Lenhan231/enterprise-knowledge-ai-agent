@@ -27,6 +27,7 @@ class RetrievalService:
         roles: list[str] | None = None,
         method: Literal["dense", "bm25", "hybrid", "parent"] = "hybrid",
         dense_weight: float = 1.0, bm25_weight: float = 2.0, rrf_k: int = 60,
+        document_ids: list[str] | None = None,
     ) -> RetrievalResponse:
         """Run one selected retrieval method and map its chunks to the public contract."""
         if not isinstance(request, RetrievalRequest):
@@ -41,6 +42,12 @@ class RetrievalService:
             query_embedding = self.embedding_service.embed_query(request.query)
 
         options = {"company": company, "roles": roles}
+        if document_ids is not None:
+            if not isinstance(document_ids, list) or any(
+                not isinstance(value, str) or not value.strip() for value in document_ids
+            ):
+                raise ValueError("document_ids must be a list of non-empty document IDs")
+            options["document_ids"] = document_ids
         parent_contexts = {}
         if method == "parent":
             chunks, parent_contexts = parent.search(

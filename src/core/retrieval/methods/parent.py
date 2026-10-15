@@ -15,10 +15,12 @@ def search(
     query_embedding: list[float] | None,
     request: RetrievalRequest,
     *, company: str | None = None, roles: list[str] | None = None,
+    document_ids: list[str] | None = None,
 ) -> tuple[list[RetrievedChunk], dict[tuple[str, int], dict]]:
     candidates = repository.similarity_search(
         query_embedding, min(request.top_k * 5, 100), query=request.query,
         company=company, roles=roles, method="dense",
+        **({"document_ids": document_ids} if document_ids is not None else {}),
     )
     contexts = repository.expand_parent_contexts(candidates, company=company, roles=roles)
     selected = []

@@ -38,6 +38,7 @@ def eligible_cte(
     *,
     include_vector: bool,
     include_lexical: bool,
+    document_ids: list[str] | None = None,
 ) -> tuple[str, list[Any]]:
     """Build the common ready-document and ACL filter before any ranking limit."""
     parameters: list[Any] = []
@@ -60,6 +61,9 @@ def eligible_cte(
     if roles is not None:
         filters += " AND (d.allowed_roles && %s::text[] OR 'admin' = ANY(%s::text[]))"
         parameters.extend((roles, roles))
+    if document_ids is not None:
+        filters += " AND d.document_id = ANY(%s::text[])"
+        parameters.append(document_ids)
     lexical_field = ", to_tsvector('simple', c.content) AS document_vector" if include_lexical else ""
     cte = f"""
         eligible AS MATERIALIZED (

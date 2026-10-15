@@ -1,0 +1,3509 @@
+{
+  "created_at": "2026-10-14T12:49:32.916381+00:00",
+  "quocan_commit": "6564702c93a028d803c309431e60e447d87bc0c3",
+  "retrieval_commit": "751469c1dafc573aa28c7b52e49bf7c4a447ccb7",
+  "case_sha256": "70ea62225f174ac0a874dda2a3d4c3bfaf7fc683b9d57851e5a2fceadc5d8259",
+  "live_snapshot_sha256": "905e457e6d3cf771630a249a44950c4592df5ef9c662e9a4bb18a35ef4144617",
+  "corpus_chunks": 827,
+  "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "protocol": "Same read-only repeatable-read snapshot, identical query vectors, top-k 10, no company/role filter as in original benchmark; generation not run",
+  "results": [
+    {
+      "id": "Q01",
+      "question": "Sứ mệnh và tầm nhìn của Tổng Công ty Phân bón và Hóa chất Dầu khí (PVFCCo) được xác định như thế nào?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4"
+      ],
+      "lexical_terms": "sứ | mệnh | và | tầm | nhìn | tổng | công | ty | phân | bón | và | hóa | chất | dầu | khí | pvfcco | xác | định | như",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::7",
+            "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN::chunk::7",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::1",
+            "SHOPEE-UNI-STORE-OPS-MALL-VN::chunk::21",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::3",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "TIKI-FBT-INVENTORY-TRANSFER::chunk::7",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::7",
+            "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN::chunk::7",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::1",
+            "SHOPEE-UNI-STORE-OPS-MALL-VN::chunk::21",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::3",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q02",
+      "question": "Mã cổ phiếu của PVFCCo là gì và có bao nhiêu cổ phiếu được niêm yết vào ngày 05/11/2007?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13"
+      ],
+      "lexical_terms": "mã | cổ | phiếu | pvfcco | và | có | cổ | phiếu | niêm | yết | vào | ngày | 05 | 11 | 2007",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.6309297535714575
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.6309297535714575
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::16",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "TIKI-FBT-INVENTORY-TRANSFER::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::6",
+            "TIKI-FBT-INVENTORY-TRANSFER::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.16666666666666666,
+          "ndcg@10": 0.3562071871080222
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.3333333333333333,
+          "ndcg@10": 0.5
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.6309297535714575
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q03",
+      "question": "PVFCCo hoạt động trong những lĩnh vực kinh doanh chính nào theo Báo cáo thường niên 2008?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14"
+      ],
+      "lexical_terms": "pvfcco | hoạt | động | trong | những | lĩnh | vực | kinh | doanh | chính | theo | báo | cáo | thường | niên | 2008",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::18",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::3",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::18",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::3",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::102"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::18",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q04",
+      "question": "Năm 2008, PVFCCo đã nhập khẩu và phân phối bao nhiêu tấn phân bón nhập khẩu vào thị trường nội địa?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "lexical_terms": "2008 | pvfcco | đã | nhập | khẩu | và | phân | phối | tấn | phân | bón | nhập | khẩu | vào | thị | trường | nội | địa",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::180",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::180",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::45",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::44",
+            "TIKI-FBT-INVENTORY-TRANSFER::chunk::2",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::12",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::6",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::11",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::4",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::3"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::45",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::44",
+            "TIKI-FBT-INVENTORY-TRANSFER::chunk::2",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::12",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::11"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::104",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.14285714285714285,
+          "ndcg@10": 0.3333333333333333
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.25,
+          "ndcg@10": 0.43067655807339306
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q05",
+      "question": "Dự án thu hồi CO₂ tại Nhà máy Đạm Phú Mỹ dự kiến làm tăng công suất sản xuất urê thêm bao nhiêu tấn mỗi năm?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "lexical_terms": "dự | án | thu | hồi | co₂ | tại | nhà | máy | đạm | phú | mỹ | dự | kiến | làm | tăng | công | suất | sản | xuất | urê | thêm | tấn | mỗi",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::180",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.125,
+          "ndcg@10": 0.31546487678572877
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::180",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.125,
+          "ndcg@10": 0.31546487678572877
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::6",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::8",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::7",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::3",
+            "TIKI-FBT-INVENTORY-TRANSFER::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "SHOPEE-UNI-STORE-OPS-MALL-VN::chunk::6",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::3"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::6",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::8",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::7",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::3",
+            "TIKI-FBT-INVENTORY-TRANSFER::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::21",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::180",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.1,
+          "ndcg@10": 0.2890648263178879
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::180",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.125,
+          "ndcg@10": 0.31546487678572877
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q06",
+      "question": "Tổng doanh thu, lợi nhuận trước thuế và số thuế nộp của PVFCCo năm 2008 là bao nhiêu?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "lexical_terms": "tổng | doanh | thu | lợi | nhuận | trước | thuế | và | số | thuế | nộp | pvfcco | 2008",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.125,
+          "ndcg@10": 0.31546487678572877
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.125,
+          "ndcg@10": 0.31546487678572877
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::44",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::49"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::44",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::44"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q07",
+      "question": "So sánh tổng doanh thu của PVFCCo giữa năm 2007 và 2008.",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "lexical_terms": "so | sánh | tổng | doanh | thu | pvfcco | giữa | 2007 | và | 2008",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "CD-POL-PROMO-001::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "CD-POL-PROMO-001::chunk::1",
+            "CD-POL-LOG-001::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::102",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::102",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q08",
+      "question": "Kế hoạch sản lượng sản xuất urê và nhập khẩu phân bón của PVFCCo trong năm 2009 là bao nhiêu?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6"
+      ],
+      "lexical_terms": "kế | hoạch | sản | lượng | sản | xuất | urê | và | nhập | khẩu | phân | bón | pvfcco | trong | 2009",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "CD-POL-PROMO-001::chunk::0",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::4",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::6",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::3",
+            "CD-POL-LOG-001::chunk::1",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::5",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::7",
+            "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN::chunk::7",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::11",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "CD-POL-PROMO-001::chunk::0",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::4",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::6",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::3",
+            "CD-POL-LOG-001::chunk::1",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::7",
+            "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN::chunk::7"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.3333333333333333,
+          "ndcg@10": 0.5
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::104",
+            "CD-POL-PROMO-001::chunk::0",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::4",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::6",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::5"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q09",
+      "question": "Các chỉ tiêu doanh thu, lợi nhuận trước thuế và thuế nộp ngân sách mà PVFCCo đặt ra cho năm 2009 là gì?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+      ],
+      "lexical_terms": "các | chỉ | tiêu | doanh | thu | lợi | nhuận | trước | thuế | và | thuế | nộp | ngân | sách | mà | pvfcco | đặt | ra | 2009",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.1,
+          "ndcg@10": 0.2890648263178879
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.1,
+          "ndcg@10": 0.2890648263178879
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "CD-POL-PROMO-001::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::24"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q10",
+      "question": "Nhà máy Đạm Phú Mỹ nằm ở đâu và công suất thiết kế sản xuất amoniac, urê mỗi ngày là bao nhiêu?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23"
+      ],
+      "lexical_terms": "nhà | máy | đạm | phú | mỹ | nằm | ở | đâu | và | công | suất | thiết | kế | sản | xuất | amoniac | urê | mỗi | ngày",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::73",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::106",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::99",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.3333333333333333,
+          "ndcg@10": 0.5
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::73",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::106",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::99",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.3333333333333333,
+          "ndcg@10": 0.5
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "TIKI-FBT-INVENTORY-TRANSFER::chunk::2",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::11",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::22",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::4",
+            "CD-POL-LOG-001::chunk::1",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::5",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::7",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::10"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::6",
+            "TIKI-FBT-INVENTORY-TRANSFER::chunk::2",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::11",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::21",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::22",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::4",
+            "CD-POL-LOG-001::chunk::1",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::8",
+            "SHOPEE-UNI-STORE-OPS-MALL-VN::chunk::27"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::6",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::21",
+            "SHOPEE-UNI-STORE-OPS-MALL-VN::chunk::27",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+            "TIKI-FBT-INVENTORY-TRANSFER::chunk::2"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::73",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::106",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::21"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.3333333333333333,
+          "ndcg@10": 0.5
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::73",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::106",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::99",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.3333333333333333,
+          "ndcg@10": 0.5
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q11",
+      "question": "PVFCCo đã triển khai những giải pháp kỹ thuật nào nhằm cải thiện chất lượng urê và hiệu quả vận hành nhà máy?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26"
+      ],
+      "lexical_terms": "pvfcco | đã | triển | khai | những | giải | pháp | kỹ | thuật | nhằm | cải | thiện | chất | lượng | urê | và | hiệu | quả | vận | hành | nhà | máy",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::60",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::60",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::20",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::12",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::18",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::3",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::24",
+            "TIKI-FBT-INVENTORY-TRANSFER::chunk::2",
+            "SHOPEE-UNI-STORE-OPS-MALL-VN::chunk::32",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::5",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::7",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::16"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::5",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::20",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::12",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::18",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::3",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::24",
+            "TIKI-FBT-INVENTORY-TRANSFER::chunk::2",
+            "SHOPEE-UNI-STORE-OPS-MALL-VN::chunk::32",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::7",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::16"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::102",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::20",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::12",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::18",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::3"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::60",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::60",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q12",
+      "question": "Tỷ số thanh toán hiện hành và tỷ số thanh toán nhanh của PVFCCo năm 2008 là bao nhiêu?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55"
+      ],
+      "lexical_terms": "tỷ | số | thanh | toán | hiện | hành | và | tỷ | số | thanh | toán | nhanh | pvfcco | 2008",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::49",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::19"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::49",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::15",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::15",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q13",
+      "question": "Công ty Cổ phần Long Hậu được thành lập theo giấy chứng nhận đăng ký kinh doanh số bao nhiêu và được cấp ngày nào?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25"
+      ],
+      "lexical_terms": "công | ty | cổ | phần | long | hậu | thành | lập | theo | giấy | chứng | nhận | đăng | ký | kinh | doanh | số | và | cấp | ngày",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "WMT-GFR-SUPPLIER-ONBOARDING-2025::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "WMT-GFR-SUPPLIER-ONBOARDING-2025::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::9",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::13",
+            "TIKI-FBT-INVENTORY-TRANSFER::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q14",
+      "question": "Đơn vị kiểm toán nào thực hiện kiểm toán báo cáo tài chính riêng năm 2008 của Long Hậu?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7"
+      ],
+      "lexical_terms": "đơn | vị | kiểm | toán | thực | hiện | kiểm | toán | báo | cáo | tài | chính | riêng | 2008 | long | hậu",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::110",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::45"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::110",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::45"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q15",
+      "question": "Báo cáo kiểm toán độc lập của Long Hậu năm 2008 được ký vào ngày nào?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::9"
+      ],
+      "lexical_terms": "báo | cáo | kiểm | toán | độc | lập | long | hậu | 2008 | ký | vào | ngày",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::18",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::18",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::3",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::18",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::18",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q16",
+      "question": "Tổng tài sản của Long Hậu tại ngày 31/12/2008 và đầu năm 2008 là bao nhiêu?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::14"
+      ],
+      "lexical_terms": "tổng | tài | sản | long | hậu | tại | ngày | 31 | 12 | 2008 | và | đầu | 2008",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q17",
+      "question": "Giá trị hàng tồn kho của Long Hậu tại cuối năm và đầu năm 2008 thay đổi như thế nào?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12"
+      ],
+      "lexical_terms": "giá | trị | hàng | tồn | kho | long | hậu | tại | cuối | và | đầu | 2008 | thay | đổi | như",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::129",
+            "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN::chunk::8"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::129",
+            "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN::chunk::8"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-aff39eb223154606ab0ed02e9f763fc0::chunk::3",
+            "UPLOAD-7acb31b3878646a0b9d93f0081252cd0::chunk::3",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::3",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::2",
+            "CD-POL-INV-001::chunk::1",
+            "CD-POL-INV-001::chunk::0"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.25,
+          "ndcg@10": 0.43067655807339306
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q18",
+      "question": "Doanh thu thuần của Long Hậu trong năm 2008 là bao nhiêu và tăng bao nhiêu so với năm trước?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20"
+      ],
+      "lexical_terms": "doanh | thu | thuần | long | hậu | trong | 2008 | và | tăng | so | trước",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::179",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::49",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::129"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::179",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::49",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::129"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "CD-POL-PROMO-001::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.25,
+          "ndcg@10": 0.43067655807339306
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::4"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q19",
+      "question": "Tổng lợi nhuận kế toán trước thuế năm 2008 của Long Hậu là bao nhiêu so với năm 2007?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "lexical_terms": "tổng | lợi | nhuận | kế | toán | trước | thuế | 2008 | long | hậu | so | 2007",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::179",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::179",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "CD-POL-PROMO-001::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.25,
+          "ndcg@10": 0.43067655807339306
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::44"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q20",
+      "question": "Theo thuyết minh báo cáo tài chính, Long Hậu xác định giá trị hàng tồn kho liên quan đến chi phí phát triển khu công nghiệp theo nguyên tắc nào?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28"
+      ],
+      "lexical_terms": "theo | thuyết | minh | báo | cáo | tài | chính | long | hậu | xác | định | giá | trị | hàng | tồn | kho | liên | quan | đến | chi | phí | phát | triển | khu | công | nghiệp | theo | nguyên | tắc",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+            "SHOPIFY-HELP-DEVELOPING-MARKETING-PLAN::chunk::18"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.6309297535714575
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "SHOPEE-UNI-CAMPAIGN-OPS-1112-VN::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+            "SHOPIFY-HELP-DEVELOPING-MARKETING-PLAN::chunk::18"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.6309297535714575
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "TIKI-FBT-INVENTORY-TRANSFER::chunk::3",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::2"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q21",
+      "question": "Long Hậu áp dụng phương pháp khấu hao nào và thời gian khấu hao ước tính cho các loại tài sản cố định là bao lâu?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29"
+      ],
+      "lexical_terms": "long | hậu | áp | dụng | phương | pháp | khấu | hao | và | thời | gian | khấu | hao | ước | tính | các | loại | tài | sản | cố | định | lâu",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::117"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.3333333333333333,
+          "ndcg@10": 0.5
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::117"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.3333333333333333,
+          "ndcg@10": 0.5
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "CD-POL-INV-001::chunk::0",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::9"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "TIKI-CATEGORY-DEAL-OPERATIONS::chunk::9",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::6"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::6"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "SHOPEE-VN-SHIPPING-POLICY-2026::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "TIKI-FBT-INVENTORY-REPORT::chunk::5"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q22",
+      "question": "Lợi nhuận thuộc cổ đông phổ thông và lãi cơ bản trên mỗi cổ phiếu của Long Hậu năm 2008 là bao nhiêu?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55"
+      ],
+      "lexical_terms": "lợi | nhuận | thuộc | cổ | đông | phổ | thông | và | lãi | cơ | bản | trên | mỗi | cổ | phiếu | long | hậu | 2008",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::24",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::179",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::124",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::24",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::179",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::124",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.6309297535714575
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::24",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.6309297535714575
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::24",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.2,
+          "ndcg@10": 0.38685280723454163
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::24",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.16666666666666666,
+          "ndcg@10": 0.3562071871080222
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::24",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::179"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.125,
+          "ndcg@10": 0.31546487678572877
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q23",
+      "question": "Báo cáo thường niên 2008 của PVFCCo và báo cáo tài chính riêng năm 2008 của Long Hậu thuộc hai doanh nghiệp nào?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+      ],
+      "lexical_terms": "báo | cáo | thường | niên | 2008 | pvfcco | và | báo | cáo | tài | chính | riêng | 2008 | long | hậu | thuộc | hai | doanh | nghiệp",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::45"
+          ],
+          "recall@10": 0.5,
+          "precision@10": 0.1,
+          "mrr": 0.2,
+          "ndcg@10": 0.23719771276929622
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::45"
+          ],
+          "recall@10": 0.5,
+          "precision@10": 0.1,
+          "mrr": 0.2,
+          "ndcg@10": 0.23719771276929622
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37"
+          ],
+          "recall@10": 0.5,
+          "precision@10": 0.1,
+          "mrr": 0.25,
+          "ndcg@10": 0.2640681225725909
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::18"
+          ],
+          "recall@10": 0.5,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 0.6131471927654584
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::18",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31"
+          ],
+          "recall@10": 0.5,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.38685280723454163
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::18",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61"
+          ],
+          "recall@10": 0.5,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.38685280723454163
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::18",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22"
+          ],
+          "recall@10": 0.5,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.38685280723454163
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    },
+    {
+      "id": "Q24",
+      "question": "So sánh lợi nhuận trước thuế năm 2008 của PVFCCo và Long Hậu, nêu rõ số liệu và đơn vị tiền tệ được sử dụng trong từng báo cáo.",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "lexical_terms": "so | sánh | lợi | nhuận | trước | thuế | 2008 | pvfcco | và | long | hậu | nêu | rõ | số | liệu | và | đơn | vị | tiền | tệ | sử | dụng | trong | từng | báo | cáo",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "CD-POL-INV-001::chunk::0",
+            "CD-POL-PROMO-001::chunk::0",
+            "UPLOAD-7acb31b3878646a0b9d93f0081252cd0::chunk::0",
+            "UPLOAD-aff39eb223154606ab0ed02e9f763fc0::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "CD-POL-PROMO-001::chunk::1"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_4_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": true
+    }
+  ],
+  "aggregates": {
+    "all": {
+      "legacy_dense": {
+        "recall@10": 0.4375,
+        "precision@10": 0.0458,
+        "mrr": 0.2174,
+        "ndcg@10": 0.2675
+      },
+      "dense": {
+        "recall@10": 0.4375,
+        "precision@10": 0.0458,
+        "mrr": 0.2174,
+        "ndcg@10": 0.2675
+      },
+      "bm25": {
+        "recall@10": 0.3542,
+        "precision@10": 0.0375,
+        "mrr": 0.2292,
+        "ndcg@10": 0.2578
+      },
+      "hybrid_1_2": {
+        "recall@10": 0.2292,
+        "precision@10": 0.025,
+        "mrr": 0.2014,
+        "ndcg@10": 0.1977
+      },
+      "hybrid_1_1": {
+        "recall@10": 0.2708,
+        "precision@10": 0.0292,
+        "mrr": 0.2028,
+        "ndcg@10": 0.2137
+      },
+      "hybrid_2_1": {
+        "recall@10": 0.3958,
+        "precision@10": 0.0417,
+        "mrr": 0.2323,
+        "ndcg@10": 0.2652
+      },
+      "hybrid_4_1": {
+        "recall@10": 0.3958,
+        "precision@10": 0.0417,
+        "mrr": 0.2431,
+        "ndcg@10": 0.2741
+      }
+    },
+    "pvfcco": {
+      "legacy_dense": {
+        "recall@10": 0.5833,
+        "precision@10": 0.0583,
+        "mrr": 0.2653,
+        "ndcg@10": 0.3376
+      },
+      "dense": {
+        "recall@10": 0.5833,
+        "precision@10": 0.0583,
+        "mrr": 0.2653,
+        "ndcg@10": 0.3376
+      },
+      "bm25": {
+        "recall@10": 0.0,
+        "precision@10": 0.0,
+        "mrr": 0.0,
+        "ndcg@10": 0.0
+      },
+      "hybrid_1_2": {
+        "recall@10": 0.0833,
+        "precision@10": 0.0083,
+        "mrr": 0.0278,
+        "ndcg@10": 0.0417
+      },
+      "hybrid_1_1": {
+        "recall@10": 0.1667,
+        "precision@10": 0.0167,
+        "mrr": 0.0972,
+        "ndcg@10": 0.113
+      },
+      "hybrid_2_1": {
+        "recall@10": 0.4167,
+        "precision@10": 0.0417,
+        "mrr": 0.1591,
+        "ndcg@10": 0.2185
+      },
+      "hybrid_4_1": {
+        "recall@10": 0.4167,
+        "precision@10": 0.0417,
+        "mrr": 0.184,
+        "ndcg@10": 0.2398
+      }
+    },
+    "long_hau": {
+      "legacy_dense": {
+        "recall@10": 0.3,
+        "precision@10": 0.03,
+        "mrr": 0.1833,
+        "ndcg@10": 0.2131
+      },
+      "dense": {
+        "recall@10": 0.3,
+        "precision@10": 0.03,
+        "mrr": 0.1833,
+        "ndcg@10": 0.2131
+      },
+      "bm25": {
+        "recall@10": 0.8,
+        "precision@10": 0.08,
+        "mrr": 0.525,
+        "ndcg@10": 0.5923
+      },
+      "hybrid_1_2": {
+        "recall@10": 0.4,
+        "precision@10": 0.04,
+        "mrr": 0.35,
+        "ndcg@10": 0.3631
+      },
+      "hybrid_1_1": {
+        "recall@10": 0.4,
+        "precision@10": 0.04,
+        "mrr": 0.32,
+        "ndcg@10": 0.3387
+      },
+      "hybrid_2_1": {
+        "recall@10": 0.4,
+        "precision@10": 0.04,
+        "mrr": 0.3167,
+        "ndcg@10": 0.3356
+      },
+      "hybrid_4_1": {
+        "recall@10": 0.4,
+        "precision@10": 0.04,
+        "mrr": 0.3125,
+        "ndcg@10": 0.3315
+      }
+    },
+    "cross_document": {
+      "legacy_dense": {
+        "recall@10": 0.25,
+        "precision@10": 0.05,
+        "mrr": 0.1,
+        "ndcg@10": 0.1186
+      },
+      "dense": {
+        "recall@10": 0.25,
+        "precision@10": 0.05,
+        "mrr": 0.1,
+        "ndcg@10": 0.1186
+      },
+      "bm25": {
+        "recall@10": 0.25,
+        "precision@10": 0.05,
+        "mrr": 0.125,
+        "ndcg@10": 0.132
+      },
+      "hybrid_1_2": {
+        "recall@10": 0.25,
+        "precision@10": 0.05,
+        "mrr": 0.5,
+        "ndcg@10": 0.3066
+      },
+      "hybrid_1_1": {
+        "recall@10": 0.25,
+        "precision@10": 0.05,
+        "mrr": 0.25,
+        "ndcg@10": 0.1934
+      },
+      "hybrid_2_1": {
+        "recall@10": 0.25,
+        "precision@10": 0.05,
+        "mrr": 0.25,
+        "ndcg@10": 0.1934
+      },
+      "hybrid_4_1": {
+        "recall@10": 0.25,
+        "precision@10": 0.05,
+        "mrr": 0.25,
+        "ndcg@10": 0.1934
+      }
+    }
+  },
+  "saved_ranking_matches": {
+    "legacy_saved_ranking_matches": 24,
+    "hybrid_saved_ranking_matches": 24
+  }
+}

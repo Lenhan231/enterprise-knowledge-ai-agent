@@ -34,6 +34,8 @@ dependencies = [
     "pypdf>=6.19.0",
     "asyncpg>=0.32.0",
     "sqlglot==30.21.0",
+    "ragas>=0.4.3",
+    "langchain-google-vertexai>=3.2.4",
 ]
 
 [project.scripts]
@@ -45,3 +47,6 @@ build-backend = "uv_build"
 
 [tool.uv]
 package = false
+
+[tool.uv.sources]
+ragas = { git = "https://github.com/GoldSharon/ragas.git", rev = "735726d" }

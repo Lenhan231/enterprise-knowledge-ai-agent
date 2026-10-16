@@ -9,7 +9,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import fitz
 
-from .text_processor import TextProcessor
+from core.chunking.text_chunker import ChunkingConfig
+from ..text.processor import TextProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,7 @@ class PaddleLayoutProcessor:
 
     def __init__(self, config: dict[str, Any]):
         self.config = config
+        self.chunking = ChunkingConfig.from_config(config)
 
     def process(
         self, source: Any, file_path: Optional[str], document: Dict[str, Any]
@@ -212,7 +214,7 @@ class PaddleLayoutProcessor:
                     sections = [block["text"]]
             block["section_path"] = sections.copy()
 
-        from .text_processor import TextProcessor
+        from ..text.processor import TextProcessor
 
         text_processor = TextProcessor(self.config)
         chunks = []
@@ -252,7 +254,7 @@ class PaddleLayoutProcessor:
                         "parser": "paddleocr.PP-StructureV3",
                         "layout_model": "PP-DocLayout-S",
                         "ocr_model": "PP-OCRv5_mobile",
-                        "chunking_method": self.config.get("chunking_strategy", "fixed"),
+                        "chunking_method": self.chunking.strategy,
                         **({
                             "contains_formula": True,
                             "formula_representation": "latex",

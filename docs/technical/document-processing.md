@@ -23,17 +23,17 @@ boundary rather than one cross-table transaction.
 - `processors/document_processor.py` is the upload dispatcher. It selects a
   format processor and attaches common source metadata; it does not parse file
   contents or persist results.
-- `processors/office_processor.py` parses DOCX/PPTX/XLSX Open XML and enforces
+- `processors/office/processor.py` parses DOCX/PPTX/XLSX Open XML and enforces
   archive expansion limits. These formats share ZIP/XML handling, so one module
   owns their common boundary.
-- `processors/text_processor.py` decodes UTF-8 TXT/Markdown and provides the
+- `processors/text/processor.py` decodes UTF-8 TXT/Markdown and provides the
   shared chunking implementation.
-- `processors/image_processor.py` handles standalone-image OCR, OCR-derived
+- `processors/image/processor.py` handles standalone-image OCR, OCR-derived
   tables, and optional vision captions.
-- `processors/pdf_processor.py` orchestrates native text extraction, OCR,
+- `processors/pdf/processor.py` orchestrates native text extraction, OCR,
   chunking and optional image captions. Its focused helpers are
-  `processors/pdf_layout_processor.py` for Paddle layout analysis and
-  `processors/pdf_table_extractor.py` for native/OCR table reconstruction.
+  `processors/pdf/layout_processor.py` for Paddle layout analysis and
+  `processors/pdf/table_extractor.py` for native/OCR table reconstruction.
   Compatibility methods remain on `PDFProcessor` for existing callers.
 - `ingest_documents.py` adapts seed PDFs and HTML into token-bounded chunks.
   Seed PDFs reuse `PDFProcessor`; public HTML uses the local HTML text
@@ -290,7 +290,7 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
 
 - Seed parsing: `src/core/document_processing/ingest_documents.py`.
 - Upload parsing: `src/core/document_processing/processors/document_processor.py`.
-- PDF/OCR/layout: `src/core/document_processing/processors/pdf_processor.py`.
+- PDF/OCR/layout: `src/core/document_processing/processors/pdf/processor.py`.
 - Table persistence: `src/core/database/structured_store.py`.
 - OCR smoke benchmark runner: `scripts/processing/evaluate_ocr.py`; common page list:
   `data/evaluation/ocr_pages.json`; rendered inputs and run reports live under

@@ -417,7 +417,7 @@ class MetricCandidateTest(unittest.TestCase):
     def test_vinamilk_2021_total_revenue_uses_the_2021_table_column(self):
         import fitz
 
-        from core.document_processing.processors.pdf_processor import PDFProcessor
+        from core.document_processing.processors.pdf.processor import PDFProcessor
 
         report = Path(__file__).resolve().parents[1] / "data/raw/vietnam_enterprises/vnm/vnm-ar-2021-vi.pdf"
         if not report.is_file():
@@ -446,7 +446,7 @@ class MetricCandidateTest(unittest.TestCase):
     def test_real_consolidated_income_statements_select_the_report_year_column(self):
         import fitz
 
-        from core.document_processing.processors.pdf_processor import PDFProcessor
+        from core.document_processing.processors.pdf.processor import PDFProcessor
 
         root = Path(__file__).resolve().parents[1] / "data/raw/vietnam_enterprises/vnm"
         fixtures = (

@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from core.utils.token_counter import TokenCounter
+from core.tokenization.token_counter import TokenCounter
 
 
 class _CharacterTokenizer:

@@ -17,12 +17,12 @@ import psycopg  # noqa: E402
 from dotenv import load_dotenv  # noqa: E402
 from psycopg.rows import dict_row  # noqa: E402
 
-from core.document_processing.processors.pdf_processor import PDFProcessor  # noqa: E402
+from core.document_processing.processors.pdf.processor import PDFProcessor  # noqa: E402
 from core.embeddings.embedding_service import (  # noqa: E402
     DEFAULT_EMBEDDING_MODEL,
     EMBEDDING_MAX_SEQUENCE_LENGTH,
 )
-from core.utils.token_counter import TokenCounter  # noqa: E402
+from core.tokenization.token_counter import TokenCounter  # noqa: E402
 
 
 def build_parsed_rows(item: dict, source: Path, counter: TokenCounter) -> list[dict]:

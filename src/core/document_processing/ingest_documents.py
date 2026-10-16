@@ -1,13 +1,14 @@
 # src/core/document_processing/ingest_documents.py
 
-from core.chunking.semantic_chunker import SemanticDocumentChunker
-from core.document_processing.processors.pdf_processor import PDFProcessor
+from core.chunking.strategies.semantic import SemanticDocumentChunker
+from core.document_processing.processors.pdf.processor import PDFProcessor
+from core.chunking.text_chunker import split_text
 from core.embeddings import EmbeddingService
 from core.embeddings.embedding_service import EMBEDDING_MAX_SEQUENCE_LENGTH
 from core.models.document import ChunkMetadata
 from uuid import uuid4
 from dataclasses import asdict
-from core.utils.token_counter import TokenCounter
+from core.tokenization.token_counter import TokenCounter
 
 from pathlib import Path
 from html.parser import HTMLParser
@@ -27,29 +28,79 @@ class _HTMLTextExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.parts: list[str] = []
+        self._sections: list[tuple[str | None, list[str]]] = [(None, [])]
+        self._heading_tag: str | None = None
+        self._heading_parts: list[str] = []
         self.ignored_depth = 0
+        self.anchor_menu_depth = 0
+
+    def _append(self, text: str) -> None:
+        self.parts.append(text)
+        self._sections[-1][1].append(text)
 
     def handle_starttag(self, tag: str, attrs) -> None:
+        attributes = dict(attrs)
+        if self.anchor_menu_depth:
+            if tag == "div":
+                self.anchor_menu_depth += 1
+            return
+        if tag == "div" and attributes.get("id") == "anchor-menu":
+            self.anchor_menu_depth = 1
+            return
         if tag in self._ignored:
             self.ignored_depth += 1
-        elif not self.ignored_depth and tag in self._breaks:
+        elif not self.ignored_depth and tag in {"h1", "h2", "h3", "h4", "h5", "h6"}:
             self.parts.append("\n")
+            self._heading_tag = tag
+            self._heading_parts = []
+        elif not self.ignored_depth and tag in self._breaks:
+            self._append("\n")
 
     def handle_endtag(self, tag: str) -> None:
+        if self.anchor_menu_depth:
+            if tag == "div":
+                self.anchor_menu_depth -= 1
+            return
         if tag in self._ignored and self.ignored_depth:
             self.ignored_depth -= 1
+        elif not self.ignored_depth and tag == self._heading_tag:
+            heading = " ".join(" ".join(self._heading_parts).split())
+            if heading:
+                self.parts.append(f"{heading}\n")
+                self._sections.append((heading, []))
+            self._heading_tag = None
+            self._heading_parts = []
         elif not self.ignored_depth and tag in self._breaks:
-            self.parts.append("\n")
+            self._append("\n")
 
     def handle_data(self, data: str) -> None:
-        if not self.ignored_depth and data.strip():
-            self.parts.append(f" {data.strip()} ")
+        if not self.ignored_depth and not self.anchor_menu_depth and data.strip() and data.strip().casefold() not in {
+            "skip to content", "skip to navigate",
+        }:
+            if self._heading_tag:
+                self._heading_parts.append(data.strip())
+            else:
+                self._append(f" {data.strip()} ")
 
-    def text(self) -> str:
-        text = "".join(self.parts)
+    def blocks(self) -> list[dict]:
+        blocks = []
+        for heading, parts in self._sections:
+            body = self._normalize("".join(parts))
+            if heading and not body:
+                continue
+            text = "\n".join(value for value in (heading, body) if value)
+            if text:
+                blocks.append({"heading": heading, "text": text})
+        return blocks
+
+    @staticmethod
+    def _normalize(text: str) -> str:
         text = re.sub(r"[ \t\xa0]+", " ", text)
         text = re.sub(r" *\n *", "\n", text)
         return re.sub(r"\n{3,}", "\n\n", text).strip()
+
+    def text(self) -> str:
+        return self._normalize("".join(self.parts))
 
 class Ingestion:
     def __init__(
@@ -57,14 +108,24 @@ class Ingestion:
         embedding_service: EmbeddingService | None = None,
         chunking_strategy: str = "sentence",
         extract_tables: bool = True,
+        chunk_size_chars: int = 1200,
+        chunk_overlap_chars: int = 150,
     ):
         self.embedding_service = embedding_service or EmbeddingService()
         self.token_counter = TokenCounter(self.embedding_service.model_name)
-        self.splitter = SemanticDocumentChunker(self.embedding_service)
         if chunking_strategy not in {"fixed", "sentence", "semantic"}:
-            raise ValueError("chunking_strategy must be 'fixed' or 'sentence'")
+            raise ValueError(
+                "chunking_strategy must be 'fixed', 'sentence', or 'semantic'"
+            )
         self.chunking_strategy = chunking_strategy
+        self.splitter = (
+            SemanticDocumentChunker(self.embedding_service)
+            if chunking_strategy == "semantic"
+            else None
+        )
         self.extract_tables = extract_tables
+        self.chunk_size_chars = chunk_size_chars
+        self.chunk_overlap_chars = chunk_overlap_chars
 
         
     def ingestion(
@@ -97,8 +158,8 @@ class Ingestion:
                 "ocr_language": "vie+eng",
                 "extract_tables": self.extract_tables,
                 "chunking_strategy": self.chunking_strategy,
-                "chunk_size": 1200,
-                "chunk_overlap": 150,
+                "chunk_size": self.chunk_size_chars,
+                "chunk_overlap": self.chunk_overlap_chars,
             }).process({
                 "metadata": {"filepath": str(input_path)},
                 "content": input_path.read_bytes(),
@@ -117,13 +178,13 @@ class Ingestion:
         elif file_type in {".html", ".htm"}:
             parser = _HTMLTextExtractor()
             parser.feed(input_path.read_text(encoding="utf-8", errors="replace"))
-            markdown_content = [{
-                "metadata": {"page_number": None},
-                "text": parser.text(),
-            }]
+            markdown_content = [
+                {"metadata": {"page_number": None, "section_title": block["heading"]}, "text": block["text"]}
+                for block in parser.blocks()
+            ]
             Path(output_dir).mkdir(parents=True, exist_ok=True)
             (Path(output_dir) / f"{input_path.stem}.md").write_text(
-                markdown_content[0]["text"], encoding="utf-8"
+                parser.text(), encoding="utf-8"
             )
         else:
             raise NotImplementedError(f"Unsupported document type: {file_type}")
@@ -136,14 +197,29 @@ class Ingestion:
             page_number = page_metadata.get("page_number")
             page_text = page["text"]
 
-            # PDFProcessor has already page-aware chunked PDFs; splitting each
-            # chunk again with SemanticChunker embeds every sentence repeatedly.
-            # Keep its bounded chunks and provenance, then embed them in one batch.
-            page_chunks = (
-                [Document(page_content=page_text, metadata={})]
-                if file_type == ".pdf"
-                else self.splitter.chunk_text(page_text)
-            )
+            # PDFProcessor has already page-aware chunked PDFs. HTML follows the
+            # configured strategy so sentence/fixed chunking does not embed text
+            # once for boundaries and again for the final stored vectors.
+            if file_type == ".pdf":
+                if self.chunking_strategy == "semantic":
+                    raise ValueError(
+                        "Semantic chunking is currently supported for HTML seed documents only"
+                    )
+                page_chunks = [Document(page_content=page_text, metadata={})]
+            elif self.chunking_strategy == "semantic":
+                assert self.splitter is not None
+                page_chunks = self.splitter.chunk_text(page_text)
+            else:
+                chunking_text = re.sub(r"\n{2,}", "\n", page_text)
+                page_chunks = [
+                    Document(page_content=text, metadata={})
+                    for text in split_text(
+                        chunking_text,
+                        size=self.chunk_size_chars,
+                        overlap=self.chunk_overlap_chars,
+                        strategy=self.chunking_strategy,
+                    )
+                ]
             for chunk in page_chunks:
                 bounded_texts = self.token_counter.split_text(
                     chunk.page_content,
@@ -159,7 +235,7 @@ class Ingestion:
                         document_type=file_type.lstrip("."),
                         page_number=page_number,
                         chunk_index=chunk_index,
-                        section_title=None,
+                        section_title=page_metadata.get("section_title"),
                         parent_id=None,
                         token_count=0,
                         document_id=document_id,

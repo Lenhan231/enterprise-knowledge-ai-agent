@@ -16,7 +16,7 @@ strategy is considered optimal until retrieval and answer quality are compared.
 | Uploaded PDF | Page-aware sentence-aware chunks: 1,100 character ceiling; 0 normal overlap | `DocumentProcessor.process` |
 | Uploaded TXT/MD, OCR images, Office text | Paragraph/sentence-aware where source text preserves paragraph breaks; 1,100 character ceiling; 0 normal overlap | `DocumentProcessor._split` |
 | Fixed baseline | Word-boundary fixed windows: 1,100/120 upload, 1,200/150 seed | `DOCUMENT_CHUNKING_STRATEGY=fixed` or seed CLI flag |
-| HTML seed reports | LangChain percentile embedding-semantic boundaries | `SemanticDocumentChunker` in `core/chunking/semantic_chunker.py` |
+| HTML seed reports | LangChain percentile embedding-semantic boundaries | `SemanticDocumentChunker` in `core/chunking/strategies/semantic.py` |
 
 Before embedding, the seed and upload paths now apply the configured tokenizer
 limit: `EMBEDDING_MAX_SEQUENCE_LENGTH=512` total tokens (including model

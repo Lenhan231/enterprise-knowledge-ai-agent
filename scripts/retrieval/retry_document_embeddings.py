@@ -28,7 +28,7 @@ def main() -> int:
             raise ValueError(f"No persisted parsed chunks found for {args.document_id}")
         parsed.set_status(args.document_id, "embedding")
         embedder = EmbeddingService()
-        from core.utils.token_counter import TokenCounter
+        from core.tokenization.token_counter import TokenCounter
 
         counter = TokenCounter(embedder.model_name)
         chunks = []

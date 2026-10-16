@@ -448,7 +448,7 @@ async def upload_document(
             parsed_repository.close()
 
         embedding_service = EmbeddingService()
-        from core.utils.token_counter import TokenCounter
+        from core.tokenization.token_counter import TokenCounter
 
         token_counter = TokenCounter(embedding_service.model_name)
         bounded_chunks = []

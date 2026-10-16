@@ -134,5 +134,5 @@ count. The 11-report corpus has been re-ingested with this guard; a read-only
 database check found no stored report chunk above the configured sequence limit.
 
 Useful source: `src/core/embeddings/embedding_service.py`,
-`src/core/utils/token_counter.py`, `.env.example`, and
+`src/core/tokenization/token_counter.py`, `.env.example`, and
 `supabase/migrations/20260922000000_initial_knowledge_schema.sql`.

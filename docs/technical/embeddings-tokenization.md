@@ -31,7 +31,7 @@ offline evaluators and must use the same source snapshot and query labels.
 ## Code and checks
 
 - Implementation: `src/core/embeddings/embedding_service.py`
-- Tokenizer boundary: `src/core/utils/token_counter.py`
+- Tokenizer boundary: `src/core/tokenization/token_counter.py`
 - Retrieval evaluation: `tools/retrieval/evaluate_embeddings.py`
 - Configuration example: `.env.example`
 

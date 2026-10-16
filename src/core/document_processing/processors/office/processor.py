@@ -8,7 +8,7 @@ import zipfile
 from typing import Any
 from xml.etree import ElementTree
 
-from .text_processor import split_document_text as _split
+from core.chunking.text_chunker import ChunkingConfig, split_document_text as _split
 
 _W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 _M = "{http://schemas.openxmlformats.org/officeDocument/2006/math}"
@@ -47,9 +47,7 @@ class OfficeProcessor:
 
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
-        self.chunking_strategy = self.config.get("chunking_strategy", "sentence")
-        self.chunk_size = int(self.config.get("chunk_size", 1100))
-        self.chunk_overlap = int(self.config.get("chunk_overlap", 120))
+        self.chunking = ChunkingConfig.from_config(self.config)
 
     def process(self, suffix: str, content: bytes, metadata: dict[str, Any]) -> dict[str, list[dict]]:
         try:
@@ -93,7 +91,7 @@ class OfficeProcessor:
                     paragraph_metadata["formula_text"] = "".join(
                         node.text or "" for node in math_nodes[0].iter(f"{_M}t")
                     )
-                chunks.extend(_split(text, paragraph_metadata, self.chunk_size, self.chunk_overlap, self.chunking_strategy))
+                chunks.extend(_split(text, paragraph_metadata, self.chunking.size, self.chunking.overlap, self.chunking.strategy))
             elif element.tag == f"{_W}tbl":
                 rows = [
                     ["".join(node.text or "" for node in cell.iter(f"{_W}t"))
@@ -129,7 +127,7 @@ class OfficeProcessor:
                     "section_title": current_section_title,
                     "layout_type": "table",
                     "table_index": table_index,
-                }, self.chunk_size, self.chunk_overlap, self.chunking_strategy))
+                }, self.chunking.size, self.chunking.overlap, self.chunking.strategy))
         return {"chunks": chunks, "tables": tables}
 
     def _pptx(self, archive: zipfile.ZipFile, metadata: dict) -> dict:
@@ -151,7 +149,7 @@ class OfficeProcessor:
                 **metadata,
                 "page_number": page_number,
                 "section_title": slide_title,
-            }, self.chunk_size, self.chunk_overlap, self.chunking_strategy))
+            }, self.chunking.size, self.chunking.overlap, self.chunking.strategy))
             for table_index, table in enumerate(root.iter(f"{_A}tbl")):
                 rows = [
                     ["".join(node.text or "" for node in cell.iter(f"{_A}t")) for cell in row.findall(f"{_A}tc")]
@@ -250,6 +248,6 @@ class OfficeProcessor:
                     "section_title": sheet.attrib["name"],
                     "page_number": sheet_index,
                 },
-                self.chunk_size, self.chunk_overlap, self.chunking_strategy,
+                self.chunking.size, self.chunking.overlap, self.chunking.strategy,
             ))
         return {"chunks": chunks, "tables": tables}

@@ -1,4 +1,4 @@
-# src/core/chunking/semantic_chunker.py
+"""Embedding-based semantic chunking strategy for seed ingestion."""
 
 from pathlib import Path
 

@@ -8,8 +8,8 @@ from typing import Any
 
 import fitz
 
-from .pdf_processor import PDFProcessor
-from .text_processor import split_document_text as _split
+from ..pdf.processor import PDFProcessor
+from core.chunking.text_chunker import ChunkingConfig, split_document_text as _split
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +19,7 @@ class ImageProcessor:
 
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
-        self.chunk_size = int(self.config.get("chunk_size", 1100))
-        self.chunk_overlap = int(self.config.get("chunk_overlap", 120))
-        self.chunking_strategy = self.config.get("chunking_strategy", "sentence")
+        self.chunking = ChunkingConfig.from_config(self.config)
         self.vision_captioning = bool(self.config.get("vision_captioning", False))
 
     def process(self, suffix: str, content: bytes, metadata: dict[str, Any]) -> dict[str, list[dict]]:
@@ -45,7 +43,7 @@ class ImageProcessor:
                 )
             finally:
                 image.close()
-        chunks = _split(text, {**metadata, "text_extraction_method": "tesseract"}, self.chunk_size, self.chunk_overlap, self.chunking_strategy)
+        chunks = _split(text, {**metadata, "text_extraction_method": "tesseract"}, self.chunking.size, self.chunking.overlap, self.chunking.strategy)
         if self.vision_captioning:
             try:
                 image_bytes, mime_type = self._caption_image_input(content, suffix)
@@ -64,7 +62,7 @@ class ImageProcessor:
                     "layout_type": "figure_caption",
                     "caption_model": model_name,
                     "is_model_generated": True,
-                }, self.chunk_size, self.chunk_overlap, self.chunking_strategy))
+                }, self.chunking.size, self.chunking.overlap, self.chunking.strategy))
             except Exception as error:
                 logger.warning(
                     "Vision caption failed for uploaded image %s (%s)",

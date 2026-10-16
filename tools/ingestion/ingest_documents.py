@@ -1,14 +1,14 @@
-# src/core/document_processing/ingest_documents.py
+# tools/ingestion/ingest_documents.py
 
-from core.chunking.semantic_chunker import SemanticDocumentChunker
-from core.document_processing.processors.pdf_processor import PDFProcessor
-from core.document_processing.processors.text_processor import split_text
+from core.chunking.strategies.semantic import SemanticDocumentChunker
+from core.document_processing.processors.pdf.processor import PDFProcessor
+from core.chunking.text_chunker import split_text
 from core.embeddings import EmbeddingService
 from core.embeddings.embedding_service import EMBEDDING_MAX_SEQUENCE_LENGTH
 from core.models.document import ChunkMetadata
 from uuid import uuid4
 from dataclasses import asdict
-from core.utils.token_counter import TokenCounter
+from core.tokenization.token_counter import TokenCounter
 
 from pathlib import Path
 from html.parser import HTMLParser
@@ -113,10 +113,16 @@ class Ingestion:
     ):
         self.embedding_service = embedding_service or EmbeddingService()
         self.token_counter = TokenCounter(self.embedding_service.model_name)
-        self.splitter = SemanticDocumentChunker(self.embedding_service)
         if chunking_strategy not in {"fixed", "sentence", "semantic"}:
-            raise ValueError("chunking_strategy must be 'fixed' or 'sentence'")
+            raise ValueError(
+                "chunking_strategy must be 'fixed', 'sentence', or 'semantic'"
+            )
         self.chunking_strategy = chunking_strategy
+        self.splitter = (
+            SemanticDocumentChunker(self.embedding_service)
+            if chunking_strategy == "semantic"
+            else None
+        )
         self.extract_tables = extract_tables
         self.chunk_size_chars = chunk_size_chars
         self.chunk_overlap_chars = chunk_overlap_chars
@@ -195,8 +201,13 @@ class Ingestion:
             # configured strategy so sentence/fixed chunking does not embed text
             # once for boundaries and again for the final stored vectors.
             if file_type == ".pdf":
+                if self.chunking_strategy == "semantic":
+                    raise ValueError(
+                        "Semantic chunking is currently supported for HTML seed documents only"
+                    )
                 page_chunks = [Document(page_content=page_text, metadata={})]
             elif self.chunking_strategy == "semantic":
+                assert self.splitter is not None
                 page_chunks = self.splitter.chunk_text(page_text)
             else:
                 chunking_text = re.sub(r"\n{2,}", "\n", page_text)

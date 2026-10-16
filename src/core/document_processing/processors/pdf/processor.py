@@ -12,16 +12,47 @@ import subprocess
 import csv
 import unicodedata
 from io import BytesIO
+from pathlib import Path
 from difflib import SequenceMatcher
 from collections import Counter, defaultdict
 from typing import Dict, List, Optional, Any, Tuple
 import numpy as np
 import fitz  # PyMuPDF
-from .pdf_layout_processor import PaddleLayoutProcessor, _HEADING_PATTERNS
-from .pdf_table_extractor import PDFTableExtractor
-from .text_processor import split_ranges
+from .layout_processor import PaddleLayoutProcessor, _HEADING_PATTERNS
+from .table_extractor import PDFTableExtractor
+from core.chunking.text_chunker import ChunkingConfig, split_ranges
 
 logger = logging.getLogger(__name__)
+
+_TESSERACT_BOOLEAN_OPTIONS = (
+    "preserve_interword_spaces",
+    "load_system_dawg",
+    "load_freq_dawg",
+    "tessedit_do_invert",
+    "textord_tablefind_recognize_tables",
+    "textord_tabfind_find_tables",
+    "lstm_use_matrix",
+)
+_TESSERACT_NUMERIC_OPTIONS = {
+    "thresholding_method": {0, 1, 2},
+    "lstm_rating_coefficient": {3, 5, 7},
+}
+
+
+def _tesseract_config_args(config: Dict[str, Any]) -> List[str]:
+    """Build Tesseract -c arguments from the small OCR Lab allowlist."""
+    settings = config.get("tesseract_config", {})
+    args = []
+    for name in _TESSERACT_BOOLEAN_OPTIONS:
+        if name in settings:
+            args.extend(["-c", f"{name}={int(bool(settings[name]))}"])
+    for name, allowed_values in _TESSERACT_NUMERIC_OPTIONS.items():
+        if name in settings:
+            value = int(settings[name])
+            if value not in allowed_values:
+                raise ValueError(f"Unsupported Tesseract setting: {name}={value}")
+            args.extend(["-c", f"{name}={value}"])
+    return args
 
 
 class PDFProcessor:
@@ -36,26 +67,45 @@ class PDFProcessor:
         Args:
             config: Configuration dictionary with processing options
         """
-        self.config = config or {
-            "extract_images": False,
-            "ocr_fallback": False,
-            "preserve_layout": True,
-            "extract_tables": True,
-        }
+        self.config = dict(config or {})
+        self.chunking = ChunkingConfig.from_config(self.config)
+        self.config.setdefault("extract_images", False)
+        self.config.setdefault("ocr_fallback", True)
+        self.config.setdefault("preserve_layout", True)
         self.config.setdefault("extract_tables", True)
-        self.config.setdefault("paddle_layout", True)
         self.config.setdefault("paddle_chart_recognition", False)
         self.config.setdefault("paddle_formula_recognition", False)
+        self.config["paddle_layout"] = bool(
+            self.config.get("paddle_layout", False)
+            or self.config.get("parser_engine") == "pp-structurev3"
+            or self.config["paddle_formula_recognition"]
+        )
         self.config.setdefault("tesseract_psm", 11)
         self.config.setdefault("tesseract_table_psm", 3)
         self.config.setdefault("ocr_language", "vie+eng")
+        self.config.setdefault("tessdata_variant", "system")
+        if self.config["tessdata_variant"] not in {"system", "fast", "best"}:
+            raise ValueError("tessdata_variant must be system, fast, or best")
+        self.tesseract_data_dir = None
+        if self.config["tessdata_variant"] != "system":
+            env_name = f"TESSDATA_{self.config['tessdata_variant'].upper()}_DIR"
+            configured_dir = os.getenv(env_name)
+            if not configured_dir or not Path(configured_dir).is_dir():
+                raise ValueError(f"Set {env_name} to the selected traineddata directory")
+            missing_languages = [
+                language for language in self.config["ocr_language"].split("+")
+                if not (Path(configured_dir) / f"{language}.traineddata").is_file()
+            ]
+            if missing_languages:
+                raise ValueError(f"{env_name} is missing traineddata for: {', '.join(missing_languages)}")
+            self.tesseract_data_dir = Path(configured_dir)
         self.config.setdefault("ocr_orientation_detection", True)
         self.config.setdefault("ocr_deskew", True)
         self.config.setdefault("ocr_render_scale", float(os.getenv("DOCUMENT_OCR_RENDER_SCALE", "1.5")))
         self.config.setdefault("ocr_table_render_scale", float(os.getenv("DOCUMENT_OCR_TABLE_RENDER_SCALE", "2.5")))
         for setting in ("ocr_render_scale", "ocr_table_render_scale"):
-            if float(self.config[setting]) not in {1.5, 2.5, 3.5}:
-                raise ValueError(f"{setting} must be one of 1.5, 2.5, or 3.5")
+            if not any(math.isclose(float(self.config[setting]), allowed, abs_tol=1e-9) for allowed in (1.5, 167 / 72, 2.5, 3.5)):
+                raise ValueError(f"{setting} must be one of 1.5, 167 DPI, 2.5, or 3.5")
         self.config.setdefault("vision_captioning", False)
         self.config.setdefault("vision_caption_max_images", 3)
         self.config.setdefault("table_chunk_replacement_threshold", 0.8)
@@ -75,6 +125,12 @@ class PDFProcessor:
                 logger.warning("tesseract executable not found, OCR fallback disabled")
         else:
             self.ocr_available = False
+
+    def _tesseract_cli_config_args(self) -> List[str]:
+        args = []
+        if self.tesseract_data_dir is not None:
+            args.extend(["--tessdata-dir", str(self.tesseract_data_dir)])
+        return [*args, *_tesseract_config_args(self.config)]
 
     def process(self, document: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -101,7 +157,7 @@ class PDFProcessor:
                 "PDF document must have a valid filepath or binary content"
             )
 
-        if self.config.get("paddle_layout", True):
+        if self.config.get("paddle_layout", True) and self.config.get("parser_engine") != "mineru":
             try:
                 result = self._process_with_paddle(pdf_source, file_path, document)
                 return self._caption_pdf_images(result, pdf_source, document)
@@ -109,6 +165,12 @@ class PDFProcessor:
                 logger.warning("PaddleOCR is unavailable; using the existing PDF/OCR path")
             except Exception:
                 logger.exception("Paddle layout processing failed; using the existing PDF/OCR path")
+
+        if self.config.get("parser_engine") == "mineru":
+            from .mineru_processor import MineruProcessor
+
+            result = MineruProcessor(self.config).process(pdf_source, file_path, document)
+            return self._caption_pdf_images(result, pdf_source, document)
 
         pdf_text, pdf_metadata, tables, ocr_pages, page_headings, ocr_rotations, ocr_deskews = self._extract_pdf(
             pdf_source, file_path=file_path
@@ -144,15 +206,12 @@ class PDFProcessor:
                     heading_positions.append((position, heading))
                     search_from = position + len(heading)
             heading_index = 0
-            chunk_size = int(self.config.get("chunk_size", 800))
-            overlap = int(self.config.get("chunk_overlap", 120))
-            chunking_strategy = self.config.get("chunking_strategy", "sentence")
             diagnostics_attached = False
             for start, end in split_ranges(
                 page_text,
-                size=chunk_size,
-                overlap=overlap,
-                strategy=chunking_strategy,
+                size=self.chunking.size,
+                overlap=self.chunking.overlap,
+                strategy=self.chunking.strategy,
             ):
                 text = page_text[start:end].strip()
                 if text:
@@ -168,9 +227,9 @@ class PDFProcessor:
                             **metadata,
                             "chunk_index": len(chunks),
                             "page_number": page_number,
-                            "chunk_strategy": "sentence" if chunking_strategy == "semantic" else chunking_strategy,
-                            "chunk_size_chars": chunk_size,
-                            "chunk_overlap_chars": overlap if chunking_strategy == "fixed" else 0,
+                            "chunk_strategy": self.chunking.strategy,
+                            "chunk_size_chars": self.chunking.size,
+                            "chunk_overlap_chars": self.chunking.overlap if self.chunking.strategy == "fixed" else 0,
                             "text_extraction_method": ocr_pages.get(
                                 page_number, "pymupdf.get_text"
                             ),
@@ -236,7 +295,7 @@ class PDFProcessor:
             table_context = table.get("context") or {}
             table_title = str(table_context.get("table_title") or "").strip()
             fragments = self._structured_table_fragments(
-                table, int(self.config.get("chunk_size", 800)), table_title=table_title,
+                table, self.chunking.size, table_title=table_title,
             )
             for fragment_index, fragment in enumerate(fragments):
                 best = None
@@ -1314,7 +1373,7 @@ class PDFProcessor:
                     matrix=fitz.Matrix(render_scale, render_scale), alpha=False,
                 )
             return subprocess.run(
-                ["tesseract", "stdin", "stdout", "-l", self.config.get("ocr_language", "vie+eng"), "--psm", str(self.config["tesseract_psm"])],
+                ["tesseract", "stdin", "stdout", "-l", self.config.get("ocr_language", "vie+eng"), "--psm", str(self.config["tesseract_psm"]), *self._tesseract_cli_config_args()],
                 input=pixmap.tobytes("png"), capture_output=True, check=True, timeout=timeout,
             ).stdout.decode("utf-8", errors="replace").strip()
         except (OSError, subprocess.SubprocessError) as e:
@@ -1334,7 +1393,7 @@ class PDFProcessor:
             )
         try:
             output = subprocess.run(
-                ["tesseract", "stdin", "stdout", "-l", self.config.get("ocr_language", "vie+eng"), "--psm", str(self.config["tesseract_table_psm"]), "tsv"],
+                ["tesseract", "stdin", "stdout", "-l", self.config.get("ocr_language", "vie+eng"), "--psm", str(self.config["tesseract_table_psm"]), *self._tesseract_cli_config_args(), "tsv"],
                 input=pixmap.tobytes("png"), capture_output=True,
                 check=True, timeout=90,
             ).stdout.decode("utf-8", errors="replace")

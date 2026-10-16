@@ -2,6 +2,10 @@
 
 This guide describes the supported upload and seed-ingestion paths. OCR fixture
 definitions and measured results live in [the OCR evaluation guide](../../data/evaluation/ocr/README.md).
+For package ownership and the parser flow beside the implementation, see
+[`src/core/document_processing/README.md`](../../src/core/document_processing/README.md).
+For the shared chunk metadata contract and parser-specific fields, see
+[`src/core/document_processing/metadata.md`](../../src/core/document_processing/metadata.md).
 
 ## Data flow
 
@@ -14,7 +18,7 @@ user upload ───┘                          │
                                                                └─> retrieval
 ```
 
-- Seed ingestion is orchestrated by `src/core/document_processing/ingest_documents.py`.
+- Seed ingestion is orchestrated by `tools/ingestion/ingest_documents.py`.
 - Authenticated uploads enter through `/api/documents/upload` in `src/app/main.py`.
 - `DocumentProcessor` dispatches by extension. Format processors parse content;
   database repositories persist output and state.
@@ -33,14 +37,17 @@ provide RAG context; see the [data flow](../README.md) and
 ## Module ownership
 
 - `processors/document_processor.py`: upload format dispatch and shared metadata.
-- `processors/pdf_processor.py`: native PDF text, Tesseract fallback, PDF tables,
-  page metadata, and optional layout/formula adapters.
-- `processors/pdf_layout_processor.py`: optional PaddleOCR layout processing.
-- `processors/pdf_table_extractor.py`: native and OCR word-box table reconstruction.
-- `processors/office_processor.py`: DOCX, PPTX, and XLSX Open XML parsing.
-- `processors/text_processor.py`: TXT/Markdown decoding and common text chunking.
-- `processors/image_processor.py`: standalone image OCR and table extraction.
-- `src/core/chunking/`: shared chunk boundaries and token-aware splitting.
+- `processors/pdf/processor.py`: native PDF text, Tesseract fallback, PDF tables,
+  page metadata, and dispatch to optional layout/parser adapters.
+- `processors/pdf/mineru_processor.py`: MinerU Basic Hugging Face Space adapter used
+  when a caller explicitly selects `parser_engine="mineru"`.
+- `processors/pdf/layout_processor.py`: optional PaddleOCR layout processing.
+- `processors/pdf/table_extractor.py`: native and OCR word-box table reconstruction.
+- `processors/image/processor.py`: standalone image OCR and table extraction.
+- `processors/office/processor.py`: DOCX, PPTX, and XLSX Open XML parsing.
+- `processors/text/processor.py`: TXT/Markdown decoding and dispatch.
+- `src/core/chunking/text_chunker.py`: shared character-based chunk boundaries.
+- `src/core/tokenization/token_counter.py`: embedding-token-aware splitting.
 - `src/core/database/structured_store.py`: structured table persistence.
 
 Keep processor output model-neutral. Token counts and vectors belong to the
@@ -111,11 +118,63 @@ Lab shows Tesseract's mean word confidence for OCR-derived tables as a parser
 diagnostic; it is not a probability or a measure of table accuracy.
 
 PDF upload defaults are text PSM 11 at scale 1.5 and table PSM 3 at scale 2.5.
-The OCR Lab exposes supported Tesseract PSM/scale options per test run; it uses
+The OCR Lab defaults to the large-corpus candidate (PSM 3, 180 DPI) and exposes
+PSM, 167/180 DPI, thresholding, dictionary, inversion, table-recognition,
+LSTM-decoding, and traineddata choices per isolated run. The app passes a
+validated allowlist of Tesseract `-c` parameters to both text and TSV calls;
+upload callers without these settings keep Tesseract's installed defaults.
+Selecting `tessdata_fast` or `tessdata_best` requires `TESSDATA_FAST_DIR` or
+`TESSDATA_BEST_DIR` pointing to the corresponding traineddata directory.
+The OCR Lab uses
 isolated `ocr_test_*` tables and does not create a corpus document, Storage
 object, or embeddings. The Tester role is separate from document ACL roles.
+The Lab can additionally run the pinned DocLayout-YOLO checkpoint and overlay
+its detected page regions; this detector pass is diagnostic and does not feed
+boxes into OCR, table extraction, or chunking. Install the optional dependency
+with `uv sync --extra layout-yolo`; the first YOLO run downloads its pinned
+checkpoint from Hugging Face. It uses CUDA when available and otherwise falls
+back to CPU. Image size and confidence threshold are selectable per run.
+
+### Production upload and OCR Lab parser paths
+
+The production `/api/documents/upload` route currently creates
+`DocumentProcessor` without a `parser_engine`. PDFs therefore use the default
+PyMuPDF/native-text and Tesseract fallback path, unless the Paddle layout
+environment setting is enabled. Selecting MinerU in OCR Lab does not change the
+production upload parser.
+
+OCR Lab accepts a per-run `parser_engine`: `pymupdf_tesseract`,
+`pp-structurev3`, or `mineru`. Each run is saved in the isolated OCR test store;
+it does not create production documents or embeddings. The route stores parser
+chunks for visual review, so an OCR Lab chunk count is not the final embedding
+chunk count used by production retrieval.
+
+The MinerU adapter calls the configured Hugging Face Space
+(`MINERU_HF_SPACE`, default `opendatalab/MinerU`) at Basic tier. It maps MinerU
+page blocks into parser chunks, retaining page, layout type, bounding box,
+parser, and tier metadata. Each block is chunked independently with the common
+text chunker (default maximum 1,100 characters); short neighboring blocks are
+not merged. MinerU output is normalized by collapsing whitespace, so source line
+breaks inside a block are not preserved. The character limit is a maximum, not
+a target size.
+
+MinerU table blocks in Markdown pipe-table or HTML form are converted into
+structured rows. HTML table chunks are serialized as column and row text rather
+than raw markup. The adapter still does not run the default PDF path's
+table-title detection or `_replace_flat_table_chunks()` formatter. A MinerU
+table chunk may therefore lack a `Table: <title>` prefix, even though the
+default production PDF path can repeat a detected title and column names in
+each row-aware retrieval fragment. Check the parser chunk and table list in
+the saved OCR Lab run; the two parser paths do not provide identical title
+context.
 
 `DOCUMENT_PADDLE_LAYOUT=true` enables the optional Paddle layout path.
+DocLayout-YOLO-DocStructBench at 640px is the selected detector candidate for
+the next integration phase based on the HCMUS comparison; it is not wired into
+`/api/documents/upload` yet. The benchmark is detector-only and does not replace
+OCR, table parsing, or chunk persistence. See the
+[layout selection report](../../artifacts/evaluation/layout/hcmus-results/formula-v2-report.md)
+before changing the upload path.
 `DOCUMENT_PADDLE_FORMULA_RECOGNITION=true` enables formula recognition and the
 layout path. Both are off by default. Chart recognition is separately
 controlled by `DOCUMENT_PADDLE_CHART_RECOGNITION` and defaults to off because

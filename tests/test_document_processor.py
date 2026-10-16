@@ -10,8 +10,8 @@ import fitz
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.document_processing.processors.document_processor import DocumentProcessor
-from core.document_processing.processors.image_processor import ImageProcessor
-from core.document_processing.processors.pdf_processor import PDFProcessor
+from core.document_processing.processors.image.processor import ImageProcessor
+from core.document_processing.processors.pdf.processor import PDFProcessor
 
 
 def archive(files):
@@ -26,21 +26,15 @@ class DocumentProcessorTest(unittest.TestCase):
     def setUp(self):
         self.processor = DocumentProcessor()
 
-    def test_ocr_scales_from_environment_reach_pdf_processor(self):
-        parsed = {"chunks": [], "tables": []}
-        with (
-            patch.dict("os.environ", {
-                "DOCUMENT_OCR_RENDER_SCALE": "3.5",
-                "DOCUMENT_OCR_TABLE_RENDER_SCALE": "2.5",
-            }),
-            patch("core.document_processing.processors.document_processor.PDFProcessor") as pdf_processor,
-        ):
-            pdf_processor.return_value.process.return_value = parsed
-            result = DocumentProcessor().process("scan.pdf", b"pdf", {})
+    def test_pdf_ocr_scale_defaults_are_owned_by_pdf_processor(self):
+        with patch.dict("os.environ", {
+            "DOCUMENT_OCR_RENDER_SCALE": "3.5",
+            "DOCUMENT_OCR_TABLE_RENDER_SCALE": "2.5",
+        }):
+            processor = PDFProcessor({})
 
-        self.assertEqual(result, parsed)
-        self.assertEqual(pdf_processor.call_args.args[0]["ocr_render_scale"], 3.5)
-        self.assertEqual(pdf_processor.call_args.args[0]["ocr_table_render_scale"], 2.5)
+        self.assertEqual(processor.config["ocr_render_scale"], 3.5)
+        self.assertEqual(processor.config["ocr_table_render_scale"], 2.5)
 
     def test_pdf_ocr_language_override_reaches_pdf_processor(self):
         with patch("core.document_processing.processors.document_processor.PDFProcessor") as pdf_processor:
@@ -150,9 +144,9 @@ class DocumentProcessorTest(unittest.TestCase):
             processor.process("report.pdf", b"pdf bytes", {"document_id": "PDF-FORMULA"})
 
         settings = pdf_type.call_args.args[0]
-        self.assertTrue(settings["paddle_layout"])
-        self.assertFalse(settings["paddle_chart_recognition"])
         self.assertTrue(settings["paddle_formula_recognition"])
+        self.assertNotIn("paddle_layout", settings)
+        self.assertTrue(PDFProcessor(settings).config["paddle_layout"])
 
     def test_pptx_preserves_slide_number(self):
         source = archive({"ppt/slides/slide1.xml": """<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
@@ -229,7 +223,7 @@ class DocumentProcessorTest(unittest.TestCase):
         processor = DocumentProcessor({"ocr_language": "vie+eng"})
         completed = Mock(stdout=b"Doanh thu nam 2024 la 100 ty dong.\n")
         with patch(
-            "core.document_processing.processors.image_processor.subprocess.run",
+            "core.document_processing.processors.image.processor.subprocess.run",
             return_value=completed,
         ) as run:
             result = processor.process(
@@ -308,7 +302,7 @@ class DocumentProcessorTest(unittest.TestCase):
         with (
             patch.object(ImageProcessor, "_ocr", return_value="Revenue 100 90\nCash 25 20\nTotal assets 500 450"),
             patch(
-                "core.document_processing.processors.pdf_processor.PDFProcessor._ocr_page_words",
+                "core.document_processing.processors.pdf.processor.PDFProcessor._ocr_page_words",
                 autospec=True, side_effect=read_table_words,
             ),
         ):

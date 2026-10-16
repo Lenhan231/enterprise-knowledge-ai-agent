@@ -599,7 +599,7 @@ async def upload_document(
             parsed_repository.close()
 
         embedding_service = EmbeddingService()
-        from core.utils.token_counter import TokenCounter
+        from core.tokenization.token_counter import TokenCounter
 
         token_counter = TokenCounter(embedding_service.model_name)
         bounded_chunks = []
@@ -721,7 +721,7 @@ def retry_document_embedding(
         document_repository.update_processing_status(document_id, "processing")
         parsed_repository.set_status(document_id, "embedding")
         from core.embeddings.embedding_service import EmbeddingService
-        from core.utils.token_counter import TokenCounter
+        from core.tokenization.token_counter import TokenCounter
         from core.database.document_chunks_repository import DocumentChunkRepository
 
         embedding_service = EmbeddingService()

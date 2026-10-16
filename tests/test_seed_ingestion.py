@@ -6,8 +6,8 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from core.document_processing.ingest_documents import Ingestion
-from core.document_processing.processors.pdf_processor import PDFProcessor
+from tools.ingestion.ingest_documents import Ingestion
+from core.document_processing.processors.pdf.processor import PDFProcessor
 
 
 class SeedIngestionTest(unittest.TestCase):
@@ -20,9 +20,9 @@ class SeedIngestionTest(unittest.TestCase):
                 "<article><h1>Manage inventory</h1><p>Use reorder points.</p></article></main>",
                 encoding="utf-8",
             )
-            with patch("core.document_processing.ingest_documents.TokenCounter") as counter, \
-                 patch("core.document_processing.ingest_documents.SemanticDocumentChunker"), \
-                 patch("core.document_processing.ingest_documents.split_text", side_effect=lambda text, **kwargs: [text]) as splitter:
+            with patch("tools.ingestion.ingest_documents.TokenCounter") as counter, \
+                 patch("tools.ingestion.ingest_documents.SemanticDocumentChunker"), \
+                 patch("tools.ingestion.ingest_documents.split_text", side_effect=lambda text, **kwargs: [text]) as splitter:
                 counter.return_value.count.side_effect = lambda text: len(text.split())
                 counter.return_value.split_text.side_effect = lambda text, **kwargs: [text]
                 ingestor = Ingestion(embedding_service=type("Embedding", (), {"model_name": "test"})())
@@ -46,10 +46,10 @@ class SeedIngestionTest(unittest.TestCase):
                 "<p>Check coverage.</p></article>",
                 encoding="utf-8",
             )
-            with patch("core.document_processing.ingest_documents.TokenCounter") as counter, \
-                 patch("core.document_processing.ingest_documents.SemanticDocumentChunker"), \
+            with patch("tools.ingestion.ingest_documents.TokenCounter") as counter, \
+                 patch("tools.ingestion.ingest_documents.SemanticDocumentChunker"), \
                  patch(
-                     "core.document_processing.ingest_documents.split_text",
+                     "tools.ingestion.ingest_documents.split_text",
                      side_effect=lambda text, **kwargs: [text],
                  ):
                 counter.return_value.count.side_effect = lambda text: len(text.split())
@@ -74,9 +74,9 @@ class SeedIngestionTest(unittest.TestCase):
                 "source_type": "public_enterprise_document", "language": "en",
                 "allowed_roles": ["operations"],
             }
-            with patch("core.document_processing.ingest_documents.TokenCounter") as counter, \
-                 patch("core.document_processing.ingest_documents.SemanticDocumentChunker") as chunker, \
-                 patch("core.document_processing.ingest_documents.split_text", return_value=["Policy Requirements apply."]) as splitter:
+            with patch("tools.ingestion.ingest_documents.TokenCounter") as counter, \
+                 patch("tools.ingestion.ingest_documents.SemanticDocumentChunker") as chunker, \
+                 patch("tools.ingestion.ingest_documents.split_text", return_value=["Policy Requirements apply."]) as splitter:
                 counter.return_value.count.side_effect = lambda text: len(text.split())
                 counter.return_value.split_text.side_effect = lambda text, **kwargs: [text]
                 ingestor = Ingestion(embedding_service=type("Embedding", (), {"model_name": "test"})())
@@ -101,9 +101,9 @@ class SeedIngestionTest(unittest.TestCase):
                 "page_number": 1, "section_title": "Financial performance", "layout_type": "text",
             }}], "tables": tables}
 
-            with patch("core.document_processing.ingest_documents.TokenCounter") as counter, \
-                 patch("core.document_processing.ingest_documents.SemanticDocumentChunker"), \
-                 patch("core.document_processing.ingest_documents.PDFProcessor") as processor:
+            with patch("tools.ingestion.ingest_documents.TokenCounter") as counter, \
+                 patch("tools.ingestion.ingest_documents.SemanticDocumentChunker"), \
+                 patch("tools.ingestion.ingest_documents.PDFProcessor") as processor:
                 counter.return_value.count.return_value = 2
                 counter.return_value.split_text.side_effect = lambda text, **kwargs: [text]
                 processor.return_value.process.return_value = parsed
@@ -132,8 +132,8 @@ class SeedIngestionTest(unittest.TestCase):
                     "DOCUMENT_OCR_RENDER_SCALE": "3.5",
                     "DOCUMENT_OCR_TABLE_RENDER_SCALE": "3.5",
                 }),
-                patch("core.document_processing.ingest_documents.TokenCounter") as counter,
-                patch("core.document_processing.ingest_documents.SemanticDocumentChunker"),
+                patch("tools.ingestion.ingest_documents.TokenCounter") as counter,
+                patch("tools.ingestion.ingest_documents.SemanticDocumentChunker"),
                 patch.object(PDFProcessor, "process", autospec=True, return_value=parsed) as process_pdf,
             ):
                 counter.return_value.count.return_value = 2
@@ -152,9 +152,9 @@ class SeedIngestionTest(unittest.TestCase):
             pdf_path.write_bytes(b"pdf")
             parsed = {"chunks": [{"text": "Revenue 60", "metadata": {"page_number": 1}}], "tables": []}
 
-            with patch("core.document_processing.ingest_documents.TokenCounter") as counter, \
-                 patch("core.document_processing.ingest_documents.SemanticDocumentChunker"), \
-                 patch("core.document_processing.ingest_documents.PDFProcessor") as processor:
+            with patch("tools.ingestion.ingest_documents.TokenCounter") as counter, \
+                 patch("tools.ingestion.ingest_documents.SemanticDocumentChunker"), \
+                 patch("tools.ingestion.ingest_documents.PDFProcessor") as processor:
                 counter.return_value.count.return_value = 2
                 counter.return_value.split_text.side_effect = lambda text, **kwargs: [text]
                 processor.return_value.process.return_value = parsed
@@ -174,9 +174,9 @@ class SeedIngestionTest(unittest.TestCase):
                 "tables": [],
             }
 
-            with patch("core.document_processing.ingest_documents.TokenCounter") as counter, \
-                 patch("core.document_processing.ingest_documents.SemanticDocumentChunker"), \
-                 patch("core.document_processing.ingest_documents.PDFProcessor") as processor:
+            with patch("tools.ingestion.ingest_documents.TokenCounter") as counter, \
+                 patch("tools.ingestion.ingest_documents.SemanticDocumentChunker"), \
+                 patch("tools.ingestion.ingest_documents.PDFProcessor") as processor:
                 counter.return_value.count.return_value = 2
                 counter.return_value.split_text.return_value = ["Revenue", "60"]
                 processor.return_value.process.return_value = parsed

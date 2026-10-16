@@ -38,7 +38,7 @@ from core.database.document_chunks_repository import DocumentChunkRepository  # 
 from core.database.document_repository import DocumentRepository  # noqa: E402
 from core.database.processed_chunks_repository import ProcessedChunksRepository  # noqa: E402
 from core.database.structured_store import StructuredDataStore  # noqa: E402
-from core.document_processing.ingest_documents import Ingestion  # noqa: E402
+from tools.ingestion.ingest_documents import Ingestion  # noqa: E402
 from core.embeddings import EmbeddingService  # noqa: E402
 
 

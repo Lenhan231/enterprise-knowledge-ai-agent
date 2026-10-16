@@ -180,7 +180,7 @@ class AskRequestTest(unittest.TestCase):
              patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_repo, \
              patch("core.database.processed_chunks_repository.ProcessedChunksRepository"), \
              patch("core.database.structured_store.StructuredDataStore"), \
-             patch("core.utils.token_counter.TokenCounter") as token_counter, \
+             patch("core.tokenization.token_counter.TokenCounter") as token_counter, \
              TestClient(app) as client:
             processor_class.SUPPORTED = {".pdf"}
             token_counter.return_value.split_text.side_effect = lambda text, max_sequence_tokens: [text]

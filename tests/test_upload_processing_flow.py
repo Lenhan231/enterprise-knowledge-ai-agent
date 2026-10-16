@@ -17,8 +17,8 @@ sys.path.insert(0, str(ROOT / "src"))
 from app import main as app_main  # noqa: E402
 from core.database.structured_store import StructuredDataStore  # noqa: E402
 from core.document_processing.processors.document_processor import DocumentProcessor  # noqa: E402
-from core.document_processing.processors.image_processor import ImageProcessor  # noqa: E402
-from core.document_processing.processors.pdf_processor import PDFProcessor  # noqa: E402
+from core.document_processing.processors.image.processor import ImageProcessor  # noqa: E402
+from core.document_processing.processors.pdf.processor import PDFProcessor  # noqa: E402
 
 
 def xlsx_with_formula() -> bytes:
@@ -121,7 +121,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
-            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository", return_value=chunk_repository),
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository"),
@@ -182,7 +182,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
-            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository", return_value=chunk_repository),
             patch("core.database.structured_store.StructuredDataStore"),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository"),
@@ -269,7 +269,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
-            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
@@ -321,7 +321,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
             patch("core.embeddings.embedding_service.EmbeddingService", side_effect=RuntimeError("model unavailable")),
-            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore") as structured_cls,
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository", return_value=parsed_repository),
@@ -368,7 +368,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
             patch.object(DocumentProcessor, "process", return_value=processed),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
-            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore"),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository", return_value=parsed_repo),
@@ -416,7 +416,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(ImageProcessor, "_ocr", return_value="Revenue 100 90\nCash 25 20\nAssets 500 450"),
             patch.object(PDFProcessor, "_ocr_page_words", return_value=words),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
-            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
@@ -482,7 +482,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
-            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
@@ -559,11 +559,11 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(app_main, "_require_same_origin"),
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
-            patch("core.document_processing.processors.pdf_processor.shutil.which", return_value="/usr/bin/tesseract"),
+            patch("core.document_processing.processors.pdf.processor.shutil.which", return_value="/usr/bin/tesseract"),
             patch.object(PDFProcessor, "_ocr_page", return_value="Revenue 100000 90000\nCash balance 25000 20000\nTotal assets 500000 450000"),
             patch.object(PDFProcessor, "_ocr_page_words", return_value=words),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
-            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
@@ -623,7 +623,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
-            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
@@ -666,7 +666,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
-            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
@@ -739,7 +739,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository", return_value=parsed_repo),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
-            patch("core.utils.token_counter.TokenCounter") as counter_cls,
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
         ):
             counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]

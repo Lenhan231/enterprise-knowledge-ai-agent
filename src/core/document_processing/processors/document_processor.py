@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Any
 
-from .image_processor import ImageProcessor
-from .office_processor import OfficeProcessor
-from .pdf_processor import PDFProcessor
-from .text_processor import TextProcessor
+from .image.processor import ImageProcessor
+from .office.processor import OfficeProcessor
+from .pdf.processor import PDFProcessor
+from .text.processor import TextProcessor
+from core.chunking.text_chunker import ChunkingConfig
 
 
 class DocumentProcessor:
@@ -22,52 +22,22 @@ class DocumentProcessor:
 
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
-        self.chunking_strategy = self.config.get("chunking_strategy", "sentence")
-        self.paddle_formula_recognition = bool(self.config.get("paddle_formula_recognition", False))
-        self.paddle_chart_recognition = bool(self.config.get("paddle_chart_recognition", False))
-        self.paddle_layout = bool(self.config.get("paddle_layout", False) or self.paddle_formula_recognition)
-        self.vision_captioning = bool(self.config.get("vision_captioning", False))
-        if self.chunking_strategy not in {"fixed", "sentence", "semantic"}:
-            raise ValueError("chunking_strategy must be 'fixed' or 'sentence'")
-        self.chunk_size = int(self.config.get("chunk_size", 1100))
-        self.chunk_overlap = int(self.config.get("chunk_overlap", 120))
-        if self.chunk_size <= 0 or self.chunk_overlap < 0 or self.chunk_overlap >= self.chunk_size:
-            raise ValueError("chunk size must be positive and overlap smaller than size")
+        self.chunking = ChunkingConfig.from_config(self.config)
 
     def process(self, filename: str, content: bytes, metadata: dict[str, Any]) -> dict[str, list[dict]]:
         suffix = Path(filename).suffix.lower()
         if suffix not in self.SUPPORTED:
             raise ValueError(f"Unsupported document format: {suffix or 'unknown'}")
         common = {**metadata, "filename": Path(filename).name, "format": suffix[1:].upper()}
+        processor_config = {**self.config, "chunking": self.chunking}
         if suffix == ".pdf":
-            result = PDFProcessor({
-                "paddle_layout": self.paddle_layout,
-                "paddle_chart_recognition": self.paddle_chart_recognition,
-                "paddle_formula_recognition": self.paddle_formula_recognition,
-                "vision_captioning": self.vision_captioning,
-                "ocr_fallback": True,
-                "ocr_language": self.config.get("ocr_language", "vie+eng"),
-                "ocr_deskew": self.config.get("ocr_deskew", True),
-                "tesseract_psm": self.config.get("tesseract_psm", 11),
-                "tesseract_table_psm": self.config.get("tesseract_table_psm", 3),
-                "ocr_render_scale": self.config.get(
-                    "ocr_render_scale", float(os.getenv("DOCUMENT_OCR_RENDER_SCALE", "1.5")),
-                ),
-                "ocr_table_render_scale": self.config.get(
-                    "ocr_table_render_scale", float(os.getenv("DOCUMENT_OCR_TABLE_RENDER_SCALE", "2.5")),
-                ),
-                "extract_tables": self.config.get("extract_tables", True),
-                "page_numbers": self.config.get("page_numbers"),
-                "chunking_strategy": self.chunking_strategy,
-                "chunk_size": self.chunk_size,
-                "chunk_overlap": self.chunk_overlap,
-            }).process({"content": content, "metadata": common})
+            result = PDFProcessor(processor_config).process({"content": content, "metadata": common})
         elif suffix in {".txt", ".md"}:
-            result = TextProcessor(self.config).process_file(content, common)
+            result = TextProcessor(processor_config).process_file(content, common)
         elif suffix in {".png", ".jpg", ".jpeg", ".tif", ".tiff"}:
-            result = ImageProcessor(self.config).process(suffix, content, common)
+            result = ImageProcessor(processor_config).process(suffix, content, common)
         else:
-            result = OfficeProcessor(self.config).process(suffix, content, common)
+            result = OfficeProcessor(processor_config).process(suffix, content, common)
         for index, chunk in enumerate(result["chunks"]):
             chunk["metadata"].update({
                 key: value for key, value in common.items()

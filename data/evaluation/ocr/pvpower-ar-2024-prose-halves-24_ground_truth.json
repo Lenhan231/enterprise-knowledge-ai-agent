@@ -1,0 +1,501 @@
+{
+  "dataset_id": "pvpower-ar-2024-vietnamese-prose-halves-24-v1",
+  "dataset_title": "PV Power AR 2024 Vietnamese prose half-page screening",
+  "purpose": "Exploratory CER/WER screening on both page halves of 12 selected annual-report spreads.",
+  "reference_method": "native PDF text layer",
+  "reference_quality": "Selected pages were visually inspected; native PDF text references are not proofread word by word and may contain extraction, reading-order, or diacritic errors.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "Twelve landscape PDF spreads produce 24 half-page samples; both halves are included and are not 24 independent documents.",
+    "The selected pages include two-column text, callouts, photographs, and chart-like material; CER/WER can reflect OCR recognition and native-text reading-order differences.",
+    "Native PDF text references have not been proofread word by word.",
+    "CER/WER measure recognized text only, not layout detection or table extraction accuracy.",
+    "Resource measures are descriptive and should only be compared on the same device class and benchmark settings.",
+    "This born-digital annual report does not represent scanned PDFs."
+  ],
+  "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+  "source_download_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+  "render_dpi": 180,
+  "pages": [
+    {
+      "id": "pvpower-ar-2024-page-30-left-vi",
+      "document_id": "PVPOWER-AR-2024-LEFT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 30,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-30-right-vi",
+      "document_id": "PVPOWER-AR-2024-RIGHT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 30,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-31-left-vi",
+      "document_id": "PVPOWER-AR-2024-LEFT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 31,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-31-right-vi",
+      "document_id": "PVPOWER-AR-2024-RIGHT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 31,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-46-left-vi",
+      "document_id": "PVPOWER-AR-2024-LEFT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 46,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-46-right-vi",
+      "document_id": "PVPOWER-AR-2024-RIGHT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 46,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-48-left-vi",
+      "document_id": "PVPOWER-AR-2024-LEFT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 48,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-48-right-vi",
+      "document_id": "PVPOWER-AR-2024-RIGHT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 48,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-49-left-vi",
+      "document_id": "PVPOWER-AR-2024-LEFT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 49,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-49-right-vi",
+      "document_id": "PVPOWER-AR-2024-RIGHT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 49,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-50-left-vi",
+      "document_id": "PVPOWER-AR-2024-LEFT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 50,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-50-right-vi",
+      "document_id": "PVPOWER-AR-2024-RIGHT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 50,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-52-left-vi",
+      "document_id": "PVPOWER-AR-2024-LEFT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 52,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-52-right-vi",
+      "document_id": "PVPOWER-AR-2024-RIGHT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 52,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-53-left-vi",
+      "document_id": "PVPOWER-AR-2024-LEFT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 53,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-53-right-vi",
+      "document_id": "PVPOWER-AR-2024-RIGHT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 53,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-58-left-vi",
+      "document_id": "PVPOWER-AR-2024-LEFT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 58,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-58-right-vi",
+      "document_id": "PVPOWER-AR-2024-RIGHT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 58,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-59-left-vi",
+      "document_id": "PVPOWER-AR-2024-LEFT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 59,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-59-right-vi",
+      "document_id": "PVPOWER-AR-2024-RIGHT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 59,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-60-left-vi",
+      "document_id": "PVPOWER-AR-2024-LEFT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 60,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-60-right-vi",
+      "document_id": "PVPOWER-AR-2024-RIGHT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 60,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-63-left-vi",
+      "document_id": "PVPOWER-AR-2024-LEFT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 63,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvpower-ar-2024-page-63-right-vi",
+      "document_id": "PVPOWER-AR-2024-RIGHT",
+      "company": "PV Power",
+      "file": "data/raw/vietnam_enterprises/pvpower/pvpower-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4152854a36577e1db99ec7efd0b74227ab0176f1b1c4df82c9f2c02f94449bc1",
+      "source_url": "https://pvpower.vn/pow-media/to-ir/18-4-25---BCTN-2024---VIET.pdf",
+      "page": 63,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    }
+  ]
+}

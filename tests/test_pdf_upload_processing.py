@@ -13,7 +13,7 @@ import fitz
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.document_processing.processors.pdf.processor import PDFProcessor
-from core.document_processing.processors.document_processor import DocumentProcessor
+from core.document_processing.document_processor import DocumentProcessor
 
 
 class PDFUploadProcessingTest(unittest.TestCase):

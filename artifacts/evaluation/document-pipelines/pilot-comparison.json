@@ -1,0 +1,183 @@
+{
+  "dataset_id": "vietnamese-enterprise-document-pipeline-pilot-v1",
+  "status": "pilot_only_not_for_model_selection",
+  "normalization": "NFC, casefold, collapse whitespace; strip Markdown/HTML presentation syntax; retain punctuation and Vietnamese diacritics",
+  "references": {
+    "full_page_ocr": 2,
+    "table_page": 1,
+    "table_anchor_rows": 4,
+    "layout_labels_reviewed": 0,
+    "reading_order_pages_labeled": 0
+  },
+  "engines": {
+    "docling": {
+      "status": "pilot_output_available",
+      "package_versions": {
+        "paddlepaddle-gpu": null,
+        "paddleocr": null,
+        "paddlex": null,
+        "mineru": null,
+        "docling": "2.129.0",
+        "torch": "2.11.0+cu128"
+      },
+      "engine_config": {
+        "device": "CUDA",
+        "ocr": "RapidOCR ONNX Runtime, vi",
+        "table_structure": true
+      },
+      "page_count": 20,
+      "successful_page_count": 20,
+      "failed_page_count": 0,
+      "ocr_full_page_references": {
+        "longhau-cover-p001": {
+          "reference_characters": 157,
+          "reference_words": 36,
+          "cer": 0.1910828025477707,
+          "wer": 0.4722222222222222,
+          "hypothesis_characters": 134,
+          "extract_details": {
+            "raw_markdown": true
+          }
+        },
+        "longhau-board-p003": {
+          "reference_characters": 2016,
+          "reference_words": 443,
+          "cer": 0.22470238095238096,
+          "wer": 0.5711060948081265,
+          "hypothesis_characters": 1886,
+          "extract_details": {
+            "raw_markdown": true
+          }
+        }
+      },
+      "table_anchor_reference": {
+        "exact_rows": 4,
+        "expected_rows": 4,
+        "row_recall": 1.0
+      },
+      "median_page_seconds": 15.599065412999948,
+      "p95_page_seconds": 27.292459150800088,
+      "batch_seconds": null,
+      "peak_rss_mb": 6270.4,
+      "parent_process_peak_rss_mb": null,
+      "raw_output_directory": "artifacts/evaluation/document-pipelines/results/docling/document-pipeline-pilot"
+    },
+    "pp-structurev3": {
+      "status": "pilot_output_available",
+      "package_versions": {
+        "paddlepaddle-gpu": "3.3.1",
+        "paddleocr": "3.4.1",
+        "paddlex": "3.4.3",
+        "mineru": null,
+        "docling": null,
+        "torch": "2.11.0+cu128"
+      },
+      "engine_config": {
+        "device": "gpu:0",
+        "layout": "PP-DocLayout-S",
+        "ocr": "PP-OCRv5 mobile",
+        "table_recognition": true
+      },
+      "page_count": 20,
+      "successful_page_count": 20,
+      "failed_page_count": 0,
+      "ocr_full_page_references": {
+        "longhau-cover-p001": {
+          "reference_characters": 157,
+          "reference_words": 36,
+          "cer": 0.1337579617834395,
+          "wer": 0.4722222222222222,
+          "hypothesis_characters": 156,
+          "extract_details": {
+            "raw_files": 2,
+            "markdown_output": false,
+            "blocks_by_file": {
+              "longhau-cover-p001-page-001-markdown.json": 0,
+              "longhau-cover-p001-page-001.json": 1
+            }
+          }
+        },
+        "longhau-board-p003": {
+          "reference_characters": 2016,
+          "reference_words": 443,
+          "cer": 0.3005952380952381,
+          "wer": 0.6930022573363431,
+          "hypothesis_characters": 1839,
+          "extract_details": {
+            "raw_files": 2,
+            "markdown_output": true
+          }
+        }
+      },
+      "table_anchor_reference": {
+        "exact_rows": 2,
+        "expected_rows": 4,
+        "row_recall": 0.5
+      },
+      "median_page_seconds": 1.6266318524999974,
+      "p95_page_seconds": 2.8376137868499427,
+      "batch_seconds": null,
+      "peak_rss_mb": 3191.8,
+      "parent_process_peak_rss_mb": null,
+      "raw_output_directory": "artifacts/evaluation/document-pipelines/results/pp-structurev3/document-pipeline-pilot"
+    },
+    "mineru": {
+      "status": "pilot_output_available",
+      "package_versions": {
+        "paddlepaddle-gpu": null,
+        "paddleocr": null,
+        "paddlex": null,
+        "mineru": "4.0.12",
+        "docling": null,
+        "torch": "2.11.0+cu128"
+      },
+      "engine_config": {
+        "device": "CUDA_VISIBLE_DEVICES=0",
+        "tier": "basic",
+        "mode": "one CLI process per page"
+      },
+      "page_count": 20,
+      "successful_page_count": 19,
+      "failed_page_count": 1,
+      "ocr_full_page_references": {
+        "longhau-cover-p001": {
+          "reference_characters": 157,
+          "reference_words": 36,
+          "cer": 0.2929936305732484,
+          "wer": 0.4722222222222222,
+          "hypothesis_characters": 177,
+          "extract_details": {
+            "archives": 1,
+            "markdown_files": [
+              "longhau-cover-p001.zip:markdown.md"
+            ]
+          }
+        },
+        "longhau-board-p003": {
+          "reference_characters": 2016,
+          "reference_words": 443,
+          "cer": 0.13690476190476192,
+          "wer": 0.45146726862302483,
+          "hypothesis_characters": 1887,
+          "extract_details": {
+            "archives": 1,
+            "markdown_files": [
+              "longhau-board-p003.zip:markdown.md"
+            ]
+          }
+        }
+      },
+      "table_anchor_reference": {
+        "exact_rows": 3,
+        "expected_rows": 4,
+        "row_recall": 0.75
+      },
+      "median_page_seconds": 16.067905764999978,
+      "p95_page_seconds": 25.9767511902,
+      "batch_seconds": 366.56515740099996,
+      "peak_rss_mb": null,
+      "parent_process_peak_rss_mb": 103.1,
+      "raw_output_directory": "artifacts/evaluation/document-pipelines/results/mineru-basic/document-pipeline-pilot"
+    }
+  }
+}

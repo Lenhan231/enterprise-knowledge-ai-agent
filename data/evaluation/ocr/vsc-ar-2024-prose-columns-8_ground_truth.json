@@ -1,0 +1,187 @@
+{
+  "dataset_id": "vsc-ar-2024-prose-columns-8-v1",
+  "dataset_title": "VSC Annual Report 2024 selected Vietnamese prose columns",
+  "purpose": "Exploratory Vietnamese OCR CER/WER screen on selected single-column crops from a listed-company annual report.",
+  "reference_method": "Native PDF text layer clipped to visually reviewed single-column prose regions.",
+  "reference_quality": "Pages and column regions visually inspected; references come from native PDF text and have not been proofread word by word.",
+  "primary_metric_selection_eligible": false,
+  "render_dpi": 180,
+  "limitations": [
+    "Eight column crops from one born-digital annual report and one company; not representative enough for model selection.",
+    "References use native PDF text without word-by-word proofreading; glyph mapping and line-break differences can affect CER/WER.",
+    "This crop-level text recognition screen excludes full-page layout and reading-order evaluation.",
+    "CER/WER measure text recognition only, not layout detection or table extraction."
+  ],
+  "source_pdf_sha256": "7c693e263034ee710f59fb528ff248b796d92280b39ef5a69b9110c9a26ed90e",
+  "source_download_url": "https://static2.vietstock.vn/vietstock/2025/4/21/1_vcs_2025_4_21_0769b2a_vi_baocaothuongnien2024_signed.pdf",
+  "pages": [
+    {
+      "id": "vsc-ar-2024-page-36-left-body-a-vi",
+      "document_id": "VSC-AR-2024",
+      "company": "VSC",
+      "file": "data/raw/vietnam_enterprises/vsc/vsc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "7c693e263034ee710f59fb528ff248b796d92280b39ef5a69b9110c9a26ed90e",
+      "source_url": "https://static2.vietstock.vn/vietstock/2025/4/21/1_vcs_2025_4_21_0769b2a_vi_baocaothuongnien2024_signed.pdf",
+      "page": 36,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "Với mạng lưới phân phối tại hơn 50\nquốc gia và vùng lãnh thổ, Vicostone\nđang từng bước mở rộng hoạt động\nkinh doanh toàn cầu. Tuy nhiên, một\ntrong những rủi ro lớn mà Công ty phải\nthường xuyên đối mặt là xu hướng\ngia tăng của các chính sách bảo hộ\nthương mại tại nhiều quốc gia nhập\nkhẩu, đặc biệt là tại các thị trường chủ\nlực như Hoa Kỳ, Canada, EU và Úc. Các\nchính sách này thường bao gồm việc\ntăng thuế nhập khẩu đối với sản phẩm\nđá nhân tạo nhằm bảo vệ ngành sản\nxuất nội địa, hoặc tạo áp lực để Việt\nNam điều chỉnh chính sách thương\nmại theo hướng cân bằng cán cân xuất\nnhập khẩu song phương.\nNhận thức rõ rằng khi các rủi ro này xảy\nra có thể gây tác động đến doanh thu\nxuất khẩu, ảnh hưởng biên lợi nhuận và\nnăng lực cạnh tranh của Vicostone tại\ncác thị trường trọng điểm, Công ty đã\nchủ động xây dựng kịch bản ứng phó\nkhẩn cấp và triển khai các giải pháp\nnhằm đảm bảo khả năng phản ứng\nnhanh và kiểm soát hiệu quả:\n-  Chủ động duy trì kết nối với các\ncơ quan chức năng, hiệp hội ngành",
+      "clip_rect": [
+        215,
+        115,
+        368,
+        459
+      ]
+    },
+    {
+      "id": "vsc-ar-2024-page-36-left-body-b-vi",
+      "document_id": "VSC-AR-2024",
+      "company": "VSC",
+      "file": "data/raw/vietnam_enterprises/vsc/vsc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "7c693e263034ee710f59fb528ff248b796d92280b39ef5a69b9110c9a26ed90e",
+      "source_url": "https://static2.vietstock.vn/vietstock/2025/4/21/1_vcs_2025_4_21_0769b2a_vi_baocaothuongnien2024_signed.pdf",
+      "page": 36,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "hàng và cơ quan ngoại giao, đồng thời\nthường xuyên cập nhật, theo dõi và\nphân tích kịch bản điều chỉnh chính\nsách thương mại tại các thị trường\nchiến lược như Mỹ và EU, từ đó đảm bảo\nVicostone có ứng phó kịp thời và phù\nhợp trong các vấn đề liên quan.\n- Đẩy mạnh khai thác các thị trường\nmới hoặc ít bị ảnh hưởng bởi rào cản\nbảo hộ thương mại, nhằm giảm mức\nđộ phụ thuộc vào một số thị trường\ntruyền thống và đa dạng hóa đầu ra\ntrong dài hạn.\n- Xây dựng các phương án tài chính\nvà vận hành linh hoạt, bao gồm tối ưu\nchi phí, liên tục hiệu quả hóa vận hành,\nduy trì bộ máy tinh gọn để thích ứng\nvới các ảnh hưởng bất lợi do thay đổi\nvề thuế suất, quy định xuất xứ hoặc\ncác rào cản kỹ thuật mới tại các nước\nsở tại.\nVới sự chuẩn bị chủ động, bài bản và\nlinh hoạt, Vicostone hướng đến mục\ntiêu giảm thiểu tác động từ các chính\nsách bảo hộ thương mại toàn cầu, giữ\nvững năng lực cạnh tranh tại thị trường\nquốc tế, đồng thời đảm bảo chiến lược\nphát triển bền vững trong dài hạn.",
+      "clip_rect": [
+        388,
+        115,
+        540,
+        464
+      ]
+    },
+    {
+      "id": "vsc-ar-2024-page-37-right-body-a-vi",
+      "document_id": "VSC-AR-2024",
+      "company": "VSC",
+      "file": "data/raw/vietnam_enterprises/vsc/vsc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "7c693e263034ee710f59fb528ff248b796d92280b39ef5a69b9110c9a26ed90e",
+      "source_url": "https://static2.vietstock.vn/vietstock/2025/4/21/1_vcs_2025_4_21_0769b2a_vi_baocaothuongnien2024_signed.pdf",
+      "page": 37,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "Vicostone hiện đang kinh doanh sản\nphẩm tại hơn 50 quốc gia và vùng lãnh\nthổ trên thế giới, chính vì vậy, hoạt\nđộng kinh doanh của Công ty luôn chịu\ncác tác động trực tiếp từ hành lang\npháp lí tại nước sở tại như: chính sách\nthuế quan, hàng rào phi thuế quan,\ncác thủ tục, quy định hành chính và\npháp lí… Sự thay đổi về pháp luật hay\ncác quy định sẽ ảnh hưởng trực tiếp\nđến hoạt động kinh doanh của Công\nty, tạo ra các khó khăn trong việc điều\nhành hoạt động sản xuất kinh doanh,\ngia tăng chi phí hoạt động. Thậm chí,\nnếu không cập nhật và điều chỉnh kịp\nthời, sản phẩm của Công ty có thể\nkhông đáp ứng điều kiện để lưu hành…\nMột trong những ví dụ điển hình là\nquyết định của các Bộ trưởng WHS từ\nKhối thịnh vượng chung, các tiểu bang\nvà vùng lãnh thổ của Úc đã quyết định\ncấm sử dụng tất cả các loại đá nhân\ntạo có chứa thạch anh tinh thể để\ngiảm thiểu nguy cơ người lao động bị\nnhiễm bệnh bụi silic. Điều đó dẫn đến\nhệ lụy là các nhà sản xuất phải thay đổi\ncông nghệ, sản phẩm mới để đáp ứng\ntheo quy định của thị trường Úc dẫn\nđến phát sinh các chi phí tăng thêm,",
+      "clip_rect": [
+        825,
+        70,
+        977,
+        418
+      ]
+    },
+    {
+      "id": "vsc-ar-2024-page-37-right-body-b-vi",
+      "document_id": "VSC-AR-2024",
+      "company": "VSC",
+      "file": "data/raw/vietnam_enterprises/vsc/vsc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "7c693e263034ee710f59fb528ff248b796d92280b39ef5a69b9110c9a26ed90e",
+      "source_url": "https://static2.vietstock.vn/vietstock/2025/4/21/1_vcs_2025_4_21_0769b2a_vi_baocaothuongnien2024_signed.pdf",
+      "page": 37,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "làm giảm khả năng cạnh tranh tại thị\ntrường này.\nĐể đảm bảo kiểm soát hiệu quả các rủi\nro này, Công ty đã thiết lập mối quan\nhệ hợp tác với các văn phòng luật quốc\ntế uy tín, có đủ khả năng tư vấn và cập\nnhật thường xuyên các thay đổi trong\nchính sách, pháp lí liên quan tới hoạt\nđộng kinh doanh của Công ty. Từ đó\ngiúp Công ty có thể chủ động đưa ra\ncác điều chỉnh, thay đổi nhằm đáp ứng\nđầy đủ, kịp thời các quy định của nước\nsở tại.\nĐội ngũ nhân sự pháp chế của Công\nty đảm bảo gồm các chuyên gia tư vấn\ngiàu kinh nghiệm có trách nhiệm cập\nnhật các thay đổi về luật pháp và các\nảnh hưởng pháp  lí đối với hoạt động\nkinh doanh của Vicostone để kịp thời\ntư vấn cho HĐQT và Ban điều hành;\nnghiên cứu sự ảnh hưởng của các văn\nbản pháp luật trong giai đoạn dự thảo\nsắp được ban hành đến hoạt động của\nCông ty để có sự chuẩn bị thích hợp.\nNgoài ra, bộ phận trên còn có trách\nnhiệm rà soát các văn bản hợp đồng\ncủa Công ty để hạn chế các rủi ro pháp\nlí liên quan.",
+      "clip_rect": [
+        997,
+        70,
+        1150,
+        415
+      ]
+    },
+    {
+      "id": "vsc-ar-2024-page-61-right-body-a-vi",
+      "document_id": "VSC-AR-2024",
+      "company": "VSC",
+      "file": "data/raw/vietnam_enterprises/vsc/vsc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "7c693e263034ee710f59fb528ff248b796d92280b39ef5a69b9110c9a26ed90e",
+      "source_url": "https://static2.vietstock.vn/vietstock/2025/4/21/1_vcs_2025_4_21_0769b2a_vi_baocaothuongnien2024_signed.pdf",
+      "page": 61,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "Theo ngân hàng thế giới (WB) tại Việt\nNam, mặc dù đối mặt với vô vàn khó\nkhăn trong năm qua, nền kinh tế Việt\nNam vẫn thể hiện được sự kiên cường,\ntiếp tục duy trì xu hướng tăng trưởng,\nphát triển dài hạn và đạt được tốc độ\ntăng trưởng cao nhất trong số các nền\nkinh tế Đông Á (31). Kinh tế Việt Nam năm\n2024 dần phục hồi mạnh mẽ, dẫn đầu\nbởi sản xuất, thương mại và FDI. Tuy\nnhiên, kinh tế vĩ mô còn tiềm ẩn rủi ro\nvà chịu áp lực lớn, thị trường bất động\nsản dù có chuyển biến nhưng chưa\nrõ nét, nhu cầu nội địa chưa hồi phục\nhoàn toàn.\nNgay  từ đầu năm,  Vicostone xác\nđịnh 2024 tiếp tục là một năm thách\nthức với doanh nghiệp. Với tâm thế\nchủ động chuyển đổi, phát triển bền\nvững, Vicostone đã xây dựng một kế\nhoạch hành động phù hợp nhằm đạt\nkế hoạch kinh doanh tại thị trường nội\nđịa đã đề ra. Năm 2024, mặc dù mảng\nkinh doanh dự án tăng trưởng chậm do\nthị trường bất động sản cung yếu và\ncục bộ, nhiều dự án chỉ dừng lại ở mức\nchuẩn bị đầu tư, chậm triển khai nhưng\nmảng bán lẻ của Vicostone lại đạt mức\ntăng trưởng tích cực. Sản lượng năm\n2024 tăng trưởng gần 15% so với năm\n2023. Sản phẩm VICOSTONE® đã có\nmặt tại các dự án trọng điểm quốc gia\nnhư nhà ga hành khách T3 của Cảng\nhàng không quốc tế Tân Sơn Nhất,\ndự án Cảng hàng không quốc tế Long\nThành. Hệ thống phân phối rộng khắp\nvới hơn 2.000 các đại lí/điểm bán và gần\n50 kho và đơn vị chế tác ủy quyền trên\ntoàn quốc, sản phẩm VICOSTONE® đã\nđến gần và nhận được sự tin dùng của\nngười tiêu dùng trong nước.",
+      "clip_rect": [
+        824,
+        70,
+        977,
+        567
+      ]
+    },
+    {
+      "id": "vsc-ar-2024-page-61-right-body-b-vi",
+      "document_id": "VSC-AR-2024",
+      "company": "VSC",
+      "file": "data/raw/vietnam_enterprises/vsc/vsc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "7c693e263034ee710f59fb528ff248b796d92280b39ef5a69b9110c9a26ed90e",
+      "source_url": "https://static2.vietstock.vn/vietstock/2025/4/21/1_vcs_2025_4_21_0769b2a_vi_baocaothuongnien2024_signed.pdf",
+      "page": 61,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "Bên cạnh việc duy trì và mở rộng hệ\nthống kênh phân phối, Vicostone tích\ncực đào tạo, hỗ trợ, hướng dẫn các\nđơn vị chế tác bên ngoài về kĩ thuật\ncắt, mài, lắp đặt sản phẩm đúng tiêu\nchuẩn, từ đó nâng cao chất lượng sản\nphẩm, tối ưu chi phí tới tay khách hàng\nvà tăng lợi thế cạnh tranh của sản\nphẩm trên thị trường. Trong năm 2024,\nnhiều chương trình khuyến mại hướng\ntới người tiêu dùng cũng được Công ty\ntriển khai như chương trình khuyến mại\ncho bộ sưu tập mới “Dòng chảy nhiệt\nđới”, chương trình tặng bàn ăn, bàn trà,\nchương trình “Mừng tuổi 22 - Ngập tràn\nquà tặng” nhân dịp kỉ niệm ngày thành\nlập Công ty...\nViệc đồng hành cũng các đối tượng\nchuyên gia cũng luôn được Vicostone\nchú trọng. Năm 2024, Vicostone đã có\nrất nhiều hoạt động hợp tác với các\nđối tác, các kiến trúc sư, nhà thiết kế,\ncác đơn vị nội thất ở cả trong nước\nvà khu vực. Sự tín nhiệm và hiểu biết\nmang tính chuyên môn về sản phẩm\nVICOSTONE® của giới chuyên gia là\nmột trong những kênh truyền thông,\nkết nối với người tiêu dùng quan trọng,\nhiệu quả của Công ty.",
+      "clip_rect": [
+        997,
+        70,
+        1150,
+        423
+      ]
+    },
+    {
+      "id": "vsc-ar-2024-page-62-left-body-a-vi",
+      "document_id": "VSC-AR-2024",
+      "company": "VSC",
+      "file": "data/raw/vietnam_enterprises/vsc/vsc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "7c693e263034ee710f59fb528ff248b796d92280b39ef5a69b9110c9a26ed90e",
+      "source_url": "https://static2.vietstock.vn/vietstock/2025/4/21/1_vcs_2025_4_21_0769b2a_vi_baocaothuongnien2024_signed.pdf",
+      "page": 62,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "Kết quả kinh doanh của Vicostone\nchịu tác động từ các yếu tố kinh tế\nvĩ mô toàn cầu, đặc biệt tại các thị\ntrường chính ở Bắc Mỹ và châu Âu. Bất\nđộng sản và xây dựng nhà ở tại các\nthị trường này đang có dấu hiệu khởi\nsắc do lạm phát đã hạ nhiệt và lãi suất\nđược điều chỉnh giảm nhưng chưa ổn\nđịnh. Bên cạnh đó, cạnh tranh đang trở\nnên ngày càng gay gắt giữa các đối thủ\ntrong ngành, đặc biệt là ở khu vực châu\nÁ - Thái Bình Dương như Ấn Độ, Trung\nQuốc, Việt Nam, Malaysia và Thái Lan.\nNhững yếu tố này tác động mạnh tới\nkết quả kinh doanh của Vicostone trên\nthị trường quốc tế.",
+      "clip_rect": [
+        215,
+        173,
+        368,
+        365
+      ]
+    },
+    {
+      "id": "vsc-ar-2024-page-62-left-body-b-vi",
+      "document_id": "VSC-AR-2024",
+      "company": "VSC",
+      "file": "data/raw/vietnam_enterprises/vsc/vsc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "7c693e263034ee710f59fb528ff248b796d92280b39ef5a69b9110c9a26ed90e",
+      "source_url": "https://static2.vietstock.vn/vietstock/2025/4/21/1_vcs_2025_4_21_0769b2a_vi_baocaothuongnien2024_signed.pdf",
+      "page": 62,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "Dù đã được Công ty dự báo và đưa\nvào danh mục quản trị rủi ro năm 2024\nkhi lập kế hoạch sản xuất kinh doanh\nnhưng sự biến đổi nhanh chóng và khó\nlường của thị trường vẫn tạo sức ép lớn\ncho hoạt động kinh doanh tại các thị\ntrường trọng điểm của Vicostone. Kết\nquả kinh doanh dù chưa đạt kì vọng\nđặt ra nhưng được đánh giá là tích cực\ntrong bối cảnh chung, cho thấy hệ\nthống quản trị rủi ro hiệu quả, khả năng\nthích ứng nhanh, kịp thời và nỗ lực cao\ncủa tập thể Ban Lãnh đạo và người lao\nđộng Công ty. Với sự hỗ trợ hiệu quả từ\ncông ty mẹ - Tập đoàn Phenikaa trong\nchiến lược phát triển thị trường, hoạt\nđộng kinh doanh tại các thị trường đã\nđạt được những kết quả nhất định.",
+      "clip_rect": [
+        388,
+        173,
+        540,
+        389
+      ]
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "dataset_id": "hgm-ar-2024-scan-manual-4-v1",
+  "dataset_title": "HGM 2024 audited report manual scan pages 2 to 5",
+  "purpose": "Exploratory CER/WER comparison on scanned audited-report prose from a Vietnamese listed mining company.",
+  "reference_method": "Manual transcription of four half-page scan crops from PDF pages 62 and 63, visually checked by one reviewer.",
+  "reference_quality": "Full selected crop transcription visually reviewed once by one reviewer; not independently adjudicated.",
+  "primary_metric_selection_eligible": false,
+  "render_dpi": 180,
+  "limitations": [
+    "Four half-page crops from one company and one annual report; too small for model selection.",
+    "References were manually transcribed by one reviewer and are not independently adjudicated.",
+    "The PDF includes paired scanned statement pages on landscape sheets with stamps, signatures, and scan artifacts.",
+    "CER/WER measure text recognition only, not layout or table extraction."
+  ],
+  "source_pdf_sha256": "d41b87341194c900dc0e25df540a8236df56d9575124e3a9c29852eb3f768346",
+  "source_download_url": "https://owa.hnx.vn/ftp/cims/2025/3_W5/000000014671229_VI_BaoCaoThuongNien_2024.pdf",
+  "pages": [
+    {
+      "id": "hgm-ar-2024-page-62-audited-page-2-vi",
+      "document_id": "HGM-AR-2024",
+      "company": "HGM",
+      "file": "data/raw/vietnam_enterprises/hgm/hgm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "d41b87341194c900dc0e25df540a8236df56d9575124e3a9c29852eb3f768346",
+      "source_url": "https://owa.hnx.vn/ftp/cims/2025/3_W5/000000014671229_VI_BaoCaoThuongNien_2024.pdf",
+      "page": 62,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": true,
+      "layout_type": "scanned_financial_report_prose",
+      "reference_annotation_method": "manual_transcription_single_reviewer_visual_checked",
+      "reference_text": "Công ty Cổ phần Cơ khí và Khoáng sản Hà Giang\nSố 390 đường Nguyễn Trãi, thành phố Hà Giang, tỉnh Hà Giang\n\nBÁO CÁO CỦA BAN GIÁM ĐỐC\n\nBan Giám đốc Công ty Cổ phần Cơ khí và Khoáng sản Hà Giang (sau đây gọi tắt là “Công ty”) trình bày Báo cáo của mình và Báo cáo tài chính của Công ty cho năm tài chính kết thúc ngày 31/12/2024.\n\nCÔNG TY\n\nCông ty Cổ phần Cơ khí và Khoáng sản Hà Giang được thành lập theo Quyết định số 604/QĐ-UB ngày 09 tháng 08 năm 1995 của Ủy ban Nhân dân tỉnh Hà Giang. Theo Quyết định số 2050/QĐ-UBND ngày 30 tháng 09 năm 2005 của Ủy ban Nhân dân tỉnh Hà Giang, Công ty Cơ khí và Khai thác Khoáng sản Hà Giang được chuyển đổi thành Công ty Cổ phần Cơ khí và Khoáng sản Hà Giang. Công ty chính thức đi vào hoạt động từ ngày 03 tháng 01 năm 2006 và hoạt động theo Giấy chứng nhận đăng ký kinh doanh số 1003000027 ngày 28 tháng 02 năm 2006 và Giấy chứng nhận đăng ký kinh doanh điều chỉnh lần thứ 8 ngày 01 tháng 06 năm 2021 do Sở Kế hoạch và Đầu tư tỉnh Hà Giang cấp.\n\nTrụ sở chính của Công ty được đặt tại: Số 390 đường Nguyễn Trãi, thành phố Hà Giang, tỉnh Hà Giang.\n\nHỘI ĐỒNG QUẢN TRỊ, BAN GIÁM ĐỐC VÀ BAN KIỂM SOÁT\n\nCác thành viên của Hội đồng Quản trị trong năm và tại ngày lập báo cáo này bao gồm:\nÔng Phạm Thành Đô — Chủ tịch\nÔng Nguyễn Việt Phương — Phó Chủ tịch\nÔng Trịnh Ngọc Hiếu — Thành viên\nÔng Nguyễn Trung Hiếu — Thành viên\nÔng Tạ Hồng Thắng — Thành viên\nÔng Đỗ Khắc Hùng — Thành viên\nÔng Trần Nguyên Nam — Thành viên\n\nCác thành viên của Ban Giám đốc đã điều hành Công ty trong năm và tại ngày lập báo cáo này bao gồm:\nÔng Đỗ Khắc Hùng — Giám đốc\nÔng Trịnh Ngọc Hiếu — Phó Giám đốc\nÔng Nguyễn Văn Biên — Phó Giám đốc\nÔng Vũ Thắng Bình — Phó Giám đốc kiêm Giám đốc Chi nhánh Hà Nội\n\nCác thành viên của Ban Kiểm soát bao gồm:\nÔng Nguyễn Ngọc Tuấn — Trưởng ban\nBà Nguyễn Thị Lương Thanh — Thành viên\nÔng Nguyễn Hữu Trọng — Thành viên\n\nNGƯỜI ĐẠI DIỆN THEO PHÁP LUẬT\n\nNgười đại diện theo pháp luật của Công ty trong năm và cho đến khi lập Báo cáo tài chính này là Ông Đỗ Khắc Hùng - Giám đốc.\n\n2",
+      "clip_rect": [
+        0,
+        0,
+        595.5,
+        842.25
+      ]
+    },
+    {
+      "id": "hgm-ar-2024-page-62-audited-page-3-vi",
+      "document_id": "HGM-AR-2024",
+      "company": "HGM",
+      "file": "data/raw/vietnam_enterprises/hgm/hgm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "d41b87341194c900dc0e25df540a8236df56d9575124e3a9c29852eb3f768346",
+      "source_url": "https://owa.hnx.vn/ftp/cims/2025/3_W5/000000014671229_VI_BaoCaoThuongNien_2024.pdf",
+      "page": 62,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": true,
+      "layout_type": "scanned_financial_report_prose",
+      "reference_annotation_method": "manual_transcription_single_reviewer_visual_checked",
+      "reference_text": "Công ty Cổ phần Cơ khí và Khoáng sản Hà Giang\nSố 390 đường Nguyễn Trãi, thành phố Hà Giang, tỉnh Hà Giang\n\nKIỂM TOÁN VIÊN\n\nCông ty TNHH Hãng Kiểm toán AASC đã thực hiện kiểm toán các Báo cáo tài chính cho Công ty.\n\nCÔNG BỐ TRÁCH NHIỆM CỦA BAN GIÁM ĐỐC ĐỐI VỚI BÁO CÁO TÀI CHÍNH\n\nBan Giám đốc Công ty chịu trách nhiệm về việc lập Báo cáo tài chính phản ánh trung thực, hợp lý tình hình tài chính, kết quả hoạt động kinh doanh và tình hình lưu chuyển tiền tệ của Công ty trong năm. Trong quá trình lập Báo cáo tài chính, Ban Giám đốc Công ty cam kết đã tuân thủ các yêu cầu sau:\n- Xây dựng và duy trì kiểm soát nội bộ mà Ban Giám đốc và Ban quản trị Công ty xác định là cần thiết để đảm bảo cho việc lập và trình bày Báo cáo tài chính không còn sai sót trọng yếu do gian lận hoặc nhầm lẫn;\n- Lựa chọn các chính sách kế toán thích hợp và áp dụng các chính sách này một cách nhất quán;\n- Đưa ra các đánh giá, dự đoán hợp lý và thận trọng;\n- Nêu rõ các Chuẩn mực kế toán áp dụng được tuân thủ hay không, có những áp dụng sai lệch trọng yếu đến mức cần phải công bố và giải thích trong Báo cáo tài chính hay không;\n- Lập và trình bày các Báo cáo tài chính trên cơ sở tuân thủ các Chuẩn mực kế toán, Chế độ kế toán doanh nghiệp Việt Nam và các quy định pháp lý có liên quan đến việc lập và trình bày Báo cáo tài chính;\n- Lập các Báo cáo tài chính dựa trên cơ sở hoạt động kinh doanh liên tục, trừ trường hợp không thể cho rằng Công ty sẽ tiếp tục hoạt động kinh doanh.\n\nBan Giám đốc Công ty đảm bảo rằng các sổ kế toán được lưu giữ để phản ánh tình hình tài chính của Công ty, với mức độ trung thực, hợp lý tại bất cứ thời điểm nào và đảm bảo rằng Báo cáo tài chính tuân thủ các quy định hiện hành của Nhà nước. Đồng thời có trách nhiệm trong việc bảo đảm an toàn tài sản của Công ty và thực hiện các biện pháp thích hợp để ngăn chặn, phát hiện các hành vi gian lận và vi phạm khác.\n\nBan Giám đốc Công ty cam kết rằng Báo cáo tài chính đã phản ánh trung thực và hợp lý tình hình tài chính của Công ty tại thời điểm ngày 31/12/2024, kết quả hoạt động kinh doanh và tình hình lưu chuyển tiền tệ cho năm tài chính kết thúc cùng ngày, phù hợp với Chuẩn mực kế toán, Chế độ kế toán doanh nghiệp Việt Nam và tuân thủ các quy định pháp lý có liên quan đến việc lập và trình bày Báo cáo tài chính năm.\n\nCam kết khác\n\nBan Giám đốc cam kết rằng Công ty tuân thủ Nghị định 155/2020/NĐ-CP của Chính phủ ngày 31/12/2020 về quy định chi tiết thi hành một số điều của Luật Chứng khoán và Công ty không vi phạm nghĩa vụ công bố thông tin theo quy định tại Thông tư số 96/2020/TT-BTC ngày 16/11/2020 của Bộ Tài chính hướng dẫn công bố thông tin trên Thị trường chứng khoán và Thông tư số 68/2024/TT-BTC ngày 18/09/2024 của Bộ Tài chính về việc sửa đổi, bổ sung một số điều của Thông tư số 96/2020/TT-BTC.\n\nThay mặt Ban Giám đốc\nĐỗ Khắc Hùng\nGiám đốc\nHà Giang, ngày 03 tháng 03 năm 2025\n\n3",
+      "clip_rect": [
+        595.5,
+        0,
+        1191,
+        842.25
+      ]
+    },
+    {
+      "id": "hgm-ar-2024-page-63-audited-page-4-vi",
+      "document_id": "HGM-AR-2024",
+      "company": "HGM",
+      "file": "data/raw/vietnam_enterprises/hgm/hgm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "d41b87341194c900dc0e25df540a8236df56d9575124e3a9c29852eb3f768346",
+      "source_url": "https://owa.hnx.vn/ftp/cims/2025/3_W5/000000014671229_VI_BaoCaoThuongNien_2024.pdf",
+      "page": 63,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": true,
+      "layout_type": "scanned_financial_report_prose",
+      "reference_annotation_method": "manual_transcription_single_reviewer_visual_checked",
+      "reference_text": "AASC\nSố: 040325.001/BCTC.KT3\n\nBÁO CÁO KIỂM TOÁN ĐỘC LẬP\n\nKính gửi: Quý Cổ đông, Hội đồng Quản trị và Ban Giám đốc\nCông ty Cổ phần Cơ khí và Khoáng sản Hà Giang\n\nChúng tôi đã kiểm toán Báo cáo tài chính kèm theo của Công ty Cổ phần Cơ khí và Khoáng sản Hà Giang được lập ngày 03 tháng 03 năm 2025, từ trang 06 đến trang 36, bao gồm: Bảng cân đối kế toán tại ngày 31 tháng 12 năm 2024, Báo cáo kết quả hoạt động kinh doanh, Báo cáo lưu chuyển tiền tệ cho năm tài chính kết thúc cùng ngày và Bản Thuyết minh Báo cáo tài chính.\n\nTrách nhiệm của Ban Giám đốc\n\nBan Giám đốc Công ty chịu trách nhiệm về việc lập và trình bày trung thực và hợp lý Báo cáo tài chính của Công ty theo Chuẩn mực kế toán, Chế độ kế toán doanh nghiệp Việt Nam và các quy định pháp lý có liên quan đến việc lập và trình bày Báo cáo tài chính và chịu trách nhiệm về kiểm soát nội bộ mà Ban Giám đốc xác định là cần thiết để đảm bảo cho việc lập và trình bày Báo cáo tài chính không có sai sót trọng yếu do gian lận hoặc nhầm lẫn.\n\nTrách nhiệm của Kiểm toán viên\n\nTrách nhiệm của chúng tôi là đưa ra ý kiến về Báo cáo tài chính dựa trên kết quả của cuộc kiểm toán. Chúng tôi đã tiến hành kiểm toán theo các Chuẩn mực kiểm toán Việt Nam. Các chuẩn mực này yêu cầu chúng tôi tuân thủ chuẩn mực và các quy định về đạo đức nghề nghiệp, lập kế hoạch và thực hiện cuộc kiểm toán để đạt được sự đảm bảo hợp lý về việc liệu Báo cáo tài chính của Công ty có còn sai sót trọng yếu hay không.\n\nCông việc kiểm toán bao gồm thực hiện các thủ tục nhằm thu thập các bằng chứng kiểm toán về các số liệu và thuyết minh trên Báo cáo tài chính. Các thủ tục kiểm toán được lựa chọn dựa trên xét đoán của kiểm toán viên, bao gồm đánh giá rủi ro có sai sót trọng yếu trong Báo cáo tài chính do gian lận hoặc nhầm lẫn. Khi thực hiện đánh giá các rủi ro này, kiểm toán viên đã xem xét kiểm soát nội bộ của Công ty liên quan đến việc lập và trình bày Báo cáo tài chính trung thực, hợp lý nhằm thiết kế các thủ tục kiểm toán phù hợp với tình hình thực tế, tuy nhiên không nhằm mục đích đưa ra ý kiến về hiệu quả của kiểm soát nội bộ của Công ty. Công việc kiểm toán cũng bao gồm đánh giá tính thích hợp của các chính sách kế toán được áp dụng và tính hợp lý của các ước tính kế toán của Ban Giám đốc cũng như đánh giá việc trình bày tổng thể Báo cáo tài chính.\n\nChúng tôi tin tưởng rằng các bằng chứng kiểm toán mà chúng tôi đã thu thập được là đầy đủ và thích hợp làm cơ sở cho ý kiến kiểm toán của chúng tôi.\n\nÝ kiến của Kiểm toán viên\n\nTheo ý kiến của chúng tôi, Báo cáo tài chính đã phản ánh trung thực và hợp lý, trên các khía cạnh trọng yếu, tình hình tài chính của Công ty Cổ phần Cơ khí và Khoáng sản Hà Giang tại ngày 31 tháng 12 năm 2024, cũng như kết quả hoạt động kinh doanh và tình hình lưu chuyển tiền tệ trong năm tài chính kết thúc cùng ngày, phù hợp với Chuẩn mực kế toán, Chế độ kế toán doanh nghiệp Việt Nam và các quy định pháp lý có liên quan đến việc lập và trình bày báo cáo tài chính.\n\n4",
+      "clip_rect": [
+        0,
+        0,
+        595.5,
+        842.25
+      ]
+    },
+    {
+      "id": "hgm-ar-2024-page-63-audited-page-5-vi",
+      "document_id": "HGM-AR-2024",
+      "company": "HGM",
+      "file": "data/raw/vietnam_enterprises/hgm/hgm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "d41b87341194c900dc0e25df540a8236df56d9575124e3a9c29852eb3f768346",
+      "source_url": "https://owa.hnx.vn/ftp/cims/2025/3_W5/000000014671229_VI_BaoCaoThuongNien_2024.pdf",
+      "page": 63,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": true,
+      "layout_type": "scanned_financial_report_prose",
+      "reference_annotation_method": "manual_transcription_single_reviewer_visual_checked",
+      "reference_text": "Vấn đề cần nhấn mạnh\n\nChúng tôi lưu ý người đọc Báo cáo tài chính đến Thuyết minh số 32 phần Thuyết minh Báo cáo tài chính, trong đó mô tả sự không chắc chắn liên quan đến khoản thuế thu nhập doanh nghiệp phải nộp bổ sung cho giai đoạn 2008 - 2018 theo kết quả làm việc của Kiểm toán Nhà nước năm 2019.\n\nVấn đề cần nhấn mạnh này không làm thay đổi ý kiến chấp nhận toàn phần nêu trên của chúng tôi.\n\nCông ty TNHH Hãng Kiểm toán AASC\n\nVũ Xuân Biên\nPhó Tổng Giám đốc\nGiấy chứng nhận đăng ký hành nghề kiểm toán số: 0743-2023-002-1\nHà Nội, ngày 04 tháng 03 năm 2025\n\nLê Văn Hưng\nKiểm toán viên\nGiấy chứng nhận đăng ký hành nghề kiểm toán số: 3953-2023-002-1\n\n5",
+      "clip_rect": [
+        595.5,
+        0,
+        1191,
+        842.25
+      ]
+    }
+  ]
+}

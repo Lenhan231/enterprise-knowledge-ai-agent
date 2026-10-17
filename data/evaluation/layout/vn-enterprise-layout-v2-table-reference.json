@@ -1,0 +1,4939 @@
+{
+  "dataset_id": "vn-enterprise-layout-v2-adjudicated-table-regions",
+  "status": "assistant-adjudicated_known_positive_regions_not_exhaustive_page_labels",
+  "provenance": {
+    "adjudication_method": "assistant visual review; not human-reviewed",
+    "candidate_source": "artifacts/evaluation/document-pipelines/tables/candidate-review/candidates.json",
+    "candidate_source_sha256": "f0c10d92eb3804b6b56f5a47915cba6e69c77c05437acb91e3579542af232b44",
+    "decision_source": "artifacts/evaluation/document-pipelines/tables/candidate-review/adjudication-v1.csv",
+    "decision_source_sha256": "e7077a7a722fcc7408d42705e2c5f7d11967a485fbf5d12ddc7eed94c07f38b1",
+    "layout_input_manifest": "artifacts/evaluation/document-pipelines/layout/inputs/manifest.json",
+    "layout_input_manifest_sha256": "0be28bf6dfc1deaf9e030a2c78115282d236d4cbd040ad4c5440d6b4bed1c33b",
+    "bbox_conversion": "PyMuPDF source-page coordinates scaled to exact 180-DPI layout input image dimensions; every source render was verified to match.",
+    "label_scope": "149 accepted complete-table regions across 114 pages. Candidate review did not exhaustively label all tables on these pages; score known-positive recall only and do not score unmatched predictions as false positives. TBL-014 was excluded after full-page review identified a photograph, not a table.",
+    "split_policy": "Issuer-level development/validation/locked_test split; locked_test was scored once on frozen baseline outputs and is not for tuning."
+  },
+  "page_count": 114,
+  "region_count": 149,
+  "split_page_counts": {
+    "development": 64,
+    "validation": 27,
+    "locked_test": 23
+  },
+  "split_region_counts": {
+    "development": 85,
+    "validation": 34,
+    "locked_test": 30
+  },
+  "pages": [
+    {
+      "page_id": "LAYOUTV2-003",
+      "source_file": "data/raw/vietnam_enterprises/bac_a_bank/bac-a-bank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "b1f14d43765d77b987328a13ab7a6eb03cec81cb199d188977e269d9799ec95a",
+      "page_number": 15,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-003.jpg",
+      "image_sha256": "cfcf62b65435fe868148122589c58112a16883a81df55f20936adbc141c26b88",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            166.79480651750995,
+            353.2342488679366,
+            1349.862617063746,
+            1814.9147696188968
+          ],
+          "bbox_pdf_points": [
+            66.7,
+            141.24,
+            539.8,
+            725.69
+          ],
+          "candidate_id": "TBL-001",
+          "candidate_crop_sha256": "5a6435173d3b824a327f07531390f3ea36c9afc8d27a7bc9ae1a0f0561ff55c1",
+          "adjudication": {
+            "candidate_id": "TBL-001",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-004",
+      "source_file": "data/raw/vietnam_enterprises/bac_a_bank/bac-a-bank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "b1f14d43765d77b987328a13ab7a6eb03cec81cb199d188977e269d9799ec95a",
+      "page_number": 21,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-004.jpg",
+      "image_sha256": "dd003c0317ef5852899dcafcc4e12992d119926a626e830b4ebdb71c9a242fb7",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            180.09838029072063,
+            582.371333838769,
+            1356.0642830332126,
+            987.3502485880255
+          ],
+          "bbox_pdf_points": [
+            72.02,
+            232.86,
+            542.28,
+            394.79
+          ],
+          "candidate_id": "TBL-047",
+          "candidate_crop_sha256": "b3136e5a0e1660404fee260e9f569fa483f0d115d263fa15d1582ff24f22e7b3",
+          "adjudication": {
+            "candidate_id": "TBL-047",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-005",
+      "source_file": "data/raw/vietnam_enterprises/bac_a_bank/bac-a-bank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "b1f14d43765d77b987328a13ab7a6eb03cec81cb199d188977e269d9799ec95a",
+      "page_number": 23,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-005.jpg",
+      "image_sha256": "a89dd8d0bdceed258e8eba79e45ea3c7e317311aef58717bd829e0a562ac06dd",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            180.2234138788147,
+            244.64297808171594,
+            1349.9376372166028,
+            681.3589546982487
+          ],
+          "bbox_pdf_points": [
+            72.07,
+            97.82,
+            539.83,
+            272.44
+          ],
+          "candidate_id": "TBL-087",
+          "candidate_crop_sha256": "a2e05778ef9f5baab67fc3ce94ee773912927ffaef70458eed4b3f9f17ebf35e",
+          "adjudication": {
+            "candidate_id": "TBL-087",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            180.2234138788147,
+            750.6102740918566,
+            1349.9376372166028,
+            1215.4619438531379
+          ],
+          "bbox_pdf_points": [
+            72.07,
+            300.13,
+            539.83,
+            486.0
+          ],
+          "candidate_id": "TBL-125",
+          "candidate_crop_sha256": "afef25d05b91fde4ff3931b989e67ad0f1f26a2dcd8df437d6b69f9e9d22ce49",
+          "adjudication": {
+            "candidate_id": "TBL-125",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-008",
+      "source_file": "data/raw/vietnam_enterprises/bidv/bidv-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6b7b841b9db815df68cc79f029702084d96d38f51b52f8dca3351830caf7a86f",
+      "page_number": 69,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-008.jpg",
+      "image_sha256": "3cc1235a02f05bf662bfeeca8718c6d4e6150146f5bdf5252f6a11324c96bc71",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1630.3672171620055,
+            529.0691090878431,
+            2834.84503933462,
+            1452.8147723794482
+          ],
+          "bbox_pdf_points": [
+            652.01,
+            211.6,
+            1133.7,
+            581.05
+          ],
+          "candidate_id": "TBL-002",
+          "candidate_crop_sha256": "11cc497705b16b07c107ad567317bb18078d637b8a6817fb3677421aa05a9122",
+          "adjudication": {
+            "candidate_id": "TBL-002",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            141.92979133159832,
+            1525.549273246014,
+            1345.4324088069027,
+            1839.1402357308782
+          ],
+          "bbox_pdf_points": [
+            56.76,
+            610.14,
+            538.06,
+            735.56
+          ],
+          "candidate_id": "TBL-048",
+          "candidate_crop_sha256": "0a5d06f7c12b5d79a06addbdc4ecd2ac074a4105d0c00f93172cd2efc4790b61",
+          "adjudication": {
+            "candidate_id": "TBL-048",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-009",
+      "source_file": "data/raw/vietnam_enterprises/bidv/bidv-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6b7b841b9db815df68cc79f029702084d96d38f51b52f8dca3351830caf7a86f",
+      "page_number": 70,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-009.jpg",
+      "image_sha256": "14fa3fe2ee3b360542f5634db622525b65f1824ab99c8743eceb344cc9b54fcc",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1630.3422119133566,
+            569.6244065803044,
+            2834.0448713778533,
+            1819.8627176256455
+          ],
+          "bbox_pdf_points": [
+            652.0,
+            227.82,
+            1133.38,
+            727.85
+          ],
+          "candidate_id": "TBL-088",
+          "candidate_crop_sha256": "eec4fd3927552be9bea969553211fac642b86d9493de520bd14b828b6ae2de73",
+          "adjudication": {
+            "candidate_id": "TBL-088",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-010",
+      "source_file": "data/raw/vietnam_enterprises/bidv/bidv-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6b7b841b9db815df68cc79f029702084d96d38f51b52f8dca3351830caf7a86f",
+      "page_number": 89,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-010.jpg",
+      "image_sha256": "94bcc0d4f7da65c6e97d1e4c4de48dd2be0c66b3f4a10cf8fce6b612970b90ef",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            141.80476508835346,
+            1057.0380744705885,
+            1344.1571411258049,
+            1646.8151134669988
+          ],
+          "bbox_pdf_points": [
+            56.71,
+            422.76,
+            537.55,
+            658.64
+          ],
+          "candidate_id": "TBL-126",
+          "candidate_crop_sha256": "56daeaf678e43822ff84930334d3daf1ed9e3bde7ebd7043ceb15e5874a0b21e",
+          "adjudication": {
+            "candidate_id": "TBL-126",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-013",
+      "source_file": "data/raw/vietnam_enterprises/bao_long/baolong-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c3a277ab92a6d4003cc54ebf6f4b3ba0a35f083a3c9637306ebea1d86d839d02",
+      "page_number": 42,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-013.jpg",
+      "image_sha256": "254565edabe21bb274ca0ad60984e7f9e9d7c6bbf87bf9dcaeaef0f8f64144b3",
+      "width_px": 2906,
+      "height_px": 2056,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1594.7494560907123,
+            426.63312590387386,
+            2764.2507270462743,
+            1617.7694033790754
+          ],
+          "bbox_pdf_points": [
+            637.79,
+            170.58,
+            1105.51,
+            646.83
+          ],
+          "candidate_id": "TBL-003",
+          "candidate_crop_sha256": "13224756bb815780555b6e8746914a51c84cd4d106dfa6cba024423907b7fc70",
+          "adjudication": {
+            "candidate_id": "TBL-003",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-014",
+      "source_file": "data/raw/vietnam_enterprises/bao_long/baolong-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c3a277ab92a6d4003cc54ebf6f4b3ba0a35f083a3c9637306ebea1d86d839d02",
+      "page_number": 43,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-014.jpg",
+      "image_sha256": "6e92ff810083e087e4b5d8ce4421a851a8471ed777dee04bf1aeae09ff4d07d1",
+      "width_px": 2906,
+      "height_px": 2056,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            141.74939504505005,
+            426.63312590387386,
+            1311.250666000612,
+            1892.6874078306746
+          ],
+          "bbox_pdf_points": [
+            56.69,
+            170.58,
+            524.41,
+            756.75
+          ],
+          "candidate_id": "TBL-049",
+          "candidate_crop_sha256": "a21656af3ad7290c62fb733d5d9672164807ff569580d307d689caafe245743f",
+          "adjudication": {
+            "candidate_id": "TBL-049",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-015",
+      "source_file": "data/raw/vietnam_enterprises/bao_long/baolong-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c3a277ab92a6d4003cc54ebf6f4b3ba0a35f083a3c9637306ebea1d86d839d02",
+      "page_number": 44,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-015.jpg",
+      "image_sha256": "db009be38ed570a01ce288fe9e0104b057b935f514e277b75b0d5c667f6e50fd",
+      "width_px": 2906,
+      "height_px": 2056,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            141.74939504505005,
+            491.6610381649872,
+            1312.0508037041652,
+            1398.1751458203926
+          ],
+          "bbox_pdf_points": [
+            56.69,
+            196.58,
+            524.73,
+            559.03
+          ],
+          "candidate_id": "TBL-089",
+          "candidate_crop_sha256": "4bb1ef97e5048628205ac8c9f0c5d9ff8338aa06df6e5b4164e53e8bc637675b",
+          "adjudication": {
+            "candidate_id": "TBL-089",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1594.7494560907123,
+            491.6610381649872,
+            2763.125533400653,
+            1925.0012780773511
+          ],
+          "bbox_pdf_points": [
+            637.79,
+            196.58,
+            1105.06,
+            769.67
+          ],
+          "candidate_id": "TBL-127",
+          "candidate_crop_sha256": "d27172ecc614e63f820b173396353f1f303476c367dd110fe7ddcf2385d78d31",
+          "adjudication": {
+            "candidate_id": "TBL-127",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-016",
+      "source_file": "data/raw/vietnam_enterprises/bao_long/baolong-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c3a277ab92a6d4003cc54ebf6f4b3ba0a35f083a3c9637306ebea1d86d839d02",
+      "page_number": 45,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-016.jpg",
+      "image_sha256": "d14ddd3f2b91147b3a83b32b2425a9777c83cd83dead46cdbb8f259f31c38e0b",
+      "width_px": 2906,
+      "height_px": 2056,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1594.7494560907123,
+            369.90877782379494,
+            2764.2507270462743,
+            1360.3088922960367
+          ],
+          "bbox_pdf_points": [
+            637.79,
+            147.9,
+            1105.51,
+            543.89
+          ],
+          "candidate_id": "TBL-162",
+          "candidate_crop_sha256": "6b02d03a8cd7329569be4faa0bb4c37ace508e4df1da6e8b840ecfc65c6fe362",
+          "adjudication": {
+            "candidate_id": "TBL-162",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            871.8000366273974,
+            519.9731907340565,
+            1312.000795097693,
+            1482.6614102888698
+          ],
+          "bbox_pdf_points": [
+            348.66,
+            207.9,
+            524.71,
+            592.81
+          ],
+          "candidate_id": "TBL-196",
+          "candidate_crop_sha256": "54d09eed5da400a71f2a9b60e10aba7cbb0849fc0b59995a13f1d0e66b80f714",
+          "adjudication": {
+            "candidate_id": "TBL-196",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-019",
+      "source_file": "data/raw/vietnam_enterprises/bao_viet/baoviet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806140dae7404c175f888a041cb3158f9220eab9cdba9f75f5c5f0cce3feb4ac",
+      "page_number": 75,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-019.jpg",
+      "image_sha256": "9077f08e52547208919a07439945eb043328684a2d6848f9c1fb4472cd3088fd",
+      "width_px": 2105,
+      "height_px": 1489,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1279.5921453586268,
+            1097.5720656101578,
+            1962.7063764261584,
+            1369.670083561964
+          ],
+          "bbox_pdf_points": [
+            511.77,
+            438.79,
+            784.98,
+            547.57
+          ],
+          "candidate_id": "TBL-128",
+          "candidate_crop_sha256": "e46385c6758c6cdfd5c0fdbb4b0289081f4650862134bb42bb98db9f5898b1a1",
+          "adjudication": {
+            "candidate_id": "TBL-128",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-020",
+      "source_file": "data/raw/vietnam_enterprises/bao_viet/baoviet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806140dae7404c175f888a041cb3158f9220eab9cdba9f75f5c5f0cce3feb4ac",
+      "page_number": 107,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-020.jpg",
+      "image_sha256": "1fbc8892d14a3ac82b92f30d541c5e412e7104499909214f97508769783d3b38",
+      "width_px": 2105,
+      "height_px": 1489,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            145.16896254083255,
+            626.5658440590908,
+            1964.8316540382787,
+            1151.6514841440614
+          ],
+          "bbox_pdf_points": [
+            58.06,
+            250.49,
+            785.83,
+            460.41
+          ],
+          "candidate_id": "TBL-197",
+          "candidate_crop_sha256": "ff6cd73ce818f52ef0f6763a4d5a5647e8db126eef0de728d3b5b9f705ae1ba6",
+          "adjudication": {
+            "candidate_id": "TBL-197",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-021",
+      "source_file": "data/raw/vietnam_enterprises/binh_minh_plastics/bmp-ar-2024-vn.pdf",
+      "source_pdf_sha256": "8e57aa5919d0471a263884bc42a8b26a3d48bac84ce07cfb326e44587ba0e611",
+      "page_number": 2,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-021.jpg",
+      "image_sha256": "52d3091b93293f25702b1ecb9ddbd7d1b5b56db3ef523113874d97546f722436",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            589.0236371753225,
+            1398.6076916373668,
+            1365.636649715277,
+            1533.2752824477225
+          ],
+          "bbox_pdf_points": [
+            235.56,
+            559.37,
+            546.14,
+            613.23
+          ],
+          "candidate_id": "TBL-164",
+          "candidate_crop_sha256": "e16354e4b9d143226b6f34c8aa28799e4d3f1de8d3f59fd377f442b4e6c08de4",
+          "adjudication": {
+            "candidate_id": "TBL-164",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-025",
+      "source_file": "data/raw/vietnam_enterprises/bsr/bsr-ar-2024-vi.pdf",
+      "source_pdf_sha256": "974ce018e1fbc525aa863019375ab46a818a824404f1765c9c4b9479b83615bd",
+      "page_number": 16,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-025.jpg",
+      "image_sha256": "d614c08c8143081560447a959c9a721c97aeb442682a0c54c69248e3ac82c427",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            141.7547545910555,
+            291.28804919061304,
+            1311.3002444010478,
+            1962.206311105659
+          ],
+          "bbox_pdf_points": [
+            56.69,
+            116.5,
+            524.41,
+            784.78
+          ],
+          "candidate_id": "TBL-006",
+          "candidate_crop_sha256": "29314c708389b132457f043d0e58dde8e4c5793f857a27361f522187e23cf72b",
+          "adjudication": {
+            "candidate_id": "TBL-006",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-027",
+      "source_file": "data/raw/vietnam_enterprises/bsr/bsr-ar-2024-vi.pdf",
+      "source_pdf_sha256": "974ce018e1fbc525aa863019375ab46a818a824404f1765c9c4b9479b83615bd",
+      "page_number": 27,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-027.jpg",
+      "image_sha256": "75391c8bafd01787ba03c8f1072a0023e816f2361c92c718ee2fc043edf94014",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            141.7547545910555,
+            490.2890434831529,
+            1311.3002444010478,
+            1107.094613052529
+          ],
+          "bbox_pdf_points": [
+            56.69,
+            196.09,
+            524.41,
+            442.78
+          ],
+          "candidate_id": "TBL-052",
+          "candidate_crop_sha256": "c8e5e2f62aa1b12bf9f9c6e05a9a60727635f003e05bafbec0bb90405f4747f3",
+          "adjudication": {
+            "candidate_id": "TBL-052",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-028",
+      "source_file": "data/raw/vietnam_enterprises/bsr/bsr-ar-2024-vi.pdf",
+      "source_pdf_sha256": "974ce018e1fbc525aa863019375ab46a818a824404f1765c9c4b9479b83615bd",
+      "page_number": 28,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-028.jpg",
+      "image_sha256": "3bd272aa312fafe25dd25c8e54115094beada339b8a2166ac44a8c69426731ee",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1665.6996335030112,
+            291.28804919061304,
+            2834.895049831918,
+            631.507489992044
+          ],
+          "bbox_pdf_points": [
+            666.14,
+            116.5,
+            1133.72,
+            252.57
+          ],
+          "candidate_id": "TBL-092",
+          "candidate_crop_sha256": "c921ae50dbab9e4e9c43eb603d0ca75c58f0897fa682b9d5be957c91c266667c",
+          "adjudication": {
+            "candidate_id": "TBL-092",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1665.6996335030112,
+            1638.2139899544177,
+            2834.895049831918,
+            1909.3744099949497
+          ],
+          "bbox_pdf_points": [
+            666.14,
+            655.2,
+            1133.72,
+            763.65
+          ],
+          "candidate_id": "TBL-130",
+          "candidate_crop_sha256": "9001f296e690887a612eb34d230fe497efe67cbee9a6f23fbaf423ece81acf9e",
+          "adjudication": {
+            "candidate_id": "TBL-130",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-029",
+      "source_file": "data/raw/vietnam_enterprises/bsr/bsr-ar-2024-vi.pdf",
+      "source_pdf_sha256": "974ce018e1fbc525aa863019375ab46a818a824404f1765c9c4b9479b83615bd",
+      "page_number": 29,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-029.jpg",
+      "image_sha256": "c9e9afd5ba5fa02d8d5d22ae4e05034fc3e05ebea165c47e56ef9775c5559c5e",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            141.7547545910555,
+            582.9511473716003,
+            1311.3002444010478,
+            1068.4395637779637
+          ],
+          "bbox_pdf_points": [
+            56.69,
+            233.15,
+            524.41,
+            427.32
+          ],
+          "candidate_id": "TBL-165",
+          "candidate_crop_sha256": "bb9f3f7dc87babd213fd7f19d38b5d91e23ee84f05d181fd236e167970159a64",
+          "adjudication": {
+            "candidate_id": "TBL-165",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-030",
+      "source_file": "data/raw/vietnam_enterprises/bsr/bsr-ar-2024-vi.pdf",
+      "source_pdf_sha256": "974ce018e1fbc525aa863019375ab46a818a824404f1765c9c4b9479b83615bd",
+      "page_number": 32,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-030.jpg",
+      "image_sha256": "4292fa2017947c5e72ca16e20e59ce2435d4264b838b6641aa50e28853527e03",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            141.7547545910555,
+            489.03888018190565,
+            1310.6751131848234,
+            1189.080322348325
+          ],
+          "bbox_pdf_points": [
+            56.69,
+            195.59,
+            524.16,
+            475.57
+          ],
+          "candidate_id": "TBL-199",
+          "candidate_crop_sha256": "f321eb865e46a7cd2481051c7607d0e0d26eb63f984e8e499f4d078a86ddee09",
+          "adjudication": {
+            "candidate_id": "TBL-199",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-033",
+      "source_file": "data/raw/vietnam_enterprises/dhg/dhg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "2e790673b4bd26336e8790ac380199aede7d6eb77f3480af589e23b9d147512a",
+      "page_number": 13,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-033.jpg",
+      "image_sha256": "9e19d932907109e8c7c3ec5d9b8066b99f1908f86ec79f2c06cf373a5aa42df4",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            141.03788737012832,
+            207.8539962008936,
+            1421.781936935464,
+            1658.2052111789012
+          ],
+          "bbox_pdf_points": [
+            56.4,
+            83.11,
+            568.56,
+            663.03
+          ],
+          "candidate_id": "TBL-007",
+          "candidate_crop_sha256": "41f5bf5a6a00602dc6a83bd4ff834e3644da22fc9326ed84c12d8fca88bac502",
+          "adjudication": {
+            "candidate_id": "TBL-007",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-034",
+      "source_file": "data/raw/vietnam_enterprises/dhg/dhg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "2e790673b4bd26336e8790ac380199aede7d6eb77f3480af589e23b9d147512a",
+      "page_number": 16,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-034.jpg",
+      "image_sha256": "d9aad4bd616c1143991a58e48e0585d10231c2d9a480e5d7d9f8cae7c148d32e",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            176.9975473059873,
+            199.17569795980228,
+            1364.241479694566,
+            731.6530692885505
+          ],
+          "bbox_pdf_points": [
+            70.78,
+            79.64,
+            545.55,
+            292.55
+          ],
+          "candidate_id": "TBL-053",
+          "candidate_crop_sha256": "aa6a54b3ff2b3c259f1427b02f776f3b2ad6754bd9f0f91c2dd2c68fad924d41",
+          "adjudication": {
+            "candidate_id": "TBL-053",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-035",
+      "source_file": "data/raw/vietnam_enterprises/dhg/dhg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "2e790673b4bd26336e8790ac380199aede7d6eb77f3480af589e23b9d147512a",
+      "page_number": 21,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-035.jpg",
+      "image_sha256": "5f3100624f2475f20438a25f9cebe93732cf3a197b35f211e6b51c457df723d5",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            177.8477757050271,
+            1459.3296272793098,
+            1347.161891560914,
+            1865.5840267844615
+          ],
+          "bbox_pdf_points": [
+            71.12,
+            583.51,
+            538.72,
+            745.95
+          ],
+          "candidate_id": "TBL-131",
+          "candidate_crop_sha256": "fae36b14e3756f19fd8987b67a4fb2a0b46d9731db08865741b961ccfe364375",
+          "adjudication": {
+            "candidate_id": "TBL-131",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-036",
+      "source_file": "data/raw/vietnam_enterprises/dhg/dhg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "2e790673b4bd26336e8790ac380199aede7d6eb77f3480af589e23b9d147512a",
+      "page_number": 22,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-036.jpg",
+      "image_sha256": "7edd27418b0a1fa420d33ccbca12b64bb4dd958468c3627faed55bf32285b2d9",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            177.89778914026473,
+            142.1790360247961,
+            1347.0618646904384,
+            1710.6751527057304
+          ],
+          "bbox_pdf_points": [
+            71.14,
+            56.85,
+            538.68,
+            684.01
+          ],
+          "candidate_id": "TBL-166",
+          "candidate_crop_sha256": "e7ebe012f2780881c3c8d35ff30ebee13dbd33bb4c95e4704d7ee884ceefa75f",
+          "adjudication": {
+            "candidate_id": "TBL-166",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-037",
+      "source_file": "data/raw/vietnam_enterprises/dong_a_paint/dong-a-paint-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c4efd08a49e07aa6b0c9f516010287ac7023e3185f86ae066db9f1644cb92272",
+      "page_number": 9,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-037.jpg",
+      "image_sha256": "33a1d92c30687e8784893af4a52ffb8ff1a9cf4424c2910191e20ebb987c79b6",
+      "width_px": 1489,
+      "height_px": 2106,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            177.95865869883735,
+            451.1177971500835,
+            1383.4003390910323,
+            965.7627443118769
+          ],
+          "bbox_pdf_points": [
+            71.15,
+            180.37,
+            553.1,
+            386.14
+          ],
+          "candidate_id": "TBL-008",
+          "candidate_crop_sha256": "956f89b352fb1755b5d0d18ed826e7eadbbe1e5ffdd41b73b28f0a85013757e7",
+          "adjudication": {
+            "candidate_id": "TBL-008",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            177.95865869883735,
+            1216.3948585903593,
+            1394.6306184664052,
+            1919.9955610035183
+          ],
+          "bbox_pdf_points": [
+            71.15,
+            486.35,
+            557.59,
+            767.67
+          ],
+          "candidate_id": "TBL-054",
+          "candidate_crop_sha256": "eb2d8b6263e74d11392dd0eb1567516b0786054a9bcf0a0ec54a2f24b5bac711",
+          "adjudication": {
+            "candidate_id": "TBL-054",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-038",
+      "source_file": "data/raw/vietnam_enterprises/dong_a_paint/dong-a-paint-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c4efd08a49e07aa6b0c9f516010287ac7023e3185f86ae066db9f1644cb92272",
+      "page_number": 10,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-038.jpg",
+      "image_sha256": "f3b19dd83bc06bc1d7524040e442912ed32a20f944dbbda5d581b634b7d8b67b",
+      "width_px": 1489,
+      "height_px": 2106,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            178.4839056183982,
+            290.67422733704444,
+            1396.1813474670134,
+            646.6263529144679
+          ],
+          "bbox_pdf_points": [
+            71.36,
+            116.22,
+            558.21,
+            258.54
+          ],
+          "candidate_id": "TBL-094",
+          "candidate_crop_sha256": "bfdafefbb1008929afcc188a8c6a8fdedc096558bd79581e5809a8c55f289cc6",
+          "adjudication": {
+            "candidate_id": "TBL-094",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-039",
+      "source_file": "data/raw/vietnam_enterprises/dong_a_paint/dong-a-paint-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c4efd08a49e07aa6b0c9f516010287ac7023e3185f86ae066db9f1644cb92272",
+      "page_number": 14,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-039.jpg",
+      "image_sha256": "ed8375e2bc90f9d6e044528aa21af14c5d590a78d03e8e62b87182fd80f1d4ff",
+      "width_px": 1489,
+      "height_px": 2106,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            178.4839056183982,
+            227.27213077023941,
+            1404.0850630185007,
+            927.0461977693072
+          ],
+          "bbox_pdf_points": [
+            71.36,
+            90.87,
+            561.37,
+            370.66
+          ],
+          "candidate_id": "TBL-132",
+          "candidate_crop_sha256": "410b21b65958036d48236a10f063232740b0f7c4fea5d3d3170a93a16b756dd8",
+          "adjudication": {
+            "candidate_id": "TBL-132",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-041",
+      "source_file": "data/raw/vietnam_enterprises/dong_a_paint/dong-a-paint-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c4efd08a49e07aa6b0c9f516010287ac7023e3185f86ae066db9f1644cb92272",
+      "page_number": 16,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-041.jpg",
+      "image_sha256": "c7eadc382d2b30ed75ca0f6e94d2076611b2ae5112c18d9bde180c8fcf906124",
+      "width_px": 1489,
+      "height_px": 2106,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            191.54004333319696,
+            452.04319264238,
+            1415.1652718454275,
+            783.4598323294541
+          ],
+          "bbox_pdf_points": [
+            76.58,
+            180.74,
+            565.8,
+            313.25
+          ],
+          "candidate_id": "TBL-167",
+          "candidate_crop_sha256": "9120bac384e59956a2e266731c85e593157b2163f0e8b974a4891ba465b80401",
+          "adjudication": {
+            "candidate_id": "TBL-167",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-048",
+      "source_file": "data/raw/vietnam_enterprises/gelex/gelex-ar-2024-vi.pdf",
+      "source_pdf_sha256": "b41d543e93e3e5dd4d963fe6f46356270742d4b880ddabb1d9c13f8a1b8d5576",
+      "page_number": 4,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-048.jpg",
+      "image_sha256": "9c9aafdc804cd21d945772a03ed767bb2ac48325964c1d07a9121f746632350c",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            141.7547545910555,
+            561.4733418561722,
+            929.7701605149438,
+            1713.9238794779524
+          ],
+          "bbox_pdf_points": [
+            56.69,
+            224.56,
+            371.83,
+            685.48
+          ],
+          "candidate_id": "TBL-010",
+          "candidate_crop_sha256": "25297ad99d998f8be9a518c1cc16b06284c9863e8dbb0f1e88c378ae8237ea14",
+          "adjudication": {
+            "candidate_id": "TBL-010",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-051",
+      "source_file": "data/raw/vietnam_enterprises/gmd/gmd-ar-2024-vi.pdf",
+      "source_pdf_sha256": "2e35b0296304d93e26b9c35ce558764011715462a9c8e78747d9cac0f9e02da0",
+      "page_number": 11,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-051.jpg",
+      "image_sha256": "b1ffe72604c8b53c8900dd42719408a80af5329b16c0d122e1cb887732129acd",
+      "width_px": 3119,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1749.3047826264828,
+            893.8667603917954,
+            2435.052663304425,
+            1035.785298349385
+          ],
+          "bbox_pdf_points": [
+            699.52,
+            357.5,
+            973.74,
+            414.26
+          ],
+          "candidate_id": "TBL-011",
+          "candidate_crop_sha256": "9be952defe48c6127027c3c11d34d230d9754d3cc5f50a93be90d15a3eb0ea86",
+          "adjudication": {
+            "candidate_id": "TBL-011",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1749.3047826264828,
+            1340.375085065269,
+            2455.3085083685755,
+            1872.644612204305
+          ],
+          "bbox_pdf_points": [
+            699.52,
+            536.08,
+            981.84,
+            748.96
+          ],
+          "candidate_id": "TBL-055",
+          "candidate_crop_sha256": "6af8393873e7cea001a6f8b5652d889b3cff6c7775bfd57529ae609e9862877e",
+          "adjudication": {
+            "candidate_id": "TBL-055",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-052",
+      "source_file": "data/raw/vietnam_enterprises/gmd/gmd-ar-2024-vi.pdf",
+      "source_pdf_sha256": "2e35b0296304d93e26b9c35ce558764011715462a9c8e78747d9cac0f9e02da0",
+      "page_number": 18,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-052.jpg",
+      "image_sha256": "6e0d489dd172b22c81e2b2e80a52066b49ed74804a501b68df593da01f75e7e3",
+      "width_px": 3119,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1743.8031950781951,
+            1030.8846582084957,
+            3059.0577273609015,
+            1885.7463236013764
+          ],
+          "bbox_pdf_points": [
+            697.32,
+            412.3,
+            1223.27,
+            754.2
+          ],
+          "candidate_id": "TBL-095",
+          "candidate_crop_sha256": "3a6679b5f7d2a355519944d0340889434a8f43655b1e0d8884e763c1c1178935",
+          "adjudication": {
+            "candidate_id": "TBL-095",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-053",
+      "source_file": "data/raw/vietnam_enterprises/gmd/gmd-ar-2024-vi.pdf",
+      "source_pdf_sha256": "2e35b0296304d93e26b9c35ce558764011715462a9c8e78747d9cac0f9e02da0",
+      "page_number": 19,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-053.jpg",
+      "image_sha256": "7b87cff152ed29661bbcc4329f0fe2dba41215718f904980e6cb897668e45d15",
+      "width_px": 3119,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            283.0316721432773,
+            352.22100849340484,
+            1598.261197209855,
+            1852.3919667240996
+          ],
+          "bbox_pdf_points": [
+            113.18,
+            140.87,
+            639.12,
+            740.86
+          ],
+          "candidate_id": "TBL-133",
+          "candidate_crop_sha256": "d240367593e0d7f9336fece4c17354f650e6a883d06655b559f29994d1c13968",
+          "adjudication": {
+            "candidate_id": "TBL-133",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1741.9026466524226,
+            352.22100849340484,
+            3057.132171719001,
+            1624.6122132368475
+          ],
+          "bbox_pdf_points": [
+            696.56,
+            140.87,
+            1222.5,
+            649.76
+          ],
+          "candidate_id": "TBL-168",
+          "candidate_crop_sha256": "a4c4d21d17e4dd18dc71d554ca4fb301b79d4eb9e5c2ad5a035f988940074ec6",
+          "adjudication": {
+            "candidate_id": "TBL-168",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-058",
+      "source_file": "data/raw/vietnam_enterprises/hoa_sen/hsg-ar-2023-2024-vi.pdf",
+      "source_pdf_sha256": "4505945da4f989f3afaef7dd1ded5f65540743be87c0140256ca11fced6d742c",
+      "page_number": 26,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-058.jpg",
+      "image_sha256": "24afdb928f6cd62153d85e288488e2cd4d80dae8ba45f83c5ccfe4281d66dad0",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1614.7889472536922,
+            1290.3935562814033,
+            2851.3985139402434,
+            1532.3251583387744
+          ],
+          "bbox_pdf_points": [
+            645.78,
+            516.09,
+            1140.32,
+            612.85
+          ],
+          "candidate_id": "TBL-134",
+          "candidate_crop_sha256": "8697b048530f2d9f10cfb2b80f0fe3c13850f77fb2f42f20ae20d4b40bb33094",
+          "adjudication": {
+            "candidate_id": "TBL-134",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-059",
+      "source_file": "data/raw/vietnam_enterprises/hoa_sen/hsg-ar-2023-2024-vi.pdf",
+      "source_pdf_sha256": "4505945da4f989f3afaef7dd1ded5f65540743be87c0140256ca11fced6d742c",
+      "page_number": 28,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-059.jpg",
+      "image_sha256": "d01eb893ec7f9d077d087d43395bd4d5a85d4c2c32847e86517adabf7999b100",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1578.5313367126744,
+            393.52640396661445,
+            2873.4781484972914,
+            1942.8537832023515
+          ],
+          "bbox_pdf_points": [
+            631.28,
+            157.39,
+            1149.15,
+            777.04
+          ],
+          "candidate_id": "TBL-169",
+          "candidate_crop_sha256": "47f644c1732f489638e799629b6584f6ba12edeea248cf2b7527ac112667b101",
+          "adjudication": {
+            "candidate_id": "TBL-169",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-070",
+      "source_file": "data/raw/vietnam_enterprises/hpg/hpg-ar-2025-vi.pdf",
+      "source_pdf_sha256": "b684eb4c8d3b7b5e09258584451c86af553fc3a61c12fb1100bd31559d661e43",
+      "page_number": 55,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-070.jpg",
+      "image_sha256": "fac8476e22bb428943e644487d9e79b63aa3f02baa02f9278c2b3d668a1cfc4b",
+      "width_px": 5520,
+      "height_px": 3105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1256.075,
+            575.425,
+            5296.875,
+            2306.15
+          ],
+          "bbox_pdf_points": [
+            502.43,
+            230.17,
+            2118.75,
+            922.46
+          ],
+          "candidate_id": "TBL-013",
+          "candidate_crop_sha256": "a5d5620b5956bb8cd7413d2cebf3ddedeb787f922b8bdc752e914d9dc35bc7d5",
+          "adjudication": {
+            "candidate_id": "TBL-013",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-071",
+      "source_file": "data/raw/vietnam_enterprises/hpg/hpg-ar-2025-vi.pdf",
+      "source_pdf_sha256": "b684eb4c8d3b7b5e09258584451c86af553fc3a61c12fb1100bd31559d661e43",
+      "page_number": 59,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-071.jpg",
+      "image_sha256": "025630b3543e44d327e420a82e20829a52523d449ed8513c070aad12bdb76dba",
+      "width_px": 5520,
+      "height_px": 3105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            3138.2749999999996,
+            1912.0749999999998,
+            4937.5,
+            2930.0
+          ],
+          "bbox_pdf_points": [
+            1255.31,
+            764.83,
+            1975.0,
+            1172.0
+          ],
+          "candidate_id": "TBL-057",
+          "candidate_crop_sha256": "2fe00f73b35d1db40b1da61e79e2fa3d03a00245d8958f4b841bab17656e4d43",
+          "adjudication": {
+            "candidate_id": "TBL-057",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-077",
+      "source_file": "data/raw/vietnam_enterprises/kien_giang_import_export/kgm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6ae6a055a6f84875d012818117fb9d8619128527dbe0cc458e28b7bbe20274ef",
+      "page_number": 42,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-077.jpg",
+      "image_sha256": "d63253a9a02dddff89f1d9d6c1a93e2980b55a996ce03a4fffa9c6cb688dd638",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            92.21935701743037,
+            962.0006603097714,
+            1408.1705776671884,
+            1971.0324640124647
+          ],
+          "bbox_pdf_points": [
+            36.88,
+            384.75,
+            563.15,
+            788.31
+          ],
+          "candidate_id": "TBL-015",
+          "candidate_crop_sha256": "1a5fe3196503e340fb1edd9ba5a74e8244b2b73fc5f3edacabbc555003573b07",
+          "adjudication": {
+            "candidate_id": "TBL-015",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-085",
+      "source_file": "data/raw/vietnam_enterprises/tra_sas/tra-sas-ar-2024-vi.pdf",
+      "source_pdf_sha256": "eb6709d714523ae0dca29f40306f06bd888c8ef52fc84bfb5ae19433aa132b42",
+      "page_number": 16,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-085.jpg",
+      "image_sha256": "8a37e64c71e78883cd7e73ca1242e768c14a81d75c9242fb7d26aa8b77d041e0",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            107.8726426716905,
+            456.0845755610277,
+            1372.2130301099583,
+            1505.471650627983
+          ],
+          "bbox_pdf_points": [
+            43.14,
+            182.41,
+            548.77,
+            602.11
+          ],
+          "candidate_id": "TBL-017",
+          "candidate_crop_sha256": "ce5eee47eccac4d2601f7eedbe0473542576ebf9456ccadc8d06024442f6d528",
+          "adjudication": {
+            "candidate_id": "TBL-017",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-087",
+      "source_file": "data/raw/vietnam_enterprises/tra_sas/tra-sas-ar-2024-vi.pdf",
+      "source_pdf_sha256": "eb6709d714523ae0dca29f40306f06bd888c8ef52fc84bfb5ae19433aa132b42",
+      "page_number": 18,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-087.jpg",
+      "image_sha256": "c5caf0184de555c08cce673077728906144d8196317b8f3ac1a23984823973e3",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            110.8232620122699,
+            519.09280594389,
+            1373.9383922667378,
+            1133.3730456447468
+          ],
+          "bbox_pdf_points": [
+            44.32,
+            207.61,
+            549.46,
+            453.29
+          ],
+          "candidate_id": "TBL-060",
+          "candidate_crop_sha256": "3fa7cfa138d37e0a5f75a5c4d5036b3c3ba1567be57d5f3ab1c3a55f94920055",
+          "adjudication": {
+            "candidate_id": "TBL-060",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1591.2840135236531,
+            519.09280594389,
+            2854.399143778121,
+            920.7452713686116
+          ],
+          "bbox_pdf_points": [
+            636.38,
+            207.61,
+            1141.52,
+            368.25
+          ],
+          "candidate_id": "TBL-099",
+          "candidate_crop_sha256": "59659ce68cd1c28ae815e2f0d7757050df92ff105a74aa221330edd134762b1c",
+          "adjudication": {
+            "candidate_id": "TBL-099",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1591.2840135236531,
+            1114.4455732638633,
+            2854.399143778121,
+            1622.4119258266521
+          ],
+          "bbox_pdf_points": [
+            636.38,
+            445.72,
+            1141.52,
+            648.88
+          ],
+          "candidate_id": "TBL-137",
+          "candidate_crop_sha256": "53e9986ca564f05554fb1914675a6230e5b51532e06c6de320b733cd4cca3319",
+          "adjudication": {
+            "candidate_id": "TBL-137",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-088",
+      "source_file": "data/raw/vietnam_enterprises/tra_sas/tra-sas-ar-2024-vi.pdf",
+      "source_pdf_sha256": "eb6709d714523ae0dca29f40306f06bd888c8ef52fc84bfb5ae19433aa132b42",
+      "page_number": 22,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-088.jpg",
+      "image_sha256": "daa3280b89debe797b893f52101854b84ec965d237c65b06ec7512d60a1530c1",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1598.0104254102282,
+            479.06257703795245,
+            2862.350812848496,
+            1709.948360179986
+          ],
+          "bbox_pdf_points": [
+            639.07,
+            191.6,
+            1144.7,
+            683.89
+          ],
+          "candidate_id": "TBL-172",
+          "candidate_crop_sha256": "07ec695d3c798fb6053128e3374e1f574aafa9f9fc6131509a8b270979ae6665",
+          "adjudication": {
+            "candidate_id": "TBL-172",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-090",
+      "source_file": "data/raw/vietnam_enterprises/msn/msn-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4e1799001dcbe8380427f344663f9e33d9143c5d2247b8e0d0761db72d9f9699",
+      "page_number": 36,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-090.jpg",
+      "image_sha256": "e758091f31b8154f219a4910ef585cef52f83e3e369b40d70fdaaa2c905fd33d",
+      "width_px": 3402,
+      "height_px": 1701,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            2320.514885508449,
+            482.185235990372,
+            3316.689330534552,
+            664.332990420751
+          ],
+          "bbox_pdf_points": [
+            928.09,
+            192.85,
+            1326.51,
+            265.7
+          ],
+          "candidate_id": "TBL-061",
+          "candidate_crop_sha256": "5c88db0bb925c019711e49c7ed511794601c8750fb3aa2b05c18169cde3cb5da",
+          "adjudication": {
+            "candidate_id": "TBL-061",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            2320.514885508449,
+            692.2114730823672,
+            3316.689330534552,
+            928.2909648231549
+          ],
+          "bbox_pdf_points": [
+            928.09,
+            276.85,
+            1326.51,
+            371.27
+          ],
+          "candidate_id": "TBL-100",
+          "candidate_crop_sha256": "3641f18cf915c66d41c4df82ddc0a7562733bb5d0d1a0cb7c1341338a604227a",
+          "adjudication": {
+            "candidate_id": "TBL-100",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            598.2497351071627,
+            892.2364607890293,
+            1590.523692872986,
+            1621.1275159921056
+          ],
+          "bbox_pdf_points": [
+            239.27,
+            356.85,
+            636.13,
+            648.37
+          ],
+          "candidate_id": "TBL-138",
+          "candidate_crop_sha256": "531c67f150807e8c115c72a04c6b7c9295e26e1dfd4ef59a85529f53b221bfc1",
+          "adjudication": {
+            "candidate_id": "TBL-138",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-091",
+      "source_file": "data/raw/vietnam_enterprises/msn/msn-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4e1799001dcbe8380427f344663f9e33d9143c5d2247b8e0d0761db72d9f9699",
+      "page_number": 37,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-091.jpg",
+      "image_sha256": "6ece356dc8f0e9f89a66da886734df1cbb8df2ed7a83f6f8822327cf1a5cb290",
+      "width_px": 3402,
+      "height_px": 1701,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            85.060626022258,
+            265.08311495825376,
+            1594.6992144913625,
+            801.3501069998146
+          ],
+          "bbox_pdf_points": [
+            34.02,
+            106.02,
+            637.8,
+            320.5
+          ],
+          "candidate_id": "TBL-173",
+          "candidate_crop_sha256": "38e7bb2003c8da4db5b9f9717f486de375eb77ef8a8003708aaff90ad64be77d",
+          "adjudication": {
+            "candidate_id": "TBL-173",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-095",
+      "source_file": "data/raw/vietnam_enterprises/pnj/pnj-ar-2024-vi.pdf",
+      "source_pdf_sha256": "7ced5afbe83443a0be1bbf970c68f3af7fa5131a3f64105a4df1c173d56ca198",
+      "page_number": 33,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-095.jpg",
+      "image_sha256": "c990ec77ff8b7c0b2b4a3ff2b99c307b5c390f75620833ced5699c69e7c19972",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1630.2671961674098,
+            547.1964769559285,
+            2849.4981150429207,
+            851.9112800019373
+          ],
+          "bbox_pdf_points": [
+            651.97,
+            218.85,
+            1139.56,
+            340.72
+          ],
+          "candidate_id": "TBL-101",
+          "candidate_crop_sha256": "3a4298e35ebf575a31a64aafd342863ba06e7a6b97f0b0aea054df6a1173dcb2",
+          "adjudication": {
+            "candidate_id": "TBL-101",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            127.80182584492586,
+            582.201049390852,
+            1346.7326817366497,
+            1062.9388452524756
+          ],
+          "bbox_pdf_points": [
+            51.11,
+            232.85,
+            538.58,
+            425.12
+          ],
+          "candidate_id": "TBL-139",
+          "candidate_crop_sha256": "02347ea56fb754b967d050d28a30a9e02bddcec33b265714fd43cda74cecdee3",
+          "adjudication": {
+            "candidate_id": "TBL-139",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1630.2671961674098,
+            1577.9311155682744,
+            2849.4981150429207,
+            1847.6413461793597
+          ],
+          "bbox_pdf_points": [
+            651.97,
+            631.09,
+            1139.56,
+            738.96
+          ],
+          "candidate_id": "TBL-174",
+          "candidate_crop_sha256": "b00aad2e478fe40bc887c4e16f5d49abb187304a673660feb72c1339957bfc47",
+          "adjudication": {
+            "candidate_id": "TBL-174",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-098",
+      "source_file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "page_number": 7,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-098.jpg",
+      "image_sha256": "1020fb464bbccef04a2b7e1e9561a1b339b8a11f30c7132a2506f7b44f685e6c",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            142.80497503431258,
+            419.2047581742333,
+            1346.157561017723,
+            1494.8452625673813
+          ],
+          "bbox_pdf_points": [
+            57.11,
+            167.66,
+            538.35,
+            597.86
+          ],
+          "candidate_id": "TBL-020",
+          "candidate_crop_sha256": "8e5b58d1e59e3460d977d252dace794439b87fa95cebd639177ccd7280410868",
+          "adjudication": {
+            "candidate_id": "TBL-020",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-099",
+      "source_file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "page_number": 19,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-099.jpg",
+      "image_sha256": "433bfcb04c524540a0c188acfb2441fa803d9b265fa246ebcd3704e0b5c0faea",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1625.2661464376142,
+            485.08836414996426,
+            2834.8200340859717,
+            1324.8230535977532
+          ],
+          "bbox_pdf_points": [
+            649.97,
+            194.01,
+            1133.69,
+            529.86
+          ],
+          "candidate_id": "TBL-102",
+          "candidate_crop_sha256": "961a483c84882e15bfa41fc7602d75ee9a8eb251813916076a4948d820ed9d9f",
+          "adjudication": {
+            "candidate_id": "TBL-102",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-100",
+      "source_file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "page_number": 71,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-100.jpg",
+      "image_sha256": "b77a1ac932f4b22b5613591185e9fa193e0c05cc9a5ee03903b40f17e6991a26",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1630.2671961674098,
+            588.9769344836121,
+            2836.4953857454525,
+            1805.2608102670774
+          ],
+          "bbox_pdf_points": [
+            651.97,
+            235.56,
+            1134.36,
+            722.01
+          ],
+          "candidate_id": "TBL-140",
+          "candidate_crop_sha256": "ac9b252bc5429da7290e29bdc51241a91353cd2f43e806e630d55985021468fb",
+          "adjudication": {
+            "candidate_id": "TBL-140",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-102",
+      "source_file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "page_number": 34,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-102.jpg",
+      "image_sha256": "f440ca7fa3a95621302c7b64628f419af3d4b9db54a8b314f58bbf813a442f14",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            106.32231725545388,
+            426.1806693951931,
+            1382.1901243209004,
+            1108.3947828858263
+          ],
+          "bbox_pdf_points": [
+            42.52,
+            170.45,
+            552.76,
+            443.3
+          ],
+          "candidate_id": "TBL-021",
+          "candidate_crop_sha256": "1c62e2a9408ec25d6087338e19d6b8c73616645edc8c1b205bc92f1e2599373b",
+          "adjudication": {
+            "candidate_id": "TBL-021",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-103",
+      "source_file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "page_number": 63,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-103.jpg",
+      "image_sha256": "20618cdb43e4373ce371b3790fda56bfadc8b1caa2fb4bf135cffba25f843f44",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            106.32231725545388,
+            518.4927275592912,
+            1380.7648251479086,
+            905.5432856254448
+          ],
+          "bbox_pdf_points": [
+            42.52,
+            207.37,
+            552.19,
+            362.17
+          ],
+          "candidate_id": "TBL-064",
+          "candidate_crop_sha256": "0efc3424a0261f4f63631c0d82d59ee6a87b2660937f1c2b2aea92a71c7b29d1",
+          "adjudication": {
+            "candidate_id": "TBL-064",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-104",
+      "source_file": "data/raw/vietnam_enterprises/pvchem/pvchem-ar-2024-vi.pdf",
+      "source_pdf_sha256": "228f980abf106e7773fa77ea0d780abcb9d0f5a9978678f7b396f1904a3cefe6",
+      "page_number": 19,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-104.jpg",
+      "image_sha256": "935754c5725ccdc9216b1065756722166e74d4b6d632dd52cc91f44fa3c0a848",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            161.43782017475237,
+            680.2388554746626,
+            1327.547169218257,
+            1412.8845565376107
+          ],
+          "bbox_pdf_points": [
+            64.54,
+            272.06,
+            530.73,
+            565.08
+          ],
+          "candidate_id": "TBL-022",
+          "candidate_crop_sha256": "8f411d2a2e0f13b406a317e81502735d43737fdf9dc3bbbdf558cb8f3874a18a",
+          "adjudication": {
+            "candidate_id": "TBL-022",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-105",
+      "source_file": "data/raw/vietnam_enterprises/pvchem/pvchem-ar-2024-vi.pdf",
+      "source_pdf_sha256": "228f980abf106e7773fa77ea0d780abcb9d0f5a9978678f7b396f1904a3cefe6",
+      "page_number": 22,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-105.jpg",
+      "image_sha256": "b30ab6d8ad5e339dc7790e09a07ca250bebe253a4784bff9406c7c6e717a7727",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            92.32522377827873,
+            322.8421709140941,
+            1396.6597656147308,
+            1013.1073360647596
+          ],
+          "bbox_pdf_points": [
+            36.91,
+            129.12,
+            558.36,
+            405.19
+          ],
+          "candidate_id": "TBL-065",
+          "candidate_crop_sha256": "58076229c68c98733277ab808212edff9bc72728dedd6f0d40e8f154d25fcda6",
+          "adjudication": {
+            "candidate_id": "TBL-065",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            92.32522377827873,
+            1120.896415898299,
+            1396.6597656147308,
+            1803.7856175716056
+          ],
+          "bbox_pdf_points": [
+            36.91,
+            448.3,
+            558.36,
+            721.42
+          ],
+          "candidate_id": "TBL-103",
+          "candidate_crop_sha256": "38f74da81d90b4bb86c7e5d1af39f8db20a2a994c73d3c08fb924c22c7f309f9",
+          "adjudication": {
+            "candidate_id": "TBL-103",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-106",
+      "source_file": "data/raw/vietnam_enterprises/pvchem/pvchem-ar-2024-vi.pdf",
+      "source_pdf_sha256": "228f980abf106e7773fa77ea0d780abcb9d0f5a9978678f7b396f1904a3cefe6",
+      "page_number": 23,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-106.jpg",
+      "image_sha256": "ad8dcc609547b778857556e7cee49ea3d3b42dd3035c58feeaf1f72bb3054782",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            92.32522377827873,
+            186.97442333454114,
+            1396.6597656147308,
+            1801.7103464915351
+          ],
+          "bbox_pdf_points": [
+            36.91,
+            74.78,
+            558.36,
+            720.59
+          ],
+          "candidate_id": "TBL-141",
+          "candidate_crop_sha256": "176cdf6a31f7987b3be37474b6c03dcbdd54ef6a4f5ea4ad79fe3d0d1c19279f",
+          "adjudication": {
+            "candidate_id": "TBL-141",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-107",
+      "source_file": "data/raw/vietnam_enterprises/pvchem/pvchem-ar-2024-vi.pdf",
+      "source_pdf_sha256": "228f980abf106e7773fa77ea0d780abcb9d0f5a9978678f7b396f1904a3cefe6",
+      "page_number": 26,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-107.jpg",
+      "image_sha256": "cc7b0d8dd771c902ca6aedc0107671d2a08a8cc424cd51da962d8e9d1911b08e",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            171.9185215464941,
+            1086.7169512421988,
+            1338.0278705899987,
+            1550.8525784632589
+          ],
+          "bbox_pdf_points": [
+            68.73,
+            434.63,
+            534.92,
+            620.26
+          ],
+          "candidate_id": "TBL-176",
+          "candidate_crop_sha256": "bb44fd5c39843b1df035f7c5e3b4d2965a55f1a075905b69379288cd1725f893",
+          "adjudication": {
+            "candidate_id": "TBL-176",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-109",
+      "source_file": "data/raw/vietnam_enterprises/pha_lai_power/ppc-ar-2024-vi-en.pdf",
+      "source_pdf_sha256": "d5ce31aa85511643d0f6fad07277dba6d3c2c2fb7d0ca51c35f6aedcef04b6a8",
+      "page_number": 5,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-109.jpg",
+      "image_sha256": "89f257591e4f761ff405753389ddabbabf74624ecc23155fe403fa7ca7113722",
+      "width_px": 1489,
+      "height_px": 2106,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            210.4989559535369,
+            1015.7090902069102,
+            1349.6844892068393,
+            1951.4339970526203
+          ],
+          "bbox_pdf_points": [
+            84.16,
+            406.11,
+            539.62,
+            780.24
+          ],
+          "candidate_id": "TBL-023",
+          "candidate_crop_sha256": "72a5d5fa9c09a5a5653b7dd41d016fbcb5d1e068f6d3fd8bceec4b1a0001a41f",
+          "adjudication": {
+            "candidate_id": "TBL-023",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-110",
+      "source_file": "data/raw/vietnam_enterprises/pha_lai_power/ppc-ar-2024-vi-en.pdf",
+      "source_pdf_sha256": "d5ce31aa85511643d0f6fad07277dba6d3c2c2fb7d0ca51c35f6aedcef04b6a8",
+      "page_number": 6,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-110.jpg",
+      "image_sha256": "01d47364938600d92a90fcf0ad500801ec84b4560ad541bfd8add24da80d3f0f",
+      "width_px": 1489,
+      "height_px": 2106,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            210.4739441954626,
+            143.11116234921425,
+            1349.6844892068393,
+            1910.3164243678755
+          ],
+          "bbox_pdf_points": [
+            84.15,
+            57.22,
+            539.62,
+            763.8
+          ],
+          "candidate_id": "TBL-066",
+          "candidate_crop_sha256": "33f42d8fafd0f36be4a25877ddc7b6d399f9fe6cda847ba6b08cc819ed32d983",
+          "adjudication": {
+            "candidate_id": "TBL-066",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-111",
+      "source_file": "data/raw/vietnam_enterprises/pha_lai_power/ppc-ar-2024-vi-en.pdf",
+      "source_pdf_sha256": "d5ce31aa85511643d0f6fad07277dba6d3c2c2fb7d0ca51c35f6aedcef04b6a8",
+      "page_number": 7,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-111.jpg",
+      "image_sha256": "b48871ff48f2ba00963d5bbf1a9de664fd5094bbf563e6c8c4122a30316e3a4f",
+      "width_px": 1489,
+      "height_px": 2106,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            210.4989559535369,
+            143.11116234921425,
+            1349.6844892068393,
+            826.6783028886016
+          ],
+          "bbox_pdf_points": [
+            84.16,
+            57.22,
+            539.62,
+            330.53
+          ],
+          "candidate_id": "TBL-104",
+          "candidate_crop_sha256": "7306cfee4cc4866e5f6d74bbd808185f5608ef67c9eb81664b53403a4013afeb",
+          "adjudication": {
+            "candidate_id": "TBL-104",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-113",
+      "source_file": "data/raw/vietnam_enterprises/pha_lai_power/ppc-ar-2024-vi-en.pdf",
+      "source_pdf_sha256": "d5ce31aa85511643d0f6fad07277dba6d3c2c2fb7d0ca51c35f6aedcef04b6a8",
+      "page_number": 13,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-113.jpg",
+      "image_sha256": "fff715cf9b7e76fc9c220eefcf60335e8ea0d14833757113d4f79e384cbe4904",
+      "width_px": 1489,
+      "height_px": 2106,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            173.78169510042474,
+            651.6284907106656,
+            1398.057229322588,
+            1931.1003069110768
+          ],
+          "bbox_pdf_points": [
+            69.48,
+            260.54,
+            558.96,
+            772.11
+          ],
+          "candidate_id": "TBL-142",
+          "candidate_crop_sha256": "e7f30a99d31b0f8c9ac020a770a316ac3e6729e2673776e5722bd74f79eec04c",
+          "adjudication": {
+            "candidate_id": "TBL-142",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-114",
+      "source_file": "data/raw/vietnam_enterprises/pha_lai_power/ppc-ar-2024-vi-en.pdf",
+      "source_pdf_sha256": "d5ce31aa85511643d0f6fad07277dba6d3c2c2fb7d0ca51c35f6aedcef04b6a8",
+      "page_number": 14,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-114.jpg",
+      "image_sha256": "718f23da17b7b1f68ce5e5972ab39e0423575fc49d2e37c9e0bd46145e000207",
+      "width_px": 1489,
+      "height_px": 2106,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            173.73167158427606,
+            141.66054238831694,
+            1397.8571352579931,
+            525.9497785812
+          ],
+          "bbox_pdf_points": [
+            69.46,
+            56.64,
+            558.88,
+            210.29
+          ],
+          "candidate_id": "TBL-177",
+          "candidate_crop_sha256": "ff411d4d5716057d5cf2d1d80b819ac34935042189f642320231722f83e0e0c9",
+          "adjudication": {
+            "candidate_id": "TBL-177",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-116",
+      "source_file": "data/raw/vietnam_enterprises/ree/ree-ar-2024-vi.pdf",
+      "source_pdf_sha256": "0bf1836d23054ee8100aef8973c4dc4ef329f5f96d31db7874525470df51f97e",
+      "page_number": 69,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-116.jpg",
+      "image_sha256": "4872854cc1f4c00969c8952c4c3756a912bffdd6305c0a9f0698175e643d8fba",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            342.1111042036083,
+            452.3590889233108,
+            1382.6521456429518,
+            1437.5877833702566
+          ],
+          "bbox_pdf_points": [
+            136.77,
+            180.92,
+            552.76,
+            574.96
+          ],
+          "candidate_id": "TBL-067",
+          "candidate_crop_sha256": "098d4bf537b3f11a72f8f3ff7775bfa7451667592ff2d1f57fb4e1e16d9e9f88",
+          "adjudication": {
+            "candidate_id": "TBL-067",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-117",
+      "source_file": "data/raw/vietnam_enterprises/ree/ree-ar-2024-vi.pdf",
+      "source_pdf_sha256": "0bf1836d23054ee8100aef8973c4dc4ef329f5f96d31db7874525470df51f97e",
+      "page_number": 95,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-117.jpg",
+      "image_sha256": "766410dbfab526159303e0a19c900c82d27a5146285ed20d676fa28d83574684",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            340.3351381000434,
+            943.8982957077109,
+            1383.7527443550202,
+            1999.1861415565536
+          ],
+          "bbox_pdf_points": [
+            136.06,
+            377.51,
+            553.2,
+            799.57
+          ],
+          "candidate_id": "TBL-105",
+          "candidate_crop_sha256": "406fa6e13b4074ae63964ac9b1f8d146802746a27582a89dcfde391622100909",
+          "adjudication": {
+            "candidate_id": "TBL-105",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-118",
+      "source_file": "data/raw/vietnam_enterprises/sj1/sj1-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+      "page_number": 9,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-118.jpg",
+      "image_sha256": "ee9f53803616b741c0a01fd7f280c4af3fca08091de71ae36caa72fd620427b3",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            204.99302842432053,
+            471.5866004964939,
+            1420.3481337592405,
+            1950.7798185322592
+          ],
+          "bbox_pdf_points": [
+            81.98,
+            188.61,
+            568.02,
+            780.21
+          ],
+          "candidate_id": "TBL-025",
+          "candidate_crop_sha256": "8588bb07d29fd383ce79e2f923380562239bb54428b1b8cfb6e7950544f3ec4c",
+          "adjudication": {
+            "candidate_id": "TBL-025",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-119",
+      "source_file": "data/raw/vietnam_enterprises/sj1/sj1-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+      "page_number": 12,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-119.jpg",
+      "image_sha256": "85ca5803c41fb00a2c9b164e9261f2916d0f3dfde600b952706ffc301e722d3b",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            126.72660015301979,
+            494.3145693131691,
+            1342.0316949906419,
+            2005.5619743929146
+          ],
+          "bbox_pdf_points": [
+            50.68,
+            197.7,
+            536.7,
+            802.12
+          ],
+          "candidate_id": "TBL-068",
+          "candidate_crop_sha256": "5b1f3d5c6e75420f32857db0728ae41868c793c933531865c3c7eda89b75bc9a",
+          "adjudication": {
+            "candidate_id": "TBL-068",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-120",
+      "source_file": "data/raw/vietnam_enterprises/sj1/sj1-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+      "page_number": 15,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-120.jpg",
+      "image_sha256": "b4962abd096ce2d451a471f3f32321446cec2d71c4ae43f32e44f4bb7d123ffb",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            90.0188951363203,
+            315.0411519143111,
+            1391.6171030615649,
+            971.9019536556497
+          ],
+          "bbox_pdf_points": [
+            36.0,
+            126.0,
+            556.53,
+            388.71
+          ],
+          "candidate_id": "TBL-144",
+          "candidate_crop_sha256": "c14c611f981c1d3b94b889fda2a38ea1e8a5dbd5b4df113dbeafc2aa254c370e",
+          "adjudication": {
+            "candidate_id": "TBL-144",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-122",
+      "source_file": "data/raw/vietnam_enterprises/sj1/sj1-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+      "page_number": 24,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-122.jpg",
+      "image_sha256": "a98c82cd4e1c7c5086d4da883b76098206caddf9981fae0fd2fe3dbeade48f5a",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            89.84385839577746,
+            414.40413109744384,
+            1399.193693402205,
+            1115.79574962921
+          ],
+          "bbox_pdf_points": [
+            35.93,
+            165.74,
+            559.56,
+            446.26
+          ],
+          "candidate_id": "TBL-179",
+          "candidate_crop_sha256": "0022e4eb90d2d2025a54f3737b351c53608138ceb5d9376012f59fcecd548213",
+          "adjudication": {
+            "candidate_id": "TBL-179",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-124",
+      "source_file": "data/raw/vietnam_enterprises/spc/spc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "b9ff17bc495e6644f1f4f426c379bbb458e92fbf20c27f9673e0d23d4bd6471e",
+      "page_number": 21,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-124.jpg",
+      "image_sha256": "a8c209a2ab852cc459b94f05958df26d3e3cd5f2652f6f774a92d303a8ebfa12",
+      "width_px": 1980,
+      "height_px": 1530,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1054.15,
+            202.45000000000002,
+            1908.975,
+            516.75
+          ],
+          "bbox_pdf_points": [
+            421.66,
+            80.98,
+            763.59,
+            206.7
+          ],
+          "candidate_id": "TBL-026",
+          "candidate_crop_sha256": "24f0f3a9c4cc187c0a119bd145cdd9b0a5b82eb02a325eefb89c9919e5094348",
+          "adjudication": {
+            "candidate_id": "TBL-026",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-125",
+      "source_file": "data/raw/vietnam_enterprises/spc/spc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "b9ff17bc495e6644f1f4f426c379bbb458e92fbf20c27f9673e0d23d4bd6471e",
+      "page_number": 27,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-125.jpg",
+      "image_sha256": "8e1cdba34dc364998230ab1c2956339123e06d216f16fef5f24fb9f4a58f63ec",
+      "width_px": 1980,
+      "height_px": 1530,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            66.825,
+            307.52500000000003,
+            923.4000000000001,
+            619.125
+          ],
+          "bbox_pdf_points": [
+            26.73,
+            123.01,
+            369.36,
+            247.65
+          ],
+          "candidate_id": "TBL-069",
+          "candidate_crop_sha256": "956624851816a6e37e73fd415aa8c81481608307e637999533e6495a6caf871c",
+          "adjudication": {
+            "candidate_id": "TBL-069",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-126",
+      "source_file": "data/raw/vietnam_enterprises/spc/spc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "b9ff17bc495e6644f1f4f426c379bbb458e92fbf20c27f9673e0d23d4bd6471e",
+      "page_number": 28,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-126.jpg",
+      "image_sha256": "ee024ac7f7e1a1fe643961ac400b64083ccd97525893efb0702129c3907f867f",
+      "width_px": 1980,
+      "height_px": 1530,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            997.5,
+            329.125,
+            1970.225,
+            1255.125
+          ],
+          "bbox_pdf_points": [
+            399.0,
+            131.65,
+            788.09,
+            502.05
+          ],
+          "candidate_id": "TBL-107",
+          "candidate_crop_sha256": "2ba82814e559e51a28535392f9b533b3d4e976f643a581467d765bfbe67bdad1",
+          "adjudication": {
+            "candidate_id": "TBL-107",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-127",
+      "source_file": "data/raw/vietnam_enterprises/spc/spc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "b9ff17bc495e6644f1f4f426c379bbb458e92fbf20c27f9673e0d23d4bd6471e",
+      "page_number": 31,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-127.jpg",
+      "image_sha256": "821319a6c6505f27ad369528aed98c854ea0cec35d679676043fd7a7c837269b",
+      "width_px": 1980,
+      "height_px": 1530,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            18.0,
+            700.9499999999999,
+            972.375,
+            1361.525
+          ],
+          "bbox_pdf_points": [
+            7.2,
+            280.38,
+            388.95,
+            544.61
+          ],
+          "candidate_id": "TBL-145",
+          "candidate_crop_sha256": "d71dab2f21d2ca8ea7ebe721b21d64dbf2fdab42f3201eb43cbf4ceacc39f9f8",
+          "adjudication": {
+            "candidate_id": "TBL-145",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-128",
+      "source_file": "data/raw/vietnam_enterprises/spc/spc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "b9ff17bc495e6644f1f4f426c379bbb458e92fbf20c27f9673e0d23d4bd6471e",
+      "page_number": 33,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-128.jpg",
+      "image_sha256": "62da486db0519a5fadaaafa24a18f4ace82a3f8cf403fa0c83ebb04c0bb611a9",
+      "width_px": 1980,
+      "height_px": 1530,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1005.125,
+            206.02499999999998,
+            1945.375,
+            1301.6499999999999
+          ],
+          "bbox_pdf_points": [
+            402.05,
+            82.41,
+            778.15,
+            520.66
+          ],
+          "candidate_id": "TBL-180",
+          "candidate_crop_sha256": "cf7135243fc8ecfff1c9dc148cec00a27963c25a44a43d7ff777a40fe407edfa",
+          "adjudication": {
+            "candidate_id": "TBL-180",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-129",
+      "source_file": "data/raw/vietnam_enterprises/sabeco/sabeco-ar-2024-vi.pdf",
+      "source_pdf_sha256": "acdfee7158184c26da69cf8ed64cc7a4c0c2ce8cd7809e3e54d9e960357a5d1d",
+      "page_number": 3,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-129.jpg",
+      "image_sha256": "e534088f14c1bdc8423df7b649c8e1867a947fa42218f9c042505df9233939ef",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            109.07289460684143,
+            346.8703095640665,
+            1347.9579389204498,
+            1960.956147804412
+          ],
+          "bbox_pdf_points": [
+            43.62,
+            138.73,
+            539.07,
+            784.28
+          ],
+          "candidate_id": "TBL-027",
+          "candidate_crop_sha256": "e4b80a330997e23695091535b53f01a72a636f13c868340b5cbaee26fcab075a",
+          "adjudication": {
+            "candidate_id": "TBL-027",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1593.534485902061,
+            429.78113970278514,
+            2832.4445354643185,
+            1960.956147804412
+          ],
+          "bbox_pdf_points": [
+            637.28,
+            171.89,
+            1132.74,
+            784.28
+          ],
+          "candidate_id": "TBL-070",
+          "candidate_crop_sha256": "afc1bebe786d1ab6a4d5808a2d2c92e0375d850d3c24694d035f0464aafdf89e",
+          "adjudication": {
+            "candidate_id": "TBL-070",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-130",
+      "source_file": "data/raw/vietnam_enterprises/sabeco/sabeco-ar-2024-vi.pdf",
+      "source_pdf_sha256": "acdfee7158184c26da69cf8ed64cc7a4c0c2ce8cd7809e3e54d9e960357a5d1d",
+      "page_number": 27,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-130.jpg",
+      "image_sha256": "4e79d5358132283c1cfe239274d01743072168ba546b03ae41036a7fcbb9e608",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            104.84700758516418,
+            357.6967237528678,
+            1426.774482662028,
+            614.9553278835303
+          ],
+          "bbox_pdf_points": [
+            41.93,
+            143.06,
+            570.59,
+            245.95
+          ],
+          "candidate_id": "TBL-146",
+          "candidate_crop_sha256": "e5dc4af06441b05a6676f1311a1f742466b7f9997a29bd964a92764e3784b906",
+          "adjudication": {
+            "candidate_id": "TBL-146",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            104.84700758516418,
+            1083.5165331910057,
+            1369.96255773155,
+            1860.5680347142563
+          ],
+          "bbox_pdf_points": [
+            41.93,
+            433.35,
+            547.87,
+            744.13
+          ],
+          "candidate_id": "TBL-181",
+          "candidate_crop_sha256": "0cc65e8b332a83e8a17f217504636e039f25e68c77b2ad14b90b1af464748807",
+          "adjudication": {
+            "candidate_id": "TBL-181",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-132",
+      "source_file": "data/raw/vietnam_enterprises/techcombank/techcombank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "fd8537f52dad35c2e34bd81312223035bc4e9d4e0e34ac05f00a21f4d4d1ef34",
+      "page_number": 17,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-132.jpg",
+      "image_sha256": "238d38796d0f67b4597435dc59414a8dbe318fd6e216f77b71826fbb9fbde8d6",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1574.1554181991032,
+            235.6557822851097,
+            2863.0259545620183,
+            1315.8218778287728
+          ],
+          "bbox_pdf_points": [
+            629.53,
+            94.25,
+            1144.97,
+            526.26
+          ],
+          "candidate_id": "TBL-028",
+          "candidate_crop_sha256": "6f1e3cba1e7e676096323e9ef3b93adc343b7847522cd59446d9fc3e216797d8",
+          "adjudication": {
+            "candidate_id": "TBL-028",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-134",
+      "source_file": "data/raw/vietnam_enterprises/techcombank/techcombank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "fd8537f52dad35c2e34bd81312223035bc4e9d4e0e34ac05f00a21f4d4d1ef34",
+      "page_number": 21,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-134.jpg",
+      "image_sha256": "c3640a1fdeb334f73c3089524872f3ff749752234956d507f3197d60408a6886",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1575.3306648856053,
+            1521.8237866082973,
+            2865.3764479350225,
+            1871.719491361382
+          ],
+          "bbox_pdf_points": [
+            630.0,
+            608.65,
+            1145.91,
+            748.59
+          ],
+          "candidate_id": "TBL-071",
+          "candidate_crop_sha256": "7f48099743c38f7f9800eb426134e20bafdbfe047c9d39aec9638b37ae772174",
+          "adjudication": {
+            "candidate_id": "TBL-071",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-135",
+      "source_file": "data/raw/vietnam_enterprises/techcombank/techcombank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "fd8537f52dad35c2e34bd81312223035bc4e9d4e0e34ac05f00a21f4d4d1ef34",
+      "page_number": 51,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-135.jpg",
+      "image_sha256": "569aa9d2cc51917e47b69f206cea84f85e5f351069231640ceffe10d94fbfed5",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1573.380255490985,
+            1323.9729425529047,
+            2863.326017545806,
+            1926.2516145617878
+          ],
+          "bbox_pdf_points": [
+            629.22,
+            529.52,
+            1145.09,
+            770.4
+          ],
+          "candidate_id": "TBL-147",
+          "candidate_crop_sha256": "7f79e1708d72959735ba7bd03b607730afdd2c5893f82d8c6b20679504b27aaa",
+          "adjudication": {
+            "candidate_id": "TBL-147",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-136",
+      "source_file": "data/raw/vietnam_enterprises/nhua_tien_phong/ntp-ar-2024-vi.pdf",
+      "source_pdf_sha256": "8c7868b31a6f4fa3dd2f9d81c6fd38bcf98cfede329d0d2baf12362cf4487a99",
+      "page_number": 4,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-136.jpg",
+      "image_sha256": "ed77897232329d30aae22be0d0b0eb3f613271af556e56a5dd05ec9c2ee80d1c",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1820.9072118672168,
+            487.73871034860844,
+            2680.0375449487983,
+            1598.9838655612787
+          ],
+          "bbox_pdf_points": [
+            728.21,
+            195.07,
+            1071.79,
+            639.51
+          ],
+          "candidate_id": "TBL-029",
+          "candidate_crop_sha256": "1cd39b46c7c1efb179d4e9c1ea6f5cfc0adb734668eb64f8fce7d21a019a078d",
+          "adjudication": {
+            "candidate_id": "TBL-029",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-137",
+      "source_file": "data/raw/vietnam_enterprises/nhua_tien_phong/ntp-ar-2024-vi.pdf",
+      "source_pdf_sha256": "8c7868b31a6f4fa3dd2f9d81c6fd38bcf98cfede329d0d2baf12362cf4487a99",
+      "page_number": 11,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-137.jpg",
+      "image_sha256": "dec4e7c04bf89e1895d0558b05a3e7e6fc70dda2df6037b77b8a99727871127f",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1630.0171436809198,
+            229.42996904489834,
+            2870.7775816432013,
+            554.4724273691876
+          ],
+          "bbox_pdf_points": [
+            651.87,
+            91.76,
+            1148.07,
+            221.76
+          ],
+          "candidate_id": "TBL-072",
+          "candidate_crop_sha256": "46d576f0132a2acf49ab5a6f344d49615a461f2e53622aa19f6c6d9da123b44c",
+          "adjudication": {
+            "candidate_id": "TBL-072",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1630.0171436809198,
+            787.9279222441021,
+            2870.7775816432013,
+            1286.7430794417612
+          ],
+          "bbox_pdf_points": [
+            651.87,
+            315.13,
+            1148.07,
+            514.63
+          ],
+          "candidate_id": "TBL-110",
+          "candidate_crop_sha256": "cf7e5a9afa7782f17df2e8f60258fa413f47b73ac7657a11cda9cff6a7ce816c",
+          "adjudication": {
+            "candidate_id": "TBL-110",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1630.0171436809198,
+            1515.5479668360358,
+            2870.7775816432013,
+            1961.081164134537
+          ],
+          "bbox_pdf_points": [
+            651.87,
+            606.14,
+            1148.07,
+            784.33
+          ],
+          "candidate_id": "TBL-148",
+          "candidate_crop_sha256": "2c7325404a4f9949fe1ea7f72a35a33c954be2e85cf4a3c6742cde025ae316ff",
+          "adjudication": {
+            "candidate_id": "TBL-148",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-138",
+      "source_file": "data/raw/vietnam_enterprises/nhua_tien_phong/ntp-ar-2024-vi.pdf",
+      "source_pdf_sha256": "8c7868b31a6f4fa3dd2f9d81c6fd38bcf98cfede329d0d2baf12362cf4487a99",
+      "page_number": 21,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-138.jpg",
+      "image_sha256": "ed0f949004406f55057b43b9f72fde21401a3ceba8793b50484d26a8f6c3024d",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1631.0423588755277,
+            1039.8108241794012,
+            2233.268767337511,
+            1638.8640748710664
+          ],
+          "bbox_pdf_points": [
+            652.28,
+            415.87,
+            893.12,
+            655.46
+          ],
+          "candidate_id": "TBL-183",
+          "candidate_crop_sha256": "a2702bfb3effcc9d995eac771250047e3c3f291ed74aaccb2d5fce8fb24c6942",
+          "adjudication": {
+            "candidate_id": "TBL-183",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-141",
+      "source_file": "data/raw/vietnam_enterprises/traphaco/traphaco-ar-2024-vi.pdf",
+      "source_pdf_sha256": "60842c5adcd5d5a88ce5fdeeb621ada61f471cd326d632b736d3197f1bf293a8",
+      "page_number": 23,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-141.jpg",
+      "image_sha256": "befaedc75a983c6191e8ded8d1595c54560ef6b53ba89cd67c7c76f7ea48ae88",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1630.74229589174,
+            1167.1524580444477,
+            2835.5451862967916,
+            1371.2041120740266
+          ],
+          "bbox_pdf_points": [
+            652.16,
+            466.8,
+            1133.98,
+            548.41
+          ],
+          "candidate_id": "TBL-030",
+          "candidate_crop_sha256": "418f9e93c8aeb73b51bc87ad1377959b4a5ec58e4dda2a78c9ce7ad47f29cad0",
+          "adjudication": {
+            "candidate_id": "TBL-030",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1630.74229589174,
+            1393.0319633138038,
+            2835.5451862967916,
+            1597.1586271414574
+          ],
+          "bbox_pdf_points": [
+            652.16,
+            557.14,
+            1133.98,
+            638.78
+          ],
+          "candidate_id": "TBL-073",
+          "candidate_crop_sha256": "bfa9ad6f240ef29693a7d76e6310ec3abe7943ed1a09fc69f8652aac164f654c",
+          "adjudication": {
+            "candidate_id": "TBL-073",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-143",
+      "source_file": "data/raw/vietnam_enterprises/kbc/kbc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "73e40813d42846ab11098a5ad32ad74e58b6bff13e4a39638e53aa81d90d906a",
+      "page_number": 15,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-143.jpg",
+      "image_sha256": "b6b728dd953d68cf985a5d0da9ae92a551e10432338bea524ba5da36d99857a9",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            170.69585446604543,
+            561.0632355638127,
+            1398.6007097028205,
+            850.848370202214
+          ],
+          "bbox_pdf_points": [
+            68.26,
+            224.34,
+            559.29,
+            340.21
+          ],
+          "candidate_id": "TBL-031",
+          "candidate_crop_sha256": "8a423e3a1ec58d2a13084731c074cffb9825bc8b33a7d2483eff7f38adb5acd5",
+          "adjudication": {
+            "candidate_id": "TBL-031",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            170.69585446604543,
+            911.7215054149412,
+            1398.6007097028205,
+            1412.1366913111847
+          ],
+          "bbox_pdf_points": [
+            68.26,
+            364.55,
+            559.29,
+            564.64
+          ],
+          "candidate_id": "TBL-074",
+          "candidate_crop_sha256": "212504f9c87214b9cc501a447d3e78c3c9ae7f575b778c478f11dca7f581f66f",
+          "adjudication": {
+            "candidate_id": "TBL-074",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            170.69585446604543,
+            1473.059845533947,
+            1398.6007097028205,
+            1822.4426306291803
+          ],
+          "bbox_pdf_points": [
+            68.26,
+            589.0,
+            559.29,
+            728.7
+          ],
+          "candidate_id": "TBL-112",
+          "candidate_crop_sha256": "99688ed94c3ecf8349716f3f0d8575f4764055b11f335c40318f9c82f744aabb",
+          "adjudication": {
+            "candidate_id": "TBL-112",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-144",
+      "source_file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "page_number": 16,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-144.jpg",
+      "image_sha256": "d96ed6a90a1708d310862128d6823ed0c61dc5c0bad86d5f3c74cf0fc4b5b7de",
+      "width_px": 4800,
+      "height_px": 2700,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            150.0,
+            525.0,
+            2345.0,
+            2387.5
+          ],
+          "bbox_pdf_points": [
+            60.0,
+            210.0,
+            938.0,
+            955.0
+          ],
+          "candidate_id": "TBL-032",
+          "candidate_crop_sha256": "883bef258922cee0452cd5cef725ac871e2afaee1702f1f104862d93f4b2cc87",
+          "adjudication": {
+            "candidate_id": "TBL-032",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            2422.5,
+            525.0,
+            4616.475,
+            2387.5
+          ],
+          "bbox_pdf_points": [
+            969.0,
+            210.0,
+            1846.59,
+            955.0
+          ],
+          "candidate_id": "TBL-075",
+          "candidate_crop_sha256": "c287b4cc18bd14616ab05af5b8c31ce2d06baec09d2f0eea659d96688383fedd",
+          "adjudication": {
+            "candidate_id": "TBL-075",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-145",
+      "source_file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "page_number": 17,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-145.jpg",
+      "image_sha256": "9705e90bdbe8552f10ef329cc6f39ce5d8c643de1d3d9bdbc1a8079a12c1ada7",
+      "width_px": 4800,
+      "height_px": 2700,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            150.0,
+            165.0,
+            2345.0,
+            2673.0
+          ],
+          "bbox_pdf_points": [
+            60.0,
+            66.0,
+            938.0,
+            1069.2
+          ],
+          "candidate_id": "TBL-113",
+          "candidate_crop_sha256": "2771c7f09535214a1c7c423553ebb0ddd5b869554ce5ee4391fa6bca0dc5489a",
+          "adjudication": {
+            "candidate_id": "TBL-113",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            2445.0,
+            165.0,
+            4633.95,
+            2296.75
+          ],
+          "bbox_pdf_points": [
+            978.0,
+            66.0,
+            1853.58,
+            918.7
+          ],
+          "candidate_id": "TBL-151",
+          "candidate_crop_sha256": "bb8b70c9ad8467ef67076b72ed61edd633a82260dcf07f1d2fd928db78ebdbe6",
+          "adjudication": {
+            "candidate_id": "TBL-151",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-149",
+      "source_file": "data/raw/vietnam_enterprises/vsc/vsc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "7c693e263034ee710f59fb528ff248b796d92280b39ef5a69b9110c9a26ed90e",
+      "page_number": 50,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-149.jpg",
+      "image_sha256": "66a1f3f34dd6afd40f6e25624bc11b8c88e428c3ddaa2a4e10fe85d4534d95ec",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1630.2671961674098,
+            235.6057757530598,
+            2870.6775606486053,
+            799.9044866700508
+          ],
+          "bbox_pdf_points": [
+            651.97,
+            94.23,
+            1148.03,
+            319.92
+          ],
+          "candidate_id": "TBL-033",
+          "candidate_crop_sha256": "b06dd164cd7306d70366c4fc258f5a034b17039e39f76dc97f6f087ffa72b5d5",
+          "adjudication": {
+            "candidate_id": "TBL-033",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-150",
+      "source_file": "data/raw/vietnam_enterprises/vsc/vsc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "7c693e263034ee710f59fb528ff248b796d92280b39ef5a69b9110c9a26ed90e",
+      "page_number": 52,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-150.jpg",
+      "image_sha256": "04d76d7351a0a3190eb22dc41c66d12e66136bdd11efe5a9639d3e9da3d7e346",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1630.2671961674098,
+            177.49818551108686,
+            2870.6775606486053,
+            489.3639226402299
+          ],
+          "bbox_pdf_points": [
+            651.97,
+            70.99,
+            1148.03,
+            195.72
+          ],
+          "candidate_id": "TBL-076",
+          "candidate_crop_sha256": "836d8687e3f6408f3f818a7a2f5da05a8c0bfb0f538d24f73244d9f99b26aab1",
+          "adjudication": {
+            "candidate_id": "TBL-076",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-151",
+      "source_file": "data/raw/vietnam_enterprises/vsc/vsc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "7c693e263034ee710f59fb528ff248b796d92280b39ef5a69b9110c9a26ed90e",
+      "page_number": 76,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-151.jpg",
+      "image_sha256": "85bd085e999a24a8ff1dba4f14434b232f0117aef3e85ad7c7f818522b4fc53d",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            106.14728051491103,
+            852.3113322583363,
+            1346.7326817366497,
+            1357.8273647506805
+          ],
+          "bbox_pdf_points": [
+            42.45,
+            340.88,
+            538.58,
+            543.06
+          ],
+          "candidate_id": "TBL-114",
+          "candidate_crop_sha256": "0bad568d287fcebdeda2ee0888532b392538d16ebe0d5b8f810304ed9ee5a4cf",
+          "adjudication": {
+            "candidate_id": "TBL-114",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-152",
+      "source_file": "data/raw/vietnam_enterprises/vsc/vsc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "7c693e263034ee710f59fb528ff248b796d92280b39ef5a69b9110c9a26ed90e",
+      "page_number": 102,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-152.jpg",
+      "image_sha256": "e642765a393af094657fdca6e281245eccda379704d86fa5a911efbe012dffb4",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1630.2671961674098,
+            234.20559285566287,
+            2870.6775606486053,
+            1035.0852069006867
+          ],
+          "bbox_pdf_points": [
+            651.97,
+            93.67,
+            1148.03,
+            413.98
+          ],
+          "candidate_id": "TBL-152",
+          "candidate_crop_sha256": "8c2947ee8c08e8f97b7380f14eb44b48f63ce3151cc9854876a260c1e908c6a1",
+          "adjudication": {
+            "candidate_id": "TBL-152",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-153",
+      "source_file": "data/raw/vietnam_enterprises/vsc/vsc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "7c693e263034ee710f59fb528ff248b796d92280b39ef5a69b9110c9a26ed90e",
+      "page_number": 114,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-153.jpg",
+      "image_sha256": "65d8425ba4af692dd0645bd9620a96c7e25e6f90f27c943939e9ba5bc2e44490",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            2061.7077563568737,
+            959.8253761656011,
+            2870.6775606486053,
+            1420.435542877144
+          ],
+          "bbox_pdf_points": [
+            824.51,
+            383.88,
+            1148.03,
+            568.1
+          ],
+          "candidate_id": "TBL-186",
+          "candidate_crop_sha256": "fc5d546510a29f140e495f1c311aafcd46524421ee56e17074f949c9a798d704",
+          "adjudication": {
+            "candidate_id": "TBL-186",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-155",
+      "source_file": "data/raw/vietnam_enterprises/vcb/vcb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9deccc3518e23302d00353b4d371a9dd251b67b12f9fe58a4da4ad3c727e99f8",
+      "page_number": 11,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-155.jpg",
+      "image_sha256": "d2c467481819d8b356f7d1dbed09bfad23e1fbe0d33fc546b6d38b255c4f5d0f",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1615.4390837185656,
+            227.20467836867817,
+            2886.3558515515147,
+            1319.5973709985392
+          ],
+          "bbox_pdf_points": [
+            646.04,
+            90.87,
+            1154.3,
+            527.77
+          ],
+          "candidate_id": "TBL-034",
+          "candidate_crop_sha256": "afda829a133296f718177d2b15316d9ef1b4ffece4475e83d5616274917d610a",
+          "adjudication": {
+            "candidate_id": "TBL-034",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-156",
+      "source_file": "data/raw/vietnam_enterprises/vcb/vcb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9deccc3518e23302d00353b4d371a9dd251b67b12f9fe58a4da4ad3c727e99f8",
+      "page_number": 16,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-156.jpg",
+      "image_sha256": "f79d11d0ed162d51ca88e4ea36bfad8bd822658b2ce3688b67279e8c2112725f",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            90.0188951363203,
+            580.4258175030808,
+            1360.91065772062,
+            1769.68116271358
+          ],
+          "bbox_pdf_points": [
+            36.0,
+            232.14,
+            544.25,
+            707.78
+          ],
+          "candidate_id": "TBL-077",
+          "candidate_crop_sha256": "1c401114916a01ad8b3e0a419bef60efbb0b20e77545962b8c6894f565767e26",
+          "adjudication": {
+            "candidate_id": "TBL-077",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-157",
+      "source_file": "data/raw/vietnam_enterprises/vcb/vcb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9deccc3518e23302d00353b4d371a9dd251b67b12f9fe58a4da4ad3c727e99f8",
+      "page_number": 17,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-157.jpg",
+      "image_sha256": "7a825ec35940a989bc8fbe02c76eed2786fbe9359f40876d5722ac7097ded594",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1616.089220183439,
+            539.5704808183201,
+            2883.805316189319,
+            1051.7123788072752
+          ],
+          "bbox_pdf_points": [
+            646.3,
+            215.8,
+            1153.28,
+            420.63
+          ],
+          "candidate_id": "TBL-115",
+          "candidate_crop_sha256": "8a87462d7eeae91379e94ca4a45db704cfbfc276c2229d931c0e6bc99c480616",
+          "adjudication": {
+            "candidate_id": "TBL-115",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            90.0188951363203,
+            878.5647615845289,
+            1360.91065772062,
+            1388.481368897264
+          ],
+          "bbox_pdf_points": [
+            36.0,
+            351.38,
+            544.25,
+            555.32
+          ],
+          "candidate_id": "TBL-153",
+          "candidate_crop_sha256": "0659af5f75bc5d12fd8d1a1ff513a3aa357d2a6d2ccdd9ccb3628c2f1d639ca3",
+          "adjudication": {
+            "candidate_id": "TBL-153",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-160",
+      "source_file": "data/raw/vietnam_enterprises/vietjet/vietjet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+      "page_number": 83,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-160.jpg",
+      "image_sha256": "ee94322e07a87125379d7cf752bccbcea878c15b2db2b6eb5405e57c9ca86f41",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1594.5847063453184,
+            157.1705302328063,
+            2871.4027128594257,
+            328.49290903573166
+          ],
+          "bbox_pdf_points": [
+            637.7,
+            62.86,
+            1148.32,
+            131.38
+          ],
+          "candidate_id": "TBL-035",
+          "candidate_crop_sha256": "3002dc60df79b20bb6071677e6f9fadd5c5a868aea3b01317a85350c68b8c0a2",
+          "adjudication": {
+            "candidate_id": "TBL-035",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-162",
+      "source_file": "data/raw/vietnam_enterprises/hvn/hvn-ar-2024-vi.pdf",
+      "source_pdf_sha256": "d2be5419a4d05c0a75bf3e18767df2ec6c64356144bcbc753a61f29a6e4ca788",
+      "page_number": 21,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-162.jpg",
+      "image_sha256": "060dacbc2d7a52729d29c8dfa88c0b4f5ab5c30cf53bbb26867b908b99d25478",
+      "width_px": 3005,
+      "height_px": 2134,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            155.91426646040784,
+            404.8264109130594,
+            1360.774513530173,
+            1986.8908259819814
+          ],
+          "bbox_pdf_points": [
+            62.36,
+            161.86,
+            544.26,
+            794.41
+          ],
+          "candidate_id": "TBL-036",
+          "candidate_crop_sha256": "b6febeb85e7c24ac7b43876a1fd17d003041aeb514c2dc844b344367626fe2a7",
+          "adjudication": {
+            "candidate_id": "TBL-036",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1644.4504704352064,
+            404.8264109130594,
+            2849.33571979273,
+            951.4396081517172
+          ],
+          "bbox_pdf_points": [
+            657.72,
+            161.86,
+            1139.63,
+            380.41
+          ],
+          "candidate_id": "TBL-078",
+          "candidate_crop_sha256": "b847bf8b4ded581db3e5c6ee921cfc2f698b8a2ed53a7147e5b1f1ae336f29fd",
+          "adjudication": {
+            "candidate_id": "TBL-078",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1644.4504704352064,
+            1068.4906153847035,
+            2849.33571979273,
+            1404.2369233111158
+          ],
+          "bbox_pdf_points": [
+            657.72,
+            427.21,
+            1139.63,
+            561.45
+          ],
+          "candidate_id": "TBL-116",
+          "candidate_crop_sha256": "30a5a87b504607e3cca6084c8469f7e21bf8d50c345c0d61f80dbae41b0e446a",
+          "adjudication": {
+            "candidate_id": "TBL-116",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1644.4504704352064,
+            1652.3950630046395,
+            2488.802730318855,
+            1893.425096488462
+          ],
+          "bbox_pdf_points": [
+            657.72,
+            660.67,
+            995.43,
+            757.04
+          ],
+          "candidate_id": "TBL-154",
+          "candidate_crop_sha256": "4f40b063d3cc9d6cc8a46e01d8d998e2597392276721981826584e1512368e21",
+          "adjudication": {
+            "candidate_id": "TBL-154",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-163",
+      "source_file": "data/raw/vietnam_enterprises/hvn/hvn-ar-2024-vi.pdf",
+      "source_pdf_sha256": "d2be5419a4d05c0a75bf3e18767df2ec6c64356144bcbc753a61f29a6e4ca788",
+      "page_number": 22,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-163.jpg",
+      "image_sha256": "38b5a28620f3919df9f9f59d8a04bb6dee86567d2cb63186e76b997287b132cd",
+      "width_px": 3005,
+      "height_px": 2134,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            155.9392687481661,
+            321.9653025876568,
+            1360.774513530173,
+            1051.9334002590117
+          ],
+          "bbox_pdf_points": [
+            62.37,
+            128.73,
+            544.26,
+            420.59
+          ],
+          "candidate_id": "TBL-188",
+          "candidate_crop_sha256": "fb11de0cc329a0e0f952df5c834f92c027a6e69b48c85c8c8c0e0a151593227c",
+          "adjudication": {
+            "candidate_id": "TBL-188",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-164",
+      "source_file": "data/raw/vietnam_enterprises/vietabank/vietabank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "1bdbf33365bd6804674e915dbf65a5ea59e423706611b6e807cc51de5def9275",
+      "page_number": 20,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-164.jpg",
+      "image_sha256": "5edcafedcce689f0b67e4941fc734900c4377cebc21c399c5274857e56631ab0",
+      "width_px": 1489,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            139.20072346955325,
+            1143.3743520547248,
+            1345.9571840383094,
+            1544.7517815531721
+          ],
+          "bbox_pdf_points": [
+            55.65,
+            457.29,
+            538.09,
+            617.82
+          ],
+          "candidate_id": "TBL-117",
+          "candidate_crop_sha256": "c091a8defef6fe5c3135b2ee85a027438ea7735c621f636133d7f6d9b91e2ff0",
+          "adjudication": {
+            "candidate_id": "TBL-117",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-167",
+      "source_file": "data/raw/vietnam_enterprises/agribank/agribank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "b5267960da464c2289f2ee75874659f3e0583f74979974d5b7a457ab6295758e",
+      "page_number": 26,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-167.jpg",
+      "image_sha256": "f4f226652e1f6b18aa23936650dfb439ba24455096f2efcdfac3407447d04fe4",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1628.966923237663,
+            1063.1388713806753,
+            2864.476258983659,
+            1628.2126835444396
+          ],
+          "bbox_pdf_points": [
+            651.45,
+            425.2,
+            1145.55,
+            651.2
+          ],
+          "candidate_id": "TBL-080",
+          "candidate_crop_sha256": "a5856e18734a25b9dc2b5e9ef11dbe5c45655523d3a03381422db5dee5f1d2b3",
+          "adjudication": {
+            "candidate_id": "TBL-080",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-168",
+      "source_file": "data/raw/vietnam_enterprises/agribank/agribank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "b5267960da464c2289f2ee75874659f3e0583f74979974d5b7a457ab6295758e",
+      "page_number": 43,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-168.jpg",
+      "image_sha256": "8b45b5f1f1f7672ce3108269907d03e8651580e6fb951224df376c09751a7c65",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1632.7427157836587,
+            404.3528181554158,
+            2867.1268153404503,
+            1850.1916793139044
+          ],
+          "bbox_pdf_points": [
+            652.96,
+            161.72,
+            1146.61,
+            739.98
+          ],
+          "candidate_id": "TBL-118",
+          "candidate_crop_sha256": "0a5da0a29070dc409a3d3659035eb19fc81cc2d30678876c7715b7fc980511f0",
+          "adjudication": {
+            "candidate_id": "TBL-118",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-170",
+      "source_file": "data/raw/vietnam_enterprises/veam/veam-ar-2024-vi-corrected.pdf",
+      "source_pdf_sha256": "08dcc82fa7b54d9934443398373284a061186bf48709ccdbc73bf66db2bd1c35",
+      "page_number": 19,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-170.jpg",
+      "image_sha256": "63d24fb1ac7b46c84b278b1c7b60c83404ed09d03ae6f92a87f07dc22a682f2e",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            71.41499014148077,
+            304.6397932479339,
+            1417.0474409375756,
+            1150.7503155320837
+          ],
+          "bbox_pdf_points": [
+            28.56,
+            121.84,
+            566.7,
+            460.24
+          ],
+          "candidate_id": "TBL-119",
+          "candidate_crop_sha256": "452b166ce292ada0f3d22c4ae2faf3dc686bd14b01fe46e186f9feb1c5ba934d",
+          "adjudication": {
+            "candidate_id": "TBL-119",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1559.002237517823,
+            330.2181343914529,
+            2906.135003232856,
+            1887.2965260949231
+          ],
+          "bbox_pdf_points": [
+            623.47,
+            132.07,
+            1162.21,
+            754.82
+          ],
+          "candidate_id": "TBL-156",
+          "candidate_crop_sha256": "fbbacb2674b9d377ea770acb7d4640692d24ba1d385d32bee75479bb5c7863ea",
+          "adjudication": {
+            "candidate_id": "TBL-156",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-171",
+      "source_file": "data/raw/vietnam_enterprises/veam/veam-ar-2024-vi-corrected.pdf",
+      "source_pdf_sha256": "08dcc82fa7b54d9934443398373284a061186bf48709ccdbc73bf66db2bd1c35",
+      "page_number": 20,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-171.jpg",
+      "image_sha256": "e0551ff2f9071ba0a0bd96481691b70686bca81f7b5c7828fbbfa29d47af1c78",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            66.53896665493009,
+            1208.732889443932,
+            1417.6225616565018,
+            1573.3555178857096
+          ],
+          "bbox_pdf_points": [
+            26.61,
+            483.43,
+            566.93,
+            629.26
+          ],
+          "candidate_id": "TBL-190",
+          "candidate_crop_sha256": "7fff17d6da9772b7ab48951025bbb2cf7c5748b3849d90cf36256c098546d9c0",
+          "adjudication": {
+            "candidate_id": "TBL-190",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-172",
+      "source_file": "data/raw/vietnam_enterprises/vinatex/vinatex-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6920b243c97fb8e2ce6be5c436e8ae11f19ce5b19230bacdda0b7ce4fb3ae58f",
+      "page_number": 10,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-172.jpg",
+      "image_sha256": "688867d079c997e4be2af3625d411559a97f8088d71470a5af5921c2d2d13c0f",
+      "width_px": 2906,
+      "height_px": 2091,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            608.7547665843691,
+            267.257525328036,
+            1294.7228215615967,
+            614.5822845726487
+          ],
+          "bbox_pdf_points": [
+            243.46,
+            106.88,
+            517.8,
+            245.78
+          ],
+          "candidate_id": "TBL-040",
+          "candidate_crop_sha256": "8c2f8c84201d94725a288eb938605ef5d719078c69fb2401b929e0f7863b7a48",
+          "adjudication": {
+            "candidate_id": "TBL-040",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-173",
+      "source_file": "data/raw/vietnam_enterprises/vinatex/vinatex-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6920b243c97fb8e2ce6be5c436e8ae11f19ce5b19230bacdda0b7ce4fb3ae58f",
+      "page_number": 11,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-173.jpg",
+      "image_sha256": "a9d8ec2b0eb07735550b143a741ea2abc3835855e9feb112d82a101f03e8f104",
+      "width_px": 2906,
+      "height_px": 2091,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            129.34726063997954,
+            314.5927138989542,
+            1296.4481184848828,
+            824.4774630535185
+          ],
+          "bbox_pdf_points": [
+            51.73,
+            125.81,
+            518.49,
+            329.72
+          ],
+          "candidate_id": "TBL-082",
+          "candidate_crop_sha256": "8b2086ba1fa3956580a2c73a7aff644c2a40006e20f66e08e358247758858def",
+          "adjudication": {
+            "candidate_id": "TBL-082",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-174",
+      "source_file": "data/raw/vietnam_enterprises/vinatex/vinatex-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6920b243c97fb8e2ce6be5c436e8ae11f19ce5b19230bacdda0b7ce4fb3ae58f",
+      "page_number": 12,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-174.jpg",
+      "image_sha256": "b0d4aeaba463d9625fbae88e307057d38d306d2a811fa54da82ee791b0735a86",
+      "width_px": 2906,
+      "height_px": 2091,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            128.8221702720229,
+            340.22323068986327,
+            1298.7985229890694,
+            1105.738002433173
+          ],
+          "bbox_pdf_points": [
+            51.52,
+            136.06,
+            519.43,
+            442.2
+          ],
+          "candidate_id": "TBL-120",
+          "candidate_crop_sha256": "f4513ad85e6ca778a037310d33f65f59993ffb3ffd242532be91dca1d3d6d372",
+          "adjudication": {
+            "candidate_id": "TBL-120",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-175",
+      "source_file": "data/raw/vietnam_enterprises/vinatex/vinatex-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6920b243c97fb8e2ce6be5c436e8ae11f19ce5b19230bacdda0b7ce4fb3ae58f",
+      "page_number": 19,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-175.jpg",
+      "image_sha256": "a8678137dd0d6d53116d47f4e36d78a6829bd77c14853d9fe90ab9fd7827f468",
+      "width_px": 2906,
+      "height_px": 2091,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            128.74715736231482,
+            1357.2421369531382,
+            1296.3731055751748,
+            1908.3857667955076
+          ],
+          "bbox_pdf_points": [
+            51.49,
+            542.78,
+            518.46,
+            763.19
+          ],
+          "candidate_id": "TBL-157",
+          "candidate_crop_sha256": "feaa19da9e017ec3c1141df322d7d72df146632ce5e1f3e6d3a63f9325e492ff",
+          "adjudication": {
+            "candidate_id": "TBL-157",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-177",
+      "source_file": "data/raw/vietnam_enterprises/vinatex/vinatex-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6920b243c97fb8e2ce6be5c436e8ae11f19ce5b19230bacdda0b7ce4fb3ae58f",
+      "page_number": 23,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-177.jpg",
+      "image_sha256": "252f48155b939406f7ee5b63f67611b9805ecae50c40f10277f114da51e4d32d",
+      "width_px": 2906,
+      "height_px": 2091,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            128.74715736231482,
+            486.7797759693935,
+            1295.9230281169262,
+            1039.64877718598
+          ],
+          "bbox_pdf_points": [
+            51.49,
+            194.67,
+            518.28,
+            415.77
+          ],
+          "candidate_id": "TBL-191",
+          "candidate_crop_sha256": "6411273a1956b1607469e3a0e333e9939d0d4886ad67ff15879e31a13edf4b05",
+          "adjudication": {
+            "candidate_id": "TBL-191",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-178",
+      "source_file": "data/raw/vietnam_enterprises/vrg/vrg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "549c9fb03919488f2d7cd8cb004b03258d3bab4313725c255a2c44c80f3b80bc",
+      "page_number": 13,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-178.jpg",
+      "image_sha256": "cc79035b2eeb481bfc6e02f7b3764fb53c85f5067724c7b4e4533f0077b2930e",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1574.655523172083,
+            432.55650223155413,
+            2887.4060719947715,
+            790.8032978369706
+          ],
+          "bbox_pdf_points": [
+            629.73,
+            173.0,
+            1154.72,
+            316.28
+          ],
+          "candidate_id": "TBL-041",
+          "candidate_crop_sha256": "6a44995915748c565d005220e5abd1043f57cdf78a51674273be47b55cfe7afd",
+          "adjudication": {
+            "candidate_id": "TBL-041",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-179",
+      "source_file": "data/raw/vietnam_enterprises/vrg/vrg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "549c9fb03919488f2d7cd8cb004b03258d3bab4313725c255a2c44c80f3b80bc",
+      "page_number": 15,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-179.jpg",
+      "image_sha256": "ba27ee4a3a7fd9038094f9dde1ec4a049e7629327efaea8c97b48eb3ec58e84c",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1576.2558590856174,
+            435.05682883404864,
+            2889.2064498974983,
+            1023.8837437215111
+          ],
+          "bbox_pdf_points": [
+            630.37,
+            174.0,
+            1155.44,
+            409.5
+          ],
+          "candidate_id": "TBL-083",
+          "candidate_crop_sha256": "72053853f00b723ae36b439e562c8697a4ee68b799aa83682829144311267c6b",
+          "adjudication": {
+            "candidate_id": "TBL-083",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-181",
+      "source_file": "data/raw/vietnam_enterprises/vrg/vrg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "549c9fb03919488f2d7cd8cb004b03258d3bab4313725c255a2c44c80f3b80bc",
+      "page_number": 20,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-181.jpg",
+      "image_sha256": "49eac3513d95052340fb46920abf55a7a2f62ecd289f8b7e60ed26c3f28638e9",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1579.7065833991765,
+            234.03056999348826,
+            2879.60443441629,
+            1988.8597926882512
+          ],
+          "bbox_pdf_points": [
+            631.75,
+            93.6,
+            1151.6,
+            795.44
+          ],
+          "candidate_id": "TBL-121",
+          "candidate_crop_sha256": "20c14eafacc07eb82a7f732b1487944e9b95e4a1a9f169e7aef26bd6a1d78327",
+          "adjudication": {
+            "candidate_id": "TBL-121",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-182",
+      "source_file": "data/raw/vietnam_enterprises/vrg/vrg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "549c9fb03919488f2d7cd8cb004b03258d3bab4313725c255a2c44c80f3b80bc",
+      "page_number": 21,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-182.jpg",
+      "image_sha256": "499bfbf3aba9344558fbbee62e9017d3f37b753443c5784a6b4d77c4ddc798ee",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "locked_test",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            91.19414182282226,
+            206.50197410002346,
+            1391.1169980885854,
+            1967.6320198330725
+          ],
+          "bbox_pdf_points": [
+            36.47,
+            82.59,
+            556.33,
+            786.95
+          ],
+          "candidate_id": "TBL-158",
+          "candidate_crop_sha256": "726e71cf44cdf19451cdfa012daa9ab8dca808c863976ccb8ec8a871f28cb216",
+          "adjudication": {
+            "candidate_id": "TBL-158",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1579.7065833991765,
+            206.50197410002346,
+            2879.629439664939,
+            2011.0376896523774
+          ],
+          "bbox_pdf_points": [
+            631.75,
+            82.59,
+            1151.61,
+            804.31
+          ],
+          "candidate_id": "TBL-192",
+          "candidate_crop_sha256": "61d1d97c3a48b84bb5b12aa55c59e75d6bdf8d046bfb1bcd30f51a065b0ef18e",
+          "adjudication": {
+            "candidate_id": "TBL-192",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-184",
+      "source_file": "data/raw/vietnam_enterprises/vtp/vtp-ar-2024-vi.pdf",
+      "source_pdf_sha256": "a56640cadc2af947294d07fcc5311427c5730df9a97538000af17e79285a95ce",
+      "page_number": 28,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-184.jpg",
+      "image_sha256": "176cce94f7f62a2a19392a4554479d74aeaba7dc549c8129aa2e3579cae30898",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            150.30654962900593,
+            462.01034960893975,
+            1417.0224356889266,
+            1280.9423217239737
+          ],
+          "bbox_pdf_points": [
+            60.11,
+            184.78,
+            566.69,
+            512.31
+          ],
+          "candidate_id": "TBL-042",
+          "candidate_crop_sha256": "a49aca67071db102996a796ff343cb9359b361dc7201578b0a7b9603ca28144c",
+          "adjudication": {
+            "candidate_id": "TBL-042",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1526.5204195228005,
+            462.01034960893975,
+            2793.236305582721,
+            1161.8267623811344
+          ],
+          "bbox_pdf_points": [
+            610.48,
+            184.78,
+            1117.06,
+            464.67
+          ],
+          "candidate_id": "TBL-084",
+          "candidate_crop_sha256": "4f974c0f1cad24c70ff61f3882cd45b77c7120f416850fa183628d85c6beefd0",
+          "adjudication": {
+            "candidate_id": "TBL-084",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-185",
+      "source_file": "data/raw/vietnam_enterprises/vtp/vtp-ar-2024-vi.pdf",
+      "source_pdf_sha256": "a56640cadc2af947294d07fcc5311427c5730df9a97538000af17e79285a95ce",
+      "page_number": 29,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-185.jpg",
+      "image_sha256": "a2f290cf649ad6e04d5a4313135f0fca17f016822b91374d9a5ae4a4edd03fd1",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            257.3790243439292,
+            342.81978046802544,
+            1405.8951000401312,
+            1524.2741066787419
+          ],
+          "bbox_pdf_points": [
+            102.93,
+            137.11,
+            562.24,
+            609.63
+          ],
+          "candidate_id": "TBL-122",
+          "candidate_crop_sha256": "cb24a4df15e361575baa08f49121eaf0aa0b7ae70e61a865a96b0410d4572c28",
+          "adjudication": {
+            "candidate_id": "TBL-122",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1566.9539065881977,
+            342.81978046802544,
+            2715.4699822844,
+            1524.2741066787419
+          ],
+          "bbox_pdf_points": [
+            626.65,
+            137.11,
+            1085.96,
+            609.63
+          ],
+          "candidate_id": "TBL-159",
+          "candidate_crop_sha256": "cf4996b5f0182faa6ebbbfdba51d3ee7e01bf3d2bc296f94790cf724fc862f90",
+          "adjudication": {
+            "candidate_id": "TBL-159",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-186",
+      "source_file": "data/raw/vietnam_enterprises/vtp/vtp-ar-2024-vi.pdf",
+      "source_pdf_sha256": "a56640cadc2af947294d07fcc5311427c5730df9a97538000af17e79285a95ce",
+      "page_number": 32,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-186.jpg",
+      "image_sha256": "0e2d45a28458aafd1cd079ba2304cf4e3ec3f18882b6f5440a2a7505fe3965b4",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "validation",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            116.97455317991843,
+            196.47566442402035,
+            1664.5743973138074,
+            1835.9398176796853
+          ],
+          "bbox_pdf_points": [
+            46.78,
+            78.58,
+            665.69,
+            734.28
+          ],
+          "candidate_id": "TBL-193",
+          "candidate_crop_sha256": "5b26a30df9f9bedaeb847464e5641765d3b6594cded2eb0e6d5d0c4772d4c14f",
+          "adjudication": {
+            "candidate_id": "TBL-193",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-188",
+      "source_file": "data/raw/vietnam_enterprises/vincom_retail/vcr-ar-2024-vn.pdf",
+      "source_pdf_sha256": "1c27f1a1dc64c65302f6a5ea567990f313420449230aab451b3779f64d80e5e4",
+      "page_number": 11,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-188.jpg",
+      "image_sha256": "7924605d57e4b7d5e009d19daa1567332a0eac1c8b4e51f2282424cf5679705d",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1595.0097955723509,
+            1135.3233003946923,
+            2888.881381665061,
+            1984.9092766563097
+          ],
+          "bbox_pdf_points": [
+            637.87,
+            454.07,
+            1155.31,
+            793.86
+          ],
+          "candidate_id": "TBL-043",
+          "candidate_crop_sha256": "1d34534ab6a3dd3d61abe1a4b834b259ccde9d10e522f502a86c57c855fc7642",
+          "adjudication": {
+            "candidate_id": "TBL-043",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-190",
+      "source_file": "data/raw/vietnam_enterprises/vic/vic-ar-2024-vi.pdf",
+      "source_pdf_sha256": "1ac1c3bcb17f9c8ca23057e32672e28697b694822315c2b71c252b7f900bb1f6",
+      "page_number": 18,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-190.jpg",
+      "image_sha256": "28feb4abb7af4e7cd40e24bec270b93fa626803d8a9facf5563e83f7d7ba3b61",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            85.06785590382269,
+            1436.3876266010593,
+            1027.765729970288,
+            1888.3966698000208
+          ],
+          "bbox_pdf_points": [
+            34.02,
+            574.48,
+            411.02,
+            755.26
+          ],
+          "candidate_id": "TBL-044",
+          "candidate_crop_sha256": "bedf4dd42b39f4dee83b9c962f0caa6dcdbb7e5b3ee09f85b65505dd3ffd0c73",
+          "adjudication": {
+            "candidate_id": "TBL-044",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-191",
+      "source_file": "data/raw/vietnam_enterprises/vic/vic-ar-2024-vi.pdf",
+      "source_pdf_sha256": "1ac1c3bcb17f9c8ca23057e32672e28697b694822315c2b71c252b7f900bb1f6",
+      "page_number": 38,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-191.jpg",
+      "image_sha256": "681356da52885d2d25ea87e45a343d70977d7ea476b936978f6a0d0a1d6e7ae0",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            419.96315105958314,
+            556.3226690550335,
+            1381.6650140992717,
+            985.8287728315441
+          ],
+          "bbox_pdf_points": [
+            167.95,
+            222.5,
+            552.55,
+            394.28
+          ],
+          "candidate_id": "TBL-085",
+          "candidate_crop_sha256": "73d2d7439d0595ea99bcdff7d6bb1bb6efacc574652a4d5006222bb3f351c887",
+          "adjudication": {
+            "candidate_id": "TBL-085",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-193",
+      "source_file": "data/raw/vietnam_enterprises/vic/vic-ar-2024-vi.pdf",
+      "source_pdf_sha256": "1ac1c3bcb17f9c8ca23057e32672e28697b694822315c2b71c252b7f900bb1f6",
+      "page_number": 52,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-193.jpg",
+      "image_sha256": "960ae7cde8e6c0532d8be160baecfe255784f931171fe028ee06a9eaf7badd91",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            85.06785590382269,
+            922.7705359166323,
+            1382.1901243209004,
+            1978.8834895442978
+          ],
+          "bbox_pdf_points": [
+            34.02,
+            369.06,
+            552.76,
+            791.45
+          ],
+          "candidate_id": "TBL-123",
+          "candidate_crop_sha256": "919a492a590816e1788cb669adf6dada03b6be4b28e6f4be0d3a88653ec9885c",
+          "adjudication": {
+            "candidate_id": "TBL-123",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-194",
+      "source_file": "data/raw/vietnam_enterprises/vic/vic-ar-2024-vi.pdf",
+      "source_pdf_sha256": "1ac1c3bcb17f9c8ca23057e32672e28697b694822315c2b71c252b7f900bb1f6",
+      "page_number": 54,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-194.jpg",
+      "image_sha256": "499e588c388e8faaacee8993fbfb0296056d522a9d712cd7c7fd133c92deeade",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            85.06785590382269,
+            906.7184391286172,
+            1379.3395259749168,
+            1341.0001667158929
+          ],
+          "bbox_pdf_points": [
+            34.02,
+            362.64,
+            551.62,
+            536.33
+          ],
+          "candidate_id": "TBL-160",
+          "candidate_crop_sha256": "25c6a0e63a7fbfa99a65dfd14d09c4dbb878969766c68d4de9bb076d90572ae0",
+          "adjudication": {
+            "candidate_id": "TBL-160",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1929.7300539875685,
+            1087.967114543446,
+            2890.5317280758936,
+            1383.730748352524
+          ],
+          "bbox_pdf_points": [
+            771.73,
+            435.13,
+            1155.97,
+            553.42
+          ],
+          "candidate_id": "TBL-194",
+          "candidate_crop_sha256": "90c3483c627a21260e4621d6e5520115af2fa97faed0ee6bc5cc4dab5cb0aa43",
+          "adjudication": {
+            "candidate_id": "TBL-194",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-197",
+      "source_file": "data/raw/vietnam_enterprises/vhm/vhm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6414ca8970f2c4d3e1410bd493da3c9ef8f6770dc8913a268a65e2ed903bb061",
+      "page_number": 22,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-197.jpg",
+      "image_sha256": "0f4935ba941569b3208f3253f792b95126ab2a8d52ba44ea5c5f2da1135aec5b",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1594.834758831808,
+            530.6193115813896,
+            2891.957027248886,
+            1955.8554815353232
+          ],
+          "bbox_pdf_points": [
+            637.8,
+            212.22,
+            1156.54,
+            782.24
+          ],
+          "candidate_id": "TBL-045",
+          "candidate_crop_sha256": "6f389823968829bf0f1ff29ab69cf47e2dc807a5b32b2d61fabdff04506fd6e0",
+          "adjudication": {
+            "candidate_id": "TBL-045",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-198",
+      "source_file": "data/raw/vietnam_enterprises/vhm/vhm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6414ca8970f2c4d3e1410bd493da3c9ef8f6770dc8913a268a65e2ed903bb061",
+      "page_number": 24,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-198.jpg",
+      "image_sha256": "6d8b2e6ac6d74275c8f2a203b6c18de7be371d0a06911ff2880aa8e8837ad7c1",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1594.809753583159,
+            322.5921382538446,
+            2890.13164409751,
+            2019.013731514335
+          ],
+          "bbox_pdf_points": [
+            637.79,
+            129.02,
+            1155.81,
+            807.5
+          ],
+          "candidate_id": "TBL-086",
+          "candidate_crop_sha256": "3ae58c572fc3169508380c20a65eb7334a8c912b33212095bee44a88cb5d18f9",
+          "adjudication": {
+            "candidate_id": "TBL-086",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            84.21767744975745,
+            649.9348970524287,
+            1379.5145627154598,
+            2019.013731514335
+          ],
+          "bbox_pdf_points": [
+            33.68,
+            259.94,
+            551.69,
+            807.5
+          ],
+          "candidate_id": "TBL-124",
+          "candidate_crop_sha256": "7398ff169f22db57c9874d04a4439d3b913e0c71bbe03675be71c482b68dfb4d",
+          "adjudication": {
+            "candidate_id": "TBL-124",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    },
+    {
+      "page_id": "LAYOUTV2-199",
+      "source_file": "data/raw/vietnam_enterprises/vhm/vhm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6414ca8970f2c4d3e1410bd493da3c9ef8f6770dc8913a268a65e2ed903bb061",
+      "page_number": 25,
+      "image_file": "artifacts/evaluation/document-pipelines/layout/inputs/page-images/LAYOUTV2-199.jpg",
+      "image_sha256": "c142e65ec6e75048b4312e00d5d8c3ff2523b3fef7e37e9d35445bfcf1f3c6af",
+      "width_px": 2977,
+      "height_px": 2105,
+      "split": "development",
+      "annotations": [
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            86.71820231465523,
+            482.03796569492096,
+            1382.0150875803574,
+            1919.1256837446786
+          ],
+          "bbox_pdf_points": [
+            34.68,
+            192.79,
+            552.69,
+            767.55
+          ],
+          "candidate_id": "TBL-161",
+          "candidate_crop_sha256": "2df1abdb8d4d54c7f8536b391d8d72ca6ad1f7448179793e4da41755e1ce9f58",
+          "adjudication": {
+            "candidate_id": "TBL-161",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        },
+        {
+          "class": "table",
+          "bbox_xyxy": [
+            1594.809753583159,
+            482.03796569492096,
+            2890.13164409751,
+            1919.1256837446786
+          ],
+          "bbox_pdf_points": [
+            637.79,
+            192.79,
+            1155.81,
+            767.55
+          ],
+          "candidate_id": "TBL-195",
+          "candidate_crop_sha256": "1e25b5004603752c9c88df58dd5a38491a12a5c8e1faedf0e9a9c67284b71227",
+          "adjudication": {
+            "candidate_id": "TBL-195",
+            "decision": "accept",
+            "reason": "Visually confirmed complete tabular region; references use the source PDF cell grid.",
+            "adjudication_method": "assistant visual review; not human-reviewed"
+          }
+        }
+      ]
+    }
+  ]
+}

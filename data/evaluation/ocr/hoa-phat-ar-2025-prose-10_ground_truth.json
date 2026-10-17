@@ -1,0 +1,207 @@
+{
+  "dataset_id": "hoa-phat-ar-2025-vietnamese-prose-screening-v1",
+  "dataset_title": "Hoa Phat AR 2025 Vietnamese OCR 10 pages",
+  "purpose": "Exploratory Vietnamese OCR comparison on selected content crops from Hòa Phát Annual Report 2025.",
+  "reference_method": "native PDF text layer clipped to the main report area",
+  "reference_quality": "Candidate pages visually inspected for Vietnamese prose and selected to avoid table-dominant spreads; native text references are not proofread word by word.",
+  "primary_metric_selection_eligible": false,
+  "render_dpi": 180,
+  "limitations": [
+    "Ten selected crops from one born-digital annual report, using large editorial two-page spreads.",
+    "References come from native PDF text and have not been proofread word by word; multi-column reading order can affect CER/WER.",
+    "CER/WER measure OCR text recognition only, not layout detection or table extraction.",
+    "Exploratory screening only; not eligible for primary model selection."
+  ],
+  "pages": [
+    {
+      "id": "hpg-ar-2025-page-4-content-crop-vi",
+      "document_id": "HÒA-PHÁT-AR-2025",
+      "company": "Hòa Phát",
+      "file": "data/raw/vietnam_enterprises/hpg/hpg-ar-2025-vi.pdf",
+      "source_pdf_sha256": "b684eb4c8d3b7b5e09258584451c86af553fc3a61c12fb1100bd31559d661e43",
+      "source_url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-2025-1.pdf",
+      "page": 4,
+      "clip_rect": [
+        250,
+        0,
+        2160,
+        1242
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "hpg-ar-2025-page-5-content-crop-vi",
+      "document_id": "HÒA-PHÁT-AR-2025",
+      "company": "Hòa Phát",
+      "file": "data/raw/vietnam_enterprises/hpg/hpg-ar-2025-vi.pdf",
+      "source_pdf_sha256": "b684eb4c8d3b7b5e09258584451c86af553fc3a61c12fb1100bd31559d661e43",
+      "source_url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-2025-1.pdf",
+      "page": 5,
+      "clip_rect": [
+        250,
+        0,
+        2160,
+        1242
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "hpg-ar-2025-page-17-content-crop-vi",
+      "document_id": "HÒA-PHÁT-AR-2025",
+      "company": "Hòa Phát",
+      "file": "data/raw/vietnam_enterprises/hpg/hpg-ar-2025-vi.pdf",
+      "source_pdf_sha256": "b684eb4c8d3b7b5e09258584451c86af553fc3a61c12fb1100bd31559d661e43",
+      "source_url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-2025-1.pdf",
+      "page": 17,
+      "clip_rect": [
+        250,
+        0,
+        2160,
+        1242
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "hpg-ar-2025-page-20-content-crop-vi",
+      "document_id": "HÒA-PHÁT-AR-2025",
+      "company": "Hòa Phát",
+      "file": "data/raw/vietnam_enterprises/hpg/hpg-ar-2025-vi.pdf",
+      "source_pdf_sha256": "b684eb4c8d3b7b5e09258584451c86af553fc3a61c12fb1100bd31559d661e43",
+      "source_url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-2025-1.pdf",
+      "page": 20,
+      "clip_rect": [
+        250,
+        0,
+        2160,
+        1242
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "hpg-ar-2025-page-21-content-crop-vi",
+      "document_id": "HÒA-PHÁT-AR-2025",
+      "company": "Hòa Phát",
+      "file": "data/raw/vietnam_enterprises/hpg/hpg-ar-2025-vi.pdf",
+      "source_pdf_sha256": "b684eb4c8d3b7b5e09258584451c86af553fc3a61c12fb1100bd31559d661e43",
+      "source_url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-2025-1.pdf",
+      "page": 21,
+      "clip_rect": [
+        250,
+        0,
+        2160,
+        1242
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "hpg-ar-2025-page-22-content-crop-vi",
+      "document_id": "HÒA-PHÁT-AR-2025",
+      "company": "Hòa Phát",
+      "file": "data/raw/vietnam_enterprises/hpg/hpg-ar-2025-vi.pdf",
+      "source_pdf_sha256": "b684eb4c8d3b7b5e09258584451c86af553fc3a61c12fb1100bd31559d661e43",
+      "source_url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-2025-1.pdf",
+      "page": 22,
+      "clip_rect": [
+        250,
+        0,
+        2160,
+        1242
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "hpg-ar-2025-page-23-content-crop-vi",
+      "document_id": "HÒA-PHÁT-AR-2025",
+      "company": "Hòa Phát",
+      "file": "data/raw/vietnam_enterprises/hpg/hpg-ar-2025-vi.pdf",
+      "source_pdf_sha256": "b684eb4c8d3b7b5e09258584451c86af553fc3a61c12fb1100bd31559d661e43",
+      "source_url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-2025-1.pdf",
+      "page": 23,
+      "clip_rect": [
+        250,
+        0,
+        2160,
+        1242
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "hpg-ar-2025-page-74-content-crop-vi",
+      "document_id": "HÒA-PHÁT-AR-2025",
+      "company": "Hòa Phát",
+      "file": "data/raw/vietnam_enterprises/hpg/hpg-ar-2025-vi.pdf",
+      "source_pdf_sha256": "b684eb4c8d3b7b5e09258584451c86af553fc3a61c12fb1100bd31559d661e43",
+      "source_url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-2025-1.pdf",
+      "page": 74,
+      "clip_rect": [
+        250,
+        0,
+        2160,
+        1242
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "hpg-ar-2025-page-78-content-crop-vi",
+      "document_id": "HÒA-PHÁT-AR-2025",
+      "company": "Hòa Phát",
+      "file": "data/raw/vietnam_enterprises/hpg/hpg-ar-2025-vi.pdf",
+      "source_pdf_sha256": "b684eb4c8d3b7b5e09258584451c86af553fc3a61c12fb1100bd31559d661e43",
+      "source_url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-2025-1.pdf",
+      "page": 78,
+      "clip_rect": [
+        250,
+        0,
+        2160,
+        1242
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "hpg-ar-2025-page-80-content-crop-vi",
+      "document_id": "HÒA-PHÁT-AR-2025",
+      "company": "Hòa Phát",
+      "file": "data/raw/vietnam_enterprises/hpg/hpg-ar-2025-vi.pdf",
+      "source_pdf_sha256": "b684eb4c8d3b7b5e09258584451c86af553fc3a61c12fb1100bd31559d661e43",
+      "source_url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-2025-1.pdf",
+      "page": 80,
+      "clip_rect": [
+        250,
+        0,
+        2160,
+        1242
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    }
+  ]
+}

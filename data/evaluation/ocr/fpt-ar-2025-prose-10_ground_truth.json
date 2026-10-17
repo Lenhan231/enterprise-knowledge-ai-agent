@@ -1,0 +1,207 @@
+{
+  "dataset_id": "fpt-ar-2025-vietnamese-prose-screening-v1",
+  "dataset_title": "FPT AR 2025 Vietnamese OCR 10 pages",
+  "purpose": "Exploratory Vietnamese OCR comparison on selected content crops from the official FPT Annual Report 2025.",
+  "reference_method": "native PDF text layer clipped to the report content area",
+  "reference_quality": "Candidate pages were visually inspected and cropped to exclude the repeated side navigation; native text references are not proofread word by word.",
+  "primary_metric_selection_eligible": false,
+  "render_dpi": 180,
+  "limitations": [
+    "Ten content crops from one born-digital annual report; pages use wide editorial layouts with multiple columns, images and graphic callouts.",
+    "References come from the native PDF text layer and have not been proofread word by word; reading order differences may affect CER/WER.",
+    "CER/WER measure OCR text recognition only, not layout detection or table extraction.",
+    "This is exploratory screening evidence, not a primary model-selection dataset."
+  ],
+  "pages": [
+    {
+      "id": "fpt-ar-2025-page-3-content-crop-vi",
+      "document_id": "FPT-AR-2025",
+      "company": "FPT",
+      "file": "data/raw/vietnam_enterprises/fpt/fpt-ar-2025-vi.pdf",
+      "source_pdf_sha256": "9449a7251d126b635988974dbc72c2773c7fff39f4e5e858b5f7d3928b4e0e6c",
+      "source_url": "https://fpt.com/api/download?url=%2Fapi%2Fmedia%2FBCTN_2025_ad403f779b.pdf",
+      "page": 3,
+      "clip_rect": [
+        245,
+        0,
+        1030,
+        560
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "fpt-ar-2025-page-4-content-crop-vi",
+      "document_id": "FPT-AR-2025",
+      "company": "FPT",
+      "file": "data/raw/vietnam_enterprises/fpt/fpt-ar-2025-vi.pdf",
+      "source_pdf_sha256": "9449a7251d126b635988974dbc72c2773c7fff39f4e5e858b5f7d3928b4e0e6c",
+      "source_url": "https://fpt.com/api/download?url=%2Fapi%2Fmedia%2FBCTN_2025_ad403f779b.pdf",
+      "page": 4,
+      "clip_rect": [
+        245,
+        0,
+        1030,
+        560
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "fpt-ar-2025-page-5-content-crop-vi",
+      "document_id": "FPT-AR-2025",
+      "company": "FPT",
+      "file": "data/raw/vietnam_enterprises/fpt/fpt-ar-2025-vi.pdf",
+      "source_pdf_sha256": "9449a7251d126b635988974dbc72c2773c7fff39f4e5e858b5f7d3928b4e0e6c",
+      "source_url": "https://fpt.com/api/download?url=%2Fapi%2Fmedia%2FBCTN_2025_ad403f779b.pdf",
+      "page": 5,
+      "clip_rect": [
+        245,
+        0,
+        1030,
+        560
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "fpt-ar-2025-page-7-content-crop-vi",
+      "document_id": "FPT-AR-2025",
+      "company": "FPT",
+      "file": "data/raw/vietnam_enterprises/fpt/fpt-ar-2025-vi.pdf",
+      "source_pdf_sha256": "9449a7251d126b635988974dbc72c2773c7fff39f4e5e858b5f7d3928b4e0e6c",
+      "source_url": "https://fpt.com/api/download?url=%2Fapi%2Fmedia%2FBCTN_2025_ad403f779b.pdf",
+      "page": 7,
+      "clip_rect": [
+        245,
+        0,
+        1030,
+        560
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "fpt-ar-2025-page-8-content-crop-vi",
+      "document_id": "FPT-AR-2025",
+      "company": "FPT",
+      "file": "data/raw/vietnam_enterprises/fpt/fpt-ar-2025-vi.pdf",
+      "source_pdf_sha256": "9449a7251d126b635988974dbc72c2773c7fff39f4e5e858b5f7d3928b4e0e6c",
+      "source_url": "https://fpt.com/api/download?url=%2Fapi%2Fmedia%2FBCTN_2025_ad403f779b.pdf",
+      "page": 8,
+      "clip_rect": [
+        245,
+        0,
+        1030,
+        560
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "fpt-ar-2025-page-18-content-crop-vi",
+      "document_id": "FPT-AR-2025",
+      "company": "FPT",
+      "file": "data/raw/vietnam_enterprises/fpt/fpt-ar-2025-vi.pdf",
+      "source_pdf_sha256": "9449a7251d126b635988974dbc72c2773c7fff39f4e5e858b5f7d3928b4e0e6c",
+      "source_url": "https://fpt.com/api/download?url=%2Fapi%2Fmedia%2FBCTN_2025_ad403f779b.pdf",
+      "page": 18,
+      "clip_rect": [
+        245,
+        0,
+        1030,
+        560
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "fpt-ar-2025-page-20-content-crop-vi",
+      "document_id": "FPT-AR-2025",
+      "company": "FPT",
+      "file": "data/raw/vietnam_enterprises/fpt/fpt-ar-2025-vi.pdf",
+      "source_pdf_sha256": "9449a7251d126b635988974dbc72c2773c7fff39f4e5e858b5f7d3928b4e0e6c",
+      "source_url": "https://fpt.com/api/download?url=%2Fapi%2Fmedia%2FBCTN_2025_ad403f779b.pdf",
+      "page": 20,
+      "clip_rect": [
+        245,
+        0,
+        1030,
+        560
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "fpt-ar-2025-page-21-content-crop-vi",
+      "document_id": "FPT-AR-2025",
+      "company": "FPT",
+      "file": "data/raw/vietnam_enterprises/fpt/fpt-ar-2025-vi.pdf",
+      "source_pdf_sha256": "9449a7251d126b635988974dbc72c2773c7fff39f4e5e858b5f7d3928b4e0e6c",
+      "source_url": "https://fpt.com/api/download?url=%2Fapi%2Fmedia%2FBCTN_2025_ad403f779b.pdf",
+      "page": 21,
+      "clip_rect": [
+        245,
+        0,
+        1030,
+        560
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "fpt-ar-2025-page-24-content-crop-vi",
+      "document_id": "FPT-AR-2025",
+      "company": "FPT",
+      "file": "data/raw/vietnam_enterprises/fpt/fpt-ar-2025-vi.pdf",
+      "source_pdf_sha256": "9449a7251d126b635988974dbc72c2773c7fff39f4e5e858b5f7d3928b4e0e6c",
+      "source_url": "https://fpt.com/api/download?url=%2Fapi%2Fmedia%2FBCTN_2025_ad403f779b.pdf",
+      "page": 24,
+      "clip_rect": [
+        245,
+        0,
+        1030,
+        560
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    },
+    {
+      "id": "fpt-ar-2025-page-25-content-crop-vi",
+      "document_id": "FPT-AR-2025",
+      "company": "FPT",
+      "file": "data/raw/vietnam_enterprises/fpt/fpt-ar-2025-vi.pdf",
+      "source_pdf_sha256": "9449a7251d126b635988974dbc72c2773c7fff39f4e5e858b5f7d3928b4e0e6c",
+      "source_url": "https://fpt.com/api/download?url=%2Fapi%2Fmedia%2FBCTN_2025_ad403f779b.pdf",
+      "page": 25,
+      "clip_rect": [
+        245,
+        0,
+        1030,
+        560
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose"
+    }
+  ]
+}

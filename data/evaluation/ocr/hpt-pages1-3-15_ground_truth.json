@@ -1,0 +1,206 @@
+{
+  "dataset_id": "hpt-longhau-pages1-3-15-v1",
+  "dataset_title": "HPT Long Hau pages 1, 3 and 15 OCR",
+  "purpose": "Exploratory CER/WER on the cover and dense prose page, with order-insensitive table cell-text scoring on a financial page.",
+  "reference_method": "visual transcription from rendered source pages",
+  "reference_quality": "single-reviewer visual transcription",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "Two selected pages from one 22-page scanned PDF; not representative of the full document or a production corpus.",
+    "Page 1 uses the isolated one-page source PDF while page 3 uses the original 22-page source PDF; both source hashes are recorded per page.",
+    "Page 3 transcription excludes the binding artifacts and printed footer page number.",
+    "CER/WER measure recognized text only, not layout detection, reading order, or table extraction accuracy.",
+    "Page 15 is scored by order-insensitive cell-text presence; CER/WER exclude that table page, and the available OCR evaluator does not score row/column association.",
+    "Dash placeholders are excluded from cell text recall; the available scorer counts cell text presence without checking its row or column."
+  ],
+  "pages": [
+    {
+      "id": "hpt-longhau-page1-cover-vi",
+      "document_id": "HPT-LONGHAU-2008",
+      "file": "data/raw/benchmark_data/HPT-trang-1.pdf",
+      "source_pdf_sha256": "93a47b39ca22db56ea11cb5b058819b84045509d924d13e955defe045400ebc0",
+      "page": 1,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": true,
+      "layout_type": "cover",
+      "clip_rect": [
+        0,
+        0,
+        595,
+        842
+      ],
+      "reference_text": "Công ty Cổ Phần Long Hậu\n\nCác báo cáo tài chính riêng đã được kiểm toán\nngày 31 tháng 12 năm 2008\n\nvà báo cáo của Hội đồng Quản trị\n\nErnst & Young\n\nERNST & YOUNG"
+    },
+    {
+      "id": "hpt-longhau-page3-board-report-vi",
+      "document_id": "HPT-LONGHAU-2008",
+      "file": "data/raw/benchmark_data/HPT - To trinh thong qua danh sach Cong ty Kiem toan signed1.pdf",
+      "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+      "page": 3,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": true,
+      "layout_type": "text",
+      "clip_rect": [
+        0,
+        0,
+        595,
+        842
+      ],
+      "reference_text": "Công ty Cổ Phần Long Hậu\n\nBÁO CÁO CỦA HỘI ĐỒNG QUẢN TRỊ\n\nHội đồng Quản trị Công ty Cổ Phần Long Hậu (Công ty) trình bày báo cáo này và các báo cáo tài chính riêng của Công ty vào ngày 31 tháng 12 năm 2008 và cho năm kết thúc cùng ngày.\n\nCÔNG TY\n\nCông ty là một công ty cổ phần được thành lập tại Việt Nam theo Giấy Chứng nhận đăng ký kinh doanh số 5003000142 ngày 23 tháng 5 năm 2006 do Sở Kế hoạch và Đầu tư Tỉnh Long An cấp và Giấy chứng nhận đầu tư số 50221000001 ngày 1 tháng 12 năm 2006 do Ban Quản Lý Các Khu Công Nghiệp Long An cấp và theo các Giấy phép Điều chỉnh sau đây:\n\nGiấy Chứng nhận Đầu tư số 50221000001 - Điều chỉnh lần 1\nGiấy Chứng nhận Đăng ký Kinh doanh số 5003000142 - Điều chỉnh lần 1\nGiấy Chứng nhận Đăng ký Kinh doanh số 5003000142 - Điều chỉnh lần 2\nNgày cấp\n3 tháng 5 năm 2007\n9 tháng 11 năm 2007\n19 tháng 2 năm 2008\n\nHoạt động chính của Công ty là xây dựng cơ sở hạ tầng cho khu công nghiệp và cho thuê lại đất đã phát triển cơ sở hạ tầng.\n\nCông ty có trụ sở chính tại Xã Long Hậu, Huyện Cần Giuộc, Tỉnh Long An.\n\nKẾT QUẢ HOẠT ĐỘNG KINH DOANH VÀ CỔ TỨC\n\nLãi sau thuế trong năm kết thúc ngày 31 tháng 12 năm 2008 là 143.110.413 ngàn đồng Việt Nam (2007: 45.297.647 ngàn đồng Việt Nam).\n\nTrong năm, Công ty đã chi trả cổ tức trị giá 27.031.684 ngàn đồng Việt Nam (2007: 0) được trích từ tổng lợi nhuận chưa phân phối vào cuối năm là 149.075.779 ngàn đồng Việt Nam (2007: 45.285.717).\n\nCÁC SỰ KIỆN PHÁT SINH SAU NGÀY KẾT THÚC NĂM TÀI CHÍNH\n\nKhông có sự kiện trọng yếu nào phát sinh sau ngày kết thúc năm tài chính đòi hỏi phải được điều chỉnh hay trình bày trong các báo cáo tài chính riêng.\n\nHỘI ĐỒNG QUẢN TRỊ\n\nCác thành viên Hội đồng Quản trị trong năm và vào ngày lập báo cáo này như sau:\n\nÔng Bùi Văn Ánh - Chủ tịch\nÔng Đoàn Hồng Dũng - Thành viên - Tổng Giám đốc\nÔng Diệp Dũng - Thành viên\nÔng Đoàn Hồng Tâm - Thành viên\nBà Võ Thị Huyền Lan - Thành viên\nBà Phạm Thị Như Anh - Thành viên\n\nKIỂM TOÁN VIÊN\n\nCông ty kiểm toán Ernst & Young bày tỏ nguyện vọng được tiếp tục làm công tác kiểm toán cho Công ty."
+    },
+    {
+      "id": "hpt-longhau-page15-financial-table-vi",
+      "document_id": "HPT-LONGHAU-2008",
+      "file": "data/raw/benchmark_data/HPT - To trinh thong qua danh sach Cong ty Kiem toan signed1.pdf",
+      "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+      "page": 15,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": true,
+      "layout_type": "financial_table",
+      "clip_rect": [
+        0,
+        0,
+        595,
+        842
+      ],
+      "reference_text": "",
+      "table_rows": [
+        {
+          "label": "Số đầu năm",
+          "values": [
+            "2.921.106",
+            "502.410",
+            "3.104.994",
+            "181.953",
+            "6.710.463"
+          ]
+        },
+        {
+          "label": "Tăng trong năm",
+          "values": [
+            "972.297",
+            "682.390",
+            "3.575.677",
+            "453.058",
+            "5.683.422"
+          ]
+        },
+        {
+          "label": "Giảm trong năm",
+          "values": [
+            "182.185",
+            "182.185"
+          ]
+        },
+        {
+          "label": "Số cuối năm",
+          "values": [
+            "3.893.403",
+            "1.002.615",
+            "6.680.671",
+            "635.011",
+            "12.211.700"
+          ]
+        },
+        {
+          "label": "Số đầu năm",
+          "values": [
+            "92.786",
+            "50.804",
+            "338.058",
+            "34.128",
+            "515.776"
+          ]
+        },
+        {
+          "label": "Khấu hao trong năm",
+          "values": [
+            "117.028",
+            "77.397",
+            "898.002",
+            "94.236",
+            "1.186.663"
+          ]
+        },
+        {
+          "label": "Giảm trong năm",
+          "values": [
+            "39.669",
+            "39.669"
+          ]
+        },
+        {
+          "label": "Số cuối năm",
+          "values": [
+            "209.814",
+            "88.532",
+            "1.236.060",
+            "128.364",
+            "1.662.770"
+          ]
+        },
+        {
+          "label": "Số đầu năm",
+          "values": [
+            "2.828.320",
+            "451.606",
+            "2.766.936",
+            "147.825",
+            "6.194.687"
+          ]
+        },
+        {
+          "label": "Số cuối năm",
+          "values": [
+            "3.683.589",
+            "914.083",
+            "5.444.611",
+            "506.647",
+            "10.548.930"
+          ]
+        },
+        {
+          "label": "Hệ thống cung cấp nước",
+          "values": [
+            "16.304.341"
+          ]
+        },
+        {
+          "label": "Xe rửa đường",
+          "values": [
+            "2.159.149"
+          ]
+        },
+        {
+          "label": "Tổng cộng",
+          "values": [
+            "18.463.490"
+          ]
+        },
+        {
+          "label": "Công ty cổ phần BourBon An Hòa",
+          "values": [
+            "25",
+            "75.000.000"
+          ]
+        },
+        {
+          "label": "Công ty Cổ phần Cảng Sài Gòn - Hiệp Phước",
+          "values": [
+            "20",
+            "30.000.000"
+          ]
+        },
+        {
+          "label": "Tổng cộng",
+          "values": [
+            "105.000.000"
+          ]
+        }
+      ]
+    }
+  ]
+}

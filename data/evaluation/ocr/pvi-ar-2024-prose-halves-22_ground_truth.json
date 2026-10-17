@@ -1,0 +1,441 @@
+{
+  "dataset_id": "pvi-ar-2024-prose-halves-22-v1",
+  "dataset_title": "PVI Annual Report 2024 Vietnamese prose half-page screening",
+  "purpose": "Exploratory CER/WER screening on prose-rich half-page crops from 12 selected annual-report spreads.",
+  "reference_method": "Native PDF text layer; not proofread word by word.",
+  "reference_quality": "Pages were selected after visual inspection of rendered spreads. Native text may contain reading-order, extraction, or diacritic errors and was not transcribed or proofread against each crop.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "Twenty-two half-page crops from one annual report are not independent documents and do not represent broad domain coverage.",
+    "References use an unproofread PDF text layer; CER/WER partly reflects source text extraction and reading-order differences.",
+    "Selected spreads contain mixed prose, graphics, and some multi-column layouts.",
+    "This born-digital annual report does not represent physical scans.",
+    "CER/WER measure text recognition only, not layout detection or table extraction.",
+    "Resource measurements are descriptive and valid for speed comparison only on the same device and benchmark configuration."
+  ],
+  "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+  "source_download_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+  "render_dpi": 180,
+  "pages": [
+    {
+      "id": "pvi-ar-2024-pdf-page-24-left-vi",
+      "document_id": "PVI-AR-2024-LEFT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 24,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-24-right-vi",
+      "document_id": "PVI-AR-2024-RIGHT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 24,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-25-left-vi",
+      "document_id": "PVI-AR-2024-LEFT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 25,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-25-right-vi",
+      "document_id": "PVI-AR-2024-RIGHT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 25,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-26-left-vi",
+      "document_id": "PVI-AR-2024-LEFT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 26,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-26-right-vi",
+      "document_id": "PVI-AR-2024-RIGHT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 26,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-27-left-vi",
+      "document_id": "PVI-AR-2024-LEFT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 27,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-27-right-vi",
+      "document_id": "PVI-AR-2024-RIGHT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 27,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-28-left-vi",
+      "document_id": "PVI-AR-2024-LEFT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 28,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-29-left-vi",
+      "document_id": "PVI-AR-2024-LEFT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 29,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-29-right-vi",
+      "document_id": "PVI-AR-2024-RIGHT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 29,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-30-left-vi",
+      "document_id": "PVI-AR-2024-LEFT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 30,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-32-left-vi",
+      "document_id": "PVI-AR-2024-LEFT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 32,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-32-right-vi",
+      "document_id": "PVI-AR-2024-RIGHT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 32,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-35-left-vi",
+      "document_id": "PVI-AR-2024-LEFT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 35,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-35-right-vi",
+      "document_id": "PVI-AR-2024-RIGHT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 35,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-36-left-vi",
+      "document_id": "PVI-AR-2024-LEFT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 36,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-44-left-vi",
+      "document_id": "PVI-AR-2024-LEFT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 44,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-44-right-vi",
+      "document_id": "PVI-AR-2024-RIGHT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 44,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-45-left-vi",
+      "document_id": "PVI-AR-2024-LEFT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 45,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "pvi-ar-2024-pdf-page-45-right-vi",
+      "document_id": "PVI-AR-2024-RIGHT",
+      "company": "PVI Holdings",
+      "file": "data/raw/vietnam_enterprises/pvi/pvi-ar-2024-vi.pdf",
+      "source_pdf_sha256": "806bba53601fbc34253bda2d01045215c3d2de387dc0bc97b518f292bfe80493",
+      "source_url": "https://pviholdings.com.vn/admin/downloadFile?filePath=%2F%2Fpvi.com.vn%2Fdata%2Fwebho_upload%2F6f9d7607-8efe-478d-bb14-7cc88d190783.pdf",
+      "page": 45,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    }
+  ]
+}

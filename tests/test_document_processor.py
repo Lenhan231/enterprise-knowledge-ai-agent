@@ -9,9 +9,9 @@ import fitz
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from core.document_processing.processors.document_processor import DocumentProcessor
-from core.document_processing.processors.image.processor import ImageProcessor
+from core.document_processing.document_processor import DocumentProcessor
 from core.document_processing.processors.pdf.processor import PDFProcessor
+from core.document_processing.scanned.processor import ScannedImageProcessor
 
 
 def archive(files):
@@ -37,11 +37,19 @@ class DocumentProcessorTest(unittest.TestCase):
         self.assertEqual(processor.config["ocr_table_render_scale"], 2.5)
 
     def test_pdf_ocr_language_override_reaches_pdf_processor(self):
-        with patch("core.document_processing.processors.document_processor.PDFProcessor") as pdf_processor:
+        with patch("core.document_processing.document_processor.PDFProcessor") as pdf_processor:
             pdf_processor.return_value.process.return_value = {"chunks": [], "tables": []}
             DocumentProcessor({"ocr_language": "eng"}).process("scan.pdf", b"pdf", {})
 
         self.assertEqual(pdf_processor.call_args.args[0]["ocr_language"], "eng")
+
+    def test_alternative_pdf_parsers_do_not_initialize_tesseract_settings(self):
+        for parser_engine in ("pp-structurev3", "mineru"):
+            processor = PDFProcessor({"parser_engine": parser_engine})
+            self.assertFalse(processor.config["ocr_fallback"])
+            self.assertNotIn("tesseract_psm", processor.config)
+            self.assertNotIn("tessdata_variant", processor.config)
+        self.assertTrue(PDFProcessor({"parser_engine": "pp-structurev3"}).config["paddle_layout"])
 
     def test_unsupported_environment_ocr_scale_fails_clearly(self):
         with patch.dict("os.environ", {"DOCUMENT_OCR_RENDER_SCALE": "4"}):
@@ -65,6 +73,44 @@ class DocumentProcessorTest(unittest.TestCase):
         self.assertEqual(metadata["filename"], "report.pdf")
         self.assertEqual(metadata["actual_char_count"], len(result["chunks"][0]["text"]))
         self.assertEqual(metadata["chunk_size_chars"], 1100)
+
+    def test_upload_test_parsers_share_cleanup_metadata_and_chunking(self):
+        processor = DocumentProcessor({
+            "chunking_strategy": "sentence", "chunk_size": 100, "chunk_overlap": 20,
+        })
+        result = processor.prepare_upload_test_output({
+            "chunks": [
+                {"text": "Revenue\u00a0 was 100.  ", "metadata": {
+                    "filename": "report.pdf", "page_number": 1, "layout_type": "text",
+                    "section_title": "Finance", "bbox": [1, 2, 3, 4],
+                    "text_extraction_method": "native_text", "parser": "pymupdf",
+                }},
+                {"text": "Profit  was 25.", "metadata": {
+                    "filename": "report.pdf", "page_number": 1, "layout_type": "text",
+                    "section_title": "Finance", "bbox": [5, 6, 7, 8],
+                    "text_extraction_method": "mineru.basic", "mineru_tier": "basic",
+                }},
+            ],
+            "tables": [{
+                "page_number": 1, "table_index": 0, "columns": ["Item\u00a0 Name"],
+                "rows": [{"Item\u00a0 Name": "Row\u00a0 1"}],
+                "context": {"table_title": "  Finance\n table  "},
+                "metadata": {"bbox": [0, 0, 10, 10], "parser": "mineru"},
+            }],
+        }, {"source_type": "upload_test", "source_sha256": "a" * 64}, "mineru")
+
+        self.assertEqual(len(result["chunks"]), 1)
+        chunk = result["chunks"][0]
+        self.assertEqual(chunk["text"], "Revenue was 100.\nProfit was 25.")
+        self.assertEqual(chunk["metadata"]["parser_engine"], "mineru")
+        self.assertEqual(chunk["metadata"]["section_path"], ["Finance"])
+        self.assertEqual(chunk["metadata"]["bbox"], [1, 2, 7, 8])
+        self.assertEqual(chunk["metadata"]["chunk_strategy"], "sentence")
+        self.assertIn("mineru_tier", chunk["metadata"]["parser_details"])
+        self.assertEqual(result["tables"][0]["columns"], ["Item Name"])
+        self.assertEqual(result["tables"][0]["rows"], [{"Item Name": "Row 1"}])
+        self.assertEqual(result["tables"][0]["context"]["table_title"], "Finance table")
+        self.assertEqual(result["tables"][0]["metadata"]["parser_engine"], "mineru")
 
     def test_pdf_page_filter_keeps_physical_page_numbers_and_total_page_count(self):
         pdf = fitz.open()
@@ -138,7 +184,7 @@ class DocumentProcessorTest(unittest.TestCase):
     def test_formula_recognition_opt_in_enables_paddle_layout_for_pdf_uploads(self):
         processor = DocumentProcessor({"paddle_formula_recognition": True})
         with patch(
-            "core.document_processing.processors.document_processor.PDFProcessor",
+            "core.document_processing.document_processor.PDFProcessor",
         ) as pdf_type:
             pdf_type.return_value.process.return_value = {"chunks": [], "tables": []}
             processor.process("report.pdf", b"pdf bytes", {"document_id": "PDF-FORMULA"})
@@ -223,7 +269,7 @@ class DocumentProcessorTest(unittest.TestCase):
         processor = DocumentProcessor({"ocr_language": "vie+eng"})
         completed = Mock(stdout=b"Doanh thu nam 2024 la 100 ty dong.\n")
         with patch(
-            "core.document_processing.processors.image.processor.subprocess.run",
+            "core.document_processing.scanned.ocr.tesseract.subprocess.run",
             return_value=completed,
         ) as run:
             result = processor.process(
@@ -246,7 +292,7 @@ class DocumentProcessorTest(unittest.TestCase):
     def test_opt_in_vision_caption_adds_a_separate_source_marked_chunk(self):
         processor = DocumentProcessor({"vision_captioning": True})
         with (
-            patch.object(ImageProcessor, "_ocr", return_value="Revenue 100 VND"),
+            patch.object(ScannedImageProcessor, "_ocr", return_value="Revenue 100 VND"),
             patch("core.llm.groq_provider.GroqProvider") as provider_type,
         ):
             provider = provider_type.return_value
@@ -267,7 +313,7 @@ class DocumentProcessorTest(unittest.TestCase):
     def test_vision_caption_failure_keeps_ocr_text(self):
         processor = DocumentProcessor({"vision_captioning": True})
         with (
-            patch.object(ImageProcessor, "_ocr", return_value="Scanned policy title"),
+            patch.object(ScannedImageProcessor, "_ocr", return_value="Scanned policy title"),
             patch("core.llm.groq_provider.GroqProvider") as provider_type,
         ):
             provider_type.return_value.caption_image.side_effect = RuntimeError("provider unavailable")
@@ -295,16 +341,13 @@ class DocumentProcessorTest(unittest.TestCase):
             ])
         table_scales = []
 
-        def read_table_words(processor, page, pixmap=None):
-            table_scales.append((processor.config["ocr_render_scale"], processor.config["ocr_table_render_scale"]))
+        def read_table_words(image_bytes, config, **kwargs):
+            table_scales.append((config["ocr_render_scale"], config["ocr_table_render_scale"]))
             return words
 
         with (
-            patch.object(ImageProcessor, "_ocr", return_value="Revenue 100 90\nCash 25 20\nTotal assets 500 450"),
-            patch(
-                "core.document_processing.processors.pdf.processor.PDFProcessor._ocr_page_words",
-                autospec=True, side_effect=read_table_words,
-            ),
+            patch.object(ScannedImageProcessor, "_ocr", return_value="Revenue 100 90\nCash 25 20\nTotal assets 500 450"),
+            patch("core.document_processing.scanned.processor.recognize_image_words", side_effect=read_table_words),
         ):
             result = self.processor.process("scan.png", image_bytes, {"document_id": "SCAN-TABLE"})
 

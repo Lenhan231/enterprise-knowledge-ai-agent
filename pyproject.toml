@@ -34,6 +34,12 @@ dependencies = [
 
 [project.optional-dependencies]
 ocr-paddle = ["paddleocr>=3.0.3", "paddlepaddle>=3.3.1", "paddlex[ocr]==3.4.3"]
+layout-yolo = ["doclayout-yolo==0.0.4"]
+docling = ["docling==2.129.0", "rapidocr==3.9.2", "onnxruntime>=1.18,<2"]
+evaluation = [
+    "grits-metric==0.6.1",
+    "rapidfuzz>=3.14.0",
+]
 
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13.0"]

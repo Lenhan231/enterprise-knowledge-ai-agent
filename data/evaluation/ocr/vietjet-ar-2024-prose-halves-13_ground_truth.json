@@ -1,0 +1,281 @@
+{
+  "dataset_id": "vietjet-ar-2024-prose-halves-13-v1",
+  "dataset_title": "Vietjet Annual Report 2024 Vietnamese prose half-page screening",
+  "purpose": "Exploratory CER/WER screening on selected half-page crops from Vietnamese double-page annual-report spreads.",
+  "reference_method": "Native PDF text layer, not proofread word by word.",
+  "reference_quality": "The selected rendered spreads were visually inspected to exclude largely non-prose regions. OCR references come from the native text layer and may contain layout-order, extraction, or diacritic errors; no word-by-word human proofread was performed.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "Thirteen regions from eight pages of one annual report are dependent samples and do not represent broad company or sector coverage.",
+    "References come from an unproofread PDF text layer and CER/WER can reflect reading-order or extraction mismatch.",
+    "The report uses double-page spreads with photographs, colored callouts, and some tables.",
+    "This born-digital annual report does not represent physical scans.",
+    "CER/WER measure text recognition, not layout detection or table extraction.",
+    "Resource results are comparable only on the same device and benchmark configuration."
+  ],
+  "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+  "source_download_url": "https://ir.vietjetair.com/File_Upload/thong-tin-tai-chinh/bao-cao-thuong-nien-parent/bao-cao-thuong-nien/VJ%20BAO%20CAO%2024_VIET_DOUBLE%20PAGE%20-%20compressed.pdf",
+  "render_dpi": 180,
+  "pages": [
+    {
+      "id": "vietjet-ar-2024-pdf-page-14-left-vi",
+      "document_id": "VIETJET-AR-2024-LEFT",
+      "company": "Vietjet Aviation Joint Stock Company",
+      "file": "data/raw/vietnam_enterprises/vietjet/vietjet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+      "source_url": "https://ir.vietjetair.com/File_Upload/thong-tin-tai-chinh/bao-cao-thuong-nien-parent/bao-cao-thuong-nien/VJ%20BAO%20CAO%2024_VIET_DOUBLE%20PAGE%20-%20compressed.pdf",
+      "page": 14,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "vietjet-ar-2024-pdf-page-14-right-vi",
+      "document_id": "VIETJET-AR-2024-RIGHT",
+      "company": "Vietjet Aviation Joint Stock Company",
+      "file": "data/raw/vietnam_enterprises/vietjet/vietjet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+      "source_url": "https://ir.vietjetair.com/File_Upload/thong-tin-tai-chinh/bao-cao-thuong-nien-parent/bao-cao-thuong-nien/VJ%20BAO%20CAO%2024_VIET_DOUBLE%20PAGE%20-%20compressed.pdf",
+      "page": 14,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "vietjet-ar-2024-pdf-page-15-left-vi",
+      "document_id": "VIETJET-AR-2024-LEFT",
+      "company": "Vietjet Aviation Joint Stock Company",
+      "file": "data/raw/vietnam_enterprises/vietjet/vietjet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+      "source_url": "https://ir.vietjetair.com/File_Upload/thong-tin-tai-chinh/bao-cao-thuong-nien-parent/bao-cao-thuong-nien/VJ%20BAO%20CAO%2024_VIET_DOUBLE%20PAGE%20-%20compressed.pdf",
+      "page": 15,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "vietjet-ar-2024-pdf-page-16-right-vi",
+      "document_id": "VIETJET-AR-2024-RIGHT",
+      "company": "Vietjet Aviation Joint Stock Company",
+      "file": "data/raw/vietnam_enterprises/vietjet/vietjet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+      "source_url": "https://ir.vietjetair.com/File_Upload/thong-tin-tai-chinh/bao-cao-thuong-nien-parent/bao-cao-thuong-nien/VJ%20BAO%20CAO%2024_VIET_DOUBLE%20PAGE%20-%20compressed.pdf",
+      "page": 16,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "vietjet-ar-2024-pdf-page-24-left-vi",
+      "document_id": "VIETJET-AR-2024-LEFT",
+      "company": "Vietjet Aviation Joint Stock Company",
+      "file": "data/raw/vietnam_enterprises/vietjet/vietjet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+      "source_url": "https://ir.vietjetair.com/File_Upload/thong-tin-tai-chinh/bao-cao-thuong-nien-parent/bao-cao-thuong-nien/VJ%20BAO%20CAO%2024_VIET_DOUBLE%20PAGE%20-%20compressed.pdf",
+      "page": 24,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "vietjet-ar-2024-pdf-page-24-right-vi",
+      "document_id": "VIETJET-AR-2024-RIGHT",
+      "company": "Vietjet Aviation Joint Stock Company",
+      "file": "data/raw/vietnam_enterprises/vietjet/vietjet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+      "source_url": "https://ir.vietjetair.com/File_Upload/thong-tin-tai-chinh/bao-cao-thuong-nien-parent/bao-cao-thuong-nien/VJ%20BAO%20CAO%2024_VIET_DOUBLE%20PAGE%20-%20compressed.pdf",
+      "page": 24,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "vietjet-ar-2024-pdf-page-25-left-vi",
+      "document_id": "VIETJET-AR-2024-LEFT",
+      "company": "Vietjet Aviation Joint Stock Company",
+      "file": "data/raw/vietnam_enterprises/vietjet/vietjet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+      "source_url": "https://ir.vietjetair.com/File_Upload/thong-tin-tai-chinh/bao-cao-thuong-nien-parent/bao-cao-thuong-nien/VJ%20BAO%20CAO%2024_VIET_DOUBLE%20PAGE%20-%20compressed.pdf",
+      "page": 25,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "vietjet-ar-2024-pdf-page-25-right-vi",
+      "document_id": "VIETJET-AR-2024-RIGHT",
+      "company": "Vietjet Aviation Joint Stock Company",
+      "file": "data/raw/vietnam_enterprises/vietjet/vietjet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+      "source_url": "https://ir.vietjetair.com/File_Upload/thong-tin-tai-chinh/bao-cao-thuong-nien-parent/bao-cao-thuong-nien/VJ%20BAO%20CAO%2024_VIET_DOUBLE%20PAGE%20-%20compressed.pdf",
+      "page": 25,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "vietjet-ar-2024-pdf-page-26-left-vi",
+      "document_id": "VIETJET-AR-2024-LEFT",
+      "company": "Vietjet Aviation Joint Stock Company",
+      "file": "data/raw/vietnam_enterprises/vietjet/vietjet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+      "source_url": "https://ir.vietjetair.com/File_Upload/thong-tin-tai-chinh/bao-cao-thuong-nien-parent/bao-cao-thuong-nien/VJ%20BAO%20CAO%2024_VIET_DOUBLE%20PAGE%20-%20compressed.pdf",
+      "page": 26,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "vietjet-ar-2024-pdf-page-26-right-vi",
+      "document_id": "VIETJET-AR-2024-RIGHT",
+      "company": "Vietjet Aviation Joint Stock Company",
+      "file": "data/raw/vietnam_enterprises/vietjet/vietjet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+      "source_url": "https://ir.vietjetair.com/File_Upload/thong-tin-tai-chinh/bao-cao-thuong-nien-parent/bao-cao-thuong-nien/VJ%20BAO%20CAO%2024_VIET_DOUBLE%20PAGE%20-%20compressed.pdf",
+      "page": 26,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "vietjet-ar-2024-pdf-page-27-left-vi",
+      "document_id": "VIETJET-AR-2024-LEFT",
+      "company": "Vietjet Aviation Joint Stock Company",
+      "file": "data/raw/vietnam_enterprises/vietjet/vietjet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+      "source_url": "https://ir.vietjetair.com/File_Upload/thong-tin-tai-chinh/bao-cao-thuong-nien-parent/bao-cao-thuong-nien/VJ%20BAO%20CAO%2024_VIET_DOUBLE%20PAGE%20-%20compressed.pdf",
+      "page": 27,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "vietjet-ar-2024-pdf-page-27-right-vi",
+      "document_id": "VIETJET-AR-2024-RIGHT",
+      "company": "Vietjet Aviation Joint Stock Company",
+      "file": "data/raw/vietnam_enterprises/vietjet/vietjet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+      "source_url": "https://ir.vietjetair.com/File_Upload/thong-tin-tai-chinh/bao-cao-thuong-nien-parent/bao-cao-thuong-nien/VJ%20BAO%20CAO%2024_VIET_DOUBLE%20PAGE%20-%20compressed.pdf",
+      "page": 27,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        595.275,
+        0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "vietjet-ar-2024-pdf-page-36-left-vi",
+      "document_id": "VIETJET-AR-2024-LEFT",
+      "company": "Vietjet Aviation Joint Stock Company",
+      "file": "data/raw/vietnam_enterprises/vietjet/vietjet-ar-2024-vi.pdf",
+      "source_pdf_sha256": "40339a343f49c820b00f6dd2e1846dafbe5fc1357b16c96c9360227bc6bd529a",
+      "source_url": "https://ir.vietjetair.com/File_Upload/thong-tin-tai-chinh/bao-cao-thuong-nien-parent/bao-cao-thuong-nien/VJ%20BAO%20CAO%2024_VIET_DOUBLE%20PAGE%20-%20compressed.pdf",
+      "page": 36,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed",
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ]
+    }
+  ]
+}

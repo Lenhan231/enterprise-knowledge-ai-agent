@@ -175,7 +175,7 @@ class AskRequestTest(unittest.TestCase):
         with patch.dict("os.environ", environment, clear=False), \
              patch("app.main._storage_client", return_value=(Mock(), "test-bucket")), \
              patch("app.main.DocumentRepository", return_value=repository), \
-             patch("core.document_processing.processors.document_processor.DocumentProcessor", return_value=processor) as processor_class, \
+             patch("core.document_processing.document_processor.DocumentProcessor", return_value=processor) as processor_class, \
              patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding), \
              patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_repo, \
              patch("core.database.processed_chunks_repository.ProcessedChunksRepository"), \
@@ -703,14 +703,14 @@ class AskRequestTest(unittest.TestCase):
 
     def test_tester_is_separate_from_document_acl_and_has_only_ocr_lab_permissions(self):
         self.assertNotIn("tester", DOCUMENT_ROLES)
-        self.assertEqual(ROLE_PERMISSIONS["tester"], {"run_ocr_tests", "review_ocr_tests"})
+        self.assertEqual(ROLE_PERMISSIONS["tester"], {"run_upload_tests", "review_upload_tests"})
         with patch.dict("os.environ", {
             "DEMO_TESTER_USERNAME": "ocr-tester",
             "DEMO_TESTER_PASSWORD": "test-password",
         }, clear=False):
             self.assertEqual(_role_accounts()["ocr-tester"], ("test-password", "tester"))
 
-    def test_tester_can_run_ocr_without_corpus_access_or_production_ingestion(self):
+    def test_tester_can_run_upload_test_without_corpus_access_or_production_ingestion(self):
         from unittest.mock import MagicMock
         import fitz
 
@@ -729,30 +729,50 @@ class AskRequestTest(unittest.TestCase):
         with (
             patch("app.main._require_same_origin"),
             patch.dict("os.environ", environment, clear=False),
-            patch("core.document_processing.processors.document_processor.DocumentProcessor") as processor,
-            patch("core.database.ocr_test_repository.OcrTestRepository", return_value=repository),
+            patch("core.document_processing.document_processor.DocumentProcessor") as processor,
+            patch("core.database.upload_test_repository.UploadTestRepository", return_value=repository),
+            patch("core.embeddings.embedding_service.EmbeddingService") as embedding_service_class,
+            patch("core.tokenization.token_counter.TokenCounter") as token_counter_class,
+            patch("core.tokenization.embedding_chunker.build_embedding_chunks") as build_embedding_chunks,
         ):
             processor.return_value.process.return_value = parsed
+            processor.return_value.prepare_upload_test_output.return_value = parsed
+            token_counter_class.return_value.count.return_value = 2
+            build_embedding_chunks.return_value = [{"text": "Sample text", "metadata": {"page_number": 1, "token_count": 2}}]
             upload = Mock(filename="scan.pdf")
             upload.read = AsyncMock(return_value=pdf_bytes)
-            response = asyncio.run(app_main.create_ocr_test(
+            response = asyncio.run(app_main.create_upload_test(
                 request=None,
                 file=upload,
                 ocr_language="vie+eng",
                 tesseract_psm=11, tesseract_table_psm=3,
                 render_scale=3.5, table_render_scale=3.5,
+                parser_engine="pymupdf_tesseract",
+                thresholding_method=0, lstm_rating_coefficient=5,
+                tessdata_variant="system", layout_detector="none",
+                chunking_strategy="sentence", chunk_size=1100, chunk_overlap=120,
+                layout_image_size=640, layout_confidence_threshold=0.30,
+                paddle_device="cpu", paddle_render_scale=1.5,
+                paddle_formula_recognition=False, paddle_chart_recognition=False,
+                mineru_force_ocr=False, mineru_page_range="",
+                paddle_layout=False,
                 user={"sub": "ocr-tester", "role": "tester"},
             ))
 
         self.assertEqual(response["page_count"], 43)
         self.assertEqual(response["chunk_count"], 1)
+        self.assertEqual(response["token_bounded_chunk_count"], 1)
+        self.assertEqual(response["embedding_status"], "not_run")
         self.assertEqual(processor.call_args.args[0]["ocr_render_scale"], 3.5)
         self.assertEqual(processor.call_args.args[0]["ocr_table_render_scale"], 3.5)
         repository.save_run.assert_called_once()
+        embedding_service_class.assert_not_called()
         self.assertEqual(repository.save_run.call_args.kwargs["chunks"], parsed["chunks"])
+        self.assertEqual(repository.save_run.call_args.kwargs["embeddings"], [])
+        self.assertEqual(repository.save_run.call_args.kwargs["token_bounded_chunks"][0]["text"], "Sample text")
         self.assertEqual(len(repository.save_run.call_args.kwargs["page_previews"]), 43)
 
-    def test_ocr_lab_http_upload_persists_rotated_scan_parser_output_outside_corpus(self):
+    def test_upload_test_http_persists_rotated_scan_outputs_outside_corpus(self):
         from io import BytesIO
         import fitz
         from PIL import Image
@@ -778,21 +798,25 @@ class AskRequestTest(unittest.TestCase):
         }
         with (
             patch.dict("os.environ", environment, clear=False),
-            patch("core.database.ocr_test_repository.OcrTestRepository", return_value=repository),
+            patch("core.database.upload_test_repository.UploadTestRepository", return_value=repository),
+            patch("core.tokenization.token_counter.TokenCounter") as token_counter_class,
+            patch("core.tokenization.embedding_chunker.build_embedding_chunks") as build_embedding_chunks,
             TestClient(app) as client,
         ):
+            token_counter_class.return_value.count.return_value = 2
+            build_embedding_chunks.return_value = [{"text": "Final text", "metadata": {"page_number": 1, "token_count": 2}}]
             login = client.post("/api/auth/login", json={
                 "username": "ocr-tester", "password": "test-password",
             })
             self.assertEqual(login.status_code, 200)
             invalid_language = client.post(
-                "/api/ocr-tests",
+                "/api/upload-tests",
                 headers={"Origin": "http://testserver"},
                 data={"ocr_language": "deu"},
                 files={"file": ("rotated-synthetic-scan.pdf", pdf_bytes, "application/pdf")},
             )
             response = client.post(
-                "/api/ocr-tests",
+                "/api/upload-tests",
                 headers={"Origin": "http://testserver"},
                 data={"ocr_language": "eng"},
                 files={"file": ("rotated-synthetic-scan.pdf", pdf_bytes, "application/pdf")},
@@ -801,6 +825,7 @@ class AskRequestTest(unittest.TestCase):
         self.assertEqual(invalid_language.status_code, 422)
         self.assertEqual(response.status_code, 200, response.text)
         self.assertEqual(response.json()["table_count"], 1)
+        self.assertEqual(response.json()["embedding_status"], "not_run")
         repository.save_run.assert_called_once()
         saved = repository.save_run.call_args.kwargs
         self.assertEqual(len(saved["page_previews"]), 1)
@@ -808,6 +833,7 @@ class AskRequestTest(unittest.TestCase):
         self.assertEqual(saved["tables"][0]["metadata"]["ocr"]["language"], "eng")
         self.assertEqual(len(saved["tables"][0]["rows"]), 3)
         self.assertEqual(saved["tables"][0]["rows"][0]["Avg fee units"], "42.50")
+        self.assertEqual(saved["embeddings"], [])
 
     def test_employee_is_denied_by_authenticated_upload_http_route(self):
         environment = {

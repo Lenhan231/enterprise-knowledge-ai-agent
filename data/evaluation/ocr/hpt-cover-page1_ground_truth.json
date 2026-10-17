@@ -1,0 +1,28 @@
+{
+  "dataset_id": "hpt-longhau-cover-page1-v1",
+  "dataset_title": "HPT / Long Hau scanned cover page 1 OCR check",
+  "purpose": "Full-page CER/WER check for one visually reviewed page from the scanned HPT PDF.",
+  "reference_method": "manual visual transcription from the rendered source page",
+  "reference_quality": "single-reviewer visual transcription",
+  "primary_metric_selection_eligible": false,
+  "source_pdf_sha256": "93a47b39ca22db56ea11cb5b058819b84045509d924d13e955defe045400ebc0",
+  "limitations": [
+    "One cover page only; this is not representative of the 22-page PDF or a production corpus.",
+    "The transcription includes printed words and excludes decorative line art and the non-text Ernst & Young logo mark.",
+    "CER/WER cannot establish layout detection quality or table extraction accuracy."
+  ],
+  "pages": [
+    {
+      "id": "hpt-longhau-cover-page1-vi",
+      "document_id": "HPT-LONGHAU-2008-COVER",
+      "file": "data/raw/benchmark_data/HPT-trang-1.pdf",
+      "page": 1,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": true,
+      "layout_type": "cover",
+      "clip_rect": [0, 0, 595, 842],
+      "reference_text": "Công ty Cổ Phần Long Hậu\n\nCác báo cáo tài chính riêng đã được kiểm toán\nngày 31 tháng 12 năm 2008\n\nvà báo cáo của Hội đồng Quản trị\n\nErnst & Young\n\nERNST & YOUNG"
+    }
+  ]
+}

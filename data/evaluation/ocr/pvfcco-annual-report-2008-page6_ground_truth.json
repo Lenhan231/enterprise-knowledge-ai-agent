@@ -1,0 +1,24 @@
+{
+  "dataset_id": "pvfcco-annual-report-2008-born-digital-page6-v1",
+  "purpose": "Focused OCR check on one English text-rich page rendered from a born-digital annual report PDF.",
+  "reference_method": "native PDF text layer",
+  "reference_quality": "native PDF text, visually confirmed as present but not independently proofread",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "This is one born-digital page, not a physical scan or representative document benchmark.",
+    "Reference text comes from the PDF text layer and has not been independently proofread."
+  ],
+  "pages": [
+    {
+      "id": "pvfcco-chairman-message-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "page": 6,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "text",
+      "clip_rect": [0, 0, 595.276, 841.89]
+    }
+  ]
+}

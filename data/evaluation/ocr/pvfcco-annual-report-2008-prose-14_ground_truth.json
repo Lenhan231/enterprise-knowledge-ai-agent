@@ -1,0 +1,170 @@
+{
+  "dataset_id": "pvfcco-annual-report-2008-prose-14-v1",
+  "dataset_title": "PVFCCo Annual Report 2008 14-page prose OCR screening set",
+  "purpose": "Exploratory English OCR comparison across prose and mixed text/image pages from one born-digital annual report.",
+  "reference_method": "native PDF text layer",
+  "reference_quality": "Native text layer visually checked against page appearance and reading flow; not independently proofread word by word.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "Fourteen selected pages from one born-digital report; not representative of scanned PDFs or other corpora.",
+    "Ground truth is extracted from the PDF text layer and has not been independently proofread; use as exploratory CER/WER only.",
+    "Pages dominated by financial tables, charts, organization diagrams, and multi-column layout were excluded to avoid mixing table or ambiguous reading-order scoring into text OCR.",
+    "CER/WER measure recognized text, not layout detection or table extraction accuracy."
+  ],
+  "pages": [
+    {
+      "id": "pvfcco-annual-report-2008-page-6-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "source_pdf_sha256": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+      "page": 6,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "pvfcco-annual-report-2008-page-7-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "source_pdf_sha256": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+      "page": 7,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "pvfcco-annual-report-2008-page-10-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "source_pdf_sha256": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+      "page": 10,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "pvfcco-annual-report-2008-page-12-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "source_pdf_sha256": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+      "page": 12,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "pvfcco-annual-report-2008-page-13-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "source_pdf_sha256": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+      "page": 13,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "pvfcco-annual-report-2008-page-17-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "source_pdf_sha256": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+      "page": 17,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "pvfcco-annual-report-2008-page-30-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "source_pdf_sha256": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+      "page": 30,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "pvfcco-annual-report-2008-page-31-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "source_pdf_sha256": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+      "page": 31,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "pvfcco-annual-report-2008-page-34-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "source_pdf_sha256": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+      "page": 34,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "pvfcco-annual-report-2008-page-35-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "source_pdf_sha256": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+      "page": 35,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "pvfcco-annual-report-2008-page-36-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "source_pdf_sha256": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+      "page": 36,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "pvfcco-annual-report-2008-page-38-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "source_pdf_sha256": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+      "page": 38,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "pvfcco-annual-report-2008-page-42-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "source_pdf_sha256": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+      "page": 42,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "pvfcco-annual-report-2008-page-68-en",
+      "document_id": "PVFCCO-ANNUAL-REPORT-2008",
+      "file": "data/raw/benchmark_data/AnnualReport_2008.pdf",
+      "source_pdf_sha256": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+      "page": 68,
+      "language": "en",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    }
+  ]
+}

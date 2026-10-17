@@ -26,12 +26,13 @@ matching passages, then compare retrieval results.
 
 Uploads read `DOCUMENT_CHUNKING_STRATEGY` (`sentence` by default; `fixed` is
 the comparison baseline). Seed PDF ingestion accepts `--chunking-strategy`.
-Character-based parser chunking is implemented in
-`src/core/chunking/text_chunker.py`, which routes to the fixed and
-sentence-aware implementations in `src/core/chunking/strategies/`.
+`src/core/document_processing/chunking/router.py` only routes character-based splitting to
+the fixed and sentence-aware implementations in
+`src/core/document_processing/chunking/strategies/`. Shared size/overlap settings live in
+`src/core/document_processing/chunking/config.py`; `chunk_builder.py` attaches parser chunk metadata.
 Embedding-token splitting is implemented in `src/core/tokenization/token_counter.py`.
 The embedding-based semantic strategy is in
-`src/core/chunking/strategies/semantic.py`; seed ingestion currently routes it
+`src/core/document_processing/chunking/strategies/semantic.py`; seed ingestion currently routes it
 for HTML documents. PDF and upload chunking support the character-based
 `fixed` and `sentence` strategies.
 

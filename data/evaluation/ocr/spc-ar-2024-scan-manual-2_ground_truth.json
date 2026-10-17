@@ -1,0 +1,62 @@
+{
+  "dataset_id": "spc-ar-2024-scan-manual-2-v1",
+  "dataset_title": "SPC AR 2024 OCR reviewed scan pp11-12",
+  "purpose": "Manual Vietnamese OCR references from two scanned facing pages in a Vietnamese enterprise annual report.",
+  "reference_method": "Manual transcription visually checked against scanned page images by one reviewer.",
+  "reference_quality": "Full-page clipped references transcribed and visually reviewed once by one reviewer; not independently adjudicated.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "Only two facing pages from one company and one annual report; insufficient for model selection.",
+    "References were created by one reviewer and are not independently adjudicated.",
+    "The source PDF consists of landscape scans with two report pages per PDF page; evaluation clips each half-page separately.",
+    "CER/WER measure recognition text, not layout or table extraction.",
+    "The source report is a scan-based annual report and may not represent low-quality physical scans."
+  ],
+  "source_pdf_sha256": "b9ff17bc495e6644f1f4f426c379bbb458e92fbf20c27f9673e0d23d4bd6471e",
+  "source_download_url": "https://file.fpts.com.vn/FileStore2/File/2025/04/15/SPC_2025-4-15_36e8106_VN_BaoCaoThuongNien_2024.pdf",
+  "render_dpi": 180,
+  "pages": [
+    {
+      "company": "SPC",
+      "file": "data/raw/vietnam_enterprises/spc/spc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "b9ff17bc495e6644f1f4f426c379bbb458e92fbf20c27f9673e0d23d4bd6471e",
+      "source_url": "https://file.fpts.com.vn/FileStore2/File/2025/04/15/SPC_2025-4-15_36e8106_VN_BaoCaoThuongNien_2024.pdf",
+      "page": 7,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": true,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "manual_transcription_single_reviewer_visual_checked",
+      "id": "spc-ar-2024-print-page-11",
+      "document_id": "SPC-AR-2024-PRINT-11",
+      "clip_rect": [
+        0,
+        0,
+        396,
+        612
+      ],
+      "reference_text": "CÔNG TY CỔ PHẦN BẢO VỆ THỰC VẬT SÀI GÒN\nQUÁ TRÌNH HÌNH THÀNH VÀ PHÁT TRIỂN\nNgày 15/03/1989, ngày viên gạch đầu tiên đặt nền móng để xây dựng Nhà máy Thuốc trừ sâu Sài Gòn - nay là công ty Cổ phần Bảo vệ Thực vật Sài Gòn - SPC.\nKhi mới thành lập, công ty chỉ sản xuất và phân phối 03 sản phẩm, với đội ngũ CB-NV là 30 người. Qua 36 năm hình thành và phát triển, đến nay Công ty đã có gần 400 cán bộ công nhân viên; quy mô hoạt động với 07 Chi nhánh trong nước, 03 Công ty con ở nước ngoài; nhà máy rộng 4,3 ha tại Hiệp Phước được trang bị máy móc thiết bị hiện đại, hệ thống quản lý môi trường đạt tiêu chuẩn ISO 14001; hệ thống quản lý chất lượng đạt tiêu chuẩn ISO 9001 liên tục từ năm 1999 đến nay.\nKhởi công xây dựng nhà máy\nCông ty đã hợp tác nhiều đối tác kinh doanh uy tín trên thế giới như KVF, LG Chem (Hàn Quốc); Haifa (Israel); Nongfeng (Trung Quốc); Agria (Bungari)... Đến nay, bộ sản phẩm của Công ty đã có trên 100 chủng loại, hệ thống phân phối rộng khắp toàn quốc và một số nước lân cận; doanh thu của Công ty hiện đạt trên 800 tỷ đồng/năm, là một trong những công ty có thị phần về thuốc bảo vệ thực vật lớn nhất Việt Nam, đã góp phần tích cực cho sự nghiệp phát triển nông nghiệp nước nhà.\nBÁO CÁO THƯỜNG NIÊN 2024\n11"
+    },
+    {
+      "company": "SPC",
+      "file": "data/raw/vietnam_enterprises/spc/spc-ar-2024-vi.pdf",
+      "source_pdf_sha256": "b9ff17bc495e6644f1f4f426c379bbb458e92fbf20c27f9673e0d23d4bd6471e",
+      "source_url": "https://file.fpts.com.vn/FileStore2/File/2025/04/15/SPC_2025-4-15_36e8106_VN_BaoCaoThuongNien_2024.pdf",
+      "page": 7,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": true,
+      "layout_type": "mixed_prose",
+      "reference_annotation_method": "manual_transcription_single_reviewer_visual_checked",
+      "id": "spc-ar-2024-print-page-12",
+      "document_id": "SPC-AR-2024-PRINT-12",
+      "clip_rect": [
+        396,
+        0,
+        792,
+        612
+      ],
+      "reference_text": "CÔNG TY CỔ PHẦN BẢO VỆ THỰC VẬT SÀI GÒN\nBa mươi sáu năm đi qua với biết bao thăng trầm và mỗi giai đoạn lịch sử, Công ty đều gặp những khó khăn, thách thức riêng, nhưng với sự góp sức của bao thế hệ cán bộ công nhân viên, Công ty đã vượt qua tất cả, đứng vững đến ngày hôm nay và khẳng định vị thế của mình.\nGiai đoạn từ năm 1989 đến năm 2000: Thành lập Nhà máy và tách ra hoạt động độc lập.\nGiai đoạn vừa thành lập, cơ sở vật chất còn đơn sơ, bộ máy tổ chức còn tối giản nhưng với lòng nhiệt huyết của toàn thể CB-CNV, sự định hướng đúng đắn của Ban lãnh đạo, sản phẩm của Công ty đã được thị trường đón nhận tích cực, thương hiệu SPC đã bắt đầu lan tỏa.\nNgày 18/02/1993, thực hiện Quyết định số 68/QĐ-UB của UBND TP.HCM, Nhà máy Thuốc trừ sâu Sài Gòn được chuyển thành DNNN Xí nghiệp Thuốc trừ sâu Sài Gòn, trực thuộc UBND TP.HCM. Xí nghiệp bắt đầu hoạt động hạch toán độc lập, có tư cách pháp nhân và tách khỏi Chi cục Bảo vệ Thực vật TP.HCM. Đây là bước chuyển mạnh mẽ của Nhà máy để thực hiện tự lập về mọi mặt.\nTrụ sở Nhà máy Thuốc trừ sâu Sài Gòn\nBÁO CÁO THƯỜNG NIÊN 2024\n12"
+    }
+  ]
+}

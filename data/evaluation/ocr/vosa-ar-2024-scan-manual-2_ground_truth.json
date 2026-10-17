@@ -1,0 +1,50 @@
+{
+  "dataset_id": "vosa-ar-2024-scan-manual-2-v1",
+  "dataset_title": "VOSA AR 2024 OCR reviewed scan pages 2-3",
+  "purpose": "Small manually transcribed real-scan Vietnamese OCR reference set.",
+  "reference_method": "manual transcription checked against rendered pages by one reviewer",
+  "reference_quality": "Full-page prose transcribed from the visible scan and visually reviewed once; single reviewer, not independently adjudicated.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "Only two pages from one annual report and one company; sample is too small for model selection.",
+    "Labels were transcribed and visually checked by one reviewer, not independently adjudicated.",
+    "The source PDF contains scanned page images with a corrupted PDF text layer; OCR is evaluated on rendered page images.",
+    "Pages contain prose and page headers/footers, not tables.",
+    "CER/WER measure text recognition only, not layout or table extraction."
+  ],
+  "source_pdf_sha256": "54089101a93d57fcdc4114c207053be0c4517b798ada9e9cbacb2f3810c20cde",
+  "source_download_url": "https://vosa.com.vn/uploads/tailieu/B%C3%81O%20C%C3%81O%20TH%C6%AF%E1%BB%9CNG%20NI%C3%8AN%20N%C4%82M%20%202024%20-%20Final..pdf",
+  "render_dpi": 180,
+  "pages": [
+    {
+      "id": "vosa-ar-2024-page-2-vi",
+      "document_id": "VOSA-AR-2024",
+      "company": "VOSA",
+      "file": "data/raw/vietnam_enterprises/vosa/vosa-ar-2024-vi.pdf",
+      "source_pdf_sha256": "54089101a93d57fcdc4114c207053be0c4517b798ada9e9cbacb2f3810c20cde",
+      "source_url": "https://vosa.com.vn/uploads/tailieu/B%C3%81O%20C%C3%81O%20TH%C6%AF%E1%BB%9CNG%20NI%C3%8AN%20N%C4%82M%20%202024%20-%20Final..pdf",
+      "page": 2,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": true,
+      "layout_type": "prose",
+      "reference_annotation_method": "manual_transcription_single_reviewer_visual_checked",
+      "reference_text": "Báo cáo thường niên năm 2024\nI. Thông tin chung:\n1. Thông tin khái quát:\n- Tên giao dịch: CÔNG TY CỔ PHẦN ĐẠI LÝ HÀNG HẢI VIỆT NAM.\n- Tên tiếng Anh: VIETNAM OCEAN SHIPPING AGENCY CORPORATION.\n- Tên viết tắt: VOSA CORPORATION.\n- Giấy chứng nhận đăng ký doanh nghiệp số: 0300437898, đã được bổ sung, sửa đổi lần thứ 14 (ngày 03/07/2023).\n- Vốn điều lệ: 140.964.860.000 đồng.\n- Vốn đầu tư của chủ sở hữu: 140.964.860.000 đồng.\n- Địa chỉ: Lầu 5, Số 12 Đường Tân Trào, Phường Tân Phú, Quận 7, TP. Hồ Chí Minh, Việt Nam.\n- Số điện thoại: (84 - 28) 54161820 - 54161821 - 54161822.\n- Số fax: (84 - 28) 54161823 - 54161824.\n- Website: http://www.vosa.com.vn\n- Mã cổ phiếu: VSA\nQuá trình hình thành và phát triển:\n- Công ty Đại lý Tàu biển Việt Nam, nay là Công ty cổ phần Đại lý Hàng hải Việt Nam, được thành lập ngày 13/03/1957 theo Nghị định số 50/NĐ của Bộ Giao thông và Bưu điện.\n- Ngày 08/08/1989: Công ty Đại lý Tàu biển Việt Nam được đổi tên thành Đại lý Hàng hải Việt Nam theo Quyết định số 1436QĐ/TCCB-LĐ của Bộ Giao thông vận tải.\n- Ngày 12/05/1993: Đại lý Hàng hải Việt Nam (VOSA) được thành lập lại theo Quyết định số 885/QĐ/TCCB-LĐ của Bộ Giao thông Vận tải, là doanh nghiệp hạch toán độc lập thuộc Tổng Công ty Hàng hải Việt Nam.\n- Ngày 30/12/2005: Bộ Giao thông Vận tải ra Quyết định số 5099/QĐ-BGTVT về việc “Phê duyệt phương án và chuyển Đại lý hàng hải Việt Nam, đơn vị thành viên hạch toán độc lập của Tổng Công ty Hàng hải Việt Nam thành công ty cổ phần”.\n- Ngày 31/03/2006: Bán đấu giá cổ phần lần đầu ra công chúng tại Trung tâm giao dịch chứng khoán TP. Hồ Chí Minh.\n- Ngày 14/06/2006: Đại hội cổ đông thành lập Công ty CP Đại lý Hàng hải Việt Nam.\n- Ngày 20/10/2006: Công ty cổ phần Đại lý Hàng hải Việt Nam nhận Giấy Chứng nhận Đăng ký doanh nghiệp số 4103005432 do Phòng đăng ký kinh doanh - Sở Kế hoạch & Đầu tư TP. HCM cấp.\n- Ngày 18/12/2023: Công ty nhận Giấy Chứng nhận Đăng ký doanh nghiệp số 0318218907 của Công ty TNHH MTV VITAMAS do Phòng đăng ký kinh doanh - Sở Kế hoạch & Đầu tư TP. HCM cấp.\n- Ngày 29/12/2023: Công ty nhận Giấy Chứng nhận Đăng ký doanh nghiệp số 0202226899 của Công ty TNHH MTV Đại lý vận tải quốc tế phía Bắc do Phòng đăng ký kinh doanh - Sở Kế hoạch & Đầu tư TP. Hải Phòng cấp.\nCông ty cổ phần Đại lý Hàng hải Việt Nam 2"
+    },
+    {
+      "id": "vosa-ar-2024-page-3-vi",
+      "document_id": "VOSA-AR-2024",
+      "company": "VOSA",
+      "file": "data/raw/vietnam_enterprises/vosa/vosa-ar-2024-vi.pdf",
+      "source_pdf_sha256": "54089101a93d57fcdc4114c207053be0c4517b798ada9e9cbacb2f3810c20cde",
+      "source_url": "https://vosa.com.vn/uploads/tailieu/B%C3%81O%20C%C3%81O%20TH%C6%AF%E1%BB%9CNG%20NI%C3%8AN%20N%C4%82M%20%202024%20-%20Final..pdf",
+      "page": 3,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": true,
+      "layout_type": "prose",
+      "reference_annotation_method": "manual_transcription_single_reviewer_visual_checked",
+      "reference_text": "Báo cáo thường niên năm 2024\n- Ngày 02/01/2025: Công ty nhận Giấy Chứng nhận Đăng ký doanh nghiệp số 0318797147 của Công ty TNHH MTV Đại lý Hàng hải Sài Gòn do Phòng đăng ký kinh doanh - Sở Kế hoạch & Đầu tư TP. Hồ Chí Minh cấp.\n2. Ngành nghề và địa bàn kinh doanh:\n- Ngành nghề kinh doanh chính: Đại lý tàu biển. Dịch vụ logistics. Đại lý vận tải (giao nhận kho vận, kho ngoại quan). Vận tải đa phương thức quốc tế. Kinh doanh kho bãi. Đại lý, kiểm đếm hàng hóa. Môi giới và dịch vụ hàng hải.\n- Địa bàn kinh doanh của Công ty trải dài trên toàn quốc, từ Móng Cái đến Cà Mau, trong đó địa bàn hoạt động kinh doanh chính là TP. Hồ Chí Minh, TP. Hải Phòng, Tỉnh Quảng Ninh.\n3. Thông tin về mô hình quản trị, tổ chức kinh doanh và bộ máy quản lý:\n- Mô hình quản trị: Mô hình quản trị của Công ty gồm Đại hội đồng cổ đông, Hội đồng quản trị, Ban kiểm soát, các Tiểu Ban thuộc Hội đồng quản trị, Ban Tổng giám đốc, các Phòng chuyên môn nghiệp vụ, các Chi nhánh trực thuộc, các Văn phòng đại diện, các Công ty con và các Công ty VOSA góp vốn.\n- Cơ cấu bộ máy quản lý: Công ty cổ phần Đại lý hàng hải Việt Nam được tổ chức và hoạt động theo Luật Doanh nghiệp số 59/2020/QH14 đã được Quốc hội nước Cộng hòa xã hội chủ nghĩa Việt Nam thông qua ngày 17/06/2020, các Luật khác và Điều lệ Công ty cổ phần Đại lý hàng hải Việt Nam đã được Đại hội đồng cổ đông thành lập thông qua ngày 14/06/2006 và bổ sung, sửa đổi ngày 29/03/2023.\nCông ty cổ phần Đại lý Hàng hải Việt Nam 3"
+    }
+  ]
+}

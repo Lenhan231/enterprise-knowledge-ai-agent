@@ -1,0 +1,39 @@
+{
+  "dataset_id": "mwg-ar-2024-chair-message-region-1-v1",
+  "dataset_title": "MWG Annual Report 2024 Vietnamese chair letter OCR region",
+  "purpose": "Exploratory CER/WER screening on a manually transcribed Vietnamese text region from an image-based annual report.",
+  "source_download_url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/posts/2025/4/0/64/c2/64c27697a67a3feb53d97256e4de3d7e.pdf",
+  "source_pdf_sha256": "e98227cb400d043c1a0e95eaa2706b397fb61001c342713e27b49ad04c17fca7",
+  "reference_method": "Manual transcription from the rendered source page; one reviewer.",
+  "reference_quality": "The reference text in the selected region was visually transcribed and checked against the issuer-hosted page image by one reviewer. A second reviewer has not adjudicated it.",
+  "primary_metric_selection_eligible": false,
+  "render_dpi": 180,
+  "limitations": [
+    "One manually transcribed page region from one company/report is too small and single-reviewed for model selection.",
+    "This measures recognition of a clipped prose block only; it does not score whole-page layout, tables, or reading order."
+  ],
+  "pages": [
+    {
+      "id": "mwg-ar-2024-pdf-page-8-chair-letter-region-vi",
+      "document_id": "MWG-AR-2024",
+      "company": "Mobile World Investment Corporation",
+      "file": "data/raw/vietnam_enterprises/mwg/mwg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "e98227cb400d043c1a0e95eaa2706b397fb61001c342713e27b49ad04c17fca7",
+      "source_url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/posts/2025/4/0/64/c2/64c27697a67a3feb53d97256e4de3d7e.pdf",
+      "page": 8,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "annual_report_prose_region",
+      "region_label": "PDF page 8: chairperson letter body and heading",
+      "reference_annotation_method": "manual_visual_transcription_single_reviewer",
+      "reference_text": "THƯ NGỎ TỪ CHỦ TỊCH HỘI ĐỒNG QUẢN TRỊ\n\nKính gửi Quý Khách hàng, Quý Cổ đông, Quý Đối tác và toàn thể Nhân viên của Tập đoàn Thế Giới Di Động (MWG),\n\nNăm 2024 đánh dấu bước chuyển mình quan trọng trong hành trình phát triển của MWG. Chúng tôi đã hoàn tất nền móng cuộc tái cấu trúc mạnh mẽ, toàn diện với triết lý “Giảm Lượng - Tăng Chất” để hướng tới vận hành tinh gọn, hiệu quả. Tập đoàn chào mừng cột mốc 20 năm hình thành và phát triển bằng việc hoàn thành xuất sắc các mục tiêu kinh doanh: đạt 107% kế hoạch doanh thu với hơn 134 nghìn tỷ đồng và 156% kế hoạch lợi nhuận sau thuế với hơn 3,7 nghìn tỷ đồng, tương đương với tăng trưởng 13,6% về doanh thu và 21 lần về lợi nhuận so với năm 2023.\n\nBước sang năm 2025, kinh tế Việt Nam được kỳ vọng sẽ có nhiều tín hiệu tích cực. Tuy nhiên, những biến động chính trị toàn cầu vẫn tiềm ẩn nhiều rủi ro, ảnh hưởng đến môi trường kinh doanh trong nước. Sức mua đang dần phục hồi nhưng chưa trở lại mức trước đại dịch. Trong bối cảnh đó, MWG tiếp tục kiên định với định hướng tăng trưởng bền vững, tập trung tối ưu vận hành và nâng cao trải nghiệm khách hàng. Chúng tôi không chạy theo số lượng mà đặt trọng tâm vào chất lượng, những giá trị cốt lõi và thực sự hữu ích cho khách hàng. Với nền tảng nội lực vững chắc, tập đoàn sẵn sàng thích ứng với những biến động của thị trường, có sức mạnh để hiện thực hóa mục tiêu 150 nghìn tỷ đồng doanh thu và 4.850 tỷ đồng lợi nhuận sau thuế.\n\nNăm 2025, bên cạnh các mục tiêu kinh doanh, MWG sẽ tiếp tục đồng hành cùng Chính phủ Việt Nam trong hành trình phát triển bền vững, hướng tới mục tiêu phát thải ròng bằng 0 vào năm 2050. Chúng tôi cam kết không chỉ nỗ lực gia tăng hiệu quả tài chính mà còn đóng góp tích cực cho xã hội thông qua giảm thiểu tác động bất lợi đến môi trường và tối ưu việc sử dụng tài nguyên thiên nhiên; thúc đẩy sự đa dạng, bình đẳng và trao quyền cho nhân viên; triển khai các hoạt động thiện nguyện thiết thực cho cộng đồng; cũng như xây dựng hệ sinh thái kinh doanh minh bạch và có trách nhiệm. Khi thực hiện tốt những cam kết này, MWG không chỉ mang lại lợi ích trực tiếp mà còn góp phần kiến tạo những giá trị bền vững lâu dài cho tất cả các bên liên quan.",
+      "clip_rect": [
+        285.0,
+        105.0,
+        800.0,
+        525.0
+      ]
+    }
+  ]
+}

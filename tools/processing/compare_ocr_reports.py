@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 def _page_identity(row: dict) -> tuple:
-    return (row.get("document_id"), row.get("page"), row.get("language"))
+    return (row.get("document_id"), row.get("page"), row.get("language"), row.get("id"))
 
 
 def _normalize(text: str) -> str:
@@ -93,9 +93,15 @@ def compare_reports(
     dataset_pages = {}
     if dataset is not None:
         dataset_pages = {_page_identity(page): page for page in dataset.get("pages", [])}
+        baseline_rows = baseline["engines"][next(iter(baseline["engines"]))].get("pages", [])
+        if not any(page.get("id") for page in baseline_rows):
+            dataset_pages = {
+                (*_page_identity(page)[:3], None): page
+                for page in dataset.get("pages", [])
+            }
         table_rows_by_page = {
-            _page_identity(page): page.get("table_rows", [])
-            for page in dataset_pages.values()
+            identity: page.get("table_rows", [])
+            for identity, page in dataset_pages.items()
         }
     if rescore_references and (dataset is None or not dataset_sha256):
         raise ValueError("Reference rescoring requires a ground-truth dataset and its content hash")
@@ -105,7 +111,7 @@ def compare_reports(
         pages = {}
         for row in rows:
             identity = _page_identity(row)
-            if None in identity or not row.get("source_pdf_sha256") or not row.get("rendered_image_sha256"):
+            if None in identity[:3] or not row.get("source_pdf_sha256") or not row.get("rendered_image_sha256"):
                 raise ValueError("Every OCR page must identify its document, page, language, PDF and rendered image hashes")
             if identity in pages:
                 raise ValueError(f"Duplicate OCR page identity: {identity}")
@@ -264,10 +270,13 @@ def compare_reports(
         "reference_rescored": rescore_references,
         "render_dpi": dpi,
         "paired_pages": [
-            {"document_id": document, "page": page, "language": language,
-             "source_pdf_sha256": reference_pages[(document, page, language)][0],
-             "rendered_image_sha256": reference_pages[(document, page, language)][1]}
-            for document, page, language in sorted(reference_pages)
+            {"id": page_id, "document_id": document, "page": page, "language": language,
+             "source_pdf_sha256": reference_pages[(document, page, language, page_id)][0],
+             "rendered_image_sha256": reference_pages[(document, page, language, page_id)][1]}
+            for document, page, language, page_id in sorted(
+                reference_pages,
+                key=lambda item: (item[0], item[1], item[2], item[3] or ""),
+            )
         ],
         "engines": comparisons,
     }

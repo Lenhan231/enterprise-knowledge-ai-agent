@@ -1,0 +1,357 @@
+{
+  "dataset_id": "vng-ar-2024-prose-regions-16-v1",
+  "dataset_title": "VNG Annual Report 2024 Vietnamese prose regions",
+  "purpose": "Exploratory Vietnamese corporate OCR CER/WER screening on half-page regions selected from the official VNG Annual Report 2024.",
+  "reference_method": "native PDF text layer clipped to selected regions and sorted in visual reading order; not proofread word by word",
+  "reference_quality": "Selected spreads were visually inspected for Vietnamese narrative content. References come from the PDF text layer and have not been proofread against every line; reading order and mixed content can affect CER/WER.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "Sixteen dependent half-page regions from one born-digital annual report are not broad sector or company coverage.",
+    "The native text references have not been proofread and may contain extraction-order or reading-order discrepancies.",
+    "Selected regions mix prose with headings, images, charts, and callouts.",
+    "This is born-digital report content, not a physical scan.",
+    "CER/WER measure recognized text only, not layout detection or table extraction.",
+    "Exploratory screening only; not eligible for primary model selection."
+  ],
+  "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+  "source_download_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+  "render_dpi": 180,
+  "pages": [
+    {
+      "id": "vng-ar-2024-pdf-page-19-l-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 19,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "VNG - BÁO CÁO THƯỜNG NIÊN 2024\nTổng quan nền kinh tế\nA.                         Năm 2024, nền kinh tế Việt Nam đã thể hiện khả năng phục hồi và duy trì sự ổn\nđịnh, thông qua các chỉ số kinh tế vĩ mô như sau: Tăng trưởng GDP đạt mức cao,Bối cảnh kinh tế vĩ mô                                          tỷ lệ lạm phát được duy trì trong ngưỡng kiểm soát, dòng vốn đầu tư trực tiếp\nnước ngoài (FDI) tiếp tục đạt kết quả tích cực. Với vị trí địa lý thuận lợi, Việt Nam\nđã củng cố vai trò là trung tâm sản xuất và thương mại có tầm ảnh hưởng trong\nkhu vực. Chỉ số niềm tin tiêu dùng cũng cho thấy người tiêu dùng Việt Nam có\nmức độ lạc quan cao hơn so với mặt bằng chung tại các quốc gia ASEAN.\nCác yếu tố trên phản ánh nền tảng kinh tế Việt Nam phát triển một cách ổn định\nvà tích cực, trong bối cảnh tình hình thế giới còn nhiều biến động.\nTĂNG TRƯỞNG GDP\nTổng sản phẩm quốc nội (GDP) của Việt Nam trong năm 2024 tăng trưởng 7,1%.\nghi nhận sự bứt tốc đáng kể so với mức tăng 5% của năm 2023. Động lực tăng\ntrưởng chủ yếu đến từ xuất khẩu khả quan, tiêu dùng nội địa vững vàng, và dòng\nvốn đầu tư trực tiếp nước ngoài (FDI) duy trì ổn định.\nKim ngạch xuất khẩu đạt mức kỷ lục 405,5 tỷ USD, tăng 14,3% so với cùng kỳ năm\ntrước, nhờ đóng góp nổi bật từ các ngành hàng chủ lực như điện tử, dệt may và\nnông sản. Bên cạnh đó, các hiệp định thương mại và mối quan hệ hợp tác chiến\nlược đã đóng vai trò quan trọng trong việc thúc đẩy hoạt động xuất khẩu.\nMặc dù kinh tế toàn cầu tiếp tục đối mặt với nhiều bất ổn, tiêu dùng nội địa tại\nViệt Nam vẫn giữ được đà phục hồi, thể hiện qua mức tăng trưởng 7,4% của khu\nvực dịch vụ, cao hơn so với mức 6,9% của năm 2023, cho thấy cầu tiêu dùng trong\nnước vẫn đang duy trì ở mức tích cực.\nNguồn: Ngân hàng thế giới",
+      "clip_rect": [
+        0.0,
+        0.0,
+        960.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-19-r-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 19,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "19\nCHỈ SỐ GIÁ TIÊU DÙNG (CPI)\nTheo Tổng cục Thống kê, lạm phát trong năm 2024 vẫn được kiểm soát hiệu quả,\nkhi chỉ số giá tiêu dùng (CPI) tăng 3,6%. nhỉnh hơn mức 3,3% của năm 2023, và vẫn\nnằm trong mức mục tiêu do Quốc hội đề ra. Lạm phát cơ bản – loại trừ các yếu\ntố biến động như thực phẩm và năng lượng – chỉ tăng 2,7%. phản ánh hiệu quả\ncủa các chính sách tiền tệ điều hành linh hoạt và chặt chẽ của Chính phủ trong\nkiểm soát áp lực lạm phát.\nĐẦU TƯ TRỰC TIẾP NƯỚC NGOÀI (FDI)\nTheo số liệu từ Bộ Kế hoạch và Đầu tư, Việt Nam thu hút 38,2 tỷ USD vốn FDI trong\nnăm 2024, giảm nhẹ 3% so với năm trước. Tuy nhiên, giải ngân FDI đạt mức cao\nkỷ lục 25,4 tỷ USD, tăng 9,4% so với cùng kỳ, cho thấy niềm tin của nhà đầu tư vào\nmôi trường đầu tư ổn định và hấp dẫn tại Việt Nam. Sức hút của Việt Nam tiếp\ntục được củng cố thông qua việc tham gia các hiệp định thương mại chiến lược,\nnâng cấp quan hệ hợp tác kinh tế và lợi thế trong xu hướng dịch chuyển chuỗi\ncung ứng toàn cầu. Đáng chú ý, dòng vốn đầu tư vẫn đổ vào các ngành công\nnghệ cao, bao gồm sản xuất bán dẫn và trí tuệ nhân tạo (AI). được hỗ trợ bởi các\nchính sách ưu đãi của Chính phủ như miễn giảm thuế và ưu đãi thuê đất.\nTÂM LÝ NGƯỜI TIÊU DÙNG\nTheo khảo sát Tâm lý người tiêu dùng ASEAN do Ngân hàng UOB thực hiện trong\nnăm 2024, người tiêu dùng Việt Nam thể hiện mức độ tự tin cao hơn so với mặt\nbằng khu vực. Hơn 70% người tham gia khảo sát bày tỏ sự lạc quan về tình hình\nkinh tế hiện tại và triển vọng tương lai, vượt xa mức trung bình 54% của ASEAN.\nNiềm tin này được thúc đẩy bởi cơ hội việc làm ngày càng cải thiện, chất lượng\ncuộc sống được nâng cao, và sự phục hồi mạnh mẽ của tiêu dùng nội địa, góp\nphần đưa Việt Nam trở thành điểm sáng trong khu vực, bất chấp bối cảnh kinh\ntế toàn cầu còn nhiều bất định.",
+      "clip_rect": [
+        960.0,
+        0.0,
+        1920.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-20-l-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 20,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "VNG - BÁO CÁO THƯỜNG NIÊN 2024\nB.                               Theo dự báo của Quỹ Tiền tệ Quốc tế (IMF). đến năm 2025, Việt Nam sẽ trở thành\nnền kinh tế lớn thứ 12 tại châu Á và đứng thứ 5 trong khu vực ASEAN, nhờ đà tăngTriển vọng kinh tế                                     trưởng mạnh mẽ của GDP và nỗ lực song song trong chuyển đổi số và phát triển\nvĩ mô năm 2025                                bền vững – hai xu hướng tăng trưởng chiến lược đang định hình các nền kinh tế\ntoàn cầu.\nVới mục tiêu tăng trưởng GDP đạt 8,0% do Chính phủ đề ra, Việt Nam đang tận\ndụng tối đa các chính sách hỗ trợ đổi mới sáng tạo, đồng thời chủ động điều tiết\nchiến lược phát triển trong bối cảnh thế giới biến động, bao gồm cả những ảnh\nhưởng tiềm tàng việc thay đổi chính quyền tại Hoa Kỳ trong nhiệm kỳ Tổng thống\ntiếp theo.\nTổng thể, Việt Nam đang bước vào năm 2025 với kỳ vọng lớn và nền tảng vững\nchắc, tiếp tục khẳng định vị thế là một trong những điểm sáng kinh tế nổi bật\ntrong khu vực.\nCác nền kinh tế lớn nhất ASEAN năm 2025 (tỷ USD)\nNguồn: Quỹ tiền tệ quốc tế IMF (tháng 4/2025)\nTĂNG TRƯỞNG GDP\nTheo dự báo của Quỹ Tiền tệ Quốc tế (IMF). tăng trưởng GDP của Việt Nam trong\nnăm 2025 dự kiến đạt 5,2% – thấp hơn so với mục tiêu 8,0% của Chính phủ, nhưng\nvẫn vượt trội so với nhiều nền kinh tế trong khu vực, như Thái Lan và Singapore.\nCác động lực tăng trưởng chính bao gồm: sản xuất công nghiệp duy trì ổn định,\nđa dạng hóa hoạt động xuất khẩu, và tiêu dùng nội địa bền vững.\nPhát triển bền vững tiếp tục là trọng tâm trong chính sách điều hành, với những\nnỗ lực đáng kể từ phía Chính phủ nhằm mở rộng năng lượng tái tạo và thúc đẩy\nnền kinh tế số.\nBỐI CẢNH CHÍNH TRỊ\nViệt Nam đang nổi lên như một mắt xích quan trọng trong làn sóng dịch chuyển\nchuỗi cung ứng toàn cầu, khi ngày càng nhiều doanh nghiệp tìm cách nâng cao\nkhả năng vận hành linh hoạt thông qua chiến lược đa dạng hóa địa lý.",
+      "clip_rect": [
+        0.0,
+        0.0,
+        960.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-20-r-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 20,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "20\nVị trí địa lý chiến lược cùng với mạng lưới các hiệp định thương mại ngày càng\nmở rộng tiếp tục củng cố sức hút của Việt Nam đối với các nhà đầu tư quốc tế.\nTrong bối cảnh toàn cầu không ngừng biến động, các chính sách thương mại\nvà xu hướng vĩ mô quốc tế cần được theo dõi sát sao. Những điều chỉnh về thuế\nquan, tỷ giá hối đoái hay dòng vốn đầu tư đều có thể mang đến cả cơ hội lẫn rủi\nro, nhấn mạnh nhu cầu cần có chiến lược linh hoạt và nền tảng kinh tế đa dạng\nđể thích ứng hiệu quả trong môi trường toàn cầu đang thay đổi nhanh chóng.\nKINH TẾ SỐ\nChuyển đổi số tiếp tục đóng vai trò then chốt trong chiến lược phát triển kinh tế\ncủa Việt Nam. Theo Bộ Thông tin và Truyền thông, đóng góp của kinh tế số vào\nGDP đạt 16,5% năm 2023 và ước tính tăng lên 18,6% trong năm 2024.\nTheo “Chiến lược quốc gia về phát triển kinh tế số và xã hội số đến năm 2025,\nđịnh hướng đến năm 2030” được Chính phủ phê duyệt từ năm 2022, mục tiêu đề\nra là đến năm 2025, kinh tế số đóng góp 20% GDP, và đến năm 2030 đạt mốc\n30% GDP.\nĐể hiện thực hóa mục tiêu này, Chính phủ đang nỗ lực đầu tư phát triển hạ tầng\nsố và thúc đẩy đổi mới công nghệ. Một trong những chương trình trọng điểm là\nChương trình Chuyển đổi số Quốc gia, triển khai từ năm 2020, đặt ra các mục tiêu\nrõ ràng đến năm 2025 và tầm nhìn đến năm 2030. Chiến lược tập trung vào ba\ntrụ cột chính: Chính phủ số, Kinh tế số và Xã hội số, với kỳ vọng nâng cao năng\nlực số cho người dân, cải thiện hạ tầng công nghệ, và đẩy mạnh đổi mới trong\nmọi lĩnh vực kinh tế.\nTheo Digital 2025 Global Overview Report của We Are Social và Meltwater, tỷ lệ\nsử dụng Internet tiếp tục là yếu tố thúc đẩy quan trọng, với gần 80% dân số Việt\nNam đã có kết nối Internet tính đến năm 2024, chủ yếu nhờ sự phổ cập nhanh\nchóng của điện thoại thông minh.\nTỷ lệ thâm nhập internet năm 2024 (%)\nNguồn: Digital 2025 Global Overview Report (We Are Social và Meltwater)",
+      "clip_rect": [
+        960.0,
+        0.0,
+        1920.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-21-l-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 21,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "VNG - BÁO CÁO THƯỜNG NIÊN 2024\nCác mảng kinh doanh\nTRÒ CHƠI TRỰC TUYẾN          Theo Báo cáo Thị trường Game Toàn cầu 2024 của NewZoo, ngành công nghiệp\ngame toàn cầu ghi nhận mức tăng trưởng ổn định so với năm trước, với doanh\nthu đạt 184 tỷ USD, tương ứng với mức tăng trưởng 0,2% so với cùng kỳ và khoảng\nA.                                              3,9 tỷ người chơi trên các nền tảng máy tính (PC), di động và máy chơi điện tử\nThị trường trò chơi trực tuyến     (console). Trong đó, châu Á–Thái Bình Dương (APAC) tiếp tục là thị trường lớn\nnhất và có ảnh hưởng nhất, chiếm 46% doanh thu toàn cầu và là nơi quy tụ 1,9 tỷ\nngười chơi. Bắc Mỹ đứng thứ hai với 27% doanh thu và 400 triệu người chơi, trong\nkhi châu Âu dù có số lượng người chơi cao hơn Bắc Mỹ (700 triệu). nhưng doanh\nthu chiếm 18%. cho thấy mức chi tiêu trung bình thấp hơn. Xét theo nền tảng, di\nđộng (\"mobile\") vẫn giữ vững vị trí dẫn đầu về cả doanh thu và số lượng người\ndùng, với 92 tỷ USD thu về trong năm 2024 (tăng 2,8% so với cùng kỳ) từ 2,6 tỷ\nngười chơi, được thúc đẩy bởi việc phổ cập điện thoại thông minh giá hợp lý tại\ncác thị trường ưu tiên di động. Trong khi đó, nền tảng PC ghi nhận mức doanh thu\n42 tỷ USD với 667 triệu người chơi, cho thấy sự chững lại so với năm trước.\nThị trường game toàn cầu (theo thiết bị)       Thị trường game toàn cầu (theo khu vực)\nNguồn: NewZoo\nTrong giai đoạn 2024–2027, NewZoo dự báo thị trường game toàn cầu sẽ tăng\ntrưởng với tốc độ CAGR 3,9%, trong đó, khu vực APAC tiếp tục dẫn đầu.\nNăm 2025 được dự báo sẽ chứng kiến sự dịch chuyển rõ nét trong mô hình kiếm\ntiền của các tựa game. Mô hình kiếm tiền hỗn hợp (hybrid monetization)–kết hợp\ngiữa mua hàng trong ứng dụng (IAP) và quảng cáo trong ứng dụng (IAA)–được\ndự đoán tăng trưởng 26,1%. phản ánh xu hướng tối ưu hóa trải nghiệm người chơi\nvà mở rộng tập người dùng mục tiêu.",
+      "clip_rect": [
+        0.0,
+        0.0,
+        960.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-21-r-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 21,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "21\nTrí tuệ nhân tạo (AI) tiếp tục là xu hướng chiến lược trong phát triển game. AI được\nứng dụng vào thử nghiệm gameplay, tạo nội dung và kiểm duyệt, từ đó tăng mức\nđộ cá nhân hóa và hấp dẫn cho sản phẩm. Nội dung do AI tạo ra (AI-generated\ncontent) được kỳ vọng sẽ trở nên phổ biến, kéo theo sự xuất hiện của các game\n“bản sao” được tối ưu hóa dựa trên các tựa game thành công.\nVNGGames cũng đang nắm bắt xu hướng này thông qua nền tảng Artian, ứng\ndụng AI vào quy trình thiết kế nhân vật, ghi nhận chuyển động, và bản địa hóa\nnội dung–từ đó tối ưu hóa hiệu quả và nâng cao sức sáng tạo trong phát triển\ngame.\nMặc dù triển vọng tăng trưởng tích cực, ngành game toàn cầu vẫn đối mặt với\nnhiều thách thức–đặc biệt là về kiếm tiền trong bối cảnh thị trường đã bão hòa\nvới những tựa game phổ biến và thiếu vắng các sản phẩm cao cấp mang tính\nđột phá.\nThị trường PC đang chứng kiến nghịch lý: tương tác người dùng tăng mạnh, với\nsố lượng người chơi đồng thời trên nền tảng như Steam đạt kỷ lục, nhưng doanh\nthu lại sụt giảm. Nguyên nhân phần lớn do mô hình miễn phí (free-to-play) chiếm\nưu thế, trong khi nhiều sản phẩm đã bước vào giai đoạn bão hòa, hạn chế khả\nnăng tạo ra nguồn thu mới.\nỞ mảng di động, thay đổi chính sách quản lý là một trong những yếu tố cần đặc\nbiệt lưu tâm. Đạo luật Thị trường Số (DMA) của EU cùng với quy định tương tự tại\nNhật Bản và Anh đã buộc Apple và Google phải cho phép cửa hàng ứng dụng\nbên thứ ba và hệ thống thanh toán thay thế. Dù mở ra cơ hội doanh thu mới cho\nnhà phát hành, điều này cũng làm phân mảnh thị trường, đòi hỏi quản lý nhiều\nhệ thống phân phối và cấu trúc phí khác nhau. Hành vi người dùng hiện vẫn gắn\nbó với các cửa hàng truyền thống, khiến tác động ngắn hạn còn khó đoán định.\nTại Việt Nam, môi trường pháp lý cũng đặt ra nhiều thách thức mới. Theo nghị\nđịnh mới về quản lý dịch vụ Internet và thông tin trên không gian mạng, tất cả\ncác game mang tính chất casino trực tuyến sẽ bị cấm từ tháng 12/2024. Đồng\nthời, người chơi dưới 18 tuổi bị giới hạn thời gian chơi mỗi ngày, điều này có thể\nảnh hưởng đến mức độ tương tác và doanh thu trong game.",
+      "clip_rect": [
+        960.0,
+        0.0,
+        1920.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-22-r-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 22,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "22\nnăm hoạt động và phát triển   20\ntựa game phát hành tại Việt Nam,          tựa game   +200               +40\nphát hành tại thị trường nước ngoài\ntựa game do VNG phát                 +20              triệu người dùng   +79                                                     triển và phân phối trên toàn cầu     hàng quý\nthành phố nơi game studio                  9               nhân sự   +1.200                                của VNG hiện diện\nTrong suốt 20 năm qua, VNG đã có những đóng góp quan trọng và bền\nvững cho ngành công nghiệp game tại Việt Nam và Đông Nam Á. Khởi\nđầu từ năm 2004 với tên gọi Vinagame, công ty đã tiên phong phổ biến\ngame online tại Việt Nam qua thành công vang dội của Võ Lâm Truyền\nKỳ, đánh dấu bước ngoặt quan trọng cho ngành game trong nước. Tính\nđến nay, VNG đã phát hành hơn 200 tựa game tại Việt Nam và hơn 40\ntựa game trên thị trường quốc tế, phục vụ khoảng 79 triệu người dùng\nhàng quý với đội ngũ nhân sự hơn 1.200 người.\nChúng tôi đã khẳng định vị thế qua việc chuyển đổi thành công từ game\nPC sang game di động trong giai đoạn 2016-2017, đánh dấu bước tiến\nlớn về công nghệ và thị hiếu người dùng. Việc mở rộng ra thị trường khu\nvực với các studio tại Bangkok, Kuala Lumpur, Jakarta, Đài Bắc, Thượng\nHải và Bắc Kinh không chỉ chứng minh năng lực cạnh tranh quốc tế mà\ncòn thể hiện độ chín của VNG ở mảng game, cả về công nghệ, kinh\nnghiệm và nguồn lực.\nBên cạnh hoạt động kinh doanh, VNGGames cũng tiên phong thúc đẩy\nthể thao điện tử (eSports) tại Việt Nam, điển hình là vai trò quan trọng\ntrong việc đưa eSports trở thành môn thi đấu chính thức tại SEA Games\n31, góp phần mang về 4 HCV cho đoàn Việt Nam. Thành công này góp\nphần khẳng định tiềm năng của ngành game và eSports nước nhà trên\nbản đồ khu vực\nHành trình 20 năm của VNG cũng không thể không kể đến đóng góp\nquan trọng của ZingPlay Game Studios (ZPS). một trong những đơn vị\ntiên phong “Go Global” của VNG. Khởi đầu từ năm 2007 với các game\ncasual, ZPS đã luôn “Đón nhận thách thức”. nỗ lực chuyển đổi liên tục từ\nnền tảng máy tính sang web và sau đó là mobile, xây dựng vị thế vững\nchắc với các sản phẩm phù hợp thị hiếu người dùng, từng bước mở rộng\nra Đông Nam Á, Nam Á và Mỹ Latinh.",
+      "clip_rect": [
+        960.0,
+        0.0,
+        1920.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-30-l-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 30,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "VNG - BÁO CÁO THƯỜNG NIÊN 2024\nNền tảng nhắn tin                  Với ưu tiên hàng đầu là đảm bảo liên lạc và giao tiếp của người Việt Nam một\n“quốc dân”                      cách ổn định và tin cậy, Zalo tiếp tục chiếm được cảm tình của người sử dụng và\nlà ứng dụng quốc dân trong lòng người Việt. Cụ thể, tính đến hết tháng 12/2024,\nZalo đang có 77,8 triệu người dùng hoạt động thường xuyên hàng tháng, với gần\n2 tỷ tin nhắn được gửi đi mỗi ngày — con số cao nhất từ trước đến nay.\nZalo tự hào duy trì vị trí số 1 trong 16 quý liên tiếp là nền tảng nhắn tin được yêu\nthích nhất tại Việt Nam (Theo Decision Lab) và được công nhận bởi đa thế hệ\nngười dùng, từ làm việc đến giải trí và kết nối. Số liệu Quý 3/2024 cho thấy tỷ lệ\nngười dùng Zalo ở các thế hệ Gen X, Gen Y và Gen Z đều vượt trội, với 75%. 56% và\n40% tương ứng, cao hơn so với Messenger và Facebook. 2024 là năm bước ngoặt\ncủa Zalo từ việc cung cấp các dịch vụ giá trị gia tăng chất lượng cao (value\nadded services) cho người dùng. Điều này không chỉ tăng trải nghiệm của người\ndùng với nhiều tính năng cao cấp mà còn giúp ứng dụng này đa dạng hóa nguồn\nthu và tăng trưởng bền vững. Tỷ trọng doanh thu mới từ VAS và Business Services\n(non - ad revenue) trên tổng doanh thu đã tăng gấp đôi so với năm 2023.\nCác dịch vụ như như zCloud (dịch vụ lưu trữ tối ưu cho Zalo). zStyle (cá nhân hóa\ntrang cá nhân) và zBusiness (tài khoản cá nhân nâng cao với các tính năng mở\nrộng phục vụ cho nhu cầu công việc) hiện đang đóng góp hiệu quả. Nhờ năng\nlực xử lý các bài toán công nghệ cho hàng chục triệu người dùng Việt Nam và\nkinh nghiệm hơn 17 năm phục vụ nhu cầu đa dạng của thị trường trong nước, các\nsản phẩm truyền thông – giải trí của Zalo cũng tạo được dấu ấn nhất định trên\nthị trường.\nZalo Video - một sản phẩm ra mắt từ tháng 8.2023 - đã ghi nhận 35 triệu người\ndùng thường xuyên trong Quý 4/2024.",
+      "clip_rect": [
+        0.0,
+        0.0,
+        960.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-30-r-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 30,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "30\nNền tảng chuyển đổi            Trong bối cảnh chuyển đổi số trở thành động lực then chốt của nền kinh tế, Zalo\nsố của doanh nghiệp         đã đáp ứng nhu cầu cấp thiết của doanh nghiệp và đối tác với gói giải pháp\ntoàn diện, bao gồm Zalo Official Account (OA) và Zalo Mini App. Các giải phápvà tổ chức                                này không chỉ tối ưu hóa hoạt động kinh doanh mà còn mở ra cánh cửa tiếp cận\nkhách hàng hiệu quả.\nTrên thị trường, xu hướng sử dụng mini app trong chuyển đổi số tiếp tục bùng nổ\nvào năm 2024, trở thành giải pháp tất yếu cho doanh nghiệp và chính quyền.\nBáo cáo của Statista (2024) chỉ ra rằng mini app giúp tiết kiệm đến 40% chi phí\nphát triển ứng dụng riêng. Với khả năng tiếp cận nhanh, linh hoạt và quảng bá\nhiệu quả, mini app – đặc biệt là Zalo Mini App – đã được các tổ chức, doanh\nnghiệp, cơ quan nhà nước tận dụng để kết nối với khách hàng, người dân trên\nnền tảng Zalo. Đến hết Quý 4/2024, Zalo ghi nhận hơn 31 triệu người dùng thường\nxuyên sử dụng Zalo Mini App. Song song đó, Zalo Official Account (Zalo OA) đóng\nvai trò như một “cầu nối số hóa” giữa doanh nghiệp, người dùng và chính quyền.\nVới Zalo OA, các doanh nghiệp có thể thiết lập tài khoản “chính chủ” để tương\ntác trực tiếp, xây dựng các chương trình chăm sóc khách hàng và tiếp thị phù\nhợp, từ đó gia tăng sự gắn kết với người tiêu dùng. Quý 4/2024, Zalo có khoảng\n68.000 gói doanh nghiệp trả phí hàng tháng cho dịch vụ OA.\nNgoài ra, hệ sinh thái Zalo còn được củng cố bởi các giải pháp quảng cáo, dịch\nvụ gửi thông báo ZNS, cùng các dịch vụ liên kết ngân hàng hỗ trợ chuyển tiền\nnhanh chóng. Riêng dịch vụ liên kết ngân hàng tiếp tục tăng trưởng tốt với 8,8\ntriệu người dùng hàng tháng. Những sáng kiến này không chỉ nâng cao hiệu quả\nkinh doanh mà còn góp phần thúc đẩy sự phát triển bền vững của các doanh\nnghiệp trong kỷ nguyên số.\nTrong bối cảnh sự cạnh tranh ngày càng khốc liệt và yêu cầu pháp lý về dữ liệu,\nbảo mật ngày càng nghiêm ngặt, Zalo đang nỗ lực không ngừng để đổi mới và\nduy trì vai trò tiên phong. Việc tận dụng tối đa công nghệ và tuân thủ các quy\nđịnh như Nghị định 147/NĐ-CP về quản lý không gian mạng sẽ là chìa khóa để\nZalo tiếp tục dẫn dắt chuyển đổi số, không chỉ cho doanh nghiệp mà còn cho cả\ncộng đồng Việt Nam.",
+      "clip_rect": [
+        960.0,
+        0.0,
+        1920.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-32-l-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 32,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "VNG - BÁO CÁO THƯỜNG NIÊN 2024\nỞ đâu có người Việt,              Trong quá trình hoạt động, Zalo tích cực thể hiện trách nhiệm xã hội, xứng đáng\nở đó có Zalo                            là ứng dụng quốc dân của người Việt. Zalo đã trở thành động lực then chốt trong\nviệc thúc đẩy chuyển đổi số hành chính công tại Việt Nam, khẳng định vai trò tiên\nphong thông qua Zalo Official Account (OA) và Zalo Mini App. Với 77,8 triệu người\ndùng hàng tháng, Zalo không chỉ là nền tảng nhắn tin mà còn là cầu nối số hóa\nhiệu quả, nhanh chóng, chuẩn xác giữa chính quyền, doanh nghiệp, và người\ndân với mong muốn được đồng hành và hỗ trợ thực hiện Chương trình Chuyển\nđổi số Quốc gia đến năm 2025, định hướng đến 2030.\nTính đến cuối năm 2024, Zalo đã có 17.273 Zalo OA (Tài khoản Zalo chính thức)\nthuộc các cơ quan nhà nước và khối tiện ích công (y tế, giáo dục…). phục vụ hơn\n40 triệu lượt theo dõi, phủ sóng 63 tỉnh thành, hỗ trợ người dân tra cứu thông tin,\nthực hiện thủ tục hành chính và tương tác với chính quyền. Một số tính năng chính\ndo Zalo OA cung cấp có thể kể đến như Tuyên truyền thông qua đăng bài viết,\nmenu tra cứu tự động và thống kê hiệu quả; Tương tác thông qua chat 1-1 giữa\ncán bộ địa phương và người dân hoặc trả lời tự động với các câu hỏi giải đáp\nphổ biến, hoặc cập nhật tình trạng xử lý hồ sơ của người dân.\nTrong khi đó, Zalo Mini App hiện đang được sử dụng ở 25/63 tỉnh thành với 173\nMini App do CQNN vận hành, đóng vai trò quan trọng trong nhiều khía cạnh hành\nchính công: số hóa thủ tục hành chính, cho phép người dân tra cứu, nộp hồ sơ\ntrực tuyến, và nhận thông báo trạng thái từ chính quyền ngay trên điện thoại;\nđảm bảo an ninh, trật tự khi người dân kết nối với công an các cấp cũng như\nphát triển kinh tế địa phương. Một số Mini App tiêu biểu, có thể kể đến như Tây\nNinh Smart, BR-VT Smart, và GoBus TP.HCM. Mini app Tây Ninh Smart, đều ghi\nnhận tốc độ tăng trưởng ấn tượng về người theo dõi.",
+      "clip_rect": [
+        0.0,
+        0.0,
+        960.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-38-l-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 38,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "VNG - BÁO CÁO THƯỜNG NIÊN 2024\nĐồng hành cùng cộng đồng     Là một phần quan trọng trong hệ sinh thái của VNG, Zalopay chia sẻ chung tầm\nnhìn và sứ mệnh kiến tạo công nghệ gắn liền với trách nhiệm xã hội thông qua\nnhiều dự án cộng đồng ý nghĩa.\n• Giáo dục: Mở rộng thêm 8 điểm mới cho dự án “Canteen không tiền mặt” tại\ncác trường đại học trong nước và quốc tế, định hình thói quen thanh toán không\ntiền mặt trong học đường.\n• Hỗ trợ thiên tai: Đồng hành cùng báo Người Lao động hỗ trợ người dân miền\nBắc khắc phục hậu quả siêu bão Yagi (tháng 9/2024). Kêu gọi quyên góp được\ngần 3 tỷ đồng từ hơn 37.000 lượt đóng góp của 32.000 nhà hảo tâm chỉ trong 1\ntháng.\n• An sinh xã hội: Đồng hành cùng Liên đoàn Lao động TP.HCM tổ chức chương\ntrình \"Ngày hội công nhân - Phiên chợ nghĩa tình\". cung cấp giải pháp công nghệ\nPhiếu quà tặng 0 đồng, giúp Liên đoàn lao động TP.HCM trao tặng 9.500 phiếu\nquà tặng cho 9.500 công nhân sắm Tết; Phối hợp cùng Quỹ Trăng khuyết và báo\nNgười Lao động, Liên đoàn Lao động TP.HCM huy động quyên góp hơn 621 triệu\nđồng từ hơn 62.000 nhà hảo tâm cho chương trình “Chuyến xe mùa xuân” – “Giúp\nnhau về nhà – Để Tết này ai cũng có Tết Nguyên Nhà”.",
+      "clip_rect": [
+        0.0,
+        0.0,
+        960.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-38-r-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 38,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "38\nGắn kết nội bộ dựa trên sự      Zalopay không ngừng xây dựng và cải tiến các sáng kiến văn hóa thông qua\nminh bạch                                  việc phát triển đội ngũ, sự hợp tác cũng như các hoạt động gắn kết, tạo nên một\nmôi trường làm việc cởi mở và đầy cảm hứng. Để tạo dựng được niềm tin trong\nnội bộ, bên cạnh niềm tin vào sứ mệnh “xã hội không tiền mặt”. Zalopay hiểu\nrằng chỉ có sự minh bạch mới tạo nên chất keo gắn kết.\n• Chương trình Embracing Excellence và Management Companion giúp nâng\ncao kỹ năng và tư duy của Zalopay Starters, thúc đẩy sự phát triển cá nhân và\nchuyên môn.\n• Các buổi chia sẻ như Zalopay Talks, Business Connecting Session, và Zalopay\n360° Feedback tạo không gian để trao đổi, phản hồi chân thành, xây dựng văn\nhóa làm việc cởi mở.\n• Hoạt động gắn kết như Zalopay Aspire Awards, Town Hall Meeting và Hackathon\n2024 khuyến khích tinh thần đổi mới, trao đổi thẳng thắn, công nhận đóng góp\ncủa nhân viên và thúc đẩy sự sáng tạo\nZaloPay sẽ tiếp tục nỗ lực xây dựng và hoàn thiện các sáng kiến văn hóa.\nPhát triển: Các chương\ntrình đào tạo nhằm nâng\ncao kỹ năng và tư duy\ncho nhân viên.\nHợp tác: Khuyến khích\nvăn hóa chia sẻ và phản\nhồi, tạo không gian giao\ntiếp thẳng thắn và cởi mở\ntrong công việc.\nTruyền cảm hứng: Tăng\ncường sự gắn bó của\nnhân viên thông qua các\nchương trình gắn kết nội\nbộ và ghi nhận kết quả\ncông việc.",
+      "clip_rect": [
+        960.0,
+        0.0,
+        1920.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-40-r-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 40,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "40\nVNG DIGITAL BUSINESS\nA.\nBối cảnh thị trường\nThị trường GPU dành cho trí tuệ nhân tạo (AI GPU) đang ghi nhận tốc độ tăng\ntrưởng vượt bậc, do nhu cầu triển khai khối lượng công việc AI tại các trung tâm\ndữ liệu ngày càng gia tăng. Theo dự báo của Gartner, doanh thu từ GPU AI toàn\ncầu sẽ tăng từ 13,1 tỷ USD năm 2023 lên hơn 51 tỷ USD vào năm 2028, với tốc độ\ntăng trưởng kép hàng năm (CAGR) đạt 32,9%. Động lực chính đến từ nhu cầu cao\nvề hạ tầng tính toán hiệu năng cao (HPC) để phục vụ quá trình huấn luyện và suy\nluận mô hình AI. Dự kiến đến năm 2028, hơn 25% máy chủ mới sẽ được tích hợp\nbộ gia tốc tính toán (workload accelerators). Đặc biệt, khi khối lượng công việc\nchuyển mạnh sang giai đoạn suy luận (AI inference) - ứng dụng mô hình đã huấn\nluyện để xử lý dữ liệu thực tế và đưa ra dự đoán – 80% bộ gia tốc triển khai sẽ\nđược dành cho tác vụ này, càng làm gia tăng nhu cầu sử dụng GPU trong các\ntrung tâm dữ liệu quy mô lớn. Các nhà cung cấp dịch vụ đám mây hàng đầu như\nOracle Cloud Infrastructure, Amazon Web Services và Microsoft Azure đã tích\nhợp GPU H100 của NVIDIA vào hệ sinh thái của mình nhằm đáp ứng nhu cầu thị\ntrường. Đây là dòng GPU được tối ưu cho các tác vụ phát triển, huấn luyện và\ntriển khai AI thế hệ mới (GenAI). mô hình ngôn ngữ lớn (LLM) và hệ thống gợi ý.\nVNG đã kịp thời nắm bắt xu hướng này với việc ra mắt thương hiệu GreenNode\nvào Quý 4/2023. Hợp tác cùng các đối tác toàn cầu như NVIDIA và ST Telemedia\nGlobal Data Centres, GreenNode đã khánh thành hạ tầng AI quy mô lớn tại Thái\nLan vào tháng 6/2024, được trang bị hàng nghìn chip GPU H100 SXM5 từ NVIDIA.\nMục tiêu của GreenNode là cung cấp giải pháp hạ tầng toàn diện cho doanh\nnghiệp ở mọi quy mô, hỗ trợ hiệu quả quá trình huấn luyện và triển khai mô hình\nAI, đồng thời thúc đẩy hệ sinh thái AI tại khu vực châu Á. Đây là bước tiến chiến\nlược giúp VNG khẳng định năng lực công nghệ và vai trò chủ động trong làn sóng\nchuyển đổi số toàn cầu.\nNăm 2024, các mối đe dọa an ninh mạng tiếp tục gia tăng và biến đổi phức tạp,\nảnh hưởng đến mọi ngành nghề và lĩnh vực. Các rủi ro đáng chú ý bao gồm tấn\ncông vào ứng dụng web, lạm dụng quyền truy cập nội bộ, và kỹ thuật lừa đảo xã\nhội (social engineering) – với thiệt hại tài chính cho mỗi sự cố có thể lên tới hàng\ntriệu USD.",
+      "clip_rect": [
+        960.0,
+        0.0,
+        1920.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-45-l-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 45,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "VNG - BÁO CÁO THƯỜNG NIÊN 2024\nVNG: Hành Trình Kiến Tạo Tương Lai Số Hóa Bền Vững Ch\nTầm nhìn và sứ mệnh             Trong suốt 20 năm hình thành và phát triển, VNG không ngừng đổi mới vì một\ntương lai số của Việt Nam. Từ một công ty game trực tuyến khởi nghiệp năm\n2004, VNG đã phát triển thành doanh nghiệp công nghệ hàng đầu, tiên phong\ntrong nhiều lĩnh vực then chốt như trò chơi trực tuyến, nền tảng kết nối, điện toán\nđám mây, và gần đây nhất là AI cùng tài chính số.\nSứ mệnh của chúng tôi vượt khỏi việc phát triển sản phẩm công nghệ đơn thuần.\nTại VNG, chúng tôi tin rằng công nghệ chính là chìa khóa để mở ra một tương lai\nbền vững, tươi sáng cho Việt Nam. VNG cam kết đi đầu trong công cuộc chuyển\nđổi số quốc gia, kiến tạo nên những giải pháp, nền tảng số tiên tiến, mang lại giá\ntrị thiết thực cho người dân, doanh nghiệp và Chính phủ. Chúng tôi cũng cam kết\nkhông ngừng đổi mới, sáng tạo, hợp tác để xây dựng một Việt Nam số phát triển,\nhội nhập sâu rộng vào nền kinh tế toàn cầu.\nBối Cảnh Chuyển Đổi Số Tại      Việt Nam đang bước vào giai đoạn then chốt trong quá trình chuyển đổi số quốc\nViệt Nam                               gia, với những thành tựu đáng ghi nhận như hệ thống VNeID và VietQR. Theo số\nliệu từ Bộ Thông tin và Truyền thông, chỉ số phát triển chính phủ điện tử (EGDI)\ncủa Việt Nam đã tăng 15 bậc trong giai đoạn 2022-2024, minh chứng cho cam\nkết và tiến triển mạnh mẽ trong công cuộc số hóa quốc gia.\nTổng bí thư Tô Lâm đã khẳng định phát triển KH-CN, đổi mới sáng tạo và chuyển\nđổi số là lựa chọn bắt buộc, con đường duy nhất đưa Việt Nam phát triển. Chính\nphủ sẽ phân bổ tối thiểu 3% ngân sách cho phát triển KH-CN và tiếp tục nâng tỷ\nlệ này lên 5% trong 5 năm tiếp theo. Tuy nhiên, vẫn còn nhiều thách thức đặt ra,\nđòi hỏi sự chung tay của cả khu vực công và tư để đẩy nhanh tiến trình này.",
+      "clip_rect": [
+        0.0,
+        0.0,
+        960.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-45-r-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 45,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "45\nho Việt Nam\nChủ trương và chính sách lớn   Nhận thức được tầm quan trọng của chuyển đổi số, Chính phủ Việt Nam đã ban\ncủa Việt Nam đối với chuyển    hành nhiều chính sách và chương trình nhằm thúc đẩy quá trình này:\nđổi số quốc gia                                                                 • Chương trình Chuyển đổi số quốc gia đến năm 2025, định hướng đến năm\n2030: Được phê duyệt theo Quyết định số 749/QĐ-TTg ngày 3/6/2020, chương\ntrình này đặt mục tiêu phát triển chính phủ số, kinh tế số và xã hội số, hướng tới\nviệc đưa Việt Nam vào nhóm 50 nước dẫn đầu về Chính phủ điện tử và đổi mới\nsáng tạo.\n• Nghị quyết số 57-NQ/TW ngày 22/12/2024 của Bộ Chính trị: Nghị quyết này\nnhấn mạnh việc phát triển khoa học, công nghệ, đổi mới sáng tạo và chuyển đổi\nsố quốc gia là đột phá quan trọng hàng đầu, là động lực chính để phát triển kinh\ntế - xã hội, ngăn chặn nguy cơ tụt hậu và đưa đất nước phát triển bứt phá trong\nkỷ nguyên mới.\nTrong bối cảnh đó, VNG tự hào được đóng góp và đồng hành cùng Chính phủ\ntrong hành trình chuyển đổi số. Với 20 năm kinh nghiệm tiên phong về phát triển\ncông nghệ và Go Global, VNG đã và đang đóng góp tích cực vào việc xây dựng\nhạ tầng số, kiến tạo các giải pháp công nghệ tiên tiến và nâng cao năng lực số\ncho người dân, doanh nghiệp cũng như các cơ quan, Bộ ngành tại Việt Nam.\nTheo We Are Social, tính đến đầu năm 2024, Việt Nam có 78,8% dân số sử dụng\nInternet, cao hơn mức trung bình của khu vực Đông Nam Á. 75,2% dân số Việt\nNam sử dụng mạng xã hội, cho thấy sự phổ biến của các nền tảng số trong đời\nsống hàng ngày. Theo số liệu từ Ngân hàng Nhà nước, giao dịch thanh toán QR\n6 tháng đầu năm 2024 1.062,01% về giá trị so với cùng kỳ 2023. Chính phủ Việt\nNam đặt mục tiêu kinh tế số chiếm 30% GDP vào năm 2030. Những con số này\ncho thấy tiềm năng to lớn của thị trường số Việt Nam, và VNG tự hào là một trong\nnhững doanh nghiệp đang dẫn đầu làn sóng này.",
+      "clip_rect": [
+        960.0,
+        0.0,
+        1920.0,
+        1080.0
+      ]
+    },
+    {
+      "id": "vng-ar-2024-pdf-page-50-r-vi",
+      "document_id": "VNG-AR-2024",
+      "company": "VNG Corporation",
+      "file": "data/raw/vietnam_enterprises/vng/vng-ar-2024-vi.pdf",
+      "source_pdf_sha256": "6d2bd9447ddbcbec7cfb00745101cc06ad11f7e1bb5c59c5427ce227d78168db",
+      "source_url": "https://corp.vcdn.vn/products/upload/vng/source/Legal/AnnualReportVIEFinal.pdf",
+      "page": 50,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "50\nZalo & AI\nChúng tôi tạo ra doanh thu chủ yếu từ hoạt động quảng cáo trên Zalo, cũng như các nền tảng truyền thông, phát nhạc\ntrực tuyến và tổng hợp tin tức. Zalo Ads vận hành theo mô hình đấu giá, trong đó không gian quảng cáo được phân bổ cho\nngười trả giá cao nhất, và doanh thu được tính dựa trên lượt nhấp (click). hiển thị (impression). hoặc lượt xem (view). Quảng\ncáo theo hiệu suất tạo doanh thu khi đạt được các chỉ số cụ thể.\nĐối với Adtima, doanh thu đến từ việc hỗ trợ nhà quảng cáo trong việc thiết kế chiến dịch và triển khai quảng cáo theo hiệu\nsuất. Bên cạnh quảng cáo, nền tảng Zalo còn tạo doanh thu từ dịch vụ dành cho doanh nghiệp thông qua Zalo Notification\nServices (ZNS). cho phép các tài khoản Official Account (OA) gửi nhiều loại tin nhắn đến người dùng. ZNS vận hành theo mô\nhình tính phí theo tin nhắn, trong đó doanh nghiệp chịu chi phí dựa trên số lượng tin nhắn được gửi thành công.\nChúng tôi cũng phát triển nguồn doanh thu mới từ các dịch vụ giá trị gia tăng, được thương mại hóa dưới tên gọi “zBox”.\nĐây là một bộ dịch vụ được thiết kế nhằm nâng cao trải nghiệm người dùng Zalo, bao gồm phát nhạc, lưu trữ đám mây, cá\nnhân hóa và hồ sơ doanh nghiệp. zBox áp dụng mô hình thu phí theo gói đăng ký, trong đó người dùng trả phí định kỳ để\nsử dụng các tính năng cao cấp. Thông qua các dịch vụ giá trị gia tăng này, zBox góp phần củng cố hệ sinh thái tổng thể\ncủa Zalo, tăng cường mức độ gắn kết và giữ chân người dùng. Cơ sở người dùng đông đảo của Zalo là lợi thế cạnh tranh\nthen chốt, thúc đẩy doanh thu trong mảng Zalo và AI. Doanh thu quảng cáo phụ thuộc vào tốc độ tăng trưởng người dùng,\nmức độ tương tác và số lượng vị trí quảng cáo khả dụng trên nền tảng. Mức độ hoạt động cao của người dùng giúp tăng\nmức độ hiển thị quảng cáo, qua đó nâng cao giá trị và đơn giá quảng cáo.\nSố lượng nhà quảng cáo tham gia Zalo Ads và Adtima cùng với quy mô ngân sách quảng cáo cũng ảnh hưởng đến tổng\ndoanh thu. Doanh thu từ ZNS sẽ tăng trưởng khi chúng tôi thu hút được nhiều doanh nghiệp hơn tham gia vào mạng lưới,\nđồng thời các doanh nghiệp ngày càng tìm kiếm những phương thức hiệu quả hơn để tiếp cận khách hàng.\nĐối với các dịch vụ giá trị gia tăng, việc mở rộng danh mục tính năng tùy chỉnh trong zBox và giới thiệu thêm các tiện ích\nmới sẽ góp phần thúc đẩy số lượng đăng ký và khả năng tạo doanh thu.",
+      "clip_rect": [
+        960.0,
+        0.0,
+        1920.0,
+        1080.0
+      ]
+    }
+  ]
+}

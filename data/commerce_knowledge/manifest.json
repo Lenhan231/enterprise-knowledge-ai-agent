@@ -765,6 +765,6 @@
     "status": "created_isolated_fixture",
     "document_id": "commerce_synthetic_policy_scan_demo",
     "path": "data/evaluation/ocr/commerce_synthetic_policy_scan_demo.pdf",
-    "note": "Two-page image-only synthetic fixture with visible warnings; use only in OCR Lab, never index as company policy or decision evidence."
+    "note": "Two-page image-only synthetic fixture with visible warnings; use only in Upload Test, never index as company policy or decision evidence."
   }
 }

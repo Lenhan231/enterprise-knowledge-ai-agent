@@ -1,0 +1,229 @@
+{
+  "dataset_id": "sj1-ar-2024-prose-columns-10-v1",
+  "dataset_title": "Hung Hau Agriculture Annual Report 2024 selected Vietnamese prose columns",
+  "purpose": "Exploratory Vietnamese OCR CER/WER screen on prose crops from a Vietnamese seafood and agriculture enterprise annual report.",
+  "reference_method": "Native PDF text layer clipped to visually reviewed prose regions.",
+  "reference_quality": "Pages and crop regions visually inspected; text references come from the PDF text layer and are not proofread word by word.",
+  "primary_metric_selection_eligible": false,
+  "render_dpi": 180,
+  "limitations": [
+    "Ten crop regions from one annual report and one company; not representative enough for model selection.",
+    "References are unproofread native PDF text; glyph mapping, line breaks, and reading order can affect CER/WER.",
+    "The source uses editorial pages and landscape spreads; crops isolate selected text columns and do not represent full-page layout.",
+    "CER/WER measure text recognition only, not layout detection or table extraction."
+  ],
+  "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+  "source_download_url": "https://files.vcbs.com.vn/algonews/hnx/2024/12/26/NTQwOTQ1_000000014338650_VI_BaoCaoThuongNien_2024.pdf",
+  "pages": [
+    {
+      "id": "sj1-ar-2024-page-17-development-strategy-vi",
+      "document_id": "SJ1-AR-2024",
+      "company": "SJ1",
+      "file": "data/raw/vietnam_enterprises/sj1/sj1-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+      "source_url": "https://files.vcbs.com.vn/algonews/hnx/2024/12/26/NTQwOTQ1_000000014338650_VI_BaoCaoThuongNien_2024.pdf",
+      "page": 17,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "Củng cố và duy trì vị thế của Công ty trên thị trường sản xuất - chế biến sản phẩm\ngiá trị gia tăng từ nông nghiệp và thuỷ hải sản nói chung và thị trường tiêu thụ\nnói riêng thông qua các mặt hàng chất lượng và đặc trưng.\n\nXây dựng mạng lưới liên kết chặt chẽ với các khu vực nuôi trồng công nghiệp có\nứng dụng công nghệ cao nhằm đảm bảo chất lượng và sự ổn định của các nguồn\nnguyên liệu đầu vào.\n\nGiữ vững tinh thần học hỏi, đổi mới và sáng tạo, tập trung phát triển đa dạng các\ndòng sản phẩm, bắt kịp xu hướng tiêu dùng của thị trường.\n\nNâng cao chất lượng sản phẩm và giá trị dịch vụ mà Công ty cung cấp.\n\nDuy trì và mở rộng kênh phân phối, đặc biệt là đối với các hệ thống nhà hàng và\nkhách sạn thuộc phân khúc cao.\n\nTăng sản lượng xuất khẩu thông qua việc tăng cường hợp tác đối với các tổ chức,\ndoanh nghiệp đủ năng lực và giàu kinh nghiệm trong việc quảng bá thương hiệu\nvà mở rộng thị trường.\n\nXây dựng môi trường làm việc chuyên nghiệp, công bằng và đề sao sức sáng tạo,\ntạo điều kiện thuận lợi cho sự phát triển của người lao động.\n\nTối đa hóa lợi ích cho các bên liên quan, đồng thời duy trì cam kết đối với trách\nnhiệm xã hội và môi trường.",
+      "clip_rect": [
+        81,
+        180,
+        444,
+        489
+      ]
+    },
+    {
+      "id": "sj1-ar-2024-page-18-sustainability-prose-a-vi",
+      "document_id": "SJ1-AR-2024",
+      "company": "SJ1",
+      "file": "data/raw/vietnam_enterprises/sj1/sj1-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+      "source_url": "https://files.vcbs.com.vn/algonews/hnx/2024/12/26/NTQwOTQ1_000000014338650_VI_BaoCaoThuongNien_2024.pdf",
+      "page": 18,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "Hoạt động Nghiên cứu và Phát triển (R&D) không chỉ là xu hướng hiện tại mà còn là nhu\ncầu tất yếu đối với các doanh nghiệp sản xuất ở mọi ngành nghề và mọi nơi trên thế giới.\nNhằm đảm bảo khả năng cạnh tranh dài hạn, Công ty Cổ phần Nông nghiệp Hùng Hậu\nđã chú trọng đầu tư vào R&D nhằm cải tiến các dòng sản phẩm chủ lực và tạo ra các sản\nphẩm mới đạt chất lượng cao, có khả năng truy xuất nguồn gốc và an toàn cho sức khỏe.\nBên cạnh đó, với mục tiêu phát triển bền vững, Công ty đã thiết lập các mục tiêu cụ thể\nvề kinh tế, tăng trưởng gắn liền với những mục tiêu môi trường và xã hội trong ngắn hạn\nlẫn dài hạn. Đây được xem là những nhiệm vụ không thể tách rời, đóng vai trò quan trọng\ntrong việc khẳng định vị thế, tăng cường uy tín, gia tăng ảnh hưởng và đóng góp vào việc\nnâng tầm ngành thuỷ sản, nông sản tại Việt Nam.",
+      "clip_rect": [
+        86,
+        557,
+        467,
+        704
+      ]
+    },
+    {
+      "id": "sj1-ar-2024-page-18-sustainability-prose-b-vi",
+      "document_id": "SJ1-AR-2024",
+      "company": "SJ1",
+      "file": "data/raw/vietnam_enterprises/sj1/sj1-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+      "source_url": "https://files.vcbs.com.vn/algonews/hnx/2024/12/26/NTQwOTQ1_000000014338650_VI_BaoCaoThuongNien_2024.pdf",
+      "page": 18,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "Cụ thể, Công ty tập trung củng cố và phát triển toàn diện chuỗi giá trị sản phẩm từ nguồn\ngiống, nuôi trồng, bảo quản, chế biến và phân phối sản phẩm giá trị gia tăng thuỷ hải sản, đặc\nbiệt là hợp tác với các đối tác chiến lược nhằm nâng cao hiệu quả và xây dựng mối liên kết\nchặt chẽ trong quá trình sản xuất.\nLà một doanh nghiệp hoạt động trong lĩnh vực sản xuất và chế biến thực phẩm, Công ty cũng\nchú trọng đến sự thân thiện môi trường và sự an toàn đối với sức khỏe con người. Đây là mục\ntiêu hoạt động, đồng thời là nền tảng cho sự phát triển vững chắc của Công ty trong tương lai.\nNgoài ra, một phần quan trọng khác trong chiến lược phát triển bền vững của SJ1 đó là đề\nxuất các sáng kiến mới mẻ và hợp tác triển khai các dự án môi trường, xã hội, cũng như chia\nsẻ những giá trị vật chất lẫn tinh thần với những cá nhân, đơn vị khó khăn. Nhìn chung, điều\nkiện tiên quyết được đề ra trong mọi hoạt động của SJ1 là các dự án đầu tư phục vụ cho sự phát\ntriển của Công ty đều phải được liên kết chặt chẽ với mục tiêu kinh doanh, minh bạch thông\ntin và trách nhiệm xã hội.",
+      "clip_rect": [
+        684,
+        546,
+        1083,
+        738
+      ]
+    },
+    {
+      "id": "sj1-ar-2024-page-53-environment-prose-vi",
+      "document_id": "SJ1-AR-2024",
+      "company": "SJ1",
+      "file": "data/raw/vietnam_enterprises/sj1/sj1-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+      "source_url": "https://files.vcbs.com.vn/algonews/hnx/2024/12/26/NTQwOTQ1_000000014338650_VI_BaoCaoThuongNien_2024.pdf",
+      "page": 53,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "Trong suốt thời gian qua, bên cạnh việc mở rộng thị\ntrường và phát triển đa dạng các dòng sản phẩm, SJ1\ncòn nỗ lực trong việc cải tiến quy trình sản xuất, nâng\ncấp máy móc thiết bị nhằm giảm thiểu việc tiêu thụ\nnăng lượng, góp phần bảo vệ môi trường. Thực hiện\nchủ trương của Chính phủ Việt Nam và các tổ chức quốc\ntế, SJ1 đã tăng cường kiểm soát và cải thiện đối với các\nchỉ tiêu như nguồn nước, điện năng, an toàn lao động,\nan toàn thực phẩm. Đặc biệt, Công ty chú trọng đến\nviệc hoàn thiện quy trình sản xuất, vừa tiết kiệm chi phí,\nnăng lượng tiêu thụ, vừa đảm bảo sản phẩm đầu ra đạt\nđược các tiêu chuẩn chất lượng, đáp ứng yêu cầu từ các\nthị trường khó tính.",
+      "clip_rect": [
+        318,
+        246,
+        556,
+        438
+      ]
+    },
+    {
+      "id": "sj1-ar-2024-page-53-labor-prose-vi",
+      "document_id": "SJ1-AR-2024",
+      "company": "SJ1",
+      "file": "data/raw/vietnam_enterprises/sj1/sj1-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+      "source_url": "https://files.vcbs.com.vn/algonews/hnx/2024/12/26/NTQwOTQ1_000000014338650_VI_BaoCaoThuongNien_2024.pdf",
+      "page": 53,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "Đối với SJ1, tập thể người lao động đóng vai trò vô cùng\nquan trọng, mang yếu tố then chốt quyết định đến hiệu\nquả hoạt động và sự phát triển bền vững của Công ty.\nVới các chính sách đào tạo và phúc lợi mà Công ty mang\nlại, mỗi cá nhân người lao động không chỉ có cơ hội học\nhỏi, nâng cao trình độ chuyên môn, mà còn được nhận\ncác phúc lợi xứng đáng, giúp duy trì cuộc sống ổn định.\nBên cạnh đó, đối với những nhân sự tân tuyển, Công\nty luôn tổ chức những buổi đào tạo chuyên sâu, không\nnhững giúp người lao động được trang bị đầy đủ kiến\nthức liên quan đến công việc mà còn hỗ trợ họ trong\nviệc làm quen với văn hoá và môi trường mới. Công ty\nđảm bảo đầy đủ chế độ bảo hiểm, trợ cấp, thưởng và\ncác phúc lợi cạnh tranh nhằm hỗ trợ đời sống ổn định,\nđặc biệt chú trọng thu hút và giữ chân nhân sự tài năng.\nNgoài ra, SJ1 còn xây dựng môi trường làm việc thân\nthiện, tổ chức nhiều hoạt động tinh thần, góp phần tạo\nđộng lực và gắn kết tập thể nhân viên.",
+      "clip_rect": [
+        635,
+        247,
+        874,
+        514
+      ]
+    },
+    {
+      "id": "sj1-ar-2024-page-53-community-prose-vi",
+      "document_id": "SJ1-AR-2024",
+      "company": "SJ1",
+      "file": "data/raw/vietnam_enterprises/sj1/sj1-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+      "source_url": "https://files.vcbs.com.vn/algonews/hnx/2024/12/26/NTQwOTQ1_000000014338650_VI_BaoCaoThuongNien_2024.pdf",
+      "page": 53,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "Công ty luôn đặt trách nhiệm đối với cộng đồng lên\nhàng đầu, thể hiện qua việc đảm bảo chất lượng sản\nphẩm và cam kết an toàn cho sức khỏe người tiêu dùng.\nVì vậy, các sản phẩm tại SJ1 không chỉ được nghiên cứu\nkỹ càng để đáp ứng nhu cầu tiêu dùng của thị trường\nmà còn được kiểm soát chặt chẽ về chất lượng đầu ra,\nđảm bảo đạt các tiêu chuẩn quốc tế về quản lý chất\nlượng như ISO, BRC, HALAL, HACCP ASC/MSC …\nĐồng thời, SJ1 cũng đầu tư vào hoạt động nghiên cứu và\nphát triển sản phẩm, đặc biệt là đa dạng hoá mặt hàng\nvới các sản phẩm hoàn toàn từ thiên nhiên, giàu dinh\ndưỡng, an toàn cho sức khoẻ người tiêu dùng, theo tinh\nthần “Chất lượng sản phẩm là uy tín của Công ty”.\nSong song với công tác kiểm soát chất lượng, SJ1 còn\nnêu cao trách nhiệm đối với cộng đồng và xã hội. Theo\nđó, dựa trên chủ trương từ Ban Lãnh đạo, tập thể người\nlao động tại các phòng ban đã tích cực tham gia các\nhoạt động nhằm hỗ trợ an sinh xã hội cho người dân tại\ncác địa phương, thực hiện trách nhiệm của Công ty đối\nvới cộng đồng và xã hội.",
+      "clip_rect": [
+        902,
+        250,
+        1140,
+        547
+      ]
+    },
+    {
+      "id": "sj1-ar-2024-page-55-business-performance-vi",
+      "document_id": "SJ1-AR-2024",
+      "company": "SJ1",
+      "file": "data/raw/vietnam_enterprises/sj1/sj1-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+      "source_url": "https://files.vcbs.com.vn/algonews/hnx/2024/12/26/NTQwOTQ1_000000014338650_VI_BaoCaoThuongNien_2024.pdf",
+      "page": 55,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "Doanh thu thuần về bán hàng và cung cấp dịch vụ đạt 1.537.925.580.058 đồng, bằng 96,12% so với kế hoạch và\nbằng 110,11%% so với cùng kỳ năm 2023.\n\nLợi nhuận trước thuế đạt 39.669.109.007 đồng, bằng 104,05% so với kế hoạch và bằng 207,11% so với cùng kỳ\nnăm 2023.\n\nTổng tài sản tại ngày 30/09/2024 đạt 1.341.712.814.653 đồng, tăng 16,03% so với cùng thời điểm của năm 2023.\n•   Tài sản ngắn hạn tại ngày 30/09/2024 đạt 768.526.723.505 đồng, tăng 6,67% so với cùng thời điểm của năm\n    2023.\n•   Tài sản dài hạn tại ngày 30/09/2024 đạt 573.186.091.148 đồng, tăng 31,52% so với cùng thời điểm của năm\n    2023.\n\nVốn chủ sở hữu tại ngày 30/09/2024 đạt 362.580.640.257 đồng, tăng 9,84% so với cùng thời điểm của năm 2023.",
+      "clip_rect": [
+        675,
+        137,
+        1143,
+        304
+      ]
+    },
+    {
+      "id": "sj1-ar-2024-page-56-board-review-vi",
+      "document_id": "SJ1-AR-2024",
+      "company": "SJ1",
+      "file": "data/raw/vietnam_enterprises/sj1/sj1-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+      "source_url": "https://files.vcbs.com.vn/algonews/hnx/2024/12/26/NTQwOTQ1_000000014338650_VI_BaoCaoThuongNien_2024.pdf",
+      "page": 56,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "HĐQT luôn theo dõi và đánh giá cao việc Ban Tổng Giám đốc triển khai thực hiện kịp thời và hiệu quả các Nghị\nquyết của ĐHĐCĐ, các Nghị quyết của HĐQT, cũng như việc cụ thể hóa các giải pháp, kế hoạch, phương án cho\nhoạt động sản xuất, kinh doanh của Công ty.\n\nHĐQT ghi nhận sự nỗ lực và quyết tâm của Ban Tổng Giám đốc nhằm có được những thay đổi tích cực trong\nhoạt động kinh doanh.\n\nThực hiện theo đúng quy định tại Điều lệ, các Quy chế, Quy định quản trị nội bộ và pháp luật hiện hành, HĐQT\nđã có những hoạt động giám sát cụ thể như sau:\n\n  •  Thường xuyên chỉ đạo sát sao Ban Tổng Giám đốc trong hoạt động đầu tư dự án, tìm kiếm thị trường bán\n     hàng mới, giám sát thực hiện kế hoạch sản xuất kinh doanh đã đề ra.\n  •   Tổ chức chỉ đạo thực hiện nghiêm túc chế độ Báo cáo tài chính quý, Báo cáo tài chính bán niên, Báo cáo\n       tài chính năm và Báo cáo thường niên.\n  •  Giám sát, chỉ đạo việc thực hiện công bố thông tin với mục tiêu đảm bảo tính minh bạch và kịp thời theo\n     đúng quy định.\n  •   Luôn bám sát các mục tiêu Nghị quyết, điều hành hoạt động sản xuất kinh doanh kịp thời linh hoạt theo\n      tình hình biến động của thị trường.",
+      "clip_rect": [
+        91,
+        133,
+        561,
+        382
+      ]
+    },
+    {
+      "id": "sj1-ar-2024-page-56-business-solutions-a-vi",
+      "document_id": "SJ1-AR-2024",
+      "company": "SJ1",
+      "file": "data/raw/vietnam_enterprises/sj1/sj1-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+      "source_url": "https://files.vcbs.com.vn/algonews/hnx/2024/12/26/NTQwOTQ1_000000014338650_VI_BaoCaoThuongNien_2024.pdf",
+      "page": 56,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "•   Tập trung khai thác thị trường hiện có, đặc biệt tập\n    trung thị trường Hàn Quốc, Nhật Bản, Pháp, Bỉ, Hà Lan\n    đối với mặt hàng giá trị gia tăng, riêng thị trường Trung\n   Quốc tập trung mặt hàng nông sản, tôm nguyên liệu\n    và cá tra đông lạnh. Ngoài ra, đẩy mạnh phát triển thị\n    trường mới tại Anh, Đức và Mỹ.\n•   Tập trung đẩy mạnh mặt hàng chủ lực của công ty\n   nhằm đẩy mạnh sản lượng và doanh thu.\n•  Tham gia các chương trình diễn đàn, kết nối giao\n   thương B2B trong nước và quốc tế do các cơ quan xúc\n    tiến thương mại tổ chức.\n•   Đẩy mạnh công tác đưa thương hiệu HungHau ra nước\n    ngoài, thể hiện logo HungHau trên các bao bì xuất\n    khẩu; quảng bá thương hiệu HungHau thông qua các\n    khách hàng hiện hữu và thông qua các hội chợ trong\n    và ngoài nước, các mạng xã hội và kênh B2B khác.\n•  Đưa vào hoạt động Công ty TNHH HappyFood Vietnam\n   – kinh doanh tôm tại Sa Đéc, Đồng Tháp.\n•   Thực hiện rà soát, theo dõi và thực hiện các biện pháp\n     cải tiến đáp ứng mục tiêu về: sản lượng, định mức,\n    chất lượng, kỹ thuật cơ điện, đầu tư MMTB, phát triển\n    sản phẩm mới.\n•  Đầu tư MMTB giảm công lao động và tăng năng suất\n    như: Băng tải chế biến tự động, bàn băng tải trong sản\n    xuất, tự động hóa các MMTB khác.",
+      "clip_rect": [
+        631,
+        133,
+        881,
+        531
+      ]
+    },
+    {
+      "id": "sj1-ar-2024-page-56-business-solutions-b-vi",
+      "document_id": "SJ1-AR-2024",
+      "company": "SJ1",
+      "file": "data/raw/vietnam_enterprises/sj1/sj1-ar-2024-vi.pdf",
+      "source_pdf_sha256": "9a26df3ab07feeba0b188daee983d072ac40034ce74e7e3967203ec763e4c586",
+      "source_url": "https://files.vcbs.com.vn/algonews/hnx/2024/12/26/NTQwOTQ1_000000014338650_VI_BaoCaoThuongNien_2024.pdf",
+      "page": 56,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "single_column_prose_crop",
+      "reference_annotation_method": "native_pdf_text_layer_column_crop_unproofread",
+      "reference_text": "•   Thực hiện kiểm soát nguyên liệu đầu vào theo đúng\n    tiêu chuẩn nhằm đáp ứng nhu cầu thị trường khó tính\n    như: Nhật Bản, Mỹ, EU, Hàn Quốc…\n•  Duy trì thực hiện công tác đào tạo CBNV về Phòng\n    cháy chữa cháy, chất lượng ATVSTP, đào tạo kiến thức\n    về BRC, ISO, HACCP,…\n•   Theo dõi sát tình hình biến động giá nguyên liệu trên\n     thị trường để điều chỉnh việc mua hàng trong nước và\n   nhập khẩu phù hợp.\n•  Chủ động tích trữ nguyên liệu có giá tốt dựa vào nhu\n    cầu đặt hàng của khách hàng.\n•   Tiếp tục thực hiện công tác quản lý vốn chặt chẽ, lập\n    kế hoạch dòng tiền, chủ động sắp xếp các nguồn tài\n    chính đáp ứng kịp thời cho các hoạt động sản xuất\n    kinh doanh.\n•   Tuyển dụng và đào tạo phát triển thêm cán bộ nhân\n    viên, cán bộ quản lý kinh doanh.\n•   Xây dựng chính sách hỗ trợ tuyển dụng, ổn định cuộc\n    sống cho công nhân tân tuyển.\n•   Xây dựng chính sách để giữ công nhân, lao động có\n    tay nghề và người lao động lâu năm.\n•   Xây dựng mô hình bán hàng hoạt động 24/7.\n•  Hoàn thành xây dựng/cải tạo Văn phòng đạt tiêu\n   chuẩn “Văn phòng xanh”, theo mô hình Công ty đa\n   quốc gia.",
+      "clip_rect": [
+        903,
+        133,
+        1152,
+        543
+      ]
+    }
+  ]
+}

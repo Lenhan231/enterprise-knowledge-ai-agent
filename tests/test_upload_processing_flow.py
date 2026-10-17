@@ -16,9 +16,9 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from app import main as app_main  # noqa: E402
 from core.database.structured_store import StructuredDataStore  # noqa: E402
-from core.document_processing.processors.document_processor import DocumentProcessor  # noqa: E402
-from core.document_processing.processors.image.processor import ImageProcessor  # noqa: E402
+from core.document_processing.document_processor import DocumentProcessor  # noqa: E402
 from core.document_processing.processors.pdf.processor import PDFProcessor  # noqa: E402
+from core.document_processing.scanned.processor import ScannedImageProcessor  # noqa: E402
 
 
 def xlsx_with_formula() -> bytes:
@@ -187,7 +187,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch("core.database.structured_store.StructuredDataStore"),
             patch("core.database.processed_chunks_repository.ProcessedChunksRepository"),
             patch(
-                "core.document_processing.processors.document_processor.DocumentProcessor.process",
+                "core.document_processing.document_processor.DocumentProcessor.process",
                 side_effect=lambda filename, content, metadata: {
                     **parsed_document,
                     "chunks": [{"text": "Walmart supplier logistics reference", "metadata": {**metadata, "page_number": 1}}],
@@ -413,7 +413,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(app_main, "_require_same_origin"),
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
-            patch.object(ImageProcessor, "_ocr", return_value="Revenue 100 90\nCash 25 20\nAssets 500 450"),
+            patch.object(ScannedImageProcessor, "_ocr", return_value="Revenue 100 90\nCash 25 20\nAssets 500 450"),
             patch.object(PDFProcessor, "_ocr_page_words", return_value=words),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
             patch("core.tokenization.token_counter.TokenCounter") as counter_cls,

@@ -147,7 +147,7 @@ class CommerceKnowledgeManifestTest(unittest.TestCase):
 
         self.assertNotIn("commerce_synthetic_policy_scan_demo", sources)
         self.assertEqual(manifest["ocr_demo"]["status"], "created_isolated_fixture")
-        self.assertIn("OCR Lab", manifest["ocr_demo"]["note"])
+        self.assertIn("Upload Test", manifest["ocr_demo"]["note"])
 
     def test_current_policy_ocr_references_match_active_pdf_checksums_without_css(self):
         manifest = json.loads((ROOT / "data/commerce_knowledge/manifest.json").read_text())

@@ -1,0 +1,33 @@
+{
+  "dataset_id": "longhau-2008-audited-financial-statement-page6-v1",
+  "purpose": "Focused OCR table-anchor check on one visually reviewed image-only Vietnamese financial statement page.",
+  "reference_method": "manual visual transcription of selected numeric rows",
+  "reference_quality": "single-reviewer visual anchor transcription",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "This is one selected page from a 22-page PDF, not a representative full-document benchmark.",
+    "Only four numeric row anchors are labeled; full-page CER/WER is unavailable.",
+    "The duplicate HPT filename has the same SHA-256 and is not a separate source sample."
+  ],
+  "pages": [
+    {
+      "id": "longhau-balance-sheet-assets-vi",
+      "document_id": "LONGHAU-AUDITED-FS-2008",
+      "file": "data/raw/benchmark_data/2.BCTC da kiem toan 2008 (V).pdf",
+      "page": 6,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": true,
+      "layout_type": "table",
+      "clip_rect": [0, 0, 595, 842],
+      "reference_text": "",
+      "table_columns": ["Mã số", "Số cuối năm", "Số đầu năm"],
+      "table_rows": [
+        {"label": "100", "values": ["377.399.288", "427.575.630"]},
+        {"label": "110", "values": ["69.205.529", "139.116.313"]},
+        {"label": "140", "values": ["165.130.646", "160.975.490"]},
+        {"label": "270", "values": ["577.753.465", "435.405.071"]}
+      ]
+    }
+  ]
+}

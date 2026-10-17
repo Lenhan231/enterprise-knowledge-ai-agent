@@ -10,8 +10,8 @@ run the app as described in the root README. The sidebar is role-aware:
 | Viewer (`employee`) | Knowledge Q&A |
 | Analyst (`finance_analyst`) and Sustainability Analyst | Knowledge Q&A and Commerce Dashboard |
 | Document Uploader | Upload Documents only; this role cannot ask document questions or open analytics |
-| Tester | Isolated OCR Lab only |
-| Admin | All workspace tabs, including upload, processing, OCR Lab, knowledge-file management, access matrix, and agent monitoring |
+| Tester | Isolated Upload Test only |
+| Admin | All workspace tabs, including upload, processing, Upload Test, knowledge-file management, access matrix, and agent monitoring |
 
 The demo accounts are local and are not production identity management.
 Each document's allowed reader roles independently control retrieval access.
@@ -85,12 +85,13 @@ To inspect the full Admin upload path, upload
 from **Upload Documents**, then open the result in **Document Processing**.
 Expect two OCR pages, three passages, and one structured table (three rows by
 four columns); the fixture is invented test data, so deactivate it in
-**Knowledge Management** after review. For an isolated parser-only run, use the
-same file in **Tester OCR Lab** instead.
+**Knowledge Management** after review. For an isolated full-pipeline run, use
+the same file in **Upload Test** instead.
 
-The **Tester OCR Lab** runs a PDF through the upload parser and stores isolated
-test previews, chunks, and tables. It does not embed the file or add it to the
-knowledge base. Admins can also use it for parser checks; production OCR output
+**Upload Test** runs a PDF through parsing, token-bounded chunking, and embedding.
+It stores page previews, parser chunks, final embedding chunks, vectors, and
+structured table rows in isolated test tables. It does not create a production
+document or retrieval entry. Admins can also use it; production upload output
 is reviewed in Document Processing.
 
 ## Troubleshooting

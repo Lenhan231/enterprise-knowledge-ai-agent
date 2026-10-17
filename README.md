@@ -31,8 +31,9 @@ examples, not policy for the synthetic business.
 Project layout
 
 - src/app: FastAPI routes and dashboard UI
-- src/core/document_processing: seed ingestion orchestration and format processors
-- src/core/chunking: shared chunk splitting and section metadata
+- src/core/document_processing: shared document format processors
+- tools/ingestion: seed ingestion orchestration and source-specific CLI workflows
+- src/core/document_processing/chunking: shared chunk splitting and section metadata
 - src/core/database: PostgreSQL repositories and table persistence
 - src/core/retrieval and src/core/rag: role-scoped hybrid search and grounded answers
 - src/core/agents: runtime router for grounded QA, analytics, hybrid reports and dashboard data
@@ -75,13 +76,25 @@ browser. The demo has no user-registration or password-reset flow.
 - Viewer: corpus overview and document questions.
 - Analyst and Sustainability Analyst: viewer access plus the source-backed analytics dashboard.
 - Document Uploader: upload and classify documents; no document Q&A or analytics access.
-- Tester: isolated OCR Lab only; test PDFs and parser output are not added to the corpus.
+- Tester: isolated Upload Test only; test PDFs, shared chunks, and token-bounded chunks stay outside the corpus.
 - Admin: analyst access plus upload, source review, access control, and knowledge-file management.
 
 Configure `DEMO_TESTER_USERNAME` / `DEMO_TESTER_PASSWORD` to enable the Tester
-login. Tester can run OCR tests and inspect saved test runs, but cannot browse
-documents or use production upload. The OCR Lab tab compares rendered source
-pages with parser chunks and extracted tables.
+login. Tester can run Upload Tests and inspect saved runs, but cannot browse
+documents or use production upload. Upload Test compares rendered pages and
+tables across production PyMuPDF/Tesseract, PP-StructureV3, and MinerU. Each
+parser has separate settings; cleanup, metadata normalization, chunking, and
+local token-limit checks are shared. It stops before embedding and creates no
+vectors. Tesseract settings appear only for the production parser; Paddle and
+MinerU expose their own settings. The optional DocLayout-YOLO overlay is
+diagnostic only; install it with `uv sync --extra layout-yolo`.
+MinerU Upload Test runs the local Basic tier through `mineru-kit`. Install MinerU
+in an isolated environment, then set `MINERU_LOCAL_CLI` to that environment's
+`mineru-kit` executable and `MINERU_LOCAL_HOME` to its model-cache home in `.env`.
+Download the Basic ONNX models into that home before running Upload Test. MinerU
+models are independent of the application's Python environment; see the
+[MinerU local setup guide](https://opendatalab.github.io/MinerU/quick_start/).
+MinerU test runs stay isolated from production ingestion.
 
 Corpus coverage and passage quality are computed from the indexed Supabase
 data. Do not treat the demo credentials as a production identity-management
@@ -130,7 +143,7 @@ The upload route requires `SUPABASE_SECRET_KEY` on the server (legacy
 `DEMO_UPLOADER_USERNAME` / `DEMO_UPLOADER_PASSWORD` (or an admin login). Never
 expose the secret key to frontend code. Text-based PDFs are extracted page by
 page, embedded and saved to `document_chunks` with their selected roles before
-the upload completes. PDF/DOCX/PPTX/XLSX/TXT/Markdown/PNG/JPEG/TIFF are
+the upload completes. PDF/DOCX/PPTX/XLSX/CSV/TXT/Markdown/PNG/JPEG/TIFF are
 supported. Tesseract handles scanned-page and image text OCR; extracted PDF and
 Office tables are stored separately. Table OCR uses PSM 3 for PDFs and PSM 6
 for direct image uploads based on a small labeled pilot; OCR-derived table
@@ -140,8 +153,8 @@ for the evaluation and limitations. Upload processing indexes source content;
 it does not extract or publish dashboard KPIs. Successful uploads report page,
 parser-passage, indexed-passage, OCR-passage and structured-table counts. Admins are taken to
 the saved parser output for that document; each passage and table links to its
-original PDF page for review. The isolated OCR Lab additionally compares page
-previews with extracted text and tables without adding test files to the corpus.
+original PDF page for review. The isolated Upload Test additionally compares page
+previews with shared chunks, token-bounded chunks, and tables without adding test files to the corpus.
 See [`docs/README.md`](docs/README.md) for
 current Commerce scope, verification status, limitations and the technical guide
 to processing, chunking, embeddings, retrieval, agents and evaluation.

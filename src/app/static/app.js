@@ -288,24 +288,60 @@ function renderExtractedTables(tables, documentId) {
 }
 
 async function loadOcrTestRuns() {
-  const result = await api("/api/ocr-tests");
+  const result = await api("/api/upload-tests");
   $("#ocr-test-runs").innerHTML = result.runs.map((run) => {
     const config = run.processor_config || {};
-    const settings = config.tesseract_psm
-      ? `PSM ${config.tesseract_psm} · page ${config.ocr_render_scale || "?"}×`
-      : "OCR settings unavailable";
-    return `<button type="button" class="ocr-run-button" data-ocr-run-id="${escapeHtml(run.run_id)}"><strong>${escapeHtml(run.source_filename)}</strong><span>${escapeHtml(new Date(run.created_at).toLocaleString())} · ${formatNumber(run.page_count)} pages · ${formatNumber(run.chunk_count)} chunks · ${formatNumber(run.table_count)} tables · ${escapeHtml(settings)}</span></button>`;
-  }).join("") || '<p class="loading-card">No OCR tests yet. Upload a PDF above to create one.</p>';
+    const engine = config.parser_engine;
+    const selected = config.parser_settings?.[engine] || config;
+    const tesseractConfig = selected.tesseract_config || {};
+    const parserSettings = engine === "mineru"
+      ? `MinerU Basic · force OCR ${selected.mineru_force_ocr ? "on" : "off"} · pages ${selected.mineru_page_range || "all"}`
+      : engine === "docling"
+      ? `Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`
+      : engine === "pp-structurev3"
+      ? `PP-StructureV3 · ${selected.paddle_device || "cpu"} · ${Math.round((selected.paddle_render_scale ?? 1.5) * 72)} DPI · formulas ${selected.paddle_formula_recognition ? "on" : "off"} · charts ${selected.paddle_chart_recognition ? "on" : "off"}`
+      : engine === "pymupdf_tesseract"
+        ? `Production PyMuPDF/Tesseract · PSM ${selected.tesseract_psm} · ${Math.round((selected.ocr_render_scale ?? 1.5) * 72)} DPI · threshold ${tesseractConfig.thresholding_method ?? 0} · table recognition ${tesseractConfig.textord_tablefind_recognize_tables ? "on" : "off"} · ${selected.tessdata_variant || "system"} data`
+        : "Parser settings unavailable";
+    const settings = config.layout_detector === "doclayout-yolo"
+      ? `${parserSettings} · YOLO overlay ${config.layout_image_size}px · confidence ${config.layout_confidence_threshold}`
+      : parserSettings;
+    const embeddingSummary = run.embedding_status === "not_run"
+      ? "embedding skipped"
+      : `historical embedding ${run.embedding_status}`;
+    return `<button type="button" class="ocr-run-button" data-ocr-run-id="${escapeHtml(run.run_id)}"><strong>${escapeHtml(run.source_filename)}</strong><span>${escapeHtml(new Date(run.created_at).toLocaleString())} · ${formatNumber(run.page_count)} pages · ${formatNumber(run.chunk_count)} shared chunks · ${formatNumber(run.token_bounded_chunk_count || 0)} token-bounded chunks · ${embeddingSummary} · ${formatNumber(run.table_count)} tables · ${escapeHtml(settings)}</span></button>`;
+  }).join("") || '<p class="loading-card">No upload tests yet. Upload a PDF above to create one.</p>';
 }
 
 function renderOcrTestDetails(run) {
+  const layoutPages = run.runtime_info?.layout_detections || [];
+  const tokenStageSummary = run.embedding_status === "not_run"
+    ? "Token-bounded input · embedding not run"
+    : `Historical embedding input · status ${run.embedding_status}`;
   const allPages = [...new Set([
     ...run.pages,
+    ...run.token_bounded_chunks.map((chunk) => Number(chunk.metadata?.page_number)).filter(Number.isFinite),
+    ...layoutPages.map((page) => Number(page.page_number)).filter(Number.isFinite),
     ...run.chunks.map((chunk) => Number(chunk.metadata?.page_number)).filter(Number.isFinite),
     ...run.tables.map((table) => Number(table.page_number)).filter(Number.isFinite),
   ])].sort((a, b) => a - b);
   const pageContent = allPages.map((pageNumber, pageIndex) => {
+    const layoutPage = layoutPages.find((page) => Number(page.page_number) === pageNumber);
+    const layoutRegions = layoutPage?.regions || [];
+    const layoutOverlay = layoutPage ? `<div class="ocr-layout-preview">
+      <img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">
+      <svg viewBox="0 0 ${Number(layoutPage.width)} ${Number(layoutPage.height)}" role="img" aria-label="${formatNumber(layoutRegions.length)} DocLayout-YOLO regions detected">
+        ${layoutRegions.map((region) => {
+          const [x1, y1, x2, y2] = region.bbox.map(Number);
+          const x = x1 * Number(layoutPage.width), y = y1 * Number(layoutPage.height);
+          const width = Math.max(0, (x2 - x1) * Number(layoutPage.width));
+          const height = Math.max(0, (y2 - y1) * Number(layoutPage.height));
+          const label = `${region.class} ${Number(region.score).toFixed(2)}`;
+          return `<g class="layout-region layout-region-${escapeHtml(region.class)}"><rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${width.toFixed(1)}" height="${height.toFixed(1)}"></rect><text x="${x.toFixed(1)}" y="${Math.max(12, y - 3).toFixed(1)}">${escapeHtml(label)}</text></g>`;
+        }).join("")}
+      </svg></div>` : `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
     const chunks = run.chunks.filter((chunk) => Number(chunk.metadata?.page_number) === pageNumber);
+    const tokenChunks = run.token_bounded_chunks.filter((chunk) => Number(chunk.metadata?.page_number) === pageNumber);
     const tables = run.tables.filter((table) => Number(table.page_number) === pageNumber);
     const ocrDiagnostics = chunks.flatMap((chunk) => chunk.metadata?.ocr_diagnostics || []);
     const tablesHtml = tables.map((table) => {
@@ -315,7 +351,12 @@ function renderOcrTestDetails(run) {
       const rows = Array.isArray(data.rows) ? data.rows : [];
       const headers = columns.length ? columns : [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
       const metadata = table.metadata || {};
-      const ocr = metadata.ocr || {};
+      const parserMetadata = metadata.parser_details || {};
+      const ocr = { ...(metadata.ocr || parserMetadata.ocr || {}) };
+      if (!ocr.engine && parserMetadata.parser === "paddleocr.PP-StructureV3") {
+        ocr.engine = parserMetadata.parser;
+        ocr.render_scale = parserMetadata.render_scale;
+      }
       const bbox = Array.isArray(metadata.bbox)
         ? metadata.bbox.map((value) => Number(value).toFixed(1)).join(" · ")
         : "Not available";
@@ -325,8 +366,8 @@ function renderOcrTestDetails(run) {
       ].filter(Boolean).join(" · ");
       const parserDetails = [
         ["OCR", [ocr.engine, ocr.language && `language ${ocr.language}`, ocr.table_psm && `PSM ${ocr.table_psm}`, ocr.render_scale && `scale ${ocr.render_scale}×`, ocr.mean_word_confidence != null && `mean word confidence ${ocr.mean_word_confidence}/100`, ocr.orientation_correction_degrees && `rotation corrected ${ocr.orientation_correction_degrees}°`, ocr.deskew_correction_degrees && `deskew corrected ${ocr.deskew_correction_degrees}°`].filter(Boolean).join(" · ") || "Not available"],
-        ["Extraction", metadata.table_extraction_method || "Not available"],
-        ["Detection", metadata.table_detection_strategy || "Not available"],
+        ["Extraction", metadata.table_extraction_method || parserMetadata.table_extraction_method || parserMetadata.table_model || "Not available"],
+        ["Detection", metadata.table_detection_strategy || parserMetadata.table_detection_strategy || parserMetadata.layout_model || "Not available"],
         ["Table region", `${bbox}${metadata.bbox_coordinate_system ? ` (${metadata.bbox_coordinate_system})` : ""}`],
         ["Structure", `${formatNumber(rows.length)} rows · ${formatNumber(headers.length)} columns`],
         ...(continuation ? [["Continuation", continuation]] : []),
@@ -344,22 +385,27 @@ function renderOcrTestDetails(run) {
         <details class="candidate-source"><summary>Detailed parser metadata</summary><pre>${escapeHtml(JSON.stringify(metadata, null, 2))}</pre></details></article>`;
     }).join("");
     return `<details class="ocr-test-page" ${pageIndex === 0 ? "open" : ""}>
-      <summary>Page ${formatNumber(pageNumber)} · ${formatNumber(chunks.length)} chunks · ${formatNumber(tables.length)} tables</summary>
+      <summary>Page ${formatNumber(pageNumber)} · ${formatNumber(chunks.length)} shared chunks · ${formatNumber(tokenChunks.length)} token-bounded chunks · ${formatNumber(tables.length)} tables</summary>
       <div class="ocr-test-page-content">
-      <section class="ocr-test-raw"><h4>Raw page</h4><img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/ocr-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview"></section>
+      <section class="ocr-test-raw"><h4>Raw page</h4>${layoutOverlay}${layoutPage ? `<p class="corpus-note">DocLayout-YOLO · ${formatNumber(layoutRegions.length)} regions at ${formatNumber(run.processor_config?.layout_image_size)}px, threshold ${escapeHtml(run.processor_config?.layout_confidence_threshold)}</p>` : ""}</section>
       <section class="ocr-test-extracted"><h4>Extracted output</h4>
         ${renderOcrDiagnostics(ocrDiagnostics)}
-        <details class="ocr-test-chunks"><summary>View ${formatNumber(chunks.length)} text chunks for this page</summary>${chunks.map((chunk) => `<article class="ocr-test-chunk"><div class="candidate-heading"><strong>Chunk ${formatNumber(chunk.chunk_index + 1)}</strong><span>${formatNumber(chunk.metadata?.actual_char_count ?? chunk.content.length)} chars actual · ${formatNumber(chunk.metadata?.chunk_size_chars ?? 0)} char limit · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")} · ${escapeHtml(chunk.metadata?.layout_type || "text")}</span></div><pre>${escapeHtml(chunk.content)}</pre><details class="candidate-source"><summary>Chunk metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No text chunks on this page.</p>'}</details>
+        <details class="ocr-test-chunks"><summary>Parser output · ${formatNumber(chunks.length)} chunks</summary>${chunks.map((chunk) => `<article class="ocr-test-chunk"><div class="candidate-heading"><strong>Chunk ${formatNumber(chunk.chunk_index + 1)}</strong><span>${formatNumber(chunk.metadata?.actual_char_count ?? chunk.content.length)} chars actual · ${formatNumber(chunk.metadata?.chunk_size_chars ?? 0)} char limit · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")} · ${escapeHtml(chunk.metadata?.layout_type || "text")}</span></div><pre>${escapeHtml(chunk.content)}</pre><details class="candidate-source"><summary>Chunk metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser chunks on this page.</p>'}</details>
+        <details class="ocr-test-chunks"><summary>${tokenStageSummary} · ${formatNumber(tokenChunks.length)} chunks</summary>${tokenChunks.map((chunk) => `<article class="ocr-test-chunk"><div class="candidate-heading"><strong>Chunk ${formatNumber(chunk.chunk_index + 1)}</strong><span>${formatNumber(chunk.metadata?.token_count ?? 0)} tokens · ${formatNumber(chunk.metadata?.actual_char_count ?? chunk.content.length)} chars · limit ${formatNumber(chunk.metadata?.embedding_max_sequence_length ?? run.embedding_max_sequence_length ?? 0)} tokens</span></div><pre>${escapeHtml(chunk.content)}</pre><details class="candidate-source"><summary>Chunk metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details></article>`).join("") || `<p class="ocr-test-empty">${run.runtime_info?.tokenization_error ? `Token counting failed: ${escapeHtml(run.runtime_info.tokenization_error)}` : "No token-bounded chunks."}</p>`}</details>
         <h4 class="ocr-test-table-heading">Extracted tables</h4>
         ${tablesHtml || '<p class="ocr-test-empty">No structured table detected on this page.</p>'}
       </section>
       </div>
     </details>`;
   }).join("");
+  const embeddingSummary = run.embedding_status === "not_run"
+    ? "Embedding skipped by design"
+    : `Historical embedding status: ${run.embedding_status}`;
   $("#ocr-test-results").innerHTML = `<article class="ocr-test-run">
-    <div class="candidate-heading"><strong>${escapeHtml(run.source_filename)}</strong><span>${formatNumber(run.page_count)} pages · ${formatNumber(run.chunks.length)} chunks · ${formatNumber(run.tables.length)} tables</span></div>
+    <div class="candidate-heading"><strong>${escapeHtml(run.source_filename)}</strong><span>${formatNumber(run.page_count)} pages · ${formatNumber(run.chunks.length)} shared chunks · ${formatNumber(run.token_bounded_chunks.length)} token-bounded chunks · ${formatNumber(run.tables.length)} tables</span></div>
     <p class="corpus-note">SHA-256: <code>${escapeHtml(run.source_sha256)}</code></p>
-    <details class="candidate-source"><summary>Parser configuration and versions</summary><pre>${escapeHtml(JSON.stringify({processor_config:run.processor_config,runtime_info:run.runtime_info},null,2))}</pre></details>
+    <p class="corpus-note">${embeddingSummary} · tokenizer: ${escapeHtml(run.runtime_info?.tokenizer_model || run.embedding_model || "unavailable")} · maximum ${formatNumber(run.embedding_max_sequence_length || run.runtime_info?.embedding_max_sequence_length || 0)} tokens${run.runtime_info?.tokenization_error ? `<br>Token counting error: ${escapeHtml(run.runtime_info.tokenization_error)}` : ""}</p>
+    <details class="candidate-source"><summary>Parser configuration and versions</summary><pre>${escapeHtml(JSON.stringify({processor_config:run.processor_config,runtime_info:{...run.runtime_info,layout_detections:undefined}},null,2))}</pre></details>
     <div class="ocr-test-pages">${pageContent}</div>
   </article>`;
 }
@@ -367,11 +413,25 @@ function renderOcrTestDetails(run) {
 async function openOcrTestRun(runId) {
   $("#ocr-test-results").innerHTML = '<p class="loading-card">Loading test pages and parser output…</p>';
   try {
-    renderOcrTestDetails(await api(`/api/ocr-tests/${encodeURIComponent(runId)}`));
+    renderOcrTestDetails(await api(`/api/upload-tests/${encodeURIComponent(runId)}`));
   } catch (error) {
     $("#ocr-test-results").innerHTML = `<p class="loading-card">${escapeHtml(error.message)}</p>`;
   }
 }
+
+function updateUploadTestParserSettings() {
+  const engine = $("#ocr-test-parser").value;
+  document.querySelectorAll("#ocr-test-form [data-parser-settings]").forEach((fieldset) => {
+    const active = fieldset.dataset.parserSettings === engine;
+    fieldset.hidden = !active;
+    fieldset.querySelectorAll("input, select, textarea").forEach((control) => {
+      control.disabled = !active;
+    });
+  });
+}
+
+$("#ocr-test-parser").addEventListener("change", updateUploadTestParserSettings);
+updateUploadTestParserSettings();
 
 function formatNumber(value) {
   return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 3 }).format(value);
@@ -1328,13 +1388,22 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
   const form = event.currentTarget;
   const button = $("#ocr-test-button");
   button.disabled = true;
-  $("#ocr-test-status").textContent = "Running OCR and saving page previews, chunks, and tables…";
+  const parserEngine = form.elements.namedItem("parser_engine").value;
+  const useYoloOverlay = form.elements.namedItem("layout_detector").value === "doclayout-yolo";
+  const parserLabel = parserEngine === "pp-structurev3"
+    ? "PP-StructureV3"
+    : parserEngine === "mineru" ? "MinerU Basic (local)"
+    : parserEngine === "docling" ? "Docling" : "production PyMuPDF/Tesseract";
+  $("#ocr-test-status").textContent = parserEngine === "mineru"
+    ? `Running MinerU locally; then applying shared cleanup, chunking, and local token counting. No embedding will run${useYoloOverlay ? " (plus diagnostic YOLO overlay)" : ""}…`
+    : `Running ${parserLabel}, then shared cleanup, chunking, and local token counting. No embedding will run${useYoloOverlay ? " (plus diagnostic YOLO overlay)" : ""}…`;
   try {
-    const result = await api("/api/ocr-tests", {method:"POST", body:new FormData(event.currentTarget)});
-    $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.chunk_count} chunks, ${result.table_count} tables. No embeddings or production document were created.`;
+    const result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
+    $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.chunk_count} shared chunks, ${result.token_bounded_chunk_count} token-bounded chunks, ${result.table_count} tables. Embedding was skipped.${result.tokenization_error ? ` Token counting error: ${result.tokenization_error}` : ""} No production document was created.`;
     await loadOcrTestRuns();
     await openOcrTestRun(result.run_id);
     form.reset();
+    updateUploadTestParserSettings();
   } catch (error) {
     $("#ocr-test-status").textContent = error.message;
   } finally {
@@ -1563,12 +1632,12 @@ function updateUploadPlanSummary() {
 }
 
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
-const SUPPORTED_UPLOAD_EXTENSIONS = new Set([".pdf", ".docx", ".pptx", ".xlsx", ".txt", ".md", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
+const SUPPORTED_UPLOAD_EXTENSIONS = new Set([".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
 
 function validateUploadFile(file) {
   if (!file) return "Choose a document to upload.";
   const extension = "." + file.name.split(".").pop().toLocaleLowerCase();
-  if (!SUPPORTED_UPLOAD_EXTENSIONS.has(extension)) return "This file type is not supported. Choose PDF, DOCX, PPTX, XLSX, TXT, MD, PNG, JPG or TIF.";
+  if (!SUPPORTED_UPLOAD_EXTENSIONS.has(extension)) return "This file type is not supported. Choose PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF.";
   if (file.size > MAX_UPLOAD_BYTES) return "The file is larger than the 50 MiB upload limit.";
   return "";
 }

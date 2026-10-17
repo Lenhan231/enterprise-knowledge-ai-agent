@@ -1,0 +1,121 @@
+{
+  "dataset_id": "vingroup-ar-2024-prose-8-v1",
+  "dataset_title": "Vingroup Annual Report 2024 Vietnamese OCR 8-page screening set",
+  "purpose": "Exploratory Vietnamese OCR comparison across narrative and mixed-image pages in the official Vingroup Annual Report 2024.",
+  "reference_method": "native PDF text layer",
+  "reference_quality": "Selected pages were visually inspected for language and document content; native references were not independently proofread word by word.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "Eight pages from one born-digital report; not representative of scanned PDFs or all enterprise documents.",
+    "Several pages use multi-column or mixed image-and-text layouts; OCR reading-order differences can affect WER/CER even when words are recognized.",
+    "References come from native PDF text layers and are not independently proofread.",
+    "CER/WER measure recognized text only, not layout detection or table extraction accuracy.",
+    "Resource measures are descriptive; runtime environments and implementation settings differ."
+  ],
+  "pages": [
+    {
+      "id": "vingroup-ar-2024-page-41-vi",
+      "document_id": "VINGROUP-AR-2024",
+      "company": "Vingroup",
+      "file": "data/raw/vietnam_enterprises/vic/vic-ar-2024-vi.pdf",
+      "source_pdf_sha256": "1ac1c3bcb17f9c8ca23057e32672e28697b694822315c2b71c252b7f900bb1f6",
+      "source_url": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2024/VIE_%20Vingroup%20AR24_250418.pdf",
+      "page": 41,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "vingroup-ar-2024-page-42-vi",
+      "document_id": "VINGROUP-AR-2024",
+      "company": "Vingroup",
+      "file": "data/raw/vietnam_enterprises/vic/vic-ar-2024-vi.pdf",
+      "source_pdf_sha256": "1ac1c3bcb17f9c8ca23057e32672e28697b694822315c2b71c252b7f900bb1f6",
+      "source_url": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2024/VIE_%20Vingroup%20AR24_250418.pdf",
+      "page": 42,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "vingroup-ar-2024-page-56-vi",
+      "document_id": "VINGROUP-AR-2024",
+      "company": "Vingroup",
+      "file": "data/raw/vietnam_enterprises/vic/vic-ar-2024-vi.pdf",
+      "source_pdf_sha256": "1ac1c3bcb17f9c8ca23057e32672e28697b694822315c2b71c252b7f900bb1f6",
+      "source_url": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2024/VIE_%20Vingroup%20AR24_250418.pdf",
+      "page": 56,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "vingroup-ar-2024-page-61-vi",
+      "document_id": "VINGROUP-AR-2024",
+      "company": "Vingroup",
+      "file": "data/raw/vietnam_enterprises/vic/vic-ar-2024-vi.pdf",
+      "source_pdf_sha256": "1ac1c3bcb17f9c8ca23057e32672e28697b694822315c2b71c252b7f900bb1f6",
+      "source_url": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2024/VIE_%20Vingroup%20AR24_250418.pdf",
+      "page": 61,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "vingroup-ar-2024-page-67-vi",
+      "document_id": "VINGROUP-AR-2024",
+      "company": "Vingroup",
+      "file": "data/raw/vietnam_enterprises/vic/vic-ar-2024-vi.pdf",
+      "source_pdf_sha256": "1ac1c3bcb17f9c8ca23057e32672e28697b694822315c2b71c252b7f900bb1f6",
+      "source_url": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2024/VIE_%20Vingroup%20AR24_250418.pdf",
+      "page": 67,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "vingroup-ar-2024-page-71-vi",
+      "document_id": "VINGROUP-AR-2024",
+      "company": "Vingroup",
+      "file": "data/raw/vietnam_enterprises/vic/vic-ar-2024-vi.pdf",
+      "source_pdf_sha256": "1ac1c3bcb17f9c8ca23057e32672e28697b694822315c2b71c252b7f900bb1f6",
+      "source_url": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2024/VIE_%20Vingroup%20AR24_250418.pdf",
+      "page": 71,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "vingroup-ar-2024-page-76-vi",
+      "document_id": "VINGROUP-AR-2024",
+      "company": "Vingroup",
+      "file": "data/raw/vietnam_enterprises/vic/vic-ar-2024-vi.pdf",
+      "source_pdf_sha256": "1ac1c3bcb17f9c8ca23057e32672e28697b694822315c2b71c252b7f900bb1f6",
+      "source_url": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2024/VIE_%20Vingroup%20AR24_250418.pdf",
+      "page": 76,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    },
+    {
+      "id": "vingroup-ar-2024-page-95-vi",
+      "document_id": "VINGROUP-AR-2024",
+      "company": "Vingroup",
+      "file": "data/raw/vietnam_enterprises/vic/vic-ar-2024-vi.pdf",
+      "source_pdf_sha256": "1ac1c3bcb17f9c8ca23057e32672e28697b694822315c2b71c252b7f900bb1f6",
+      "source_url": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2024/VIE_%20Vingroup%20AR24_250418.pdf",
+      "page": 95,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose"
+    }
+  ]
+}

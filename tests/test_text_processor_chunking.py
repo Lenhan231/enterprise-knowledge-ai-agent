@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from core.chunking.text_chunker import split_ranges, split_text
+from core.document_processing.chunking.router import split_ranges, split_text
 
 
 class StructureAwareChunkingTest(unittest.TestCase):

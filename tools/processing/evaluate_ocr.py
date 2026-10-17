@@ -49,6 +49,27 @@ def normalize(text: str) -> str:
     return " ".join(re.findall(r"\w+", text, flags=re.UNICODE))
 
 
+def normalize_formula(text: str) -> str:
+    """Normalize a linearized formula while retaining math operators."""
+    text = unicodedata.normalize("NFKC", text).strip()
+    text = re.sub(r"^\\\(|\\\)$", "", text)
+    text = re.sub(r"^\\\[|\\\]$", "", text)
+    return re.sub(r"\s+", "", text)
+
+
+def formula_tokens(text: str) -> list[str]:
+    """Tokenize LaTeX commands, identifiers, numbers, and operators."""
+    return re.findall(r"\\[A-Za-z]+|[A-Za-z]+|[0-9]+|[^\s]", text)
+
+
+def normalize_for_page(text: str, content_type: str) -> str:
+    return normalize_formula(text) if content_type == "formula" else normalize(text)
+
+
+def tokens_for_page(text: str, content_type: str) -> list[str]:
+    return formula_tokens(text) if content_type == "formula" else text.split()
+
+
 def ocr_language_for_dataset(dataset: dict) -> str:
     languages = {str(page.get("language", "")).casefold() for page in dataset.get("pages", [])}
     if not languages or "" in languages:
@@ -317,28 +338,40 @@ def main() -> int:
     page_specs = dataset["pages"][:args.max_pages]
     prepared_pages = []
     for page_spec in page_specs:
-        pdf_path = REPO_ROOT / page_spec["file"]
-        if not pdf_path.is_file():
-            raise FileNotFoundError(pdf_path)
-        with fitz.open(pdf_path) as pdf:
-            page = pdf[page_spec["page"] - 1]
-            clip = fitz.Rect(page_spec["clip_rect"]) if page_spec.get("clip_rect") else None
+        source_pdf_sha256 = None
+        source_image_sha256 = None
+        if page_spec.get("image_file"):
+            image_path = REPO_ROOT / page_spec["image_file"]
+            if not image_path.is_file():
+                raise FileNotFoundError(image_path)
             reference = page_spec.get("reference_text")
-            if reference is None:
-                reference = page.get_text("text", clip=clip)
-            pixmap = page.get_pixmap(dpi=args.dpi, alpha=False, clip=clip)
-        source_pdf_sha256 = hashlib.sha256(pdf_path.read_bytes()).hexdigest()
-        image_path = output_dir / (
-            f"{page_spec['document_id']}-p{page_spec['page']}-{page_spec.get('id', 'full')}"
-            f"-d{args.dpi}-{dataset_sha256[:10]}-{source_pdf_sha256[:10]}.png"
-        )
-        pixmap.save(image_path)
-        rendered_image_sha256 = hashlib.sha256(image_path.read_bytes()).hexdigest()
-        normalized_reference = normalize(reference)
+            source_image_sha256 = hashlib.sha256(image_path.read_bytes()).hexdigest()
+            rendered_image_sha256 = source_image_sha256
+        else:
+            pdf_path = REPO_ROOT / page_spec["file"]
+            if not pdf_path.is_file():
+                raise FileNotFoundError(pdf_path)
+            with fitz.open(pdf_path) as pdf:
+                page = pdf[page_spec["page"] - 1]
+                clip = fitz.Rect(page_spec["clip_rect"]) if page_spec.get("clip_rect") else None
+                reference = page_spec.get("reference_text")
+                if reference is None:
+                    reference = page.get_text("text", clip=clip)
+                pixmap = page.get_pixmap(dpi=args.dpi, alpha=False, clip=clip)
+            source_pdf_sha256 = hashlib.sha256(pdf_path.read_bytes()).hexdigest()
+            image_path = output_dir / (
+                f"{page_spec['document_id']}-p{page_spec['page']}-{page_spec.get('id', 'full')}"
+                f"-d{args.dpi}-{dataset_sha256[:10]}-{source_pdf_sha256[:10]}.png"
+            )
+            pixmap.save(image_path)
+            rendered_image_sha256 = hashlib.sha256(image_path.read_bytes()).hexdigest()
+        content_type = page_spec.get("content_type", "text")
+        normalized_reference = normalize_for_page(reference or "", content_type)
         prepared_pages.append({
             "spec": page_spec,
             "image_path": image_path,
             "source_pdf_sha256": source_pdf_sha256,
+            "source_image_sha256": source_image_sha256,
             "rendered_image_sha256": rendered_image_sha256,
             "reference": normalized_reference,
         })
@@ -365,10 +398,17 @@ def main() -> int:
         for prepared in prepared_pages:
             page_spec = prepared["spec"]
             normalized_reference = prepared["reference"]
+            content_type = page_spec.get("content_type", "text")
             table_rows = page_spec.get("table_rows", [])
             if not engine_data["available"]:
                 error = engine_data["model_initialization_error"] or "engine package or executable unavailable"
-                engine_data["pages"].append({"document_id": page_spec["document_id"], "page": page_spec["page"], "error": error})
+                engine_data["pages"].append({
+                    "id": page_spec.get("id"),
+                    "content_type": content_type,
+                    "document_id": page_spec["document_id"],
+                    "page": page_spec["page"],
+                    "error": error,
+                })
                 continue
             if engine == "tesseract":
                 hypothesis, seconds, error = run_engine(
@@ -376,22 +416,25 @@ def main() -> int:
                 )
             else:
                 hypothesis, seconds, error = run_engine(engine, model, prepared["image_path"], ocr_language)
-            normalized_hypothesis = normalize(hypothesis)
-            reference_words = normalized_reference.split()
-            hypothesis_words = normalized_hypothesis.split()
+            normalized_hypothesis = normalize_for_page(hypothesis, content_type)
+            reference_words = tokens_for_page(normalized_reference, content_type)
+            hypothesis_words = tokens_for_page(normalized_hypothesis, content_type)
             character_edits = edit_distance(normalized_reference, normalized_hypothesis)
             word_edits = edit_distance(reference_words, hypothesis_words)
             row = {
+                "id": page_spec.get("id"),
+                "content_type": content_type,
                 "document_id": page_spec["document_id"],
                 "page": page_spec["page"],
                 "language": page_spec["language"],
                 "source_pdf_sha256": prepared["source_pdf_sha256"],
+                "source_image_sha256": prepared["source_image_sha256"],
                 "rendered_image_sha256": prepared["rendered_image_sha256"],
-                "reference_source": (
+                "reference_source": page_spec.get("reference_annotation_method", (
                     "manual_transcription" if normalized_reference and page_spec.get("reference_text") is not None
                     else "manual_table_anchors_only" if page_spec.get("reference_text") == "" and table_rows
                     else "native_pdf_text_unreviewed"
-                ),
+                )),
                 "hypothesis_text": hypothesis,
                 "reference_characters": len(normalized_reference),
                 "reference_words": len(reference_words),
@@ -426,6 +469,10 @@ def main() -> int:
 
     for engine_data in engines.values():
         engine_data["aggregate"] = summarize_pages(engine_data["pages"])
+        engine_data["by_content_type"] = {
+            content_type: summarize_pages([page for page in engine_data["pages"] if page.get("content_type") == content_type])
+            for content_type in sorted({page.get("content_type", "text") for page in page_specs})
+        }
         engine_data["by_language"] = {
             language: summarize_pages([row for row in engine_data["pages"] if row.get("language") == language])
             for language in sorted({page["language"] for page in page_specs})

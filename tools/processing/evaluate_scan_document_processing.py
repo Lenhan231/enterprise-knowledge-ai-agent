@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT))
 
-from core.document_processing.processors.document_processor import DocumentProcessor  # noqa: E402
+from core.document_processing.document_processor import DocumentProcessor  # noqa: E402
 from tools.processing.evaluate_ocr import edit_distance, error_rate, normalize, peak_memory_mb  # noqa: E402
 
 

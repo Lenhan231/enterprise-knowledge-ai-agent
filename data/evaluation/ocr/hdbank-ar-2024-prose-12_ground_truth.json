@@ -1,0 +1,263 @@
+{
+  "dataset_id": "hdbank-ar-2024-vietnamese-prose-12-v1",
+  "dataset_title": "HDBank Annual Report 2024 Vietnamese OCR 12-page screening set",
+  "purpose": "Exploratory Vietnamese OCR CER/WER screening on selected narrative and mixed prose pages from HDBank official 2024 Annual Report.",
+  "reference_method": "native PDF text layer clipped to the left page of each two-page spread; visual text-block order was corrected on pages 30, 107, and 108 where the PDF content order differed from page reading order",
+  "reference_quality": "Selected page regions were visually inspected. Native PDF text references are unproofread and may include text-layer and diacritic errors; visual column/section order was manually set on pages 30, 107, and 108 after detecting source text-layer order that did not match the rendered page.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "Twelve clipped page regions from one born-digital annual report; this does not represent scanned PDFs or all enterprise documents.",
+    "Each label covers the left half of a two-page PDF spread; page design includes columns, photos, and callouts, so layout reading order can affect CER/WER.",
+    "Native PDF text references are not proofread word by word.",
+    "CER/WER measure recognized text only, not layout detection or table extraction accuracy.",
+    "Resource measures are descriptive and should only be compared on the same device class and benchmark settings."
+  ],
+  "source_pdf_sha256": "770603c09640f915edff2378fb77e33e67a6707dc55217b08dd286439079ea60",
+  "source_download_url": "https://cdn.hdbank.com.vn/hdbank/bctn/2024/pdf/BCTN-HDBANK-2024.pdf",
+  "render_dpi": 180,
+  "pages": [
+    {
+      "id": "hdbank-ar-2024-page-19-left-vi",
+      "document_id": "HDBANK-AR-2024",
+      "company": "HDBank",
+      "file": "data/raw/vietnam_enterprises/hdbank/hdbank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "770603c09640f915edff2378fb77e33e67a6707dc55217b08dd286439079ea60",
+      "source_url": "https://cdn.hdbank.com.vn/hdbank/bctn/2024/pdf/BCTN-HDBANK-2024.pdf",
+      "page": 19,
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed"
+    },
+    {
+      "id": "hdbank-ar-2024-page-30-left-vi",
+      "document_id": "HDBANK-AR-2024",
+      "company": "HDBank",
+      "file": "data/raw/vietnam_enterprises/hdbank/hdbank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "770603c09640f915edff2378fb77e33e67a6707dc55217b08dd286439079ea60",
+      "source_url": "https://cdn.hdbank.com.vn/hdbank/bctn/2024/pdf/BCTN-HDBANK-2024.pdf",
+      "page": 30,
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose",
+      "reference_annotation_method": "native_pdf_text_blocks_reordered_after_visual_review",
+      "reference_text": "MÔI TRƯỜNG KINH DOANH,\nCƠ HỘI, RỦI RO VÀ THÁCH THỨC\nNHÌN LẠI MÔI TRƯỜNG KINH DOANH NĂM 2024: CƠ HỘI, RỦI RO VÀ THÁCH THỨC\nNăm 2024, kinh tế toàn cầu có nhiều biến động do dư \nđịa kéo dài từ chu kỳ thắt chặt tiền tệ nhằm kiềm chế \nđà tăng của lạm phát trước đó. Tăng trưởng kinh tế toàn \ncầu có sự phân cực giữa các nền kinh tế lớn với Mỹ và Ấn \nĐộ là hai điểm sáng nhờ sức tiêu dùng mạnh mẽ và ổn \nđịnh, trong khi Trung Quốc và khu vực châu Âu tiếp tục \nđối mặt với suy giảm tăng trưởng do tiêu dùng yếu và \ncác vấn đề nội tại. Bên cạnh đó, những căng thẳng địa \nchính trị kéo dài đã tạo thêm áp lực bất ổn lên kinh tế \ntoàn cầu. Thị trường tài chính cũng chịu tác động mạnh \nmẽ với lợi suất trái phiếu Mỹ tăng cao, đồng USD mạnh \nlên, gây thách thức lớn cho các nền kinh tế mới nổi phụ \nthuộc vào nguồn vốn ngoại tệ. Kể từ tháng 9/2024, khi \ncác Ngân hàng Trung ương lớn bắt đầu khởi động chu kỳ \nnới lỏng, triển vọng chung của tăng trưởng kinh tế toàn \ncầu mới trở nên lạc quan hơn.\nTheo Quỹ tiền tệ quốc tế (IMF), tăng trưởng toàn cầu ước \nđạt 3,2% trong năm 2024, giảm nhẹ so với mức 3,3% của \nnăm 2023. Điểm tích cực là lạm phát toàn cầu 2024 đã \ngiảm xuống mức 5,8% từ mức 6,7% của năm 2023, và \nđược dự báo sẽ tiếp tục giảm còn 3,5% vào năm 2026.\nTại các nền kinh tế lớn, lạm phát dần tiệm cận về mốc \nmục tiêu của các Ngân hàng trung ương.\nTại Việt Nam, bức tranh kinh tế trong năm 2024 tiếp tục \ncho thấy sự vươn lên mạnh mẽ, tăng trưởng GDP đạt 7,09% \nvới đầu tàu là khu vực dịch vụ và công nghiệp, xây dựng. \nMặc dù đây là mức tăng khá mạnh mẽ của nền kinh tế, một \nsố chuyên gia đánh giá tính tích cực chưa thực sự đồng \nđều ở tất cả các nhóm ngành của ngành kinh tế, do ảnh \nhưởng nhiều yếu tố trong và ngoài nước. Các động lực \ntăng trưởng khác đến từ nỗ lực giải ngân đầu tư công của \nChính phủ với quyết tâm chính trị cao, xu hướng cải thiện \ncủa dòng vốn vào Việt Nam, kim ngạch xuất nhập khẩu và \nsự phục hồi trở lại của du lịch nội địa. Lạm phát trong năm \n2024 tiếp tục được kiểm soát tốt với mức tăng chỉ khoảng \n3,63% thấp hơn nhiều so với mục tiêu Quốc hội đề ra.\nTrong năm 2024, Việt Nam Đồng (VND) mất giá khoảng 5%, \ntín dụng tăng khoảng 15,08% so với cuối năm 2023, thanh \nkhoản thị trường liên ngân hàng thường duy trì ở trạng \nthái ổn định và dồi dào, nhiều nút thắt trên thị trường vốn \ndoanh nghiệp và bất động sản đang được tích cực gỡ bỏ.\nTRIỂN VỌNG KINH TẾ VIỆT NAM & TOÀN CẦU 2025\nKinh tế toàn cầu năm 2025 được dự báo sẽ có những cải \nthiện rõ nét nhờ các chính sách nới lỏng tiền tệ phát huy \nhiệu quả. Tuy nhiên, các thách thức dài hạn vẫn tồn tại như \ncăng thẳng thương mại giữa Mỹ và Trung Quốc dự kiến vẫn \nsẽ kéo dài các bất ổn địa chính trị, bên cạnh đó xung đột tại \nUkraine và Trung Đông có thể tiếp tục làm gián đoạn chuỗi \ncung ứng toàn cầu và ảnh hưởng đến đầu tư quốc tế. IMF \ndự báo tăng trưởng toàn cầu cho năm 2025 tương tự như \n2024 ở mức 3,2%, các gói kích thích tài khóa từ các nền kinh \ntế lớn, đặc biệt tại Mỹ và Trung Quốc được kỳ vọng sẽ phát \nhuy tính hiệu quả, đóng góp tích cực vào tổng cầu hàng \nhóa và dịch vụ.\nTrong bối cảnh kinh tế toàn cầu nhiều thách thức, Việt Nam \ncó những điểm sáng nhất định để tiếp tục tăng trưởng\nkinh tế nhờ vào hoạt động xuất nhập khẩu sôi động, điểm \nđến thu hút của dòng vốn FDI cũng như còn nhiều dư địa \ntrong việc đẩy mạnh các hoạt động đầu tư công. Bên cạnh \nđó, chính sách tiền tệ của Việt Nam luôn được Ngân hàng \nNhà nước điều hành linh hoạt, phối hợp chặt chẽ với chính \nsách tài khóa để kiểm soát lạm phát, đảm bảo thanh khoản \nvà ổn định hệ thống tài chính. Đặc biệt, ngành ngân hàng \nđược kỳ vọng đóng vai trò then chốt trong việc đảm bảo \nnguồn vốn tín dụng cho các lĩnh vực ưu tiên, đồng thời cải \nthiện khả năng quản trị rủi ro và đầu tư vào công nghệ số \nhóa nhằm nâng cao hiệu quả hoạt động. Năm 2025 cũng \nlà thời điểm ngành ngân hàng tập trung tái cấu trúc, hướng \nđến các chuẩn mực quốc tế cao hơn để đáp ứng nhu cầu \nphát triển trong nước và hội nhập quốc tế."
+    },
+    {
+      "id": "hdbank-ar-2024-page-31-left-vi",
+      "document_id": "HDBANK-AR-2024",
+      "company": "HDBank",
+      "file": "data/raw/vietnam_enterprises/hdbank/hdbank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "770603c09640f915edff2378fb77e33e67a6707dc55217b08dd286439079ea60",
+      "source_url": "https://cdn.hdbank.com.vn/hdbank/bctn/2024/pdf/BCTN-HDBANK-2024.pdf",
+      "page": 31,
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed"
+    },
+    {
+      "id": "hdbank-ar-2024-page-58-left-vi",
+      "document_id": "HDBANK-AR-2024",
+      "company": "HDBank",
+      "file": "data/raw/vietnam_enterprises/hdbank/hdbank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "770603c09640f915edff2378fb77e33e67a6707dc55217b08dd286439079ea60",
+      "source_url": "https://cdn.hdbank.com.vn/hdbank/bctn/2024/pdf/BCTN-HDBANK-2024.pdf",
+      "page": 58,
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed"
+    },
+    {
+      "id": "hdbank-ar-2024-page-60-left-vi",
+      "document_id": "HDBANK-AR-2024",
+      "company": "HDBank",
+      "file": "data/raw/vietnam_enterprises/hdbank/hdbank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "770603c09640f915edff2378fb77e33e67a6707dc55217b08dd286439079ea60",
+      "source_url": "https://cdn.hdbank.com.vn/hdbank/bctn/2024/pdf/BCTN-HDBANK-2024.pdf",
+      "page": 60,
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed"
+    },
+    {
+      "id": "hdbank-ar-2024-page-65-left-vi",
+      "document_id": "HDBANK-AR-2024",
+      "company": "HDBank",
+      "file": "data/raw/vietnam_enterprises/hdbank/hdbank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "770603c09640f915edff2378fb77e33e67a6707dc55217b08dd286439079ea60",
+      "source_url": "https://cdn.hdbank.com.vn/hdbank/bctn/2024/pdf/BCTN-HDBANK-2024.pdf",
+      "page": 65,
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed"
+    },
+    {
+      "id": "hdbank-ar-2024-page-70-left-vi",
+      "document_id": "HDBANK-AR-2024",
+      "company": "HDBank",
+      "file": "data/raw/vietnam_enterprises/hdbank/hdbank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "770603c09640f915edff2378fb77e33e67a6707dc55217b08dd286439079ea60",
+      "source_url": "https://cdn.hdbank.com.vn/hdbank/bctn/2024/pdf/BCTN-HDBANK-2024.pdf",
+      "page": 70,
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed"
+    },
+    {
+      "id": "hdbank-ar-2024-page-71-left-vi",
+      "document_id": "HDBANK-AR-2024",
+      "company": "HDBank",
+      "file": "data/raw/vietnam_enterprises/hdbank/hdbank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "770603c09640f915edff2378fb77e33e67a6707dc55217b08dd286439079ea60",
+      "source_url": "https://cdn.hdbank.com.vn/hdbank/bctn/2024/pdf/BCTN-HDBANK-2024.pdf",
+      "page": 71,
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed"
+    },
+    {
+      "id": "hdbank-ar-2024-page-76-left-vi",
+      "document_id": "HDBANK-AR-2024",
+      "company": "HDBank",
+      "file": "data/raw/vietnam_enterprises/hdbank/hdbank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "770603c09640f915edff2378fb77e33e67a6707dc55217b08dd286439079ea60",
+      "source_url": "https://cdn.hdbank.com.vn/hdbank/bctn/2024/pdf/BCTN-HDBANK-2024.pdf",
+      "page": 76,
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed"
+    },
+    {
+      "id": "hdbank-ar-2024-page-104-left-vi",
+      "document_id": "HDBANK-AR-2024",
+      "company": "HDBank",
+      "file": "data/raw/vietnam_enterprises/hdbank/hdbank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "770603c09640f915edff2378fb77e33e67a6707dc55217b08dd286439079ea60",
+      "source_url": "https://cdn.hdbank.com.vn/hdbank/bctn/2024/pdf/BCTN-HDBANK-2024.pdf",
+      "page": 104,
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose",
+      "reference_annotation_method": "native_pdf_text_unreviewed"
+    },
+    {
+      "id": "hdbank-ar-2024-page-107-left-vi",
+      "document_id": "HDBANK-AR-2024",
+      "company": "HDBank",
+      "file": "data/raw/vietnam_enterprises/hdbank/hdbank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "770603c09640f915edff2378fb77e33e67a6707dc55217b08dd286439079ea60",
+      "source_url": "https://cdn.hdbank.com.vn/hdbank/bctn/2024/pdf/BCTN-HDBANK-2024.pdf",
+      "page": 107,
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose",
+      "reference_annotation_method": "native_pdf_text_blocks_reordered_after_visual_review",
+      "reference_text": "NHÀ ĐẦU TƯ\nLeapfrog Investments\nHDBank là một ngân hàng thương mại và bán lẻ hàng đầu \ntại Việt Nam, niêm yết trên sàn chứng khoán, với thành tích \nhoạt động mạnh mẽ, đạt mức lợi nhuận trên vốn chủ sở \nhữu (ROE) ổn định trên 20% và tăng trưởng tín dụng hàng \nnăm trên 20%. Phục vụ hơn 20 triệu khách hàng, đặc biệt \nchú trọng vào Khách hàng Cá nhân và các doanh nghiệp \nsiêu nhỏ, nhỏ và vừa (MSMEs), HDBank hoàn toàn phù hợp \nvới mục tiêu thúc đẩy tài chính toàn diện của LeapFrog. \nKhoản đầu tư của LeapFrog vào HDBank đã củng cố nền \ntảng vốn của ngân hàng, giúp ngân hàng mở rộng các \nsáng kiến cho vay đến nhiều khách hàng bán lẻ và MSMEs \nhơn, đặc biệt tập trung vào hỗ trợ các doanh nghiệp do \nphụ nữ sở hữu hoặc lãnh đạo.\nTrong năm qua, LeapFrog đã hỗ trợ HDBank nâng cao các \nhoạt động môi trường, xã hội và quản trị (ESG), cũng như \ncung cấp hướng dẫn về các thông lệ tốt nhất liên quan \nđến việc triển khai Hệ thống Quản lý Môi trường và Xã hội \n(ESMS) và đào tạo nhân viên. Chúng tôi hài lòng với những \ntiến bộ mà HDBank đã đạt được trong việc tích hợp ESG \nvào hoạt động cho vay thông qua ESMS. Chúng tôi tin \nrằng cam kết của Ngân hàng đối với các thông lệ tốt nhất \nvề môi trường và xã hội cũng như quản trị doanh nghiệp \nsẽ tạo nên sự khác biệt và thiết lập nền tảng vững chắc\nđể phù hợp với các tiêu chuẩn quốc tế. Ngoài ra, LeapFrog \nđang tích cực làm việc với ban lãnh đạo để hỗ trợ chiến \nlược tăng cường doanh số bán bảo hiểm nhân thọ của \nHDBank, đảm bảo phù hợp với các quy định mới và củng \ncố vị thế của ngân hàng trong số các ngân hàng hàng đầu \nvề phân phối bảo hiểm nhân thọ. Nhìn chung, trải nghiệm \ncủa chúng tôi với HDBank rất tích cực và chúng tôi mong \nmuốn tiếp tục hợp tác để thúc đẩy tác động có ý nghĩa và \ntăng trưởng bền vững.\nSự hợp tác của chúng tôi với HDBank rất tích cực vì nó \nmang lại sự đa dạng hóa cho danh mục đầu tư của chúng \ntôi và thúc đẩy tài chính toàn diện tại một thị trường quan \ntrọng ở Đông Nam Á. Tính đến cuối năm 2024, Ngân hàng \nđã giải ngân 4.400 tỷ đồng (tương đương gần 176 triệu \nđô la Mỹ) cho các khoản vay đối với các MSMEs do phụ nữ \nsở hữu, những người thường gặp phải những hạn chế như \nthiếu tài sản thế chấp và nhận thức rủi ro cao hơn. Việc hỗ \ntrợ các sáng kiến ESG của HDBank giúp ngân hàng tuân \nthủ các chính sách và thông lệ tốt nhất về ESG, đồng thời \ncho phép chúng tôi thực hiện mục tiêu cải thiện tính bền \nvững trong hoạt động kinh doanh của các công ty thuộc \ndanh mục đầu tư của mình.\nCƠ QUAN QUẢN LÝ\nNgân hàng Nhà nước Việt Nam - Chi nhánh TP. Hồ Chí Minh\nNgân hàng Nhà nước Việt Nam - Chi nhánh Thành phố \nHồ Chí Minh ghi nhận và đánh giá cao sự nỗ lực tập thể \nHội đồng quản trị, Ban Kiểm soát, Ban Điều hành và toàn \nthể cán bộ  nhân viên của HDBank để đạt được những kết \nquả khả quan, tăng trưởng về tổng nguồn vốn, tổng huy \nđộng, chất lượng tín dụng tốt, tỷ lệ nợ xấu trên địa bàn\nkiểm soát tốt. Bên cạnh đó, Ngân hàng Nhà nước Việt \nNam đánh giá cao chiến lược phát triển bền vững của \nHDBank, tăng trưởng tín dụng gắn liền với chuyển dịch \ncơ cấu tín dụng theo hướng an toàn và hiệu quả, kiểm \nsoát chất lượng tín dụng chặt chẽ, áp dụng và tuân thủ \ntiêu chuẩn an toàn theo Basel II."
+    },
+    {
+      "id": "hdbank-ar-2024-page-108-left-vi",
+      "document_id": "HDBANK-AR-2024",
+      "company": "HDBank",
+      "file": "data/raw/vietnam_enterprises/hdbank/hdbank-ar-2024-vi.pdf",
+      "source_pdf_sha256": "770603c09640f915edff2378fb77e33e67a6707dc55217b08dd286439079ea60",
+      "source_url": "https://cdn.hdbank.com.vn/hdbank/bctn/2024/pdf/BCTN-HDBANK-2024.pdf",
+      "page": 108,
+      "clip_rect": [
+        0,
+        0,
+        595.275,
+        841.89
+      ],
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "editorial_spread_prose",
+      "reference_annotation_method": "native_pdf_text_blocks_reordered_after_visual_review",
+      "reference_text": "Đơn vị DHL Group\nVới vị thế là công ty logistics hàng đầu thế giới, DHL cam \nkết tiên phong trong phát triển bền vững. Chúng tôi đã \ntriển khai các sản phẩm GoGreen từ năm 2008, đặt mục \ntiêu cao về giảm phát thải khí nhà kính và duy trì chuẩn \nmực trách nhiệm xã hội, quản trị toàn cầu.\nTrong hành trình đó, HDBank là một đối tác quan trọng. \nDHL đánh giá cao sự hợp tác hiệu quả và tinh thần hỗ trợ \ntận tâm của đội ngũ HDBank. Đặc biệt, việc HDBank lựa \nchọn dịch vụ GoGreen Plus của DHL thể hiện sự đồng lòng \ntrong mục tiêu phát triển bền vững. Cam kết sử dụng dịch \nvụ GoGreen Plus của HDBank, với lộ trình giảm phát thải \n30% từ tháng 3/2024 và tăng lên 90% từ 1/1/2025, là minh \nchứng cho sự hợp tác chặt chẽ, cùng hướng tới một tương \nlai xanh hơn.\nCỘNG ĐỒNG ĐỊA PHƯƠNG\nChủ tịch Hội Bảo trợ bệnh nhân nghèo TP. Hồ Chí Minh - Tiến sĩ Trần Thành Long chia sẻ\nLà một ngân hàng thuộc Top dẫn đầu tại Việt Nam, nhiều \nnăm nay, HDBank còn ghi dấu ấn nổi bật với việc đồng \nhành cùng các chương trình thiện nguyện sâu rộng trên \ncả nước. Với Hội Bảo trợ bệnh nhân nghèo TP. Hồ Chí \nMinh, từ năm 2007 đến nay, HDBank đã ủng hộ cho Hội \nmột nguồn lực tài chính lớn, giúp phẫu thuật mắt cho \nbệnh nhân nghèo, phát học bổng cho học sinh - sinh viên\nnghèo hiếu học, tặng thẻ Bảo hiểm y tế và xây nhà tình \nthương cho các hộ cận nghèo, khó khăn. Hơn 12.500 ca \nmổ mắt, 20.500 thẻ Bảo hiểm y tế, các suất học bổng, \nhàng trăm nhà tình thương đã được trao đi trong các \nnăm qua, từng bước giúp bà con trên khắp mọi miền đất \nnước thay đổi chất lượng cuộc sống, có thêm nhiều niềm \nvui và lạc quan.\nCô giáo Nguyễn Thị Hoan - Hiệu trưởng Trường Tiểu học Thái Học, xã Vũ Minh,  \nhuyện Nguyên Bình, tỉnh Cao Bằng\nGiữa những ngày cận Tết Nguyên đán Ất Tỵ, các thầy \ncô giáo và học sinh chúng tôi thật hạnh phúc khi được \nHDBank quan tâm, chia sẻ với những món quà ý nghĩa. \nKhông những thế, đoàn cán bộ nhân viên HDBank \ncòn dành cho Trường sự quan tâm, thăm hỏi chân tình.\nQua đó, các em học sinh và thầy cô giáo vùng cao như \nchúng tôi được tiếp thêm nguồn động lực ý nghĩa để tiếp \ntục vượt lên những khó khăn, học tập và cống hiến cho \nmột tương lai tốt đẹp hơn."
+    }
+  ]
+}

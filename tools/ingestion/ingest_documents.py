@@ -1,8 +1,8 @@
 # tools/ingestion/ingest_documents.py
 
-from core.chunking.strategies.semantic import SemanticDocumentChunker
+from core.document_processing.chunking.strategies.semantic import SemanticDocumentChunker
 from core.document_processing.processors.pdf.processor import PDFProcessor
-from core.chunking.text_chunker import split_text
+from core.document_processing.chunking.router import split_text
 from core.embeddings import EmbeddingService
 from core.embeddings.embedding_service import EMBEDDING_MAX_SEQUENCE_LENGTH
 from core.models.document import ChunkMetadata

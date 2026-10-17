@@ -1,0 +1,315 @@
+{
+  "dataset_id": "pvfcco-ar-2024-prose-regions-14-v1",
+  "dataset_title": "PVFCCo Annual Report 2024 Vietnamese prose regions",
+  "purpose": "Exploratory Vietnamese corporate OCR CER/WER screening on half-page regions selected from the official PVFCCo Annual Report 2024.",
+  "reference_method": "native PDF text layer clipped to selected PDF regions and sorted in visual reading order; not proofread word by word",
+  "reference_quality": "The selected half-page regions were visually reviewed for prose content. References were extracted from the PDF text layer and have not been proofread against every line; text order and mixed content may affect CER/WER.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "Fourteen dependent half-page regions from one born-digital annual report do not establish broad company or sector coverage.",
+    "Native PDF references are unproofread and may contain extraction-order, text-mapping, or layout discrepancies.",
+    "Regions may include headings, callouts, graphics, or other mixed content.",
+    "This is a born-digital report, not a physical-scan benchmark.",
+    "CER/WER measure text recognition only, not layout detection or table extraction.",
+    "Exploratory screening only; not eligible for primary model selection."
+  ],
+  "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+  "source_download_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+  "render_dpi": 180,
+  "pages": [
+    {
+      "id": "dpm-ar-2024-pdf-page-5-r-vi",
+      "document_id": "PVFCCO-AR-2024",
+      "company": "PVFCCo (Đạm Phú Mỹ)",
+      "file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "source_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+      "page": 5,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "Thông                điệp\nlãnh              đạo                                                 8  9\nVới nỗ lực và kết quả đạt được trong năm 2024,   chính sách/đời sống cán bộ công nhân viên,\nPVFCCo tiếp tục vinh dự được bình chọn trong   chú trọng phát triển nguồn nhân lực chất lượng\nnhóm các công ty niêm yết kinh doanh hiệu   cao, qua đó tiếp tục nâng cao uy tín thương\nquả hàng đầu Việt Nam, Doanh nghiệp xuất sắc   hiệu Phân bón và Hóa chất Phú Mỹ, cổ phiếu\nkhu vực Châu Á, lọt vào nhóm công ty có giá trị  DPM trên thị trường.\nnhất ngành nông nghiệp, thương hiệu Đạm Phú\nMỹ và NPK Phú Mỹ tiếp tục được công nhận là   Nhân dịp này, tôi xin thay mặt tập thể PVFCCo\nthương hiệu quốc gia, cổ phiếu DPM tiếp tục   gửi tới các cổ đông và đối tác lời cảm ơn chân\nnhận được sự quan tâm từ các nhà đầu tư trong   thành nhất. Tổng công ty Phân bón và Hóa chất\nnước cũng như nước ngoài.                 Dầu khí – CTCP cam kết tiếp tục triển khai mạnh\nmẽ các chiến lược kinh doanh và phát triển bền\nNhững kết quả tích cực trong năm 2024 là động   vững đã được cổ đông thông qua, đáp ứng sự\nlực để tập thể PVFCCo tiếp tục nỗ lực nâng cao    tin tưởng và ủng hộ của các quý vị cổ đông,\nhiệu quả hoạt động, gia tăng hiệu suất đầu tư   nhà đầu tư và cộng đồng đối với cổ phiếu DPM\ncho các cổ đông, đồng thời là cơ sở để công ty   và thương hiệu Phân bón – Hóa chất Phú Mỹ.\ntiếp tục cải thiện chính sách, nâng cao đời sống\ncho người lao động, khuyến khích tinh thần\ncống hiến và sáng tạo cho hành trình phát triển\nbền vững của Tổng công ty.                     Xin chúc các quý vị thành công và hạnh phúc!\nChào đón năm mới Ất Tỵ 2025, đối với PVFCCo,   Xin trân trọng cảm ơn.\ntập thể lãnh đạo và nhân viên đã xác định rõ các   Chủ tịch Hội đồng Quản trị\nmục tiêu quan trọng trong năm 2025 là thực\nhiện thành công đợt bảo dưỡng tổng thể Nhà\nmáy Đạm Phú Mỹ, vận hành an toàn và hiệu\nquả các nhà máy phân bón hóa chất, chuyển\nđổi linh hoạt chính sách bán hàng và xúc tiến\ntriển khai các dự án đầu tư mới để tạo động   Nguyễn Xuân Hòa\nlực tăng trưởng, không ngừng cải thiện chế độ",
+      "clip_rect": [
+        595.275,
+        0.0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "dpm-ar-2024-pdf-page-17-l-vi",
+      "document_id": "PVFCCO-AR-2024",
+      "company": "PVFCCo (Đạm Phú Mỹ)",
+      "file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "source_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+      "page": 17,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "BÁO CÁO THƯỜNG NIÊN 2024                                                            www.dpm.vn\nBỐI CẢNH THỊ TRƯỜNG PHÂN BÓN – HÓA CHẤT\nNĂM 2024\nTHỊ TRƯỜNG QUỐC TẾ\nTrong năm 2024, tình hình kinh tế, chính trị   trường mới nổi. Bên cạnh đó, việc thay đổi chính\nthế giới tiếp tục biến động phức tạp, xung đột     trị diễn ra tại các thị trường trọng điểm cũng tác\ntại Châu Âu và Trung Đông tiếp tục gia tăng   động tiêu cực đến thị trường. Ở chiều ngược lại,\nchưa có hồi kết dẫn đến sự bất ổn đối với thị   khả năng đầu tư của nông dân đã tăng đáng kể\ntrường năng lượng và hàng hóa. Giá dầu và khí   do giá phân bón đã phù hợp hơn và giá bán một\nđốt tăng, ảnh hưởng đến lạm phát ở nhiều quốc   số loại nông sản chính ở mức cao.\ngia. Đồng USD mạnh trở thành gánh nặng đối\nvới hoạt động nhập khẩu, nhất là tại các nước   Theo Báo cáo của Hiệp hội phân bón Thế giới\nđang phát triển như Việt Nam. Bên cạnh những    (IFA), nhu cầu phân bón thế giới trong năm\nkhó khăn thì cải cách thương mại trên toàn cầu   2024 ước đạt 203,6 triệu tấn, tăng 3% (5,8 triệu\nđã thúc đẩy thương mại giữa các quốc gia tạo   tấn) so với năm 2023. Trong đó, nhu cầu N tăng\nđiều kiện cho sản xuất dần phục hồi, khối lượng   2,2% lên 115,6 triệu tấn, P2O5 tăng tăng 3% lên\nthương mại hàng hóa tăng trưởng nhẹ. Tuy   48 triệu tấn và K2O tăng 6% lên 40 triệu tấn.\nnhiên, các rủi ro về địa chính trị leo thang sẽ   Nhu cầu được phục hồi do khả năng chi trả\ntiếp tục là rào cản đối với tăng trưởng kinh tế   được cải thiện sau khi giá phân bón trong năm\nổn định và bền vững.                       2024 đã giảm từ mức đỉnh của tháng 5/2022.\nNăm 2024, giá urê thế giới có mức biến động\nHầu hết các xung đột, biến động, rủi ro toàn   nhỏ hơn so với năm 2023, bình quân thấp hơn\ncầu đều tác động đến hoạt động sản xuất kinh   từ 1-12% (4-47 USD/tấn) so với năm trước tùy\ndoanh phân bón: cạnh tranh gay gắt, sự phân   từng khu vực, đạt mức 349 USD/tấn FOB tại\nmảnh trong các nền kinh tế lớn, tái tổ chức chuỗi  Đông Nam Á, 320 USD/tấn FOB tại Hoa Kỳ, 327\ncung ứng, chi phí cao, rủi ro tiền tệ trong thị   USD/tấn FOB tại Trung Đông và 357 USD/tấn\nFOB tại Ai Cập.",
+      "clip_rect": [
+        0.0,
+        0.0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "dpm-ar-2024-pdf-page-17-r-vi",
+      "document_id": "PVFCCO-AR-2024",
+      "company": "PVFCCo (Đạm Phú Mỹ)",
+      "file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "source_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+      "page": 17,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "Giới                  thiệu                                                                                                       trị                                                                 Báo cáo phát                                                                                                            triển                                                                                       Báo                         Báo cáo hoạt                                    động           Quản                                                                                                  cáo   32  33       Tổng            công                     ty                                                  Công                                                                          ty                                                                           bền vững                                                                                                                                        tài                                                                                                            chính                             năm 2024\nDiện tích lúa năm 2024 đạt\n7.130.000ha\ntăng 12.000 ha so với 2023THỊ TRƯỜNG TRONG NƯỚC\nNgoài những khó khăn chung như tỷ giá cao,   trong tất cả các loại phân bón chính và có xu\ntác động tiêu cực từ biến đổi khí hậu đã ảnh   hướng giảm trong năm 2024. Để đáp ứng phần\nhưởng đến hoạt động sản xuất kinh doanh nói   nào nhu cầu tăng, sản xuất phân bón của Việt\nchung của các doanh nghiệp. Tuy nhiên, nền  Nam (urê, DAP, NPK) trong năm 2024 đã tăng\nkinh tế đã xuất hiện các tín hiệu lạc quan đến   khoảng 9% so với năm 2023, đạt 5,75 triệu tấn.\ntừ sản xuất nông nghiệp, đầu tư và tiêu dùng, là\ncác lĩnh vực đang đóng góp nhiều hơn vào mục   Giá các chủng loại phân bón trên thị trường thế\ntiêu tăng trưởng kinh tế.                            giới và Việt Nam trong năm 2024 đều có mức\nbiến động nhỏ hơn so với năm 2023, nhìn chung\nTrong năm 2024, sản xuất nông nghiệp tuy   đều có xu hướng giảm, ngoại trừ giá DAP tăng.\ndiễn ra trong điều kiện thời tiết phức tạp nhưng   Nhu cầu gia tăng đã hỗ trợ giá trong năm 2024,\nvẫn duy trì mức tăng trưởng tích cực, đáp ứng   tuy nhiên nguồn cung cũng hồi phục đã gây áp\nnhu cầu trong nước và xuất khẩu. Diện tích lúa    lực tới giá giao dịch. Trong đó, giá Kali có mức\nnăm 2024 đạt 7,13 triệu ha, tăng 12 nghìn ha so   giảm lớn nhất, tiếp theo là giá các loại phân bón\nvới năm 2023. Sản lượng lương thực có hạt đạt   khác, trừ giá DAP có mức tăng nhẹ.\n47,87 triệu tấn.\nBình quân, giá urê Cà Mau/Phú Mỹ tại Tp. Hồ\nTrong năm 2024, tổng nhu cầu phân bón của   Chí Minh/Tây Nam Bộ đã giảm 23-225 đồng/\nViệt Nam tăng khoảng 16% so với năm 2023,   kg (-1%) so với năm 2023; Urê nhập khẩu giảm\nđạt khoảng 10,54 – 10,86 triệu tấn. Trong đó,   407-1.040 đồng/kg (giảm 4-9%) trong khi giá\nnhu cầu tiêu thụ Kali có mức tăng trưởng lớn   urê Ninh Bình/Hà Bắc tăng 1-2%, tăng khoảng\nnhất khi Kali là loại có giá cả phải chăng nhất    11-190 đồng/kg.\nXU HƯỚNG THỊ TRƯỜNG NĂM 2025\nNăm 2025, dự kiến nhu cầu tiêu thụ phân bón tại Việt Nam tiếp tục tăng so với năm 2024,\ntuy nhiên mức tăng sẽ chậm lại. AgroMonitor dự báo nhu cầu phân bón của Việt Nam sẽ\ntăng khoảng 4-8% so với năm 2024, đạt khoảng 11-12 triệu tấn. Trong khi đó, sản lượng sản\nxuất phân bón của Việt Nam trong năm 2025 nhìn chung ít biến động so với năm 2024,\nước đạt khoảng 5,6 – 5,7 triệu tấn.\nTrong bối cảnh như vậy, kết quả kinh doanh chung của các nhà sản xuất, đơn vị phân phối\nnăm 2024 của Tổng công ty đều đạt được những kết quả và mục tiêu đề ra. Các kết quả\ncụ thể được trình bày ở nội dung dưới đây.",
+      "clip_rect": [
+        595.275,
+        0.0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "dpm-ar-2024-pdf-page-21-l-vi",
+      "document_id": "PVFCCO-AR-2024",
+      "company": "PVFCCo (Đạm Phú Mỹ)",
+      "file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "source_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+      "page": 21,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "BÁO CÁO THƯỜNG NIÊN 2024                                                            www.dpm.vn\nTÌNH HÌNH ĐẦU TƯ, THỰC HIỆN CÁC DỰ ÁN, KẾT QUẢ\nTHỰC THI CHIẾN LƯỢC PHÁT TRIỂN\nCÁC DỰ ÁN ĐẦU TƯ THEO KẾ HOẠCH NĂM 2024\n01     Tổ hợp Dự án Nâng công suất phân xưởng NH3 Nhà máy Đạm Phú Mỹ và xây dựng Nhà\nmáy sản xuất NPK công nghệ hóa học: Tổng công ty đã hoàn thành phê duyệt Quyết\ntoán vốn dự án hoàn thành tại Quyết định số 24-393/QĐ-PBHC ngày 14/10/2024.\n02    Dự án Melamine: Đã hoàn thành Báo cáo cơ hội đầu tư. Với tổng mức đầu tư lớn,\nTổng công ty tiếp tục xem xét, nghiên cứu kỹ lưỡng trong giai đoạn nghiên cứu khả thi\ncủa dự án.\n03    Dự án Nhà máy sản xuất Oxy già (H2O2): Hoàn thành cập nhật Báo cáo nghiên cứu khả thi\nđể cấp thẩm quyền thẩm định, phê duyệt. Tổng công ty đã hoàn thành và trình báo cáo\nđánh giá tác động môi trường, hồ sơ về Quy hoạch 1/500, Giấy chứng nhận đầu tư liên\nquan đến dự án đến các cơ quan quản lý nhà nước.\n04    Dự án thu hồi Ar, H2, N2 từ khí Off-gas của Xưởng NH3 Nhà máy Đạm Phú Mỹ: Đang thực\nhiện lập FS dự án.\n05    Dự án DEF/Adblue: Đang thực hiện lập FS dự án.\n06    Đầu tư bồn chứa Acid H3PO4 phục vụ sản xuất Nhà máy NPK: Đang hoàn hiện FS trình cơ\nquan quản lý nhà nước thẩm định thiết kế cơ sở dự án.\n07    Công trình bể chứa nước rửa bụi (EHU) xưởng NPK: đang triển khai thi công xây dựng, dự\nkiến nghiệm thu hoàn thành công trình và bàn giao đưa vào sử dụng trong tháng 5/2025.\n08    Đầu tư xây dựng văn phòng làm việc, nhà ăn mới tại Nhà máy Đạm Phú Mỹ: Đã hoàn\nthành Khảo sát xây dựng. Đang hoàn thiện phương án Tổng mặt bằng và trình cấp thẩm\nquyền phê duyệt.\n09    Đầu tư xây dựng hệ thống băng tải vận chuyển phân NPK: Đã hoàn thành thẩm tra FS,\nđã xin ý kiến về phương án PCCC của Phòng Cảnh sát PCCC tỉnh Bà Rịa Vũng Tàu; Đang\nthực hiện thẩm định FS dự án.\n10    Các dự án đầu tư, mua sắm khác đang triển khai theo kế hoạch.\nTÌNH HÌNH GIẢI NGÂN ĐẦU TƯ,\nMUA SẮM TRONG NĂM 2024\nTheo kế hoạch năm 2024 kế hoạch đầu tư/mua sắm với tổng\nmức đầu tư xây dựng và mua sắm là 666 tỷ đồng. PVFCCo đã\nthực hiện giải ngân được 258 tỷ đồng đạt 39% kế hoạch năm\ntheo tiến độ thực tế, tăng 17% so với năm 2023.",
+      "clip_rect": [
+        0.0,
+        0.0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "dpm-ar-2024-pdf-page-25-l-vi",
+      "document_id": "PVFCCO-AR-2024",
+      "company": "PVFCCo (Đạm Phú Mỹ)",
+      "file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "source_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+      "page": 25,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "BÁO CÁO THƯỜNG NIÊN 2024                                                            www.dpm.vn\nTỔ CHỨC VÀ NHÂN SỰ (TIẾP THEO)\nCHÍNH SÁCH ĐỐI VỚI NGƯỜI LAO ĐỘNG\nTrong bối cảnh nền kinh tế xã hội năm 2024 gặp nhiều khó khăn, Tổng công ty đã nỗ lực và cố\ngắng đảm bảo duy trì được chính sách đối với người lao động như năm trước.\nTổng công ty đã ban hành chính sách nhân\nviên áp dụng từ 01/01/2009, hằng năm được rà\nsoát, chỉnh sửa bổ sung phù hợp với tình hình\nCHÍNH SÁCH NHÂN VIÊN                      thực tế của Tổng công ty. Quy định bao gồm\ncác chính sách phúc lợi áp dụng cho toàn thể\nNăm 2024, sau giai đoạn thực hiện Dự án Cải  CBCNV và một số chính sách có tính đãi ngộ\ntiến chính sách tiền lương, Tổng công ty đã   đối với những người lao động giỏi, có trình độ\nchính thức triển khai và áp dụng chính sách   quản lý và chuyên môn cao. Ngoài việc thực\ntiền lương mới theo phương pháp trả lương 3P.   hiện đầy đủ và nghiêm túc chế độ Bảo hiểm\nMục tiêu của chính sách này là đảm bảo việc trả   xã hội, Bảo hiểm Y tế và Bảo hiểm tai nạn cho\nlương phù hợp với giá trị thị trường, từ đó giảm   toàn bộ người lao động, đảm bảo quyền lợi về\nthiểu hiện tượng chảy máu chất xám và thu hút   sức khỏe, an sinh và sự an toàn của nhân viên\nnhững lao động có tay nghề cao, đóng góp vào   trong suốt quá trình làm việc, Tổng công ty còn\nsự phát triển bền vững của Tổng công ty. Chính  mua bổ sung thêm Bảo hiểm hưu trí; Bảo hiểm\nsách trả lương 3P không chỉ giúp công ty cạnh   y tế PVI Care cho CBCNV. Điều này thể hiện\ntranh hiệu quả trong việc tuyển dụng nhân lực  cam kết của công ty trong việc chăm sóc, bảo\nchất lượng mà còn tạo động lực mạnh mẽ cho   vệ sức khỏe và phúc lợi cho người lao động, tạo\nnhân viên cống hiến và gắn bó lâu dài.          môi trường làm việc ổn định và bền vững.\nThực hiện chủ trương đẩy mạnh đào tạo cho\ncán bộ quản lý, bên cạnh việc cử cán bộ tham\ngia các khóa đào tạo do Tập đoàn triển khai,\nCHÍNH SÁCH ĐÀO TẠO                   PVFCCo đã triển khai các khóa đào tạo bồi\ndưỡng năng lực quản lý; đào tạo cập nhật, phổ\nXác định việc đầu tư cho nguồn nhân lực là đầu   cập kiến thức về quản trị, xu hướng công nghệ\ntư quan trọng, đảm bảo cho sự phát triển ổn   mới cho cán bộ quản lý của Tổng công ty, cán\nđịnh và bền vững của doanh nghiệp, Tổng công   bộ là người đại diện phần vốn của PVN, người\nty đã rất quan tâm xây dựng các cơ chế chính   giữ chức danh, chức vụ do Tập đoàn quản lý.\nsách, quy chế, quy định đào tạo để khuyến\nkhích CBCNV nâng cao trình độ chuyên môn,  PVFCCo cũng triển khai các khóa đào tạo về\nnghiệp vụ.                               ứng dụng trí tuệ nhân tạo AI trong công việc,\nbán hàng trên các ứng dụng công nghệ, nhằm\nTrong bối cảnh hoạt động sản xuất kinh doanh   thúc đẩy quá trình chuyển đổi số cho doanh\ncó nhiều thách thức, Tổng công ty đang triển   nghiệp. Các khóa đào tạo về chuyên môn\nkhai công tác tái cấu trúc tinh gọn bộ máy đòi   nghiệp vụ tiếp tục được thực hiện theo kế hoạch\nhỏi chất lượng nguồn nhân lực ngày một nâng  nhằm đảm bảo CBCNV được liên tục bồi dưỡng\ncao. Công tác đào tạo và phát triển nguồn nhân   các kiến thức chuyên ngành cần thiết, cập nhật\nlực luôn được Lãnh đạo PVFCCo quan tâm   những xu hướng mới về công nghệ. Đội ngũ\nđôn đốc.                                  chuyên gia, cán bộ kỹ thuật, quản lý sản xuất",
+      "clip_rect": [
+        0.0,
+        0.0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "dpm-ar-2024-pdf-page-25-r-vi",
+      "document_id": "PVFCCO-AR-2024",
+      "company": "PVFCCo (Đạm Phú Mỹ)",
+      "file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "source_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+      "page": 25,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "Giới                  thiệu                                                                                                       trị                                                                 Báo cáo phát                                                                                                            triển                                                                                       Báo                         Báo cáo hoạt                                    động           Quản                                                                                                  cáo  48  49       Tổng            công                     ty                                                  Công                                                                          ty                                                                           bền vững                                                                                                                                        tài                                                                                                            chính                             năm 2024\ncủa PVFCCo cũng được tham dự các khóa đào   Đào tạo an toàn theo luật định và đào tạo cập\ntạo chuyên sâu, thi các chứng chỉ nghề quốc tế   nhật các thay đổi trong văn bản pháp luật cũng\nAPI, dự các hội thảo về công nghệ phân bón   được thực hiện theo đúng tiến độ của kế hoạch\ntrên thế giới.                              đào tạo.\nĐào tạo nội bộ tiếp tục phát huy được vai trò   Công tác đào tạo đã đạt được những kết quả\ntrong việc đào tạo lớp cán bộ kỹ thuật, công   nhất định trong việc cập nhật, củng cố, làm\nnhân lành nghề kế cận nhằm chuẩn bị nguồn   giàu kiến thức, kỹ năng trong công tác chuyên\nnhân lực dự phòng; đúc kết, chia sẻ, truyền đạt  môn cũng như công tác quản lý, mở rộng tầm\nlại kinh nghiệm thực tế trong vận hành, sửa   nhận thức, tư duy chiến lược trong hoạch định\nchữa, giải quyết các sự cố máy móc. Tổng công   công việc và thiết lập các mục tiêu nhiệm vụ\nty đã triển khai hệ thống E-Learning phục vụ   của CBCNV, nâng cao chất lượng nguồn nhân\ncho công tác đào tạo được chủ động và linh    lực góp phần cải thiện năng suất lao động.\nhoạt, đặc biệt trong công tác đào tạo nội bộ,\nhiện đang giai đoạn xây dựng nội dung và giáo\ntrình đưa lên hệ thống.\nhành tạo phần mềm khảo sát và đánh giá tình\nhình thực hiện Văn hóa doanh nghiệp cũng như\nthu nhận ý kiến đóng góp của CBCNV.\nVĂN HÓA DOANH NGHIỆP PVFCCo\nĐối với công tác đào tạo Văn hóa doanh nghiệp,\nTrong năm 2024, PVFCCo đã có nhiều nỗ lực   Tổng công ty vẫn duy trì chương trình đào tạo\ntrong việc tái tạo Văn hóa doanh nghiệp. Nhằm   kết hợp hoạt động ngoại khóa gắn liền với hệ\nhoàn thiện các hệ thống văn bản chỉ đạo, các   giá trị cốt lõi của Tổng công ty “Tiên phong\nquy định, quyết định trong xây dựng văn hóa   – Sáng tạo – Chuyên nghiệp – Hiệu quả  -\ndoanh nghiệp, Tổng công ty đã phối hợp với   Sẻ chia”, duy trì các hoạt động teambuilding kết\ncác đối tác thực hiện bộ cẩm nang và phim văn   hợp phát triển văn hóa PVFCCo qua các năm và\nhóa doanh nghiệp mới, bổ sung những điểm   luôn được sự hưởng ứng của toàn thể CBCNV.\nmới phù hợp với thực tế tại đơn vị, dự kiến hoàn   Tổng công ty cũng phối hợp và kết nối các tổ\nthiện trong năm 2025.                       chức đoàn thể (Công đoàn, Đoàn Thanh niên và\nHội Cựu Chiến binh) thực hiện những hoạt động\nNgoài việc ban hành các văn bản chỉ đạo, Tổng   lồng ghép VHDN nhằm đẩy mạnh hoạt động\ncông ty đã đổi mới hình thức truyền thông Văn   rèn mới bản thân trên 4 phương diện thể chất,\nhóa doanh nghiệp bằng cách tiến hành các     trí tuệ, tình cảm, tinh thần. Ngoài ra, Tổng công\nhình thức tuyên truyền nội bộ trực quan, sinh   ty luôn tích cực tuyên truyền, vận động CBCNV\nđộng với nhiều nội dung và nhiều hình thức như   tham gia các hoạt động trong tuần lễ văn hóa\nstandee, bảng gỗ, ti vi vừa thu hút người xem   Dầu khí và tham gia các cuộc thi như: “Tôi yêu\nvừa tạo không gian làm việc hiện đại. Bên cạnh   PetroVietnam”, chụp ảnh \"Petrovietnam trong\nđó, Tổng công ty tiếp tục đẩy mạnh truyền    tôi\", sáng tác video clip “Tự hào Petrovietnam.”\nthông trên các nền tảng số như Website,   Trong đó, nhiều cá nhân và tập thể đã xuất sắc\nFacebook, Youtube, Zalo OA. Đồng thời, tiến   giành được giải thưởng.",
+      "clip_rect": [
+        595.275,
+        0.0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "dpm-ar-2024-pdf-page-28-l-vi",
+      "document_id": "PVFCCO-AR-2024",
+      "company": "PVFCCo (Đạm Phú Mỹ)",
+      "file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "source_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+      "page": 28,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "BÁO CÁO THƯỜNG NIÊN 2024                                                            www.dpm.vn\nBÁO CÁO, ĐÁNH GIÁ CỦA BAN TỔNG GIÁM ĐỐC\n(TIẾP THEO)\nĐÁNH GIÁ VỀ KẾT QUẢ HOẠT ĐỘNG SẢN XUẤT KINH DOANH\nCông tác tổ chức, nhân sự,\nphát triển nguồn nhân lực, tái cơ cấu\nTổng công ty đã thành lập mới các Ban chức năng gồm Ban\nPháp chế Tuân thủ và Ban Chuyển đổi số và Công nghệ\nthông tin nhằm đáp ứng yêu cầu đổi mới và phát triển, nâng\ntổng số ban chức năng thuộc Khối Văn phòng Tổng công ty\nlên 10 Ban/Văn phòng tính đến tháng 12/2024. Tiếp đó, Tổng      Tổng công ty đã\ncông ty đã xây dựng lại ma trận chức năng công việc, trên cơ      thành lập mới các\nsở đó sắp xếp lại và ban hành quy định về chức năng nhiệm    Ban chức năng gồm\nvụ của từng Ban, Đơn vị cùng cơ cấu tổ chức, định biên nhân    Ban Pháp chế Tuân\nsự tương ứng.                                        thủ và Ban Chuyển\nđổi số và Công nghệ\nBên cạnh đó, Tổng công ty tiếp tục thực hiện rà soát, điều    thông tin nhằm đáp\nchỉnh bổ sung các quy chế, quy trình, các quy định về phân    ứng yêu cầu đổi mới\ncấp, phối hợp… nhằm hoàn thiện hệ thống văn bản quy phạm        và phát triển\nnội bộ, từ đó nâng cao hiệu quả trong công tác quản lý, quản\ntrị nội bộ của Tổng công ty.\nTriển khai Dự án cải tiến chính sách tiền lương, PVFCCo đã xây dựng lại danh\nmục chức danh, điều chỉnh lại hệ thống thang bảng lương phù hợp với hệ\nthống chức danh mới; cập nhật bổ sung các chế độ chính sách đãi ngộ; hệ\nthống đánh giá công việc và phân bổ lương thưởng sát với năng lực và kết\nquả công việc. Những thay đổi này đã mang lại động lực cho CBCNV phát\nhuy sáng tạo/cải tiến trong công việc và giúp Tổng công ty giữ chân CBCNV\ncó trình độ cao.\nPVFCCo cũng rà soát, sửa đổi bổ sung, hoàn thiện danh mục năng lực, Từ điển\nnăng lực, khung năng lực giúp cho việc đánh giá năng lực sát với năng lực\nthực tế của CBCNV; sử dụng kết quả đánh giá năng lực làm cơ sở để xây dựng\nchương trình đào tạo, bồi dưỡng năng lực quản lý và chuyên môn nghiệp vụ,\nkỹ năng cho CBCNV.",
+      "clip_rect": [
+        0.0,
+        0.0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "dpm-ar-2024-pdf-page-29-l-vi",
+      "document_id": "PVFCCO-AR-2024",
+      "company": "PVFCCo (Đạm Phú Mỹ)",
+      "file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "source_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+      "page": 29,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "BÁO CÁO THƯỜNG NIÊN 2024                                                            www.dpm.vn\nBÁO CÁO, ĐÁNH GIÁ CỦA BAN TỔNG GIÁM ĐỐC\n(TIẾP THEO)\nPHÂN TÍCH VỀ TÌNH HÌNH TÀI CHÍNH\nTình hình tài sản và nguồn vốn của PVFCCo\nTổng tài sản theo báo cáo tài chính hợp nhất của PVFCCo tại ngày 31/12/2024 là 16.558 tỷ đồng,\ntăng 24% so với đầu năm (16.558/13.309). Lượng tiền và các khoản tương đương tiền của PVFCCo\ngiảm 19% so với đầu năm (1.005/1.242 tỷ đồng), các khoản đầu tư tài chính ngắn hạn tăng 76% so\nvới đầu năm (9.464/5.385 tỷ đồng).\nTình hình nợ phải trả\nKhoản nợ phải trả tại thời điểm 31/12/2024 của PVFCCo là 5.372 tỷ đồng, tăng 205% so với đầu\nnăm (5.372/1.764 tỷ đồng), chủ yếu là khoản vay vốn lưu động ngắn hạn 3.422 tỷ đồng (PVFCCo\nđã tối ưu khoản tiền nhàn rỗi gửi kỳ hạn trên 6 tháng với lãi suất khoảng 4%/năm và vay ngắn\nhạn ngân hàng 3.422 tỷ đồng kỳ hạn dưới 6 tháng với lãi suất khoảng 3,6%/năm)\nCác chỉ số tổng nợ/tổng tài sản, tổng nợ/vốn chủ sở hữu đều tăng so với năm 2023 và khả năng\nthanh toán hiện hành và thanh toán nhanh năm 2023 vẫn duy trì ở mức cao và lớn hơn 1. Điều\nnày cho thấy khả năng thanh toán các khoản nợ tốt, Tổng công ty không gặp áp lực về nợ khi\nđến hạn phải trả, đảm bảo hoạt động sản xuất kinh doanh tốt.\nVới lượng tiền và các khoản tương đương tiền cuối kỳ là 1.005 tỷ đồng, PVFCCo chủ động được\nnguồn vốn cho sản xuất, kinh doanh và thực hiện các dự án đầu tư theo kế hoạch.\nKhả năng sinh lời\nCác chỉ số về khả năng sinh lời của PVFCCo như ROE, ROA đều tăng so với cùng kỳ năm trước là\ndo lợi nhuận sau thuế năm 2024 tăng so với năm 2023 làm các chỉ tiêu ROE, ROA tăng theo.",
+      "clip_rect": [
+        0.0,
+        0.0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "dpm-ar-2024-pdf-page-32-r-vi",
+      "document_id": "PVFCCO-AR-2024",
+      "company": "PVFCCo (Đạm Phú Mỹ)",
+      "file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "source_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+      "page": 32,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "Giới                  thiệu                          Báo cáo hoạt                                    động                                                                 Báo cáo phát                                                                                                            triển                                                                                       Báo                                                  Quản                                                                                                 trị                                                                                                  cáo  62  63       Tổng            công                     ty                             năm                                    2024                                                                           bền vững                                                                                                                                        tài                                                                                                            chính                                                  Công                                                                         ty\nHoạt động của Hội đồng Quản trị năm 2024\nVỚI VAI TRÒ LÀ CƠ QUAN QUẢN LÝ CAO NHẤT, ĐẠI DIỆN CHO QUYỀN LỢI CỦA\nCÁC CỔ ĐÔNG, TRONG NĂM 2024, HĐQT ĐÃ TÍCH CỰC THỰC HIỆN VAI TRÒ, NHIỆM\nVỤ CỦA MÌNH THEO CHUẨN MỰC QUẢN TRỊ CỦA CÔNG TY CỔ PHẦN.\nTrong năm 2024, HĐQT đã tổ chức 8 phiên họp và thực hiện 86 lượt lấy ý kiến các thành viên bằng\nvăn bản, thông qua 90 nghị quyết, quyết định và nhiều văn bản chỉ đạo khác về những nội dung\nquan trọng tiêu biểu sau đây:\nKế hoạch, chiến lược                     Đầu tư, triển khai các dự án\nPhê duyệt kế hoạch và giám sát thực hiện kế     Chỉ đạo và hoàn thành công tác quyết toán\nhoạch sản xuất, kinh doanh năm 2024.         dự án hoàn thành đối với Dự án đầu tư nâng\ncông suất xưởng NH3 Nhà máy Đạm Phú Mỹ  Triển khai rà soát, xây dựng Chiến lược phát                                             và xây dựng Nhà máy phân NPK công nghệ  triển Tổng công ty và kế hoạch sản xuất kinh                                          hóa học.  doanh giai đoạn 2026-2030.\nChỉ đạo triển khai các dự án H2O2 và các dựVề tổ chức – nhân sự                                            án đầu tư khác theo kế hoạch.\nTrình ĐHĐCĐ về việc kiện toàn thành viên                                       Ban hành, sửa đổi bổ sung các quy chế  HĐQT, bầu Chủ tịch HĐQT, bổ nhiệm Tổng\ngiám đốc.                                     Chỉ đạo thực hiện và hoàn thành công tác rà\nsoát, hoàn thiện hệ thống văn bản quy phạm  Tiếp tục chỉ đạo triển khai công tác tái sắp                                                   nội bộ của Tổng công ty giai đoạn 2 với kết  xếp cơ cấu bộ máy quản trị điều hành công                                          quả 11 quy chế và nhiều quy định, quy trình  ty mẹ và các công ty con, công tác cải tiến                                          quản lý được ban hành, cập nhật ở các lĩnh  chính sách tiền lương.                                            vực quản trị, kinh doanh, đầu tư, mua sắm, tài\nPhê duyệt định biên lao động; Công tác      chính, tài sản, quản lý chất lượng…\nbổ nhiệm, bổ nhiệm lại cán bộ trong Ban                                     Công tác tái cơ cấu  điều hành.\nChỉ đạo triển khai công tác tái cơ cấu tổng  Thành lập Ban Pháp chế & Tuân thủ, Ban                                                 thể Tổng công ty và các đơn vị thành viên.  Chuyển đổi số & Công nghệ thông tin.                                                Chỉ đạo xây dựng mô hình kinh doanh mới.\nHệ thống quản trị, kiểm soát rủi ro, kiểm soát                                     Quan hệ cổ đôngnội bộ\nTổ chức thành công phiên họp ĐHĐCĐ  Phê duyệt và triển khai kế hoạch kiểm toán                                            thường niên 2024 (trong tháng 3/2024). Chỉ  nội bộ, giám sát hoạt động các công ty thành                                         đạo bộ phận IR tích cực triển khai các hoạt  viên; Chỉ đạo thực hiện công tác rà soát, hoàn                                        động tiếp xúc, trao đổi cập nhật thông tin  thiện hệ thống văn bản nội bộ và hệ thống                                            thông qua kênh trực tuyến nhằm đảm bảo  quản trị rủi ro.                                            thông tin liên tục, đầy đủ về kết quả hoạt\nTrong Quý 2/2024, HĐQT đã thành lập 03    động tới cổ đông, nhà đầu tư.\nỦy ban thuộc HĐQT là Ủy ban Quản trị rủi                                         Lựa chọn đơn vị thực hiện kiểm toán báo cáo  ro và Chế độ chính sách, Ủy ban Kế hoạch &                                                         tài chính  Kinh doanh, Ủy ban Đầu tư phát triển & Khoa\nhọc công nghệ thuộc HĐQT. Việc thành lập     Tổ chức lựa chọn và phê duyệt kết quả lựa\ncác Ủy ban trực thuộc nhằm tăng cường chỉ     chọn đơn vị thực hiện soát xét, kiểm toán\nđạo, đôn đốc, giám sát Tổng công ty triển     báo cáo tài chính năm 2024 theo ủy quyền\nkhai các nghị quyết, quyết định của HĐQT.     của Đại hội đồng cổ đông.\nCác Ủy ban đã họp cuộc họp định kỳ các quý                                          Ngoài các phiên họp định kỳ và bất thường,  3 và quý 4 năm 2024.                                 HĐQT còn thường xuyên giao ban công việc\nHĐQT, Ban điều hành đã tạo điều kiện hỗ trợ   hàng tuần, hàng tháng để kiểm tra, đánh giá\nBan kiểm soát hoàn thành tốt nhiệm vụ giám   công việc của HĐQT và giám sát việc thực hiện\nsát việc quản lý và điều hành của Tổng công   của Ban điều hành đối với các nghị quyết, quyết\nty. Các kiến nghị, góp ý của Ban kiểm soát   định của HĐQT trong hoạt động sản xuất kinh\nđược HĐQT, Ban điều hành chỉ đạo các Ban   doanh của Tổng công ty.\nchức năng/Chi nhánh/Đơn vị thành viên triển\nkhai thực hiện.",
+      "clip_rect": [
+        595.275,
+        0.0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "dpm-ar-2024-pdf-page-36-l-vi",
+      "document_id": "PVFCCO-AR-2024",
+      "company": "PVFCCo (Đạm Phú Mỹ)",
+      "file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "source_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+      "page": 36,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "BÁO CÁO THƯỜNG NIÊN 2024                                                            www.dpm.vn\nBÁO CÁO, ĐÁNH GIÁ CỦA HỘI ĐỒNG QUẢN TRỊ VỀ\nQUẢN TRỊ CÔNG TY\nTỔNG QUAN\nCông tác quản trị công ty của Tổng công ty được kế thừa, hoàn thiện qua nhiều năm với mô hình\ntheo quy định về quản trị công ty đại chúng, niêm yết, hướng tới tuân thủ chuẩn mực quản trị công\nty tốt. Tổng công ty đảm bảo thiết lập và thực thi về trách nhiệm của Hội đồng quản trị (HĐQT),\nmôi trường kiểm soát, công bố thông tin và minh bạch và đảm bảo các quyền của cổ đông,\ncác bên có liên quan. Nhiều năm liền cổ phiếu DPM được đánh giá có tiến bộ hàng năm về điểm\nquản trị trong Bộ chỉ số đánh giá phát triển bền vững của Sở Giao dịch Chứng khoán TP Hồ Chí\nMinh (VNSI).\nNHỮNG KẾT QUẢ ĐẠT ĐƯỢC\nVới vai trò là cơ quan quản lý Tổng công ty giữa 2 kỳ Đại hội đồng cổ đông, HĐQT đánh giá tổng\nkết năm 2024 công tác quản trị công ty tiếp tục phát huy hiệu quả và có cải tiến trong bối cảnh\nmôi trường hoạt động có những thuận lợi và khó khăn, giúp cho Tổng công ty tiếp tục hoàn thành\ntốt các nhiệm vụ và chỉ tiêu kế hoạch sản xuất kinh doanh theo kế hoạch được Đại hội đồng cổ\nđông (ĐHĐCĐ) thông qua.\nHĐQT đã thực hiện đầy đủ trách nhiệm với kết quả như trình bày cụ thể ở phần trên, với một số\nđiểm nổi bật trong năm 2024 như sau:\n3  2    1\nBổ sung thành viên HĐQT đảm bảo cho năng lực, trách nhiệm và\nhiệu quả của HĐQT.\nCải tiến nhằm tăng tính hiệu quả, chuyên nghiệp của HĐQT với việc\nthành lập 3 Ủy ban thuộc HĐQT.\nTăng cường hiệu quả môi trường kiểm soát với việc chỉ đạo quyết liệt việc xây\ndựng, hoàn thiện hệ thống văn bản quản lý nội bộ của Tổng công ty, thiết lập\nbộ máy thực thi công tác quản trị rủi ro – tuân thủ ở cấp điều hành và phân công\ntrách nhiệm chỉ đạo, giám sát về quản trị rủi ro cho ủy ban thuộc HĐQT. Chỉ đạo\nviệc triển khai lộ trình thực hành về môi trường – xã hội – quản trị (ESG).",
+      "clip_rect": [
+        0.0,
+        0.0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "dpm-ar-2024-pdf-page-36-r-vi",
+      "document_id": "PVFCCO-AR-2024",
+      "company": "PVFCCo (Đạm Phú Mỹ)",
+      "file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "source_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+      "page": 36,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "Giới                  thiệu                          Báo cáo hoạt                                    động                                                                 Báo cáo phát                                                                                                             triển                                                                                       Báo                                                  Quản                                                                                                 trị                                                                                                  cáo  70  71       Tổng            công                     ty                              năm                                     2024                                                                           bền vững                                                                                                                                        tài                                                                                                            chính                                                  Công                                                                         ty\nĐÁNH GIÁ CỦA HỘI ĐỒNG QUẢN TRỊ VỀ HOẠT ĐỘNG CỦA BAN TỔNG GIÁM ĐỐC\nĐánh giá chung về hoạt động của Ban điều hành trong hoạt động sản xuất kinh doanh của Tổng\ncông ty:\nCác thành viên trong Ban Tổng giám đốc đều có trình độ, năng lực và phẩm chất, được đào tạo\nđầy đủ về chuyên môn, am hiểu về lĩnh vực được giao phụ trách và đã có nhiều năm kinh nghiệm\ntrong việc quản lý và điều hành các dự án/doanh nghiệp lớn.\nTổng giám đốc có phân công nhiệm vụ rõ ràng cho các Phó Tổng giám đốc và định kỳ hàng tuần\ntổ chức họp giao ban để đánh giá kết quả thực hiện công việc tuần và giao kế hoạch công việc\nkỳ tới.\nBan Tổng giám đốc đã triển khai hoạt động SXKD của đơn vị phù hợp với nghị quyết của Đại hội\nđồng cổ đông, chỉ đạo của Hội đồng quản trị và tuân thủ đúng điều lệ doanh nghiệp, quy định\ncủa pháp luật.\nBan Tổng giám đốc nhận thức rõ những thuận lợi và khó khăn của Tổng công ty nên đã linh hoạt\ntrong việc điều hành các hoạt động sản xuất kinh doanh, đồng thời đã ban hành các văn bản tài\nliệu nội bộ theo thẩm quyền nhằm kiểm soát có hiệu quả mọi hoạt động sản xuất kinh doanh của\nTổng công ty; thực hiện tốt vai trò kiểm soát rủi ro ngay từ Ban điều hành và các quản lý cấp trung.\nĐÁNH GIÁ VỀ TRÁCH NHIỆM MÔI TRƯỜNG VÀ XÃ HỘI CỦA TỔNG CÔNG TY\nTổng công ty luôn đảm bảo tuân thủ đầy đủ trách nhiệm đối với môi trường và xã hội trong mọi\nhoạt động sản xuất, kinh doanh, đầu tư. Hoạt động chính của Tổng công ty trong lĩnh vực sản xuất\nphân bón, hóa chất, có liên quan và tác động đến môi trường. Trong sản xuất, công tác tuân thủ\nquy định của pháp luật về an toàn, môi trường được ưu tiên hàng đầu. Trong phân phối sản phẩm,\nTổng công ty luôn luôn có chương trình, kế hoạch triển khai hội thảo, tư vấn, trình diễn đối với bà\ncon nông dân về việc sử dụng phân bón hiệu quả, tiết kiệm, giảm thiểu tác động tới môi trường.\nĐối với xã hội, trong nhiều năm qua Tổng công ty luôn luôn là một trong những doanh nghiệp tích\ncực có đóng góp cho công tác an sinh xã hội, doanh nghiệp vì người lao động.\nTrong chiến lược trung và dài hạn, Tổng công ty có định hướng và chính sách rõ ràng về lĩnh vực\nESG với cam kết dài hạn về chính sách môi trường và phát triển bền vững, tiếp tục bồi đắp vai trò\ntrách nhiệm vì cộng đồng thịnh vượng đã được xã hội công nhận trong nhiều năm qua, đồng hành\ncùng cổ đông Nhà nước thực hiện chiến lược Quốc gia về “tăng trưởng xanh”. Tổng công ty đang\nxây dựng chiến lược giảm phát thải nhà kính, thực hiện các giải pháp quản lý và cải tiến dây truyền\ncông nghệ và các dự án đầu tư có định hướng giảm tiêu hao năng lượng, sử dụng năng lượng/\nnguyên liệu tái tạo, thay thế và tiết kiệm nhằm giảm phát thải nhà kính.\nTrong năm 2024, Ban điều hành Tổng công ty đã thành lập bộ máy thực hiện nhiệm vụ ESG để\nhoàn thiện bộ tiêu chí ESG và đầu mối nghiên cứu các giải pháp tiết kiệm năng lượng, chuyển dịch\nnăng lượng, sử dụng năng lượng hiệu quả, triển khai các giải pháp giảm phát thải khí nhà kính và\nthực hiện các giải pháp tiết kiệm năng lượng trong báo cáo kiểm toán năng lượng hàng năm.\nKết quả về việc thực hiện trách nhiệm môi trường, xã hội năm 2024 cụ thể như trình bày tại\nChương 4 - Báo cáo Phát triển bền vững.",
+      "clip_rect": [
+        595.275,
+        0.0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "dpm-ar-2024-pdf-page-38-r-vi",
+      "document_id": "PVFCCO-AR-2024",
+      "company": "PVFCCo (Đạm Phú Mỹ)",
+      "file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "source_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+      "page": 38,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "Giới                  thiệu                          Báo cáo hoạt                                    động                                                                 Báo cáo phát                                                                                                            triển                                                                                       Báo                                                  Quản                                                                                                 trị                                                                                                  cáo   74  75       Tổng            công                     ty                             năm                                    2024                                                                           bền vững                                                                                                                                        tài                                                                                                            chính                                                  Công                                                                         ty\nKết quả sản xuất kinh doanh của Tổng công ty\nSản lượng sản xuất Urê Phú Mỹ: 889.500 tấn - đạt 105% KH năm, tăng 9% so với năm 2023; NPK\nPhú Mỹ 133.389 tấn - đạt 93% KH năm, tăng 10% so với năm 2023.\nSản lượng kinh doanh Urê Phú Mỹ: 898.671 tấn - đạt 103% KH năm, tăng 2% so với năm 2023; NPK\nPhú Mỹ 147.154 tấn - đạt 103% KH năm, tăng 7% so với năm 2023.\nDoanh thu hợp nhất 13.878 tỷ đồng - đạt 109% KH năm, giảm 1% so với năm 2023.\nLợi nhuận trước thuế hợp nhất 669,3 tỷ đồng - đạt 101,4% KH năm, giảm 3% so với năm 2023.\nKết quả hoạt động của HĐQT TCT\nHĐQT đã triển khai thực hiện các nội dung được ĐHĐCĐ thông qua, đảm bảo hoạt động SXKD của\nTCT được thường xuyên, liên tục. Trong năm 2024 HĐQT đã tổ chức 08 cuộc họp và 86 lần lấy ý\nkiến các Thành viên bằng văn bản, thông qua 90 Nghị quyết, Quyết định quan trọng và nhiều văn\nbản chỉ đạo khác.\nHĐQT đã phê duyệt quyết toán vốn dự án NH3-NPK; chỉ đạo TCT tích cực làm việc với cơ quan có\nthẩm quyền để được phê duyệt quy hoạch tỷ lệ 1/500, FS, ĐTM của dự án H2O2; chấp thuận chủ\ntrương và chỉ đạo triển khai lập FS đầu tư bồn acid H3PO4, xưởng sản xuất DEF/Adblue, dự án thu\nhồi Ar, H2, N2 từ khí Off-gas của Xưởng NH3; HĐQT đã chấp thuận chủ trương đầu tư dự án trạm\nđiện 110kv. Năm 2024 HĐQT đã hoàn thiện và sửa đổi/ban hành mới 11 quy chế; đã báo cáo cấp có\nthẩm quyền về phương án tăng vốn điều lệ để giảm chênh lệch với vốn chủ sở hữu; xây dựng mô\nhình kinh doanh phân bón mới áp dụng từ 2025; chỉ đạo đẩy mạnh phát triển đầu tư và kinh doanh\ncác sản phẩm hóa chất; chỉ đạo triển khai nhiều hoạt động khác của TCT.\nKết quả hoạt động của Tổng giám đốc TCT\nTGĐ đã thường xuyên, kịp thời chỉ đạo các Ban chức năng, đơn vị trực thuộc và các Công ty thành\nviên triển khai thực hiện các nội dung theo Nghị quyết, Quyết định, chỉ đạo của HĐQT, của ĐHĐCĐ\nvà các quy định pháp luật liên quan, cụ thể: TGĐ đã phân công nhiệm vụ rõ ràng cho các Phó Tổng\ngiám đốc. Tại mỗi phiên họp của HĐQT, TGĐ có báo cáo và giải trình cụ thể về những khó khăn,\nvướng mắc của từng lĩnh vực hoạt động, từng dự án để HĐTQ xem xét, xử lý và quyết nghị; đã tích\ncực chỉ đạo triển khai thực hiện công tác đầu tư xây dựng và đôn đốc đẩy nhanh tiến độ của từng\ndự án; đã chỉ đạo các bộ phận chức năng/nhà máy duy trì hoạt động sản xuất, kinh doanh ổn định,\nan toàn, liên tục, đảm bảo kinh doanh có lãi và vượt kế hoạch được giao.\nTrong năm 2024, HĐQT và TGĐ TCT đã chỉ đạo TCT triển khai hoàn thành hầu hết các chỉ tiêu\nđược ĐHĐCĐ giao. Riêng chỉ tiêu Vốn điều lệ/VĐL bình quân và chỉ tiêu giải ngân vốn đầu tư\nXDCB của Công ty mẹ chưa hoàn thành là do nguyên nhân khách quan, phụ thuộc vào quyết định\ncủa cơ quan quản lý nhà nước.\nKết quả giám sát tình hình hoạt động và tài chính của Tổng công ty\nNăm 2024, hoạt động SXKD của Tổng công ty được duy trì ổn định, thường xuyên, liên tục và an\ntoàn. Tình hình tài chính của Tổng công ty được ghi nhận và phản ánh hợp lý, chỉ tiêu doanh thu\nhợp nhất tăng 9% so với kế hoạch, lợi nhuận trước thuế hợp nhất tăng 1,4% và lợi nhuận sau thuế\nhợp nhất tăng 2,2% so với kế hoạch. Tổng tài sản hợp nhất cuối năm tăng 24,4% so với đầu năm\nchủ yếu do được tài trợ từ nguồn vốn nợ vay ngắn hạn. Các chỉ tiêu khả năng sinh lời tăng so với\nnăm trước, các chỉ tiêu về khả năng thanh toán được đảm bảo. Nợ phải trả và nợ phải thu cuối\nnăm tăng so với đầu năm, tại Công ty mẹ phát sinh tăng nợ phải thu khó đòi và đã được trích lập\ndự phòng. Hệ số bảo toàn vốn = 2,81 (> 1) nên Tổng công ty bảo toàn và phát triển được vốn góp\ncủa chủ sở hữu.\nBáo cáo tự đánh giá kết quả hoạt động của Ban kiểm soát và thành viên Ban kiểm soát\nBan kiểm soát và từng Kiểm soát viên đã triển khai đầy đủ và hoàn thành công tác kiểm tra, giám\nsát thường xuyên và định kỳ theo kế hoạch được ĐHĐCĐ giao; đã tổ chức kiểm tra 04 Công ty có\nvốn góp chi phối, 02 chi nhánh trực thuộc và có báo cáo kết quả kiểm tra, kiến nghị gửi tới HĐQT,\nTGĐ TCT. Các thành viên BKS đã nỗ lực, chủ động giải quyết công việc độc lập, đề xuất xử lý các",
+      "clip_rect": [
+        595.275,
+        0.0,
+        1190.55,
+        841.89
+      ]
+    },
+    {
+      "id": "dpm-ar-2024-pdf-page-39-l-vi",
+      "document_id": "PVFCCO-AR-2024",
+      "company": "PVFCCo (Đạm Phú Mỹ)",
+      "file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "source_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+      "page": 39,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "BÁO CÁO THƯỜNG NIÊN 2024                                                            www.dpm.vn\nBÁO CÁO CỦA BAN KIỂM SOÁT (TIẾP THEO)\nBÁO CÁO HOẠT ĐỘNG CỦA BAN KIỂM SOÁT\nvấn đề trong phạm vi công việc được phân công, tham dự đầy đủ các cuộc họp và đã hoàn thành\ntốt nhiệm vụ được giao, tuân thủ các quy định của luật doanh nghiệp, Điều lệ công ty, quy chế\nhoạt động BKS.\nThù lao, chi phí hoạt động các lợi ích khác của Ban kiểm soát và các thành viên Ban kiểm soát\nTiền lương, thưởng, thù lao của các Kiểm soát viên được xây dựng, thực hiện theo Nghị định số\n53/2016/NĐ-CP và theo Nghị quyết đã được ĐHĐCĐ thường niên năm 2024 thông qua.\nChi phí hoạt động của BKS và từng Kiểm soát viên bao gồm: Chi phí văn phòng phẩm, trang\nthiết bị, cước điện thoại, internet, công tác phí và chi phí tiếp khách, hội họp, đã được hạch toán\nvào chi phí kinh doanh theo quy định của pháp luật về thuế thu nhập doanh nghiệp, được lập và\nhạch toán riêng trong sổ sách kế toán tài chính năm 2024 của Tổng công ty.\nTổng kết các cuộc họp của Ban kiểm soát, các kết luận kiến nghị, kết quả giám sát tình hình hoạt\nđộng và tài chính của Tổng công ty:\nBan kiểm soát đã tổ chức 5 cuộc họp định kỳ về các vấn đề: thông qua kết quả hoạt động năm\n2023 và kế hoạch hoạt động năm 2024, kế hoạch kiểm tra giám sát các đơn vị trình ĐHĐCĐ thông\nqua; thẩm định báo cáo tài chính quý/6 tháng/năm; thông qua nội dung báo cáo giám sát định\nkỳ, báo cáo thẩm định tiền lương, báo cáo tổng kết tình hình thực hiện nhiệm vụ của cá nhân, tập\nthể Ban kiểm soát; PVFCCo thực hiện nghĩa vụ bảo lãnh đối ứng cho PVN liên quan đến khoản vay\ncủa VNPOLY.\nBáo cáo đánh giá về giao dịch giữa Tổng công ty, các công ty con, công ty khác do Tổng công\nty nắm quyền kiểm soát trên năm mươi phần trăm (50%) trở lên vốn điều lệ với thành viên Hội\nđồng quản trị, Tổng giám đốc và những người có liên quan của thành viên đó: Theo thông tin\nBKS nhận được, năm 2024 phát sinh các giao dịch sau:\nGiao dịch giữa Tổng công ty và công ty con: Đến 31/12/2024, tổng số vốn góp vào các công ty\ncon không thay đổi, tỷ lệ vốn góp 75%/VĐL là 386,25 tỷ đồng. Các công ty con này làm hệ thống\nđại lý phân phối sản phẩm, làm dịch vụ của Tổng công ty, do vậy trong năm Tổng công ty tiếp\ntục ký các hợp đồng với các công ty con; các giao dịch được HĐQT TCT thông qua và công bố\nthông tin đúng quy định, đảm bảo lợi ích của cổ đông.\nGiao dịch giữa Tổng công ty và PVN: (i) Thực hiện chuyển cho PVN số tiền 30.961.069.384 đồng\nliên quan nghĩa vụ bảo lãnh đối ứng cho khoản vay của VNPOLY; (ii) Hợp đồng chuyển nhượng\nquyền sử dụng nhãn hiệu PVN. HĐQT đã thông qua.\nGiao dịch giữa TCT và Công ty Cổ phần Phân bón Dầu khí Cà Mau (PVCFC)– Công ty có vốn\ngóp chi phối của PVN: hai bên đã ký Hợp đồng mua bán UFC85 số 09/2023/HĐMB-TM/PVCFC-\nPVFCCoCNHCM ngày 06/01/2023 có hiệu lực 24 tháng, HĐQT PVFCCo đã thông qua giao dịch\ntại Nghị quyết số 23-024/NQ-PBHC ngày 17/01/2023 về giao dịch có liên quan.\nGiao dịch bán hóa chất cho một số đơn vị có vốn góp khác của PVN gồm: Liên doanh Việt Nga\n– Vietsopetro; Công ty Khí Cà Mau, Công ty Khí Đông Nam Bộ, Công ty chế biến Khí Vũng Tàu\nlà các đơn vị trực thuộc của PVGas; hợp đồng mua bán hóa chất NH3, H3PO4 với PVChem.\nGiao dịch giữa TCT và Công ty CP Bao Bì Đạm Phú Mỹ (doanh nghiệp có 43,34% vốn góp của\nTCT): đã ký hợp đồng mua bán sản phẩm bao bì các loại.\nGiao dịch giữa Tổng công ty với các công ty trong đó thành viên Hội đồng quản trị là thành viên\nsáng lập hoặc là người quản lý doanh nghiệp (công ty con) trong thời gian 03 năm gần nhất\ntrước thời điểm giao dịch. Theo thông tin BKS nhận được, năm 2024 phát sinh các giao dịch sau:\nGiao dịch ký hợp đồng mua bán với TCT Hóa chất và dịch vụ Dầu khí – CTCP - Chi nhánh Dịch vụ\nhóa chất dầu khí (PVChem-CS) và Công ty TNHH PVChem-Tech, là các doanh nghiệp mà TGĐ\nPVFCCo là người quản lý tại PVChem trong 03 năm gần đây:",
+      "clip_rect": [
+        0.0,
+        0.0,
+        595.275,
+        841.89
+      ]
+    },
+    {
+      "id": "dpm-ar-2024-pdf-page-39-r-vi",
+      "document_id": "PVFCCO-AR-2024",
+      "company": "PVFCCo (Đạm Phú Mỹ)",
+      "file": "data/raw/vietnam_enterprises/dpm/dpm-ar-2024-vi.pdf",
+      "source_pdf_sha256": "4494681e3c12424e882711767c1189f0e0d0f965dba20880d50f60c3b689a38d",
+      "source_url": "https://dpm.vn/public_folder/files_upload/202504/20250410dpmar-2024vnwebpdf1744691930.pdf",
+      "page": 39,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "mixed_prose_region",
+      "reference_source": "native_pdf_text_unreviewed",
+      "reference_text": "Giới                  thiệu                          Báo cáo hoạt                                    động                                                                 Báo cáo phát                                                                                                            triển                                                                                       Báo                                                  Quản                                                                                                 trị                                                                                                  cáo   76  77       Tổng            công                     ty                             năm                                    2024                                                                           bền vững                                                                                                                                        tài                                                                                                            chính                                                  Công                                                                         ty\nHợp đồng mua bán số 44/2024/CNHC/KD-PVChem ngày 24/4/2024 mua hóa chất H3PO4\ncho NM ĐPM, giá trị có VAT 55.938.177.051 đồng.\nHợp đồng mua bán số 46/2024/CNHC/KD-PVChem-CS/B_AMMONIA ngày 24/5/2024 bán\nNH3 cho PVChem CS, giá trị 949 triệu đồng (chưa VAT).\nHợp đồng mua bán NH3 số 47/2024/CNHC/KD-PVChem-Tech/B_Ammonia ngày 05/6/2024.\nKết quả giám sát đối với Hội đồng quản trị, Tổng giám đốc và những người điều hành khác:\nHĐQT đã triển khai thực hiện đầy đủ các nội dung được Đại hội đồng cổ đông thông qua, đảm bảo\nhoạt động sản xuất kinh doanh của Tổng công ty được thường xuyên, liên tục và tăng trưởng. Hội\nđồng quản trị đã phân công nhiệm vụ cụ thể cho từng Thành viên phụ trách từng lĩnh vực, đã thành\nlập 03 Ủy ban trực thuộc nhằm tăng cường chỉ đạo, đôn đốc, giám sát Tổng công ty triển khai thực\nhiện các nghị quyết, quyết định của HĐQT; tổ chức đầy đủ các cuộc họp định kỳ và đột xuất khi\nphát sinh yêu cầu. HĐQT làm việc với tinh thần trách nhiệm, độc lập và minh bạch.\nTổng giám đốc Tổng công ty đã chỉ đạo và phân công các Phó Tổng giám đốc triển khai các Nghị\nquyết, Quyết định, chỉ đạo của HĐQT Tổng công ty, định kỳ có báo cáo HĐQT tình hình và kết quả\nthực hiện.\nHĐQT cùng với Tổng giám đốc và Người quản lý khác đã chỉ đạo và thực hiện tốt Nghị quyết Đại\nhội đồng cổ đông, hoàn thành vượt mức các chỉ tiêu kế hoạch sản xuất kinh doanh năm 2024.\nKết quả đánh giá sự phối hợp hoạt động giữa Ban kiểm soát với Hội đồng quản trị, Tổng giám\nđốc và các cổ đông:\nHội đồng quản trị, Tổng giám đốc Tổng công ty đã phối hợp và hỗ trợ Ban Kiểm soát hoàn thành\ntốt nhiệm vụ kiểm tra, giám sát theo quy định. Các kiến nghị, góp ý của Ban kiểm soát được HĐQT,\nTổng giám đốc Tổng công ty chỉ đạo các Ban chức năng/Chi nhánh/Đơn vị thành viên triển khai\nthực hiện. BKS đã thực hiện báo cáo đầy đủ, kịp thời cho cổ đông lớn theo quy định và khi có yêu\ncầu đột xuất.\nBÁO CÁO CÁC GIAO DỊCH, THÙ LAO VÀ CÁC KHOẢN LỢI\nÍCH KHÁC CỦA HỘI ĐỒNG QUẢN TRỊ, BAN TỔNG GIÁM\nĐỐC VÀ BAN KIỂM SOÁT\nLƯƠNG, THƯỞNG, THÙ LAO VÀ CÁC KHOẢN LỢI ÍCH KHÁC CỦA HỘI ĐỒNG\nQUẢN TRỊ, BAN TỔNG GIÁM ĐỐC VÀ BAN KIỂM SOÁT\nTổng công ty áp dụng chế độ lương cho thành viên Hội đồng quản trị và thành viên Ban kiểm\nsoát chuyên trách và Ban điều hành theo quy định của pháp luật, quy chế quản lý tiền lương,\ntiền thưởng và chế độ chính sách đối với người đại diện của Tập đoàn Dầu khí, hài hòa với chính\nsách lương và quỹ lương hàng năm của Tổng công ty, tương xứng với năng lực và kết quả công\nviệc của từng thành viên.\nĐối với các thành viên Hội đồng quản trị và thành viên Ban kiểm soát không chuyên trách, Tổng\ncông ty thực hiện chế độ thù lao công việc.",
+      "clip_rect": [
+        595.275,
+        0.0,
+        1190.55,
+        841.89
+      ]
+    }
+  ]
+}

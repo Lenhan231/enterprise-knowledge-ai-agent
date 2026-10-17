@@ -36,17 +36,47 @@ provide RAG context; see the [data flow](../README.md) and
 
 ## Module ownership
 
-- `processors/document_processor.py`: upload format dispatch and shared metadata.
-- `processors/pdf/processor.py`: native PDF text, Tesseract fallback, PDF tables,
-  page metadata, and dispatch to optional layout/parser adapters.
-- `processors/pdf/mineru_processor.py`: MinerU Basic Hugging Face Space adapter used
+- `document_processor.py`: upload format dispatch and shared metadata.
+- `processors/pdf/processor.py`: coordinates parser selection and optional PDF
+  image captioning.
+- `processors/pdf/text_extractor.py`: coordinates native page extraction and
+  scanned-page OCR, headings, and structured tables in one PDF traversal.
+- `processors/pdf/digital_born/native_text.py`: extracts embedded text from a
+  digital-born PDF page.
+- `processors/pdf/text_chunks.py`: creates page-local text chunks with
+  heading/OCR metadata through the shared chunk builder and router.
+- `processors/pdf/table_chunks.py`: formats PDF tables and reconciles them
+  with flat page text chunks; chunk boundaries use the shared chunking router.
+- `processors/pdf/scanned/ocr.py`: PDF page selection/rendering, orientation/deskew, and
+  merging OCR with native PDF text.
+- `processors/pdf/table_processor.py`: table title/context recovery,
+  coordinate restoration, and continuation linking.
+- `processors/pdf/table_extractor.py`: native PDF and OCR word-box table
+  reconstruction.
+- `pipelines/mineru/processor.py`: MinerU Basic local CLI adapter used
   when a caller explicitly selects `parser_engine="mineru"`.
-- `processors/pdf/layout_processor.py`: optional PaddleOCR layout processing.
-- `processors/pdf/table_extractor.py`: native and OCR word-box table reconstruction.
-- `processors/image/processor.py`: standalone image OCR and table extraction.
-- `processors/office/processor.py`: DOCX, PPTX, and XLSX Open XML parsing.
-- `processors/text/processor.py`: TXT/Markdown decoding and dispatch.
-- `src/core/chunking/text_chunker.py`: shared character-based chunk boundaries.
+- `pipelines/pp_structurev3/processor.py`: optional PP-StructureV3 integrated OCR,
+  layout, and table processing.
+- `pipelines/docling/processor.py`: optional local Docling conversion with
+  RapidOCR and table-structure extraction; maps Docling items into the shared
+  parser output shape.
+- `scanned/processor.py`: standalone scanned-image OCR and table recovery.
+- `scanned/ocr/`: shared Tesseract runner and image text/word-box recognition
+  used by image, PDF, and Office paths.
+- `scanned/table_recovery.py`: reconstructs scanned tables from OCR word boxes.
+- `scanned/layout/doclayout_yolo.py`: optional diagnostic layout detector.
+- `processors/office/processor.py`: Office archive validation and format routing.
+- `processors/office/{docx,pptx,xlsx}/digital_born/processor.py`: native
+  format-specific text, tables, formulas, and structure.
+- `processors/office/{docx,pptx,xlsx}/scanned/processor.py`: OCR adapters for
+  images embedded in each Office format. Shared OOXML and image OCR helpers live
+  in `processors/office/scanned/`; image OCR emits text chunks, not table rows.
+- `processors/csv/digital_born/processor.py`: UTF-8 CSV rows as structured
+  tables and searchable row-aware chunks.
+- `processors/text/digital_born/processor.py`: TXT/Markdown decoding and dispatch.
+- `src/core/document_processing/chunking/router.py`: routes text to the selected chunking strategy.
+- `src/core/document_processing/chunking/config.py`: shared strategy, size, and overlap settings.
+- `src/core/document_processing/chunking/chunk_builder.py`: builds parser chunks and metadata.
 - `src/core/tokenization/token_counter.py`: embedding-token-aware splitting.
 - `src/core/database/structured_store.py`: structured table persistence.
 
@@ -56,8 +86,10 @@ embedding/index stage because tokenization limits vary by model.
 ## Supported input and behavior
 
 `DocumentProcessor.SUPPORTED` is the authoritative extension list. It currently
-includes PDF, DOCX, PPTX, XLSX, TXT, Markdown, PNG, JPEG, and TIFF. Seed ingestion
-supports PDF and HTML. Legacy binary XLS is unsupported.
+includes PDF, DOCX, PPTX, XLSX, CSV, TXT, Markdown, PNG, JPEG, and TIFF. CSV
+files are parsed as UTF-8 tables and produce structured rows plus searchable
+row-aware chunks. Seed ingestion supports PDF and HTML. Legacy binary XLS is
+unsupported.
 
 For PDFs, PyMuPDF extracts text when a page has a usable text layer. Pages with
 no usable text can fall back to Tesseract (`vie+eng` by default); processor
@@ -75,7 +107,7 @@ extraction when the text gate rejects a region. These are conservative
 heuristics, not accuracy scores; validate them on labeled scans before changing
 thresholds or treating extracted tables as business facts. When an embedded
 image is rejected for low confidence or too few recognized words, the page's
-parser metadata records the reason and score; Admin Processing and OCR Lab show
+parser metadata records the reason and score; Admin Processing and Upload Test show
 that diagnostic beside the extracted output.
 
 On scan-only pages where OCR word boxes also produce a structured table, the
@@ -118,16 +150,22 @@ Lab shows Tesseract's mean word confidence for OCR-derived tables as a parser
 diagnostic; it is not a probability or a measure of table accuracy.
 
 PDF upload defaults are text PSM 11 at scale 1.5 and table PSM 3 at scale 2.5.
-The OCR Lab defaults to the large-corpus candidate (PSM 3, 180 DPI) and exposes
+The Upload Test defaults to those production settings and exposes
 PSM, 167/180 DPI, thresholding, dictionary, inversion, table-recognition,
-LSTM-decoding, and traineddata choices per isolated run. The app passes a
+LSTM-decoding, and traineddata choices only when the production parser is
+selected. PP-StructureV3 exposes device, render scale, formula, and chart
+settings; MinerU exposes forced OCR and page range; Docling exposes device, OCR,
+language, table-structure, and CPU-thread settings. All four use the same
+cleanup, metadata normalization, chunking, and local token-limit checks. The app passes a
 validated allowlist of Tesseract `-c` parameters to both text and TSV calls;
 upload callers without these settings keep Tesseract's installed defaults.
 Selecting `tessdata_fast` or `tessdata_best` requires `TESSDATA_FAST_DIR` or
 `TESSDATA_BEST_DIR` pointing to the corresponding traineddata directory.
-The OCR Lab uses
-isolated `ocr_test_*` tables and does not create a corpus document, Storage
-object, or embeddings. The Tester role is separate from document ACL roles.
+The Upload Test uses isolated `upload_test_*` tables and does not create a
+corpus document or Storage object. It saves shared parser chunks, normalized
+table rows, and token-bounded chunks intended as embedding input. It stops
+before embedding and stores no vectors for new runs. The Tester role is
+separate from document ACL roles.
 The Lab can additionally run the pinned DocLayout-YOLO checkpoint and overlay
 its detected page regions; this detector pass is diagnostic and does not feed
 boxes into OCR, table extraction, or chunking. Install the optional dependency
@@ -135,28 +173,36 @@ with `uv sync --extra layout-yolo`; the first YOLO run downloads its pinned
 checkpoint from Hugging Face. It uses CUDA when available and otherwise falls
 back to CPU. Image size and confidence threshold are selectable per run.
 
-### Production upload and OCR Lab parser paths
+### Production upload and Upload Test parser paths
 
 The production `/api/documents/upload` route currently creates
 `DocumentProcessor` without a `parser_engine`. PDFs therefore use the default
 PyMuPDF/native-text and Tesseract fallback path, unless the Paddle layout
-environment setting is enabled. Selecting MinerU in OCR Lab does not change the
-production upload parser.
+environment setting is enabled. Selecting MinerU in Upload Test does not
+change the production upload parser.
 
-OCR Lab accepts a per-run `parser_engine`: `pymupdf_tesseract`,
-`pp-structurev3`, or `mineru`. Each run is saved in the isolated OCR test store;
-it does not create production documents or embeddings. The route stores parser
-chunks for visual review, so an OCR Lab chunk count is not the final embedding
-chunk count used by production retrieval.
+Upload Test accepts a per-run `parser_engine`: `pymupdf_tesseract`,
+`pp-structurev3`, `mineru`, or `docling`. Each run is saved in isolated test
+tables; it does not create production documents, Storage objects, or retrieval
+entries. The four parsers are followed by one cleanup, metadata-normalization, and
+chunking path. Local tokenizer checks produce the exact token-bounded text that
+would be sent to embedding, but the test route does not call the embedding
+provider or write vectors.
 
-The MinerU adapter calls the configured Hugging Face Space
-(`MINERU_HF_SPACE`, default `opendatalab/MinerU`) at Basic tier. It maps MinerU
-page blocks into parser chunks, retaining page, layout type, bounding box,
-parser, and tier metadata. Each block is chunked independently with the common
-text chunker (default maximum 1,100 characters); short neighboring blocks are
-not merged. MinerU output is normalized by collapsing whitespace, so source line
-breaks inside a block are not preserved. The character limit is a maximum, not
-a target size.
+Install the optional Docling parser with `uv sync --extra docling`. Upload Test
+configures its local CPU/CUDA device, RapidOCR language and enablement, table
+structure recognition, and CPU thread count per run. The first conversion can
+download model artifacts into Docling's cache.
+
+The MinerU adapter runs `mineru-kit parse` locally at Basic tier and reads its
+Middle JSON output. Install MinerU in an isolated environment, set
+`MINERU_LOCAL_CLI` to its executable, and set `MINERU_LOCAL_HOME` to the home
+directory containing its downloaded models. The adapter maps page blocks into
+parser output, retaining page, layout type, bounding box, parser, tier, and
+MinerU version metadata. Selected page ranges are remapped to their original PDF
+page numbers. Upload Test then applies shared whitespace cleanup and re-chunks
+neighboring blocks with matching page, section, and element type. The character
+limit is a maximum, not a target size.
 
 MinerU table blocks in Markdown pipe-table or HTML form are converted into
 structured rows. HTML table chunks are serialized as column and row text rather
@@ -164,8 +210,8 @@ than raw markup. The adapter still does not run the default PDF path's
 table-title detection or `_replace_flat_table_chunks()` formatter. A MinerU
 table chunk may therefore lack a `Table: <title>` prefix, even though the
 default production PDF path can repeat a detected title and column names in
-each row-aware retrieval fragment. Check the parser chunk and table list in
-the saved OCR Lab run; the two parser paths do not provide identical title
+each table retrieval chunk. Check the shared and token-bounded chunks plus
+the table list in the saved Upload Test run; the two parser paths do not provide identical title
 context.
 
 `DOCUMENT_PADDLE_LAYOUT=true` enables the optional Paddle layout path.
@@ -193,7 +239,8 @@ preserved; the parser does not recalculate formulas.
 Section titles are format-dependent metadata: Word headings, slide titles,
 worksheet names, and recognizable PDF headings. OCR-only unnumbered headings
 can be missed, so `section_title` may be null. A table's context is separate
-from `structured_data` and parser `metadata` in OCR test persistence.
+from parser `metadata` in Upload Test persistence; rows are stored separately in
+`upload_test_records` to mirror production's `extracted_records` table.
 
 Optional image captions are generated content, disabled by default, and are not
 valid source evidence for metric extraction. They must remain labeled as model

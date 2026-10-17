@@ -484,8 +484,15 @@
 
 .ocr-test-page-content{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .ocr-test-page-content>.ocr-test-raw,.ocr-test-page-content>.ocr-test-extracted{min-width:0;margin:0}
+.ocr-layout-preview{position:relative;width:fit-content;max-width:100%;margin:0 auto}
+.ocr-test-raw .ocr-layout-preview img{display:block;width:auto;max-width:100%;max-height:850px;margin:0;border:1px solid var(--line);object-fit:contain}
+.ocr-layout-preview svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.layout-region rect{fill:transparent;stroke:#2563eb;stroke-width:3;vector-effect:non-scaling-stroke}
+.layout-region text{fill:#fff;stroke:#111827;stroke-width:2px;paint-order:stroke;font-size:18px;font-weight:700}
+.layout-region-title rect{stroke:#dc2626}.layout-region-table rect{stroke:#16a34a}.layout-region-formula rect{stroke:#9333ea}.layout-region-figure rect{stroke:#d97706}
 #ocr-test-form{grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:14px}
 #ocr-test-form .ocr-test-field{display:grid;min-width:0;gap:6px}
+#ocr-test-form fieldset[hidden]{display:none}
 #ocr-test-form .ocr-test-field>label{color:var(--muted);font-size:12px;line-height:1.4}
 #ocr-test-form .ocr-test-field>input,#ocr-test-form .ocr-test-field>select{box-sizing:border-box;width:100%;min-width:0;min-height:40px}
 #ocr-test-form>button,#ocr-test-form>#ocr-test-status{grid-column:1/-1}

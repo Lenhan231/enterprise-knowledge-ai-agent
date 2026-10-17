@@ -1,0 +1,356 @@
+{
+  "dataset_id": "acb-ar-2024-manual-prose-regions-16-v1",
+  "dataset_title": "ACB Annual Report 2024 manually transcribed Vietnamese prose regions",
+  "purpose": "Exploratory CER/WER screening on manually transcribed prose crops from the bank annual report.",
+  "reference_method": "Manual transcription from rendered page crops; one reviewer.",
+  "reference_quality": "All 16 prose crops were transcribed from the rendered PDF images and visually checked against those images by one reviewer. No independent second review was performed. The PDF has text-mapping problems elsewhere; these selected regions were labeled from visible images rather than extracted text.",
+  "primary_metric_selection_eligible": false,
+  "limitations": [
+    "Sixteen crops come from five PDF pages of one annual report and are not independent documents or broad bank-domain coverage.",
+    "The manual references have one reviewer and no second adjudication.",
+    "Crops isolate prose paragraphs and do not measure full-page reading order, layout detection, or table extraction.",
+    "The annual report is a born-digital PDF, not a physical scan.",
+    "CER/WER measure recognition only. Resource measurements are comparable only on the same device and benchmark configuration."
+  ],
+  "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+  "source_download_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+  "render_dpi": 180,
+  "pages": [
+    {
+      "id": "acb-ar-2024-pdf-page-14-region-market-risk-tools-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 14,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Ngân hàng xây dựng các công cụ đo lường, giám sát liên tục về mức độ tổn thất có khả năng xảy ra như đánh giá độ nhạy, mức lỗ tối đa ước tính trong cả điều kiện bình thường (VaR – Value at Risk) và giai đoạn căng thẳng (SVaR – Stressed VaR), từ đó đưa ra cảnh báo giúp nâng cao công tác quản lý các hạn mức quy mô và trạng thái, hạn mức ngăn lỗ và hạn mức biến động tối đa ước tính phù hợp với khẩu vị rủi ro.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        65.9,
+        106.94,
+        325.75,
+        201.28
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-14-region-market-risk-backtest-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 14,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Kiểm tra hồi tố (back test) được thực hiện thường xuyên để đánh giá mức độ chính xác của các công cụ hoặc mô hình đo lường rủi ro thị trường nhằm liên tục cải tiến phản ánh sát hơn mức độ rủi ro. Nguyên tắc kiểm tra hồi tố mô hình VaR dựa trên đánh giá số lần vượt của lãi/lỗ thực tế và lãi/lỗ giả định so với mức lỗ tối đa ước tính VaR.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        65.9,
+        196.61,
+        325.73,
+        278.95
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-14-region-market-risk-monitoring-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 14,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Bên cạnh đó, Ngân hàng cũng giám sát và giới hạn các trạng thái có rủi ro thị trường thông qua một số công cụ gồm đánh giá độ nhạy, VaR và kiểm tra sức chịu đựng. Việc kiểm tra sức chịu đựng được triển khai thường xuyên nhằm đánh giá mức độ ảnh hưởng đến lợi nhuận và giá trị của các danh mục tài sản trong những trường hợp căng thẳng và có khả năng xảy ra. Ngoài ra, ACB thực hiện kiểm tra sức chịu đựng nghịch đảo để dự phòng trường hợp mức lỗ của các danh mục kinh doanh vượt hạn mức hiện hành.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        65.9,
+        274.28,
+        325.71,
+        392.62
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-14-region-anti-money-laundering-system-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 14,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Trong năm 2023 - 2024 ACB đã triển khai việc xây dựng hệ thống phòng chống rửa tiền mới với các tính năng sàng lọc khách hàng, sàng lọc giao dịch và giám sát giao dịch nhằm tuân thủ các yêu cầu mới của Luật Phòng chống rửa tiền. Hệ thống này giúp kịp thời phát hiện các giao dịch có dấu hiệu đáng ngờ, rà soát và ngăn chặn các khách hàng thuộc danh sách đen, danh sách truy nã, danh sách cấm vận, v.v. thực hiện các giao dịch liên quan đến vi phạm pháp luật, và do đó gây rủi ro cho ACB.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        65.9,
+        433.61,
+        325.75,
+        551.95
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-14-region-anti-money-laundering-system-impact-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 14,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Sau khi đưa vào vận hành, hệ thống đã giúp rút ngắn đáng kể thời gian sàng lọc giao dịch trung bình từ 30 phút xuống còn 5-10 phút; việc sàng lọc khách hàng tại quầy giảm từ 20 phút xuống còn 5 phút. Kết quả sàng lọc khách hàng qua kênh online được trả về hệ thống eKYC chỉ tối đa 45 giây để hỗ trợ việc ra quyết định trên eKYC. Hệ thống cũng có công cụ giám sát toàn hệ thống các giao dịch trên tài khoản khách hàng nhằm kịp thời phát hiện các giao dịch có yếu tố đáng ngờ dựa trên các kịch bản được xây dựng phù hợp với Luật Phòng chống rửa tiền và thông lệ quốc tế.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        65.9,
+        547.28,
+        325.75,
+        677.62
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-14-region-liquidity-risk-governance-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 14,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Ngân hàng quản trị rủi ro thanh khoản thông qua triển khai áp dụng các chuẩn mực quốc tế về “Đánh giá nội bộ về an toàn theo quy định của Ngân hàng Trung ương châu Âu” (ILAAP) và Hiệp ước vốn Basel III nhằm đảm bảo Ngân hàng có chiến lược, quy định rõ ràng và hệ thống để nhận dạng, đo lường, quản lý và giám sát rủi ro thanh khoản hiệu quả. Ngoài ra, Ngân hàng thực hiện rà soát khả năng chịu đựng rủi ro và khẩu vị rủi ro thanh khoản, đồng thời đánh giá khả năng quản lý thanh khoản và nguồn vốn của Ngân hàng.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        820.67,
+        156.94,
+        1097.56,
+        263.28
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-14-region-liquidity-risk-strategy-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 14,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Chiến lược quản lý rủi ro thanh khoản của Ngân hàng được áp dụng trong cả điều kiện bình thường và có diễn biến bất lợi về thanh khoản, bao gồm duy trì đủ tài sản có tính thanh khoản cao, quản lý thanh khoản trong ngày, thực hiện đánh giá thường xuyên khả năng tiếp cận nguồn vốn để đáp ứng nhu cầu thanh khoản.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        820.67,
+        258.61,
+        1097.56,
+        328.95
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-14-region-liquidity-stress-testing-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 14,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Kiểm tra sức chịu đựng được thường xuyên thực hiện nhằm đánh giá mức đủ thanh khoản cần thiết để đối mặt với các biến động trong nội bộ và bên ngoài. Ngoài ra, các kết quả kiểm tra là cơ sở để đề xuất những hành động giảm thiểu rủi ro, phân bổ các nguồn lực tài chính và rà soát kế hoạch dự phòng thanh khoản, cũng như đánh giá các kế hoạch kinh doanh có khả năng ảnh hưởng tiêu cực đến khả năng thanh khoản.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        820.67,
+        324.28,
+        1097.58,
+        418.62
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-15-region-interest-rate-risk-standards-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 15,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "ACB đưa vào ứng dụng thực tiễn các chuẩn mực Basel III nhằm hoàn thiện công tác quản lý rủi ro lãi suất trên sổ ngân hàng theo thông lệ quốc tế và tuân thủ cao các quy định của NHNN. Theo đó, Ngân hàng cân đối cơ cấu tỷ trọng, kỳ hạn các tài sản nợ và tài sản có trên sổ ngân hàng nhằm hạn chế ảnh hưởng tiêu cực của biến động lãi suất đến thu nhập lãi thuần và giá trị kinh tế của vốn chủ sở hữu, đặc biệt trong thời điểm có biến động mạnh về lãi suất.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        65.9,
+        103.27,
+        283.23,
+        233.61
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-15-region-interest-rate-risk-strategy-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 15,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Công tác triển khai quản lý rủi ro lãi suất với chất lượng cao cho phép ACB xây dựng các chiến lược kinh doanh linh hoạt, phù hợp với biến động lãi suất của thị trường; từ đó giúp Ngân hàng cân bằng mục tiêu tối ưu lợi nhuận và giảm thiểu tổn thất, giúp quản lý tốt bộ đệm vốn nhằm nâng cao năng lực sẵn sàng ứng phó trong điều kiện căng thẳng về lãi suất.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        65.9,
+        228.94,
+        283.22,
+        335.28
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-15-region-interest-rate-stress-testing-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 15,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Kiểm tra sức chịu đựng rủi ro lãi suất trên sổ ngân hàng được thường xuyên thực hiện nhằm xác định các rủi ro kinh tế chính có khả năng xảy ra trong các kịch bản căng thẳng và mức ảnh hưởng đến tình hình tài chính và vốn tự có. Theo đó, Ngân hàng chủ động đánh giá và đưa ra các chiến lược quản lý rủi ro hiệu quả và/ hoặc hành động dự phòng, đồng thời xác định yêu cầu vốn tự có trong thủ tục đánh giá nội bộ mức đủ vốn (ICAAP) và khả năng bù đắp lợi nhuận sụt giảm.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        65.9,
+        330.61,
+        283.21,
+        460.95
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-15-region-reputation-risk-monitoring-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 15,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Trong năm 2024, để quản lý hiệu quả rủi ro này, ACB đã thực hiện giám sát liên tục và chặt chẽ thông qua sự tham gia tích cực của toàn bộ nhân viên Ngân hàng cùng với việc thiết lập một hệ thống đo lường, đánh giá và dự đoán các nguy cơ tiềm ẩn trong khi vẫn tiếp tục cải thiện các hoạt động truyền thông. Cụ thể như sau:",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        65.9,
+        605.61,
+        283.22,
+        699.95
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-15-region-environmental-risk-context-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 15,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Hiện nay, các rủi ro về môi trường, thiên tai, dịch bệnh đặt ra các thách thức và rủi ro cho các ngành kinh tế nói chung và ngành ngân hàng nói riêng. Năm 2024, Việt Nam chịu ảnh hưởng lớn của bão Yagi (bão số 3), theo đó ACB cũng kịp thời xây dựng, triển khai một số chính sách quản lý rủi ro trong ngắn hạn và dài hạn để hỗ trợ khách hàng, đảm bảo hoạt động của ACB được liên tục, ổn định và phát triển bền vững.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        285.55,
+        458.95,
+        502.88,
+        577.29
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-27-region-asset-quality-2024-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 27,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Trong năm 2024, trước áp lực về suy giảm chất lượng tín dụng của toàn ngành, ACB vẫn duy trì chất lượng tài sản thuộc nhóm tốt nhất thị trường. Tỷ lệ nợ xấu của ACB tuy tăng lên 1,5% nhưng vẫn thấp hơn mục tiêu (dưới 2%) và là một trong số các ngân hàng có tỷ lệ nợ xấu thấp nhất thị trường.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        71.57,
+        212.17,
+        502.9,
+        258.51
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-29-region-credit-growth-2024-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 29,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Trong năm 2024, hoạt động tín dụng trở thành mảng cạnh tranh gay gắt giữa các ngân hàng. Trong bối cảnh đó, ACB vẫn tăng trưởng cao hơn bình quân ngành. Dư nợ cho vay đến cuối năm đạt 581 nghìn tỷ đồng, tăng 19,1% so với năm 2023. Cho vay nhất quán theo hướng cẩn trọng, với 98% khoản vay có tài sản đảm bảo và tỷ lệ cho vay trên giá trị tài sản bảo đảm (LTV) của danh mục khoảng 53%.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        71.88,
+        103.77,
+        502.92,
+        162.11
+      ]
+    },
+    {
+      "id": "acb-ar-2024-pdf-page-30-region-income-margin-2024-vi",
+      "document_id": "ACB-AR-2024",
+      "company": "Asia Commercial Bank",
+      "file": "data/raw/vietnam_enterprises/acb/acb-ar-2024-vi.pdf",
+      "source_pdf_sha256": "c242e8c075b28b49028e9946f3c43c581444dbdda14b5078729fa28e3991389e",
+      "source_url": "https://acb.com.vn/acbwebsite/files/BCTN_2024.pdf",
+      "page": 30,
+      "language": "vi",
+      "image_only": false,
+      "physical_scan": false,
+      "layout_type": "prose_region",
+      "reference_text": "Tổng thu nhập trong năm của ACB đạt 33.515 tỷ đồng, tăng 2,3% so với cùng kỳ, trong đó thu nhập lãi thuần tăng 11,4% và thu nhập ngoài lãi giảm 27%. Biên lãi ròng có sự sụt giảm so với năm 2023, còn 3,62%, chủ yếu do mặt bằng lãi suất huy động tăng trở lại trong khi lãi suất cho vay vẫn duy trì ở mức thấp để hỗ trợ thúc đẩy tăng trưởng.",
+      "reference_annotation_method": "manual_transcription",
+      "clip_rect": [
+        667.0,
+        157.3,
+        1098.47,
+        215.64
+      ]
+    }
+  ]
+}

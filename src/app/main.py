@@ -55,9 +55,9 @@ ROLE_PERMISSIONS = {
     "operations": {"view_corpus", "ask_documents", "view_analytics"},
     "legal_compliance": {"view_corpus", "ask_documents"},
     "executive": {"view_corpus", "ask_documents", "view_analytics"},
-    "admin": {"view_corpus", "ask_documents", "view_analytics", "upload_documents", "classify_documents", "review_metrics", "manage_access", "manage_knowledge", "view_agent_monitoring", "run_ocr_tests", "review_ocr_tests"},
+    "admin": {"view_corpus", "ask_documents", "view_analytics", "upload_documents", "classify_documents", "review_metrics", "manage_access", "manage_knowledge", "view_agent_monitoring", "run_upload_tests", "review_upload_tests"},
     "document_uploader": {"view_corpus", "upload_documents", "classify_documents"},
-    "tester": {"run_ocr_tests", "review_ocr_tests"},
+    "tester": {"run_upload_tests", "review_upload_tests"},
 }
 
 
@@ -452,9 +452,9 @@ async def upload_document(
     _require_same_origin(request)
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
-    from core.document_processing.processors.document_processor import DocumentProcessor
+    from core.document_processing.document_processor import DocumentProcessor
     if not filename or extension not in DocumentProcessor.SUPPORTED:
-        raise HTTPException(415, "Supported formats: PDF, DOCX, PPTX, XLSX, TXT, MD, PNG, JPG, TIF")
+        raise HTTPException(415, "Supported formats: PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG, TIF")
     if not title.strip() or not document_type.strip() or not domain.strip():
         raise HTTPException(422, "Title, document type, and domain are required")
     if ocr_language not in OCR_LANGUAGES:
@@ -491,6 +491,7 @@ async def upload_document(
     content_type = {".pdf": "application/pdf", ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
                     ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    ".csv": "text/csv",
                     ".txt": "text/plain", ".md": "text/markdown", ".png": "image/png",
                     ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".tif": "image/tiff", ".tiff": "image/tiff"}[extension]
     source_hash = hashlib.sha256(content).hexdigest()
@@ -532,7 +533,7 @@ async def upload_document(
         })
         registered = True
         repository.update_processing_status(document_id, "processing")
-        from core.document_processing.processors.document_processor import DocumentProcessor
+        from core.document_processing.document_processor import DocumentProcessor
         from core.embeddings.embedding_service import EmbeddingService
         from core.database.document_chunks_repository import DocumentChunkRepository
         from core.database.processed_chunks_repository import ProcessedChunksRepository
@@ -600,28 +601,19 @@ async def upload_document(
 
         embedding_service = EmbeddingService()
         from core.tokenization.token_counter import TokenCounter
+        from core.tokenization.embedding_chunker import build_embedding_chunks
 
         token_counter = TokenCounter(embedding_service.model_name)
-        bounded_chunks = []
-        for chunk in chunks:
-            for text in token_counter.split_text(
-                chunk["text"],
-                max_sequence_tokens=embedding_service.max_sequence_length,
-            ):
-                chunk_metadata = dict(chunk["metadata"])
-                chunk_metadata.update({
-                    "chunk_index": len(bounded_chunks),
-                    "token_count": token_counter.count(text),
-                    "actual_char_count": len(text),
-                })
-                bounded_chunks.append({"text": text, "metadata": chunk_metadata})
-        chunks = bounded_chunks
+        chunks = build_embedding_chunks(
+            chunks,
+            token_counter,
+            embedding_service.max_sequence_length,
+            embedding_service.model_name,
+        )
         parsed_repository = ProcessedChunksRepository()
         parsed_repository.set_status(document_id, "embedding")
         parsed_repository.close()
         vectors = embedding_service.embed_documents([chunk["text"] for chunk in chunks])
-        for chunk in chunks:
-            chunk["metadata"]["embedding_model"] = embedding_service.model_name
         chunk_repository = DocumentChunkRepository()
         try:
             chunk_repository.replace_document(document_id, [
@@ -722,40 +714,33 @@ def retry_document_embedding(
         parsed_repository.set_status(document_id, "embedding")
         from core.embeddings.embedding_service import EmbeddingService
         from core.tokenization.token_counter import TokenCounter
+        from core.tokenization.embedding_chunker import build_embedding_chunks
         from core.database.document_chunks_repository import DocumentChunkRepository
 
         embedding_service = EmbeddingService()
         token_counter = TokenCounter(embedding_service.model_name)
-        bounded_chunks = []
-        for chunk in parsed_chunks:
-            text = str(chunk.get("content") or "")
-            metadata = dict(chunk.get("metadata") or {})
-            if not text.strip():
-                continue
-            for part in token_counter.split_text(
-                text, max_sequence_tokens=embedding_service.max_sequence_length,
-            ):
-                chunk_metadata = dict(metadata)
-                chunk_metadata.update({
-                    "chunk_index": len(bounded_chunks),
-                    "token_count": token_counter.count(part),
-                    "actual_char_count": len(part),
-                    "embedding_model": embedding_service.model_name,
-                    "document_id": document_id,
-                    "allowed_roles": allowed_roles,
-                })
-                bounded_chunks.append((part, chunk_metadata))
+        bounded_chunks = build_embedding_chunks(
+            parsed_chunks,
+            token_counter,
+            embedding_service.max_sequence_length,
+            embedding_service.model_name,
+        )
+        for chunk in bounded_chunks:
+            chunk["metadata"].update({
+                "document_id": document_id,
+                "allowed_roles": allowed_roles,
+            })
         if not bounded_chunks:
             raise ValueError("Saved parser output contains no embeddable text")
 
-        vectors = embedding_service.embed_documents([text for text, _ in bounded_chunks])
+        vectors = embedding_service.embed_documents([chunk["text"] for chunk in bounded_chunks])
         if len(vectors) != len(bounded_chunks):
             raise ValueError("Embedding provider returned a different number of vectors than passages")
         chunk_repository = DocumentChunkRepository()
         try:
             chunk_repository.replace_document(document_id, [
-                (filename, index, text, metadata, vector)
-                for index, ((text, metadata), vector) in enumerate(zip(bounded_chunks, vectors, strict=True))
+                (filename, index, chunk["text"], chunk["metadata"], vector)
+                for index, (chunk, vector) in enumerate(zip(bounded_chunks, vectors, strict=True))
             ])
         finally:
             chunk_repository.close()
@@ -791,8 +776,9 @@ def retry_document_embedding(
             document_repository.close()
 
 
-@app.post("/api/ocr-tests")
-async def create_ocr_test(
+@app.post("/api/upload-tests")
+@app.post("/api/ocr-tests", include_in_schema=False)
+async def create_upload_test(
     request: Request,
     file: UploadFile = File(...),
     tesseract_psm: int = Form(default=11),
@@ -800,22 +786,76 @@ async def create_ocr_test(
     render_scale: float = Form(default=1.5),
     table_render_scale: float = Form(default=2.5),
     ocr_language: str = Form(default="vie+eng"),
-    user: dict = Depends(require_permission("run_ocr_tests")),
+    thresholding_method: int = Form(default=0),
+    preserve_interword_spaces: bool = Form(default=False),
+    load_system_dawg: bool = Form(default=True),
+    load_freq_dawg: bool = Form(default=True),
+    tessedit_do_invert: bool = Form(default=True),
+    textord_tablefind_recognize_tables: bool = Form(default=False),
+    textord_tabfind_find_tables: bool = Form(default=True),
+    lstm_use_matrix: bool = Form(default=True),
+    lstm_rating_coefficient: int = Form(default=5),
+    tessdata_variant: str = Form(default="system"),
+    parser_engine: str = Form(default="pymupdf_tesseract"),
+    paddle_device: str = Form(default="cpu"),
+    paddle_render_scale: float = Form(default=1.5),
+    paddle_formula_recognition: bool = Form(default=False),
+    paddle_chart_recognition: bool = Form(default=False),
+    mineru_force_ocr: bool = Form(default=False),
+    mineru_page_range: str = Form(default=""),
+    docling_device: str = Form(default="cpu"),
+    docling_ocr: bool = Form(default=True),
+    docling_ocr_language: str = Form(default="vi"),
+    docling_table_structure: bool = Form(default=True),
+    docling_num_threads: int = Form(default=4),
+    chunking_strategy: str = Form(default="sentence"),
+    chunk_size: int = Form(default=1100),
+    chunk_overlap: int = Form(default=120),
+    paddle_layout: bool = Form(default=False),
+    layout_detector: str = Form(default="none"),
+    layout_image_size: int = Form(default=640),
+    layout_confidence_threshold: float = Form(default=0.30),
+    user: dict = Depends(require_permission("run_upload_tests")),
 ):
-    """Run the upload PDF parser and save inspectable output outside the corpus."""
+    """Run the upload pipeline and save inspectable output outside the corpus."""
     _require_same_origin(request)
     filename = Path((file.filename or "").replace("\\", "/")).name
     if Path(filename).suffix.lower() != ".pdf":
-        raise HTTPException(415, "OCR Lab accepts PDF files only")
-    if tesseract_psm not in {3, 6, 11, 12} or tesseract_table_psm not in {3, 4, 6, 11, 12}:
+        raise HTTPException(415, "Upload Test accepts PDF files only")
+    if parser_engine not in {"pymupdf_tesseract", "pp-structurev3", "mineru", "docling"}:
+        raise HTTPException(422, "Unsupported Upload Test parser")
+    if parser_engine == "pymupdf_tesseract" and (tesseract_psm not in {3, 6, 11, 12} or tesseract_table_psm not in {3, 4, 6, 11, 12}):
         raise HTTPException(422, "Unsupported Tesseract page segmentation mode")
-    if render_scale not in {1.5, 2.5, 3.5} or table_render_scale not in {1.5, 2.5, 3.5}:
-        raise HTTPException(422, "Render scale must be 1.5, 2.5, or 3.5")
-    if ocr_language not in OCR_LANGUAGES:
+    supported_scales = (1.5, 167 / 72, 2.5, 3.5)
+    if parser_engine == "pymupdf_tesseract" and not all(any(abs(value - scale) < 1e-9 for scale in supported_scales) for value in (render_scale, table_render_scale)):
+        raise HTTPException(422, "Render scale must be 1.5, 167 DPI, 2.5, or 3.5")
+    if parser_engine == "pymupdf_tesseract" and ocr_language not in OCR_LANGUAGES:
         raise HTTPException(422, "OCR language must be eng or vie+eng")
+    if parser_engine == "pymupdf_tesseract" and (thresholding_method not in {0, 1, 2} or lstm_rating_coefficient not in {3, 5, 7}):
+        raise HTTPException(422, "Unsupported Tesseract parameter")
+    if parser_engine == "pymupdf_tesseract" and tessdata_variant not in {"system", "fast", "best"}:
+        raise HTTPException(422, "Unsupported Tesseract traineddata variant")
+    if parser_engine == "pp-structurev3" and (paddle_device not in {"cpu", "gpu:0"} or not any(abs(paddle_render_scale - scale) < 1e-9 for scale in supported_scales)):
+        raise HTTPException(422, "Unsupported PP-StructureV3 device or render scale")
+    if parser_engine == "mineru" and mineru_page_range and not re.fullmatch(r"\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*", mineru_page_range.strip()):
+        raise HTTPException(422, "MinerU page range must look like 1-3,5")
+    if parser_engine == "docling" and (
+        docling_device not in {"cpu", "cuda"}
+        or docling_ocr_language not in {"vi", "en"}
+        or not 1 <= docling_num_threads <= 16
+    ):
+        raise HTTPException(422, "Unsupported Docling device, OCR language, or thread count")
+    if layout_detector not in {"none", "doclayout-yolo"}:
+        raise HTTPException(422, "Unsupported Upload Test layout detector")
+    if chunking_strategy not in {"sentence", "fixed"} or not 100 <= chunk_size <= 5000 or not 0 <= chunk_overlap < chunk_size:
+        raise HTTPException(422, "Unsupported shared chunking configuration")
+    if layout_image_size not in {512, 640, 768, 1024}:
+        raise HTTPException(422, "Layout image size must be 512, 640, 768, or 1024")
+    if layout_confidence_threshold not in {0.30, 0.50, 0.67}:
+        raise HTTPException(422, "Unsupported layout confidence threshold")
     content = await file.read(20 * 1024 * 1024 + 1)
     if len(content) > 20 * 1024 * 1024:
-        raise HTTPException(413, "OCR test PDF exceeds the 20 MiB limit")
+        raise HTTPException(413, "Upload Test PDF exceeds the 20 MiB limit")
     if b"%PDF-" not in content[:1024]:
         raise HTTPException(415, "The uploaded file is not a PDF")
 
@@ -829,7 +869,14 @@ async def create_ocr_test(
         page_count = len(source)
         if not 1 <= page_count <= 50:
             source.close()
-            raise HTTPException(422, "OCR Lab accepts PDFs with 1-50 pages")
+            raise HTTPException(422, "Upload Test accepts PDFs with 1-50 pages")
+        if parser_engine == "mineru" and mineru_page_range:
+            for item in mineru_page_range.split(","):
+                bounds = [int(part) for part in item.split("-")]
+                first_page, last_page = bounds[0], bounds[-1]
+                if first_page < 1 or last_page < first_page or last_page > page_count:
+                    source.close()
+                    raise HTTPException(422, "MinerU page range must be within this PDF and in ascending order")
         page_previews = []
         for page in source:
             scale = min(120 / 72, 1800 / page.rect.width, 2400 / page.rect.height)
@@ -842,99 +889,201 @@ async def create_ocr_test(
     except Exception as error:
         raise HTTPException(422, "Could not open the uploaded PDF") from error
 
-    config = {
-        "chunking_strategy": os.getenv("DOCUMENT_CHUNKING_STRATEGY", "sentence"),
-        "paddle_layout": os.getenv("DOCUMENT_PADDLE_LAYOUT", "false").strip().lower() == "true",
-        "paddle_chart_recognition": os.getenv(
-            "DOCUMENT_PADDLE_CHART_RECOGNITION", "false",
-        ).strip().lower() == "true",
-        "paddle_formula_recognition": os.getenv("DOCUMENT_PADDLE_FORMULA_RECOGNITION", "false").strip().lower() == "true",
-        "vision_captioning": False,
+    tesseract_settings = {
         "tesseract_psm": tesseract_psm,
         "tesseract_table_psm": tesseract_table_psm,
         "ocr_language": ocr_language,
         "ocr_render_scale": render_scale,
         "ocr_table_render_scale": table_render_scale,
+        "tesseract_config": {
+            "thresholding_method": thresholding_method,
+            "preserve_interword_spaces": preserve_interword_spaces,
+            "load_system_dawg": load_system_dawg,
+            "load_freq_dawg": load_freq_dawg,
+            "tessedit_do_invert": tessedit_do_invert,
+            "textord_tablefind_recognize_tables": textord_tablefind_recognize_tables,
+            "textord_tabfind_find_tables": textord_tabfind_find_tables,
+            "lstm_use_matrix": lstm_use_matrix,
+            "lstm_rating_coefficient": lstm_rating_coefficient,
+        },
+        "tessdata_variant": tessdata_variant,
+    }
+    pp_settings = {
+        "paddle_device": paddle_device,
+        "paddle_render_scale": paddle_render_scale,
+        "paddle_formula_recognition": paddle_formula_recognition,
+        "paddle_chart_recognition": paddle_chart_recognition,
+    }
+    mineru_settings = {
+        "mineru_force_ocr": mineru_force_ocr,
+        "mineru_page_range": mineru_page_range.strip(),
+    }
+    docling_settings = {
+        "docling_device": docling_device,
+        "docling_ocr": docling_ocr,
+        "docling_ocr_language": docling_ocr_language,
+        "docling_table_structure": docling_table_structure,
+        "docling_num_threads": docling_num_threads,
+    }
+    selected_settings = {
+        "pymupdf_tesseract": tesseract_settings,
+        "pp-structurev3": pp_settings,
+        "mineru": mineru_settings,
+        "docling": docling_settings,
+    }[parser_engine]
+    config = {
+        "chunking_strategy": chunking_strategy,
+        "chunk_size": chunk_size,
+        "chunk_overlap": chunk_overlap,
+        "parser_engine": parser_engine,
+        "parser_settings": {parser_engine: selected_settings},
+        **selected_settings,
+        "paddle_layout": parser_engine == "pp-structurev3" or paddle_layout,
+        "vision_captioning": False,
+        "layout_detector": layout_detector,
+        "layout_image_size": layout_image_size,
+        "layout_confidence_threshold": layout_confidence_threshold,
     }
     run_id = uuid.uuid4()
     source_sha256 = hashlib.sha256(content).hexdigest()
-    from core.document_processing.processors.document_processor import DocumentProcessor
+    from core.document_processing.document_processor import DocumentProcessor
+    source_metadata = {"source_type": "upload_test", "source_sha256": source_sha256}
+    document_processor = DocumentProcessor(config)
     try:
-        parsed = DocumentProcessor(config).process(
-            filename, content, {"source_type": "ocr_test", "source_sha256": source_sha256},
-        )
+        parsed = document_processor.process(filename, content, source_metadata)
+        parsed = document_processor.prepare_upload_test_output(parsed, source_metadata, parser_engine)
     except (ValueError, RuntimeError) as error:
-        raise HTTPException(422, f"OCR processing failed: {error}") from error
-    try:
-        tesseract_version = subprocess.run(
-            ["tesseract", "--version"], capture_output=True, check=True,
-            text=True, timeout=10,
-        ).stdout.splitlines()[0]
-    except (OSError, subprocess.SubprocessError, IndexError):
-        tesseract_version = None
-    runtime_info = {"pymupdf": fitz.VersionBind, "tesseract": tesseract_version}
+        status_code = 503 if parser_engine in {"mineru", "docling"} and isinstance(error, RuntimeError) else 422
+        raise HTTPException(status_code, f"Upload Test processing failed: {error}") from error
+    runtime_info = {"pymupdf": fitz.VersionBind}
+    if parser_engine == "pymupdf_tesseract":
+        try:
+            runtime_info["tesseract"] = subprocess.run(
+                ["tesseract", "--version"], capture_output=True, check=True,
+                text=True, timeout=10,
+            ).stdout.splitlines()[0]
+        except (OSError, subprocess.SubprocessError, IndexError):
+            runtime_info["tesseract"] = None
+    if parser_engine == "mineru":
+        runtime_info["mineru"] = parsed["metadata"].get("mineru_version")
+        if parsed["metadata"].get("mineru_preprocessing"):
+            runtime_info["mineru_preprocessing"] = parsed["metadata"]["mineru_preprocessing"]
+    if parser_engine == "docling":
+        runtime_info["docling"] = parsed["metadata"].get("docling_version")
+    if layout_detector == "doclayout-yolo":
+        try:
+            from core.document_processing.scanned.layout.doclayout_yolo import detect_layout
 
-    from core.database.ocr_test_repository import OcrTestRepository
-    repository = OcrTestRepository()
+            runtime_info["layout_detections"] = detect_layout(
+                page_previews,
+                image_size=layout_image_size,
+                threshold=layout_confidence_threshold,
+            )
+        except Exception as error:
+            logger.exception("DocLayout-YOLO failed during isolated upload test %s", run_id)
+            raise HTTPException(
+                503,
+                "DocLayout-YOLO is unavailable. Install the layout-yolo extra and check model download access.",
+            ) from error
+
+    token_bounded_chunks = []
+    embedding_status = "not_run"
+    tokenization_error = None
+    try:
+        from core.embeddings.embedding_service import (
+            DEFAULT_EMBEDDING_MODEL, EMBEDDING_MAX_SEQUENCE_LENGTH,
+        )
+        from core.tokenization.token_counter import TokenCounter
+        from core.tokenization.embedding_chunker import build_embedding_chunks
+
+        runtime_info.update({
+            "tokenizer_model": DEFAULT_EMBEDDING_MODEL,
+            "embedding_max_sequence_length": EMBEDDING_MAX_SEQUENCE_LENGTH,
+        })
+        token_counter = TokenCounter(DEFAULT_EMBEDDING_MODEL)
+        token_bounded_chunks = build_embedding_chunks(
+            parsed["chunks"],
+            token_counter,
+            EMBEDDING_MAX_SEQUENCE_LENGTH,
+            DEFAULT_EMBEDDING_MODEL,
+        )
+    except Exception as error:
+        token_bounded_chunks = []
+        tokenization_error = f"{type(error).__name__}: {error}"
+        runtime_info["tokenization_error"] = tokenization_error
+        logger.exception("Token-bounded chunking failed during isolated upload test %s", run_id)
+
+    from core.database.upload_test_repository import UploadTestRepository
+    repository = UploadTestRepository()
     try:
         repository.save_run(
             run_id, source_filename=filename, source_sha256=source_sha256,
             uploaded_by=user["sub"], processor_config=config, runtime_info=runtime_info,
             page_previews=page_previews, chunks=parsed["chunks"], tables=parsed["tables"],
+            token_bounded_chunks=token_bounded_chunks, embeddings=[],
+            embedding_status=embedding_status, embedding_error=None,
         )
     except Exception as error:
-        logger.exception("Could not persist OCR test run %s", run_id)
-        raise HTTPException(503, "OCR completed, but its test output could not be saved") from error
+        logger.exception("Could not persist upload test run %s", run_id)
+        raise HTTPException(503, "Upload processing completed, but its test output could not be saved") from error
     finally:
         repository.close()
     return {
         "run_id": str(run_id), "source_filename": filename,
         "source_sha256": source_sha256, "page_count": page_count,
-        "chunk_count": len(parsed["chunks"]), "table_count": len(parsed["tables"]),
+        "chunk_count": len(parsed["chunks"]),
+        "token_bounded_chunk_count": len(token_bounded_chunks),
+        "embedding_status": embedding_status,
+        "embedding_error": None,
+        "tokenization_error": tokenization_error,
+        "table_count": len(parsed["tables"]),
         "processor_config": config, "runtime_info": runtime_info,
     }
 
 
-@app.get("/api/ocr-tests")
-def list_ocr_tests(user: dict = Depends(require_permission("review_ocr_tests"))):
-    from core.database.ocr_test_repository import OcrTestRepository
+@app.get("/api/upload-tests")
+@app.get("/api/ocr-tests", include_in_schema=False)
+def list_upload_tests(user: dict = Depends(require_permission("review_upload_tests"))):
+    from core.database.upload_test_repository import UploadTestRepository
 
-    repository = OcrTestRepository()
+    repository = UploadTestRepository()
     try:
         return {"runs": repository.list_runs()}
     finally:
         repository.close()
 
 
-@app.get("/api/ocr-tests/{run_id}")
-def inspect_ocr_test(
+@app.get("/api/upload-tests/{run_id}")
+@app.get("/api/ocr-tests/{run_id}", include_in_schema=False)
+def inspect_upload_test(
     run_id: uuid.UUID,
-    user: dict = Depends(require_permission("review_ocr_tests")),
+    user: dict = Depends(require_permission("review_upload_tests")),
 ):
-    from core.database.ocr_test_repository import OcrTestRepository
+    from core.database.upload_test_repository import UploadTestRepository
 
-    repository = OcrTestRepository()
+    repository = UploadTestRepository()
     try:
         run = repository.get_run(run_id)
         if run is None:
-            raise HTTPException(404, "OCR test run not found")
+            raise HTTPException(404, "Upload Test run not found")
         return run
     finally:
         repository.close()
 
 
-@app.get("/api/ocr-tests/{run_id}/pages/{page_number}/preview")
-def get_ocr_test_preview(
+@app.get("/api/upload-tests/{run_id}/pages/{page_number}/preview")
+@app.get("/api/ocr-tests/{run_id}/pages/{page_number}/preview", include_in_schema=False)
+def get_upload_test_preview(
     run_id: uuid.UUID, page_number: int,
-    user: dict = Depends(require_permission("review_ocr_tests")),
+    user: dict = Depends(require_permission("review_upload_tests")),
 ):
-    from core.database.ocr_test_repository import OcrTestRepository
+    from core.database.upload_test_repository import UploadTestRepository
 
-    repository = OcrTestRepository()
+    repository = UploadTestRepository()
     try:
         preview = repository.get_page_preview(run_id, page_number)
         if preview is None:
-            raise HTTPException(404, "OCR test page preview not found")
+            raise HTTPException(404, "Upload Test page preview not found")
         return Response(content=preview, media_type="image/png")
     finally:
         repository.close()

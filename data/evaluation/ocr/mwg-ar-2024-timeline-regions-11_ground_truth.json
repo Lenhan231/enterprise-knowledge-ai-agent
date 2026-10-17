@@ -1,0 +1,260 @@
+{
+  "dataset_id": "mwg-ar-2024-timeline-regions-11-v1",
+  "dataset_title": "MWG Annual Report 2024 Vietnamese timeline prose OCR regions",
+  "purpose": "Exploratory CER/WER screening on manually transcribed prose blocks in the timeline section of an image-based Vietnamese enterprise annual report.",
+  "source_download_url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/posts/2025/4/0/64/c2/64c27697a67a3feb53d97256e4de3d7e.pdf",
+  "source_pdf_sha256": "e98227cb400d043c1a0e95eaa2706b397fb61001c342713e27b49ad04c17fca7",
+  "reference_method": "Manual transcription from rendered page crops; one reviewer.",
+  "reference_quality": "All 11 prose blocks were transcribed from and visually checked against the rendered source pages by one reviewer. The text is image-based, and a second reviewer has not adjudicated the transcriptions.",
+  "primary_metric_selection_eligible": false,
+  "render_dpi": 180,
+  "limitations": [
+    "Eleven regions from two pages of one company report are a narrow screening sample and are not eligible for primary model selection.",
+    "The reference is single-reviewed.",
+    "Each crop isolates a timeline prose block; this does not measure whole-page layout, tables, or reading order."
+  ],
+  "pages": [
+    {
+      "id": "mwg-ar-2024-pdf-page-15-region-2014-vi",
+      "document_id": "MWG-AR-2024",
+      "company": "Mobile World Investment Corporation",
+      "file": "data/raw/vietnam_enterprises/mwg/mwg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "e98227cb400d043c1a0e95eaa2706b397fb61001c342713e27b49ad04c17fca7",
+      "source_url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/posts/2025/4/0/64/c2/64c27697a67a3feb53d97256e4de3d7e.pdf",
+      "page": 15,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "timeline_prose_region",
+      "region_label": "PDF page 15: 2014 timeline prose block",
+      "reference_annotation_method": "manual_visual_transcription_single_reviewer",
+      "reference_text": "Ngày 14/07/2014, niêm yết thành công 62.723.171 cổ phiếu với mã cổ phiếu MWG.\nSố lượng siêu thị tăng 60%, doanh thu tăng 65% và lợi nhuận sau thuế tăng 160% so với năm 2013.",
+      "clip_rect": [
+        62,
+        216,
+        222,
+        303
+      ]
+    },
+    {
+      "id": "mwg-ar-2024-pdf-page-15-region-2015-growth-vi",
+      "document_id": "MWG-AR-2024",
+      "company": "Mobile World Investment Corporation",
+      "file": "data/raw/vietnam_enterprises/mwg/mwg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "e98227cb400d043c1a0e95eaa2706b397fb61001c342713e27b49ad04c17fca7",
+      "source_url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/posts/2025/4/0/64/c2/64c27697a67a3feb53d97256e4de3d7e.pdf",
+      "page": 15,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "timeline_prose_region",
+      "region_label": "PDF page 15: 2015-growth timeline prose block",
+      "reference_annotation_method": "manual_visual_transcription_single_reviewer",
+      "reference_text": "Tốc độ mở cửa hàng ghi nhận mức kỷ lục mới với trung bình 5 cửa hàng được mở mới trong 1 tuần. Chuỗi Điện Máy Xanh trở thành chuỗi bán lẻ điện máy có số lượng siêu thị nhiều nhất Việt Nam, phủ sóng 43/63 tỉnh thành.",
+      "clip_rect": [
+        232,
+        75,
+        582,
+        120
+      ]
+    },
+    {
+      "id": "mwg-ar-2024-pdf-page-15-region-2015-bach-hoa-xanh-vi",
+      "document_id": "MWG-AR-2024",
+      "company": "Mobile World Investment Corporation",
+      "file": "data/raw/vietnam_enterprises/mwg/mwg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "e98227cb400d043c1a0e95eaa2706b397fb61001c342713e27b49ad04c17fca7",
+      "source_url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/posts/2025/4/0/64/c2/64c27697a67a3feb53d97256e4de3d7e.pdf",
+      "page": 15,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "timeline_prose_region",
+      "region_label": "PDF page 15: 2015-bach-hoa-xanh timeline prose block",
+      "reference_annotation_method": "manual_visual_transcription_single_reviewer",
+      "reference_text": "Cuối năm 2015, công ty bắt đầu giai đoạn thử nghiệm chuỗi siêu thị mini bán hàng tiêu dùng Bách Hóa Xanh.",
+      "clip_rect": [
+        350,
+        118,
+        583,
+        160
+      ]
+    },
+    {
+      "id": "mwg-ar-2024-pdf-page-15-region-2016-vi",
+      "document_id": "MWG-AR-2024",
+      "company": "Mobile World Investment Corporation",
+      "file": "data/raw/vietnam_enterprises/mwg/mwg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "e98227cb400d043c1a0e95eaa2706b397fb61001c342713e27b49ad04c17fca7",
+      "source_url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/posts/2025/4/0/64/c2/64c27697a67a3feb53d97256e4de3d7e.pdf",
+      "page": 15,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "timeline_prose_region",
+      "region_label": "PDF page 15: 2016 timeline prose block",
+      "reference_annotation_method": "manual_visual_transcription_single_reviewer",
+      "reference_text": "Chuỗi thegioididong.com tiếp tục thống lĩnh và nâng cao thị phần với gần 900 siêu thị.\nĐiện Máy Xanh đã trở thành nhà bán lẻ điện máy đầu tiên và duy nhất tại Việt Nam phủ sóng 63/63 tỉnh thành vào tháng 7/2016 với hơn 250 siêu thị.\nHoàn tất giai đoạn 1 của thử nghiệm chuỗi siêu thị Bách Hóa Xanh với 40 siêu thị.\nKết quả kinh doanh ấn tượng với lợi nhuận sau thuế tăng trưởng 47% so với 2015.\nGiá trị doanh nghiệp đạt 1 tỷ đô la vào cuối năm 2016.",
+      "clip_rect": [
+        62,
+        316,
+        215,
+        528
+      ]
+    },
+    {
+      "id": "mwg-ar-2024-pdf-page-15-region-2017-vi",
+      "document_id": "MWG-AR-2024",
+      "company": "Mobile World Investment Corporation",
+      "file": "data/raw/vietnam_enterprises/mwg/mwg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "e98227cb400d043c1a0e95eaa2706b397fb61001c342713e27b49ad04c17fca7",
+      "source_url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/posts/2025/4/0/64/c2/64c27697a67a3feb53d97256e4de3d7e.pdf",
+      "page": 15,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "timeline_prose_region",
+      "region_label": "PDF page 15: 2017 timeline prose block",
+      "reference_annotation_method": "manual_visual_transcription_single_reviewer",
+      "reference_text": "Kết thúc năm 2017, chuỗi thegioididong.com chính thức vượt mốc 1.000 siêu thị, chuỗi Điện Máy Xanh có hơn 640 siêu thị trên toàn quốc.\nChuỗi siêu thị Bách Hóa Xanh tăng tốc với gần 300 cửa hàng vào cuối năm 2017.",
+      "clip_rect": [
+        350,
+        216,
+        570,
+        288
+      ]
+    },
+    {
+      "id": "mwg-ar-2024-pdf-page-15-region-2018-vi",
+      "document_id": "MWG-AR-2024",
+      "company": "Mobile World Investment Corporation",
+      "file": "data/raw/vietnam_enterprises/mwg/mwg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "e98227cb400d043c1a0e95eaa2706b397fb61001c342713e27b49ad04c17fca7",
+      "source_url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/posts/2025/4/0/64/c2/64c27697a67a3feb53d97256e4de3d7e.pdf",
+      "page": 15,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "timeline_prose_region",
+      "region_label": "PDF page 15: 2018 timeline prose block",
+      "reference_annotation_method": "manual_visual_transcription_single_reviewer",
+      "reference_text": "Thegioididong.com và Điện Máy Xanh thống lĩnh thị trường Việt Nam với 45% thị phần điện thoại và 35% thị phần điện máy.\nBách Hóa Xanh đạt điểm hòa vốn EBITDA ở cấp cửa hàng.\nHoàn tất việc mua chuỗi bán lẻ điện máy Trần Anh.\nHoàn tất việc đầu tư cổ phần thiểu số tại Công ty bán lẻ An Khang - Đơn vị vận hành chuỗi nhà thuốc An Khang.",
+      "clip_rect": [
+        477,
+        420,
+        655,
+        570
+      ]
+    },
+    {
+      "id": "mwg-ar-2024-pdf-page-15-region-2019-vi",
+      "document_id": "MWG-AR-2024",
+      "company": "Mobile World Investment Corporation",
+      "file": "data/raw/vietnam_enterprises/mwg/mwg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "e98227cb400d043c1a0e95eaa2706b397fb61001c342713e27b49ad04c17fca7",
+      "source_url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/posts/2025/4/0/64/c2/64c27697a67a3feb53d97256e4de3d7e.pdf",
+      "page": 15,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "timeline_prose_region",
+      "region_label": "PDF page 15: 2019 timeline prose block",
+      "reference_annotation_method": "manual_visual_transcription_single_reviewer",
+      "reference_text": "Kết thúc năm 2019, chuỗi Điện Máy Xanh chính thức vượt mốc 1.000 cửa hàng trên toàn quốc.\nChuỗi Bách Hóa Xanh mở rộng mạnh mẽ thêm 600 điểm bán, nâng tổng số cửa hàng Bách Hóa Xanh lên 1.008 cửa hàng.",
+      "clip_rect": [
+        640,
+        180,
+        800,
+        275
+      ]
+    },
+    {
+      "id": "mwg-ar-2024-pdf-page-16-region-2020-vi",
+      "document_id": "MWG-AR-2024",
+      "company": "Mobile World Investment Corporation",
+      "file": "data/raw/vietnam_enterprises/mwg/mwg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "e98227cb400d043c1a0e95eaa2706b397fb61001c342713e27b49ad04c17fca7",
+      "source_url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/posts/2025/4/0/64/c2/64c27697a67a3feb53d97256e4de3d7e.pdf",
+      "page": 16,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "timeline_prose_region",
+      "region_label": "PDF page 16: 2020 timeline prose block",
+      "reference_annotation_method": "manual_visual_transcription_single_reviewer",
+      "reference_text": "Mô hình cửa hàng siêu nhỏ - Điện Máy Xanh Supermini (ĐMS) - được đưa vào thử nghiệm từ giữa năm 2020 và phát triển thần tốc với 302 cửa hàng tại 61/63 tỉnh thành vào cuối năm để phục vụ người dân khu vực nông thôn Việt Nam.\nBách Hóa Xanh lọt vào Top 3 chuỗi bán lẻ thực phẩm và hàng tiêu dùng lớn nhất tại Việt Nam với 1.719 cửa hàng.",
+      "clip_rect": [
+        44,
+        245,
+        224,
+        355
+      ]
+    },
+    {
+      "id": "mwg-ar-2024-pdf-page-16-region-2021-vi",
+      "document_id": "MWG-AR-2024",
+      "company": "Mobile World Investment Corporation",
+      "file": "data/raw/vietnam_enterprises/mwg/mwg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "e98227cb400d043c1a0e95eaa2706b397fb61001c342713e27b49ad04c17fca7",
+      "source_url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/posts/2025/4/0/64/c2/64c27697a67a3feb53d97256e4de3d7e.pdf",
+      "page": 16,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "timeline_prose_region",
+      "region_label": "PDF page 16: 2021 timeline prose block",
+      "reference_annotation_method": "manual_visual_transcription_single_reviewer",
+      "reference_text": "Doanh thu MWG vượt mốc 5 tỷ đô trong năm 2021 với hơn 5.000 siêu thị trên toàn quốc.\nDuy trì vị thế dẫn đầu thị phần bán lẻ thiết bị công nghệ và điện tử tiêu dùng theo ước tính từ số liệu của các hãng lớn trên thị trường.\nDoanh thu Bách Hóa Xanh vượt mốc 1 tỷ USD và là Top 3 nhà bán lẻ thực phẩm và hàng tiêu dùng lớn nhất Việt Nam với hơn 2.000 điểm bán, chính thức hòa vốn EBITDA ở cấp độ công ty.\nChuỗi nhà thuốc An Khang chính thức được hợp nhất và MWG vào cuối năm 2021.",
+      "clip_rect": [
+        366,
+        350,
+        605,
+        480
+      ]
+    },
+    {
+      "id": "mwg-ar-2024-pdf-page-16-region-2022-vi",
+      "document_id": "MWG-AR-2024",
+      "company": "Mobile World Investment Corporation",
+      "file": "data/raw/vietnam_enterprises/mwg/mwg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "e98227cb400d043c1a0e95eaa2706b397fb61001c342713e27b49ad04c17fca7",
+      "source_url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/posts/2025/4/0/64/c2/64c27697a67a3feb53d97256e4de3d7e.pdf",
+      "page": 16,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "timeline_prose_region",
+      "region_label": "PDF page 16: 2022 timeline prose block",
+      "reference_annotation_method": "manual_visual_transcription_single_reviewer",
+      "reference_text": "Doanh thu vượt 5,5 tỷ USD với hơn 5.700 siêu thị trên toàn quốc. Trong đó, Điện máy xanh Supermini vượt mốc 1.000 cửa hàng và TopZone trở thành chuỗi cửa hàng ủy quyền lớn nhất của Apple tại Việt Nam với 100 cửa hàng.\nCủng cố vị thế nhà bán lẻ số 1 về sản phẩm công nghệ và điện tử tiêu dùng, top 3 về bán lẻ thực phẩm, hàng tiêu dùng thiết yếu và dược phẩm.\nDoanh thu online vượt 800 triệu USD. thegioididong.com, dienmayxanh.com và bachhoaxanh.com góp mặt trong top 10 website TMĐT hàng đầu Việt Nam.\nChính thức gia nhập thị trường bán lẻ điện máy tại Indonesia với 5 cửa hàng Erablue.",
+      "clip_rect": [
+        44,
+        62,
+        390,
+        160
+      ]
+    },
+    {
+      "id": "mwg-ar-2024-pdf-page-16-region-2023-vi",
+      "document_id": "MWG-AR-2024",
+      "company": "Mobile World Investment Corporation",
+      "file": "data/raw/vietnam_enterprises/mwg/mwg-ar-2024-vi.pdf",
+      "source_pdf_sha256": "e98227cb400d043c1a0e95eaa2706b397fb61001c342713e27b49ad04c17fca7",
+      "source_url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/posts/2025/4/0/64/c2/64c27697a67a3feb53d97256e4de3d7e.pdf",
+      "page": 16,
+      "language": "vi",
+      "image_only": true,
+      "physical_scan": false,
+      "layout_type": "timeline_prose_region",
+      "region_label": "PDF page 16: 2023 timeline prose block",
+      "reference_annotation_method": "manual_visual_transcription_single_reviewer",
+      "reference_text": "Đối mặt với những thách thức do tác động của biến động kinh tế - chính trị toàn cầu, MWG đã chủ động tái cấu trúc toàn diện, tập trung vào duy trì doanh thu, gia tăng thị phần và kiểm soát chi phí để bảo vệ dòng tiền lành mạnh, giữ vững vị thế là nhà bán lẻ hàng đầu tại Việt Nam.\nDoanh thu cả năm 2023 đạt xấp xỉ 5 tỷ USD với hơn 5.500 siêu thị trên toàn quốc. Trong đó, các kênh online đóng góp khoảng 700 triệu USD. Thị phần các sản phẩm điện thoại, điện máy tăng từ 5% - 25%. Đặc biệt, thị phần điện thoại của MWG đối với nhãn hàng Apple tăng từ 25% - 30% trong giai đoạn đầu năm và đạt khoảng 50% giai đoạn cuối năm.\nChuỗi Bách Hóa Xanh đạt doanh thu 1,3 tỷ USD và chính thức vươn lên trở thành nhà bán lẻ thực phẩm và hàng tiêu dùng có doanh số lớn nhất Việt Nam với quy mô 1.700 điểm bán. Tháng 12/2023, Bách Hóa Xanh đã đạt điểm hòa vốn sau mọi chi phí, tương ứng với quy mô vận hành hiện tại và trên cơ sở hoạt động kinh doanh cốt lõi.\nChuỗi bán lẻ điện máy Erablue có 38 cửa hàng hoạt động tại Indonesia.",
+      "clip_rect": [
+        548,
+        78,
+        816,
+        302
+      ]
+    }
+  ]
+}

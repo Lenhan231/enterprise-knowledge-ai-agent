@@ -70,6 +70,8 @@ class KnowledgeAgent(BaseAgent):
                     "chunk_index": context["chunk_index"],
                     "retrieval_score": context["retrieval_score"],
                     "retrieval_method": context["retrieval_method"],
+                    **({"retrieval_details": context["retrieval_details"]}
+                       if context.get("retrieval_details") else {}),
                 },
             )
             for context in result.contexts

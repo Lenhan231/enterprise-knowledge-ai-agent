@@ -7,7 +7,7 @@ from typing import Literal
 
 from core.database.document_chunks_repository import DocumentChunkRepository
 from core.embeddings import EmbeddingService
-from core.retrieval.methods import parent
+from core.retrieval.methods import parent, translated_hybrid
 from core.retrieval.retrieval import (
     RankedChunk, RetrievalRequest, RetrievalResponse, SourceLocation, make_chunk_id,
 )
@@ -18,22 +18,35 @@ class RetrievalService:
         self,
         embedding_service: EmbeddingService | None = None,
         repository: DocumentChunkRepository | None = None,
+        query_translator=None,
     ) -> None:
         self.embedding_service = embedding_service
         self.repository = repository or DocumentChunkRepository()
+        self.query_translator = query_translator
+        self._translation_llm = None
+
+    def _get_translator(self):
+        if self.query_translator is None:
+            from core.llm.groq_provider import GroqProvider
+            from core.retrieval.query_translator import QueryTranslator
+            self._translation_llm = GroqProvider()
+            self.query_translator = QueryTranslator(self._translation_llm)
+        return self.query_translator
 
     def retrieve(
         self, request: RetrievalRequest, company: str | None = None,
         roles: list[str] | None = None,
-        method: Literal["dense", "bm25", "hybrid", "parent"] = "hybrid",
+        method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid"] = "hybrid",
         dense_weight: float = 1.0, bm25_weight: float = 2.0, rrf_k: int = 60,
         document_ids: list[str] | None = None,
+        query_language: str = "auto",
+        document_languages: dict[str, str] | None = None,
     ) -> RetrievalResponse:
         """Run one selected retrieval method and map its chunks to the public contract."""
         if not isinstance(request, RetrievalRequest):
             raise TypeError("request must be a RetrievalRequest")
-        if method not in {"dense", "bm25", "hybrid", "parent"}:
-            raise ValueError("method must be dense, bm25, hybrid, or parent")
+        if method not in {"dense", "bm25", "hybrid", "parent", "translated_hybrid"}:
+            raise ValueError("method must be dense, bm25, hybrid, parent, or translated_hybrid")
         started = perf_counter()
         query_embedding = None
         if method != "bm25":
@@ -49,7 +62,14 @@ class RetrievalService:
                 raise ValueError("document_ids must be a list of non-empty document IDs")
             options["document_ids"] = document_ids
         parent_contexts = {}
-        if method == "parent":
+        retrieval_details = {}
+        if method == "translated_hybrid":
+            chunks, retrieval_details = translated_hybrid.search(
+                self.repository, query_embedding, request, self._get_translator,
+                query_language=query_language, document_languages=document_languages,
+                dense_weight=dense_weight, bm25_weight=bm25_weight, rrf_k=rrf_k, **options,
+            )
+        elif method == "parent":
             chunks, parent_contexts = parent.search(
                 self.repository, query_embedding, request, **options,
             )
@@ -94,8 +114,13 @@ class RetrievalService:
             query=request.query,
             latency_ms=(perf_counter() - started) * 1000,
             results=results,
+            retrieval_details=retrieval_details,
             method=method,
         )
 
     def close(self) -> None:
-        self.repository.close()
+        try:
+            self.repository.close()
+        finally:
+            if self._translation_llm is not None:
+                self._translation_llm.close()

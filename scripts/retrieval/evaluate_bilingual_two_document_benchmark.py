@@ -19,6 +19,7 @@ from core.retrieval.retrieval import make_chunk_id
 from openai import APIError
 from core.llm.groq_provider import GroqProvider
 from core.retrieval.query_translator import QueryTranslator
+from core.retrieval.methods.translated_hybrid import fuse as fuse_rankings
 
 # Verified document languages for this experiment; no answer labels are used.
 DOCUMENT_LANGUAGES = {SOURCES['annual_report']: 'en', SOURCES['long_hau_fs']: 'vn'}
@@ -33,11 +34,7 @@ def lexical_scopes(document_ids, language_aware):
 
 
 def fuse(rankings, weights, k=60):
-    scores = {}
-    for ranking, weight in zip(rankings, weights):
-        for rank, chunk_id in enumerate(dict.fromkeys(ranking), 1):
-            scores[chunk_id] = scores.get(chunk_id, 0.0) + weight / (k + rank)
-    return sorted(scores, key=lambda chunk_id: (-scores[chunk_id], chunk_id))
+    return fuse_rankings(rankings, weights, k)[0]
 
 
 def main():

@@ -144,7 +144,7 @@ def _require_same_origin(request: Request) -> None:
 class AskRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     question: str = Field(min_length=3, max_length=1000)
-    retrieval_method: Literal["dense", "bm25", "hybrid", "parent"] = "hybrid"
+    retrieval_method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid"] = "hybrid"
 
 
 class LoginRequest(BaseModel):
@@ -859,6 +859,8 @@ def _answer_documents(request: AskRequest, user: dict) -> dict:
                 "excerpt": evidence.content[:700] if evidence.content else "",
                 "score": evidence.metadata.get("retrieval_score"),
                 "retrieval_method": evidence.metadata.get("retrieval_method"),
+                **({"retrieval_details": evidence.metadata["retrieval_details"]}
+                   if evidence.metadata.get("retrieval_details") else {}),
                 "source_type": evidence.source_type,
             }
             for evidence in agent_result.evidence

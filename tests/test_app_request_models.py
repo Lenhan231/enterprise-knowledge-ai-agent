@@ -14,6 +14,12 @@ from core.models.agents import AgentResult, Evidence
 
 
 class AskRequestTest(unittest.TestCase):
+    def test_translated_hybrid_is_selectable_by_the_app(self):
+        request = AskRequest(question="Revenue in 2008?", retrieval_method="translated_hybrid")
+        self.assertEqual(request.retrieval_method, "translated_hybrid")
+        page = (Path(__file__).resolve().parents[1] / "src/app/static/index.html").read_text()
+        self.assertIn('value="translated_hybrid"', page)
+
     def test_report_route_uses_knowledge_agent_without_running_hybrid_sql(self):
         evidence = Evidence(
             citation_id="S1", source_type="document", source="2024 annual report",

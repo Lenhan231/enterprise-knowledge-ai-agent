@@ -243,20 +243,31 @@ class RAGService:
         limit: int = 5,
         company: str | None = None,
         roles: list[str] | None = None,
-        retrieval_method: Literal["dense", "bm25", "hybrid", "parent"] = "hybrid",
+        retrieval_method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid"] = "hybrid",
         retrieval_query: str | None = None,
+        document_ids: list[str] | None = None,
+        query_language: str = "auto",
+        document_languages: dict[str, str] | None = None,
     ) -> RAGResult:
         requested_record_type = _requested_record_type(question)
         if requested_record_type == "invoice" and retrieval_method == "hybrid":
             # Adjacent chunks may contain the scope that was split from a
             # payment-term sentence; parent expansion remains role/company filtered.
             retrieval_method = "parent"
+        retrieval_options = {}
+        if document_ids is not None:
+            retrieval_options["document_ids"] = document_ids
+        if query_language != "auto":
+            retrieval_options["query_language"] = query_language
+        if document_languages is not None:
+            retrieval_options["document_languages"] = document_languages
         contexts = self.retrieve_contexts(
             retrieval_query or question,
             limit=limit,
             company=company,
             roles=roles,
             retrieval_method=retrieval_method,
+            **retrieval_options,
         )
         if not contexts:
             return RAGResult(
@@ -374,9 +385,12 @@ class RAGService:
         limit: int = 5,
         company: str | None = None,
         roles: list[str] | None = None,
-        retrieval_method: Literal["dense", "bm25", "hybrid", "parent"] = "hybrid",
+        retrieval_method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid"] = "hybrid",
+        document_ids: list[str] | None = None,
+        query_language: str = "auto",
+        document_languages: dict[str, str] | None = None,
     ) -> list[dict]:
-        """Return authorized ranked passages without invoking the language model."""
+        """Return authorized passages; translated_hybrid also invokes query translation."""
         if not isinstance(roles, list) or not roles or any(
             not isinstance(role, str) or not role.strip() for role in roles
         ):
@@ -386,6 +400,12 @@ class RAGService:
         retrieval_filters = {"roles": roles}
         if company is not None:
             retrieval_filters["company"] = company
+        if document_ids is not None:
+            retrieval_filters["document_ids"] = document_ids
+        if query_language != "auto":
+            retrieval_filters["query_language"] = query_language
+        if document_languages is not None:
+            retrieval_filters["document_languages"] = document_languages
         retrieval_filters.update(method)
         retrieved = self.retrieval_service.retrieve(request, **retrieval_filters)
 
@@ -404,6 +424,9 @@ class RAGService:
                 start=1,
             )
         ]
+        if retrieved.retrieval_details:
+            for context in contexts:
+                context["retrieval_details"] = dict(retrieved.retrieval_details)
         return contexts
 
     def close(self) -> None:

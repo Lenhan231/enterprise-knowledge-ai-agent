@@ -16,7 +16,12 @@ Example: "Compare document counts by business domain" is analytics, needs_sql
 is true, and needs_knowledge is false.
 
 hybrid:
-Requires both document knowledge and structured business data.
+Requires both document knowledge and structured business data. Choose hybrid when
+the user asks how to apply a procedure, policy, or method to the current business
+dataset, or asks for a data-backed next step under a documented rule. Choose
+knowledge only when the user asks what a source says or requests general guidance
+without applying it to the current dataset. Do not treat a source's required
+fields as proof that the application currently collects or displays them.
 
 dashboard:
 User explicitly requests charts, dashboard, visualization, or KPI view.
@@ -37,5 +42,23 @@ Return valid JSON only:
 }}
 
 User request:
+{question}
+"""
+
+COMMERCE_DOMAIN_CLASSIFIER_PROMPT = """
+Choose which Commerce decision domain best fits the user's business objective.
+
+Available domains:
+{domains}
+
+Return JSON only with keys `domain` and `confidence`. `domain` must be one of the
+listed IDs or null. Choose from the decision requested, not just a word mentioned
+in passing. If the request materially spans multiple domains or is not a Commerce
+operations question, return null. Do not infer data availability or recommend an
+action.
+
+Example shape: {{"domain": "inventory_allocation", "confidence": 0.91}}
+
+Question:
 {question}
 """

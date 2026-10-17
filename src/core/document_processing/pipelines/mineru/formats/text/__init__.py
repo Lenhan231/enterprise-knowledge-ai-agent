@@ -1,0 +1,1 @@
+"""MinerU text input adapter."""

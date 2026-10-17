@@ -1,12 +1,14 @@
 # src/core/database/documents_repository.py
 import os
+import re
 
 import psycopg
 from dotenv import load_dotenv
 from psycopg.rows import dict_row
 
 from core.database.connection_limit import close_database_connection, connect_database
-from core.analytics.sql_safety import validate_analytics_sql
+from core.analytics.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql, validate_commerce_sql
+from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES, COMMERCE_QUERY_TABLES
 
 load_dotenv()
 
@@ -37,6 +39,61 @@ class DocumentRepository:
                                     ORDER by document_id""")
             return cursor.fetchall()
 
+    def list_knowledge_documents(self) -> list[dict]:
+        """List indexed source documents and their retrieval status for Admin."""
+        with self.conn.cursor() as cursor:
+            cursor.execute("""SELECT d.document_id, d.title, d.company, d.domain,
+                                    d.document_type, d.format, d.source_url,
+                                    d.source_type, d.processing_status,
+                                    d.knowledge_base_active,
+                                    d.allowed_roles,
+                                    count(c.id)::int AS chunk_count,
+                                    max(c.metadata->>'source_publisher') AS source_publisher,
+                                    max(c.metadata->>'external_reference_type') AS reference_type,
+                                    max(c.metadata->>'evidence_class') AS evidence_class,
+                                    bool_or(c.metadata->>'synthetic_company_policy' = 'true') AS synthetic_company_policy,
+                                    ARRAY(
+                                        SELECT DISTINCT jsonb_array_elements_text(x.metadata->'knowledge_domains')
+                                        FROM public.document_chunks x
+                                        WHERE x.metadata->>'document_id' = d.document_id
+                                          AND jsonb_typeof(x.metadata->'knowledge_domains') = 'array'
+                                    ) AS knowledge_domains
+                               FROM public.documents d
+                               LEFT JOIN public.document_chunks c
+                                 ON c.metadata->>'document_id' = d.document_id
+                              GROUP BY d.document_id
+                              ORDER BY d.knowledge_base_active DESC, d.title""")
+            return cursor.fetchall()
+
+    def set_document_allowed_roles(self, document_id: str, allowed_roles: list[str]) -> bool:
+        """Replace a saved document's retrieval roles without reprocessing its chunks."""
+        with self.conn.transaction(), self.conn.cursor() as cursor:
+            cursor.execute("""UPDATE public.documents
+                                SET allowed_roles = %s::text[]
+                              WHERE document_id = %s
+                                AND EXISTS (
+                                    SELECT 1 FROM public.document_chunks c
+                                    WHERE c.metadata->>'document_id' = documents.document_id
+                                )
+                          RETURNING document_id""", (allowed_roles, document_id))
+            return cursor.fetchone() is not None
+
+    def set_knowledge_base_active(self, document_id: str, active: bool) -> bool:
+        """Toggle retrieval eligibility without deleting source, chunks, or metrics."""
+        with self.conn.transaction(), self.conn.cursor() as cursor:
+            cursor.execute("""UPDATE public.documents
+                                SET knowledge_base_active = %s
+                              WHERE document_id = %s
+                                AND (%s IS FALSE OR (
+                                    processing_status = 'ready'
+                                    AND EXISTS (
+                                        SELECT 1 FROM public.document_chunks c
+                                        WHERE c.metadata->>'document_id' = documents.document_id
+                                    )
+                                ))
+                          RETURNING document_id""", (active, document_id, active))
+            return cursor.fetchone() is not None
+
     def upsert_document(self, document: dict) -> None:
         with self.conn.cursor() as cursor:
             cursor.execute(
@@ -45,13 +102,15 @@ class DocumentRepository:
                     document_id, domain, title, year_or_version, format,
                     source_url, verification,
                     document_type, fiscal_year, company, source_type,
-                    allowed_roles, processing_status
+                    allowed_roles, storage_path, processing_status,
+                    knowledge_base_active
                 ) VALUES (
                     %(document_id)s, %(domain)s, %(title)s, %(year_or_version)s,
                     %(format)s, %(source_url)s,
                     %(verification)s, %(document_type)s,
                     %(fiscal_year)s, %(company)s, %(source_type)s,
-                    %(allowed_roles)s, %(processing_status)s
+                    %(allowed_roles)s, %(storage_path)s, %(processing_status)s,
+                    %(knowledge_base_active)s
                 )
                 ON CONFLICT (document_id) DO UPDATE SET
                     domain = EXCLUDED.domain,
@@ -64,10 +123,11 @@ class DocumentRepository:
                     fiscal_year = EXCLUDED.fiscal_year,
                     company = EXCLUDED.company,
                     source_type = EXCLUDED.source_type,
-                    allowed_roles = EXCLUDED.allowed_roles,
+                    storage_path = COALESCE(EXCLUDED.storage_path, documents.storage_path),
                     processing_status = EXCLUDED.processing_status
                 """,
-                document,
+                {**document, "storage_path": document.get("storage_path"),
+                 "knowledge_base_active": document.get("knowledge_base_active", True)},
             )
             self.conn.commit()
 
@@ -96,8 +156,7 @@ class DocumentRepository:
             self.conn.commit()
 
     def corpus_dashboard(
-        self, role: str, username: str = "", include_analytics: bool = False,
-        company: str | None = None,
+        self, role: str, username: str = "", company: str | None = None,
     ) -> dict:
         """Aggregate visible documents and indexed chunks from persisted state."""
         role_filter = "(d.allowed_roles && %s::text[] OR %s = 'admin' OR (%s = 'document_uploader' AND d.uploaded_by = %s))"
@@ -110,12 +169,21 @@ class DocumentRepository:
                 f"""
                 SELECT d.document_id, d.company, d.domain, d.title, d.document_type,
                        d.format, d.fiscal_year, d.source_url, d.allowed_roles,
-                       d.processing_status, count(c.id)::int AS chunks
+                       d.processing_status, count(c.id)::int AS chunks,
+                       ARRAY(
+                           SELECT DISTINCT jsonb_array_elements_text(reference.metadata->'knowledge_domains')
+                           FROM document_chunks reference
+                           WHERE reference.metadata->>'document_id' = d.document_id
+                             AND jsonb_typeof(reference.metadata->'knowledge_domains') = 'array'
+                       ) AS knowledge_domains,
+                       max(c.metadata->>'source_publisher') AS source_publisher,
+                       max(c.metadata->>'external_reference_type') AS external_reference_type
                 FROM documents d
                 LEFT JOIN document_chunks c
                   ON c.metadata->>'document_id' = d.document_id
                  AND coalesce(d.processing_status, 'ready') = 'ready'
-                WHERE d.source_type IN ('public_enterprise_document', 'user_upload')
+                WHERE d.source_type IN ('public_enterprise_document', 'user_upload', 'synthetic_demo_policy')
+                  AND d.knowledge_base_active IS TRUE
                   AND {visible_filter}
                 GROUP BY d.document_id
                 ORDER BY d.company, d.fiscal_year NULLS LAST, d.title
@@ -130,7 +198,8 @@ class DocumentRepository:
                     FROM documents d LEFT JOIN document_chunks c
                       ON c.metadata->>'document_id' = d.document_id
                      AND coalesce(d.processing_status, 'ready') = 'ready'
-                    WHERE d.source_type IN ('public_enterprise_document', 'user_upload')
+                    WHERE d.source_type IN ('public_enterprise_document', 'user_upload', 'synthetic_demo_policy')
+                      AND d.knowledge_base_active IS TRUE
                       AND {visible_filter}
                     GROUP BY d.company, d.domain, d.fiscal_year
                     ORDER BY d.company, d.domain, d.fiscal_year NULLS LAST""",
@@ -145,7 +214,8 @@ class DocumentRepository:
                     FROM documents d LEFT JOIN document_chunks c
                       ON c.metadata->>'document_id' = d.document_id
                      AND coalesce(d.processing_status, 'ready') = 'ready'
-                    WHERE d.source_type IN ('public_enterprise_document', 'user_upload')
+                    WHERE d.source_type IN ('public_enterprise_document', 'user_upload', 'synthetic_demo_policy')
+                      AND d.knowledge_base_active IS TRUE
                       AND {visible_filter}
                     GROUP BY d.document_id ORDER BY d.title""",
                 visible_params,
@@ -154,99 +224,19 @@ class DocumentRepository:
             cursor.execute(
                 f"""SELECT d.company, d.fiscal_year, d.processing_status, count(*)::int AS documents
                     FROM documents d
-                    WHERE d.source_type IN ('public_enterprise_document', 'user_upload')
+                    WHERE d.source_type IN ('public_enterprise_document', 'user_upload', 'synthetic_demo_policy')
+                      AND d.knowledge_base_active IS TRUE
                       AND {visible_filter}
                     GROUP BY d.company, d.fiscal_year, d.processing_status
                     ORDER BY d.company, d.fiscal_year NULLS LAST, d.processing_status""",
                 visible_params,
             )
             processing = cursor.fetchall()
-            if include_analytics:
-                cursor.execute(
-                    f"""SELECT m.company, m.metric_name, m.metric_label, m.fiscal_year,
-                              m.metric_value, m.unit, m.document_id, m.page_number,
-                              m.source_url, m.entry_method, m.source_reference, m.source_note,
-                              m.allowed_roles
-                       FROM extracted_financial_metrics m
-                       WHERE m.status = 'verified'
-                         AND (m.allowed_roles @> %s::text[] OR %s = 'admin')
-                         AND (%s::text IS NULL OR m.company = %s::text)
-                       ORDER BY m.company, m.metric_name, m.fiscal_year""",
-                    ([role], role, company, company),
-                )
-                financial = cursor.fetchall()
-                if role == "admin":
-                    cursor.execute(
-                        f"""SELECT c.id, c.document_id, coalesce(c.company, d.company) AS company,
-                                   coalesce(d.title, c.source_reference, 'Manual entry') AS title,
-                                   c.metric_name, c.metric_label,
-                                   c.candidate_values, c.normalized_value, c.unit,
-                                   c.fiscal_year, c.page_number, c.source_quote, c.status,
-                                   d.source_url, c.evidence_count, c.entry_method,
-                                   c.source_reference, c.source_note, c.allowed_roles,
-                                   c.extraction_method, c.extractor_model,
-                                   c.prompt_version, c.selection_evidence,
-                                   (SELECT max(ch.metadata->>'text_extraction_method')
-                                    FROM document_chunks ch
-                                    WHERE ch.metadata->>'document_id' = c.document_id
-                                      AND ch.metadata->>'page_number' = c.page_number::text)
-                                     AS text_extraction_method
-                            FROM (
-                                SELECT candidate.id, candidate.document_id,
-                                       candidate.company, candidate.allowed_roles,
-                                       candidate.metric_name, candidate.metric_label,
-                                       candidate.candidate_values, candidate.normalized_value,
-                                       candidate.unit, candidate.page_number,
-                                       candidate.source_quote, candidate.status,
-                                       candidate.entry_method, candidate.source_reference,
-                                       candidate.source_note,
-                                       candidate.extraction_method, candidate.extractor_model,
-                                       candidate.prompt_version, candidate.selection_evidence,
-                                       candidate.created_at,
-                                       coalesce(candidate.fiscal_year,
-                                           CASE WHEN d.fiscal_year ~ '^[0-9]{{4}}$'
-                                                THEN d.fiscal_year::integer END) AS fiscal_year,
-                                       row_number() OVER (
-                                           PARTITION BY coalesce(candidate.document_id, 'manual-' || candidate.id::text), candidate.metric_name
-                                           ORDER BY candidate.created_at DESC, candidate.id DESC
-                                       ) AS review_rank,
-                                       count(*) OVER (
-                                           PARTITION BY coalesce(candidate.document_id, 'manual-' || candidate.id::text), candidate.metric_name
-                                       )::int AS evidence_count
-                                FROM extracted_metric_candidates candidate
-                                LEFT JOIN documents d USING (document_id)
-                                WHERE candidate.status = 'needs_review'
-                                  AND (candidate.document_id IS NULL OR d.processing_status = 'ready')
-                                  AND (%s::text IS NULL OR coalesce(candidate.company, d.company) = %s::text)
-                                  AND (candidate.document_id IS NULL OR {visible_filter})
-                                  AND NOT EXISTS (
-                                      SELECT 1 FROM extracted_financial_metrics verified
-                                      WHERE verified.company = coalesce(candidate.company, d.company)
-                                        AND verified.metric_name = candidate.metric_name
-                                        AND verified.fiscal_year = coalesce(candidate.fiscal_year,
-                                            CASE WHEN d.fiscal_year ~ '^[0-9]{{4}}$'
-                                                 THEN d.fiscal_year::integer END)
-                                        AND verified.status = 'verified'
-                                  )
-                            ) c
-                            LEFT JOIN documents d USING (document_id)
-                            WHERE c.review_rank = 1
-                            ORDER BY coalesce(c.company, d.company), c.fiscal_year NULLS LAST,
-                                     coalesce(d.title, c.source_reference), c.page_number""",
-                        (company, company) + visible_params,
-                    )
-                    candidates = cursor.fetchall()
-                else:
-                    candidates = []
-            else:
-                financial, candidates = [], []
         return {
             "documents": documents,
             "domains": domains,
             "quality": quality,
             "processing": processing,
-            "financial": financial,
-            "candidates": candidates,
             "document_count": len(documents),
             "chunk_count": sum(row["chunks"] for row in documents),
         }
@@ -259,6 +249,7 @@ class DocumentRepository:
         metric_cte = """authorized_financial_metrics AS (
             SELECT id AS metric_id, company, fiscal_year, metric_name, metric_label, metric_value, unit,
                    document_id, page_number, source_url, source_quote, source_reference,
+                   source_chunk_id, source_chunk_index, source_content_hash,
                    source_note, entry_method
             FROM public.extracted_financial_metrics
             WHERE status = 'verified'
@@ -305,7 +296,8 @@ class DocumentRepository:
                     cursor.execute(
                         """SELECT id AS metric_id, company, fiscal_year, metric_name, metric_label,
                                   metric_value, unit, document_id, page_number, source_url, source_quote,
-                                  source_reference, source_note, entry_method
+                                  source_reference, source_note, entry_method, source_chunk_id,
+                                  source_chunk_index, source_content_hash
                            FROM public.extracted_financial_metrics
                            WHERE status='verified' AND id = ANY(%s)
                              AND (allowed_roles @> %s::text[] OR %s = 'admin')
@@ -343,124 +335,161 @@ class DocumentRepository:
                     documents.extend(cursor.fetchall())
         return {"results": results, "evidence": evidence, "documents": documents}
 
-    def save_metric_candidates(self, document_id: str, candidates: list[dict]) -> None:
-        with self.conn.transaction(), self.conn.cursor() as cursor:
-            cursor.executemany(
-                """INSERT INTO extracted_metric_candidates (
-                       document_id, metric_name, metric_label, candidate_values,
-                       fiscal_year, page_number, source_quote, source_quote_hash, unit,
-                       extraction_method, extractor_model, prompt_version, selection_evidence
-                   ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                   ON CONFLICT (document_id, metric_name, page_number, source_quote_hash)
-                   DO UPDATE SET candidate_values = EXCLUDED.candidate_values,
-                                 metric_label = EXCLUDED.metric_label,
-                                 fiscal_year = EXCLUDED.fiscal_year,
-                                 source_quote = EXCLUDED.source_quote,
-                                 unit = EXCLUDED.unit,
-                                 extraction_method = EXCLUDED.extraction_method,
-                                 extractor_model = EXCLUDED.extractor_model,
-                                 prompt_version = EXCLUDED.prompt_version,
-                                 selection_evidence = EXCLUDED.selection_evidence,
-                                 status = 'needs_review', normalized_value = NULL,
-                                 reviewed_by = NULL, reviewed_at = NULL, created_at = now()
-                   WHERE extracted_metric_candidates.status IN ('needs_review', 'superseded')""",
-                [(document_id, row["metric_name"], row["metric_label"],
-                  psycopg.types.json.Jsonb(row["candidate_values"]), row["fiscal_year"],
-                  row["page_number"], row["source_quote"], row["source_quote_hash"],
-                  row.get("unit"),
-                  row.get("extraction_method", "rule_based_page_evidence"),
-                  row.get("extractor_model"), row.get("prompt_version"),
-                  psycopg.types.json.Jsonb(row.get("selection_evidence", {})))
-                 for row in candidates],
-            )
-            cursor.execute(
-                """UPDATE extracted_metric_candidates AS old
-                   SET status = 'superseded'
-                   WHERE old.document_id = %s AND old.status = 'needs_review'
-                     AND NOT EXISTS (
-                         SELECT 1
-                         FROM unnest(%s::text[], %s::text[]) AS incoming(metric_name, source_quote_hash)
-                         WHERE incoming.metric_name = old.metric_name
-                           AND incoming.source_quote_hash = old.source_quote_hash
-                     )""",
-                (document_id,
-                 [row["metric_name"] for row in candidates],
-                 [row["source_quote_hash"] for row in candidates]),
-            )
+    def commerce_dashboard(self, keys: tuple[str, ...] | None = None) -> dict:
+        """Return descriptive dashboard aggregates from the private synthetic Commerce schema."""
+        queries = {
+            "overview": """SELECT min(date)::text AS first_day, max(date)::text AS last_day,
+                       sum(revenue)::double precision AS revenue,
+                       sum(cogs)::double precision AS cogs,
+                       (sum(revenue) - sum(cogs))::double precision AS gross_profit,
+                       CASE WHEN sum(revenue) = 0 THEN NULL
+                            ELSE ((sum(revenue) - sum(cogs)) / sum(revenue))::double precision END AS gross_margin
+                    FROM commerce.sales""",
+            "sales_by_year": """SELECT extract(year FROM date)::int AS year,
+                       sum(revenue)::double precision AS revenue,
+                       sum(cogs)::double precision AS cogs,
+                       (sum(revenue) - sum(cogs))::double precision AS gross_profit,
+                       CASE WHEN sum(revenue) = 0 THEN NULL
+                            ELSE ((sum(revenue) - sum(cogs)) / sum(revenue))::double precision END AS gross_margin
+                    FROM commerce.sales GROUP BY 1 ORDER BY 1""",
+            "inventory_by_year": """SELECT year, count(*)::int AS sku_snapshots,
+                       count(DISTINCT product_id)::int AS products,
+                       round(avg(stock_on_hand)::numeric, 0)::bigint AS avg_stock_on_hand,
+                       count(*) FILTER (WHERE stockout_flag)::int AS stockout_snapshots,
+                       count(*) FILTER (WHERE overstock_flag)::int AS overstock_snapshots,
+                       round(avg(stockout_days)::numeric, 2)::double precision AS avg_stockout_days,
+                       round(avg(fill_rate)::numeric, 4)::double precision AS avg_fill_rate
+                    FROM commerce.inventory GROUP BY year ORDER BY year""",
+            "inventory_year_end_by_category": """WITH year_end AS (
+                       SELECT year, max(snapshot_date) AS snapshot_date
+                       FROM commerce.inventory GROUP BY year
+                    )
+                    SELECT i.year, i.snapshot_date::text AS snapshot_date, i.category,
+                       count(*)::int AS products, sum(i.stock_on_hand)::bigint AS stock_on_hand,
+                       count(*) FILTER (WHERE i.stockout_flag)::int AS stockout_products,
+                       count(*) FILTER (WHERE i.overstock_flag)::int AS overstock_products,
+                       count(*) FILTER (WHERE i.stockout_flag AND i.overstock_flag)::int AS both_flagged_products
+                    FROM commerce.inventory i JOIN year_end y USING (year, snapshot_date)
+                    GROUP BY i.year, i.snapshot_date, i.category ORDER BY i.year, i.category""",
+            "inventory_latest_by_category": """WITH latest AS (SELECT max(snapshot_date) AS snapshot_date FROM commerce.inventory)
+                    SELECT i.snapshot_date::text AS snapshot_date, i.category, count(*)::int AS products,
+                       sum(i.stock_on_hand)::bigint AS stock_on_hand,
+                       count(*) FILTER (WHERE i.stockout_flag)::int AS stockout_products,
+                       count(*) FILTER (WHERE i.overstock_flag)::int AS overstock_products,
+                       count(*) FILTER (WHERE i.stockout_flag AND i.overstock_flag)::int AS both_flagged_products
+                    FROM commerce.inventory i JOIN latest l USING (snapshot_date)
+                    GROUP BY i.snapshot_date, i.category ORDER BY i.category""",
+            "inventory_latest_flag_overlap": """WITH latest AS (SELECT max(snapshot_date) AS snapshot_date FROM commerce.inventory)
+                    SELECT i.snapshot_date::text AS snapshot_date, count(*)::int AS product_rows,
+                       count(*) FILTER (WHERE i.stockout_flag)::int AS stockout_flagged_rows,
+                       count(*) FILTER (WHERE i.overstock_flag)::int AS overstock_flagged_rows,
+                       count(*) FILTER (WHERE i.stockout_flag AND i.overstock_flag)::int AS both_flagged_rows
+                    FROM commerce.inventory i JOIN latest l USING (snapshot_date)
+                    GROUP BY i.snapshot_date""",
+            "promotions_by_year": """SELECT * FROM commerce.dashboard_promotions_by_year
+                    ORDER BY year, used_promotion""",
+            "promotions_by_campaign": """SELECT * FROM commerce.dashboard_promotions_by_campaign
+                    ORDER BY year DESC, net_item_sales DESC, campaign""",
+            "logistics_by_year_region": """SELECT * FROM commerce.dashboard_logistics_by_year_region
+                    ORDER BY year, region""",
+        }
+        if keys is not None:
+            unknown = set(keys) - queries.keys()
+            if unknown:
+                raise ValueError(f"Unsupported Commerce dashboard aggregates: {', '.join(sorted(unknown))}")
+            queries = {key: queries[key] for key in keys}
 
-    def create_manual_metric_candidate(
-        self, *, company: str, metric_name: str, metric_label: str,
-        metric_value: str, fiscal_year: int, unit: str,
-        source_reference: str | None, source_note: str, allowed_roles: list[str],
-    ) -> int:
-        with self.conn.transaction(), self.conn.cursor() as cursor:
-            cursor.execute(
-                """INSERT INTO public.extracted_metric_candidates (
-                       company, metric_name, metric_label, candidate_values,
-                       fiscal_year, unit, status, extraction_method, entry_method,
-                       source_reference, source_note, allowed_roles, selection_evidence
-                   ) VALUES (%s, %s, %s, %s, %s, %s, 'needs_review', 'manual_entry',
-                             'manual', %s, %s, %s, %s)
-                   RETURNING id""",
-                (company, metric_name, metric_label,
-                 psycopg.types.json.Jsonb([metric_value]), fiscal_year, unit,
-                 source_reference, source_note, allowed_roles,
-                 psycopg.types.json.Jsonb({"entry_method": "manual"})),
-            )
-            return cursor.fetchone()[0]
+        result = {}
+        with self.conn.cursor() as cursor:
+            cursor.execute("SET TRANSACTION READ ONLY")
+            cursor.execute("SET LOCAL statement_timeout = '10s'")
+            for name, sql in queries.items():
+                cursor.execute(sql)
+                rows = cursor.fetchall()
+                result[name] = rows[0] if name == "overview" and rows else rows
+        data_notes = ["Commerce records are synthetic competition data, not actual company operating results."]
+        selected_keys = set(queries)
+        if selected_keys & {"promotions_by_year", "promotions_by_campaign"}:
+            data_notes.extend((
+                "Promotion comparisons are descriptive; the data has no randomized holdout and does not establish causal uplift.",
+                "Promotion tables include merchandise gross-profit and margin proxies from transaction item prices, discounts, and catalog COGS. They are not contribution margin or campaign ROI; catalog cost assumptions and campaign costs are not validated.",
+            ))
+        if selected_keys & {"inventory_by_year", "inventory_year_end_by_category", "inventory_latest_by_category", "inventory_latest_flag_overlap"}:
+            data_notes.append("The stored days_of_supply values are anomalously large, so they are excluded from decision summaries.")
+        if "logistics_by_year_region" in selected_keys:
+            data_notes.append("Geography is grouped into dataset regions; carrier, warehouse origin, route capacity and promised SLA are not available.")
+        return {**result, "data_notes": data_notes}
 
-    def review_metric_candidate(
-        self, candidate_id: int, status: str, value: float | None,
-        unit: str | None, reviewer: str, company: str | None = None,
-    ) -> bool:
-        if status not in {"verified", "rejected"} or (status == "verified" and (value is None or not unit)):
-            raise ValueError("Verified metrics require a normalized value and unit")
-        with self.conn.transaction(), self.conn.cursor(row_factory=psycopg.rows.dict_row) as cursor:
-            cursor.execute(
-                """UPDATE extracted_metric_candidates AS candidate
-                   SET status=%s, normalized_value=%s, unit=%s, reviewed_by=%s, reviewed_at=now()
-                   WHERE candidate.id=%s AND candidate.status='needs_review'
-                     AND (candidate.document_id IS NULL OR EXISTS (
-                         SELECT 1 FROM documents d
-                         WHERE d.document_id=candidate.document_id
-                           AND d.processing_status='ready'
-                           AND (%s::text IS NULL OR d.company=%s::text)
-                     ))
-                     AND (candidate.document_id IS NOT NULL OR
-                          (%s::text IS NULL OR candidate.company=%s::text))
-                   RETURNING candidate.*""",
-                (status, value if status == "verified" else None,
-                 unit if status == "verified" else None, reviewer, candidate_id,
-                 company, company, company, company),
-            )
-            candidate = cursor.fetchone()
-            if candidate is None:
-                return False
-            if status == "verified":
-                cursor.execute(
-                    """INSERT INTO extracted_financial_metrics (
-                           company, fiscal_year, metric_name, metric_label, metric_value,
-                           unit, document_id, page_number, source_quote, source_quote_hash,
-                           source_url, allowed_roles, status, entry_method,
-                           source_reference, source_note, verified_by, verified_at
-                       ) SELECT coalesce(c.company, d.company), coalesce(c.fiscal_year,
-                                CASE WHEN d.fiscal_year ~ '^[0-9]{4}$' THEN d.fiscal_year::integer END),
-                                c.metric_name, c.metric_label, c.normalized_value, c.unit,
-                                d.document_id, c.page_number, c.source_quote,
-                                c.source_quote_hash, d.source_url,
-                                coalesce(nullif(c.allowed_roles, '{}'::text[]), d.allowed_roles),
-                                'verified', c.entry_method, c.source_reference, c.source_note,
-                                %s, now()
-                         FROM extracted_metric_candidates c
-                         LEFT JOIN documents d USING(document_id)
-                   WHERE c.id=%s
-                         ON CONFLICT (company, fiscal_year, metric_name)
-                             WHERE status = 'verified' DO NOTHING""",
-                    (reviewer, candidate_id),
+    def commerce_decision_snapshot(self, domain: str) -> dict:
+        """Return a bounded, read-only SQL evidence slice for one Commerce decision domain."""
+        profile = COMMERCE_DECISION_PROFILES.get(domain)
+        if profile is None:
+            raise ValueError(f"Unsupported Commerce decision domain: {domain}")
+        dashboard = self.commerce_dashboard(profile["dashboard_keys"])
+        selected = {}
+        for key in profile["dashboard_keys"]:
+            rows = dashboard.get(key, [])
+            if key == "inventory_latest_flag_overlap":
+                selected[key] = rows
+                continue
+            if key == "inventory_latest_by_category":
+                ranked = sorted(
+                    rows,
+                    key=lambda row: row.get("stockout_products", 0) + row.get("overstock_products", 0),
+                    reverse=True,
                 )
-                if cursor.rowcount == 0:
-                    raise ValueError("A verified value already exists for this company, year, and metric")
-        return True
+                selected[key] = ranked[:12]
+                continue
+            if key == "promotions_by_campaign":
+                rows_by_year = {}
+                for row in rows:
+                    rows_by_year.setdefault(int(row["year"]), []).append(row)
+                years = sorted(rows_by_year)[-3:]
+                selected[key] = [
+                    row for year in years
+                    for row in sorted(rows_by_year[year], key=lambda item: item.get("net_item_sales", 0), reverse=True)[:12]
+                ]
+                continue
+            years = sorted({int(row["year"]) for row in rows if row.get("year") is not None})
+            recent = set(years[-3:])
+            selected[key] = [row for row in rows if int(row["year"]) in recent]
+        return {
+            "domain": domain,
+            "domain_label": profile["label"],
+            "source_tables": list(profile["source_tables"]),
+            "observations": selected,
+            "limitations": list(profile["limitations"]),
+            "dataset_note": "Synthetic Kaggle Datathon 2026 Round 1 Commerce data; not observed results from a real retailer.",
+        }
+
+    def execute_commerce_analytics(self, query: str, domain: str) -> list[dict]:
+        """Run a domain-scoped, validated SELECT over synthetic Commerce data."""
+        table_columns = COMMERCE_QUERY_TABLES.get(domain)
+        if table_columns is None:
+            raise ValueError(f"Unsupported Commerce decision domain: {domain}")
+        query = validate_commerce_sql(query, table_columns)
+        with self.conn.transaction(), self.conn.cursor() as cursor:
+            cursor.execute("SET TRANSACTION READ ONLY")
+            cursor.execute("SET LOCAL statement_timeout = '5s'")
+            try:
+                cursor.execute(query)
+                columns = [item.name for item in cursor.description]
+                return [dict(row) if isinstance(row, dict) else dict(zip(columns, row))
+                        for row in cursor.fetchall()]
+            except psycopg.Error as error:
+                detail = f" ({type(error).__name__}, SQLSTATE {error.sqlstate})" if error.sqlstate else f" ({type(error).__name__})"
+                database_message = error.diag.message_primary
+                if database_message:
+                    database_message = re.sub(r"'[^']*'", "'<value>'", database_message)
+                    detail += f": {database_message[:180]}"
+                raise UnsafeAnalyticsQuery(f"The Commerce SELECT could not be executed{detail}") from error
+
+    def latest_commerce_inventory_snapshot(self) -> str | None:
+        """Return the latest inventory snapshot date for bounded latest-snapshot queries."""
+        with self.conn.cursor() as cursor:
+            cursor.execute("SELECT max(snapshot_date)::text AS snapshot_date FROM commerce.inventory")
+            row = cursor.fetchone()
+            return row["snapshot_date"] if row else None
 
     def update_processing_status(self, document_id: str, status: str) -> None:
         if status not in {"uploaded", "processing", "ready", "failed"}:
@@ -472,8 +501,8 @@ class DocumentRepository:
             )
             self.conn.commit()
 
-    def uploaded_source(self, document_id: str, company: str) -> dict | None:
-        """Return private Storage coordinates for a ready upload in this corpus."""
+    def uploaded_source(self, document_id: str, company: str, role: str, username: str) -> dict | None:
+        """Return private Storage coordinates only to a role allowed on the upload."""
         with self.conn.cursor() as cursor:
             cursor.execute(
                 """SELECT title, format, storage_path
@@ -481,8 +510,25 @@ class DocumentRepository:
                    WHERE document_id = %s AND company = %s
                      AND source_type = 'user_upload'
                      AND processing_status = 'ready'
-                     AND storage_path IS NOT NULL""",
-                (document_id, company),
+                     AND storage_path IS NOT NULL
+                     AND (allowed_roles && ARRAY[%s]::text[] OR %s = 'admin'
+                          OR (%s = 'document_uploader' AND uploaded_by = %s))""",
+                (document_id, company, role, role, role, username),
+            )
+            return cursor.fetchone()
+
+    def accessible_synthetic_policy_source(self, document_id: str, company: str, role: str) -> dict | None:
+        """Check corpus ACL before serving a manifest-registered demo policy file."""
+        with self.conn.cursor() as cursor:
+            cursor.execute(
+                """SELECT title, format
+                   FROM public.documents
+                   WHERE document_id = %s AND company = %s
+                     AND source_type = 'synthetic_demo_policy'
+                     AND processing_status = 'ready'
+                     AND knowledge_base_active IS TRUE
+                     AND (allowed_roles && ARRAY[%s]::text[] OR %s = 'admin')""",
+                (document_id, company, role, role),
             )
             return cursor.fetchone()
 

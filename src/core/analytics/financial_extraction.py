@@ -14,7 +14,7 @@ from core.analytics.metric_ontology import METRIC_ONTOLOGY
 
 logger = logging.getLogger(__name__)
 
-PROMPT_VERSION = "vinamilk-financial-page-json-v2"
+PROMPT_VERSION = "financial-page-json-v2"
 MAX_FINANCIAL_PAGES = 10
 METRIC_NAMES = {
     "total_consolidated_revenue": "Total consolidated revenue",

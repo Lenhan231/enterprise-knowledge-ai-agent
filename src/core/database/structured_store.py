@@ -25,16 +25,23 @@ class StructuredDataStore:
         records_count = 0
         with self.connection.transaction(), self.connection.cursor() as cursor:
             cursor.execute("DELETE FROM public.extracted_tables WHERE document_id = %s", (document_id,))
-            for table in tables:
-                page_number = int(table["page_number"])
-                table_index = int(table["table_index"])
-                table_id = f"{document_id}:page:{page_number}:table:{table_index}"
+            for source_index, table in enumerate(tables):
+                source_page = table.get("page_number")
+                # The legacy table requires an integer page. Zero is an internal
+                # sentinel for formats whose source locations are sheets/slides.
+                page_number = int(source_page) if source_page is not None else 0
+                table_index = int(table["table_index"] if source_page is not None else source_index)
+                location = f"page:{page_number}" if source_page is not None else "unpaginated"
+                table_id = f"{document_id}:{location}:table:{table_index}"
+                metadata = dict(table.get("metadata") or {})
+                if table.get("context"):
+                    metadata["table_context"] = table["context"]
                 cursor.execute(
                     """INSERT INTO public.extracted_tables
                        (id, document_id, document_name, page_number, table_index, columns, metadata)
                        VALUES (%s, %s, %s, %s, %s, %s, %s)""",
                     (table_id, document_id, document_name, page_number, table_index,
-                     Jsonb(table.get("columns", [])), Jsonb(table.get("metadata", {}))),
+                     Jsonb(table.get("columns", [])), Jsonb(metadata)),
                 )
                 rows = table.get("rows", [])
                 if rows:
@@ -56,7 +63,8 @@ class StructuredDataStore:
             raise ValueError("table_limit must be 1-50 and row_limit must be 1-100")
         with self.connection.transaction(), self.connection.cursor() as cursor:
             cursor.execute(
-                """SELECT t.id, t.page_number, t.table_index, t.columns, t.metadata,
+                """SELECT t.id, NULLIF(t.page_number, 0) AS page_number,
+                          t.table_index, t.columns, t.metadata,
                           (SELECT count(*) FROM public.extracted_records r
                            WHERE r.table_id = t.id) AS row_count,
                           COALESCE((

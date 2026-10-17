@@ -1,1 +1,1 @@
-"""Docling PDF parser adapter."""
+"""Docling multi-format parser adapter."""

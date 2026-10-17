@@ -117,7 +117,7 @@ function renderCorpus(data) {
   $("#company-name").textContent = companies.size || 0;
   $("#document-count").textContent = formatNumber(data.document_count);
   $("#chunk-count").textContent = formatNumber(data.chunk_count);
-  const inFlight = data.documents.filter((doc) => doc.processing_status !== "ready").length;
+  const inFlight = data.documents.filter((doc) => !["ready", "parsed"].includes(doc.processing_status)).length;
   $("#processing-count").textContent = formatNumber(inFlight);
   $("#source-count").textContent = `${formatNumber(data.document_count)} registered source${data.document_count === 1 ? "" : "s"}`;
   $("#connection-status").textContent = "Knowledge base connected";
@@ -253,9 +253,8 @@ function renderParsedChunks(chunks, documentId) {
     const sourceLabel = isPdf && pageNumber ? `Open original PDF · page ${formatNumber(pageNumber)}` : "Open original document";
     return `
     <article class="candidate-row" id="document-chunk-${chunk.chunk_index}">
-        <div class="candidate-heading"><strong>${pageNumber ? `Page ${formatNumber(pageNumber)} · ` : ""}Passage ${formatNumber(chunk.chunk_index + 1)}</strong><span>${escapeHtml(chunk.processing_status || "extracted")} · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")}</span></div>
+        <div class="candidate-heading"><strong>${pageNumber ? `Page ${formatNumber(pageNumber)} · ` : ""}Passage ${formatNumber(chunk.chunk_index + 1)}</strong><span>${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")}</span></div>
       ${sourceUrl ? `<a class="document-link" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(sourceLabel)}</a>` : ""}
-      ${chunk.processing_error ? `<p class="corpus-note">Processing error: ${escapeHtml(chunk.processing_error)}</p>` : ""}
       ${renderOcrDiagnostics(chunk.metadata?.ocr_diagnostics)}
       <blockquote>${escapeHtml(chunk.content)}</blockquote>
       <details class="candidate-source"><summary>Parser metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details>
@@ -277,8 +276,12 @@ function renderExtractedTables(tables, documentId) {
       table.metadata?.continued_from_page && `Continued from page ${formatNumber(table.metadata.continued_from_page)}`,
       table.metadata?.continued_to_page && `Continues on page ${formatNumber(table.metadata.continued_to_page)}`,
     ].filter(Boolean).join(" · ");
+    const sourceLocation = table.page_number
+      ? `Page ${formatNumber(table.page_number)}`
+      : table.metadata?.sheet_name ? `Sheet ${escapeHtml(table.metadata.sheet_name)}`
+        : table.metadata?.slide_number ? `Slide ${formatNumber(table.metadata.slide_number)}` : null;
     return `<article class="candidate-row">
-      <div class="candidate-heading"><strong>Page ${formatNumber(table.page_number)} · Table ${formatNumber(table.table_index + 1)}</strong><span>${formatNumber(table.row_count)} rows · showing ${formatNumber(rows.length)}</span></div>
+      <div class="candidate-heading"><strong>${sourceLocation ? `${sourceLocation} · ` : ""}Table ${formatNumber(table.table_index + 1)}</strong><span>${formatNumber(table.row_count)} rows · showing ${formatNumber(rows.length)}</span></div>
       ${continuation ? `<p class="corpus-note">${escapeHtml(continuation)}</p>` : ""}
       ${sourceUrl ? `<a class="document-link" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(sourceLabel)}</a>` : ""}
       <div class="extracted-table-wrap"><table class="extracted-table"><thead><tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
@@ -295,13 +298,13 @@ async function loadOcrTestRuns() {
     const selected = config.parser_settings?.[engine] || config;
     const tesseractConfig = selected.tesseract_config || {};
     const parserSettings = engine === "mineru"
-      ? `MinerU Basic · force OCR ${selected.mineru_force_ocr ? "on" : "off"} · pages ${selected.mineru_page_range || "all"}`
+      ? `MinerU · force OCR ${selected.mineru_force_ocr ? "on" : "off"} · pages ${selected.mineru_page_range || "all"}`
       : engine === "docling"
       ? `Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`
       : engine === "pp-structurev3"
       ? `PP-StructureV3 · ${selected.paddle_device || "cpu"} · ${Math.round((selected.paddle_render_scale ?? 1.5) * 72)} DPI · formulas ${selected.paddle_formula_recognition ? "on" : "off"} · charts ${selected.paddle_chart_recognition ? "on" : "off"}`
-      : engine === "pymupdf_tesseract"
-        ? `Production PyMuPDF/Tesseract · PSM ${selected.tesseract_psm} · ${Math.round((selected.ocr_render_scale ?? 1.5) * 72)} DPI · threshold ${tesseractConfig.thresholding_method ?? 0} · table recognition ${tesseractConfig.textord_tablefind_recognize_tables ? "on" : "off"} · ${selected.tessdata_variant || "system"} data`
+      : engine === "built_in"
+        ? `Built-in · PSM ${selected.tesseract_psm} · ${Math.round((selected.ocr_render_scale ?? 1.5) * 72)} DPI · threshold ${tesseractConfig.thresholding_method ?? 0} · table recognition ${tesseractConfig.textord_tablefind_recognize_tables ? "on" : "off"} · ${selected.tessdata_variant || "system"} data`
         : "Parser settings unavailable";
     const settings = config.layout_detector === "doclayout-yolo"
       ? `${parserSettings} · YOLO overlay ${config.layout_image_size}px · confidence ${config.layout_confidence_threshold}`
@@ -309,21 +312,19 @@ async function loadOcrTestRuns() {
     const embeddingSummary = run.embedding_status === "not_run"
       ? "embedding skipped"
       : `historical embedding ${run.embedding_status}`;
-    return `<button type="button" class="ocr-run-button" data-ocr-run-id="${escapeHtml(run.run_id)}"><strong>${escapeHtml(run.source_filename)}</strong><span>${escapeHtml(new Date(run.created_at).toLocaleString())} · ${formatNumber(run.page_count)} pages · ${formatNumber(run.chunk_count)} shared chunks · ${formatNumber(run.token_bounded_chunk_count || 0)} token-bounded chunks · ${embeddingSummary} · ${formatNumber(run.table_count)} tables · ${escapeHtml(settings)}</span></button>`;
-  }).join("") || '<p class="loading-card">No upload tests yet. Upload a PDF above to create one.</p>';
+    const previewSummary = run.page_count ? `${formatNumber(run.page_count)} page previews` : "no page previews";
+    const processingSummary = `processing ${formatDuration(run.runtime_info?.processing_time_ms)}`;
+    return `<button type="button" class="ocr-run-button" data-ocr-run-id="${escapeHtml(run.run_id)}"><strong>${escapeHtml(run.source_filename)}</strong><span>${escapeHtml(new Date(run.created_at).toLocaleString())} · ${processingSummary} · ${previewSummary} · ${formatNumber(run.chunk_count)} parser chunks · ${embeddingSummary} · ${formatNumber(run.table_count)} tables · ${escapeHtml(settings)}</span></button>`;
+  }).join("") || '<p class="loading-card">No upload tests yet. Upload a supported document above to create one.</p>';
 }
 
 function renderOcrTestDetails(run) {
   const layoutPages = run.runtime_info?.layout_detections || [];
-  const tokenStageSummary = run.embedding_status === "not_run"
-    ? "Token-bounded input · embedding not run"
-    : `Historical embedding input · status ${run.embedding_status}`;
   const allPages = [...new Set([
     ...run.pages,
-    ...run.token_bounded_chunks.map((chunk) => Number(chunk.metadata?.page_number)).filter(Number.isFinite),
-    ...layoutPages.map((page) => Number(page.page_number)).filter(Number.isFinite),
-    ...run.chunks.map((chunk) => Number(chunk.metadata?.page_number)).filter(Number.isFinite),
-    ...run.tables.map((table) => Number(table.page_number)).filter(Number.isFinite),
+    ...layoutPages.map((page) => page.page_number == null ? NaN : Number(page.page_number)).filter(Number.isFinite),
+    ...run.chunks.map((chunk) => chunk.metadata?.page_number == null ? NaN : Number(chunk.metadata.page_number)).filter(Number.isFinite),
+    ...run.tables.map((table) => table.page_number == null ? NaN : Number(table.page_number)).filter(Number.isFinite),
   ])].sort((a, b) => a - b);
   const pageContent = allPages.map((pageNumber, pageIndex) => {
     const layoutPage = layoutPages.find((page) => Number(page.page_number) === pageNumber);
@@ -341,7 +342,6 @@ function renderOcrTestDetails(run) {
         }).join("")}
       </svg></div>` : `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
     const chunks = run.chunks.filter((chunk) => Number(chunk.metadata?.page_number) === pageNumber);
-    const tokenChunks = run.token_bounded_chunks.filter((chunk) => Number(chunk.metadata?.page_number) === pageNumber);
     const tables = run.tables.filter((table) => Number(table.page_number) === pageNumber);
     const ocrDiagnostics = chunks.flatMap((chunk) => chunk.metadata?.ocr_diagnostics || []);
     const tablesHtml = tables.map((table) => {
@@ -385,28 +385,46 @@ function renderOcrTestDetails(run) {
         <details class="candidate-source"><summary>Detailed parser metadata</summary><pre>${escapeHtml(JSON.stringify(metadata, null, 2))}</pre></details></article>`;
     }).join("");
     return `<details class="ocr-test-page" ${pageIndex === 0 ? "open" : ""}>
-      <summary>Page ${formatNumber(pageNumber)} · ${formatNumber(chunks.length)} shared chunks · ${formatNumber(tokenChunks.length)} token-bounded chunks · ${formatNumber(tables.length)} tables</summary>
+      <summary>Page ${formatNumber(pageNumber)} · ${formatNumber(chunks.length)} parser chunks · ${formatNumber(tables.length)} tables</summary>
       <div class="ocr-test-page-content">
       <section class="ocr-test-raw"><h4>Raw page</h4>${layoutOverlay}${layoutPage ? `<p class="corpus-note">DocLayout-YOLO · ${formatNumber(layoutRegions.length)} regions at ${formatNumber(run.processor_config?.layout_image_size)}px, threshold ${escapeHtml(run.processor_config?.layout_confidence_threshold)}</p>` : ""}</section>
       <section class="ocr-test-extracted"><h4>Extracted output</h4>
         ${renderOcrDiagnostics(ocrDiagnostics)}
         <details class="ocr-test-chunks"><summary>Parser output · ${formatNumber(chunks.length)} chunks</summary>${chunks.map((chunk) => `<article class="ocr-test-chunk"><div class="candidate-heading"><strong>Chunk ${formatNumber(chunk.chunk_index + 1)}</strong><span>${formatNumber(chunk.metadata?.actual_char_count ?? chunk.content.length)} chars actual · ${formatNumber(chunk.metadata?.chunk_size_chars ?? 0)} char limit · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")} · ${escapeHtml(chunk.metadata?.layout_type || "text")}</span></div><pre>${escapeHtml(chunk.content)}</pre><details class="candidate-source"><summary>Chunk metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser chunks on this page.</p>'}</details>
-        <details class="ocr-test-chunks"><summary>${tokenStageSummary} · ${formatNumber(tokenChunks.length)} chunks</summary>${tokenChunks.map((chunk) => `<article class="ocr-test-chunk"><div class="candidate-heading"><strong>Chunk ${formatNumber(chunk.chunk_index + 1)}</strong><span>${formatNumber(chunk.metadata?.token_count ?? 0)} tokens · ${formatNumber(chunk.metadata?.actual_char_count ?? chunk.content.length)} chars · limit ${formatNumber(chunk.metadata?.embedding_max_sequence_length ?? run.embedding_max_sequence_length ?? 0)} tokens</span></div><pre>${escapeHtml(chunk.content)}</pre><details class="candidate-source"><summary>Chunk metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details></article>`).join("") || `<p class="ocr-test-empty">${run.runtime_info?.tokenization_error ? `Token counting failed: ${escapeHtml(run.runtime_info.tokenization_error)}` : "No token-bounded chunks."}</p>`}</details>
         <h4 class="ocr-test-table-heading">Extracted tables</h4>
         ${tablesHtml || '<p class="ocr-test-empty">No structured table detected on this page.</p>'}
       </section>
       </div>
     </details>`;
   }).join("");
-  const embeddingSummary = run.embedding_status === "not_run"
-    ? "Embedding skipped by design"
-    : `Historical embedding status: ${run.embedding_status}`;
+  const unpagedChunks = run.chunks.filter((chunk) => chunk.metadata?.page_number == null);
+  const unpagedTables = run.tables.filter((table) => table.page_number == null);
+  const unpagedOutput = unpagedChunks.length || unpagedTables.length
+    ? `<section class="ocr-test-page">
+        <h3>Document content · no page previews</h3>
+        <section class="ocr-test-extracted"><h4>Extracted output · ${formatNumber(unpagedChunks.length)} shared chunks</h4>
+          ${unpagedChunks.map((chunk) => `<article class="ocr-test-chunk"><div class="candidate-heading"><strong>Chunk ${formatNumber(chunk.chunk_index + 1)}</strong><span>${formatNumber(chunk.metadata?.actual_char_count ?? chunk.content.length)} chars · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(chunk.content)}</pre><details class="candidate-source"><summary>Chunk metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser chunks.</p>'}
+          <h4 class="ocr-test-table-heading">Extracted tables · ${formatNumber(unpagedTables.length)}</h4>
+          ${unpagedTables.map((table) => {
+            const data = table.structured_data || {};
+            const rows = Array.isArray(data.rows) ? data.rows : [];
+            const columns = Array.isArray(data.columns) && data.columns.length
+              ? data.columns : [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
+            const location = table.metadata?.sheet_name ? ` · ${escapeHtml(table.metadata.sheet_name)}` : "";
+            return `<article class="ocr-test-table"><h5>Table ${formatNumber(table.table_index + 1)}${location} <span>${formatNumber(rows.length)} rows</span></h5>
+              ${columns.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table"><thead><tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
+              <details class="candidate-source"><summary>Table metadata</summary><pre>${escapeHtml(JSON.stringify(table.metadata, null, 2))}</pre></details></article>`;
+          }).join("") || '<p class="ocr-test-empty">No unpaged structured tables.</p>'}
+        </section>
+      </section>`
+    : "";
+  const processingSummary = `Processing time: ${formatDuration(run.runtime_info?.processing_time_ms)}`;
   $("#ocr-test-results").innerHTML = `<article class="ocr-test-run">
-    <div class="candidate-heading"><strong>${escapeHtml(run.source_filename)}</strong><span>${formatNumber(run.page_count)} pages · ${formatNumber(run.chunks.length)} shared chunks · ${formatNumber(run.token_bounded_chunks.length)} token-bounded chunks · ${formatNumber(run.tables.length)} tables</span></div>
+    <div class="candidate-heading"><strong>${escapeHtml(run.source_filename)}</strong><span>${processingSummary} · ${run.page_count ? `${formatNumber(run.page_count)} page previews` : "No page previews"} · ${formatNumber(run.chunks.length)} parser chunks · ${formatNumber(run.tables.length)} tables</span></div>
     <p class="corpus-note">SHA-256: <code>${escapeHtml(run.source_sha256)}</code></p>
-    <p class="corpus-note">${embeddingSummary} · tokenizer: ${escapeHtml(run.runtime_info?.tokenizer_model || run.embedding_model || "unavailable")} · maximum ${formatNumber(run.embedding_max_sequence_length || run.runtime_info?.embedding_max_sequence_length || 0)} tokens${run.runtime_info?.tokenization_error ? `<br>Token counting error: ${escapeHtml(run.runtime_info.tokenization_error)}` : ""}</p>
+    <p class="corpus-note">Tokenization and embedding are downstream stages and are not run by Upload Test.</p>
     <details class="candidate-source"><summary>Parser configuration and versions</summary><pre>${escapeHtml(JSON.stringify({processor_config:run.processor_config,runtime_info:{...run.runtime_info,layout_detections:undefined}},null,2))}</pre></details>
-    <div class="ocr-test-pages">${pageContent}</div>
+    <div class="ocr-test-pages">${pageContent}${unpagedOutput}</div>
   </article>`;
 }
 
@@ -435,6 +453,12 @@ updateUploadTestParserSettings();
 
 function formatNumber(value) {
   return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 3 }).format(value);
+}
+
+function formatDuration(milliseconds) {
+  const value = Number(milliseconds);
+  if (!Number.isFinite(value)) return "time unavailable";
+  return value < 1000 ? `${formatNumber(value)} ms` : `${formatNumber(value / 1000)} s`;
 }
 
 function formatFinancialValue(value) {
@@ -1216,6 +1240,7 @@ async function loadWorkspace(user) {
         updateUploadRoleSelection();
         syncUploadReferenceFields();
         $("#upload-button").disabled = false;
+        $("#parser-handoff-button").disabled = false;
         $("#upload-section").hidden = false;
         $("#upload-status").textContent = "";
         delete $("#upload-status").dataset.state;
@@ -1223,6 +1248,7 @@ async function loadWorkspace(user) {
     } catch (error) {
       $("#upload-section").hidden = false;
       $("#upload-button").disabled = true;
+      $("#parser-handoff-button").disabled = true;
       $("#upload-status").dataset.state = "error";
       $("#upload-status").textContent = `Upload permissions could not be loaded: ${error.message}`;
     }
@@ -1392,14 +1418,12 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
   const useYoloOverlay = form.elements.namedItem("layout_detector").value === "doclayout-yolo";
   const parserLabel = parserEngine === "pp-structurev3"
     ? "PP-StructureV3"
-    : parserEngine === "mineru" ? "MinerU Basic (local)"
-    : parserEngine === "docling" ? "Docling" : "production PyMuPDF/Tesseract";
-  $("#ocr-test-status").textContent = parserEngine === "mineru"
-    ? `Running MinerU locally; then applying shared cleanup, chunking, and local token counting. No embedding will run${useYoloOverlay ? " (plus diagnostic YOLO overlay)" : ""}…`
-    : `Running ${parserLabel}, then shared cleanup, chunking, and local token counting. No embedding will run${useYoloOverlay ? " (plus diagnostic YOLO overlay)" : ""}…`;
+    : parserEngine === "mineru" ? "MinerU (local)"
+    : parserEngine === "docling" ? "Docling" : "Built-in";
+  $("#ocr-test-status").textContent = `Running ${parserLabel}, then shared cleanup and parser chunking. Tokenization and embedding are downstream${useYoloOverlay ? " (plus diagnostic YOLO overlay)" : ""}…`;
   try {
     const result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
-    $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.chunk_count} shared chunks, ${result.token_bounded_chunk_count} token-bounded chunks, ${result.table_count} tables. Embedding was skipped.${result.tokenization_error ? ` Token counting error: ${result.tokenization_error}` : ""} No production document was created.`;
+    $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.chunk_count} parser chunks, ${result.table_count} tables. No production document was created.`;
     await loadOcrTestRuns();
     await openOcrTestRun(result.run_id);
     form.reset();
@@ -1608,7 +1632,7 @@ function updateUploadPlanSummary() {
     .map((input) => input.closest("label")?.querySelector("strong")?.textContent.trim())
     .filter(Boolean);
   const lines = [
-    `Document Q&A: ${title} will be indexed after processing.`,
+    `Document Q&A: ${title} can be fully indexed, or saved as parser output for downstream processing.`,
     `Access: ${roles.length ? roles.join(", ") : "select at least one role above"}.`,
   ];
   if (referenceEnabled) {
@@ -1711,6 +1735,7 @@ $("#upload-synthetic-policy").addEventListener("change", (event) => {
 $("#upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
+  const parserHandoff = event.submitter?.dataset.uploadMode === "parser-handoff";
   const file = $("#upload-file").files[0];
   const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
   const knowledgeDomains = [...form.querySelectorAll('input[name="knowledge_domains"]:checked')].map((input) => input.value);
@@ -1775,19 +1800,25 @@ $("#upload-form").addEventListener("submit", async (event) => {
       : `${Math.floor(elapsedSeconds / 60)}m ${String(elapsedSeconds % 60).padStart(2, "0")}s`);
   };
   status.dataset.state = "processing";
-  status.textContent = "Uploading, extracting text/OCR, chunking and indexing. Keep this tab open.";
+  status.textContent = parserHandoff
+    ? "Uploading, extracting and saving parser output. Tokenization and indexing are downstream. Keep this tab open."
+    : "Uploading, extracting text/OCR, chunking and indexing. Keep this tab open.";
   updateProcessingTime();
   const processingTimer = window.setInterval(updateProcessingTime, 1000);
   let result;
   try {
-    result = await api("/api/documents/upload", { method: "POST", body, headers: {} });
-    const referenceStatus = knowledgeUse === "commerce"
+    result = await api(parserHandoff ? "/api/documents/parser-handoff" : "/api/documents/upload", { method: "POST", body, headers: {} });
+    const referenceStatus = parserHandoff
+      ? " Parser output is saved in public for downstream tokenization and indexing; this document is not searchable yet."
+      : knowledgeUse === "commerce"
       ? syntheticPolicy
         ? ` Indexed as synthetic demo guidance for ${knowledgeDomains.join(", ")} (scope: ${applicability}); dashboard SQL is unchanged.`
         : ` Indexed as ${referenceType} for ${knowledgeDomains.join(", ")} (scope: ${applicability}); dashboard SQL is unchanged.`
       : " Indexed for document Q&A; Commerce dashboard SQL is unchanged.";
     const pageSummary = result.page_count ? `${formatNumber(result.page_count)} pages` : "File processed";
-    const extractionSummary = `${formatNumber(result.parser_chunk_count)} parser passages · ${formatNumber(result.indexed_chunk_count)} indexed passages · ${formatNumber(result.ocr_chunk_count)} OCR passages · ${formatNumber(result.table_count)} tables`;
+    const extractionSummary = parserHandoff
+      ? `${formatNumber(result.parser_chunk_count)} parser chunks · ${formatNumber(result.ocr_chunk_count)} OCR chunks · ${formatNumber(result.table_count)} tables · 0 indexed`
+      : `${formatNumber(result.parser_chunk_count)} parser passages · ${formatNumber(result.indexed_chunk_count)} indexed passages · ${formatNumber(result.ocr_chunk_count)} OCR passages · ${formatNumber(result.table_count)} tables`;
     const uploadedTitle = form.elements.title.value || file.name;
     status.dataset.state = "success";
     progress.hidden = true;
@@ -1814,7 +1845,7 @@ $("#upload-form").addEventListener("submit", async (event) => {
       processingStatus.textContent = status.textContent;
       processingStatus.hidden = false;
       if (![...parsedDocument.options].some((option) => option.value === result.document_id)) {
-        parsedDocument.add(new Option(`${uploadedTitle} · ready`, result.document_id));
+        parsedDocument.add(new Option(`${uploadedTitle} · ${result.processing_status}`, result.document_id));
       }
       parsedDocument.value = result.document_id;
       selectWorkspaceTab("processing");

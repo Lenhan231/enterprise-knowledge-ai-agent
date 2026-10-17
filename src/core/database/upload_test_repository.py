@@ -44,7 +44,7 @@ class UploadTestRepository:
             raise ValueError("Embedding chunk and vector counts must match")
         with self.connection.transaction(), self.connection.cursor() as cursor:
             cursor.execute(
-                """INSERT INTO public.upload_test_runs
+                """INSERT INTO upload_test.upload_test_runs
                    (run_id, source_filename, source_sha256, uploaded_by,
                     processor_config, runtime_info, page_count, chunk_count, table_count,
                     token_bounded_chunk_count, embedding_status, embedding_model,
@@ -59,12 +59,12 @@ class UploadTestRepository:
                 ),
             )
             cursor.executemany(
-                """INSERT INTO public.upload_test_pages (run_id, page_number, preview_png)
+                """INSERT INTO upload_test.upload_test_pages (run_id, page_number, preview_png)
                    VALUES (%s, %s, %s)""",
                 [(run_id, index + 1, image) for index, image in enumerate(page_previews)],
             )
             cursor.executemany(
-                """INSERT INTO public.upload_test_parser_chunks
+                """INSERT INTO upload_test.upload_test_parser_chunks
                    (run_id, chunk_index, content, metadata) VALUES (%s, %s, %s, %s)""",
                 [
                     (run_id, index, chunk["text"], Jsonb(chunk["metadata"]))
@@ -72,7 +72,7 @@ class UploadTestRepository:
                 ],
             )
             cursor.executemany(
-                """INSERT INTO public.upload_test_tables
+                """INSERT INTO upload_test.upload_test_tables
                    (run_id, table_index, page_number, columns, context, metadata)
                    VALUES (%s, %s, %s, %s, %s, %s)""",
                 [
@@ -82,11 +82,16 @@ class UploadTestRepository:
                         Jsonb({
                             **table.get("context", {}),
                             "source_filename": source_filename,
-                            "page_number": table.get("page_number"),
+                            **({"page_number": table["page_number"]} if table.get("page_number") is not None else {}),
                             "section_title": next((
                                 chunk.get("metadata", {}).get("section_title")
                                 for chunk in chunks
-                                if chunk.get("metadata", {}).get("page_number") == table.get("page_number")
+                                if chunk.get("metadata", {}).get("element_type") == "table"
+                                and all(
+                                    chunk.get("metadata", {}).get(key) == table.get(key)
+                                    for key in ("page_number", "sheet_name", "slide_number", "paragraph_index", "table_index")
+                                    if table.get(key) is not None
+                                )
                                 and chunk.get("metadata", {}).get("section_title")
                             ), None),
                         }),
@@ -99,7 +104,7 @@ class UploadTestRepository:
                 ],
             )
             cursor.executemany(
-                """INSERT INTO public.upload_test_records
+                """INSERT INTO upload_test.upload_test_records
                    (run_id, table_index, row_index, data) VALUES (%s, %s, %s, %s)""",
                 [
                     (run_id, table_index, row_index, Jsonb(row))
@@ -108,7 +113,7 @@ class UploadTestRepository:
                 ],
             )
             cursor.executemany(
-                """INSERT INTO public.upload_test_token_chunks
+                """INSERT INTO upload_test.upload_test_token_chunks
                    (run_id, chunk_index, content, metadata, embedding)
                    VALUES (%s, %s, %s, %s, %s)""",
                 [
@@ -125,11 +130,11 @@ class UploadTestRepository:
             raise ValueError("limit must be between 1 and 50")
         with self.connection.cursor(row_factory=dict_row) as cursor:
             cursor.execute(
-                """SELECT run_id, source_filename, source_sha256, processor_config,
+                """SELECT run_id, source_filename, source_sha256, processor_config, runtime_info,
                           page_count, chunk_count, token_bounded_chunk_count, embedding_status,
                           embedding_model, embedding_backend, embedding_max_sequence_length,
                           embedding_error, table_count, created_at
-                   FROM public.upload_test_runs
+                   FROM upload_test.upload_test_runs
                    ORDER BY created_at DESC LIMIT %s""",
                 (limit,),
             )
@@ -137,19 +142,19 @@ class UploadTestRepository:
 
     def get_run(self, run_id: uuid.UUID) -> dict | None:
         with self.connection.cursor(row_factory=dict_row) as cursor:
-            cursor.execute("SELECT * FROM public.upload_test_runs WHERE run_id = %s", (run_id,))
+            cursor.execute("SELECT * FROM upload_test.upload_test_runs WHERE run_id = %s", (run_id,))
             run = cursor.fetchone()
             if run is None:
                 return None
             cursor.execute(
                 """SELECT chunk_index, content, metadata
-                   FROM public.upload_test_parser_chunks WHERE run_id = %s ORDER BY chunk_index""",
+                   FROM upload_test.upload_test_parser_chunks WHERE run_id = %s ORDER BY chunk_index""",
                 (run_id,),
             )
             run["chunks"] = cursor.fetchall()
             cursor.execute(
                 """SELECT chunk_index, content, metadata
-                   FROM public.upload_test_token_chunks
+                   FROM upload_test.upload_test_token_chunks
                    WHERE run_id = %s ORDER BY chunk_index""",
                 (run_id,),
             )
@@ -160,20 +165,20 @@ class UploadTestRepository:
                               'columns', t.columns,
                               'rows', coalesce((
                                   SELECT jsonb_agg(r.data ORDER BY r.row_index)
-                                  FROM public.upload_test_records r
+                                  FROM upload_test.upload_test_records r
                                   WHERE r.run_id = t.run_id AND r.table_index = t.table_index
                               ), '[]'::jsonb)
                           ) AS structured_data,
                           t.context, t.metadata,
-                          (SELECT count(*) FROM public.upload_test_records r
+                          (SELECT count(*) FROM upload_test.upload_test_records r
                            WHERE r.run_id = t.run_id AND r.table_index = t.table_index) AS row_count
-                   FROM public.upload_test_tables t
+                   FROM upload_test.upload_test_tables t
                    WHERE t.run_id = %s ORDER BY t.table_index""",
                 (run_id,),
             )
             run["tables"] = cursor.fetchall()
             cursor.execute(
-                """SELECT page_number FROM public.upload_test_pages
+                """SELECT page_number FROM upload_test.upload_test_pages
                    WHERE run_id = %s ORDER BY page_number""",
                 (run_id,),
             )
@@ -183,7 +188,7 @@ class UploadTestRepository:
     def get_page_preview(self, run_id: uuid.UUID, page_number: int) -> bytes | None:
         with self.connection.cursor() as cursor:
             cursor.execute(
-                """SELECT preview_png FROM public.upload_test_pages
+                """SELECT preview_png FROM upload_test.upload_test_pages
                    WHERE run_id = %s AND page_number = %s""",
                 (run_id, page_number),
             )

@@ -418,6 +418,7 @@
 [data-theme="dark"] .upload-use-option:has(input:checked){box-shadow:0 0 0 2px rgba(61,122,219,.22)}
 [data-theme="dark"] .upload-form #upload-file::file-selector-button{background:#172d4a;border-color:var(--line);color:var(--ink)}
 .upload-form{grid-template-columns:repeat(12,minmax(0,1fr));align-items:start;gap:14px}
+.upload-form>.upload-actions,.upload-form>.corpus-note{grid-column:1/-1;min-width:0}
 .upload-form>.upload-document-step{grid-column:span 7}
 .upload-form>.upload-access-step{grid-column:span 5;align-content:start}
 .upload-form>.upload-step:not(.upload-document-step){grid-column:1/-1}

@@ -1,0 +1,1 @@
+"""MinerU raster image adapter."""

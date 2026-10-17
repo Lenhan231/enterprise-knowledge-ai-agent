@@ -1,41 +1,27 @@
-"""Route character-based text splitting to the selected strategy."""
+"""Route text and structured tables to their respective chunkers."""
 
-from __future__ import annotations
+from typing import Any, Literal
 
-from .config import (
-    DEFAULT_CHUNKING_STRATEGY,
-    DEFAULT_CHUNK_OVERLAP,
-    DEFAULT_CHUNK_SIZE,
-)
-from .strategies.fixed import split_ranges as split_fixed_ranges
-from .strategies.sentence import split_ranges as split_sentence_ranges
+from core.document_processing.chunking.config import ChunkingConfig
+from core.document_processing.chunking.table.chunker import build_table_chunks
+from core.document_processing.chunking.text.chunk_builder import build_text_chunks
 
 
-def split_ranges(
-    text: str,
+def build_chunks(
+    content: str | dict[str, Any],
+    config: ChunkingConfig,
     *,
-    size: int = DEFAULT_CHUNK_SIZE,
-    overlap: int = DEFAULT_CHUNK_OVERLAP,
-    strategy: str = DEFAULT_CHUNKING_STRATEGY,
-) -> list[tuple[int, int]]:
-    """Route to a chunking strategy and return source text offsets."""
-    if strategy == "fixed":
-        return split_fixed_ranges(text, size, overlap)
-    if strategy == "sentence":
-        return split_sentence_ranges(text, size, overlap)
-    raise ValueError("chunking strategy must be 'fixed' or 'sentence'")
-
-
-def split_text(
-    text: str,
-    *,
-    size: int = DEFAULT_CHUNK_SIZE,
-    overlap: int = DEFAULT_CHUNK_OVERLAP,
-    strategy: str = DEFAULT_CHUNKING_STRATEGY,
-) -> list[str]:
-    return [
-        text[start:end].strip()
-        for start, end in split_ranges(
-            text, size=size, overlap=overlap, strategy=strategy
-        )
-    ]
+    kind: Literal["text", "table"],
+    metadata: dict[str, Any] | None = None,
+    title: str = "",
+) -> list[dict[str, Any]]:
+    """Dispatch parser content to the shared text or table chunking path."""
+    if kind == "text":
+        if not isinstance(content, str):
+            raise TypeError("text chunking requires string content")
+        return build_text_chunks(content, metadata or {}, config)
+    if kind == "table":
+        if not isinstance(content, dict):
+            raise TypeError("table chunking requires a structured table")
+        return build_table_chunks(content, config, metadata=metadata, title=title)
+    raise ValueError("chunk kind must be 'text' or 'table'")

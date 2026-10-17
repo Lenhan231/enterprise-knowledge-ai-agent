@@ -6,19 +6,28 @@ the database does not require one fixed set of JSONB keys.
 
 ## Shared chunk fields
 
-`DocumentProcessor.process()` adds these fields to every parsed chunk:
+`DocumentProcessor.process()` adds these fields to every parsed chunk and table:
 
 | Field | Meaning |
 | --- | --- |
 | `filename` | Original uploaded filename. |
 | `format` | Technical file format, such as `PDF`, `DOCX`, or `CSV`. |
-| `chunk_index` | Zero-based index in this parser result. |
-| `actual_char_count` | Character count of the parser chunk text. |
+| `pipeline_id` | Selected profile: `built_in`, `docling`, `mineru`, or `pp-structurev3`. |
+| `parser` | Actual component that produced this chunk/table, for example `docling`, `python-csv`, or `tesseract`. |
+| `chunk_index` | Zero-based index in this parser result (chunks only). |
+| `actual_char_count` | Character count of the parser chunk text (chunks only). |
+| `table_index` | Zero-based table index (tables only). |
 
-Processors add `page_number` when the source has a known page. These fields
+Processors add source locations such as `page_number`, `sheet_name`, or
+`slide_number` only when meaningful for the format. These fields
 describe the parser result; the upload endpoint may later split an oversized
 chunk for the embedding model and assign new retrieval chunk indexes and token
 metadata. See [chunking](../../../docs/technical/chunking.md).
+
+The legacy `extracted_tables.page_number` database column is non-nullable. The
+structured store uses `0` internally for tables without page locations and
+returns that sentinel as `null`; source metadata retains the real sheet/slide
+location.
 
 ## Heading context
 
@@ -39,9 +48,8 @@ The same processor receives different context from each caller:
   `document_type`, fiscal year, source URL/type, and allowed roles. Its source
   type is `user_upload` unless the caller explicitly marks demo material.
 - Upload Test adds `source_type="upload_test"` and the input `source_sha256`.
-  It saves parser chunks, token-bounded embedding chunks, vectors, and
-  normalized table rows in isolated storage; it does not create a production
-  document or retrieval entry.
+  It saves parser chunks, token-bounded previews, and normalized table rows in
+  isolated storage; it does not create a production document or vectors.
 - Seed ingestion supplies source-document metadata separately and currently
   constructs the `ChunkMetadata` dataclass in
   [`src/core/models/document.py`](../models/document.py).
@@ -69,8 +77,8 @@ it records which engine produced the content. The common keys and their
 meanings remain the same. Parser-only details such as `mineru_tier` or `bbox`
 are not required on other engines' output.
 
-Tables are returned separately from text chunks as `{page_number, table_index,
-columns, rows, metadata}`. The production upload persists this structure in the
+Tables are returned separately from text chunks as `{table_index, columns,
+rows, metadata}` with optional source locations. The production upload persists this structure in the
 structured table store; Upload Test keeps columns and normalized rows in
 `upload_test_tables` and `upload_test_records`. Table
 chunks may also contain row-aware text for retrieval. See the

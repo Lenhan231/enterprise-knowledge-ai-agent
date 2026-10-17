@@ -26,8 +26,8 @@ production parser selection itself becomes configurable.
 
 | Stage | Owner |
 | --- | --- |
-| Parse files, layout, tables, character chunks | `src/core/document_processing/processors/` |
-| Save parser output and orchestrate upload/retry | `src/app/main.py`, `ProcessedChunksRepository` |
+| Shared native readers for files, layout, tables, and text | `src/core/document_processing/readers/` |
+| Save parser output and orchestrate upload/retry | `src/app/main.py`, `ParserChunksRepository` |
 | Split and count tokenizer tokens | `src/core/tokenization/token_counter.py` |
 | Build final bounded chunks and metadata | `src/core/tokenization/embedding_chunker.py` |
 | Select model and create vectors | `src/core/embeddings/embedding_service.py` |

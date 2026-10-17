@@ -383,7 +383,11 @@
 
           <aside id="upload-plan-summary" class="upload-plan-summary" role="status" aria-live="polite"></aside>
 
-          <button id="upload-button" type="submit" class="primary-button">Upload and index document</button>
+          <div class="upload-actions" style="display:flex;gap:10px;flex-wrap:wrap">
+            <button id="upload-button" type="submit" class="primary-button" data-upload-mode="production">Upload and index document</button>
+            <button id="parser-handoff-button" type="submit" class="secondary-button" data-upload-mode="parser-handoff">Save parser output to public</button>
+          </div>
+          <p class="corpus-note">Parser handoff saves parser chunks and extracted tables in public, then stops. It is not searchable until the downstream owner tokenizes and indexes it.</p>
           <div id="upload-status-wrap" class="upload-status-wrap" hidden>
             <div id="upload-progress" class="upload-progress" role="progressbar" aria-label="Document processing" aria-valuetext="Processing">
               <span></span>
@@ -456,15 +460,15 @@
     <section id="tab-ocr-lab" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-ocr-lab" hidden>
       <section class="candidate-review">
         <div class="section-heading">
-          <div><p class="eyebrow">ISOLATED UPLOAD TEST</p><h2>Compare parsers through token-bounded chunks</h2></div>
+          <div><p class="eyebrow">ISOLATED UPLOAD TEST</p><h2>Compare parser output</h2></div>
         </div>
-        <p>Select one parser per run. Each parser has its own settings; all four use the same output cleanup, metadata fields, chunking strategy, and local token-limit check. Upload Test saves the resulting text and tables for review, then stops before embedding or vector creation. MinerU runs locally through its Basic tier; its isolated runtime and model files must be installed on the server. Docling also runs locally and may download its models on the first run. The optional DocLayout-YOLO overlay is diagnostic only and does not change parser output.</p>
+        <p>Select one pipeline per run. Each pipeline has its own format adapters and settings; all use the same output cleanup, provenance fields, and chunking. Upload Test saves parser output for inspection and stops before tokenization, embedding, or vector creation.</p>
         <form id="ocr-test-form" class="upload-form">
-          <div class="ocr-test-field"><label for="ocr-test-file">PDF to upload-test (up to 20 MiB, 50 pages)</label>
-          <input id="ocr-test-file" name="file" type="file" accept="application/pdf,.pdf" required></div>
+          <div class="ocr-test-field"><label for="ocr-test-file">Document to upload-test (up to 20 MiB; PDFs up to 50 pages)</label>
+          <input id="ocr-test-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff" required></div>
           <div class="ocr-test-field"><label for="ocr-test-parser">Document parser</label>
-          <select id="ocr-test-parser" name="parser_engine"><option value="pymupdf_tesseract" selected>Production · PyMuPDF + Tesseract</option><option value="pp-structurev3">Paddle PP-StructureV3</option><option value="mineru">MinerU Basic · local</option><option value="docling">Docling · local layout + OCR</option></select></div>
-          <fieldset data-parser-settings="pymupdf_tesseract"><legend>Production parser tuning · PyMuPDF + Tesseract</legend>
+          <select id="ocr-test-parser" name="parser_engine"><option value="built_in" selected>Built-in</option><option value="pp-structurev3">Paddle PP-StructureV3</option><option value="mineru">MinerU · local</option><option value="docling">Docling · local</option></select></div>
+          <fieldset data-parser-settings="built_in"><legend>Built-in tuning · PyMuPDF + Tesseract for PDF, Tesseract for images</legend>
           <div class="ocr-test-field"><label for="ocr-test-language">OCR language</label>
           <select id="ocr-test-language" name="ocr_language"><option value="vie+eng" selected>Vietnamese + English · default</option><option value="eng">English only</option></select></div>
           <div class="ocr-test-field"><label for="ocr-test-psm">Tesseract page segmentation (text)</label>
@@ -585,6 +589,6 @@
     </div>
     </main>
   </div>
-  <script src="/static/app.js?v=upload-test-table-provenance-20261016" defer></script>
+  <script src="/static/app.js?v=upload-test-processing-time-20261017" defer></script>
 </body>
 </html>

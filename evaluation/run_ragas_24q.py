@@ -116,11 +116,15 @@ async def main():
                         return metric_name, round(float(result.value), 4), ""
                     except Exception as exc:
                         message = str(exc)
-                        if attempt < 2 and ("429" in message or "rate_limit" in message.lower()):
-                            retry = re.search(
-                                r"(?:try again in|retry in) ([\d.]+)s", message, re.IGNORECASE
-                            )
-                            await asyncio.sleep(float(retry.group(1)) + 1 if retry else 20)
+                        retryable = any(token in message.lower() for token in (
+                            "429", "rate_limit", "503", "unavailable", "timed out",
+                        ))
+                        if attempt < 2 and retryable:
+                            retry = re.search(r"(?:try again in|retry in) ([\d.]+)s", message, re.IGNORECASE)
+                            if retry and float(retry.group(1)) > 120:
+                                return metric_name, "", f"Retry deferred by provider: {message}"
+                            delay = float(retry.group(1)) + 1 if retry else 10 * (2 ** attempt)
+                            await asyncio.sleep(delay)
                             continue
                         return metric_name, "", f"{type(exc).__name__}: {message}"
 

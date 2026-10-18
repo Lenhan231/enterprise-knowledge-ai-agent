@@ -8,7 +8,7 @@ Run retrieval and all three models from `src/core/llm/models.py`:
 .venv\Scripts\python.exe evaluation\run_generation_benchmark.py
 ```
 
-`gpt_oss_20b` uses `GROQ_API_KEY`, `qwen3` uses `GROQ_API_KEY_2`, and `gemini_flash` uses `GEMINI_API_KEY`. The two Groq keys must differ; separate keys may still share an organization quota. The script defaults to the two verified Supabase document IDs; override with `--annual-report-id` and `--long-hau-fs-id` if the documents are reindexed. Use `--question-id Q01 Q02` for selected questions or `--inspect-only` for retrieval without generation.
+`gpt_oss_20b` uses `GROQ_API_KEY`, `qwen3` uses `GROQ_API_KEY_2`, and `cloudflare_llama_3_1_8b` uses `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`. The two Groq keys must differ; separate keys may still share an organization quota. The script defaults to the two verified Supabase document IDs; override with `--annual-report-id` and `--long-hau-fs-id` if the documents are reindexed. Use `--question-id Q01 Q02` for selected questions or `--inspect-only` for retrieval without generation.
 
 Outputs are `artifacts/benchmark/long_hau_2008.json` and the adjacent `.md` file. They include complete gold and retrieved chunk contents, ranks, scores, pages, answers, citations, and per-question metrics. These files are Git-ignored because they contain document text. Retrieval uses the embedding model recorded on indexed chunks.
 

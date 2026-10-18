@@ -24,6 +24,7 @@ from core.embeddings.embedding_service import EmbeddingService
 from core.llm.models import BENCHMARK_MODELS
 from core.llm.groq_provider import GroqProvider
 from core.llm.openai_compatible_provider import OpenAICompatibleProvider
+from core.llm.Cloudflare_provider import CloudflareProvider
 from core.rag.rag_service import RAGService
 from core.retrieval.retrieval import RetrievalRequest, make_chunk_id
 from core.retrieval.retrieval_service import RetrievalService
@@ -248,8 +249,10 @@ def main() -> int:
         retrieval = RetrievalService(EmbeddingService(model_name=embedding_model), repository)
         providers = {
             name: (
+                CloudflareProvider(model=BENCHMARK_MODELS[name]["model"])
+                if BENCHMARK_MODELS[name].get("provider") == "cloudflare" else
                 GroqProvider(model=BENCHMARK_MODELS[name]["model"], api_key=keys[name])
-                if "groq.com" in BENCHMARK_MODELS[name]["base_url"] else
+                if "groq.com" in BENCHMARK_MODELS[name].get("base_url", "") else
                 OpenAICompatibleProvider(
                     model=BENCHMARK_MODELS[name]["model"],
                     base_url=BENCHMARK_MODELS[name]["base_url"],
@@ -325,7 +328,11 @@ def main() -> int:
                 print(f"{case['id']}: {len(contexts)} chunks")
         finally:
             for provider in providers.values():
-                provider.client.close()
+                client = getattr(provider, "client", None)
+                if client is not None:
+                    client.close()
+                elif hasattr(provider, "close"):
+                    provider.close()
     finally:
         repository.close()
     print(f"Retrieval content and results: {args.output} / {args.output.with_suffix('.md')}")

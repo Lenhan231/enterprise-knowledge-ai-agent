@@ -1,1 +1,1 @@
-"""Canonical business metric concepts shared by routing and analytics."""
+"""Analytics helpers for Commerce decision support and document evidence."""

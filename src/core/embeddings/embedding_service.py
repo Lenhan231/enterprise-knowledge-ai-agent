@@ -19,6 +19,7 @@ DEFAULT_EMBEDDING_MODEL = os.getenv(
 )
 EMBEDDING_MAX_SEQUENCE_LENGTH = int(os.getenv("EMBEDDING_MAX_SEQUENCE_LENGTH", "512"))
 EMBEDDING_BACKEND = os.getenv("EMBEDDING_BACKEND", "local").strip().lower()
+HUGGINGFACE_EMBEDDING_BATCH_SIZE = 16
 _BACKEND_LOAD_LOCK = Lock()
 
 
@@ -34,8 +35,12 @@ class HuggingFaceInferenceEmbeddings(Embeddings):
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         if not texts:
             return []
-        vectors = self.client.feature_extraction(texts)
-        return [[float(value) for value in vector] for vector in vectors]
+        vectors = []
+        for start in range(0, len(texts), HUGGINGFACE_EMBEDDING_BATCH_SIZE):
+            batch = texts[start:start + HUGGINGFACE_EMBEDDING_BATCH_SIZE]
+            batch_vectors = self.client.feature_extraction(batch)
+            vectors.extend([[float(value) for value in vector] for vector in batch_vectors])
+        return vectors
 
     def embed_query(self, text: str) -> list[float]:
         vector = self.client.feature_extraction(text)
@@ -47,6 +52,11 @@ def _load_backend(model_name: str, backend_name: str = EMBEDDING_BACKEND) -> Emb
     if backend_name == "local":
         from langchain_huggingface import HuggingFaceEmbeddings
 
+        token = os.getenv("HUGGINGFACE_API_KEY")
+        if token:
+            return HuggingFaceEmbeddings(
+                model_name=model_name, model_kwargs={"token": token},
+            )
         return HuggingFaceEmbeddings(model_name=model_name)
     if backend_name == "huggingface_inference":
         return HuggingFaceInferenceEmbeddings(model_name=model_name)

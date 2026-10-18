@@ -1,7 +1,11 @@
 from core.llm.groq_provider import GroqProvider
+from core.llm.provider_fallback import (
+    accumulate_token_usage,
+    generate_with_provider_fallback,
+    is_retryable_provider_error,
+)
 from core.retrieval.retrieval import RetrievalRequest
 from core.retrieval.retrieval_service import RetrievalService
-from core.retrieval.retrieval import RetrievalRequest
 from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT
 from pydantic import BaseModel, Field
 from typing import Literal
@@ -12,10 +16,10 @@ import unicodedata
 from collections import OrderedDict
 from threading import Lock
 from time import monotonic
+from openai import RateLimitError
 
-# Groq's on-demand tier can reject prompts close to its 8k TPM request limit.
-# Keep the retrieved evidence smaller so the prompt and generated answer fit.
-MAX_CONTEXT_CHARS = 16_000
+# Leave room for the system prompt, question, and response under Groq's 8k TPM cap.
+MAX_CONTEXT_CHARS = 5_000
 RESPONSE_CACHE_TTL_SECONDS = 60
 RESPONSE_CACHE_MAX_ENTRIES = 128
 _RESPONSE_CACHE: OrderedDict[str, tuple[float, str, tuple[str, ...]]] = OrderedDict()
@@ -84,67 +88,117 @@ def _related_party_invoice_disclosure(contexts: list[dict]) -> "RAGResult | None
     return None
 
 
-def _employee_access_policy_disclosure(question: str, contexts: list[dict]) -> "RAGResult | None":
-    terms = question.casefold()
-    if not all(re.search(pattern, terms) for pattern in (r"\bemployees?\b", r"\baccess\b", r"\bpolic(?:y|ies)\b")):
-        return None
-
-    code_id = "VNM-CODE-2025-EN"
-    for context in contexts:
-        metadata = context.get("metadata") or {}
-        document_name = str(metadata.get("source_document") or context.get("document_name") or "")
-        document_type = str(metadata.get("document_type") or "").casefold().replace("_", " ")
-        if (
-            metadata.get("document_id") != code_id
-            and "information system policy" in document_name.casefold()
-            and "policy" in document_type
-        ):
-            return None
-
-    access_context = next((
-        context for context in contexts
-        if (context.get("metadata") or {}).get("document_id") == code_id
-        and "employees are assigned rights to access and process information" in str(context.get("content", "")).casefold()
-    ), None)
-    reference_context = next((
-        context for context in contexts
-        if (context.get("metadata") or {}).get("document_id") == code_id
-        and "in information system policy" in str(context.get("content", "")).casefold()
-    ), None)
-    if not access_context or not reference_context:
-        return None
-
-    def sentence(context: dict, start: str) -> str | None:
-        match = re.search(re.escape(start) + r"[^.]*\.", str(context.get("content", "")), re.IGNORECASE)
-        return match.group(0).strip() if match else None
-
-    rights = sentence(access_context, "Employees are assigned rights to access and process information")
-    exceptions = sentence(access_context, "For the exceptions")
-    prohibited = sentence(access_context, "Unauthorized access and processing")
-    policy_reference = sentence(reference_context, "The Company stipulates the usage and protection")
-    if not all((rights, exceptions, prohibited, policy_reference)):
-        return None
-
-    access_id = access_context["source_id"]
-    reference_id = reference_context["source_id"]
-    return RAGResult(
-        answer=(
-            f"The Code of Conduct's Network and access section says: “{rights}” [{access_id}] "
-            f"“{exceptions}” [{access_id}] “{prohibited}” [{access_id}] "
-            f"The Code separately refers to the Information System Policy: “{policy_reference}” [{reference_id}] "
-            f"The separate Information System Policy is not included in the retrieved documents; this answer covers only the Code of Conduct provisions [{reference_id}]."
-        ),
-        contexts=[access_context, reference_context],
-        source_ids=list(dict.fromkeys((access_id, reference_id))),
-    )
-
-
 class RAGResult(BaseModel):
     answer: str
     contexts: list[dict] = Field(default_factory=list)
     source_ids: list[str] = Field(default_factory=list)
     insufficient_context: bool = False
     prompt_sha256: str | None = None
+    answer_fallback_reason: str | None = None
+    generation_provider: str | None = None
+    token_usage: dict | None = None
+
+
+def _source_only_fallback(question: str, contexts: list[dict], reason: str) -> RAGResult:
+    is_vietnamese = any(
+        character in question.casefold()
+        for character in "ăâđêôơưàáạảãằắặẳẵầấậẩẫềếệểễồốộổỗờớợởỡừứựửữỳýỵỷỹ"
+    )
+    note_key = "source_notes" if is_vietnamese else "source_notes_en"
+    question_terms = set(re.findall(r"[a-z0-9]+", question.casefold()))
+    named_sources = []
+    for context in contexts:
+        publisher = str((context.get("metadata") or {}).get("source_publisher") or "")
+        publisher_terms = set(re.findall(r"[a-z0-9]+", publisher.casefold()))
+        publisher_terms -= {"the", "company", "group", "holding", "holdings"}
+        if context.get("source_id") and publisher_terms & question_terms:
+            named_sources.append(context)
+    if named_sources:
+        # A named source in the question is stronger than an unrelated catalog note.
+        contexts = named_sources[:3]
+    curated_policy = next((
+        context for context in contexts
+        if (context.get("metadata") or {}).get("synthetic_company_policy") is True
+        and isinstance((context.get("metadata") or {}).get(note_key), str)
+        and (context.get("metadata") or {}).get(note_key).strip()
+        and context.get("source_id")
+    ), None)
+    if curated_policy:
+        metadata = curated_policy.get("metadata") or {}
+        source_id = curated_policy["source_id"]
+        note = metadata[note_key].strip()
+        if is_vietnamese:
+            opening = (
+                "Request tổng hợp đã chạm giới hạn token của model provider. "
+                if reason == "provider_rate_limited" else
+                "Không thể gọi dịch vụ mô hình để tổng hợp. "
+                if reason == "provider_unavailable" else
+                "Bản nháp mô hình thiếu citation hợp lệ nên đã bị loại. "
+            )
+            answer = (
+                f"{opening}Ghi chú biên mục cho policy giả lập Commerce Demo "
+                f"(không phải bản chép OCR): {note} Đối chiếu trang PDF gốc; "
+                f"nội dung chỉ áp dụng cho dữ liệu demo. [{source_id}]"
+            )
+        else:
+            opening = (
+                "The model request exceeded the provider's current token rate limit. "
+                if reason == "provider_rate_limited" else
+                "Model synthesis is unavailable. "
+                if reason == "provider_unavailable" else
+                "The model draft lacked valid citations and was rejected. "
+            )
+            answer = (
+                f"{opening}The curated catalog note for this synthetic Commerce Demo policy "
+                f"(not a verified OCR transcript) says: {note} Check the original PDF page; "
+                f"it applies only to the demo data. [{source_id}]"
+            )
+        return RAGResult(
+            answer=answer,
+            contexts=contexts,
+            source_ids=[source_id],
+            answer_fallback_reason=reason,
+        )
+    if reason == "provider_unavailable":
+        opening = (
+            "Không thể tổng hợp câu trả lời vì dịch vụ mô hình đang tạm thời không khả dụng. "
+            "Các trích đoạn dưới đây là nội dung nguồn đã truy xuất, chưa được diễn giải:"
+            if is_vietnamese else
+            "Answer synthesis is temporarily unavailable. The retrieved passages below are source text, "
+            "not a synthesized answer:"
+        )
+    elif reason == "provider_rate_limited":
+        opening = (
+            "Request tổng hợp đã chạm giới hạn token của nhà cung cấp mô hình. Các trích đoạn dưới đây là nội dung nguồn đã truy xuất, chưa được diễn giải:"
+            if is_vietnamese else
+            "The model request exceeded the provider's current token rate limit. The retrieved passages below are source text, not a synthesized answer:"
+        )
+    else:
+        opening = (
+            "Bản trả lời của mô hình không có citation hợp lệ nên đã bị loại. Các trích đoạn dưới đây là nội dung nguồn "
+            "đã truy xuất, chưa được diễn giải:"
+            if is_vietnamese else
+            "The model draft did not contain valid citations and was rejected. The retrieved passages below are source "
+            "text, not a synthesized answer:"
+        )
+    excerpts = []
+    source_ids = []
+    for context in contexts[:3]:
+        source_id = context.get("source_id")
+        content = " ".join(str(context.get("content") or "").split())
+        if not source_id or not content:
+            continue
+        excerpt = content[:700].rstrip()
+        if len(content) > len(excerpt):
+            excerpt = excerpt.rsplit(" ", 1)[0].rstrip() + "…"
+        excerpts.append(f"[{source_id}] {excerpt}")
+        source_ids.append(source_id)
+    return RAGResult(
+        answer=opening + "\n\n" + "\n\n".join(excerpts),
+        contexts=contexts,
+        source_ids=source_ids,
+        answer_fallback_reason=reason,
+    )
 
 
 def _format_contexts(contexts: list[dict]) -> str:
@@ -169,6 +223,17 @@ def _format_contexts(contexts: list[dict]) -> str:
 
         if metadata.get("section_title"):
             lines.append(f"Section: {metadata['section_title']}")
+
+        if metadata.get("evidence_class"):
+            lines.append(f"Evidence class: {metadata['evidence_class']}")
+        if metadata.get("source_publisher"):
+            lines.append(f"Publisher: {metadata['source_publisher']}")
+        if metadata.get("reference_applicability"):
+            lines.append(f"Applicability: {metadata['reference_applicability']}")
+        if metadata.get("synthetic_company_policy") is True:
+            lines.append("Status: synthetic demo policy; not issued by a real company")
+        if metadata.get("knowledge_domains"):
+            lines.append(f"Decision domains: {', '.join(metadata['knowledge_domains'])}")
 
         lines.append(f"Content: {context['content']}")
         blocks.append("\n".join(lines))
@@ -243,14 +308,20 @@ class RAGService:
         limit: int = 5,
         company: str | None = None,
         roles: list[str] | None = None,
+        metadata_filter: dict | None = None,
         retrieval_method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid"] = "hybrid",
         retrieval_query: str | None = None,
         document_ids: list[str] | None = None,
         query_language: str = "auto",
         document_languages: dict[str, str] | None = None,
+        retrieved_contexts: list[dict] | None = None,
     ) -> RAGResult:
+        if not isinstance(roles, list) or not roles or any(
+            not isinstance(role, str) or not role.strip() for role in roles
+        ):
+            raise ValueError("RAG generation requires trusted authenticated roles")
         requested_record_type = _requested_record_type(question)
-        if requested_record_type == "invoice" and retrieval_method == "hybrid":
+        if retrieved_contexts is None and requested_record_type == "invoice" and retrieval_method == "hybrid":
             # Adjacent chunks may contain the scope that was split from a
             # payment-term sentence; parent expansion remains role/company filtered.
             retrieval_method = "parent"
@@ -261,11 +332,12 @@ class RAGService:
             retrieval_options["query_language"] = query_language
         if document_languages is not None:
             retrieval_options["document_languages"] = document_languages
-        contexts = self.retrieve_contexts(
+        contexts = retrieved_contexts if retrieved_contexts is not None else self.retrieve_contexts(
             retrieval_query or question,
             limit=limit,
             company=company,
             roles=roles,
+            metadata_filter=metadata_filter,
             retrieval_method=retrieval_method,
             **retrieval_options,
         )
@@ -287,10 +359,6 @@ class RAGService:
                 insufficient_context=True,
                 source_ids=[],
             )
-
-        access_policy_disclosure = _employee_access_policy_disclosure(question, contexts)
-        if access_policy_disclosure:
-            return access_policy_disclosure
 
         # Only expose contexts that were actually sent to the model as sources.
         # A raw string slice could truncate midway through a chunk while still
@@ -338,9 +406,18 @@ class RAGService:
                 contexts=prompt_contexts,
                 source_ids=source_ids,
                 prompt_sha256=prompt_sha256,
+                generation_provider="response_cache",
             )
 
-        answer = self.llm.generate(prompt).strip()
+        try:
+            answer, generation_provider = generate_with_provider_fallback(self.llm, prompt)
+            answer_token_usage = accumulate_token_usage(None, self.llm)
+        except Exception as error:
+            if not is_retryable_provider_error(error):
+                raise
+            reason = "provider_rate_limited" if isinstance(error, RateLimitError) else "provider_unavailable"
+            fallback = _source_only_fallback(question, prompt_contexts, reason)
+            return fallback.model_copy(update={"prompt_sha256": prompt_sha256})
 
         if answer == INSUFFICIENT_ANSWER:
             return RAGResult(
@@ -348,13 +425,19 @@ class RAGService:
                 contexts=contexts,
                 insufficient_context=True,
                 prompt_sha256=prompt_sha256,
+                generation_provider=generation_provider,
+                token_usage=answer_token_usage,
             )
         source_ids = extract_source_ids(answer)
 
         if not source_ids:
-            raise ValueError(
-                f"Generated answer contains no source citations. Answer: {answer}"
-)
+            return _source_only_fallback(question, prompt_contexts, "evidence_validation_failed").model_copy(
+                update={
+                    "prompt_sha256": prompt_sha256,
+                    "generation_provider": generation_provider,
+                    "token_usage": answer_token_usage,
+                },
+            )
 
         allowed_source_ids = {
             context["source_id"]
@@ -365,9 +448,12 @@ class RAGService:
         )
 
         if unknown_source_ids:
-            raise ValueError(
-                "Generated answer contains unknown citations: "
-                f"{sorted(unknown_source_ids)}"
+            return _source_only_fallback(question, prompt_contexts, "evidence_validation_failed").model_copy(
+                update={
+                    "prompt_sha256": prompt_sha256,
+                    "generation_provider": generation_provider,
+                    "token_usage": answer_token_usage,
+                },
             )
 
         _cache_response(cache_key, answer, source_ids)
@@ -377,6 +463,8 @@ class RAGService:
             contexts=prompt_contexts,
             source_ids=source_ids,
             prompt_sha256=prompt_sha256,
+            generation_provider=generation_provider,
+            token_usage=answer_token_usage,
         )
 
     def retrieve_contexts(
@@ -385,6 +473,7 @@ class RAGService:
         limit: int = 5,
         company: str | None = None,
         roles: list[str] | None = None,
+        metadata_filter: dict | None = None,
         retrieval_method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid"] = "hybrid",
         document_ids: list[str] | None = None,
         query_language: str = "auto",
@@ -398,6 +487,8 @@ class RAGService:
         request = RetrievalRequest(query=question, top_k=limit)
         method = {} if retrieval_method == "hybrid" else {"method": retrieval_method}
         retrieval_filters = {"roles": roles}
+        if metadata_filter:
+            retrieval_filters["metadata_filter"] = metadata_filter
         if company is not None:
             retrieval_filters["company"] = company
         if document_ids is not None:
@@ -412,6 +503,7 @@ class RAGService:
         contexts = [
             {
                 "document_name": context.source,
+                "chunk_id": context.chunk_id,
                 "chunk_index": context.location.chunk_index,
                 "content": context.text,
                 "metadata": context.metadata,

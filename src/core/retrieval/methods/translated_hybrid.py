@@ -16,7 +16,7 @@ def fuse(rankings, weights, k=60):
 
 
 def search(repository, vector, request, get_translator, *, company=None, roles=None,
-           document_ids=None, document_languages=None, query_language="auto",
+           document_ids=None, document_languages=None, query_language="auto", metadata_filter=None,
            dense_weight=1.0, bm25_weight=2.0, rrf_k=60):
     if query_language not in {"auto", "en", "vn"}:
         raise ValueError("query_language must be auto, en or vn")
@@ -33,6 +33,8 @@ def search(repository, vector, request, get_translator, *, company=None, roles=N
     filters = {"company": company, "roles": roles}
     if document_ids is not None:
         filters["document_ids"] = document_ids
+    if metadata_filter:
+        filters["metadata_filter"] = metadata_filter
     candidate_k = request.top_k * 10
     dense = repository.similarity_search(
         vector, candidate_k, query=request.query, method="dense", **filters)

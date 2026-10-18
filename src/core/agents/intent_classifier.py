@@ -2,9 +2,13 @@ import json
 import re
 
 from core.analytics.metric_ontology import resolve_metric_names
+from core.analytics.commerce_decision_support import (
+    COMMERCE_DECISION_PROFILES,
+    resolve_commerce_decision_domain,
+)
 from core.llm.groq_provider import GroqProvider
 from core.models.intent import IntentResult
-from core.prompts.intent import INTENT_CLASSIFIER_PROMPT
+from core.prompts.intent import COMMERCE_DOMAIN_CLASSIFIER_PROMPT, INTENT_CLASSIFIER_PROMPT
 
 
 def _is_document_count_request(text: str) -> bool:
@@ -45,6 +49,30 @@ class IntentClassifier:
         except Exception:
             return self.fallback(question)
 
+    def classify_commerce_domain(self, question: str) -> str | None:
+        """Classify the Commerce objective; fall back to domain terms if the model is unavailable."""
+        fallback = resolve_commerce_decision_domain(question)
+        domains = "\n".join(
+            f"- {domain}: {profile['label']}; data: {', '.join(profile['source_tables'])}; "
+            f"decision scope: {profile['retrieval_query']}; data limits: {profile['limitations'][0]}"
+            for domain, profile in COMMERCE_DECISION_PROFILES.items()
+        )
+        try:
+            raw = self.llm.generate(COMMERCE_DOMAIN_CLASSIFIER_PROMPT.format(
+                domains=domains,
+                question=question,
+            )).strip()
+            if raw.startswith("```"):
+                raw = raw.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+            payload = json.loads(raw)
+            domain = payload.get("domain")
+            confidence = float(payload.get("confidence", 0))
+            if domain in COMMERCE_DECISION_PROFILES and 0.6 <= confidence <= 1:
+                return domain
+        except Exception:
+            pass
+        return fallback
+
     @staticmethod
     def fallback(question: str) -> IntentResult:
         text = question.casefold()
@@ -68,6 +96,11 @@ class IntentClassifier:
         )
         analytics = metadata_counts or bool(financial_metrics) or any(term in text for term in (
             "trend", "compare", "growth", "tăng trưởng", "so sánh", "thống kê"
+        )) or any(term in text for term in (
+            "by year", "by region", "by category", "by campaign", "highest", "lowest", "most", "fewest",
+            "average", "median", "maximum", "minimum",
+            "theo năm", "theo vùng", "theo khu vực", "theo danh mục", "theo campaign",
+            "nhiều nhất", "ít nhất", "trung bình", "cao nhất", "thấp nhất",
         ))
         dashboard = any(term in text for term in ("dashboard", "chart", "visualize", "biểu đồ", "đồ thị"))
         report = not metadata_counts and (financial_summary or why_financial_change or any(term in text for term in (
@@ -76,8 +109,10 @@ class IntentClassifier:
             "viết báo cáo", "lập báo cáo", "tạo báo cáo",
         )))
         financial_metric = bool(financial_metrics) or any(term in text for term in ("financial", "tài chính", "biên lợi nhuận"))
-        intent = "dashboard" if dashboard else "report" if report else "hybrid" if analytics and financial_metric else "analytics" if analytics else "knowledge"
-        return IntentResult(intent=intent, needs_knowledge=intent in {"knowledge", "hybrid", "report"} or financial_metric,
+        asks_decision = any(term in text for term in ("should we", "recommend", "decision", "decide", "strategy", "what should", "nên", "đề xuất", "quyết định", "chiến lược", "có nên"))
+        needs_source_context = financial_metric
+        intent = "dashboard" if dashboard else "report" if report else "hybrid" if analytics and (needs_source_context or asks_decision) else "analytics" if analytics else "knowledge"
+        return IntentResult(intent=intent, needs_knowledge=intent in {"knowledge", "hybrid", "report"} or needs_source_context,
                             needs_sql=intent in {"analytics", "hybrid", "report"},
                             output_mode="dashboard" if dashboard else "answer", confidence=0.35)
 
@@ -94,7 +129,7 @@ class IntentClassifier:
         fallback = cls.fallback(question)
         if fallback.intent == "report" and result.output_mode != "dashboard":
             return fallback
-        if fallback.needs_knowledge and fallback.needs_sql and result.output_mode != "dashboard":
+        if fallback.needs_sql and (fallback.needs_knowledge or fallback.intent == "hybrid") and result.output_mode != "dashboard":
             return result.model_copy(update={"intent": "hybrid", "needs_knowledge": True, "needs_sql": True})
         return result
 

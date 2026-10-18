@@ -18,7 +18,7 @@ def extract_metric_tables(pdf_path: Path) -> list[dict]:
     """Run slower table detection only on pages whose text layer has KPI labels."""
     import fitz
 
-    from core.document_processing.processors.pdf_processor import PDFProcessor
+    from core.document_processing.processors.pdf.processor import PDFProcessor
 
     labels = [label.casefold() for metric in METRICS.values() for label in metric]
     tables = []
@@ -77,7 +77,7 @@ def main() -> int:
         if not raw_pdf.is_file():
             print(f"missing raw report: {raw_pdf}", file=sys.stderr)
             continue
-        from core.document_processing.processors.pdf_processor import PDFProcessor
+        from core.document_processing.processors.pdf.processor import PDFProcessor
 
         processor = PDFProcessor({
             "paddle_layout": False,

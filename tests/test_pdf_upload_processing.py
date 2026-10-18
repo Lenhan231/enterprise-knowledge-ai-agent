@@ -10,7 +10,7 @@ import fitz
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from core.document_processing.processors.pdf_processor import PDFProcessor
+from core.document_processing.processors.pdf.processor import PDFProcessor
 
 
 class PDFUploadProcessingTest(unittest.TestCase):
@@ -96,8 +96,8 @@ class PDFUploadProcessingTest(unittest.TestCase):
         pdf.new_page()
         source = pdf.tobytes()
         pdf.close()
-        with patch("core.document_processing.processors.pdf_processor.shutil.which", return_value="/usr/bin/tesseract"), \
-             patch("core.document_processing.processors.pdf_processor.subprocess.run", return_value=SimpleNamespace(
+        with patch("core.document_processing.processors.pdf.processor.shutil.which", return_value="/usr/bin/tesseract"), \
+             patch("core.document_processing.processors.pdf.processor.subprocess.run", return_value=SimpleNamespace(
                  stdout="Doanh thu thuần năm 2024 đạt 100 tỷ đồng".encode("utf-8")
              )) as run:
             result = PDFProcessor({
@@ -150,8 +150,8 @@ class PDFUploadProcessingTest(unittest.TestCase):
         source = pdf.tobytes()
         pdf.close()
 
-        with patch("core.document_processing.processors.pdf_processor.shutil.which", return_value="/usr/bin/tesseract"), \
-             patch("core.document_processing.processors.pdf_processor.subprocess.run", return_value=SimpleNamespace(
+        with patch("core.document_processing.processors.pdf.processor.shutil.which", return_value="/usr/bin/tesseract"), \
+             patch("core.document_processing.processors.pdf.processor.subprocess.run", return_value=SimpleNamespace(
                  stdout="Net revenue 2024: 61.8 trillion VND".encode("utf-8")
              )) as run:
             result = PDFProcessor({
@@ -438,7 +438,7 @@ class PDFUploadProcessingTest(unittest.TestCase):
             "5\t1\t1\t1\t1\t1\t15\t30\t30\t15\t95\tRevenue\n"
         )
         with patch(
-            "core.document_processing.processors.pdf_processor.subprocess.run",
+            "core.document_processing.processors.pdf.processor.subprocess.run",
             return_value=SimpleNamespace(stdout=tsv.encode("utf-8")),
         ) as run:
             words = processor._ocr_page_words(page)
@@ -459,7 +459,7 @@ class PDFUploadProcessingTest(unittest.TestCase):
             "5\t1\t1\t1\t1\t1\t25\t50\t50\t25\t95\tRevenue\n"
         )
         with patch(
-            "core.document_processing.processors.pdf_processor.subprocess.run",
+            "core.document_processing.processors.pdf.processor.subprocess.run",
             return_value=SimpleNamespace(stdout=tsv.encode("utf-8")),
         ):
             words = processor._ocr_page_words(page)

@@ -16,7 +16,7 @@ import fitz
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from core.document_processing.processors.text_processor import split_ranges  # noqa: E402
+from core.chunking.text_chunker import split_ranges  # noqa: E402
 
 
 def summarize(texts: list[str]) -> dict:

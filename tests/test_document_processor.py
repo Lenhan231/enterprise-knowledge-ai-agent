@@ -10,8 +10,8 @@ import fitz
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.document_processing.processors.document_processor import DocumentProcessor
-from core.document_processing.processors.image_processor import ImageProcessor
-from core.document_processing.processors.pdf_processor import PDFProcessor
+from core.document_processing.processors.image.processor import ImageProcessor
+from core.document_processing.processors.pdf.processor import PDFProcessor
 
 
 def archive(files):
@@ -169,7 +169,7 @@ class DocumentProcessorTest(unittest.TestCase):
         processor = DocumentProcessor({"ocr_language": "vie+eng"})
         completed = Mock(stdout=b"Doanh thu nam 2024 la 100 ty dong.\n")
         with patch(
-            "core.document_processing.processors.image_processor.subprocess.run",
+            "core.document_processing.processors.image.processor.subprocess.run",
             return_value=completed,
         ) as run:
             result = processor.process(
@@ -248,7 +248,7 @@ class DocumentProcessorTest(unittest.TestCase):
         with (
             patch.object(ImageProcessor, "_ocr", return_value="Revenue 100 90\nCash 25 20\nTotal assets 500 450"),
             patch(
-                "core.document_processing.processors.pdf_processor.PDFProcessor._ocr_page_words",
+                "core.document_processing.processors.pdf.processor.PDFProcessor._ocr_page_words",
                 autospec=True, side_effect=read_table_words,
             ),
         ):

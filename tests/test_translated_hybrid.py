@@ -129,12 +129,12 @@ class TranslatedHybridTest(unittest.TestCase):
         service.repository = repo
         service.retrieve(RetrievalRequest(query="question"), method="translated_hybrid",
                          company="Company", roles=["employee"], document_ids=["EN", "VN"],
-                         document_languages={"EN": "en", "VN": "vn"})
+                         metadata_filter={"domain": "finance"}, document_languages={"EN": "en", "VN": "vn"})
         self.assertEqual(cursor.execute.call_count, 3)
         for call, scope in zip(cursor.execute.call_args_list, [["EN", "VN"], ["EN"], ["VN"]]):
             sql, params = call.args
             for clause in ["d.document_id = ANY(%s::text[])", "d.allowed_roles && %s::text[]",
-                           "d.company = %s::text", "coalesce(d.processing_status, 'ready') = 'ready'"]:
+                           "d.company = %s::text", "c.metadata @> %s::jsonb", "d.knowledge_base_active IS TRUE", "coalesce(d.processing_status, 'ready') = 'ready'"]:
                 self.assertIn(clause, sql)
                 self.assertLess(sql.index(clause), sql.index("LIMIT"))
             self.assertIn(scope, [x for x in params if isinstance(x, list)])

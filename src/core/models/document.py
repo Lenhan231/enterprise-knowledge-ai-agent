@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 @dataclass
 class ChunkMetadata:
-    source_document: str      # e.g. "2024_Apple.pdf" original name
+    source_document: str      # e.g. "annual-report-2024.pdf" original name
     document_type: str        # e.g. "pdf", "docx", "xlsx", "image"
     page_number: int | None   # None when the format has no stable page concept
     chunk_index: int          # index within one source document

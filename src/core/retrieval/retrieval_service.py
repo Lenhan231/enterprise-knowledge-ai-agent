@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from time import perf_counter
 from typing import Literal
 
@@ -11,6 +12,8 @@ from core.retrieval.methods import parent, translated_hybrid
 from core.retrieval.retrieval import (
     RankedChunk, RetrievalRequest, RetrievalResponse, SourceLocation, make_chunk_id,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class RetrievalService:
@@ -36,6 +39,7 @@ class RetrievalService:
     def retrieve(
         self, request: RetrievalRequest, company: str | None = None,
         roles: list[str] | None = None,
+        metadata_filter: dict | None = None,
         method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid"] = "hybrid",
         dense_weight: float = 1.0, bm25_weight: float = 2.0, rrf_k: int = 60,
         document_ids: list[str] | None = None,
@@ -49,12 +53,24 @@ class RetrievalService:
             raise ValueError("method must be dense, bm25, hybrid, parent, or translated_hybrid")
         started = perf_counter()
         query_embedding = None
+        effective_method = method
         if method != "bm25":
-            if self.embedding_service is None:
-                self.embedding_service = EmbeddingService()
-            query_embedding = self.embedding_service.embed_query(request.query)
+            try:
+                if self.embedding_service is None:
+                    self.embedding_service = EmbeddingService()
+                query_embedding = self.embedding_service.embed_query(request.query)
+            except Exception as exc:
+                if method != "hybrid":
+                    raise
+                effective_method = "bm25"
+                logger.warning(
+                    "Hybrid retrieval embedding failed; falling back to BM25 (%s)",
+                    type(exc).__name__,
+                )
 
         options = {"company": company, "roles": roles}
+        if metadata_filter:
+            options["metadata_filter"] = metadata_filter
         if document_ids is not None:
             if not isinstance(document_ids, list) or any(
                 not isinstance(value, str) or not value.strip() for value in document_ids
@@ -69,17 +85,17 @@ class RetrievalService:
                 query_language=query_language, document_languages=document_languages,
                 dense_weight=dense_weight, bm25_weight=bm25_weight, rrf_k=rrf_k, **options,
             )
-        elif method == "parent":
+        elif effective_method == "parent":
             chunks, parent_contexts = parent.search(
                 self.repository, query_embedding, request, **options,
             )
         else:
             fusion_options = (
                 {"dense_weight": dense_weight, "bm25_weight": bm25_weight, "rrf_k": rrf_k}
-                if method == "hybrid" else {}
+                if effective_method == "hybrid" else {}
             )
             chunks = self.repository.similarity_search(
-                query_embedding, request.top_k, query=request.query, method=method,
+                query_embedding, request.top_k, query=request.query, method=effective_method,
                 **fusion_options, **options,
             )
 
@@ -87,7 +103,7 @@ class RetrievalService:
         for rank, chunk in enumerate(chunks, start=1):
             context = parent_contexts.get((chunk.document_id, chunk.chunk_index), {})
             metadata = dict(chunk.metadata)
-            if method == "parent":
+            if effective_method == "parent":
                 indices = context.get("chunk_indices", [chunk.chunk_index])
                 metadata.update({
                     "parent_id": f"{chunk.document_id}::parent::{indices[0]}-{indices[-1]}",
@@ -108,14 +124,14 @@ class RetrievalService:
                     section_title=chunk.metadata.get("section_title"),
                 ),
                 metadata=metadata,
-                retrieval_method=method,
+                retrieval_method=effective_method,
             ))
         return RetrievalResponse(
             query=request.query,
             latency_ms=(perf_counter() - started) * 1000,
             results=results,
             retrieval_details=retrieval_details,
-            method=method,
+            method=effective_method,
         )
 
     def close(self) -> None:

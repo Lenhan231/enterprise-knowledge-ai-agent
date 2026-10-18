@@ -1,0 +1,200 @@
+"""Persist upload-pipeline test runs separately from the indexed corpus."""
+
+from __future__ import annotations
+
+import os
+import uuid
+from typing import Any
+
+import psycopg
+from dotenv import load_dotenv
+from pgvector import Vector
+from psycopg.rows import dict_row
+from psycopg.types.json import Jsonb
+
+from core.database.connection_limit import close_database_connection, connect_database
+
+load_dotenv()
+
+
+class UploadTestRepository:
+    def __init__(self, connection: psycopg.Connection | None = None):
+        self.connection = connection or connect_database(os.environ["DATABASE_URL"])
+        self._owns_connection = connection is None
+
+    def save_run(
+        self,
+        run_id: uuid.UUID,
+        *,
+        source_filename: str,
+        source_sha256: str,
+        uploaded_by: str,
+        processor_config: dict[str, Any],
+        runtime_info: dict[str, Any],
+        page_previews: list[bytes],
+        chunks: list[dict[str, Any]],
+        tables: list[dict[str, Any]],
+        token_bounded_chunks: list[dict[str, Any]],
+        embedding_status: str,
+        embeddings: list[list[float]] | None = None,
+        embedding_error: str | None = None,
+    ) -> None:
+        embeddings = embeddings or []
+        if embeddings and len(token_bounded_chunks) != len(embeddings):
+            raise ValueError("Embedding chunk and vector counts must match")
+        with self.connection.transaction(), self.connection.cursor() as cursor:
+            cursor.execute(
+                """INSERT INTO upload_test.upload_test_runs
+                   (run_id, source_filename, source_sha256, uploaded_by,
+                    processor_config, runtime_info, page_count, chunk_count, table_count,
+                    token_bounded_chunk_count, embedding_status, embedding_model,
+                    embedding_backend, embedding_max_sequence_length, embedding_error)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                (
+                    run_id, source_filename, source_sha256, uploaded_by,
+                    Jsonb(processor_config), Jsonb(runtime_info), len(page_previews),
+                    len(chunks), len(tables), len(token_bounded_chunks), embedding_status,
+                    runtime_info.get("embedding_model"), runtime_info.get("embedding_backend"),
+                    runtime_info.get("embedding_max_sequence_length"), embedding_error,
+                ),
+            )
+            cursor.executemany(
+                """INSERT INTO upload_test.upload_test_pages (run_id, page_number, preview_png)
+                   VALUES (%s, %s, %s)""",
+                [(run_id, index + 1, image) for index, image in enumerate(page_previews)],
+            )
+            cursor.executemany(
+                """INSERT INTO upload_test.upload_test_parser_chunks
+                   (run_id, chunk_index, content, metadata) VALUES (%s, %s, %s, %s)""",
+                [
+                    (run_id, index, chunk["text"], Jsonb(chunk["metadata"]))
+                    for index, chunk in enumerate(chunks)
+                ],
+            )
+            cursor.executemany(
+                """INSERT INTO upload_test.upload_test_tables
+                   (run_id, table_index, page_number, columns, context, metadata)
+                   VALUES (%s, %s, %s, %s, %s, %s)""",
+                [
+                    (
+                        run_id, index, table.get("page_number"),
+                        Jsonb(table.get("columns", [])),
+                        Jsonb({
+                            **table.get("context", {}),
+                            "source_filename": source_filename,
+                            **({"page_number": table["page_number"]} if table.get("page_number") is not None else {}),
+                            "section_title": next((
+                                chunk.get("metadata", {}).get("section_title")
+                                for chunk in chunks
+                                if chunk.get("metadata", {}).get("element_type") == "table"
+                                and all(
+                                    chunk.get("metadata", {}).get(key) == table.get(key)
+                                    for key in ("page_number", "sheet_name", "slide_number", "paragraph_index", "table_index")
+                                    if table.get(key) is not None
+                                )
+                                and chunk.get("metadata", {}).get("section_title")
+                            ), None),
+                        }),
+                        Jsonb({
+                            key: value for key, value in table.get("metadata", {}).items()
+                            if key not in {"filename", "format", "source_type", "source_sha256"}
+                        }),
+                    )
+                    for index, table in enumerate(tables)
+                ],
+            )
+            cursor.executemany(
+                """INSERT INTO upload_test.upload_test_records
+                   (run_id, table_index, row_index, data) VALUES (%s, %s, %s, %s)""",
+                [
+                    (run_id, table_index, row_index, Jsonb(row))
+                    for table_index, table in enumerate(tables)
+                    for row_index, row in enumerate(table.get("rows", []))
+                ],
+            )
+            cursor.executemany(
+                """INSERT INTO upload_test.upload_test_token_chunks
+                   (run_id, chunk_index, content, metadata, embedding)
+                   VALUES (%s, %s, %s, %s, %s)""",
+                [
+                    (
+                        run_id, index, chunk["text"], Jsonb(chunk["metadata"]),
+                        Vector(embeddings[index]) if embeddings else None,
+                    )
+                    for index, chunk in enumerate(token_bounded_chunks)
+                ],
+            )
+
+    def list_runs(self, limit: int = 20) -> list[dict]:
+        if not 1 <= limit <= 50:
+            raise ValueError("limit must be between 1 and 50")
+        with self.connection.cursor(row_factory=dict_row) as cursor:
+            cursor.execute(
+                """SELECT run_id, source_filename, source_sha256, processor_config, runtime_info,
+                          page_count, chunk_count, token_bounded_chunk_count, embedding_status,
+                          embedding_model, embedding_backend, embedding_max_sequence_length,
+                          embedding_error, table_count, created_at
+                   FROM upload_test.upload_test_runs
+                   ORDER BY created_at DESC LIMIT %s""",
+                (limit,),
+            )
+            return cursor.fetchall()
+
+    def get_run(self, run_id: uuid.UUID) -> dict | None:
+        with self.connection.cursor(row_factory=dict_row) as cursor:
+            cursor.execute("SELECT * FROM upload_test.upload_test_runs WHERE run_id = %s", (run_id,))
+            run = cursor.fetchone()
+            if run is None:
+                return None
+            cursor.execute(
+                """SELECT chunk_index, content, metadata
+                   FROM upload_test.upload_test_parser_chunks WHERE run_id = %s ORDER BY chunk_index""",
+                (run_id,),
+            )
+            run["chunks"] = cursor.fetchall()
+            cursor.execute(
+                """SELECT chunk_index, content, metadata
+                   FROM upload_test.upload_test_token_chunks
+                   WHERE run_id = %s ORDER BY chunk_index""",
+                (run_id,),
+            )
+            run["token_bounded_chunks"] = cursor.fetchall()
+            cursor.execute(
+                """SELECT t.table_index, t.page_number,
+                          jsonb_build_object(
+                              'columns', t.columns,
+                              'rows', coalesce((
+                                  SELECT jsonb_agg(r.data ORDER BY r.row_index)
+                                  FROM upload_test.upload_test_records r
+                                  WHERE r.run_id = t.run_id AND r.table_index = t.table_index
+                              ), '[]'::jsonb)
+                          ) AS structured_data,
+                          t.context, t.metadata,
+                          (SELECT count(*) FROM upload_test.upload_test_records r
+                           WHERE r.run_id = t.run_id AND r.table_index = t.table_index) AS row_count
+                   FROM upload_test.upload_test_tables t
+                   WHERE t.run_id = %s ORDER BY t.table_index""",
+                (run_id,),
+            )
+            run["tables"] = cursor.fetchall()
+            cursor.execute(
+                """SELECT page_number FROM upload_test.upload_test_pages
+                   WHERE run_id = %s ORDER BY page_number""",
+                (run_id,),
+            )
+            run["pages"] = [row["page_number"] for row in cursor.fetchall()]
+            return run
+
+    def get_page_preview(self, run_id: uuid.UUID, page_number: int) -> bytes | None:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """SELECT preview_png FROM upload_test.upload_test_pages
+                   WHERE run_id = %s AND page_number = %s""",
+                (run_id, page_number),
+            )
+            row = cursor.fetchone()
+            return row[0] if row else None
+
+    def close(self) -> None:
+        if self._owns_connection:
+            close_database_connection(self.connection)

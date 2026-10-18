@@ -1,7 +1,13 @@
 const $ = (selector) => document.querySelector(selector);
-let analyticsSnapshot = null;
 let activeTab = "knowledge";
 let currentUser = null;
+let decisionSuggestionsPending = false;
+let commerceSnapshot = null;
+const commerceLoadedDomains = new Set();
+const commerceLoadingDomains = new Set();
+let commerceCampaignsLoaded = false;
+let commerceCampaignsLoading = false;
+let knowledgeDocuments = [];
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
 }[char]));
@@ -26,10 +32,23 @@ function sourcePageUrl(value, pageNumber) {
   return url.href;
 }
 
+function uploadedSourcePageUrl(documentId, pageNumber) {
+  if (!String(documentId || "").startsWith("UPLOAD-")) return "";
+  const page = Number(pageNumber);
+  return `/api/documents/${encodeURIComponent(documentId)}/source${Number.isInteger(page) && page > 0 ? `#page=${page}` : ""}`;
+}
+
+function syntheticPolicySourcePageUrl(source) {
+  if (source.synthetic_company_policy !== true || !source.document_id) return "";
+  const page = Number(source.page_number);
+  return `/api/documents/${encodeURIComponent(source.document_id)}/source${Number.isInteger(page) && page > 0 ? `#page=${page}` : ""}`;
+}
+
 function selectWorkspaceTab(name) {
   const button = $(`[data-tab-target="${name}"]`);
   if (!button || button.hidden) return;
   activeTab = name;
+  $(".intro").hidden = name === "analytics";
   document.querySelectorAll(".workspace-tab").forEach((tab) => {
     const selected = tab === button;
     tab.setAttribute("aria-selected", String(selected));
@@ -39,37 +58,66 @@ function selectWorkspaceTab(name) {
   document.querySelectorAll(".tab-panel").forEach((panel) => {
     panel.hidden = panel.id !== button.getAttribute("aria-controls");
   });
+  if (name === "analytics") loadCommerceDashboardForActiveView();
 }
 
 function syncWorkspaceTabs(user = currentUser) {
+  const isTester = user?.role === "tester";
   const isAdmin = user?.role === "admin";
-  const canViewAnalytics = ["finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user?.role);
+  const canAskDocuments = !isTester && user?.role !== "document_uploader";
+  const canViewAnalytics = ["operations", "finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user?.role);
   const canUpload = ["document_uploader", "admin"].includes(user?.role);
   const available = {
-    knowledge: true,
+    knowledge: canAskDocuments,
     analytics: canViewAnalytics,
-    processing: canUpload,
-    metrics: isAdmin,
+    upload: canUpload,
+    processing: isAdmin,
+    "ocr-lab": isTester || isAdmin,
+    "knowledge-management": isAdmin,
     access: isAdmin,
     monitoring: isAdmin,
   };
   document.querySelectorAll(".workspace-tab").forEach((button) => {
     button.hidden = !available[button.dataset.tabTarget];
   });
-  if (!available[activeTab]) activeTab = "knowledge";
+  if (!available[activeTab]) {
+    activeTab = isTester ? "ocr-lab" : available.knowledge ? "knowledge" : available.upload ? "upload" : "analytics";
+  }
   selectWorkspaceTab(activeTab);
 }
+
+const UPLOAD_ROLE_LABELS = {
+  employee: ["Employee", "General document Q&A"],
+  finance_analyst: ["Finance analyst", "Finance and analytics sources"],
+  sustainability_analyst: ["Sustainability analyst", "Sustainability sources and analytics"],
+  procurement: ["Procurement", "Procurement and supplier sources"],
+  operations: ["Operations", "Operations sources and analytics"],
+  legal_compliance: ["Legal and compliance", "Legal and compliance sources"],
+  executive: ["Executive", "Executive sources and analytics"],
+  admin: ["Administrator", "Administrative and review access"],
+};
 
 document.querySelectorAll("[data-open-tab]").forEach((button) => {
   button.addEventListener("click", () => selectWorkspaceTab(button.dataset.openTab));
 });
 
 function renderCorpus(data) {
+  const commerceLabels = {
+    inventory_allocation: "Inventory allocation",
+    promotion_planning: "Promotion planning",
+    nationwide_logistics: "Nationwide logistics",
+  };
+  const referenceLabels = {
+    management_cookbook_reference: "Management method",
+    company_practice_reference: "Company practice",
+    company_policy_reference: "External policy · stated scope only",
+    platform_operating_rule: "Platform operating rule",
+  };
   const companies = new Set(data.documents.map((doc) => doc.company).filter(Boolean));
   $("#company-name").textContent = companies.size || 0;
   $("#document-count").textContent = formatNumber(data.document_count);
   $("#chunk-count").textContent = formatNumber(data.chunk_count);
-  const inFlight = data.documents.filter((doc) => doc.processing_status !== "ready").length;
+  const inFlight = data.documents.filter((doc) => !["ready", "parsed"].includes(doc.processing_status)).length;
   $("#processing-count").textContent = formatNumber(inFlight);
   $("#source-count").textContent = `${formatNumber(data.document_count)} registered source${data.document_count === 1 ? "" : "s"}`;
   $("#connection-status").textContent = "Knowledge base connected";
@@ -83,69 +131,334 @@ function renderCorpus(data) {
     }, {});
   $("#company-grid").innerHTML = Object.entries(groups).map(([company, docs]) => `
     <article class="company-card">
-      <div class="company-card-head"><div><span class="company-kicker">${escapeHtml(docs[0].domain.replaceAll("_", " "))}</span><h3>${escapeHtml(company)}</h3></div><span class="doc-total">${formatNumber(docs.length)} doc${docs.length === 1 ? "" : "s"}</span></div>
+      <div class="company-card-head"><div><span class="company-kicker">${escapeHtml([...new Set(docs.flatMap((doc) => doc.knowledge_domains || []))].map((domain) => commerceLabels[domain] || domain).join(" · ") || docs[0].domain.replaceAll("_", " "))}</span><h3>${escapeHtml(company)}</h3></div><span class="doc-total">${formatNumber(docs.length)} doc${docs.length === 1 ? "" : "s"}</span></div>
       <div class="document-list">${docs.map((doc) => {
         const href = validSourceUrl(doc.source_url);
         const link = href
           ? `<a class="document-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Open official source</a>`
           : "";
         const status = doc.processing_status || (doc.chunks ? "ready" : "uploaded");
-        return `<article class="document-row"><div class="file-mark">${escapeHtml(doc.format)}</div><div class="document-info"><strong>${escapeHtml(doc.title)}</strong><span>${escapeHtml(doc.fiscal_year ? `FY ${doc.fiscal_year}` : "General")} · ${formatNumber(doc.chunks)} passages · ${escapeHtml(status)} · access: ${escapeHtml((doc.allowed_roles || []).join(", "))}</span>${link}</div></article>`;
+        const domains = (doc.knowledge_domains || []).map((domain) => commerceLabels[domain] || domain).join(", ");
+        const reference = referenceLabels[doc.external_reference_type] || "";
+        const attribution = [doc.source_publisher, reference, domains].filter(Boolean).join(" · ");
+        return `<article class="document-row"><div class="file-mark">${escapeHtml(doc.format)}</div><div class="document-info"><strong>${escapeHtml(doc.title)}</strong><span>${escapeHtml(doc.fiscal_year ? `FY ${doc.fiscal_year}` : attribution || "General")} · ${formatNumber(doc.chunks)} passages · ${escapeHtml(status)} · access: ${escapeHtml((doc.allowed_roles || []).join(", "))}</span>${attribution ? `<small>${escapeHtml(attribution)}</small>` : ""}${link}</div></article>`;
       }).join("")}</div>
     </article>`).join("") || '<div class="loading-card">No company documents are indexed yet.</div>';
 }
 
-function renderParsedChunkInspector(data) {
-  const documents = data.documents;
+function renderParsedChunkInspector(documents) {
   const section = $("#parsed-chunk-inspector");
+  const select = $("#parsed-document");
+  const selectedDocument = select.value;
   section.hidden = documents.length === 0;
-  $("#parsed-document").innerHTML = documents.map((doc) =>
-    `<option value="${escapeHtml(doc.document_id)}">${escapeHtml(doc.title)} · ${escapeHtml(doc.processing_status || "unknown")}</option>`
+  select.innerHTML = documents.map((doc) =>
+    `<option value="${escapeHtml(doc.document_id)}">${escapeHtml(doc.title)} · ${escapeHtml(doc.processing_status || "unknown")}${doc.knowledge_base_active ? "" : " · removed from Q&A"}</option>`
   ).join("");
+  if (documents.some((doc) => doc.document_id === selectedDocument)) {
+    select.value = selectedDocument;
+  }
 }
 
-function renderMetricCatalog(metrics) {
-  const select = $("#manual-metric-name");
-  select.innerHTML = metrics.map((metric) =>
-    `<option value="${escapeHtml(metric.metric_name)}">${escapeHtml(metric.label)}</option>`
-  ).join("");
-  const showDefinition = () => {
-    const metric = metrics.find((item) => item.metric_name === select.value);
-    $("#metric-definition").innerHTML = metric
-      ? `<article class="analysis-stat"><span>${escapeHtml(metric.metric_name)}</span><strong>${escapeHtml(metric.definition)}</strong><small>${escapeHtml(metric.unit_guidance)}</small></article>`
+function knowledgeDocumentIsRetrievable(doc) {
+  return doc.knowledge_base_active && doc.processing_status === "ready" && Number(doc.chunk_count) > 0;
+}
+
+function renderKnowledgeDocuments() {
+  const query = $("#knowledge-documents-search").value.trim().toLocaleLowerCase();
+  const selectedDomain = $("#knowledge-domain-filter").value;
+  const selectedState = $("#knowledge-state-filter").value;
+  const matches = knowledgeDocuments.filter((doc) => {
+    const domains = doc.knowledge_domains || [];
+    const retrievable = knowledgeDocumentIsRetrievable(doc);
+    const stateMatches = selectedState === "all"
+      || (selectedState === "available" && retrievable)
+      || (selectedState === "removed" && !doc.knowledge_base_active)
+      || (selectedState === "attention" && doc.knowledge_base_active && !retrievable);
+    const domainMatches = selectedDomain === "all"
+      || (selectedDomain === "general" && domains.length === 0)
+      || domains.includes(selectedDomain);
+    const textMatches = [doc.title, doc.document_id, doc.source_publisher,
+      doc.domain, doc.evidence_class, doc.synthetic_company_policy ? "synthetic demo policy" : "",
+      ...domains].join(" ").toLocaleLowerCase().includes(query);
+    return stateMatches && domainMatches && textMatches;
+  });
+  const retrievableCount = knowledgeDocuments.filter(knowledgeDocumentIsRetrievable).length;
+  const removedCount = knowledgeDocuments.filter((doc) => !doc.knowledge_base_active).length;
+  const attentionCount = knowledgeDocuments.filter((doc) => doc.knowledge_base_active && !knowledgeDocumentIsRetrievable(doc)).length;
+  $("#knowledge-documents-status").textContent = `Showing ${formatNumber(matches.length)} of ${formatNumber(knowledgeDocuments.length)} sources · ${formatNumber(retrievableCount)} retrievable · ${formatNumber(removedCount)} removed · ${formatNumber(attentionCount)} need attention`;
+  $("#knowledge-documents-list").innerHTML = matches.map((doc) => {
+    const domains = (doc.knowledge_domains || []).join(", ") || doc.domain || "General";
+    const href = validSourceUrl(doc.source_url);
+    const sourceKind = doc.synthetic_company_policy
+      ? "Synthetic demo policy · fictional Commerce Demo only"
+      : ({ management_cookbook_reference: "Management method · general guidance",
+          company_practice_reference: "Company practice · attributed example",
+          platform_operating_rule: "Platform rule · scope-specific" }[doc.evidence_class] || "Knowledge source");
+    const uploadedSource = doc.source_type === "user_upload" && doc.processing_status === "ready"
+      ? uploadedSourcePageUrl(doc.document_id)
       : "";
-    const unit = $("#manual-metric-unit");
-    if (!unit.value && metric?.unit_guidance) unit.placeholder = metric.unit_guidance;
-  };
-  select.onchange = showDefinition;
-  showDefinition();
+    const sourceLink = doc.synthetic_company_policy
+      ? `<a href="/api/admin/knowledge-documents/${encodeURIComponent(doc.document_id)}/source" target="_blank" rel="noopener noreferrer">Open original PDF</a>`
+      : uploadedSource
+        ? `<a href="${escapeHtml(uploadedSource)}" target="_blank" rel="noopener noreferrer">Open uploaded file</a>`
+        : href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Open source</a>` : "";
+    const canRetryEmbedding = doc.source_type === "user_upload" && doc.processing_status === "failed";
+    return `<article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
+      <div class="knowledge-document-copy"><strong>${escapeHtml(doc.title)}</strong>
+        <span class="knowledge-source-kind ${doc.synthetic_company_policy ? "is-synthetic" : ""}">${escapeHtml(sourceKind)}</span>
+        <span>${escapeHtml(doc.source_publisher || doc.company || "Unknown publisher")} · ${escapeHtml(doc.format || "File")} · ${formatNumber(doc.chunk_count)} passages</span>
+        <small>${escapeHtml(domains)} · ${escapeHtml(doc.processing_status || "unknown")} · ${knowledgeDocumentIsRetrievable(doc) ? "Available to AI" : doc.knowledge_base_active ? "Not retrievable" : "Removed from AI retrieval"}</small>
+        <code>${escapeHtml(doc.document_id)}</code>${sourceLink}
+        <details class="knowledge-access-editor"><summary>Access roles: ${escapeHtml((doc.allowed_roles || []).join(", ") || "none")}</summary>
+          <form class="knowledge-access-form" data-document-id="${escapeHtml(doc.document_id)}">
+            <div class="knowledge-access-options">${Object.entries(UPLOAD_ROLE_LABELS).map(([role, [label]]) => `<label><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}" ${(doc.allowed_roles || []).includes(role) ? "checked" : ""}><span>${escapeHtml(label)}</span></label>`).join("")}</div>
+            <button class="secondary-button" type="submit">Save access</button>
+            <small data-access-status aria-live="polite"></small>
+          </form>
+        </details>
+      </div>
+      <div class="knowledge-document-actions">
+        ${canRetryEmbedding ? `<button class="secondary-button" type="button" data-retry-embedding="${escapeHtml(doc.document_id)}">Retry embedding</button>` : ""}
+        <button class="${doc.knowledge_base_active ? "danger-button" : "secondary-button"}" type="button" data-knowledge-toggle="${escapeHtml(doc.document_id)}" data-active="${doc.knowledge_base_active ? "true" : "false"}">${doc.knowledge_base_active ? "Remove from knowledge base" : "Restore to knowledge base"}</button>
+      </div>
+    </article>`;
+  }).join("") || '<p class="loading-card">No matching indexed sources.</p>';
 }
 
-function renderParsedChunks(chunks) {
-  $("#parsed-chunk-list").innerHTML = chunks.map((chunk) => `
-    <article class="candidate-row">
-        <div class="candidate-heading"><strong>Passage ${formatNumber(chunk.chunk_index + 1)}</strong><span>${escapeHtml(chunk.processing_status || "extracted")} · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")}</span></div>
-      ${chunk.processing_error ? `<p class="corpus-note">Processing error: ${escapeHtml(chunk.processing_error)}</p>` : ""}
+async function refreshKnowledgeDocuments() {
+  $("#knowledge-documents-status").textContent = "Loading indexed sources…";
+  const result = await api("/api/admin/knowledge-documents");
+  knowledgeDocuments = result.documents;
+  renderKnowledgeDocuments();
+  renderParsedChunkInspector(knowledgeDocuments);
+}
+
+function renderOcrDiagnostics(diagnostics) {
+  if (!Array.isArray(diagnostics) || diagnostics.length === 0) return "";
+  return diagnostics.map((item) => {
+    const message = item.reason === "low_mean_word_confidence"
+      ? `Embedded image OCR skipped: confidence ${formatNumber(item.mean_word_confidence)}/100 was below the ${formatNumber(item.minimum_word_confidence)}/100 threshold.`
+      : `Embedded image OCR skipped: only ${formatNumber(item.word_count)} words were recognized.`;
+    return `<p class="ocr-diagnostic" role="note"><strong>OCR review needed.</strong> ${escapeHtml(message)} No OCR-derived text or table from this image region was added; inspect the original page.</p>`;
+  }).join("");
+}
+
+function renderParsedChunks(chunks, documentId) {
+  $("#parsed-chunk-list").innerHTML = chunks.map((chunk) => {
+    const pageNumber = chunk.metadata?.page_number;
+    const isPdf = String(chunk.metadata?.format || "").toLowerCase() === "pdf"
+      || /\.pdf(?:$|[?#])/i.test(String(chunk.metadata?.source_url || ""));
+    const sourceUrl = uploadedSourcePageUrl(documentId, isPdf ? pageNumber : null)
+      || sourcePageUrl(chunk.metadata?.source_url, isPdf ? pageNumber : null);
+    const sourceLabel = isPdf && pageNumber ? `Open original PDF · page ${formatNumber(pageNumber)}` : "Open original document";
+    return `
+    <article class="candidate-row" id="document-chunk-${chunk.chunk_index}">
+        <div class="candidate-heading"><strong>${pageNumber ? `Page ${formatNumber(pageNumber)} · ` : ""}Passage ${formatNumber(chunk.chunk_index + 1)}</strong><span>${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")}</span></div>
+      ${sourceUrl ? `<a class="document-link" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(sourceLabel)}</a>` : ""}
+      ${renderOcrDiagnostics(chunk.metadata?.ocr_diagnostics)}
       <blockquote>${escapeHtml(chunk.content)}</blockquote>
       <details class="candidate-source"><summary>Parser metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details>
-    </article>`
-  ).join("") || '<p class="loading-card">No parsed passages at this offset.</p>';
+    </article>`;
+  }).join("") || '<p class="loading-card">No parsed passages at this offset.</p>';
 }
 
-function renderExtractedTables(tables) {
+function renderExtractedTables(tables, documentId) {
   $("#parsed-table-list").innerHTML = tables.map((table) => {
     const columns = Array.isArray(table.columns) ? table.columns : [];
     const rows = Array.isArray(table.rows) ? table.rows : [];
+    const pageNumber = table.page_number;
+    const isPdf = String(table.metadata?.format || "").toLowerCase() === "pdf"
+      || /\.pdf(?:$|[?#])/i.test(String(table.metadata?.source_url || ""));
+    const sourceUrl = uploadedSourcePageUrl(documentId, isPdf ? pageNumber : null)
+      || sourcePageUrl(table.metadata?.source_url, isPdf ? pageNumber : null);
+    const sourceLabel = isPdf && pageNumber ? `Open original PDF · page ${formatNumber(pageNumber)}` : "Open original document";
+    const continuation = [
+      table.metadata?.continued_from_page && `Continued from page ${formatNumber(table.metadata.continued_from_page)}`,
+      table.metadata?.continued_to_page && `Continues on page ${formatNumber(table.metadata.continued_to_page)}`,
+    ].filter(Boolean).join(" · ");
+    const sourceLocation = table.page_number
+      ? `Page ${formatNumber(table.page_number)}`
+      : table.metadata?.sheet_name ? `Sheet ${escapeHtml(table.metadata.sheet_name)}`
+        : table.metadata?.slide_number ? `Slide ${formatNumber(table.metadata.slide_number)}` : null;
     return `<article class="candidate-row">
-      <div class="candidate-heading"><strong>Page ${formatNumber(table.page_number)} · Table ${formatNumber(table.table_index + 1)}</strong><span>${formatNumber(table.row_count)} rows · showing ${formatNumber(rows.length)}</span></div>
+      <div class="candidate-heading"><strong>${sourceLocation ? `${sourceLocation} · ` : ""}Table ${formatNumber(table.table_index + 1)}</strong><span>${formatNumber(table.row_count)} rows · showing ${formatNumber(rows.length)}</span></div>
+      ${continuation ? `<p class="corpus-note">${escapeHtml(continuation)}</p>` : ""}
+      ${sourceUrl ? `<a class="document-link" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(sourceLabel)}</a>` : ""}
       <div class="extracted-table-wrap"><table class="extracted-table"><thead><tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
       <details class="candidate-source"><summary>Table metadata</summary><pre>${escapeHtml(JSON.stringify(table.metadata, null, 2))}</pre></details>
     </article>`;
   }).join("") || '<p class="loading-card">No structured tables were extracted from this document.</p>';
 }
 
+async function loadOcrTestRuns() {
+  const result = await api("/api/upload-tests");
+  $("#ocr-test-runs").innerHTML = result.runs.map((run) => {
+    const config = run.processor_config || {};
+    const engine = config.parser_engine;
+    const selected = config.parser_settings?.[engine] || config;
+    const tesseractConfig = selected.tesseract_config || {};
+    const parserSettings = engine === "mineru"
+      ? `MinerU · force OCR ${selected.mineru_force_ocr ? "on" : "off"} · pages ${selected.mineru_page_range || "all"}`
+      : engine === "docling"
+      ? `Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`
+      : engine === "pp-structurev3"
+      ? `PP-StructureV3 · ${selected.paddle_device || "cpu"} · ${Math.round((selected.paddle_render_scale ?? 1.5) * 72)} DPI · formulas ${selected.paddle_formula_recognition ? "on" : "off"} · charts ${selected.paddle_chart_recognition ? "on" : "off"}`
+      : engine === "built_in"
+        ? `Built-in · PSM ${selected.tesseract_psm} · ${Math.round((selected.ocr_render_scale ?? 1.5) * 72)} DPI · threshold ${tesseractConfig.thresholding_method ?? 0} · table recognition ${tesseractConfig.textord_tablefind_recognize_tables ? "on" : "off"} · ${selected.tessdata_variant || "system"} data`
+        : "Parser settings unavailable";
+    const settings = config.layout_detector === "doclayout-yolo"
+      ? `${parserSettings} · YOLO overlay ${config.layout_image_size}px · confidence ${config.layout_confidence_threshold}`
+      : parserSettings;
+    const embeddingSummary = run.embedding_status === "not_run"
+      ? "embedding skipped"
+      : `historical embedding ${run.embedding_status}`;
+    const previewSummary = run.page_count ? `${formatNumber(run.page_count)} page previews` : "no page previews";
+    const processingSummary = `processing ${formatDuration(run.runtime_info?.processing_time_ms)}`;
+    return `<button type="button" class="ocr-run-button" data-ocr-run-id="${escapeHtml(run.run_id)}"><strong>${escapeHtml(run.source_filename)}</strong><span>${escapeHtml(new Date(run.created_at).toLocaleString())} · ${processingSummary} · ${previewSummary} · ${formatNumber(run.chunk_count)} parser chunks · ${embeddingSummary} · ${formatNumber(run.table_count)} tables · ${escapeHtml(settings)}</span></button>`;
+  }).join("") || '<p class="loading-card">No upload tests yet. Upload a supported document above to create one.</p>';
+}
+
+function renderOcrTestDetails(run) {
+  const layoutPages = run.runtime_info?.layout_detections || [];
+  const allPages = [...new Set([
+    ...run.pages,
+    ...layoutPages.map((page) => page.page_number == null ? NaN : Number(page.page_number)).filter(Number.isFinite),
+    ...run.chunks.map((chunk) => chunk.metadata?.page_number == null ? NaN : Number(chunk.metadata.page_number)).filter(Number.isFinite),
+    ...run.tables.map((table) => table.page_number == null ? NaN : Number(table.page_number)).filter(Number.isFinite),
+  ])].sort((a, b) => a - b);
+  const pageContent = allPages.map((pageNumber, pageIndex) => {
+    const layoutPage = layoutPages.find((page) => Number(page.page_number) === pageNumber);
+    const layoutRegions = layoutPage?.regions || [];
+    const layoutOverlay = layoutPage ? `<div class="ocr-layout-preview">
+      <img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">
+      <svg viewBox="0 0 ${Number(layoutPage.width)} ${Number(layoutPage.height)}" role="img" aria-label="${formatNumber(layoutRegions.length)} DocLayout-YOLO regions detected">
+        ${layoutRegions.map((region) => {
+          const [x1, y1, x2, y2] = region.bbox.map(Number);
+          const x = x1 * Number(layoutPage.width), y = y1 * Number(layoutPage.height);
+          const width = Math.max(0, (x2 - x1) * Number(layoutPage.width));
+          const height = Math.max(0, (y2 - y1) * Number(layoutPage.height));
+          const label = `${region.class} ${Number(region.score).toFixed(2)}`;
+          return `<g class="layout-region layout-region-${escapeHtml(region.class)}"><rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${width.toFixed(1)}" height="${height.toFixed(1)}"></rect><text x="${x.toFixed(1)}" y="${Math.max(12, y - 3).toFixed(1)}">${escapeHtml(label)}</text></g>`;
+        }).join("")}
+      </svg></div>` : `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
+    const chunks = run.chunks.filter((chunk) => Number(chunk.metadata?.page_number) === pageNumber);
+    const tables = run.tables.filter((table) => Number(table.page_number) === pageNumber);
+    const ocrDiagnostics = chunks.flatMap((chunk) => chunk.metadata?.ocr_diagnostics || []);
+    const tablesHtml = tables.map((table) => {
+      const data = table.structured_data || {};
+      const context = table.context || {};
+      const columns = Array.isArray(data.columns) ? data.columns : [];
+      const rows = Array.isArray(data.rows) ? data.rows : [];
+      const headers = columns.length ? columns : [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
+      const metadata = table.metadata || {};
+      const parserMetadata = metadata.parser_details || {};
+      const ocr = { ...(metadata.ocr || parserMetadata.ocr || {}) };
+      if (!ocr.engine && parserMetadata.parser === "paddleocr.PP-StructureV3") {
+        ocr.engine = parserMetadata.parser;
+        ocr.render_scale = parserMetadata.render_scale;
+      }
+      const bbox = Array.isArray(metadata.bbox)
+        ? metadata.bbox.map((value) => Number(value).toFixed(1)).join(" · ")
+        : "Not available";
+      const continuation = [
+        metadata.continued_from_page && `from page ${formatNumber(metadata.continued_from_page)}`,
+        metadata.continued_to_page && `to page ${formatNumber(metadata.continued_to_page)}`,
+      ].filter(Boolean).join(" · ");
+      const parserDetails = [
+        ["OCR", [ocr.engine, ocr.language && `language ${ocr.language}`, ocr.table_psm && `PSM ${ocr.table_psm}`, ocr.render_scale && `scale ${ocr.render_scale}×`, ocr.mean_word_confidence != null && `mean word confidence ${ocr.mean_word_confidence}/100`, ocr.orientation_correction_degrees && `rotation corrected ${ocr.orientation_correction_degrees}°`, ocr.deskew_correction_degrees && `deskew corrected ${ocr.deskew_correction_degrees}°`].filter(Boolean).join(" · ") || "Not available"],
+        ["Extraction", metadata.table_extraction_method || parserMetadata.table_extraction_method || parserMetadata.table_model || "Not available"],
+        ["Detection", metadata.table_detection_strategy || parserMetadata.table_detection_strategy || parserMetadata.layout_model || "Not available"],
+        ["Table region", `${bbox}${metadata.bbox_coordinate_system ? ` (${metadata.bbox_coordinate_system})` : ""}`],
+        ["Structure", `${formatNumber(rows.length)} rows · ${formatNumber(headers.length)} columns`],
+        ...(continuation ? [["Continuation", continuation]] : []),
+      ];
+      return `<article class="ocr-test-table"><h5>Table ${formatNumber(table.table_index + 1)} <span>${formatNumber(rows.length)} rows</span></h5>
+        ${headers.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table"><thead><tr>${headers.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${headers.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
+        <details class="candidate-source"><summary>Table context</summary><dl class="ocr-context-list">
+          <dt>Source</dt><dd>${escapeHtml(context.source_filename || run.source_filename)}</dd>
+          <dt>Section</dt><dd>${escapeHtml(context.section_title || "Not extracted")}</dd>
+          <dt>Table title</dt><dd>${escapeHtml(context.table_title || "Not extracted")}</dd>
+          <dt>Unit</dt><dd>${escapeHtml(context.unit || "Not extracted")}</dd>
+          <dt>Reporting periods</dt><dd>${escapeHtml((context.reporting_periods || []).join(", ") || "Not extracted")}</dd>
+        </dl></details>
+        <dl class="ocr-context-list">${parserDetails.map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`).join("")}</dl>
+        <details class="candidate-source"><summary>Detailed parser metadata</summary><pre>${escapeHtml(JSON.stringify(metadata, null, 2))}</pre></details></article>`;
+    }).join("");
+    return `<details class="ocr-test-page" ${pageIndex === 0 ? "open" : ""}>
+      <summary>Page ${formatNumber(pageNumber)} · ${formatNumber(chunks.length)} parser chunks · ${formatNumber(tables.length)} tables</summary>
+      <div class="ocr-test-page-content">
+      <section class="ocr-test-raw"><h4>Raw page</h4>${layoutOverlay}${layoutPage ? `<p class="corpus-note">DocLayout-YOLO · ${formatNumber(layoutRegions.length)} regions at ${formatNumber(run.processor_config?.layout_image_size)}px, threshold ${escapeHtml(run.processor_config?.layout_confidence_threshold)}</p>` : ""}</section>
+      <section class="ocr-test-extracted"><h4>Extracted output</h4>
+        ${renderOcrDiagnostics(ocrDiagnostics)}
+        <details class="ocr-test-chunks"><summary>Parser output · ${formatNumber(chunks.length)} chunks</summary>${chunks.map((chunk) => `<article class="ocr-test-chunk"><div class="candidate-heading"><strong>Chunk ${formatNumber(chunk.chunk_index + 1)}</strong><span>${formatNumber(chunk.metadata?.actual_char_count ?? chunk.content.length)} chars actual · ${formatNumber(chunk.metadata?.chunk_size_chars ?? 0)} char limit · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")} · ${escapeHtml(chunk.metadata?.layout_type || "text")}</span></div><pre>${escapeHtml(chunk.content)}</pre><details class="candidate-source"><summary>Chunk metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser chunks on this page.</p>'}</details>
+        <h4 class="ocr-test-table-heading">Extracted tables</h4>
+        ${tablesHtml || '<p class="ocr-test-empty">No structured table detected on this page.</p>'}
+      </section>
+      </div>
+    </details>`;
+  }).join("");
+  const unpagedChunks = run.chunks.filter((chunk) => chunk.metadata?.page_number == null);
+  const unpagedTables = run.tables.filter((table) => table.page_number == null);
+  const unpagedOutput = unpagedChunks.length || unpagedTables.length
+    ? `<section class="ocr-test-page">
+        <h3>Document content · no page previews</h3>
+        <section class="ocr-test-extracted"><h4>Extracted output · ${formatNumber(unpagedChunks.length)} shared chunks</h4>
+          ${unpagedChunks.map((chunk) => `<article class="ocr-test-chunk"><div class="candidate-heading"><strong>Chunk ${formatNumber(chunk.chunk_index + 1)}</strong><span>${formatNumber(chunk.metadata?.actual_char_count ?? chunk.content.length)} chars · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(chunk.content)}</pre><details class="candidate-source"><summary>Chunk metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser chunks.</p>'}
+          <h4 class="ocr-test-table-heading">Extracted tables · ${formatNumber(unpagedTables.length)}</h4>
+          ${unpagedTables.map((table) => {
+            const data = table.structured_data || {};
+            const rows = Array.isArray(data.rows) ? data.rows : [];
+            const columns = Array.isArray(data.columns) && data.columns.length
+              ? data.columns : [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
+            const location = table.metadata?.sheet_name ? ` · ${escapeHtml(table.metadata.sheet_name)}` : "";
+            return `<article class="ocr-test-table"><h5>Table ${formatNumber(table.table_index + 1)}${location} <span>${formatNumber(rows.length)} rows</span></h5>
+              ${columns.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table"><thead><tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
+              <details class="candidate-source"><summary>Table metadata</summary><pre>${escapeHtml(JSON.stringify(table.metadata, null, 2))}</pre></details></article>`;
+          }).join("") || '<p class="ocr-test-empty">No unpaged structured tables.</p>'}
+        </section>
+      </section>`
+    : "";
+  const processingSummary = `Processing time: ${formatDuration(run.runtime_info?.processing_time_ms)}`;
+  $("#ocr-test-results").innerHTML = `<article class="ocr-test-run">
+    <div class="candidate-heading"><strong>${escapeHtml(run.source_filename)}</strong><span>${processingSummary} · ${run.page_count ? `${formatNumber(run.page_count)} page previews` : "No page previews"} · ${formatNumber(run.chunks.length)} parser chunks · ${formatNumber(run.tables.length)} tables</span></div>
+    <p class="corpus-note">SHA-256: <code>${escapeHtml(run.source_sha256)}</code></p>
+    <p class="corpus-note">Tokenization and embedding are downstream stages and are not run by Upload Test.</p>
+    <details class="candidate-source"><summary>Parser configuration and versions</summary><pre>${escapeHtml(JSON.stringify({processor_config:run.processor_config,runtime_info:{...run.runtime_info,layout_detections:undefined}},null,2))}</pre></details>
+    <div class="ocr-test-pages">${pageContent}${unpagedOutput}</div>
+  </article>`;
+}
+
+async function openOcrTestRun(runId) {
+  $("#ocr-test-results").innerHTML = '<p class="loading-card">Loading test pages and parser output…</p>';
+  try {
+    renderOcrTestDetails(await api(`/api/upload-tests/${encodeURIComponent(runId)}`));
+  } catch (error) {
+    $("#ocr-test-results").innerHTML = `<p class="loading-card">${escapeHtml(error.message)}</p>`;
+  }
+}
+
+function updateUploadTestParserSettings() {
+  const engine = $("#ocr-test-parser").value;
+  document.querySelectorAll("#ocr-test-form [data-parser-settings]").forEach((fieldset) => {
+    const active = fieldset.dataset.parserSettings === engine;
+    fieldset.hidden = !active;
+    fieldset.querySelectorAll("input, select, textarea").forEach((control) => {
+      control.disabled = !active;
+    });
+  });
+}
+
+$("#ocr-test-parser").addEventListener("change", updateUploadTestParserSettings);
+updateUploadTestParserSettings();
+
 function formatNumber(value) {
   return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 3 }).format(value);
+}
+
+function formatDuration(milliseconds) {
+  const value = Number(milliseconds);
+  if (!Number.isFinite(value)) return "time unavailable";
+  return value < 1000 ? `${formatNumber(value)} ms` : `${formatNumber(value / 1000)} s`;
 }
 
 function formatFinancialValue(value) {
@@ -155,170 +468,335 @@ function formatFinancialValue(value) {
     : "—";
 }
 
-function parseVietnameseFinancialInput(value) {
-  const text = String(value ?? "").trim();
-  const grouped = /^[+-]?\d{1,3}(?:\.\d{3})+(?:,\d+)?$/.test(text);
-  const plain = /^[+-]?\d+(?:,\d+)?$/.test(text);
-  const dotDecimal = /^[+-]?\d+\.\d+$/.test(text);
-  if (!grouped && !plain && !dotDecimal) return NaN;
-  const canonical = grouped ? text.replace(/\./g, "").replace(",", ".") : text.replace(",", ".");
-  return Number(canonical);
+function formatCommerceValue(value) {
+  const parsed = typeof value === "number" ? value : Number(String(value ?? "").trim());
+  return Number.isFinite(parsed)
+    ? new Intl.NumberFormat("en-US", { useGrouping: true, maximumFractionDigits: 2 }).format(parsed)
+    : "—";
 }
 
-function renderCandidateFigures(figures) {
-  if (!figures.length) return "<span>No numeric token detected</span>";
-  return figures.map((figure) => `<button type="button" data-candidate-value="${escapeHtml(figure)}" aria-pressed="false">${escapeHtml(figure)}</button>`).join("");
+function commerceTable(rows, columns) {
+  if (!rows.length) return '<p class="analysis-empty">No observations for this year.</p>';
+  const headings = columns.map(([, label]) => `<th>${escapeHtml(label)}</th>`).join("");
+  const body = rows.map((row) => `<tr>${columns.map(([key, , format]) => {
+    const value = row[key];
+    const rendered = format ? format(value, row)
+      : value == null ? "—"
+        : key === "year" ? String(value)
+          : typeof value === "number" ? formatCommerceValue(value) : value;
+    return `<td>${escapeHtml(rendered)}</td>`;
+  }).join("")}</tr>`).join("");
+  return `<table><thead><tr>${headings}</tr></thead><tbody>${body}</tbody></table>`;
 }
 
-function normalizeCandidateFigure(value) {
-  const text = String(value).trim();
-  // Parser figures are source-grounded integer tokens; preserve their exact digits.
-  return /^[+-]?\d{1,3}([.,])\d{3}(?:\1\d{3})*$/.test(text)
-    ? text.replace(/[.,]/g, "")
-    : text;
+function renderCommerceEvidence(rows, group) {
+  if (!Array.isArray(rows) || !rows.length) return "";
+  const columns = [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
+  if (!columns.length) return "";
+  const header = columns.map((key) => `<th>${escapeHtml(key.replaceAll("_", " "))}</th>`).join("");
+  const body = rows.map((row) => `<tr>${columns.map((key) => {
+    const value = row?.[key];
+    const text = typeof value === "number"
+      ? new Intl.NumberFormat("en-US", {maximumFractionDigits: 8}).format(value)
+      : value === true ? "Yes" : value === false ? "No" : value == null ? "—" : String(value);
+    return `<td>${escapeHtml(text)}</td>`;
+  }).join("")}</tr>`).join("");
+  return `<details class="citation-observations"><summary>Inspect structured SQL observations · ${rows.length} rows</summary><div class="commerce-table-wrap"><table aria-label="${escapeHtml(group || "Commerce SQL observations")}"><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div></details>`;
 }
 
-function renderAnalytics(data) {
-  analyticsSnapshot = data;
-  const companySelect = $("#analytics-company");
-  const yearSelect = $("#analytics-year");
-  const selectedCompany = companySelect.value;
-  const selectedYear = yearSelect.value;
-  const companies = [...new Set(data.documents.map((item) => item.company).filter(Boolean))].sort();
-  const years = [...new Set(data.documents.map((item) => item.fiscal_year).filter(Boolean).map(String))].sort();
-  companySelect.innerHTML = '<option value="">All companies</option>' + companies.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");
-  yearSelect.innerHTML = '<option value="">All years</option>' + years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`).join("");
-  companySelect.value = companies.includes(selectedCompany) ? selectedCompany : "";
-  yearSelect.value = years.includes(selectedYear) ? selectedYear : "";
-  companySelect.onchange = yearSelect.onchange = applyAnalyticsFilters;
-  applyAnalyticsFilters();
+function renderCommerceCards(cards, note) {
+  $("#commerce-domain-cards").innerHTML = cards.map(([label, value, detail]) =>
+    `<article class="commerce-kpi-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><small>${escapeHtml(detail || note)}</small></article>`
+  ).join("");
 }
 
-function applyAnalyticsFilters() {
-  if (!analyticsSnapshot) return;
-  const company = $("#analytics-company").value;
-  const year = $("#analytics-year").value;
-  const matches = (item) => (!company || item.company === company) && (!year || String(item.fiscal_year ?? "") === year);
-  const data = {
-    ...analyticsSnapshot,
-    documents: analyticsSnapshot.documents.filter(matches),
-    domains: analyticsSnapshot.domains.filter(matches),
-    processing: analyticsSnapshot.processing.filter(matches),
-    financial: analyticsSnapshot.financial.filter(matches),
-    candidates: analyticsSnapshot.candidates.filter(matches),
-    quality: analyticsSnapshot.quality.filter(matches),
-  };
-  const metricGroups = data.financial.reduce((groups, item) => {
-    const key = `${item.company}:${item.metric_name}`;
-    (groups[key] ??= []).push(item);
-    return groups;
-  }, {});
-  const metrics = Object.values(metricGroups).map((series) =>
-    series.sort((a, b) => Number(a.fiscal_year) - Number(b.fiscal_year))
-  );
-  const reports = data.documents.filter((item) => item.document_type === "annual_report");
-  const reportYears = [...new Set(reports.map((item) => String(item.fiscal_year || "")).filter(Boolean))].sort();
-  const verifiedYears = [...new Set(data.financial.map((item) => String(item.fiscal_year)))].sort();
-  $("#analysis-summary").innerHTML = [
-    ["Annual reports in scope", reports.length, reportYears.join(" · ") || "No fiscal year recorded"],
-    ["Verified indicators", metrics.length, data.financial.length ? `${formatNumber(data.financial.length)} source-backed observations` : "No published values for this selection"],
-    ["Verified reporting periods", verifiedYears.length, verifiedYears.join(" · ") || "Admin review required before comparison"],
-  ].map(([label, value, note]) => `<article class="analysis-stat"><span>${escapeHtml(label)}</span><strong>${formatNumber(value)}</strong><small>${escapeHtml(note)}</small></article>`).join("");
-  $("#analysis-coverage-note").textContent = `${formatNumber(data.documents.length)} source documents · ${formatNumber(data.documents.reduce((sum, item) => sum + item.chunks, 0))} indexed passages`;
-
-  $("#financial-kpis").innerHTML = metrics.length ? metrics.map((series) => {
-    const latest = series.at(-1);
-    const previous = series.length > 1 ? series.at(-2) : null;
-    const href = sourcePageUrl(latest.source_url, latest.page_number);
-    const diff = previous ? Number(latest.metric_value) - Number(previous.metric_value) : 0;
-    const isNegative = diff < 0;
-    const comparison = previous && previous.unit === latest.unit
-      ? `Change vs FY ${escapeHtml(previous.fiscal_year)}: ${diff >= 0 ? "+" : ""}${formatFinancialValue(diff)} ${escapeHtml(latest.unit)}${Number(previous.metric_value) ? ` (${formatFinancialValue(diff / Math.abs(Number(previous.metric_value)) * 100)}%)` : ""}`
-      : "One verified reporting period";
-    const provenance = latest.entry_method === "manual"
-      ? `<span class="metric-provenance">Manual entry · admin verified${latest.verified_by ? ` by ${escapeHtml(latest.verified_by)}` : ""}</span>${latest.source_reference ? (validSourceUrl(latest.source_reference) ? `<a href="${escapeHtml(validSourceUrl(latest.source_reference))}" target="_blank" rel="noopener noreferrer">${escapeHtml(latest.source_reference)}</a>` : `<span>${escapeHtml(latest.source_reference)}</span>`) : ""}${latest.source_note ? `<details class="candidate-source"><summary>Verification context</summary><p>${escapeHtml(latest.source_note)}</p></details>` : ""}`
-      : href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Source · page ${escapeHtml(latest.page_number)}</a>` : `<span>Source · page ${escapeHtml(latest.page_number ?? "not recorded")}</span>`;
-    return `<article class="financial-card"><span>${escapeHtml(latest.metric_label)}</span><strong>${formatFinancialValue(latest.metric_value)} <small>${escapeHtml(latest.unit)}</small></strong><em class="${isNegative ? "negative" : ""}">FY ${escapeHtml(latest.fiscal_year)} · ${comparison}</em>${provenance}</article>`;
-  }).join("") : '<p class="analysis-empty"><strong>No verified financial results for this selection</strong><span>Unreviewed extraction candidates are excluded. Admins can validate source evidence in Document processing.</span></p>';
-
-  const comparisons = metrics.flatMap((series) => {
-    if (series.length < 2) return [];
-    const latest = series.at(-1);
-    const previous = series.at(-2);
-    if (previous.unit !== latest.unit) return [];
-    const change = Number(latest.metric_value) - Number(previous.metric_value);
-    const percent = Number(previous.metric_value) ? change / Math.abs(Number(previous.metric_value)) * 100 : null;
-    const href = validSourceUrl(latest.source_url);
-    const source = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Source, page ${escapeHtml(latest.page_number)}</a>` : "Source link unavailable";
-    return [`<article class="insight-row"><div class="insight-mark">${change >= 0 ? "+" : "-"}</div><div><strong>${escapeHtml(latest.metric_label)} ${change >= 0 ? "increased" : "decreased"} by ${formatFinancialValue(Math.abs(change))} ${escapeHtml(latest.unit)}${percent === null ? "" : ` (${formatFinancialValue(Math.abs(percent))}%)`}</strong><span>Reported change from FY ${escapeHtml(previous.fiscal_year)} to FY ${escapeHtml(latest.fiscal_year)} · ${source}</span></div></article>`];
-  });
-  if (comparisons.length) {
-    $("#financial-insights").innerHTML = `<div class="insight-list">${comparisons.join("")}</div><p class="analysis-caveat">These are reported period-to-period changes. They describe the figures and do not establish why they changed.</p>`;
-  } else {
-    const pending = (data.candidates || []).length;
-    const reportScope = reportYears.length ? `Annual reports in this selection: ${reportYears.join(", ")}. ` : "No annual report is available in this selection. ";
-    const reviewScope = pending ? `${formatNumber(pending)} extracted evidence items await admin review; they are not treated as reported results.` : data.financial.length ? "A year-over-year comparison needs at least two verified periods for the same indicator." : "Ask an administrator to review extracted source evidence before interpreting financial results.";
-    $("#financial-insights").innerHTML = `<div class="insight-empty"><span class="eyebrow">ANALYSIS STATUS</span><h4>No verified period comparison yet</h4><p>${escapeHtml(reportScope + reviewScope)}</p>${pending ? '<button type="button" class="inline-tab-link" data-open-tab="processing">Review source evidence</button>' : ""}</div>`;
+function renderCommerceChart(selector, rows, series, unit, kind = "line", periodLabel = "All available years") {
+  const root = $(selector);
+  if (!rows.length) {
+    root.innerHTML = '<p class="analysis-empty">No observations available to chart.</p>';
+    return;
   }
-  $("#financial-trends").innerHTML = metrics.map((series) => {
-    const max = Math.max(1, ...series.map((item) => Math.abs(Number(item.metric_value))));
-    return `<article class="trend-card"><h4>${escapeHtml(series[0].metric_label)} · ${escapeHtml(series[0].unit)}</h4><div class="trend-bars">${series.map((item) => { const href = validSourceUrl(item.source_url); const source = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" aria-label="Open source page ${item.page_number}">Source</a>` : ""; const ratio = Math.abs(Number(item.metric_value)) / max; return `<div class="trend-point"><strong>${formatFinancialValue(item.metric_value)}</strong><i style="--bar-ratio:${ratio}" role="img" aria-label="FY ${escapeHtml(item.fiscal_year)} value ${formatFinancialValue(item.metric_value)} ${escapeHtml(item.unit)}"></i><span>FY ${escapeHtml(item.fiscal_year)}</span>${source}</div>`; }).join("")}</div></article>`;
+  const years = [...new Set(rows.map((row) => Number(row.year)).filter(Number.isFinite))].sort((a, b) => a - b);
+  const values = rows.flatMap((row) => series.map((item) => Number(item.value(row)))).filter(Number.isFinite);
+  const max = unit === "%" ? Math.max(100, ...values) : Math.max(1, ...values) * 1.08;
+  const width = 760, height = 250, left = 60, right = 746, top = 15, bottom = 199;
+  const x = (index) => years.length < 2 ? (left + right) / 2 : left + index * (right - left) / (years.length - 1);
+  const y = (value) => bottom - (value / max) * (bottom - top);
+  const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
+  const grid = Array.from({ length: 4 }, (_, index) => {
+    const value = max * index / 3, yy = y(value);
+    return `<g><line x1="${left}" y1="${yy}" x2="${right}" y2="${yy}" class="commerce-chart-gridline"/><text x="${left - 8}" y="${yy + 4}" text-anchor="end" class="commerce-chart-axis-label">${compact.format(value)}</text></g>`;
   }).join("");
-  const maxDocs = Math.max(1, ...(data.domains || []).map((item) => item.documents));
-  $("#domain-chart").innerHTML = (data.domains || []).map((item) => `
-    <div class="bar-row"><div><span>${escapeHtml(item.company)} · ${escapeHtml(item.domain.replaceAll("_", " "))} · FY ${escapeHtml(item.fiscal_year || "No year")}</span><strong>${formatNumber(item.documents)} docs · ${formatNumber(item.chunks)} passages</strong></div><span class="bar-track"><i style="width:${Math.max(5, item.documents / maxDocs * 100)}%"></i></span></div>
-  `).join("");
-  const statusCounts = (data.processing || []).map((item) => `<div class="bar-row"><div><span>${escapeHtml(item.company)} · ${escapeHtml(item.fiscal_year ? `FY ${item.fiscal_year}` : "General")}</span><strong>${formatNumber(item.documents)} · ${escapeHtml(item.processing_status || "unknown")}</strong></div><span class="bar-track"><i style="width:${Math.max(5, item.documents / Math.max(1, ...data.processing.map((row) => row.documents)) * 100)}%"></i></span></div>`);
-  $("#processing-chart").innerHTML = statusCounts.join("") || '<p class="loading-card">No processing records yet.</p>';
-  $("#quality-chart").innerHTML = (data.quality || []).map((item) => `
-    <div class="quality-row"><div><strong>${escapeHtml(item.document_id)}</strong><span>${formatNumber(item.chunks)} passages · avg ${formatNumber(item.avg_chunk_chars)} chars</span></div><span class="quality-pill ${item.empty_chunks ? "warning" : "ok"}">${item.empty_chunks ? `${item.empty_chunks} empty` : "No empty passages"}</span></div>
-  `).join("");
-  renderCandidates(data);
+  const labels = years.map((year, index) => `<text x="${x(index)}" y="${height - 12}" text-anchor="middle" class="commerce-chart-axis-label">${year}</text>`).join("");
+  let marks = "";
+  if (kind === "bar") {
+    const groupWidth = Math.min(28, (right - left) / Math.max(years.length, 1) * 0.72);
+    const barWidth = groupWidth / series.length;
+    marks = years.map((year, yearIndex) => series.map((item, seriesIndex) => {
+      const row = rows.find((candidate) => Number(candidate.year) === year && item.matches(candidate));
+      const value = row ? Number(item.value(row)) : NaN;
+      if (!Number.isFinite(value)) return "";
+      const barX = x(yearIndex) - groupWidth / 2 + seriesIndex * barWidth;
+      return `<g><title>${escapeHtml(item.label)} · ${year}: ${formatCommerceValue(value)} ${escapeHtml(unit)}</title><rect x="${barX}" y="${y(value)}" width="${Math.max(2, barWidth - 1)}" height="${bottom - y(value)}" rx="2" fill="${item.color}"/></g>`;
+    }).join("")).join("");
+  } else {
+    marks = series.map((item) => {
+      const points = years.map((year, index) => {
+        const row = rows.find((candidate) => Number(candidate.year) === year && item.matches(candidate));
+        const value = row ? Number(item.value(row)) : NaN;
+        return Number.isFinite(value) ? { year, index, value } : null;
+      }).filter(Boolean);
+      const path = points.map((point, index) => `${index ? "L" : "M"}${x(point.index)},${y(point.value)}`).join(" ");
+      return `<path d="${path}" fill="none" stroke="${item.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${points.map((point) => `<g><title>${escapeHtml(item.label)} · ${point.year}: ${formatCommerceValue(point.value)} ${escapeHtml(unit)}</title><circle cx="${x(point.index)}" cy="${y(point.value)}" r="3.5" fill="${item.color}"/></g>`).join("")}`;
+    }).join("");
+  }
+  const legend = series.map((item) => `<span><i style="--commerce-series:${item.color}"></i>${escapeHtml(item.label)}</span>`).join("");
+  root.innerHTML = `<figure><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(series.map((item) => item.label).join(" and "))} by year"><title>${escapeHtml(series.map((item) => item.label).join(" and "))} by year</title>${grid}<line x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}" class="commerce-chart-axis"/>${marks}${labels}</svg><figcaption>${legend}<span class="commerce-chart-unit">${escapeHtml(unit)}</span></figcaption></figure><p class="commerce-chart-note">Showing ${escapeHtml(periodLabel)}.</p>`;
 }
 
-function renderCandidates(data) {
-  const candidates = data.candidates || [];
-  $("#candidate-review").hidden = !candidates.length;
-  $("#candidate-list").innerHTML = candidates.map((item) => {
-    const href = sourcePageUrl(item.source_url, item.page_number);
-    const uploadedSourceHref = String(item.document_id || "").startsWith("UPLOAD-")
-      ? `/api/admin/processing/${encodeURIComponent(item.document_id)}/source#page=${encodeURIComponent(item.page_number)}`
-      : "";
-    const sourceHref = href || uploadedSourceHref;
-    const sourceLabel = href ? "Open official original" : "Open uploaded source";
-    const figures = Array.isArray(item.candidate_values)
-      ? item.candidate_values.map(String).filter(Boolean)
-      : [];
-  const isManual = item.entry_method === "manual";
-  const extraction = isManual ? "Manual entry · user supplied" : item.extraction_method === "llm_selected_financial_page"
-      ? `LLM · ${item.extractor_model || "configured model"}`
-      : item.text_extraction_method || "Rule-based evidence";
-    const signals = item.selection_evidence || {};
-    const selectionSummary = [
-      ...(signals.financial_terms || []),
-      ...(signals.metric_labels || []),
-      signals.table_count ? `${signals.table_count} parsed tables` : "",
-    ].filter(Boolean).join(" · ");
-    const labelMatchNotice = signals.source_label_match === "ocr_near_match"
-      ? "<small>OCR label is approximate; verify the printed metric label, value, and year in the source.</small>"
-      : "";
-    const evidenceCount = Math.max(1, Number(item.evidence_count) || 1);
-    const extractionLabel = extraction.includes("tesseract") ? "OCR assisted" : extraction;
-    const figuresMarkup = renderCandidateFigures(figures);
-    return `<article class="candidate-row">
-      <div class="candidate-evidence">
-        <div class="candidate-heading"><div><strong>${escapeHtml(item.metric_label)}</strong><span>${escapeHtml(item.company)} · ${escapeHtml(item.title)}</span></div><span class="candidate-status">Admin review${evidenceCount > 1 ? ` · ${formatNumber(evidenceCount)} excerpts` : ""}</span></div>
-        <div class="candidate-facts"><span><small>Reporting year</small><strong>${escapeHtml(item.fiscal_year || "Needs review")}</strong></span><span><small>Source page</small><strong>${escapeHtml(item.page_number ?? (isManual ? "Manual reference" : "—"))}</strong></span><span><small>Document</small><strong>${escapeHtml(item.document_id || (isManual ? "Manual entry" : "—"))}</strong></span><span><small>Entry method</small><strong>${escapeHtml(extractionLabel)}</strong></span></div>
-        <div class="candidate-value"><small>${isManual ? "User-supplied value · confirm its provenance and reporting basis" : figures.length > 1 ? "Figures in excerpt · select a value, then confirm its reporting year in the source" : "Figure found in excerpt · select it only after checking the source"}</small><div class="candidate-figures">${figuresMarkup}</div><small>Confirm the reporting year and scale. Use one consistent dashboard unit across periods.${evidenceCount > 1 ? " Rejecting this excerpt will show the next pending source excerpt." : ""}</small></div>
-        <details class="candidate-source"><summary>${isManual ? "Review manual source context" : `Check source excerpt${sourceHref ? ` · <a href="${escapeHtml(sourceHref)}" target="_blank" rel="noopener noreferrer">${sourceLabel} · page ${escapeHtml(item.page_number)}</a>` : ""}`}</summary>${isManual ? `${item.source_reference ? `<p>Source reference: ${escapeHtml(item.source_reference)}</p>` : "<p>No external source URL supplied.</p>"}<p>${escapeHtml(item.source_note)}</p>` : `${labelMatchNotice}<blockquote>${escapeHtml(item.source_quote)}</blockquote>${selectionSummary ? `<small>Page-selection signals · ${escapeHtml(selectionSummary)}</small>` : ""}${item.prompt_version ? `<small>Extraction prompt · ${escapeHtml(item.prompt_version)}</small>` : ""}`}</details>
-      </div>
-      <form data-candidate-id="${item.id}" class="review-form">
-        <label>Verified value<input name="normalized_value" type="text" inputmode="decimal" pattern="[+-]?[0-9.,]+" value="${isManual ? escapeHtml(figures[0] || "") : ""}" required placeholder="e.g. 59723 or 59.723" aria-describedby="metric-value-help"></label><small id="metric-value-help">Nhập chữ số liền nhau (59723) hoặc theo cách viết Việt Nam (59.723; phần thập phân: 59.723,5). Dashboard cũng hiển thị theo cách viết Việt Nam: 59.723.</small><output class="review-value-preview" aria-live="polite"></output>
-        <label>Dashboard unit (verify)<input name="unit" value="${escapeHtml(item.unit || "")}" required placeholder="e.g. billion VND"></label>
-        <div class="review-actions"><button type="submit">Verify and publish</button><button type="button" data-reject>Reject</button></div>
-      </form>
-    </article>`;
-  }).join("");
+function renderCommerceDashboard(data = commerceSnapshot) {
+  if (!data) return;
+  commerceSnapshot = data;
+  const activeView = document.querySelector('[data-commerce-view][aria-selected="true"]')?.dataset.commerceView || "inventory";
+  const yearSelect = $("#commerce-year-filter");
+  const selectedYear = yearSelect.value;
+  const domainYears = {
+    inventory: (data.inventory_by_year || []).map((row) => row.year),
+    promotions: [
+      ...(data.promotions_by_year || []).map((row) => row.year),
+      ...(data.promotions_by_campaign || []).map((row) => row.year),
+    ],
+    logistics: (data.logistics_by_year_region || []).map((row) => row.year),
+  };
+  const years = [...new Set((domainYears[activeView] || []).filter(Number.isFinite))].sort((a, b) => a - b);
+  yearSelect.innerHTML = '<option value="">All available years</option>' + years.map((year) =>
+    `<option value="${year}">${year}</option>`).join("");
+  yearSelect.value = years.includes(Number(selectedYear)) ? selectedYear : "";
+  const year = yearSelect.value ? Number(yearSelect.value) : null;
+  const byYear = (rows) => rows.filter((row) => year == null || Number(row.year) === year);
+  const yearLabel = year == null ? "All available years" : `Year ${year}`;
+  if (activeView === "inventory") {
+    const rows = byYear(data.inventory_by_year || []);
+    const latest = rows.at(-1) || {};
+    const inventoryPeriod = year == null ? `Latest annual data: ${latest.year ?? "—"}` : yearLabel;
+    const annualCategoryRows = data.inventory_year_end_by_category || [];
+    const categoryYear = year ?? annualCategoryRows.at(-1)?.year ?? null;
+    const categoryRows = categoryYear == null ? [] : annualCategoryRows.filter((row) => Number(row.year) === Number(categoryYear));
+    const stockoutProducts = categoryRows.reduce((sum, row) => sum + Number(row.stockout_products || 0), 0);
+    const overstockProducts = categoryRows.reduce((sum, row) => sum + Number(row.overstock_products || 0), 0);
+    const bothFlaggedProducts = categoryRows.reduce((sum, row) => sum + Number(row.both_flagged_products || 0), 0);
+    const stockoutDays = Number(latest.avg_stockout_days);
+    const fillRate = Number(latest.avg_fill_rate);
+    renderCommerceCards([
+      ["SKU snapshots", formatCommerceValue(latest.sku_snapshots), inventoryPeriod],
+      ["Average units on hand", formatCommerceValue(latest.avg_stock_on_hand), inventoryPeriod],
+      ["Average fill rate", Number.isFinite(fillRate) ? `${(fillRate * 100).toFixed(2)}%` : "—", "Mean of source fill_rate values"],
+      ["Stockout snapshots", formatCommerceValue(latest.stockout_snapshots), `${inventoryPeriod}; not unique products`],
+      ["Overstock snapshots", formatCommerceValue(latest.overstock_snapshots), `${inventoryPeriod}; days-of-supply excluded`],
+      ["Average stockout days", Number.isFinite(stockoutDays) ? stockoutDays.toFixed(2) : "—", inventoryPeriod],
+      ["Selected snapshot · stockout / overstock / both flags", `${formatCommerceValue(stockoutProducts)} / ${formatCommerceValue(overstockProducts)} / ${formatCommerceValue(bothFlaggedProducts)}`, `Latest snapshot in ${categoryYear}; both flags can apply to one product`],
+    ], "Synthetic dataset observation");
+  } else if (activeView === "promotions") {
+    const rows = byYear(data.promotions_by_year || []);
+    const tagged = rows.filter((row) => row.used_promotion);
+    const plain = rows.filter((row) => !row.used_promotion);
+    const sum = (items, key) => items.reduce((total, row) => total + Number(row[key] || 0), 0);
+    const taggedOrders = sum(tagged, "delivered_orders");
+    const plainOrders = sum(plain, "delivered_orders");
+    const paired = (key) => `${formatCommerceValue(sum(tagged, key))} / ${formatCommerceValue(sum(plain, key))}`;
+    const marginProxy = (items) => {
+      const sales = sum(items, "net_sales");
+      return sales ? `${(sum(items, "merchandise_gross_profit_proxy") / sales * 100).toFixed(1)}%` : "—";
+    };
+    renderCommerceCards([
+      ["Delivered order groups · tagged / untagged", `${formatCommerceValue(taggedOrders)} / ${formatCommerceValue(plainOrders)}`, yearLabel],
+      ["Net sales · tagged / untagged items", paired("net_sales"), "Dataset units; currency not declared"],
+      ["Units · tagged / untagged items", paired("units"), yearLabel],
+      ["Recorded discounts · tagged / untagged", paired("discounts"), "Dataset units; currency not declared"],
+      ["Gross-profit proxy · tagged / untagged", paired("merchandise_gross_profit_proxy"), "Net item sales less catalog COGS; estimate only"],
+      ["Gross-margin proxy · tagged / untagged", `${marginProxy(tagged)} / ${marginProxy(plain)}`, "Catalog COGS assumption; not contribution margin or ROI"],
+    ], "Mixed orders may count in both groups; comparison is not causal. Validate catalog COGS before using the gross-profit proxy.");
+  } else {
+    const rows = byYear(data.logistics_by_year_region || []);
+    const deliveries = rows.reduce((sum, row) => sum + Number(row.deliveries || 0), 0);
+    const weighted = (key) => deliveries ? rows.reduce((sum, row) => sum + Number(row[key] || 0) * Number(row.deliveries || 0), 0) / deliveries : NaN;
+    const regionalMedians = rows.map((row) => Number(row.median_transit_days)).filter(Number.isFinite);
+    const medianRange = regionalMedians.length ? `${Math.min(...regionalMedians).toFixed(1)}–${Math.max(...regionalMedians).toFixed(1)} days` : "—";
+    renderCommerceCards([
+      ["Delivered shipments", formatCommerceValue(deliveries), yearLabel],
+      ["Weighted average transit", Number.isFinite(weighted("avg_transit_days")) ? `${weighted("avg_transit_days").toFixed(2)} days` : "—", "Weighted by delivered shipments"],
+      ["Regional-year median range", medianRange, "Range across displayed region/year aggregates, not individual shipments"],
+      ["Weighted average shipping fee", formatCommerceValue(weighted("avg_shipping_fee")), "Dataset units; currency not declared"],
+    ], "Descriptive regional summary; no carrier or route-level data");
+  }
+  const inventoryRows = byYear(data.inventory_by_year || []);
+  renderCommerceChart("#commerce-inventory-chart", inventoryRows, [
+    { label: "Stockout snapshots", color: "#c54845", matches: () => true, value: (row) => row.stockout_snapshots },
+    { label: "Overstock snapshots", color: "#3972bd", matches: () => true, value: (row) => row.overstock_snapshots },
+  ], "snapshot count", "line", yearLabel);
+  renderCommerceChart("#commerce-inventory-fill-rate-chart", inventoryRows, [
+    { label: "Average fill rate", color: "#48a17c", matches: () => true, value: (row) => Number(row.avg_fill_rate) * 100 },
+  ], "%", "line", yearLabel);
+  const promotionRows = byYear(data.promotions_by_year || []);
+  renderCommerceChart("#commerce-promotion-chart", promotionRows, [
+    { label: "Items with promotion tag", color: "#3972bd", matches: (row) => row.used_promotion, value: (row) => row.net_sales },
+    { label: "Items without promotion tag", color: "#48a17c", matches: (row) => !row.used_promotion, value: (row) => row.net_sales },
+  ], "net sales · dataset units", "bar", yearLabel);
+  const logisticsRows = byYear(data.logistics_by_year_region || []);
+  const regionColors = ["#3972bd", "#48a17c", "#d58c35", "#8761bd"];
+  const regions = [...new Set(logisticsRows.map((row) => row.region))].sort();
+  renderCommerceChart("#commerce-logistics-chart", logisticsRows, regions.map((region, index) => ({
+    label: region, color: regionColors[index % regionColors.length],
+    matches: (row) => row.region === region, value: (row) => row.avg_transit_days,
+  })), "average transit days", "line", yearLabel);
+  $("#commerce-sales-table").innerHTML = commerceTable(byYear(data.sales_by_year || []), [
+    ["year", "Year"], ["revenue", "Revenue", formatCommerceValue], ["cogs", "COGS", formatCommerceValue], ["gross_profit", "Gross profit", formatCommerceValue],
+    ["gross_margin", "Gross margin", (value) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(1)}%` : "—"],
+  ]);
+  $("#commerce-inventory-table").innerHTML = commerceTable(byYear(data.inventory_by_year || []), [
+    ["year", "Year"], ["products", "Products"], ["sku_snapshots", "SKU snapshots"], ["avg_stock_on_hand", "Avg units on hand", formatCommerceValue],
+    ["avg_fill_rate", "Average fill rate", (value) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(2)}%` : "—"],
+    ["stockout_snapshots", "Stockout snapshots"], ["overstock_snapshots", "Overstock snapshots"],
+    ["avg_stockout_days", "Avg stockout days"],
+  ]);
+  const annualCategoryRows = data.inventory_year_end_by_category || [];
+  const categoryYear = year ?? annualCategoryRows.at(-1)?.year ?? null;
+  const categoryRows = categoryYear == null ? [] : annualCategoryRows.filter((row) => Number(row.year) === Number(categoryYear));
+  $("#commerce-inventory-category").innerHTML = commerceTable(categoryRows, [
+    ["category", "Category"], ["products", "Products"], ["stock_on_hand", "Units on hand", formatCommerceValue],
+    ["stockout_products", "Stockout products"], ["overstock_products", "Overstock products"],
+    ["both_flagged_products", "Both flags"],
+  ]);
+  $("#commerce-inventory-latest-date").textContent = categoryRows[0]?.snapshot_date
+    ? `· Year ${categoryYear}: ${categoryRows[0].snapshot_date}` : "";
+  $("#commerce-promotion-table").innerHTML = commerceTable(byYear(data.promotions_by_year || []), [
+    ["year", "Year"], ["used_promotion", "Promotion tagged", (value) => value ? "Yes" : "No"],
+    ["delivered_orders", "Delivered orders"], ["units", "Units"], ["net_sales", "Net sales", formatCommerceValue],
+    ["discounts", "Recorded discounts", formatCommerceValue], ["catalog_cogs", "Catalog COGS", formatCommerceValue],
+    ["merchandise_gross_profit_proxy", "Gross-profit proxy", formatCommerceValue],
+    ["merchandise_gross_margin_proxy", "Gross-margin proxy", (value) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(1)}%` : "—"],
+  ]);
+  $("#commerce-campaign-table").innerHTML = commerceTable(byYear(data.promotions_by_campaign || []), [
+    ["campaign", "Campaign"], ["channel", "Channel"], ["campaign_start", "Window starts"],
+    ["campaign_end", "Window ends"], ["delivered_orders", "Delivered orders"], ["units", "Tagged units"],
+    ["net_item_sales", "Tagged net item sales", formatCommerceValue], ["discounts", "Recorded discounts", formatCommerceValue],
+    ["catalog_cogs", "Catalog COGS", formatCommerceValue],
+    ["merchandise_gross_profit_proxy", "Gross-profit proxy", formatCommerceValue],
+    ["merchandise_gross_margin_proxy", "Gross-margin proxy", (value) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(1)}%` : "—"],
+  ]);
+  $("#commerce-logistics-table").innerHTML = commerceTable(byYear(data.logistics_by_year_region || []), [
+    ["year", "Year"], ["region", "Dataset region"], ["deliveries", "Deliveries"],
+    ["avg_transit_days", "Avg transit days"], ["median_transit_days", "Median transit days"],
+    ["avg_shipping_fee", "Avg shipping fee · dataset units"],
+  ]);
+  $("#commerce-data-notes-list").innerHTML = (data.data_notes || []).map((note) => `<li>${escapeHtml(note)}</li>`).join("");
+}
+
+function selectedCommerceDomain() {
+  const domainByView = {
+    inventory: "inventory_allocation",
+    promotions: "promotion_planning",
+    logistics: "nationwide_logistics",
+  };
+  const activeView = document.querySelector('[data-commerce-view][aria-selected="true"]')?.dataset.commerceView;
+  return domainByView[activeView] || "inventory_allocation";
+}
+
+document.querySelectorAll("[data-commerce-view]").forEach((button) => {
+  button.addEventListener("click", () => {
+    $("#commerce-dashboard-status").hidden = true;
+    document.querySelectorAll("[data-commerce-view]").forEach((tab) => {
+      const selected = tab === button;
+      tab.setAttribute("aria-selected", String(selected));
+      $("#commerce-view-" + tab.dataset.commerceView).hidden = !selected;
+    });
+    renderDecisionDomainQuestions(selectedCommerceDomain());
+    renderCommerceDashboard();
+    loadCommerceDashboardForActiveView();
+  });
+});
+$("#commerce-campaign-details").addEventListener("toggle", (event) => {
+  if (event.currentTarget.open) loadCommerceCampaigns();
+});
+const commerceTabList = $(".commerce-dashboard-tabs");
+const commerceTabsAreHorizontal = window.matchMedia("(max-width: 640px)");
+const syncCommerceTabOrientation = () => commerceTabList.setAttribute(
+  "aria-orientation", commerceTabsAreHorizontal.matches ? "horizontal" : "vertical",
+);
+syncCommerceTabOrientation();
+commerceTabsAreHorizontal.addEventListener("change", syncCommerceTabOrientation);
+commerceTabList.addEventListener("keydown", (event) => {
+  const tabs = [...document.querySelectorAll("[data-commerce-view]")];
+  const current = tabs.indexOf(event.target);
+  const forward = commerceTabsAreHorizontal.matches ? "ArrowRight" : "ArrowDown";
+  const backward = commerceTabsAreHorizontal.matches ? "ArrowLeft" : "ArrowUp";
+  const next = { [forward]: (current + 1) % tabs.length, [backward]: (current - 1 + tabs.length) % tabs.length,
+    Home: 0, End: tabs.length - 1 }[event.key];
+  if (current < 0 || next === undefined) return;
+  event.preventDefault();
+  tabs[next].focus();
+  tabs[next].click();
+});
+$("#commerce-year-filter").addEventListener("change", () => renderCommerceDashboard());
+function selectedQuestionSuggestionDomain() {
+  return $("#business-question-domain").value || selectedCommerceDomain();
+}
+
+$("#business-question-domain").addEventListener("change", () => {
+  renderDecisionDomainQuestions(selectedQuestionSuggestionDomain());
+});
+
+const DECISION_DOMAIN_QUESTIONS = {
+  inventory_allocation: [
+    {
+      title: "Where are stockouts and excess inventory concentrated?",
+      question: "Which product categories show the strongest combination of stockout and overstock signals in the latest snapshot, and how do the last three annual inventory summaries compare? Recommend a bounded investigation, not a stock transfer, because warehouse locations, lead times, demand forecasts, and transfer costs are unavailable.",
+    },
+    {
+      title: "What should be checked before reallocating stock?",
+      question: "Should inventory be reallocated toward products with repeated stockout signals? Use only the Commerce inventory aggregates and company references. State the warehouse-level stock, forecast demand, replenishment lead time, transfer cost, and target service level needed before moving stock.",
+    },
+    {
+      title: "Generate conditional inventory actions",
+      question: "Suggest up to three conditional next actions for inventory allocation from the available SQL observations and company practice references. Do not invent numeric thresholds or assume the synthetic dataset represents one company's live warehouse network.",
+    },
+  ],
+  promotion_planning: [
+    {
+      title: "How do promotion-tagged orders compare?",
+      question: "Compare delivered orders, units, net sales, discounts, and the catalog-COGS merchandise gross-profit/margin proxy for promotion-tagged and untagged items in the latest three years. Treat the comparison as descriptive, not causal uplift; explain why the proxy is not contribution margin or ROI and what COGS validation, campaign spend, and holdout data are needed before changing promotion spend.",
+    },
+    {
+      title: "Should we repeat a promotion?",
+      question: "Should the business repeat or expand a promotion based on the available order data? Separate the catalog-COGS gross-profit proxy from contribution margin, explain why causal lift and ROI cannot be established without a holdout and campaign spend, and use a cited company measurement method for the next step.",
+    },
+    {
+      title: "Generate conditional promotion actions",
+      question: "Suggest up to three conditional next actions for promotion planning. Do not call tagged-versus-untagged differences uplift, treat the catalog-COGS proxy as contribution margin, set an unsourced discount threshold, or recommend scaling without causal and campaign-cost evidence.",
+    },
+  ],
+  nationwide_logistics: [
+    {
+      title: "Which regions have longer transit times?",
+      question: "Compare average and median ship-to-delivery time and shipping fees by dataset region for the latest three years. Recommend where to investigate, but do not infer a carrier, route, warehouse cause, or SLA breach from these aggregates.",
+    },
+    {
+      title: "Would regional inventory placement help?",
+      question: "Should the business consider regional inventory placement to improve delivery speed or cost? Compare available regional transit evidence with cited company practices, then identify the warehouse origin, route, capacity, carrier, demand, and cost data needed before a pilot.",
+    },
+    {
+      title: "Generate conditional logistics actions",
+      question: "Suggest up to three conditional next actions for nationwide logistics from the SQL observations and company references. Do not recommend network redesign from regional averages alone.",
+    },
+  ],
+};
+
+function renderDecisionDomainQuestions(domain) {
+  const container = $("#decision-domain-questions");
+  if (!container) return;
+  container.innerHTML = (DECISION_DOMAIN_QUESTIONS[domain] || []).map(({ title, question }) =>
+    `<button type="button" data-decision-domain="${escapeHtml(domain)}" data-decision-question="${escapeHtml(question)}"><strong>${escapeHtml(title)}</strong><small>Select to load this question and its domain into the editor.</small></button>`
+  ).join("");
 }
 
 function renderDashboardVisualization(visualization) {
@@ -340,9 +818,10 @@ function renderDashboardVisualization(visualization) {
   const colors = ["#2463b5", "#da8a2d", "#24866b", "#8758a8"];
   const charts = series.map((item, seriesIndex) => {
     const values = item.values.map((value) => Number.isFinite(value) ? value : null);
-    const max = Math.max(...values.filter((value) => value !== null), 0) || 1;
+    const observedMax = Math.max(...values.filter((value) => value !== null), 0) || 1;
+    const max = visualization.unit === "%" ? Math.max(100, observedMax) : observedMax * 1.1;
     const x = (index) => left + (categories.length === 1 ? plotWidth / 2 : index * plotWidth / (categories.length - 1));
-    const y = (value) => top + plotHeight - value / (max * 1.1) * plotHeight;
+    const y = (value) => top + plotHeight - value / max * plotHeight;
     const segments = [];
     let segment = [];
     values.forEach((value, index) => {
@@ -364,39 +843,159 @@ function renderDashboardVisualization(visualization) {
     ).join("");
     return `<article class="answer-chart"><h4>${escapeHtml(item.name)} · ${escapeHtml(visualization.unit)}</h4><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(item.name)} by fiscal year">${grid}<line x1="${left}" y1="${top}" x2="${left}" y2="${top + plotHeight}" class="chart-axis"/>${segments.map((path) => `<path d="${path.join(" ")}" fill="none" stroke="${colors[seriesIndex % colors.length]}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`).join("")}${points}${xLabels}</svg></article>`;
   }).join("");
-  return `<section class="answer-visualization"><h3>${escapeHtml(visualization.title || "Verified financial trend")}</h3>${charts}<p class="chart-note">Values come from verified, role-visible source metrics. Exact amounts and citations are listed in the response above.</p></section>`;
+  return `<section class="answer-visualization"><h3>${escapeHtml(visualization.title || "Verified data trend")}</h3>${charts}<p class="chart-note">Chart values come from the cited database observations. Review the source and scope in the response above.</p></section>`;
+}
+
+function renderAnswerBody(answer) {
+  const lines = String(answer || "").split(/\r?\n/);
+  const blocks = [];
+  let paragraph = [];
+  const inline = (value) => escapeHtml(value)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>");
+  const cells = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "")
+    .split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, "|"));
+  const isRow = (line) => /^\s*\|.*\|\s*$/.test(line);
+  const isDivider = (line) => isRow(line)
+    && cells(line).every((cell) => /^:?-{3,}:?$/.test(cell));
+  const flushParagraph = () => {
+    if (paragraph.length) blocks.push(`<p>${paragraph.map(inline).join("<br>")}</p>`);
+    paragraph = [];
+  };
+
+  for (let index = 0; index < lines.length;) {
+    if (isRow(lines[index]) && isDivider(lines[index + 1] || "")) {
+      flushParagraph();
+      const headings = cells(lines[index]);
+      index += 2;
+      const rows = [];
+      while (index < lines.length && isRow(lines[index])) rows.push(cells(lines[index++]));
+      const header = headings.map((cell) => `<th scope="col">${inline(cell)}</th>`).join("");
+      const body = rows.map((row) => `<tr>${headings.map((_, column) =>
+        `<td>${inline(row[column] || "")}</td>`).join("")}</tr>`).join("");
+      blocks.push(`<div class="commerce-table-wrap answer-markdown-table"><table aria-label="Answer details"><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div>`);
+      continue;
+    }
+    if (!lines[index].trim()) flushParagraph();
+    else paragraph.push(lines[index]);
+    index += 1;
+  }
+  flushParagraph();
+  return blocks.join("");
 }
 
 function renderAnswer(data, panel = $("#answer-panel")) {
   panel.hidden = false;
   const citations = Array.isArray(data.citations) ? data.citations : [];
+  const usedEvidenceFallback = Boolean(data.answer_fallback_reason);
+  const domainLabels = {
+    inventory_allocation: "Inventory allocation",
+    promotion_planning: "Promotion planning",
+    nationwide_logistics: "Nationwide logistics",
+  };
+  const domainNote = domainLabels[data.business_decision_domain]
+    ? `<p class="analysis-caveat answer-provenance-note" role="status"><strong>Decision domain:</strong> ${escapeHtml(domainLabels[data.business_decision_domain])}${data.business_domain_auto_detected ? " · detected from your question" : " · selected"}</p>`
+    : data.needs_domain_clarification
+      ? '<p class="analysis-caveat answer-provenance-note" role="status"><strong>No analysis was run.</strong> Choose one decision domain or clarify the question.</p>'
+      : "";
+  const answerFallbackNotes = {
+    provider_rate_limited: "The answer model was rate-limited. This response uses a conservative, built-in evidence fallback; it is not a model-synthesized recommendation.",
+    provider_unavailable: "The answer model was unavailable. This response uses a conservative, built-in evidence fallback; it is not a model-synthesized recommendation.",
+    evidence_validation_failed: "The model draft did not pass grounding checks. This response uses a conservative, built-in evidence fallback instead.",
+    unsupported_measure: "The Commerce data cannot establish campaign ROI or incremental profit without campaign costs and a valid counterfactual; this response summarizes the available evidence without estimating either measure.",
+  };
+  const fallbackNote = data.decision_suggestions_fallback && ["provider_rate_limited", "provider_unavailable"].includes(data.answer_fallback_reason)
+    ? `The model provider was ${data.answer_fallback_reason === "provider_rate_limited" ? "rate-limited" : "unavailable"}. One conservative next step is shown; the requested multi-action recommendation could not be generated.`
+    : data.decision_suggestions_fallback && data.answer_fallback_reason === "evidence_validation_failed"
+      ? "The model draft failed grounding checks. One conservative next step is shown; the requested multi-action recommendation could not be validated."
+    : data.agent === "knowledge" && ["provider_rate_limited", "provider_unavailable"].includes(data.answer_fallback_reason)
+    ? "The model provider was unavailable. Retrieved passages are shown verbatim; no synthesized answer was generated."
+    : data.agent === "knowledge" && data.answer_fallback_reason === "evidence_validation_failed"
+      ? "The model draft lacked valid source citations and was rejected. Retrieved passages are shown verbatim."
+      : answerFallbackNotes[data.answer_fallback_reason];
+  const decisionModeNote = answerFallbackNotes[data.answer_fallback_reason]
+    ? `<p class="analysis-caveat answer-provenance-note" role="note"><strong>${data.agent === "knowledge" ? "Source-only fallback." : "Decision-support fallback."}</strong> ${fallbackNote}</p>`
+    : "";
+  const referenceRetrievalNote = data.decision_reference_retrieval_limited
+    ? '<p class="analysis-caveat answer-provenance-note" role="note"><strong>Document retrieval was temporarily rate-limited.</strong> This recommendation uses SQL and schema evidence only; no operating document could be checked for this answer.</p>'
+    : "";
+  const questionSqlFallbackNotes = {
+    provider_rate_limited: "The model provider was rate-limited while generating question-specific SQL.",
+    provider_unavailable: "The model provider was unavailable while generating question-specific SQL.",
+    query_rejected: "Generated SQL did not pass the safety checks.",
+    no_question_rows: "The question-specific query returned no rows.",
+    requested_dimension_unavailable: "The requested reporting dimension is not in this domain's approved schema.",
+  };
+  const questionSqlFallbackNote = questionSqlFallbackNotes[data.question_sql_fallback]
+    ? `<p class="analysis-caveat answer-provenance-note" role="note"><strong>Using bounded Commerce aggregates.</strong> ${questionSqlFallbackNotes[data.question_sql_fallback]} This answer may not reflect the exact filters or grouping in your question.</p>`
+    : "";
+  const usage = data.token_usage;
+  const usageStages = usage ? [
+    ["SQL generation", usage.sql_generation],
+    ["Answer generation", usage.answer_generation],
+  ].filter(([, value]) => value && Number.isInteger(value.total_tokens)) : [];
+  const tokenUsage = usageStages.length
+    ? `<details class="token-usage"><summary>Generation tokens · ${Number(usage.total?.total_tokens || 0).toLocaleString()} total</summary><ul>${usageStages.map(([label, value]) => `<li>${escapeHtml(label)}: ${Number(value.input_tokens || 0).toLocaleString()} in · ${Number(value.output_tokens || 0).toLocaleString()} out · ${Number(value.total_tokens).toLocaleString()} total</li>`).join("")}</ul><small>SQL and answer model calls only; embeddings and routing are not included.</small></details>`
+    : "";
   panel.innerHTML = `
     <div class="answer-header-wrap">
       <div class="answer-heading">
-        <span class="answer-mark">AI</span>
-        <div><span class="eyebrow">GROUNDED RESPONSE</span><h3>Synthesized Answer</h3></div>
+        <span class="answer-mark">${usedEvidenceFallback ? "EV" : "AI"}</span>
+        <div><span class="eyebrow">GROUNDED RESPONSE</span><h3>${usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer"}</h3></div>
       </div>
       <div class="answer-actions-bar">
         <button type="button" class="action-btn" id="copy-answer-btn" title="Copy response text">Copy</button>
       </div>
     </div>
-    <div class="answer-text">${escapeHtml(data.answer)}</div>
+    ${domainNote}
+    ${decisionModeNote}
+    ${referenceRetrievalNote}
+    ${questionSqlFallbackNote}
+    ${tokenUsage}
+    <div class="answer-text">${renderAnswerBody(data.answer)}</div>
     ${renderDashboardVisualization(data.data?.visualization)}
-    ${data.citation_validation_failed ? '<p class="error-message">Relevant passages were found, but citation verification did not meet the strict confidence threshold.</p>' : citations.length ? `
+    ${data.citation_validation_failed ? `<p class="error-message">The answer was withheld because it failed evidence validation.${data.decision_validation_failure ? ` <details><summary>Admin diagnostic</summary><code>${escapeHtml(data.decision_validation_failure)}</code>${data.decision_validation_numeric_tokens?.length ? `<p>Unsupported numeric claims: ${data.decision_validation_numeric_tokens.map(escapeHtml).join(", ")}</p>` : ""}</details>` : ""}</p>` : citations.length ? `
       <div class="citations">
         <div class="citation-header-row">
           <h4>Cited Sources (${citations.length})</h4>
           <span class="citation-count-badge">${citations.length} source${citations.length === 1 ? "" : "s"}</span>
         </div>
         ${citations.map((source) => {
-          const href = validSourceUrl(source.source_url);
+          const href = uploadedSourcePageUrl(source.document_id, source.page_number)
+            || syntheticPolicySourcePageUrl(source)
+            || validSourceUrl(source.source_url);
           const link = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View original</a>` : "";
-          const location = source.page_number ? `Page ${source.page_number}` : `Passage ${source.chunk_index + 1}`;
+          const chunk = Number.isInteger(source.chunk_index) ? ` · Indexed chunk ${source.chunk_index}` : "";
+          const location = source.page_number ? `Page ${source.page_number}${chunk}`
+            : source.source_type === "commerce_sql" ? `SQL aggregate · ${(source.source_tables || []).join(", ")}`
+              : source.source_type === "commerce_schema" ? `Schema coverage · ${(source.source_tables || []).join(", ")}`
+              : Number.isInteger(source.chunk_index) ? `Passage ${source.chunk_index + 1}` : "Reference";
           const relevanceScore = Number.isFinite(source.score) ? source.score * 100 : null;
           const scoreClass = relevanceScore && relevanceScore >= 80 ? "high" : relevanceScore && relevanceScore >= 60 ? "med" : "low";
           const relevanceBadge = relevanceScore !== null
             ? `<span class="citation-relevance-meter ${scoreClass}">Relevance: ${relevanceScore.toFixed(1)}%</span>`
             : "";
+          const referenceScope = source.reference_applicability
+            ? `<p class="citation-scope"><strong>Source scope:</strong> ${escapeHtml(source.reference_applicability)}</p>`
+            : "";
+          const ocrInfo = source.ocr && typeof source.ocr === "object" ? source.ocr : null;
+          const ocrMethod = String(source.text_extraction_method || "").toLocaleLowerCase();
+          const ocrDerived = Boolean(ocrInfo) || /(?:^|[_+])(?:tesseract|paddleocr|ocr)(?:$|[_+])/.test(ocrMethod);
+          const ocrLabel = ocrInfo?.engine ? ` · ${escapeHtml(ocrInfo.engine)}` : "";
+          const ocrNote = ocrDerived
+            ? `<p class="citation-ocr-note"><strong>OCR-extracted text${ocrLabel}.</strong> OCR may misread words; check the original page before treating this passage as a rule.</p>`
+            : "";
+          const sqlTrace = source.sql_query
+            ? `<details class="citation-sql-trace"><summary>Inspect generated SQL</summary><pre>${escapeHtml(source.sql_query)}</pre></details>`
+            : "";
+          const observationTrace = source.source_type === "commerce_sql"
+            ? renderCommerceEvidence(source.commerce_observations, source.commerce_observation_group)
+            : "";
+          const sourceExcerpt = source.source_type === "commerce_sql"
+            && Array.isArray(source.commerce_observations) && source.commerce_observations.length
+            ? ""
+            : `<p>${escapeHtml(source.excerpt)}</p>`;
+          const publisher = source.source_publisher || source.company || "Verified source";
           return `
             <article class="citation">
               <div class="citation-title">
@@ -404,9 +1003,13 @@ function renderAnswer(data, panel = $("#answer-panel")) {
                 <strong>${escapeHtml(source.title)}</strong>
                 <span>${escapeHtml(location)}</span>
               </div>
-              <p>${escapeHtml(source.excerpt)}</p>
+              ${referenceScope}
+              ${ocrNote}
+              ${sourceExcerpt}
+              ${observationTrace}
+              ${sqlTrace}
               <div class="citation-foot">
-                <span>${escapeHtml(source.company || "Verified source")}</span>
+                <span>${escapeHtml(publisher)}${source.evidence_class ? ` · ${escapeHtml(source.evidence_class.replaceAll("_", " "))}` : ""}</span>
                 ${relevanceBadge}
                 ${link}
               </div>
@@ -431,7 +1034,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
     });
   }
 
-  panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderAgentMonitoring(data) {
@@ -518,54 +1121,144 @@ async function api(path, options = {}) {
   if (response.status === 401) {
     $("#login-view").hidden = false;
     $("#workspace").hidden = true;
+    $("#login-brand-sidebar").hidden = false;
     throw new Error("Sign in to continue");
   }
   const data = await response.json();
-  if (!response.ok) throw Object.assign(new Error(data.detail || "Request failed"), { status: response.status });
+  if (!response.ok) {
+    const detail = Array.isArray(data.detail)
+      ? data.detail.map((issue) => {
+        const field = Array.isArray(issue.loc) ? issue.loc.at(-1) : "";
+        return [field, issue.msg].filter(Boolean).join(": ");
+      }).filter(Boolean).join("; ")
+      : data.detail;
+    throw Object.assign(new Error(detail || "Request failed"), { status: response.status });
+  }
   return data;
+}
+
+async function loadCommerceDashboardForActiveView() {
+  const view = document.querySelector('[data-commerce-view][aria-selected="true"]')?.dataset.commerceView || "inventory";
+  const domainByView = {
+    inventory: "inventory_allocation",
+    promotions: "promotion_planning",
+    logistics: "nationwide_logistics",
+  };
+  const domain = domainByView[view];
+  if (!domain || commerceLoadedDomains.has(domain) || commerceLoadingDomains.has(domain)) return;
+  commerceLoadingDomains.add(domain);
+  const status = $("#commerce-dashboard-status");
+  status.textContent = `Loading ${view} data…`;
+  status.hidden = false;
+  const isCurrentView = () => activeTab === "analytics"
+    && domainByView[document.querySelector('[data-commerce-view][aria-selected="true"]')?.dataset.commerceView || "inventory"] === domain;
+  try {
+    const data = await api(`/api/commerce/dashboard?domain=${encodeURIComponent(domain)}`);
+    commerceSnapshot = { ...(commerceSnapshot || {}), ...data };
+    commerceLoadedDomains.add(domain);
+    renderCommerceDashboard(commerceSnapshot);
+    if (isCurrentView()) status.hidden = true;
+    if (domain === "promotion_planning" && $("#commerce-campaign-details").open) loadCommerceCampaigns();
+  } catch (error) {
+    if (isCurrentView()) {
+      status.textContent = `Could not load ${view} data: ${error.message}`;
+      status.hidden = false;
+    }
+  } finally {
+    commerceLoadingDomains.delete(domain);
+  }
+}
+
+async function loadCommerceCampaigns() {
+  if (!commerceLoadedDomains.has("promotion_planning") || commerceCampaignsLoaded || commerceCampaignsLoading) return;
+  commerceCampaignsLoading = true;
+  const status = $("#commerce-dashboard-status");
+  status.textContent = "Loading campaign results…";
+  status.hidden = false;
+  try {
+    const data = await api("/api/commerce/dashboard?domain=promotion_planning&detail=campaigns");
+    commerceSnapshot = { ...(commerceSnapshot || {}), ...data };
+    commerceCampaignsLoaded = true;
+    renderCommerceDashboard(commerceSnapshot);
+    if (activeTab === "analytics" && document.querySelector('[data-commerce-view="promotions"]')?.getAttribute("aria-selected") === "true") {
+      status.hidden = true;
+    }
+  } catch (error) {
+    if (activeTab === "analytics" && document.querySelector('[data-commerce-view="promotions"]')?.getAttribute("aria-selected") === "true") {
+      status.textContent = `Could not load campaign results: ${error.message}`;
+      status.hidden = false;
+    }
+  } finally {
+    commerceCampaignsLoading = false;
+  }
 }
 
 async function loadWorkspace(user) {
   currentUser = user;
   $("#login-view").hidden = true;
+  $("#login-brand-sidebar").hidden = true;
   $("#workspace").hidden = false;
   $("#analytics-section").hidden = true;
   $("#upload-section").hidden = true;
+  $("#processing-upload-status").hidden = true;
+  $("#processing-upload-status").textContent = "";
+  delete $("#processing-upload-status").dataset.state;
   $("#admin-section").hidden = true;
   $("#monitoring-section").hidden = true;
-  $("#metric-management-section").hidden = user.role !== "admin";
-  $("#candidate-review").hidden = true;
   syncWorkspaceTabs();
   $("#access-matrix").replaceChildren();
   $("#connection-status").textContent = "Knowledge base connected";
   $("#user-badge").textContent = `${user.username} · ${user.role}`;
   $("#user-badge").hidden = false;
   $("#logout-button").hidden = false;
+  $(".intro").hidden = user.role === "tester";
+  $(".stats").hidden = user.role === "tester";
+  if (user.role === "tester") {
+    try {
+      await loadOcrTestRuns();
+      $("#login-error").hidden = true;
+    } catch (error) {
+      $("#ocr-test-runs").innerHTML = `<p class="loading-card">${escapeHtml(error.message)}</p>`;
+    }
+    return;
+  }
+  if (["admin", "document_uploader"].includes(user.role)) {
+    try {
+      const capability = await api("/api/documents/upload-capability");
+      if (capability.can_upload) {
+        const { roles } = await api("/api/documents/roles");
+        $("#upload-role-options").innerHTML = roles.map((role) => {
+          const [label, description] = UPLOAD_ROLE_LABELS[role] || [role.replaceAll("_", " "), "Document Q&A access"];
+          return `<label class="upload-role-option"><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}"><span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span></label>`;
+        }).join("");
+        $("#upload-role-options").querySelectorAll('input[name="allowed_roles"]').forEach((input) => {
+          input.addEventListener("change", () => {
+            updateUploadRoleSelection();
+            updateUploadPlanSummary();
+          });
+        });
+        updateUploadRoleSelection();
+        syncUploadReferenceFields();
+        $("#upload-button").disabled = false;
+        $("#parser-handoff-button").disabled = false;
+        $("#upload-section").hidden = false;
+        $("#upload-status").textContent = "";
+        delete $("#upload-status").dataset.state;
+      }
+    } catch (error) {
+      $("#upload-section").hidden = false;
+      $("#upload-button").disabled = true;
+      $("#parser-handoff-button").disabled = true;
+      $("#upload-status").dataset.state = "error";
+      $("#upload-status").textContent = `Upload permissions could not be loaded: ${error.message}`;
+    }
+  }
   try {
     const data = await api("/api/dashboard");
     renderCorpus(data);
-    if (user.role === "admin") renderParsedChunkInspector(data);
-    if (user.role === "admin") {
-      $("#metric-management-section").hidden = false;
-      const roles = await api("/api/documents/roles");
-      $("#manual-metric-role-options").innerHTML = roles.roles.map((role) =>
-        `<label><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}" ${["admin", "executive", "finance_analyst"].includes(role) ? "checked" : ""}> ${escapeHtml(role.replaceAll("_", " "))}</label>`
-      ).join("");
-      renderMetricCatalog(await api("/api/metrics/catalog"));
-    }
-    try {
-      const capability = await api("/api/documents/upload-capability");
-      $("#upload-section").hidden = !capability.can_upload;
-      if (capability.can_upload) {
-        const { roles } = await api("/api/documents/roles");
-        $("#upload-role-options").innerHTML = roles.map((role) => `<label><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}"> ${escapeHtml(role.replaceAll("_", " "))}</label>`).join("");
-      }
-    } catch {
-      $("#upload-section").hidden = true;
-    }
-    if (["finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user.role)) {
-      const analytics = await api("/api/analytics");
-      renderAnalytics(analytics);
+    if (["operations", "finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user.role)) {
+      $("#commerce-dashboard").hidden = false;
+      renderDecisionDomainQuestions(selectedQuestionSuggestionDomain());
       $("#analytics-section").hidden = false;
     }
     if (user.role === "admin") {
@@ -574,7 +1267,9 @@ async function loadWorkspace(user) {
       $("#admin-section").hidden = false;
       $("#monitoring-section").hidden = false;
       await refreshAgentMonitoring();
+      await refreshKnowledgeDocuments();
     }
+    if (user.role === "admin") await loadOcrTestRuns();
     syncWorkspaceTabs(user);
     $("#login-error").hidden = true;
   } catch (error) {
@@ -592,38 +1287,157 @@ $("#workspace-tabs").addEventListener("click", (event) => {
   if (button) selectWorkspaceTab(button.dataset.tabTarget);
 });
 
+const workspaceTabsAreHorizontal = window.matchMedia("(max-width: 780px)");
+const syncWorkspaceTabOrientation = () => $("#workspace-tabs").setAttribute(
+  "aria-orientation", workspaceTabsAreHorizontal.matches ? "horizontal" : "vertical",
+);
+syncWorkspaceTabOrientation();
+workspaceTabsAreHorizontal.addEventListener("change", syncWorkspaceTabOrientation);
 $("#workspace-tabs").addEventListener("keydown", (event) => {
   const tabs = [...document.querySelectorAll(".workspace-tab:not([hidden])")];
   const current = tabs.indexOf(event.target);
   if (current < 0) return;
-  const next = { ArrowRight: (current + 1) % tabs.length, ArrowLeft: (current - 1 + tabs.length) % tabs.length, Home: 0, End: tabs.length - 1 }[event.key];
+  const forward = workspaceTabsAreHorizontal.matches ? "ArrowRight" : "ArrowDown";
+  const backward = workspaceTabsAreHorizontal.matches ? "ArrowLeft" : "ArrowUp";
+  const next = { [forward]: (current + 1) % tabs.length, [backward]: (current - 1 + tabs.length) % tabs.length,
+    Home: 0, End: tabs.length - 1 }[event.key];
   if (next === undefined) return;
   event.preventDefault();
   tabs[next].focus();
   selectWorkspaceTab(tabs[next].dataset.tabTarget);
 });
 
+$("#knowledge-documents-search").addEventListener("input", renderKnowledgeDocuments);
+$("#knowledge-domain-filter").addEventListener("change", renderKnowledgeDocuments);
+$("#knowledge-state-filter").addEventListener("change", renderKnowledgeDocuments);
+$("#knowledge-documents-refresh").addEventListener("click", async () => {
+  try { await refreshKnowledgeDocuments(); }
+  catch (error) { $("#knowledge-documents-status").textContent = error.message; }
+});
+$("#knowledge-documents-list").addEventListener("click", async (event) => {
+  const retryButton = event.target.closest("[data-retry-embedding]");
+  if (retryButton) {
+    const documentId = retryButton.dataset.retryEmbedding;
+    retryButton.disabled = true;
+    retryButton.textContent = "Retrying embedding…";
+    try {
+      const result = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/retry-embedding`, {
+        method: "POST",
+      });
+      await refreshKnowledgeDocuments();
+      $("#knowledge-documents-status").textContent = `Embedding recovered · ${formatNumber(result.indexed_chunk_count)} passages indexed`;
+    } catch (error) {
+      $("#knowledge-documents-status").textContent = error.message;
+      retryButton.disabled = false;
+      retryButton.textContent = "Retry embedding";
+    }
+    return;
+  }
+  const button = event.target.closest("[data-knowledge-toggle]");
+  if (!button) return;
+  const active = button.dataset.active === "true";
+  const documentId = button.dataset.knowledgeToggle;
+  const action = active ? "Remove this source from AI retrieval? Its original file and parser output will be retained." : "Restore this source to AI retrieval?";
+  if (!window.confirm(action)) return;
+  button.disabled = true;
+  try {
+    await api(`/api/admin/knowledge-documents/${encodeURIComponent(documentId)}`, {
+      method: "PATCH", body: JSON.stringify({active: !active}),
+    });
+    await refreshKnowledgeDocuments();
+  } catch (error) {
+    $("#knowledge-documents-status").textContent = error.message;
+    button.disabled = false;
+  }
+});
+
+$("#knowledge-documents-list").addEventListener("submit", async (event) => {
+  const form = event.target.closest(".knowledge-access-form");
+  if (!form) return;
+  event.preventDefault();
+  const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
+  const status = form.querySelector("[data-access-status]");
+  const button = form.querySelector('button[type="submit"]');
+  if (!roles.length) {
+    status.textContent = "Select at least one role.";
+    return;
+  }
+  button.disabled = true;
+  status.textContent = "Saving…";
+  try {
+    await api(`/api/admin/knowledge-documents/${encodeURIComponent(form.dataset.documentId)}/access`, {
+      method: "PATCH", body: JSON.stringify({allowed_roles: roles}),
+    });
+    await refreshKnowledgeDocuments();
+  } catch (error) {
+    status.textContent = error.message;
+    button.disabled = false;
+  }
+});
+
 $("#parsed-chunk-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const documentId = $("#parsed-document").value;
   const offset = Math.max(0, Number.parseInt($("#parsed-offset").value || "0", 10));
+  const focusChunkIndex = Number.parseInt(event.currentTarget.dataset.focusChunk || "", 10);
+  const stage = event.currentTarget.dataset.stage || "parser";
+  const sourceChunkId = Number.parseInt(event.currentTarget.dataset.sourceChunkId || "", 10);
+  delete event.currentTarget.dataset.focusChunk;
+  delete event.currentTarget.dataset.stage;
+  delete event.currentTarget.dataset.sourceChunkId;
   $("#parsed-chunk-list").innerHTML = '<p class="loading-card">Loading saved parser output…</p>';
   $("#parsed-table-list").innerHTML = '<p class="loading-card">Loading extracted tables…</p>';
   try {
-    const result = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/chunks?offset=${offset}&limit=25`);
-    renderParsedChunks(result.chunks);
+    const sourceChunkParameter = Number.isInteger(sourceChunkId) && sourceChunkId > 0
+      ? `&source_chunk_id=${sourceChunkId}` : "";
+    const result = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/chunks?offset=${offset}&limit=25&stage=${stage}${sourceChunkParameter}`);
+    renderParsedChunks(result.chunks, documentId);
     $("#parsed-chunk-list").insertAdjacentHTML("afterbegin", `<p class="corpus-note">Showing ${result.stage === "parser" ? "saved parser output before embeddings" : "indexed retrieval chunks after embeddings"}.</p>`);
+    if (Number.isInteger(focusChunkIndex)) {
+      requestAnimationFrame(() => document.getElementById(`document-chunk-${focusChunkIndex}`)?.scrollIntoView({behavior: "smooth", block: "center"}));
+    }
   } catch (error) {
     $("#parsed-chunk-list").innerHTML = `<p class="loading-card">${escapeHtml(error.message)}</p>`;
   }
   try {
     const result = await api(`/api/admin/processing/${encodeURIComponent(documentId)}/tables?row_limit=100`);
-    renderExtractedTables(result.tables);
+    renderExtractedTables(result.tables, documentId);
   } catch (error) {
     $("#parsed-table-list").innerHTML = error.status === 404
       ? '<p class="loading-card">No structured tables were extracted from this document.</p>'
       : `<p class="loading-card">${escapeHtml(error.message)}</p>`;
   }
+});
+
+$("#ocr-test-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = $("#ocr-test-button");
+  button.disabled = true;
+  const parserEngine = form.elements.namedItem("parser_engine").value;
+  const useYoloOverlay = form.elements.namedItem("layout_detector").value === "doclayout-yolo";
+  const parserLabel = parserEngine === "pp-structurev3"
+    ? "PP-StructureV3"
+    : parserEngine === "mineru" ? "MinerU (local)"
+    : parserEngine === "docling" ? "Docling" : "Built-in";
+  $("#ocr-test-status").textContent = `Running ${parserLabel}, then shared cleanup and parser chunking. Tokenization and embedding are downstream${useYoloOverlay ? " (plus diagnostic YOLO overlay)" : ""}…`;
+  try {
+    const result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
+    $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.chunk_count} parser chunks, ${result.table_count} tables. No production document was created.`;
+    await loadOcrTestRuns();
+    await openOcrTestRun(result.run_id);
+    form.reset();
+    updateUploadTestParserSettings();
+  } catch (error) {
+    $("#ocr-test-status").textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+
+$("#ocr-test-runs").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-ocr-run-id]");
+  if (button) openOcrTestRun(button.dataset.ocrRunId);
 });
 
 $("#login-form").addEventListener("submit", async (event) => {
@@ -642,9 +1456,15 @@ $("#logout-button").addEventListener("click", async () => {
   await api("/api/auth/logout", { method: "POST" });
   $("#workspace").hidden = true;
   $("#login-view").hidden = false;
+  $("#login-brand-sidebar").hidden = false;
   $("#user-badge").hidden = true;
   $("#logout-button").hidden = true;
   activeTab = "knowledge";
+  commerceSnapshot = null;
+  commerceLoadedDomains.clear();
+  commerceLoadingDomains.clear();
+  commerceCampaignsLoaded = false;
+  commerceCampaignsLoading = false;
   syncWorkspaceTabs();
 });
 
@@ -723,21 +1543,46 @@ $("#ask-form").addEventListener("submit", async (event) => {
 $("#business-question-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const button = $("#business-question-button");
-  const question = $("#business-question").value.trim();
+  const decisionSuggestions = decisionSuggestionsPending;
+  decisionSuggestionsPending = false;
+  const question = decisionSuggestions ? "" : $("#business-question").value.trim();
+  const businessDecisionDomain = decisionSuggestions
+    ? selectedCommerceDomain()
+    : $("#business-question-domain").value || null;
   const panel = $("#business-answer-panel");
-  if (!question) return;
+  if ((!decisionSuggestions && question.length < 3) || (decisionSuggestions && !businessDecisionDomain)) return;
   button.disabled = true;
   button.innerHTML = '<span>Analyzing sources…</span>';
-  renderSkeletonAnswer(panel, "Analyzing financial metrics from authorized sources…");
+  renderSkeletonAnswer(panel, decisionSuggestions
+    ? "Combining recent Commerce SQL observations and company references…"
+    : "Combining Commerce SQL observations and cited company references…");
   try {
-    const result = await api("/api/ask", { method: "POST", body: JSON.stringify({ question }) });
+    const result = await api("/api/ask", { method: "POST", body: JSON.stringify({
+      ...(question ? { question } : {}),
+      business_decision_domain: businessDecisionDomain,
+      commerce_decision_support: true,
+      decision_suggestions: decisionSuggestions,
+    }) });
     renderAnswer(result, panel);
   } catch (error) {
     panel.innerHTML = `<p class="error-message">${escapeHtml(error.message)}</p>`;
   } finally {
     button.disabled = false;
-    button.innerHTML = '<span>Analyze metrics</span>';
+    button.innerHTML = '<span>Analyze decision evidence</span>';
   }
+});
+
+$(".decision-question-prompts").addEventListener("click", (event) => {
+  const questionPrompt = event.target.closest("[data-decision-question]");
+  if (questionPrompt) {
+    $("#business-question").value = questionPrompt.dataset.decisionQuestion;
+    $("#business-question-domain").value = questionPrompt.dataset.decisionDomain;
+    $("#business-question").focus();
+    return;
+  }
+  if (!event.target.closest("[data-decision-suggestions]")) return;
+  decisionSuggestionsPending = true;
+  $("#business-question-form").requestSubmit();
 });
 
 $("#analytics-section").addEventListener("click", (event) => {
@@ -747,128 +1592,280 @@ $("#analytics-section").addEventListener("click", (event) => {
 
 $("#monitoring-refresh").addEventListener("click", refreshAgentMonitoring);
 
+function syncUploadReferenceFields() {
+  const form = $("#upload-form");
+  const isReference = form.elements.commerce_decision_support.checked;
+  if (!isReference) {
+    form.elements.reference_type.value = "";
+    form.querySelectorAll('input[name="knowledge_domains"]').forEach((input) => { input.checked = false; });
+    form.elements.synthetic_company_policy.checked = false;
+    form.elements.source_publisher.value = "";
+    form.elements.reference_applicability.value = "";
+  } else if (form.elements.synthetic_company_policy.checked && form.elements.reference_type.value !== "company_policy_reference") {
+    form.elements.synthetic_company_policy.checked = false;
+    form.elements.source_publisher.value = "";
+    form.elements.reference_applicability.value = "";
+  }
+  $("#upload-reference-fields").hidden = !isReference;
+  $("#upload-commerce-details").hidden = !isReference;
+  $("#upload-commerce-details").open = isReference;
+  $("#upload-synthetic-policy-option").hidden = !isReference || currentUser?.role !== "admin";
+  form.elements.reference_type.required = isReference;
+  form.elements.source_publisher.required = isReference;
+  form.elements.reference_applicability.required = isReference;
+  updateUploadPlanSummary();
+}
+
+function updateUploadRoleSelection() {
+  const selectedRoles = [...$("#upload-role-options").querySelectorAll('input[name="allowed_roles"]:checked')];
+  const summary = $("#upload-role-selection");
+  summary.textContent = selectedRoles.length
+    ? `${selectedRoles.length} role${selectedRoles.length === 1 ? "" : "s"} can retrieve this document.`
+    : "No roles selected yet. Select at least one role to allow document Q&A access.";
+}
+
+function updateUploadPlanSummary() {
+  const form = $("#upload-form");
+  const referenceEnabled = form.elements.commerce_decision_support.checked;
+  const title = form.elements.title.value.trim() || $("#upload-file").files[0]?.name || "Selected file";
+  const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')]
+    .map((input) => input.closest("label")?.querySelector("strong")?.textContent.trim())
+    .filter(Boolean);
+  const lines = [
+    `Document Q&A: ${title} can be fully indexed, or saved as parser output for downstream processing.`,
+    `Access: ${roles.length ? roles.join(", ") : "select at least one role above"}.`,
+  ];
+  if (referenceEnabled) {
+    const sourceType = form.elements.reference_type.selectedOptions[0]?.textContent.trim();
+    const domains = [...form.querySelectorAll('input[name="knowledge_domains"]:checked')]
+      .map((input) => input.closest("label")?.querySelector("strong")?.textContent.trim())
+      .filter(Boolean);
+    const missing = [
+      !sourceType || form.elements.reference_type.value === "" ? "source type" : "",
+      !form.elements.source_publisher.value.trim() ? "publisher" : "",
+      !form.elements.reference_applicability.value.trim() ? "scope" : "",
+      domains.length ? "" : "decision domain",
+    ].filter(Boolean);
+    lines.push(`Decision support: ${sourceType && form.elements.reference_type.value ? sourceType : "Commerce reference"}${domains.length ? ` · ${domains.join(", ")}` : ""}.`);
+    if (missing.length) lines.push(`Complete: ${missing.join(", ")}.`);
+  } else {
+    lines.push("Decision support: off; this file is for document Q&A only.");
+  }
+  lines.push("Commerce dashboard data: unchanged.");
+  $("#upload-plan-summary").textContent = lines.join("\n");
+}
+
+const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+const SUPPORTED_UPLOAD_EXTENSIONS = new Set([".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
+
+function validateUploadFile(file) {
+  if (!file) return "Choose a document to upload.";
+  const extension = "." + file.name.split(".").pop().toLocaleLowerCase();
+  if (!SUPPORTED_UPLOAD_EXTENSIONS.has(extension)) return "This file type is not supported. Choose PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF.";
+  if (file.size > MAX_UPLOAD_BYTES) return "The file is larger than the 50 MiB upload limit.";
+  return "";
+}
+
+$("#upload-file").addEventListener("change", (event) => {
+  const file = event.currentTarget.files[0];
+  const title = $("#upload-title");
+  if (file && title.dataset.userEdited !== "true") {
+    title.value = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
+  }
+  const error = validateUploadFile(file);
+  $("#upload-file-info").textContent = error || file.name + " · " + (file.size / 1024 / 1024).toFixed(1) + " MiB. The original stays private; review OCR output in Document Processing.";
+  $("#upload-file-info").setAttribute("role", error ? "alert" : "status");
+  updateUploadPlanSummary();
+});
+
+const uploadDropzone = $("#upload-dropzone");
+uploadDropzone.addEventListener("dragover", (event) => {
+  event.preventDefault();
+  if ($("#upload-form").getAttribute("aria-busy") === "true") return;
+  uploadDropzone.classList.add("is-dragging");
+});
+uploadDropzone.addEventListener("dragleave", (event) => {
+  if (!event.relatedTarget || !uploadDropzone.contains(event.relatedTarget)) {
+    uploadDropzone.classList.remove("is-dragging");
+  }
+});
+uploadDropzone.addEventListener("drop", (event) => {
+  event.preventDefault();
+  uploadDropzone.classList.remove("is-dragging");
+  if ($("#upload-form").getAttribute("aria-busy") === "true") return;
+  const files = event.dataTransfer?.files;
+  if (!files?.length) return;
+  if (files.length !== 1) {
+    $("#upload-file").value = "";
+    $("#upload-file-info").textContent = "Upload one file at a time.";
+    $("#upload-file-info").setAttribute("role", "alert");
+    return;
+  }
+  const input = $("#upload-file");
+  input.files = files;
+  input.dispatchEvent(new Event("change", { bubbles: true }));
+});
+
+$("#upload-title").addEventListener("input", (event) => {
+  event.currentTarget.dataset.userEdited = "true";
+  updateUploadPlanSummary();
+});
+
+$("#upload-commerce-reference").addEventListener("change", syncUploadReferenceFields);
+$("#upload-reference-type").addEventListener("change", syncUploadReferenceFields);
+$("#upload-reference-fields").addEventListener("input", updateUploadPlanSummary);
+$("#upload-reference-fields").addEventListener("change", updateUploadPlanSummary);
+syncUploadReferenceFields();
+
+$("#upload-synthetic-policy").addEventListener("change", (event) => {
+  const form = $("#upload-form");
+  if (event.currentTarget.checked) {
+    form.elements.commerce_decision_support.checked = true;
+    form.elements.reference_type.value = "company_policy_reference";
+    form.elements.source_publisher.value = "Commerce Demo (fictional organization)";
+    form.elements.reference_applicability.value = "Fictional Commerce Demo only; not a policy of a real company.";
+  } else {
+    form.elements.reference_type.value = "";
+    form.elements.source_publisher.value = "";
+    form.elements.reference_applicability.value = "";
+  }
+  syncUploadReferenceFields();
+});
+
 $("#upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
-  const button = $("#upload-button");
+  const parserHandoff = event.submitter?.dataset.uploadMode === "parser-handoff";
   const file = $("#upload-file").files[0];
   const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
-  if (!file || !roles.length) {
-    $("#upload-status").textContent = "Select a supported document and at least one access role.";
+  const knowledgeDomains = [...form.querySelectorAll('input[name="knowledge_domains"]:checked')].map((input) => input.value);
+  const knowledgeUse = form.elements.commerce_decision_support.checked ? "commerce" : "general";
+  const referenceType = form.elements.reference_type.value;
+  const publisher = form.elements.source_publisher.value.trim();
+  const applicability = form.elements.reference_applicability.value.trim();
+  const syntheticPolicy = form.elements.synthetic_company_policy.checked;
+  const fileError = validateUploadFile(file);
+  if (fileError || !roles.length) {
+    const status = $("#upload-status");
+    $("#upload-status-wrap").hidden = false;
+    $("#upload-progress").hidden = true;
+    status.dataset.state = "error";
+    status.textContent = fileError || "Select at least one role authorized to retrieve this document.";
+    return;
+  }
+  if (knowledgeUse === "commerce" && (!referenceType || !knowledgeDomains.length || !publisher || !applicability)) {
+    const status = $("#upload-status");
+    $("#upload-status-wrap").hidden = false;
+    $("#upload-progress").hidden = true;
+    status.dataset.state = "error";
+    status.textContent = "Commerce references need a publisher, reference type, applicability scope, and at least one decision domain.";
+    return;
+  }
+  if (syntheticPolicy && referenceType !== "company_policy_reference") {
+    const status = $("#upload-status");
+    $("#upload-status-wrap").hidden = false;
+    $("#upload-progress").hidden = true;
+    status.dataset.state = "error";
+    status.textContent = "A synthetic Commerce Demo document must be classified as a company policy.";
     return;
   }
   const body = new FormData();
   body.append("file", file);
-  for (const name of ["title", "document_type", "domain", "fiscal_year"]) {
+  for (const name of ["title", "source_publisher", "reference_type", "reference_applicability", "fiscal_year", "source_url", "ocr_language"]) {
     const value = form.elements[name].value.trim();
     if (value) body.append(name, value);
   }
+  body.append("document_type", knowledgeUse === "commerce" ? referenceType : "knowledge_document");
+  body.append("domain", knowledgeUse === "commerce"
+    ? knowledgeDomains.length === 1 ? knowledgeDomains[0] : "commerce_operations"
+    : "general_knowledge");
+  body.append("synthetic_company_policy", syntheticPolicy ? "true" : "false");
+  knowledgeDomains.forEach((domain) => body.append("knowledge_domains", domain));
   roles.forEach((role) => body.append("allowed_roles", role));
-  button.disabled = true;
-  $("#upload-status").textContent = "Uploading and processing the document…";
+  const controls = [...form.querySelectorAll("input, select, textarea, button")];
+  const controlsWereDisabled = controls.map((control) => control.disabled);
+  controls.forEach((control) => { control.disabled = true; });
+  form.setAttribute("aria-busy", "true");
+  const status = $("#upload-status");
+  const progress = $("#upload-progress");
+  const elapsedLabel = $("#upload-elapsed");
+  $("#upload-status-wrap").hidden = false;
+  progress.hidden = false;
+  elapsedLabel.hidden = false;
+  const processingStartedAt = Date.now();
+  const updateProcessingTime = () => {
+    const elapsedSeconds = Math.floor((Date.now() - processingStartedAt) / 1000);
+    elapsedLabel.textContent = "Elapsed: " + (elapsedSeconds < 60
+      ? `${elapsedSeconds}s`
+      : `${Math.floor(elapsedSeconds / 60)}m ${String(elapsedSeconds % 60).padStart(2, "0")}s`);
+  };
+  status.dataset.state = "processing";
+  status.textContent = parserHandoff
+    ? "Uploading, extracting and saving parser output. Tokenization and indexing are downstream. Keep this tab open."
+    : "Uploading, extracting text/OCR, chunking and indexing. Keep this tab open.";
+  updateProcessingTime();
+  const processingTimer = window.setInterval(updateProcessingTime, 1000);
+  let result;
   try {
-    const result = await api("/api/documents/upload", { method: "POST", body, headers: {} });
-    $("#upload-status").textContent = `Processed ${result.document_id}; status: ${result.processing_status}; passages indexed: ${result.searchable}.`;
+    result = await api(parserHandoff ? "/api/documents/parser-handoff" : "/api/documents/upload", { method: "POST", body, headers: {} });
+    const referenceStatus = parserHandoff
+      ? " Parser output is saved in public for downstream tokenization and indexing; this document is not searchable yet."
+      : knowledgeUse === "commerce"
+      ? syntheticPolicy
+        ? ` Indexed as synthetic demo guidance for ${knowledgeDomains.join(", ")} (scope: ${applicability}); dashboard SQL is unchanged.`
+        : ` Indexed as ${referenceType} for ${knowledgeDomains.join(", ")} (scope: ${applicability}); dashboard SQL is unchanged.`
+      : " Indexed for document Q&A; Commerce dashboard SQL is unchanged.";
+    const pageSummary = result.page_count ? `${formatNumber(result.page_count)} pages` : "File processed";
+    const extractionSummary = parserHandoff
+      ? `${formatNumber(result.parser_chunk_count)} parser chunks · ${formatNumber(result.ocr_chunk_count)} OCR chunks · ${formatNumber(result.table_count)} tables · 0 indexed`
+      : `${formatNumber(result.parser_chunk_count)} parser passages · ${formatNumber(result.indexed_chunk_count)} indexed passages · ${formatNumber(result.ocr_chunk_count)} OCR passages · ${formatNumber(result.table_count)} tables`;
+    const uploadedTitle = form.elements.title.value || file.name;
+    status.dataset.state = "success";
+    progress.hidden = true;
+    elapsedLabel.hidden = true;
+    status.textContent = `Processed ${result.document_id}; status: ${result.processing_status}; ${pageSummary}; ${extractionSummary}.${referenceStatus}`;
     form.reset();
-    await loadWorkspace(await api("/api/auth/me"));
-  } catch (error) {
-    $("#upload-status").textContent = error.message;
-  } finally {
-    button.disabled = false;
-  }
-});
-
-$("#manual-metric-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const form = event.currentTarget;
-  const values = Object.fromEntries(new FormData(form));
-  values.allowed_roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
-  if (!values.allowed_roles.length) {
-    $("#manual-metric-status").textContent = "Select at least one role allowed to view this metric.";
-    return;
-  }
-  const button = $("#manual-metric-button");
-  button.disabled = true;
-  $("#manual-metric-status").textContent = "Saving metric for verification…";
-  try {
-    await api("/api/metrics/manual", {method: "POST", body: JSON.stringify(values)});
-    form.reset();
-    $("#manual-metric-status").textContent = "Saved to the review queue. Verify it below before it appears in Business Analysis.";
-    await loadWorkspace(await api("/api/auth/me"));
-  } catch (error) {
-    $("#manual-metric-status").textContent = error.message;
-  } finally {
-    button.disabled = false;
-  }
-});
-
-$("#candidate-list").addEventListener("submit", async (event) => {
-  const form = event.target.closest("form[data-candidate-id]");
-  if (!form) return;
-  event.preventDefault();
-  const values = Object.fromEntries(new FormData(form));
-  try {
-    await api(`/api/analytics/candidates/${form.dataset.candidateId}/review`, {method:"POST", body:JSON.stringify({status:"verified", normalized_value:values.normalized_value, unit:values.unit})});
-    await handleCandidateProcessed(form);
-  } catch (error) { alert(error.message); }
-});
-
-$("#candidate-list").addEventListener("click", async (event) => {
-  const valueButton = event.target.closest("[data-candidate-value]");
-  if (valueButton) {
-    const candidate = valueButton.closest(".candidate-row");
-    candidate.querySelectorAll("[data-candidate-value]").forEach((button) => button.setAttribute("aria-pressed", String(button === valueButton)));
-    const input = candidate.querySelector('input[name="normalized_value"]');
-    input.value = normalizeCandidateFigure(valueButton.dataset.candidateValue);
-    candidate.querySelector(".review-value-preview").textContent = `Hiển thị trên dashboard: ${formatFinancialValue(parseVietnameseFinancialInput(input.value))}`;
-    input.focus();
-    return;
-  }
-  if (!event.target.matches("[data-reject]")) return;
-  const form = event.target.closest("form[data-candidate-id]");
-  try {
-    await api(`/api/analytics/candidates/${form.dataset.candidateId}/review`, {method:"POST", body:JSON.stringify({status:"rejected"})});
-    await handleCandidateProcessed(form);
-  } catch (error) { alert(error.message); }
-});
-
-$("#candidate-list").addEventListener("input", (event) => {
-  const input = event.target.closest('input[name="normalized_value"]');
-  if (!input) return;
-  const preview = input.closest("form").querySelector(".review-value-preview");
-  const parsed = parseVietnameseFinancialInput(input.value);
-  preview.textContent = Number.isFinite(parsed)
-    ? `Hiển thị trên dashboard: ${formatFinancialValue(parsed)}`
-    : "Dùng dấu chấm cho nhóm hàng nghìn và dấu phẩy cho phần thập phân.";
-});
-
-async function handleCandidateProcessed(form) {
-  const row = form.closest(".candidate-row");
-  if (row) {
-    row.classList.add("removing");
-    await new Promise((resolve) => setTimeout(resolve, 220));
-    row.remove();
-    if (!$("#candidate-list").querySelector(".candidate-row")) {
-      $("#candidate-review").hidden = true;
+    $("#upload-title").dataset.userEdited = "false";
+    updateUploadRoleSelection();
+    syncUploadReferenceFields();
+    $("#upload-file-info").textContent = "Choose one file. Scanned PDFs and images use OCR; Admins can review extracted text and tables in Document Processing.";
+    $("#upload-file-info").setAttribute("role", "status");
+    try {
+      const workspace = await api("/api/dashboard");
+      renderCorpus(workspace);
+      if (currentUser?.role === "admin") await refreshKnowledgeDocuments();
+    } catch (error) {
+      status.dataset.state = "warning";
+      status.textContent = `The file was processed successfully as ${result.document_id}, but the corpus overview could not refresh: ${error.message}`;
     }
-  }
-  await refreshCandidateData();
-}
-
-async function refreshCandidateData() {
-  try {
-    const data = await api("/api/dashboard");
-    const candidates = data.candidates || [];
-    $("#candidate-review").hidden = !candidates.length;
-    renderCandidates(data);
-    if (currentUser && ["finance_analyst", "sustainability_analyst", "executive", "admin"].includes(currentUser.role)) {
-      const analytics = await api("/api/analytics");
-      renderAnalytics(analytics);
+    const parsedDocument = $("#parsed-document");
+    if (currentUser?.role === "admin") {
+      const processingStatus = $("#processing-upload-status");
+      processingStatus.dataset.state = status.dataset.state || "success";
+      processingStatus.textContent = status.textContent;
+      processingStatus.hidden = false;
+      if (![...parsedDocument.options].some((option) => option.value === result.document_id)) {
+        parsedDocument.add(new Option(`${uploadedTitle} · ${result.processing_status}`, result.document_id));
+      }
+      parsedDocument.value = result.document_id;
+      selectWorkspaceTab("processing");
+      $("#parsed-chunk-form").requestSubmit();
+    } else {
+      selectWorkspaceTab("upload");
     }
   } catch (error) {
-    console.error("Failed to refresh candidate data:", error);
+    progress.hidden = true;
+    elapsedLabel.hidden = true;
+    status.dataset.state = result ? "warning" : "error";
+    status.textContent = result
+      ? `The file was processed successfully as ${result.document_id}, but the workspace could not refresh: ${error.message}`
+      : error.message;
+  } finally {
+    window.clearInterval(processingTimer);
+    controls.forEach((control, index) => { control.disabled = controlsWereDisabled[index]; });
+    form.removeAttribute("aria-busy");
   }
-}
+});
 
 function setupThemeToggle() {
   const button = $("#theme-toggle");

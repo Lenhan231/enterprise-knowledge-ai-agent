@@ -203,10 +203,13 @@ async def create_upload_test(
     source_sha256 = hashlib.sha256(content).hexdigest()
     source_metadata = {"source_type": "upload_test", "source_sha256": source_sha256}
     document_processor = DocumentProcessor(config)
+    from core.document_processing.chunking.processor import ChunkingProcessor
+
+    chunking_processor = ChunkingProcessor(config)
     processing_started = time.perf_counter()
     try:
         parsed = document_processor.process(filename, content, source_metadata)
-        parsed = document_processor.prepare_upload_test_output(parsed, source_metadata, parser_engine)
+        parsed = chunking_processor.process(parsed)
     except (ValueError, RuntimeError) as error:
         status_code = 503 if isinstance(error, RuntimeError) else 422
         raise HTTPException(status_code, f"Upload Test processing failed: {error}") from error
@@ -244,7 +247,6 @@ async def create_upload_test(
         runtime_info["layout_detections"] = []
         runtime_info["layout_detector_note"] = "No rendered page or image preview is available for this format."
 
-    embedding_status = "not_run"
     runtime_info["processing_time_ms"] = max(
         0, round((time.perf_counter() - processing_started) * 1000),
     )
@@ -256,8 +258,7 @@ async def create_upload_test(
             run_id, source_filename=filename, source_sha256=source_sha256,
             uploaded_by=user["sub"], processor_config=config, runtime_info=runtime_info,
             page_previews=page_previews, chunks=parsed["chunks"], tables=parsed["tables"],
-            token_bounded_chunks=[], embeddings=[],
-            embedding_status=embedding_status, embedding_error=None,
+            token_bounded_chunks=[], embeddings=[], embedding_status="not_run",
         )
     except Exception as error:
         logger.exception("Could not persist upload test run %s", run_id)
@@ -268,8 +269,6 @@ async def create_upload_test(
         "run_id": str(run_id), "source_filename": filename,
         "source_sha256": source_sha256, "page_count": page_count,
         "chunk_count": len(parsed["chunks"]),
-        "embedding_status": embedding_status,
-        "embedding_error": None,
         "table_count": len(parsed["tables"]),
         "processor_config": config, "runtime_info": runtime_info,
     }

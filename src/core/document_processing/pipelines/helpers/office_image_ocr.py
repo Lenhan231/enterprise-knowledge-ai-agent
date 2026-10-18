@@ -6,8 +6,6 @@ import logging
 import zipfile
 from typing import Any
 
-from core.document_processing.chunking.config import ChunkingConfig
-from core.document_processing.chunking.router import build_chunks
 from core.document_processing.pipelines.built_in.scanned.ocr.image_ocr import recognize_image_text
 
 logger = logging.getLogger(__name__)
@@ -17,10 +15,9 @@ def process_embedded_image(
     archive: zipfile.ZipFile,
     image_part: str,
     config: dict[str, Any],
-    chunking: ChunkingConfig,
     metadata: dict[str, Any],
 ) -> list[dict[str, Any]]:
-    """Parse an Office image with its selected pipeline and attach source location."""
+    """Parse an Office image into content blocks with source location."""
     engine = config.get("parser_engine", "built_in")
     image_bytes = archive.read(image_part)
     source_metadata = {**metadata, "source_part": image_part}
@@ -35,16 +32,26 @@ def process_embedded_image(
             result = PPStructureV3Processor(config).process_image(
                 image_bytes, suffix, {"content": image_bytes, "metadata": source_metadata},
             )
-            chunks = result.get("chunks", [])
-            for chunk in chunks:
-                chunk_metadata = chunk.setdefault("metadata", {})
+            elements = result.get("elements", [])
+            for element in elements:
+                chunk_metadata = element.setdefault("metadata", {})
                 chunk_metadata.pop("page_number", None)
                 chunk_metadata.update(source_metadata)
                 chunk_metadata.setdefault("element_type", "image")
                 chunk_metadata.setdefault("layout_type", chunk_metadata["element_type"])
                 chunk_metadata.setdefault("parser", "paddleocr.PP-StructureV3")
                 chunk_metadata.setdefault("text_extraction_method", "paddleocr.PP-StructureV3")
-            return chunks
+                if chunk_metadata["element_type"] == "table":
+                    table_ref = element.pop("table_ref", None)
+                    if isinstance(table_ref, int) and 0 <= table_ref < len(result.get("tables", [])):
+                        table = dict(result["tables"][table_ref])
+                        table_metadata = dict(table.get("metadata") or {})
+                        table_metadata.pop("page_number", None)
+                        table_metadata.update(source_metadata)
+                        table["metadata"] = table_metadata
+                        table.pop("page_number", None)
+                        element["table_data"] = table
+            return elements
 
         if engine != "built_in":
             # Docling and MinerU parse Office packages as a whole; this helper is
@@ -66,15 +73,13 @@ def process_embedded_image(
 
     if not text:
         return []
-    return build_chunks(
-        text,
-        chunking,
-        kind="text",
-        metadata={
+    return [{
+        "text": text,
+        "metadata": {
             **source_metadata,
             "element_type": "image",
             "layout_type": "image",
             "text_extraction_method": "tesseract_embedded_image",
             "parser": "tesseract",
         },
-    )
+    }]

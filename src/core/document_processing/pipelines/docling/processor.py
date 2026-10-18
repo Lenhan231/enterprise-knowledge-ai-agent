@@ -7,8 +7,6 @@ from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any
 
-from core.document_processing.chunking.config import ChunkingConfig
-
 from .result_mapper import map_result
 
 
@@ -17,7 +15,6 @@ class DoclingProcessor:
 
     def __init__(self, config: dict[str, Any]):
         self.config = config
-        self.chunking = ChunkingConfig.from_config(config)
 
     def process(
         self, source: bytes | str | Path, file_path: str | None, document: dict[str, Any],
@@ -77,7 +74,6 @@ class DoclingProcessor:
         return map_result(
             result,
             self.config,
-            self.chunking,
             TableItem,
             do_ocr,
             docling_version,

@@ -1,4 +1,4 @@
-"""Resolve embedded Office images and turn their OCR text into parser chunks."""
+"""Resolve embedded Office images and return OCR content blocks."""
 
 from __future__ import annotations
 
@@ -7,7 +7,6 @@ import zipfile
 from typing import Any
 from xml.etree import ElementTree
 
-from core.document_processing.chunking.config import ChunkingConfig
 from core.document_processing.pipelines.helpers.office_image_ocr import process_embedded_image
 
 _REL = "{http://schemas.openxmlformats.org/package/2006/relationships}"
@@ -52,8 +51,7 @@ def ocr_embedded_image(
     archive: zipfile.ZipFile,
     image_part: str,
     config: dict[str, Any],
-    chunking: ChunkingConfig,
     metadata: dict[str, Any],
 ) -> list[dict[str, Any]]:
     """Parse a single embedded image with the selected pipeline."""
-    return process_embedded_image(archive, image_part, config, chunking, metadata)
+    return process_embedded_image(archive, image_part, config, metadata)

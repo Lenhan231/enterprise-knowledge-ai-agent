@@ -7,8 +7,6 @@ import zipfile
 from typing import Any
 from xml.etree import ElementTree
 
-from core.document_processing.chunking.config import ChunkingConfig
-from core.document_processing.chunking.router import build_chunks
 from core.document_processing.headings import section_metadata
 from ...scanned.image_ocr import relationship_targets
 from ..scanned.processor import PptxScannedProcessor
@@ -20,13 +18,12 @@ _P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
 class PptxProcessor:
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
-        self.chunking = ChunkingConfig.from_config(config or {})
 
     def process(self, archive: zipfile.ZipFile, metadata: dict) -> dict:
         names = sorted((n for n in archive.namelist() if re.fullmatch(r"ppt/slides/slide\d+\.xml", n)),
                        key=lambda n: int(re.search(r"slide(\d+)", n).group(1)))
-        chunks, tables = [], []
-        scanned = PptxScannedProcessor(self.config, self.chunking)
+        elements, tables = [], []
+        scanned = PptxScannedProcessor(self.config)
         for page_number, name in enumerate(names, 1):
             root = ElementTree.fromstring(archive.read(name))
             relationships = relationship_targets(archive, name)
@@ -46,12 +43,12 @@ class PptxProcessor:
                     if title:
                         slide_title = title
                         break
-            chunks.extend(build_chunks(text, self.chunking, kind="text", metadata={
+            elements.append({"text": text, "metadata": {
                 **metadata,
                 "slide_number": page_number,
                 **section_metadata(slide_title, 1 if slide_title else None),
-            }))
-            chunks.extend(scanned.process_slide(
+            }})
+            elements.extend(scanned.process_slide(
                 archive,
                 root,
                 relationships,
@@ -88,10 +85,10 @@ class PptxProcessor:
                     },
                 }
                 tables.append(table_data)
-                chunks.extend(build_chunks(table_data, self.chunking, kind="table", metadata={
+                elements.append({"element_type": "table", "table_ref": len(tables) - 1, "metadata": {
                     **metadata,
                     "slide_number": page_number,
                     "table_index": table_index,
                     **section_metadata(slide_title, 1 if slide_title else None),
-                }))
-        return {"chunks": chunks, "tables": tables}
+                }})
+        return {"elements": elements, "tables": tables}

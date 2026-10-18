@@ -77,11 +77,10 @@ def caption_pdf_images(
                         page_number, type(error).__name__,
                     )
                     continue
-                result["chunks"].append({
+                result["elements"].append({
                     "text": f"AI-generated image caption (unverified): {caption}",
                     "metadata": {
                         **metadata,
-                        "chunk_index": len(result["chunks"]),
                         "page_number": page_number,
                         "bbox": list(rect),
                         "bbox_coordinate_system": "pdf_points",

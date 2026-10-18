@@ -7,8 +7,6 @@ from typing import Any
 
 import fitz
 
-from core.document_processing.chunking.config import ChunkingConfig
-from core.document_processing.chunking.router import build_chunks
 from core.document_processing.headings import section_metadata
 from core.document_processing.pipelines.built_in.scanned.ocr.image_ocr import (
     looks_like_numeric_table,
@@ -21,11 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 class ScannedImageProcessor:
-    """Process standalone scanned images into OCR chunks and tables."""
+    """Process standalone scanned images into OCR blocks and tables."""
 
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
-        self.chunking = ChunkingConfig.from_config(self.config)
         self.vision_captioning = bool(self.config.get("vision_captioning", False))
 
     def process(self, suffix: str, content: bytes, metadata: dict[str, Any]) -> dict[str, list[dict]]:
@@ -63,13 +60,14 @@ class ScannedImageProcessor:
                 )
             finally:
                 image.close()
-        chunks = build_chunks(
-            text, self.chunking, kind="text", metadata={
+        elements = [{
+            "text": text,
+            "metadata": {
                 **metadata,
                 "text_extraction_method": "tesseract",
                 **section_metadata(None, None),
             },
-        )
+        }]
         if self.vision_captioning:
             try:
                 image_bytes, mime_type = self._caption_image_input(content, suffix)
@@ -81,9 +79,9 @@ class ScannedImageProcessor:
                     model_name = provider.vision_model_name
                 finally:
                     provider.close()
-                chunks.extend(build_chunks(
-                    f"AI-generated image caption (unverified): {caption}",
-                    self.chunking, kind="text", metadata={
+                elements.append({
+                    "text": f"AI-generated image caption (unverified): {caption}",
+                    "metadata": {
                         **metadata,
                         "text_extraction_method": "groq_vision_caption",
                         "element_type": "figure_caption",
@@ -92,13 +90,18 @@ class ScannedImageProcessor:
                         "caption_model": model_name,
                         "is_model_generated": True,
                     },
-                ))
+                })
             except Exception as error:
                 logger.warning(
                     "Vision caption failed for uploaded image %s (%s)",
                     metadata["filename"], type(error).__name__,
                 )
-        return {"chunks": chunks, "tables": tables}
+        for table_index, table in enumerate(tables):
+            elements.append({
+                "element_type": "table", "table_ref": table_index,
+                "metadata": {**(table.get("metadata") or {}), "table_index": table.get("table_index", table_index)},
+            })
+        return {"elements": elements, "tables": tables}
 
     def _ocr(self, content: bytes) -> str:
         return recognize_image_text(

@@ -515,7 +515,10 @@ async def upload_document(
             "ocr_language": ocr_language,
         })
         try:
-            processed = processor.process(filename, content, metadata)
+            from core.document_processing.chunking.processor import ChunkingProcessor
+
+            parsed = processor.process(filename, content, metadata)
+            processed = ChunkingProcessor(processor.config).process(parsed)
         except ValueError as error:
             raise HTTPException(422, str(error)) from error
         parser_chunks = processed["chunks"]

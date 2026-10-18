@@ -65,8 +65,8 @@ def process(runtime: Any, content: bytes, source_format: str, document: dict[str
             )
             continue
         asset_chunks = []
-        for chunk in image_result.get("chunks", []):
-            metadata = chunk.setdefault("metadata", {})
+        for element in image_result.get("elements", []):
+            metadata = element.setdefault("metadata", {})
             metadata.pop("page_number", None)
             metadata.pop("bbox", None)
             metadata.pop("bbox_coordinate_system", None)
@@ -80,7 +80,7 @@ def process(runtime: Any, content: bytes, source_format: str, document: dict[str
                 "mineru_tier": "basic",
                 "text_extraction_method": "mineru.local.basic",
             })
-            asset_chunks.append(chunk)
+            asset_chunks.append(element)
         normalized_asset = PurePosixPath(asset_path).as_posix()
         image_chunks_by_asset[normalized_asset] = asset_chunks
     return runtime.result_mapper.markdown_result(

@@ -6,19 +6,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import fitz
 
-from core.document_processing.chunking.config import ChunkingConfig
-from core.document_processing.chunking.router import build_chunks
 from core.document_processing.headings import HEADING_PATTERNS, section_metadata
-from core.document_processing.readers.text.digital_born.processor import TextProcessor
 from .page_parser import parse_pages
 
 
 class PPStructureV3Processor:
-    """Run the opt-in PP-Structure layout path using the supplied parser config."""
+    """Run PP-Structure layout and return ordered semantic blocks and tables."""
 
     def __init__(self, config: dict[str, Any]):
         self.config = config
-        self.chunking = ChunkingConfig.from_config(config)
 
     def process_image(
         self, content: bytes, suffix: str, document: Dict[str, Any],
@@ -83,8 +79,7 @@ class PPStructureV3Processor:
             block["section_path"] = sections.copy()
             block["heading_level"] = len(sections) or None
 
-        text_processor = TextProcessor(self.config)
-        chunks = []
+        elements = []
         grouped: Dict[Tuple[int, Tuple[str, ...], str, Optional[int]], List[Dict[str, Any]]] = {}
         for block in page_blocks:
             key = (
@@ -95,8 +90,6 @@ class PPStructureV3Processor:
 
         for (page_number, section_path, element_type, table_index), blocks in grouped.items():
             text = "\n".join(block["text"] for block in blocks)
-            context_path = section_path[:-1] if element_type == "title" else section_path
-            context_prefix = " > ".join(context_path)
             boxes = [block["bbox"] for block in blocks if block.get("bbox")]
             bbox = (
                 [
@@ -109,30 +102,32 @@ class PPStructureV3Processor:
                 else None
             )
             if element_type == "table":
-                table = next(
-                    item for item in tables
+                table_ref = next(
+                    index for index, item in enumerate(tables)
                     if item["page_number"] == page_number and item["table_index"] == table_index
                 )
-                chunks.extend(build_chunks(table, self.chunking, kind="table", metadata={
-                    "page_number": page_number,
-                    "section_path": list(section_path),
-                    **section_metadata(
-                        section_path[-1] if section_path else None,
-                        len(section_path) or None,
-                    ),
-                    "bbox": bbox,
-                    "bbox_coordinate_system": "rendered_page_pixel",
-                    "render_scale": render_scale,
-                    "parser": "paddleocr.PP-StructureV3",
-                    "layout_model": self.config.get("paddle_layout_model", "PP-DocLayout-S"),
-                    "ocr_model": self.config.get("paddle_recognition_model", "PP-OCRv5_mobile_rec"),
-                }))
+                elements.append({
+                    "element_type": "table", "table_ref": table_ref,
+                    "metadata": {
+                        "page_number": page_number,
+                        "section_path": list(section_path),
+                        **section_metadata(
+                            section_path[-1] if section_path else None,
+                            len(section_path) or None,
+                        ),
+                        "bbox": bbox,
+                        "bbox_coordinate_system": "rendered_page_pixel",
+                        "render_scale": render_scale,
+                        "parser": "paddleocr.PP-StructureV3",
+                        "layout_model": self.config.get("paddle_layout_model", "PP-DocLayout-S"),
+                        "ocr_model": self.config.get("paddle_recognition_model", "PP-OCRv5_mobile_rec"),
+                        "table_index": table_index,
+                    },
+                })
                 continue
-            for chunk in text_processor.process({"text": text, "metadata": {}}):
-                if context_prefix:
-                    chunk["text"] = f"Section: {context_prefix}\n{chunk['text']}"
-                chunk["metadata"].update(
-                    {
+            elements.append({
+                "text": text,
+                "metadata": {
                         "page_number": page_number,
                         "section_path": list(section_path),
                         **section_metadata(
@@ -144,11 +139,10 @@ class PPStructureV3Processor:
                         **({"table_index": table_index} if table_index is not None else {}),
                         "bbox": bbox,
                         "bbox_coordinate_system": "rendered_page_pixel",
-                                    "render_scale": render_scale,
+                        "render_scale": render_scale,
                         "parser": "paddleocr.PP-StructureV3",
                         "layout_model": self.config.get("paddle_layout_model", "PP-DocLayout-S"),
                         "ocr_model": self.config.get("paddle_recognition_model", "PP-OCRv5_mobile_rec"),
-                        "chunking_method": self.chunking.strategy,
                         **({
                             "contains_formula": True,
                             "formula_representation": "latex",
@@ -157,10 +151,8 @@ class PPStructureV3Processor:
                             "visual_content_extracted": True,
                             "source_layout_label": blocks[0]["source_layout_label"],
                         } if element_type in {"image", "figure", "chart"} else {}),
-                    }
-                )
-                chunk["metadata"]["chunk_index"] = len(chunks)
-                chunks.append(chunk)
+                },
+            })
 
         metadata = {
             "page_count": page_count,
@@ -168,8 +160,6 @@ class PPStructureV3Processor:
         }
         if file_path:
             metadata["file_size_bytes"] = os.path.getsize(file_path)
-        for chunk in chunks:
-            chunk["metadata"].update(document.get("metadata", {}))
-        for index, chunk in enumerate(chunks):
-            chunk["metadata"]["chunk_index"] = index
-        return {"chunks": chunks, "tables": tables, "metadata": metadata}
+        for element in elements:
+            element["metadata"].update(document.get("metadata", {}))
+        return {"elements": elements, "tables": tables, "metadata": metadata}

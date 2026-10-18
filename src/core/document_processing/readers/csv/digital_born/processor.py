@@ -1,4 +1,4 @@
-"""Parse CSV rows into a structured table and searchable parser chunks."""
+"""Parse CSV rows into a structured table for the shared chunker."""
 
 from __future__ import annotations
 
@@ -6,13 +6,11 @@ import csv
 import io
 from typing import Any
 
-from core.document_processing.chunking.config import ChunkingConfig
-from core.document_processing.chunking.router import build_chunks
 
 
 class CSVProcessor:
     def __init__(self, config: dict[str, Any] | None = None):
-        self.chunking = ChunkingConfig.from_config(config or {})
+        pass
 
     def process_file(self, content: bytes, metadata: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
         try:
@@ -57,8 +55,10 @@ class CSVProcessor:
             "layout_type": "table",
             "table_index": table_index,
         }
-        chunks = build_chunks(table, self.chunking, kind="table", metadata=chunk_metadata)
-        return {"chunks": chunks, "tables": [table]}
+        return {
+            "elements": [{"element_type": "table", "table_ref": 0, "metadata": chunk_metadata}],
+            "tables": [table],
+        }
 
     @staticmethod
     def _unique_columns(header: list[str], width: int) -> list[str]:

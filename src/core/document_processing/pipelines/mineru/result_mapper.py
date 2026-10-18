@@ -8,10 +8,7 @@ from typing import Any
 
 import fitz
 
-from core.document_processing.chunking.config import ChunkingConfig
-from core.document_processing.chunking.router import build_chunks
 from core.document_processing.headings import HEADING_PATTERNS, heading_level, section_metadata
-from core.document_processing.readers.text.digital_born.processor import TextProcessor
 from core.document_processing.pipelines.helpers.table_parser import parse_html_table
 
 
@@ -38,10 +35,8 @@ def _html_table(content: str) -> tuple[list[str], list[dict[str, str]]] | None:
 class MineruResultMapper:
     """Normalize MinerU output blocks, tables, section context, and provenance."""
 
-    def __init__(self, config: dict[str, Any], chunking: ChunkingConfig):
+    def __init__(self, config: dict[str, Any]):
         self.config = config
-        self.chunking = chunking
-        self.text_processor = TextProcessor(config)
 
     def markdown_result(self, markdown: str, document: dict[str, Any]) -> dict[str, Any]:
         metadata = document.get("metadata", {})
@@ -71,7 +66,7 @@ class MineruResultMapper:
         )
         events.sort(key=lambda event: (event[0], -(event[1] - event[0])))
 
-        chunks: list[dict[str, Any]] = []
+        elements: list[dict[str, Any]] = []
         tables: list[dict[str, Any]] = []
         section_stack: list[str] = []
         prose: list[str] = []
@@ -90,18 +85,18 @@ class MineruResultMapper:
             prose.clear()
             if not text:
                 return
-            for chunk in self.text_processor.process({
+            elements.append({
                 "text": text,
-                "metadata": {**metadata, **section_metadata_now()},
-            }):
-                chunk["metadata"].update({
+                "metadata": {
+                    **metadata,
+                    **section_metadata_now(),
                     "element_type": "text",
                     "layout_type": "text",
                     "parser": "mineru",
                     "mineru_tier": "flash",
                     "text_extraction_method": "mineru.flash",
-                })
-                chunks.append(chunk)
+                },
+            })
 
         def consume_text(text: str) -> None:
             for line in text.splitlines():
@@ -130,16 +125,16 @@ class MineruResultMapper:
                 return
             seen_assets.add(found_key)
             context = section_metadata_now()
-            for source_chunk in image_chunks_by_asset[found_key]:
-                chunk = {**source_chunk, "metadata": dict(source_chunk.get("metadata") or {})}
-                chunk_metadata = chunk["metadata"]
+            for source_element in image_chunks_by_asset[found_key]:
+                element = {**source_element, "metadata": dict(source_element.get("metadata") or {})}
+                chunk_metadata = element["metadata"]
                 chunk_metadata.update(context)
                 chunk_metadata.update({"element_type": "image", "layout_type": "image"})
-                text = str(chunk.get("text") or "").strip()
+                text = str(element.get("text") or "").strip()
                 title = context.get("section_title")
                 if title and text and not text.startswith(f"Section: {title}\n"):
-                    chunk["text"] = f"Section: {title}\n{text}"
-                chunks.append(chunk)
+                    element["text"] = f"Section: {title}\n{text}"
+                elements.append(element)
 
         def add_table(block: str, method: str) -> None:
             flush_prose()
@@ -162,15 +157,18 @@ class MineruResultMapper:
                 "metadata": table_metadata,
             }
             tables.append(table)
-            chunks.extend(build_chunks(table, self.chunking, kind="table", metadata={
-                **metadata,
-                **section_metadata_now(),
-                "element_type": "table",
-                "table_index": table_index,
-                "parser": "mineru",
-                "mineru_tier": "flash",
-                "text_extraction_method": "mineru.flash",
-            }))
+            elements.append({
+                "element_type": "table", "table_ref": len(tables) - 1,
+                "metadata": {
+                    **metadata,
+                    **section_metadata_now(),
+                    "element_type": "table",
+                    "table_index": table_index,
+                    "parser": "mineru",
+                    "mineru_tier": "flash",
+                    "text_extraction_method": "mineru.flash",
+                },
+            })
 
         cursor = 0
         for start, end, kind, value in events:
@@ -192,11 +190,8 @@ class MineruResultMapper:
         for asset, asset_chunks in image_chunks_by_asset.items():
             if asset in seen_assets or PurePosixPath(asset).name in seen_assets:
                 continue
-            for chunk in asset_chunks:
-                chunks.append(chunk)
-        for index, chunk in enumerate(chunks):
-            chunk.setdefault("metadata", {})["chunk_index"] = index
-        return {"chunks": chunks, "tables": tables}
+            elements.extend(asset_chunks)
+        return {"elements": elements, "tables": tables}
 
     @staticmethod
     def _block_text(value: Any) -> str:
@@ -228,7 +223,7 @@ class MineruResultMapper:
     ) -> dict[str, Any]:
         pdf = fitz.open(stream=source, filetype="pdf") if isinstance(source, bytes) else fitz.open(source)
         tables: list[dict[str, Any]] = []
-        chunks: list[dict[str, Any]] = []
+        elements: list[dict[str, Any]] = []
         current_section_title = None
         current_heading_level = None
         page_count = len(pdf)
@@ -284,21 +279,21 @@ class MineruResultMapper:
                         current_section_title = text
                         current_heading_level = heading_level(text) or 1
                     if table_index is not None:
-                        table_chunks = build_chunks(tables[-1], self.chunking, kind="table", metadata={
-                            "page_number": page_number,
-                            **section_metadata(current_section_title, current_heading_level),
-                            "bbox": point_bbox,
-                            "bbox_coordinate_system": "pdf_point",
-                            "text_extraction_method": "mineru.local.basic",
-                            "parser": "mineru",
-                            "mineru_tier": "basic",
+                        elements.append({
+                            "element_type": "table", "table_ref": len(tables) - 1,
+                            "metadata": {
+                                "page_number": page_number,
+                                **section_metadata(current_section_title, current_heading_level),
+                                "bbox": point_bbox,
+                                "bbox_coordinate_system": "pdf_point",
+                                "text_extraction_method": "mineru.local.basic",
+                                "parser": "mineru",
+                                "mineru_tier": "basic",
+                                "table_index": table_index,
+                            },
                         })
-                        for chunk in table_chunks:
-                            chunk["metadata"]["chunk_index"] = len(chunks)
-                            chunks.append(chunk)
                         continue
-                    for chunk in self.text_processor.process({"text": text, "metadata": {}}):
-                        chunk["metadata"].update({
+                    element_metadata = {
                             "page_number": page_number,
                             "element_type": element_type,
                             "layout_type": element_type,
@@ -307,17 +302,14 @@ class MineruResultMapper:
                             "bbox_coordinate_system": "pdf_point",
                             "text_extraction_method": "mineru.local.basic",
                             "parser": "mineru", "mineru_tier": "basic",
-                            "chunk_index": len(chunks),
-                        })
-                        if heading_kind:
-                            chunk["metadata"]["heading_kind"] = heading_kind
-                        if table_index is not None:
-                            chunk["metadata"]["table_index"] = table_index
-                        chunks.append(chunk)
+                        }
+                    if heading_kind:
+                        element_metadata["heading_kind"] = heading_kind
+                    elements.append({"text": text, "metadata": element_metadata})
         finally:
             pdf.close()
         return {
-            "chunks": chunks,
+            "elements": elements,
             "tables": tables,
             "metadata": {
                 "page_count": page_count,

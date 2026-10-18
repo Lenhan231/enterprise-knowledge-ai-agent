@@ -7,8 +7,6 @@ import zipfile
 from typing import Any
 from xml.etree import ElementTree
 
-from core.document_processing.chunking.config import ChunkingConfig
-from core.document_processing.chunking.router import build_chunks
 from core.document_processing.headings import section_metadata
 from ...scanned.image_ocr import relationship_targets
 from ..scanned.processor import DocxScannedProcessor
@@ -20,15 +18,14 @@ _M = "{http://schemas.openxmlformats.org/officeDocument/2006/math}"
 class DocxProcessor:
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
-        self.chunking = ChunkingConfig.from_config(config or {})
 
     def process(self, archive: zipfile.ZipFile, metadata: dict) -> dict:
         document_part = "word/document.xml"
         root = ElementTree.fromstring(archive.read(document_part))
         relationships = relationship_targets(archive, document_part)
-        chunks = []
+        elements = []
         tables = []
-        scanned = DocxScannedProcessor(self.config, self.chunking)
+        scanned = DocxScannedProcessor(self.config)
         current_section_title = None
         current_heading_level = None
         pending_text: list[str] = []
@@ -45,9 +42,7 @@ class DocxProcessor:
             if pending_formulas:
                 chunk_metadata["contains_formula"] = True
                 chunk_metadata["formula_text"] = "\n".join(pending_formulas)
-            chunks.extend(build_chunks(
-                "\n".join(pending_text), self.chunking, kind="text", metadata=chunk_metadata,
-            ))
+            elements.append({"text": "\n".join(pending_text), "metadata": chunk_metadata})
             pending_text.clear()
             pending_metadata = None
             pending_formulas = []
@@ -84,11 +79,11 @@ class DocxProcessor:
                 image_chunks = scanned.process_element(archive, element, relationships, paragraph_metadata)
                 if image_chunks:
                     flush_text()
-                    chunks.extend(image_chunks)
+                    elements.extend(image_chunks)
             elif element.tag == f"{_W}tbl":
                 flush_text()
                 for paragraph_index, paragraph in enumerate(element.iter(f"{_W}p")):
-                    chunks.extend(scanned.process_element(
+                    elements.extend(scanned.process_element(
                         archive,
                         paragraph,
                         relationships,
@@ -123,14 +118,15 @@ class DocxProcessor:
                     "metadata": {
                         "parser": "python-stdlib-docx-xml",
                         "paragraph_index": index,
+                        **section_metadata(current_section_title, current_heading_level),
                     },
                 }
                 tables.append(table)
-                chunks.extend(build_chunks(table, self.chunking, kind="table", metadata={
+                elements.append({"element_type": "table", "table_ref": table_index, "metadata": {
                     **metadata,
                     "paragraph_index": index,
                     "table_index": table_index,
                     **section_metadata(current_section_title, current_heading_level),
-                }))
+                }})
         flush_text()
-        return {"chunks": chunks, "tables": tables}
+        return {"elements": elements, "tables": tables}

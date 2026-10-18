@@ -42,7 +42,7 @@ before role-filtered chunks are embedded and indexed. Uploading a file adds
 knowledge for retrieval; it does not create or publish dashboard metrics.
 Classifications are selected by the uploader and are not inferred or approved
 automatically. Supported formats, limits, and recovery commands are in the
-[root README](../README.md) and [processing guide](technical/document-processing.md).
+[root README](../README.md) and [processing guide](../src/core/document_processing/docs/document-processing.md).
 
 ## Commerce analytics
 
@@ -88,11 +88,10 @@ four columns); the fixture is invented test data, so deactivate it in
 **Knowledge Management** after review. For an isolated full-pipeline run, use
 the same file in **Upload Test** instead.
 
-**Upload Test** runs a PDF through parsing, token-bounded chunking, and embedding.
-It stores page previews, parser chunks, final embedding chunks, vectors, and
-structured table rows in isolated test tables. It does not create a production
-document or retrieval entry. Admins can also use it; production upload output
-is reviewed in Document Processing.
+**Upload Test** runs a selected parser and saves page previews, parser chunks,
+and structured table rows in isolated test tables. It stops before tokenization
+and embedding. It does not create a production document or retrieval entry.
+Admins can also use it; production upload output is reviewed in Document Processing.
 
 ## Troubleshooting
 

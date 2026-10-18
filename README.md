@@ -30,11 +30,12 @@ examples, not policy for the synthetic business.
 
 Project layout
 
-- src/app: FastAPI routes and dashboard UI
-- src/core/document_processing: shared document format processors
+- src/app: FastAPI routes and dashboard UI; isolated Upload Test API lives in `upload_test.py`
+- src/core/document_processing: format handlers under `formats/`, parser engines under `pipelines/`, and the shared upload router
 - tools/ingestion: seed ingestion orchestration and source-specific CLI workflows
 - src/core/document_processing/chunking: shared chunk splitting and section metadata
 - src/core/database: PostgreSQL repositories and table persistence
+- Supabase `document_preprocessing_test` schema: isolated Upload Test runs and parser outputs
 - src/core/retrieval and src/core/rag: role-scoped hybrid search and grounded answers
 - src/core/agents: runtime router for grounded QA, analytics, hybrid reports and dashboard data
 - [CLI tools](tools/README.md): reproducible CLI entry points grouped by workstream; see the [repository map](docs/technical/repository-ownership.md) for ownership and shared contracts
@@ -76,16 +77,16 @@ browser. The demo has no user-registration or password-reset flow.
 - Viewer: corpus overview and document questions.
 - Analyst and Sustainability Analyst: viewer access plus the source-backed analytics dashboard.
 - Document Uploader: upload and classify documents; no document Q&A or analytics access.
-- Tester: isolated Upload Test only; test PDFs, shared chunks, and token-bounded chunks stay outside the corpus.
+- Tester: isolated Upload Test only; parser chunks and tables stay outside the corpus.
 - Admin: analyst access plus upload, source review, access control, and knowledge-file management.
 
 Configure `DEMO_TESTER_USERNAME` / `DEMO_TESTER_PASSWORD` to enable the Tester
 login. Tester can run Upload Tests and inspect saved runs, but cannot browse
 documents or use production upload. Upload Test compares rendered pages and
-tables across production PyMuPDF/Tesseract, PP-StructureV3, and MinerU. Each
-parser has separate settings; cleanup, metadata normalization, chunking, and
-local token-limit checks are shared. It stops before embedding and creates no
-vectors. Tesseract settings appear only for the production parser; Paddle and
+tables across Built-in, PP-StructureV3, MinerU, and Docling. Each
+parser has separate settings; cleanup, metadata normalization, and parser
+chunking are shared. It stops before tokenization, embedding, and vector creation.
+Tesseract settings appear only for the Built-in profile; Paddle and
 MinerU expose their own settings. The optional DocLayout-YOLO overlay is
 diagnostic only; install it with `uv sync --extra layout-yolo`.
 MinerU Upload Test runs the local Basic tier through `mineru-kit`. Install MinerU
@@ -106,13 +107,17 @@ upload, OCR review, role access, and troubleshooting steps.
 Original user-uploaded PDF, Office, text and image documents are stored in a
 private Supabase Storage bucket;
 PostgreSQL stores document metadata, processing state, and role assignments.
-Parser output is retained in `processed_document_chunks` before embeddings;
-embedded passages in `document_chunks` support retrieval. Uploads do not create
+Parser output is retained in `document_parser_chunks` before embeddings;
+embedded passages in `document_chunks` support retrieval. `/api/documents/parser-handoff`
+uses the same parser and writes the same public parser chunks and structured tables,
+then leaves the document in `parsed` state for downstream tokenization and indexing.
+The regular `/api/documents/upload` continues through embedding and retrieval indexing.
+Uploads do not create
 dashboard metrics: Commerce dashboard observations come from the private SQL
 dataset, while uploaded and seeded documents provide policy and operating
 context through RAG. The manifest is the source registry for public seed data,
-not a dashboard data source. User uploads go through `/api/documents/upload`;
-parser output is chunked, embedded, and indexed with source and access rules.
+not a dashboard data source. Regular uploads go through `/api/documents/upload`;
+parser handoff stops after saving parser output for downstream processing.
 Commerce references retain their publisher, applicability scope, and
 decision-domain tags. Admins can inspect each source chunk in Processing.
 The Admin **Knowledge Management** tab can change reader roles for each indexed
@@ -148,13 +153,13 @@ supported. Tesseract handles scanned-page and image text OCR; extracted PDF and
 Office tables are stored separately. Table OCR uses PSM 3 for PDFs and PSM 6
 for direct image uploads based on a small labeled pilot; OCR-derived table
 metadata keeps the engine and settings used. See
-[`docs/technical/document-processing.md`](docs/technical/document-processing.md)
+[`src/core/document_processing/docs/document-processing.md`](src/core/document_processing/docs/document-processing.md)
 for the evaluation and limitations. Upload processing indexes source content;
 it does not extract or publish dashboard KPIs. Successful uploads report page,
 parser-passage, indexed-passage, OCR-passage and structured-table counts. Admins are taken to
 the saved parser output for that document; each passage and table links to its
 original PDF page for review. The isolated Upload Test additionally compares page
-previews with shared chunks, token-bounded chunks, and tables without adding test files to the corpus.
+previews with parser chunks and tables without adding test files to the corpus.
 See [`docs/README.md`](docs/README.md) for
 current Commerce scope, verification status, limitations and the technical guide
 to processing, chunking, embeddings, retrieval, agents and evaluation.

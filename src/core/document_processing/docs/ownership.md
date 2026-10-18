@@ -1,0 +1,1 @@
+../../../../docs/technical/repository-ownership.md

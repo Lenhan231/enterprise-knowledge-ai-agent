@@ -2,12 +2,12 @@
 
 ## Active path
 
-The upload and seed-ingestion paths keep parser pages and source metadata, then
-split text before embedding. Sentence mode is the default. It groups paragraph
+Upload keeps parser elements and source metadata, then splits text downstream of
+parsing. Sentence mode is the default. It groups paragraph
 and sentence boundaries up to a character ceiling; fixed mode provides
 overlapping character windows for comparison. Current upload chunks target
-1,100 characters with no sentence-mode overlap; seed PDFs target 1,200
-characters. Fixed-mode sizes and overlap are recorded in each chunk's metadata.
+1,100 characters with no sentence-mode overlap. Fixed-mode sizes and overlap
+are recorded in each chunk's metadata.
 
 Character length is only a first-stage bound. Before embedding, `TokenCounter`
 uses the tokenizer for the selected embedding model and splits any passage that
@@ -25,26 +25,25 @@ matching passages, then compare retrieval results.
 ## Configuration and checks
 
 Uploads read `DOCUMENT_CHUNKING_STRATEGY` (`sentence` by default; `fixed` is
-the comparison baseline). Seed PDF ingestion accepts `--chunking-strategy`.
-`src/core/document_processing/chunking/router.py` only routes character-based splitting to
-the fixed and sentence-aware implementations in
-`src/core/document_processing/chunking/strategies/`. Shared size/overlap settings live in
-`src/core/document_processing/chunking/config.py`; `chunk_builder.py` attaches parser chunk metadata.
+the comparison baseline).
+`src/core/document_processing/chunking/router.py` routes text and structured tables.
+Text chunking lives in `src/core/document_processing/chunking/text/`, where its router selects
+fixed or sentence-aware splitting from `text/strategies/`. Table chunking lives in
+`src/core/document_processing/chunking/table/chunker.py` and groups whole rows while repeating
+the table title and headers. Shared size/overlap settings live in
+`src/core/document_processing/chunking/config.py`.
 Embedding-token splitting is implemented in `src/core/tokenization/token_counter.py`.
-The embedding-based semantic strategy is in
-`src/core/document_processing/chunking/strategies/semantic.py`; seed ingestion currently routes it
-for HTML documents. PDF and upload chunking support the character-based
-`fixed` and `sentence` strategies.
+Upload currently uses the character-based `fixed` and `sentence` strategies.
 
 Focused regression checks:
 
 ```bash
 PYTHONPATH=src .venv/bin/python -m unittest \
   tests.test_text_processor_chunking tests.test_document_processor \
-  tests.test_pdf_upload_processing tests.test_seed_ingestion -q
+  tests.test_pdf_upload_processing -q
 ```
 
 No chunking strategy is declared best for Commerce yet. Use the active
 Commerce retrieval cases and independently review source passages before
-changing production defaults. See [retrieval](retrieval-rbac.md) and
-[embeddings/tokenization](embeddings-tokenization.md).
+changing production defaults. See [retrieval](../../../../docs/technical/retrieval-rbac.md) and
+[embeddings/tokenization](../../../../docs/technical/embeddings-tokenization.md).

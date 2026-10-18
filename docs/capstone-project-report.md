@@ -74,7 +74,7 @@ Format dispatch ──> PDF text/layout + page-level OCR fallback
         ▼
 Parser chunks + structured tables + provenance metadata
         │
-        ├── processed_document_chunks (model-neutral parser output)
+        ├── document_parser_chunks (model-neutral parser output)
         └── chunking → token counting → embedding → document_chunks
                                               │
 User question ─> authenticated router ─> ACL/domain-filtered retrieval
@@ -84,11 +84,11 @@ User question ─> authenticated router ─> ACL/domain-filtered retrieval
                                       └── DashboardAgent ─> Commerce aggregates
 ```
 
-The ingestion and retrieval boundaries are documented in the repository's [document-processing guide](technical/document-processing.md), [retrieval and RBAC guide](technical/retrieval-rbac.md), and [Commerce agent guide](technical/agents-and-evaluation.md).
+The ingestion and retrieval boundaries are documented in the repository's [document-processing guide](../src/core/document_processing/docs/document-processing.md), [retrieval and RBAC guide](technical/retrieval-rbac.md), and [Commerce agent guide](technical/agents-and-evaluation.md).
 
 ### 3.2 Document ingestion and data model
 
-The upload endpoint accepts PDF, DOCX, PPTX, XLSX, CSV, TXT, Markdown, PNG, JPEG, and TIFF. CSV files are parsed into structured rows and searchable row-aware text. Original user files are stored in a private Supabase Storage bucket. PostgreSQL keeps the document record, processing status, role assignments, and parser/index metadata. `processed_document_chunks` stores parser output independently of embedding configuration; `document_chunks` stores the active retrieval representation and vector. Structured table data is persisted separately from its retrieval text so that a table can remain inspectable as rows and columns without embedding an opaque JSON object as a single passage.
+The upload endpoint accepts PDF, DOCX, PPTX, XLSX, CSV, TXT, Markdown, PNG, JPEG, and TIFF. CSV files are parsed into structured rows and searchable row-aware text. Original user files are stored in a private Supabase Storage bucket. PostgreSQL keeps the document record, processing state, role assignments, and parser/index metadata. `document_parser_chunks` stores parser output independently of embedding configuration; `document_chunks` stores the active retrieval representation and vector. Structured table data is persisted separately from its retrieval text so that a table can remain inspectable as rows and columns without embedding an opaque JSON object as a single passage.
 
 For PDFs, PyMuPDF extracts usable text and tables. Pages without usable text can fall back to Tesseract (`vie+eng`). Native-text table extraction and OCR-word-box reconstruction retain page and bounding-box context where available. DOCX, PPTX, and XLSX are parsed from Open XML. Chunking and token limits are applied before embedding; model-neutral parser output allows future embedding experiments without repeating document parsing.
 

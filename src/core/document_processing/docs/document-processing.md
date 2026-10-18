@@ -1,27 +1,28 @@
 # Document processing
 
-This guide describes the supported upload and seed-ingestion paths. OCR fixture
-definitions and measured results live in [the OCR evaluation guide](../../data/evaluation/ocr/README.md).
+This guide describes the document upload flow. OCR fixture
+definitions and measured results live in [the OCR evaluation guide](../../../../data/evaluation/ocr/README.md).
 For package ownership and the parser flow beside the implementation, see
-[`src/core/document_processing/README.md`](../../src/core/document_processing/README.md).
+[`src/core/document_processing/README.md`](../README.md).
 For the shared chunk metadata contract and parser-specific fields, see
-[`src/core/document_processing/metadata.md`](../../src/core/document_processing/metadata.md).
+[`metadata.md`](metadata.md).
 
 ## Data flow
 
 ```text
-seed manifest ─┐
-               ├─> format processor ─> parser chunks + structured tables
-user upload ───┘                          │
-                                          ├─> processed_document_chunks
-                                          └─> tokenize/embed ─> document_chunks
-                                                               └─> retrieval
+Upload → DocumentProcessor → ordered elements + structured tables
+       → ChunkingProcessor → text chunks + table chunks
+       → parser output → production tokenization and retrieval indexing
 ```
 
-- Seed ingestion is orchestrated by `tools/ingestion/ingest_documents.py`.
+Upload Test uses the same parser and chunker, then stops at parser output for
+inspection.
+
 - Authenticated uploads enter through `/api/documents/upload` in `src/app/main.py`.
-- `DocumentProcessor` dispatches by extension. Format processors parse content;
-  database repositories persist output and state.
+- Upload Test enters through the isolated API in `src/app/upload_test.py`.
+- `DocumentProcessor` selects a parser profile; that profile's format adapter
+  dispatches by extension. Shared normalization records `pipeline_id` and the
+  actual producing `parser`.
 - Original uploads live in private Supabase Storage. Parsed, model-neutral chunks
   are stored before embeddings; `document_chunks` is the active retrieval index.
 - Structured table rows are persisted separately from retrieval text so the UI
@@ -29,54 +30,63 @@ user upload ───┘                          │
 - Documents become searchable only when processing succeeds. Failed embedding
   work can be retried from persisted parsed chunks.
 
-The manifest is a seed-source registry, not the source of dashboard values.
 Commerce analytics reads the Commerce SQL schema, while uploaded documents
-provide RAG context; see the [data flow](../README.md) and
-[Commerce status](../commerce-decision-support.md).
+provide RAG context; see the [project docs](../../../../docs/README.md) and
+[Commerce status](../../../../docs/commerce-decision-support.md).
 
 ## Module ownership
 
-- `document_processor.py`: upload format dispatch and shared metadata.
-- `processors/pdf/processor.py`: coordinates parser selection and optional PDF
-  image captioning.
-- `processors/pdf/text_extractor.py`: coordinates native page extraction and
+- `document_processor.py`: selects the parser profile and returns cleaned,
+  provenance-normalized elements and structured tables; each profile's
+  `formats/router.py` handles supported file types.
+- `chunking/processor.py`: downstream text/table chunking stage used by both
+  production upload and Upload Test.
+- `formats/`: handlers for PDF, Office, CSV, text, and image inputs.
+- `pipelines/built_in/processor.py`: built-in PyMuPDF/Tesseract parser
+  and optional PDF image captioning.
+- `pipelines/built_in/text_extractor.py`: coordinates native page extraction and
   scanned-page OCR, headings, and structured tables in one PDF traversal.
-- `processors/pdf/digital_born/native_text.py`: extracts embedded text from a
+- `formats/pdf/digital_born/native_text.py`: extracts embedded text from a
   digital-born PDF page.
-- `processors/pdf/text_chunks.py`: creates page-local text chunks with
-  heading/OCR metadata through the shared chunk builder and router.
-- `processors/pdf/table_chunks.py`: formats PDF tables and reconciles them
-  with flat page text chunks; chunk boundaries use the shared chunking router.
-- `processors/pdf/scanned/ocr.py`: PDF page selection/rendering, orientation/deskew, and
+- `pipelines/built_in/text_chunks.py`: creates ordered page-local text blocks
+  with heading/OCR metadata; final chunking happens downstream.
+- PDF structured tables use the shared table chunker in
+  `chunking/table/chunker.py`; each parser supplies its own structured table
+  data and context metadata.
+- `pipelines/built_in/scanned/pdf_ocr.py`: PDF page selection/rendering, orientation/deskew, and
   merging OCR with native PDF text.
-- `processors/pdf/table_processor.py`: table title/context recovery,
+- `pipelines/built_in/table_processor.py`: table title/context recovery,
   coordinate restoration, and continuation linking.
-- `processors/pdf/table_extractor.py`: native PDF and OCR word-box table
+- `pipelines/built_in/table_extractor.py`: native PDF and OCR word-box table
   reconstruction.
 - `pipelines/mineru/processor.py`: MinerU Basic local CLI adapter used
   when a caller explicitly selects `parser_engine="mineru"`.
+- `pipelines/mineru/result_mapper.py`: maps MinerU Middle JSON/Markdown to the shared output.
 - `pipelines/pp_structurev3/processor.py`: optional PP-StructureV3 integrated OCR,
   layout, and table processing.
+- `pipelines/pp_structurev3/page_parser.py`: turns PP-Structure page predictions into blocks and tables.
 - `pipelines/docling/processor.py`: optional local Docling conversion with
-  RapidOCR and table-structure extraction; maps Docling items into the shared
-  parser output shape.
-- `scanned/processor.py`: standalone scanned-image OCR and table recovery.
-- `scanned/ocr/`: shared Tesseract runner and image text/word-box recognition
-  used by image, PDF, and Office paths.
-- `scanned/table_recovery.py`: reconstructs scanned tables from OCR word boxes.
-- `scanned/layout/doclayout_yolo.py`: optional diagnostic layout detector.
-- `processors/office/processor.py`: Office archive validation and format routing.
-- `processors/office/{docx,pptx,xlsx}/digital_born/processor.py`: native
+  RapidOCR and table-structure extraction.
+- `pipelines/docling/result_mapper.py`: maps Docling items into ordered elements and tables.
+- `pipelines/built_in/pdf_images.py`: embedded PDF image extraction and optional captioning.
+- `formats/image/processor.py`: standalone scanned-image OCR and table recovery.
+- `pipelines/built_in/scanned/ocr/`: Built-in Tesseract runner and image
+  text/word-box recognition.
+- `pipelines/built_in/scanned/table_recovery.py`: reconstructs tables from Built-in OCR word boxes.
+- `utils/layout/doclayout_yolo.py`: optional Upload Test diagnostic layout detector.
+- `formats/office/processor.py`: Office archive validation and format routing.
+- `formats/office/{docx,pptx,xlsx}/digital_born/processor.py`: native
   format-specific text, tables, formulas, and structure.
-- `processors/office/{docx,pptx,xlsx}/scanned/processor.py`: OCR adapters for
+- `formats/office/{docx,pptx,xlsx}/scanned/processor.py`: OCR adapters for
   images embedded in each Office format. Shared OOXML and image OCR helpers live
-  in `processors/office/scanned/`; image OCR emits text chunks, not table rows.
-- `processors/csv/digital_born/processor.py`: UTF-8 CSV rows as structured
+  in `formats/office/scanned/`; image OCR emits text chunks, not table rows.
+- `formats/csv/digital_born/processor.py`: UTF-8 CSV rows as structured
   tables and searchable row-aware chunks.
-- `processors/text/digital_born/processor.py`: TXT/Markdown decoding and dispatch.
-- `src/core/document_processing/chunking/router.py`: routes text to the selected chunking strategy.
+- `formats/text/digital_born/processor.py`: TXT/Markdown decoding and dispatch.
+- `src/core/document_processing/chunking/router.py`: routes text or table content to its chunker.
 - `src/core/document_processing/chunking/config.py`: shared strategy, size, and overlap settings.
-- `src/core/document_processing/chunking/chunk_builder.py`: builds parser chunks and metadata.
+- `src/core/document_processing/chunking/text/`: text chunk builder and fixed/sentence strategies.
+- `src/core/document_processing/chunking/table/chunker.py`: shared row-preserving table chunker.
 - `src/core/tokenization/token_counter.py`: embedding-token-aware splitting.
 - `src/core/database/structured_store.py`: structured table persistence.
 
@@ -88,8 +98,7 @@ embedding/index stage because tokenization limits vary by model.
 `DocumentProcessor.SUPPORTED` is the authoritative extension list. It currently
 includes PDF, DOCX, PPTX, XLSX, CSV, TXT, Markdown, PNG, JPEG, and TIFF. CSV
 files are parsed as UTF-8 tables and produce structured rows plus searchable
-row-aware chunks. Seed ingestion supports PDF and HTML. Legacy binary XLS is
-unsupported.
+row-aware chunks. Legacy binary XLS is unsupported.
 
 For PDFs, PyMuPDF extracts text when a page has a usable text layer. Pages with
 no usable text can fall back to Tesseract (`vie+eng` by default); processor
@@ -152,7 +161,7 @@ diagnostic; it is not a probability or a measure of table accuracy.
 PDF upload defaults are text PSM 11 at scale 1.5 and table PSM 3 at scale 2.5.
 The Upload Test defaults to those production settings and exposes
 PSM, 167/180 DPI, thresholding, dictionary, inversion, table-recognition,
-LSTM-decoding, and traineddata choices only when the production parser is
+LSTM-decoding, and traineddata choices only when the Built-in profile is
 selected. PP-StructureV3 exposes device, render scale, formula, and chart
 settings; MinerU exposes forced OCR and page range; Docling exposes device, OCR,
 language, table-structure, and CPU-thread settings. All four use the same
@@ -161,11 +170,12 @@ validated allowlist of Tesseract `-c` parameters to both text and TSV calls;
 upload callers without these settings keep Tesseract's installed defaults.
 Selecting `tessdata_fast` or `tessdata_best` requires `TESSDATA_FAST_DIR` or
 `TESSDATA_BEST_DIR` pointing to the corresponding traineddata directory.
-The Upload Test uses isolated `upload_test_*` tables and does not create a
-corpus document or Storage object. It saves shared parser chunks, normalized
-table rows, and token-bounded chunks intended as embedding input. It stops
-before embedding and stores no vectors for new runs. The Tester role is
-separate from document ACL roles.
+The Upload Test stores runs and outputs in the dedicated PostgreSQL
+`document_preprocessing_test` schema and does not create a corpus document or Storage object.
+It stops at parser output: page previews, parser chunks, structured tables, and table
+records. Tokenization and embeddings are downstream work and are not stored by Upload Test.
+Production document and retrieval tables remain in `public`.
+The Tester role is separate from document ACL roles.
 The Lab can additionally run the pinned DocLayout-YOLO checkpoint and overlay
 its detected page regions; this detector pass is diagnostic and does not feed
 boxes into OCR, table extraction, or chunking. Install the optional dependency
@@ -176,18 +186,20 @@ back to CPU. Image size and confidence threshold are selectable per run.
 ### Production upload and Upload Test parser paths
 
 The production `/api/documents/upload` route currently creates
-`DocumentProcessor` without a `parser_engine`. PDFs therefore use the default
-PyMuPDF/native-text and Tesseract fallback path, unless the Paddle layout
-environment setting is enabled. Selecting MinerU in Upload Test does not
-change the production upload parser.
+`DocumentProcessor` without a `parser_engine`, so it uses the `built_in`
+profile. That profile uses PyMuPDF/Tesseract for PDF, Tesseract for images, and
+native readers for Office, CSV, and text. Upload Test can select each profile
+independently for every supported extension. `pipeline_id` names the selected
+profile; `parser` names the actual producing component.
 
-Upload Test accepts a per-run `parser_engine`: `pymupdf_tesseract`,
+Upload Test accepts a per-run `parser_engine`: `built_in`,
 `pp-structurev3`, `mineru`, or `docling`. Each run is saved in isolated test
 tables; it does not create production documents, Storage objects, or retrieval
-entries. The four parsers are followed by one cleanup, metadata-normalization, and
-chunking path. Local tokenizer checks produce the exact token-bounded text that
-would be sent to embedding, but the test route does not call the embedding
-provider or write vectors.
+entries. The four parsers return ordered elements and tables, followed by shared
+cleanup and metadata normalization. A downstream text/table chunking step is
+shared with production.
+Tokenization and embedding belong to the downstream
+ingestion stage and are not part of Upload Test.
 
 Install the optional Docling parser with `uv sync --extra docling`. Upload Test
 configures its local CPU/CUDA device, RapidOCR language and enablement, table
@@ -200,26 +212,25 @@ Middle JSON output. Install MinerU in an isolated environment, set
 directory containing its downloaded models. The adapter maps page blocks into
 parser output, retaining page, layout type, bounding box, parser, tier, and
 MinerU version metadata. Selected page ranges are remapped to their original PDF
-page numbers. Upload Test then applies shared whitespace cleanup and re-chunks
-neighboring blocks with matching page, section, and element type. The character
+page numbers. `DocumentProcessor` applies shared whitespace cleanup and metadata;
+the downstream `ChunkingProcessor` chunks neighboring text blocks with matching
+page, section, and element type and sends tables through the row-aware table
+chunker. The character
 limit is a maximum, not a target size.
 
 MinerU table blocks in Markdown pipe-table or HTML form are converted into
 structured rows. HTML table chunks are serialized as column and row text rather
-than raw markup. The adapter still does not run the default PDF path's
-table-title detection or `_replace_flat_table_chunks()` formatter. A MinerU
-table chunk may therefore lack a `Table: <title>` prefix, even though the
-default production PDF path can repeat a detected title and column names in
-each table retrieval chunk. Check the shared and token-bounded chunks plus
-the table list in the saved Upload Test run; the two parser paths do not provide identical title
-context.
+than raw markup. PDF parsers also create structured table chunks through the
+shared table chunker. The default PyMuPDF path retains page text and adds these
+table chunks separately; it does not reconcile table extraction against flat
+page text. Table titles and context remain best-effort and parser-dependent.
 
 `DOCUMENT_PADDLE_LAYOUT=true` enables the optional Paddle layout path.
 DocLayout-YOLO-DocStructBench at 640px is the selected detector candidate for
 the next integration phase based on the HCMUS comparison; it is not wired into
 `/api/documents/upload` yet. The benchmark is detector-only and does not replace
 OCR, table parsing, or chunk persistence. See the
-[layout selection report](../../artifacts/evaluation/layout/hcmus-results/formula-v2-report.md)
+[layout selection report](../../../../artifacts/evaluation/layout/hcmus-results/formula-v2-report.md)
 before changing the upload path.
 `DOCUMENT_PADDLE_FORMULA_RECOGNITION=true` enables formula recognition and the
 layout path. Both are off by default. Chart recognition is separately
@@ -240,7 +251,8 @@ Section titles are format-dependent metadata: Word headings, slide titles,
 worksheet names, and recognizable PDF headings. OCR-only unnumbered headings
 can be missed, so `section_title` may be null. A table's context is separate
 from parser `metadata` in Upload Test persistence; rows are stored separately in
-`upload_test_records` to mirror production's `extracted_records` table.
+`document_preprocessing_test.upload_test_records` to mirror production's
+`public.extracted_records` table.
 
 Optional image captions are generated content, disabled by default, and are not
 valid source evidence for metric extraction. They must remain labeled as model
@@ -252,7 +264,7 @@ User uploads are parsed, chunked, embedded, and indexed as RAG knowledge. They
 do not create dashboard observations. The Commerce dashboard reads the Commerce
 SQL dataset; decision-support documents provide
 retrieved policy or operating context. XLSX uploads are supported for document
-Q&A, but uploaded HTML is unsupported; seed-corpus HTML ingestion is separate.
+Q&A, but HTML is not a supported upload format.
 
 ## Reproduce and verify
 
@@ -274,7 +286,7 @@ uv run python tools/processing/evaluate_ocr.py \
 These fixtures verify wiring and known table anchors, not real-world OCR
 accuracy. They are synthetic and must not be indexed as Commerce policy or
 business evidence. Current measured limitations, source hashes, and commands
-for engine comparisons are maintained in [the OCR evaluation guide](../../data/evaluation/ocr/README.md).
+for engine comparisons are maintained in [the OCR evaluation guide](../../../../data/evaluation/ocr/README.md).
 
 On 2026-10-06, the Admin processing API returned HTTP 200 for the active
 Shopee Uni Vietnamese inventory guide (`SHOPEE-UNI-INVENTORY-MANAGEMENT-VN`):
@@ -283,8 +295,8 @@ passages across 11 pages. This confirms OCR passages from an image-heavy public
 operating PDF reach persisted processing output. A later human transcription of
 two clear regions on page 11 (heading/instruction and replenishment callouts)
 scored micro-CER 0.015873 / micro-WER 0.041096 after rasterizing those crops to
-force OCR ([dataset](../../data/evaluation/ocr/commerce_shopee_inventory_page_transcriptions.json),
-[run](../../artifacts/evaluation/ocr/pipeline/shopee-page11-selected-region-ocr-20261007.json)).
+force OCR ([dataset](../../../../data/evaluation/ocr/commerce_shopee_inventory_page_transcriptions.json),
+[run](../../../../artifacts/evaluation/ocr/pipeline/shopee-page11-selected-region-ocr-20261007.json)).
 This is a single-reviewer, selected-region check on a mixed vector/image
 PowerPoint export, not a full-page transcription or physical-scan benchmark.
 The screenshot text still has OCR errors and must be checked against the
@@ -301,8 +313,8 @@ The false tables no longer block OCR fallback. The screenshot's product grid
 remains unstructured OCR text, so this result demonstrates page-level OCR and
 persisted OCR Lab review data (outside the production knowledge base), not
 reliable extraction of the screenshot table or physical-scan accuracy
-([upload/API audit](../../artifacts/evaluation/ocr/pipeline/commerce-shopee-inventory-upload-lab-20261008.json),
-[current page-11 anchor run](../../artifacts/evaluation/ocr/pipeline/shopee-inventory-selected-anchor-current-20261008.json)).
+([upload/API audit](../../../../artifacts/evaluation/ocr/pipeline/commerce-shopee-inventory-upload-lab-20261008.json),
+[current page-11 anchor run](../../../../artifacts/evaluation/ocr/pipeline/shopee-inventory-selected-anchor-current-20261008.json)).
 
 A selected-page check on the image-heavy Amazon FBA Restock Guide (pages 6–7;
 English, upload defaults) exposed two issues: standalone screenshot text could
@@ -318,15 +330,15 @@ native layer still includes duplicated screen text and neither page yielded a
 structured table. Do not treat it as full-page accuracy evidence. A separate
 forced-raster check at the upload defaults matched all 9/9 selected phrase
 anchors in 2.811 seconds per page; CER/WER remain unavailable because labels are
-partial ([anchor labels](../../data/evaluation/ocr/commerce_amazon_fba_restock_page_anchors.json),
-[run](../../artifacts/evaluation/ocr/pipeline/amazon-fba-restock-selected-page-upload-smoke-20261008.json)).
+partial ([anchor labels](../../../../data/evaluation/ocr/commerce_amazon_fba_restock_page_anchors.json),
+[run](../../../../artifacts/evaluation/ocr/pipeline/amazon-fba-restock-selected-page-upload-smoke-20261008.json)).
 The two-page excerpt was uploaded through the live Tester OCR Lab API both
 before and after the text gate. The follow-up run
 `f01bac00-29f2-4090-bce8-a632a75847a4` appears in the Tester run list; upload,
 detail readback, and both PNG previews returned HTTP 200. It remains in isolated
 OCR test tables, outside production retrieval. The audit records the earlier
-run and the post-change comparison ([API readback](../../artifacts/evaluation/ocr/pipeline/commerce-amazon-fba-ocr-lab-upload-live-20261008.json)).
+run and the post-change comparison ([API readback](../../../../artifacts/evaluation/ocr/pipeline/commerce-amazon-fba-ocr-lab-upload-live-20261008.json)).
 
 For chunk sizing, embedding, and model-specific token limits see
-[chunking](chunking.md) and [embedding/tokenization](embeddings-tokenization.md). For the CLI map, see
-[`tools/README.md`](../../tools/README.md).
+[chunking](chunking.md) and [embedding/tokenization](../../../../docs/technical/embeddings-tokenization.md). For the CLI map, see
+[`tools/README.md`](../../../../tools/README.md).

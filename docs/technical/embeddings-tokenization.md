@@ -21,7 +21,7 @@ queries must use the same model and vector dimension.
 `EMBEDDING_MAX_SEQUENCE_LENGTH` defaults to 512 tokens. Chunking records actual
 token counts and splits overlength text before embedding; character limits are
 not a substitute because tokenization varies by model and language. See
-[chunking](chunking.md) for the processing order and settings.
+[chunking](../../src/core/document_processing/docs/chunking.md) for the processing order and settings.
 
 Changing the embedding model or vector dimension requires re-embedding all
 passages that will be searched. Do not compare vectors from different models

@@ -6,7 +6,8 @@ the database does not require one fixed set of JSONB keys.
 
 ## Shared chunk fields
 
-`DocumentProcessor.process()` adds these fields to every parsed chunk and table:
+The shared normalization and chunking stages add these fields to parser chunks
+and structured tables:
 
 | Field | Meaning |
 | --- | --- |
@@ -22,7 +23,7 @@ Processors add source locations such as `page_number`, `sheet_name`, or
 `slide_number` only when meaningful for the format. These fields
 describe the parser result; the upload endpoint may later split an oversized
 chunk for the embedding model and assign new retrieval chunk indexes and token
-metadata. See [chunking](../../../docs/technical/chunking.md).
+metadata. See [chunking](chunking.md).
 
 The legacy `extracted_tables.page_number` database column is non-nullable. The
 structured store uses `0` internally for tables without page locations and
@@ -48,12 +49,8 @@ The same processor receives different context from each caller:
   `document_type`, fiscal year, source URL/type, and allowed roles. Its source
   type is `user_upload` unless the caller explicitly marks demo material.
 - Upload Test adds `source_type="upload_test"` and the input `source_sha256`.
-  It saves parser chunks, token-bounded previews, and normalized table rows in
-  isolated storage; it does not create a production document or vectors.
-- Seed ingestion supplies source-document metadata separately and currently
-  constructs the `ChunkMetadata` dataclass in
-  [`src/core/models/document.py`](../models/document.py).
-
+  It saves parser chunks and normalized table rows in isolated storage; it
+  stops before tokenization, embeddings, or production document creation.
 `format` and `document_type` are different concepts: `format` is the file
 extension; `document_type` is the business classification selected for a
 production upload.
@@ -82,14 +79,14 @@ rows, metadata}` with optional source locations. The production upload persists 
 structured table store; Upload Test keeps columns and normalized rows in
 `upload_test_tables` and `upload_test_records`. Table
 chunks may also contain row-aware text for retrieval. See the
-[processing guide](../../../docs/technical/document-processing.md).
+[processing guide](document-processing.md).
 
 ## Current model boundary
 
-[`ChunkMetadata`](../models/document.py) is currently used by seed ingestion;
-production upload and Upload Test build dictionaries and add caller- and
-parser-specific keys. The dataclass is therefore not the complete production
-schema and must not be treated as a strict allowlist for JSONB. A symlink from
+Production upload and Upload Test build metadata dictionaries and add caller-
+and parser-specific keys. [`ChunkMetadata`](../../models/document.py) is used
+by a separate ingestion utility and is not the complete production parser
+schema; do not treat it as a strict allowlist for JSONB. A symlink from
 `document_processing` to that dataclass would create another import path, not a
 shared metadata contract. Keep `core/models` as the model owner; use this file
 to understand which keys are common and which are optional provenance.

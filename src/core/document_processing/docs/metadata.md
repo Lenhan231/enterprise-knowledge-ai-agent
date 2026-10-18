@@ -20,10 +20,9 @@ and structured tables:
 | `table_index` | Zero-based table index (tables only). |
 
 Processors add source locations such as `page_number`, `sheet_name`, or
-`slide_number` only when meaningful for the format. These fields
-describe the parser result; the upload endpoint may later split an oversized
-chunk for the embedding model and assign new retrieval chunk indexes and token
-metadata. See [chunking](chunking.md).
+`slide_number` only when meaningful for the format. These fields describe the
+parser result persisted for inspection and downstream use. See
+[parser chunking](chunking.md).
 
 The legacy `extracted_tables.page_number` database column is non-nullable. The
 structured store uses `0` internally for tables without page locations and
@@ -77,8 +76,8 @@ are not required on other engines' output.
 Tables are returned separately from text chunks as `{table_index, columns,
 rows, metadata}` with optional source locations. The production upload persists this structure in the
 structured table store; Upload Test keeps columns and normalized rows in
-`upload_test_tables` and `upload_test_records`. Table
-chunks may also contain row-aware text for retrieval. See the
+`upload_test_tables` and `upload_test_records`. Table chunks also contain
+row-aware text while structured rows remain available separately. See the
 [processing guide](document-processing.md).
 
 ## Current model boundary

@@ -6,6 +6,5 @@ document-processing material has one place to browse.
 | Topic | Document |
 | --- | --- |
 | Parser flow, formats, OCR, and pipeline configuration | [Document processing guide](document-processing.md) |
-| Text/table chunking and embedding limits | [Chunking guide](chunking.md) |
+| Parser text/table chunking | [Chunking guide](chunking.md) |
 | Shared parser provenance and metadata fields | [Metadata contract](metadata.md) |
-| Project workstream responsibilities | [Ownership map](ownership.md) |

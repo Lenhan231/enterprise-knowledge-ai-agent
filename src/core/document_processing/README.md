@@ -1,8 +1,8 @@
 # Document processing
 
-This package parses supported files into ordered elements and structured tables.
-It does not persist documents or create embeddings. The application owns upload
-and persistence; tokenization and embedding are downstream stages.
+This package parses supported files into ordered elements, structured tables,
+and parser chunks. Its ownership ends at parser output; upload persistence is
+handled by the application and parser-chunk repository.
 
 For end-to-end flow, OCR settings, supported formats, and chunking, see the
 package docs index at [`docs/README.md`](docs/README.md). Shared
@@ -20,11 +20,12 @@ ChunkingProcessor.process(parsed output)
     ├── text elements → text strategies
     └── table elements → row-aware table chunks
 
-application → persist parser chunks/tables → downstream tokenization and indexing
+application → persist parser chunks/tables
 ```
 
 Production upload and Upload Test use the same parser and chunking stages.
-Upload Test stores isolated results and stops before production indexing.
+Upload Test stores isolated results; this package does not handle downstream
+tokenization, embeddings, or retrieval indexing.
 
 ## Package map
 

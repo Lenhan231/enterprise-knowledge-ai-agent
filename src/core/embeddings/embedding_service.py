@@ -53,11 +53,16 @@ def _load_backend(model_name: str, backend_name: str = EMBEDDING_BACKEND) -> Emb
         from langchain_huggingface import HuggingFaceEmbeddings
 
         token = os.getenv("HUGGINGFACE_API_KEY")
-        if token:
-            return HuggingFaceEmbeddings(
-                model_name=model_name, model_kwargs={"token": token},
-            )
-        return HuggingFaceEmbeddings(model_name=model_name)
+        options = {"model_kwargs": {"token": token}} if token else {}
+        backend = HuggingFaceEmbeddings(model_name=model_name, **options)
+        encoder = backend._client
+        architecture_limit = getattr(encoder[0].auto_model.config, "max_position_embeddings", None)
+        if EMBEDDING_MAX_SEQUENCE_LENGTH < 1 or (
+            isinstance(architecture_limit, int) and EMBEDDING_MAX_SEQUENCE_LENGTH > architecture_limit
+        ):
+            raise ValueError("Configured embedding sequence length exceeds the model architecture limit")
+        encoder.max_seq_length = EMBEDDING_MAX_SEQUENCE_LENGTH
+        return backend
     if backend_name == "huggingface_inference":
         return HuggingFaceInferenceEmbeddings(model_name=model_name)
     raise ValueError(f"Unsupported EMBEDDING_BACKEND: {backend_name}")

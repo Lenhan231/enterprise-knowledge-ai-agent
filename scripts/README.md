@@ -134,3 +134,45 @@ The original two-report runner remains an experimental report generator; it
 now shares the fusion helper with the integrated method. Existing saved
 benchmark JSON files are unchanged. Rerun all strategies with the same scope,
 questions and corpus before reporting new comparative scores.
+
+
+## Frozen VietStyle dense baseline
+
+```bash
+.venv/bin/python scripts/retrieval/evaluate_vietstyle_dense.py --snapshot artifacts/evaluation/embedding-comparison-20261018 --output artifacts/evaluation/embedding-comparison-20261018/dense-baseline.json
+```
+
+Uses the snapshot's model/revision/input limit and exact five-document scope in a
+read-only DB transaction. Refuses changed text, metadata or vectors. Reports
+expected-source-file recall in the top ten chunks for all 20 questions; this is
+not passage relevance or answer accuracy. Missing README.txt stays in the scoring
+denominator. No translation, generation, or remote model download is performed.
+
+
+## Local candidate embedding models
+
+```bash
+.venv/bin/python scripts/retrieval/evaluate_embedding_candidates.py --snapshot artifacts/evaluation/embedding-comparison-20261018 --model multilingual-e5-base --device cuda --batch-size 2
+```
+
+The same script accepts `bge-m3` and `qwen3-embedding-0.6b` (batch size 1 was
+used for Qwen on 6 GB VRAM). Model weights/tokenizers download as needed;
+embedding and cosine search run locally. No database or inference API access.
+Frozen chunks/questions stay unchanged; model-specific formatting and every
+input length are checked before embedding. Existing vectors/results are
+preserved; use a fresh `--output-dir` for repeats. See the snapshot comparison.md
+for results and before/after code explanation.
+
+E5-large-v2 is also supported by the frozen candidate runner: use `--model e5-large-v2` with the same snapshot/device arguments. Its model card specifies English-only support; the VietStyle run keeps Vietnamese inputs for comparison.
+
+### Four-direction multilingual dense benchmark
+
+Frozen output: `artifacts/evaluation/four-direction-20261018/comparison.md`.
+Uses the complete old PVFCCo English and Long Hau Vietnamese PDFs and 24 paired intents (48 queries). This measures labelled evidence-page coverage among top ten chunks, not the VietStyle source-file score. Both reports remain candidates for every query; target language does not filter retrieval.
+
+```bash
+.venv/bin/python scripts/retrieval/prepare_four_direction_benchmark.py
+HF_HUB_OFFLINE=1 OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 .venv/bin/python scripts/retrieval/evaluate_embedding_candidates.py --snapshot artifacts/evaluation/four-direction-20261018 --model multilingual-e5-base --device cuda --batch-size 2
+```
+
+Local preparation requires Tesseract with eng/vie and retained historical contexts included in the snapshot for page-label validation. Cached original pages are reused. All three tokenizers are checked before encoding; shared chunks are 60 whitespace words with 12-word overlap, cap 512. Use the revisions recorded in candidate configs for exact repeats, and a fresh `--output-dir` because existing results are protected. BGE uses batch 2; Qwen uses batch 1. `preflight-100-word-attempt/` is an incomplete superseded attempt; use only the top-level final candidate results. No Supabase writes or inference API calls.

@@ -1,0 +1,171 @@
+{
+  "corpus_sha256": "a52fdb6efaadfe428f7c477617b4c0b8072a30d3e3b9596dbfa205b67cc01352",
+  "cases_sha256": "4f62e9502f25bd2cf7d5f3c2c04511ae70e675fb1f74c8fb60b6fbc908d5df83",
+  "chunks": 532,
+  "cases": 20,
+  "baseline_source_recall_at_10": 0.7999999999999999,
+  "source_recall_ceiling": 0.95,
+  "baseline_local_replay_exact_orders": 20,
+  "independently_verified_candidate_cases": 80,
+  "candidates": [
+    {
+      "candidate": "multilingual-e5-base",
+      "model_id": "intfloat/multilingual-e5-base",
+      "revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+      "dimensions": 768,
+      "summary": {
+        "mean_source_recall_at_10": 0.9333333333333333,
+        "full_source_recall_cases": 16,
+        "mean_local_retrieval_latency_ms": 17.93644885037793,
+        "median_local_retrieval_latency_ms": 12.780709002981894,
+        "peak_gpu_allocated_mib": 1105.12158203125
+      },
+      "paired_cases": {
+        "improved": [
+          "Q01",
+          "Q05",
+          "Q07",
+          "Q12",
+          "Q16",
+          "Q17",
+          "Q20"
+        ],
+        "regressed": [],
+        "unchanged": [
+          "Q02",
+          "Q03",
+          "Q04",
+          "Q06",
+          "Q08",
+          "Q09",
+          "Q10",
+          "Q11",
+          "Q13",
+          "Q14",
+          "Q15",
+          "Q18",
+          "Q19"
+        ]
+      },
+      "batch_size": 2,
+      "dtype": "float32",
+      "max_sequence_length": 512,
+      "max_passage_tokens": 476,
+      "corpus_embedding_seconds": 14.152867666998645,
+      "delta_percentage_points": 13.333333333333341
+    },
+    {
+      "candidate": "bge-m3",
+      "model_id": "BAAI/bge-m3",
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "dimensions": 1024,
+      "summary": {
+        "mean_source_recall_at_10": 0.8916666666666666,
+        "full_source_recall_cases": 15,
+        "mean_local_retrieval_latency_ms": 39.90479480053182,
+        "median_local_retrieval_latency_ms": 38.758222999604186,
+        "peak_gpu_allocated_mib": 2219.787109375
+      },
+      "paired_cases": {
+        "improved": [
+          "Q01",
+          "Q05",
+          "Q07",
+          "Q08",
+          "Q16",
+          "Q17",
+          "Q20"
+        ],
+        "regressed": [
+          "Q11",
+          "Q18"
+        ],
+        "unchanged": [
+          "Q02",
+          "Q03",
+          "Q04",
+          "Q06",
+          "Q09",
+          "Q10",
+          "Q12",
+          "Q13",
+          "Q14",
+          "Q15",
+          "Q19"
+        ]
+      },
+      "batch_size": 2,
+      "dtype": "float32",
+      "max_sequence_length": 512,
+      "max_passage_tokens": 474,
+      "corpus_embedding_seconds": 29.04669207400002,
+      "delta_percentage_points": 9.166666666666668
+    },
+    {
+      "candidate": "qwen3-embedding-0.6b",
+      "model_id": "Qwen/Qwen3-Embedding-0.6B",
+      "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "dimensions": 1024,
+      "summary": {
+        "mean_source_recall_at_10": 0.8666666666666667,
+        "full_source_recall_cases": 13,
+        "mean_local_retrieval_latency_ms": 60.06570535246283,
+        "median_local_retrieval_latency_ms": 50.679573501838604,
+        "peak_gpu_allocated_mib": 2398.28173828125
+      },
+      "paired_cases": {
+        "improved": [
+          "Q01",
+          "Q05",
+          "Q08",
+          "Q16",
+          "Q20"
+        ],
+        "regressed": [
+          "Q10"
+        ],
+        "unchanged": [
+          "Q02",
+          "Q03",
+          "Q04",
+          "Q06",
+          "Q07",
+          "Q09",
+          "Q11",
+          "Q12",
+          "Q13",
+          "Q14",
+          "Q15",
+          "Q17",
+          "Q18",
+          "Q19"
+        ]
+      },
+      "batch_size": 1,
+      "dtype": "float32",
+      "max_sequence_length": 512,
+      "max_passage_tokens": 425,
+      "corpus_embedding_seconds": 56.44373920299404,
+      "delta_percentage_points": 6.666666666666677
+    },
+    {
+      "candidate": "e5-large-v2",
+      "model_id": "intfloat/e5-large-v2",
+      "revision": "f169b11e22de13617baa190a028a32f3493550b6",
+      "dimensions": 1024,
+      "batch_size": 2,
+      "dtype": "float32",
+      "max_sequence_length": 512,
+      "max_passage_tokens": 404,
+      "corpus_embedding_seconds": 46.80315559700102,
+      "summary": {
+        "mean_source_recall_at_10": 0.7833333333333333,
+        "full_source_recall_cases": 10,
+        "mean_local_retrieval_latency_ms": 24.70256915075879,
+        "median_local_retrieval_latency_ms": 20.06765050100512,
+        "peak_gpu_allocated_mib": 1325.595703125
+      },
+      "delta_percentage_points": -1.6666666666666607
+    }
+  ]
+}

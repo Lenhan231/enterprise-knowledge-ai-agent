@@ -1,0 +1,223 @@
+{
+  "created_at": "2026-10-18T12:55:34.288595+00:00",
+  "documents": [
+    {
+      "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+      "title": "03 Policy Rules Registry",
+      "status": "ready",
+      "chunks": 12,
+      "dimensions_valid": true,
+      "vectors_present": true
+    },
+    {
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "title": "04 Inventory Control and Reorder Planner",
+      "status": "ready",
+      "chunks": 485,
+      "dimensions_valid": true,
+      "vectors_present": true
+    },
+    {
+      "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+      "title": "02 SOP Cycle Count and Stock Adjustment",
+      "status": "ready",
+      "chunks": 9,
+      "dimensions_valid": true,
+      "vectors_present": true
+    },
+    {
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "title": "01 Inventory Management Policy Manual",
+      "status": "ready",
+      "chunks": 18,
+      "dimensions_valid": true,
+      "vectors_present": true
+    },
+    {
+      "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+      "title": "05 Inventory Policy Training Deck",
+      "status": "ready",
+      "chunks": 8,
+      "dimensions_valid": true,
+      "vectors_present": true
+    }
+  ],
+  "indexed_chunks": 532,
+  "dimensions": 384,
+  "vectors_finite": true,
+  "parser_snapshot_unchanged": true,
+  "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+  "model_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+  "device": "cuda:0",
+  "encoder_max_seq_length": 512,
+  "max_observed_encoder_input_tokens": 402,
+  "encoder_truncated_chunks": 0,
+  "probe_400_word_encoded_tokens": 402,
+  "indexed_corpus_sha256": "a52fdb6efaadfe428f7c477617b4c0b8072a30d3e3b9596dbfa205b67cc01352",
+  "vectors_file_sha256": "12f5790712a46bcf243afafbffa054787d265a6824da35733f0d21ebc26882a0",
+  "retrieval_checks": [
+    {
+      "case_id": "Q01",
+      "method": "dense",
+      "returned_chunks": 10,
+      "latency_ms": 4404.710980998061,
+      "ranked_chunk_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::0",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::0",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::3",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0"
+      ]
+    },
+    {
+      "case_id": "Q01",
+      "method": "bm25",
+      "returned_chunks": 10,
+      "latency_ms": 814.4721259996004,
+      "ranked_chunk_ids": [
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::0",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::0",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7"
+      ]
+    },
+    {
+      "case_id": "Q01",
+      "method": "hybrid",
+      "returned_chunks": 10,
+      "latency_ms": 1080.2684580012283,
+      "ranked_chunk_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::0",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::0",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3"
+      ]
+    },
+    {
+      "case_id": "Q05",
+      "method": "dense",
+      "returned_chunks": 10,
+      "latency_ms": 694.3432799998845,
+      "ranked_chunk_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::9",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::4",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15"
+      ]
+    },
+    {
+      "case_id": "Q05",
+      "method": "bm25",
+      "returned_chunks": 10,
+      "latency_ms": 470.0625389996276,
+      "ranked_chunk_ids": [
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::1",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::4",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::2",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::0"
+      ]
+    },
+    {
+      "case_id": "Q05",
+      "method": "hybrid",
+      "returned_chunks": 10,
+      "latency_ms": 955.8774789984454,
+      "ranked_chunk_ids": [
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::1",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::9",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::2",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::0",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::4"
+      ]
+    },
+    {
+      "case_id": "Q15",
+      "method": "dense",
+      "returned_chunks": 10,
+      "latency_ms": 705.9422919992357,
+      "ranked_chunk_ids": [
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::4",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::9",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::12",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5"
+      ]
+    },
+    {
+      "case_id": "Q15",
+      "method": "bm25",
+      "returned_chunks": 10,
+      "latency_ms": 470.8230030009872,
+      "ranked_chunk_ids": [
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::6",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::4"
+      ]
+    },
+    {
+      "case_id": "Q15",
+      "method": "hybrid",
+      "returned_chunks": 10,
+      "latency_ms": 531.5930079996178,
+      "ranked_chunk_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::4",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6"
+      ]
+    }
+  ],
+  "limitations": "Availability smoke, not a model-quality comparison. New vectors use all-MiniLM-L6-v2 at explicit 512 tokens and are not equivalent to prior multilingual MiniLM/shorter-limit runs. Document language labels unchanged. Historical upload failure cause not proven."
+}

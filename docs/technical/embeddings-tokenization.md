@@ -11,6 +11,10 @@
   Transformers weights. `EMBEDDING_BACKEND=huggingface_inference` calls the
   Hugging Face Inference API with `HUGGINGFACE_API_KEY`, avoiding those weights
   in app RAM. Both document passages and queries use the selected backend.
+- The local backend explicitly applies the configured sequence limit to its
+  Sentence Transformers encoder and rejects values above a known architecture
+  maximum. The tokenizer's advertised limit can differ from the encoder's
+  packaged default. Hosted inference limits are provider-controlled.
 - PostgreSQL stores `vector(384)` and ranks cosine distance with pgvector.
 - `TokenCounter` loads `AutoTokenizer` for the same model and records token
   counts in chunk metadata. It does not truncate or reject overlength text.

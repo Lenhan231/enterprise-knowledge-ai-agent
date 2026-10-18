@@ -1,0 +1,33 @@
+{
+  "cases.json_sha256": "1464440db4666e5873f3ca3c0fd2b70886624e718a54caff1769849a419d35f5",
+  "pages_sha256": "6227c6a90210fdc5b13562fca0d69f654345100f6a71a519eb894c3424fa92ed",
+  "original_pdf_sha256": {
+    "AnnualReport_2008.pdf": "cb33572b64b46bd3b0cb642bef50f4261b400b6d4993f1bfa457fa8ecc198de4",
+    "2.BCTC da kiem toan 2008 (V).pdf": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4"
+  },
+  "chunks": 525,
+  "pages": 118,
+  "chunks_by_document": {
+    "annual_report": 348,
+    "long_hau_fs": 177
+  },
+  "chunking": "60 whitespace words, 12-word overlap, page boundaries preserved",
+  "directions": {
+    "vi->en": 12,
+    "en->en": 12,
+    "vi->vi": 10,
+    "en->vi": 10,
+    "vi->mixed": 2,
+    "en->mixed": 2
+  },
+  "empty_pages": [
+    "annual_report::page::2",
+    "annual_report::page::95"
+  ],
+  "metric": "gold evidence page coverage among top 10 chunks; page labels retained, old chunk indices not reused",
+  "scope": "Both complete reports compete for every question; language/gold labels never restrict ranking",
+  "retained_contexts_sha256": "2f39126048fcb08d2e1bd836dd6a697f03f9a04cc5354a0c340cb9ac1b137bd6",
+  "retained_contexts_source": "Local origin/QuocAn artifacts/benchmark JSON context records; partial historical records used only for evidence validation, not ranking corpus",
+  "retained_contexts_branch_commit": "cf16ccf1a5fe9d7b773734ae357165e83c237075",
+  "full_page_word_coverage_verified": true
+}

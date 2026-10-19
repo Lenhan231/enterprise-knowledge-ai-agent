@@ -1,0 +1,74 @@
+{
+  "note": "Diacritic counts flag candidates for inspection, not automatic language labels. Mixed language was confirmed by content and visual PDF review.",
+  "files": {
+    "01_Inventory_Management_Policy_Manual_EN.docx": {
+      "parser_chunks": 19,
+      "chunks_with_vietnamese_diacritic_characters": 0,
+      "examples": []
+    },
+    "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf": {
+      "parser_chunks": 6,
+      "chunks_with_vietnamese_diacritic_characters": 6,
+      "examples": [
+        {
+          "chunk_index": 0,
+          "excerpt": "VietStyle Commerce · SOP-INV-002 · Tài li·u mô ph·ng Trang 1 VIETSTYLE COMMERCE SOP-INV-002 CYCLE COUNT PROCEDURE AND INVENTORY ADJUSTMENT Phiên b·n v1.0 · 16/10/2026 · Owner: Inventory Manager TÀI LI·U MÔ PH·NG CHO DATATHON 2026. Các ng··ng v·n hành, lead time, KPI và c·p phê du"
+        },
+        {
+          "chunk_index": 1,
+          "excerpt": "VietStyle Commerce · SOP-INV-002 · Tài li·u mô ph·ng Trang 2 1. M·c ·ích và ph·m vi Áp d·ng cho SKU th·i trang và outdoor trong kho / ·i·m x· lý ··n c·a mô hình VietStyle Commerce. SOP bao g·m ki·m kê chu k·, ki·m kê theo s· ki·n và ·i·u ch·nh chênh l·ch. Không dùng SOP này ·· th"
+        },
+        {
+          "chunk_index": 2,
+          "excerpt": "· Freeze transactions at the location being counted or record every transaction occurring during the count window. · Chu·n b· thi·t b· quét, nhãn cách ly, bi·u m·u ghi nh·n, camera và ph··ng án x· lý hàng ·ang pick / pack / chuy·n kho. 4. Counting and Reconciliation · Count by SK"
+        }
+      ]
+    },
+    "03_Policy_Rules_Registry_EN.csv": {
+      "parser_chunks": 12,
+      "chunks_with_vietnamese_diacritic_characters": 2,
+      "examples": [
+        {
+          "chunk_index": 2,
+          "excerpt": "Row 3: policy_id: INV-POL-003 | policy_name: Inventory Conflict Verification | trigger: A stockout/low-service signal occurs with >120 days of supply, or stockout and overstock flags are both enabled | rule_or_required_action: Temporarily block automatic POs; check transactions, "
+        },
+        {
+          "chunk_index": 11,
+          "excerpt": "Row 12: policy_id: INV-POL-012 | policy_name: AI / Automated Reporting | trigger: AI Agent generates an answer or PO recommendation | rule_or_required_action: Use only authorized data; cite sources and snapshot date; never create POs or adjust inventory autonomously; escalate con"
+        }
+      ]
+    },
+    "04_Inventory_Control_and_Reorder_Planner_EN.xlsx": {
+      "parser_chunks": 485,
+      "chunks_with_vietnamese_diacritic_characters": 11,
+      "examples": [
+        {
+          "chunk_index": 0,
+          "excerpt": "Columns: Mục | Nội dung"
+        },
+        {
+          "chunk_index": 1,
+          "excerpt": "Columns: Mục | Nội dung"
+        },
+        {
+          "chunk_index": 2,
+          "excerpt": "Columns: Mục | Nội dung"
+        }
+      ]
+    },
+    "05_Inventory_Policy_Training_Deck_EN.pptx": {
+      "parser_chunks": 8,
+      "chunks_with_vietnamese_diacritic_characters": 2,
+      "examples": [
+        {
+          "chunk_index": 1,
+          "excerpt": "01 | Data Context The dataset is for simulation and does not reflect current inventory. 2,412 SKUs in product master 60,247 Inventory records across snapshots 424 SKUs in the 2022-12-31 snapshot 67.3% Records with stockout_flag enabled Product categories • Streetwear • Outdoor • "
+        },
+        {
+          "chunk_index": 7,
+          "excerpt": "07 | Clean Data Before Automation For the Inventory / RAG Agent 1. Giữ snapshot date và source file. 2. Trả lời kèm policy_id và trích dẫn nguồn. 3. Không suy đoán lead time / currency / PO. 4. Mâu thuẫn → DATA CONFLICT. 5. Không tự ghi PO hoặc điều chỉnh tồn. Implementation Road"
+        }
+      ]
+    }
+  }
+}

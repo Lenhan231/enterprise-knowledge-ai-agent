@@ -1,0 +1,26 @@
+{
+  "indexed_corpus": "indexed-corpus.jsonl",
+  "cases": "cases.json",
+  "document_ids": [
+    "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+    "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+    "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv",
+    "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+    "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx",
+    "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+    "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+    "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+    "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+    "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+  ],
+  "candidate_revisions": {
+    "multilingual-e5-base": "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "bge-m3": "5617a9f61b028005a4858fdac845db406aefb181",
+    "qwen3-embedding-0.6b": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3"
+  },
+  "evidence": {
+    "path": "artifacts/evaluation/vietstyle-bilingual-20261019/evidence-v1/evidence.json",
+    "sha256": "012d0864c0b82d252c5a0164a29ddf76a81ef7c8a289259fa9cde8b33163a207"
+  },
+  "indexed_corpus_sha256": "b8f5aba0da18a0725ae17762bf083d9101b740f9b86d3a928674225e51db51e5"
+}

@@ -1,0 +1,65 @@
+{
+  "phase": "Source provenance only; no retrieval/evidence scorer or context expansion yet",
+  "legacy_commit": "f8b5aa6504adb3eab0c5aa8671332cbfe9525b71",
+  "input_sha256": {
+    "artifacts/evaluation/embedding-comparison-20261018/parser-corpus.jsonl": "284501a33c514642cd092b9d0b59dbf63cc80950a729088cc7dd226b626c41c3",
+    "artifacts/evaluation/vietstyle-bilingual-20261019/corrected-english-parser-corpus.jsonl": "2be61cc3a9bf014c5090b256c98f7433acb67f44e003c312773a3242f035cd58"
+  },
+  "checks": [
+    {
+      "tokenizer": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "sequence_limit": 512,
+      "source_documents": 10,
+      "source_parser_chunks": 1063,
+      "final_chunks": 1063,
+      "split_parent_chunks": 0,
+      "verified_source_segments": 1063,
+      "legacy_text_and_metadata_preserved": true,
+      "exact_source_slices": true,
+      "all_nonwhitespace_source_and_child_characters_covered": true
+    },
+    {
+      "tokenizer": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "sequence_limit": 384,
+      "source_documents": 10,
+      "source_parser_chunks": 1063,
+      "final_chunks": 1768,
+      "split_parent_chunks": 705,
+      "verified_source_segments": 2473,
+      "legacy_text_and_metadata_preserved": true,
+      "exact_source_slices": true,
+      "all_nonwhitespace_source_and_child_characters_covered": true
+    },
+    {
+      "tokenizer": "Qwen/Qwen3-Embedding-0.6B",
+      "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "sequence_limit": 512,
+      "source_documents": 10,
+      "source_parser_chunks": 1063,
+      "final_chunks": 1063,
+      "split_parent_chunks": 0,
+      "verified_source_segments": 1063,
+      "legacy_text_and_metadata_preserved": true,
+      "exact_source_slices": true,
+      "all_nonwhitespace_source_and_child_characters_covered": true
+    },
+    {
+      "tokenizer": "Qwen/Qwen3-Embedding-0.6B",
+      "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "sequence_limit": 384,
+      "source_documents": 10,
+      "source_parser_chunks": 1063,
+      "final_chunks": 1881,
+      "split_parent_chunks": 818,
+      "verified_source_segments": 2699,
+      "legacy_text_and_metadata_preserved": true,
+      "exact_source_slices": true,
+      "all_nonwhitespace_source_and_child_characters_covered": true
+    }
+  ],
+  "no_models_loaded": true,
+  "no_database_access": true,
+  "limit_note": "384 is a verification setting to force splits; it does not change the application configured limit or frozen datasets."
+}

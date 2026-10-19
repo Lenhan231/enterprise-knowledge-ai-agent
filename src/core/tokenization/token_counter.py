@@ -20,7 +20,18 @@ class TokenCounter:
         max_sequence_tokens: int,
         overlap_tokens: int = 32,
     ) -> list[str]:
-        """Split text by tokenizer offsets while reserving model special tokens."""
+        """Return text only; keep the existing caller interface."""
+        return [part for part, _, _ in self.split_text_with_offsets(
+            text, max_sequence_tokens, overlap_tokens,
+        )]
+
+    def split_text_with_offsets(
+        self,
+        text: str,
+        max_sequence_tokens: int,
+        overlap_tokens: int = 32,
+    ) -> list[tuple[str, int, int]]:
+        """Return unchanged slices with Unicode [start, end) source coordinates."""
         if max_sequence_tokens <= 0:
             raise ValueError("Maximum sequence length must be positive")
 
@@ -40,7 +51,7 @@ class TokenCounter:
         )
         offsets = encoded["offset_mapping"]
         if len(offsets) <= content_limit:
-            return [text]
+            return [(text, 0, len(text))]
 
         chunks = []
         token_start = 0
@@ -60,7 +71,7 @@ class TokenCounter:
             if self.count(chunk) > content_limit:
                 raise ValueError("Tokenizer could not split text within the configured sequence length")
 
-            chunks.append(chunk)
+            chunks.append((chunk, char_start, char_end))
             previous_char_end = char_end
             if token_end == len(offsets):
                 break

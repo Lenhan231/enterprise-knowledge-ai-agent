@@ -1,0 +1,329 @@
+{
+  "scope": "20 paired question meanings, raw text only; these are embedding tokenizers, not a ChatGPT billing estimate",
+  "models": {
+    "multilingual-e5-base": {
+      "revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+      "vi_total": 549,
+      "en_total": 553,
+      "vi_en_ratio": 0.9927667269439421,
+      "per_intent": [
+        {
+          "id": "Q01",
+          "vi_tokens": 24,
+          "en_tokens": 23
+        },
+        {
+          "id": "Q02",
+          "vi_tokens": 21,
+          "en_tokens": 24
+        },
+        {
+          "id": "Q03",
+          "vi_tokens": 23,
+          "en_tokens": 27
+        },
+        {
+          "id": "Q04",
+          "vi_tokens": 23,
+          "en_tokens": 24
+        },
+        {
+          "id": "Q05",
+          "vi_tokens": 16,
+          "en_tokens": 16
+        },
+        {
+          "id": "Q06",
+          "vi_tokens": 24,
+          "en_tokens": 23
+        },
+        {
+          "id": "Q07",
+          "vi_tokens": 18,
+          "en_tokens": 20
+        },
+        {
+          "id": "Q08",
+          "vi_tokens": 30,
+          "en_tokens": 27
+        },
+        {
+          "id": "Q09",
+          "vi_tokens": 35,
+          "en_tokens": 34
+        },
+        {
+          "id": "Q10",
+          "vi_tokens": 34,
+          "en_tokens": 33
+        },
+        {
+          "id": "Q11",
+          "vi_tokens": 29,
+          "en_tokens": 30
+        },
+        {
+          "id": "Q12",
+          "vi_tokens": 38,
+          "en_tokens": 38
+        },
+        {
+          "id": "Q13",
+          "vi_tokens": 30,
+          "en_tokens": 25
+        },
+        {
+          "id": "Q14",
+          "vi_tokens": 27,
+          "en_tokens": 26
+        },
+        {
+          "id": "Q15",
+          "vi_tokens": 18,
+          "en_tokens": 15
+        },
+        {
+          "id": "Q16",
+          "vi_tokens": 31,
+          "en_tokens": 34
+        },
+        {
+          "id": "Q17",
+          "vi_tokens": 29,
+          "en_tokens": 33
+        },
+        {
+          "id": "Q18",
+          "vi_tokens": 28,
+          "en_tokens": 28
+        },
+        {
+          "id": "Q19",
+          "vi_tokens": 30,
+          "en_tokens": 30
+        },
+        {
+          "id": "Q20",
+          "vi_tokens": 41,
+          "en_tokens": 43
+        }
+      ]
+    },
+    "bge-m3": {
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "vi_total": 549,
+      "en_total": 553,
+      "vi_en_ratio": 0.9927667269439421,
+      "per_intent": [
+        {
+          "id": "Q01",
+          "vi_tokens": 24,
+          "en_tokens": 23
+        },
+        {
+          "id": "Q02",
+          "vi_tokens": 21,
+          "en_tokens": 24
+        },
+        {
+          "id": "Q03",
+          "vi_tokens": 23,
+          "en_tokens": 27
+        },
+        {
+          "id": "Q04",
+          "vi_tokens": 23,
+          "en_tokens": 24
+        },
+        {
+          "id": "Q05",
+          "vi_tokens": 16,
+          "en_tokens": 16
+        },
+        {
+          "id": "Q06",
+          "vi_tokens": 24,
+          "en_tokens": 23
+        },
+        {
+          "id": "Q07",
+          "vi_tokens": 18,
+          "en_tokens": 20
+        },
+        {
+          "id": "Q08",
+          "vi_tokens": 30,
+          "en_tokens": 27
+        },
+        {
+          "id": "Q09",
+          "vi_tokens": 35,
+          "en_tokens": 34
+        },
+        {
+          "id": "Q10",
+          "vi_tokens": 34,
+          "en_tokens": 33
+        },
+        {
+          "id": "Q11",
+          "vi_tokens": 29,
+          "en_tokens": 30
+        },
+        {
+          "id": "Q12",
+          "vi_tokens": 38,
+          "en_tokens": 38
+        },
+        {
+          "id": "Q13",
+          "vi_tokens": 30,
+          "en_tokens": 25
+        },
+        {
+          "id": "Q14",
+          "vi_tokens": 27,
+          "en_tokens": 26
+        },
+        {
+          "id": "Q15",
+          "vi_tokens": 18,
+          "en_tokens": 15
+        },
+        {
+          "id": "Q16",
+          "vi_tokens": 31,
+          "en_tokens": 34
+        },
+        {
+          "id": "Q17",
+          "vi_tokens": 29,
+          "en_tokens": 33
+        },
+        {
+          "id": "Q18",
+          "vi_tokens": 28,
+          "en_tokens": 28
+        },
+        {
+          "id": "Q19",
+          "vi_tokens": 30,
+          "en_tokens": 30
+        },
+        {
+          "id": "Q20",
+          "vi_tokens": 41,
+          "en_tokens": 43
+        }
+      ]
+    },
+    "qwen3-embedding-0.6b": {
+      "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "vi_total": 578,
+      "en_total": 500,
+      "vi_en_ratio": 1.156,
+      "per_intent": [
+        {
+          "id": "Q01",
+          "vi_tokens": 25,
+          "en_tokens": 21
+        },
+        {
+          "id": "Q02",
+          "vi_tokens": 22,
+          "en_tokens": 18
+        },
+        {
+          "id": "Q03",
+          "vi_tokens": 26,
+          "en_tokens": 23
+        },
+        {
+          "id": "Q04",
+          "vi_tokens": 24,
+          "en_tokens": 22
+        },
+        {
+          "id": "Q05",
+          "vi_tokens": 19,
+          "en_tokens": 14
+        },
+        {
+          "id": "Q06",
+          "vi_tokens": 26,
+          "en_tokens": 22
+        },
+        {
+          "id": "Q07",
+          "vi_tokens": 25,
+          "en_tokens": 24
+        },
+        {
+          "id": "Q08",
+          "vi_tokens": 33,
+          "en_tokens": 28
+        },
+        {
+          "id": "Q09",
+          "vi_tokens": 40,
+          "en_tokens": 32
+        },
+        {
+          "id": "Q10",
+          "vi_tokens": 38,
+          "en_tokens": 36
+        },
+        {
+          "id": "Q11",
+          "vi_tokens": 32,
+          "en_tokens": 30
+        },
+        {
+          "id": "Q12",
+          "vi_tokens": 35,
+          "en_tokens": 35
+        },
+        {
+          "id": "Q13",
+          "vi_tokens": 31,
+          "en_tokens": 18
+        },
+        {
+          "id": "Q14",
+          "vi_tokens": 27,
+          "en_tokens": 23
+        },
+        {
+          "id": "Q15",
+          "vi_tokens": 20,
+          "en_tokens": 12
+        },
+        {
+          "id": "Q16",
+          "vi_tokens": 27,
+          "en_tokens": 26
+        },
+        {
+          "id": "Q17",
+          "vi_tokens": 30,
+          "en_tokens": 28
+        },
+        {
+          "id": "Q18",
+          "vi_tokens": 27,
+          "en_tokens": 24
+        },
+        {
+          "id": "Q19",
+          "vi_tokens": 29,
+          "en_tokens": 26
+        },
+        {
+          "id": "Q20",
+          "vi_tokens": 42,
+          "en_tokens": 38
+        }
+      ]
+    }
+  }
+}

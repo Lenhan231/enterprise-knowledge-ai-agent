@@ -176,3 +176,46 @@ HF_HUB_OFFLINE=1 OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 .venv/bin/python scripts/re
 ```
 
 Local preparation requires Tesseract with eng/vie and retained historical contexts included in the snapshot for page-label validation. Cached original pages are reused. All three tokenizers are checked before encoding; shared chunks are 60 whitespace words with 12-word overlap, cap 512. Use the revisions recorded in candidate configs for exact repeats, and a fresh `--output-dir` because existing results are protected. BGE uses batch 2; Qwen uses batch 1. `preflight-100-word-attempt/` is an incomplete superseded attempt; use only the top-level final candidate results. No Supabase writes or inference API calls.
+
+### Build corrected local English VietStyle simulation files
+
+`.venv/bin/python scripts/retrieval/build_vietstyle_english.py` rebuilds the separately versioned English pack from the preserved originals and translation sources in `artifacts/evaluation/vietstyle-bilingual-20261019/`. It preserves workbook values/formulas and CSV policy data, regenerates a text-extractable SOP PDF, and packages five documents plus English benchmark questions/build notes. No database or model calls. See that folder's BUILD_NOTES.md; question/reference-answer files are evaluation inputs, not retrieval evidence.
+
+### Validate bilingual VietStyle evidence labels
+
+`.venv/bin/python scripts/retrieval/validate_vietstyle_evidence.py --self-check` verifies evaluation-only source spans and generates a human-readable review. See `artifacts/evaluation/vietstyle-bilingual-20261019/evidence-v1/README.md` for 20 paired intents, required/optional components, Q14 policy-role issues, and the next retrieval-to-source mapping step. Uses the standard library; no models, database or scoring run. Never index label/question/reference-answer files as evidence.
+
+Source mapping step 1 is now implemented in the shared token chunker. See `artifacts/evaluation/vietstyle-bilingual-20261019/evidence-v1/source-mapping-step1.md` for fields, before/after behavior, checks and the remaining evidence-scoring step. Existing database rows/saved corpora were not rebuilt.
+
+Evidence scoring step 2 is implemented in `src/core/evaluation/evidence_metrics.py`; see `artifacts/evaluation/vietstyle-bilingual-20261019/evidence-v1/evidence-coverage-step2.md` for AND/OR, overlap, Q14, tests and oracle-only verification. Run `.venv/bin/python -m unittest discover -s tests -p test_evidence_metrics.py -v`. This is not yet wired into a model benchmark.
+
+### VietStyle exact-evidence dense benchmark (four directions)
+
+`artifacts/evaluation/vietstyle-bilingual-20261019/dense-evidence-benchmark-v1/` contains the shared 1,063 provenance-bearing chunks and 80 cases per candidate (20 paired intents). Read IMPLEMENTATION.md for before/after code changes and repeat commands; comparison.md has the model results.
+
+- Prepare a fresh snapshot: `.venv/bin/python scripts/retrieval/prepare_vietstyle_evidence_benchmark.py --output-dir artifacts/evaluation/vietstyle-evidence-repeat`.
+- Use existing `evaluate_embedding_candidates.py --snapshot <folder> --model <candidate> --device cuda --batch-size 2` (Qwen batch 1). Evidence-enabled snapshots automatically invoke the new scorer; older snapshots retain their metrics.
+- Replay saved ranks and character coverage, without encoders: `.venv/bin/python scripts/retrieval/compare_vietstyle_evidence.py` (or `--snapshot <folder>`).
+- Checks: `.venv/bin/python -m unittest discover -s tests -p 'test_evidence*.py' -v`.
+
+Each direction searches all five target-language files, without gold-source filtering. The new component/full-intent metrics are not comparable directly to the old file/page metric. Q14 remains excluded from full-intent scoring. This is dense-only, without automatic translation, generation, database writes or production configuration changes.
+
+### Evidence v2 label review and rescoring
+
+Versioned labels: `artifacts/evaluation/vietstyle-bilingual-20261019/evidence-v2/README.md`; before/after component changes are in annotation-changes.json. Validate with `validate_vietstyle_evidence.py --folder artifacts/evaluation/vietstyle-bilingual-20261019/evidence-v2 --self-check`.
+
+`rescore_vietstyle_evidence.py` replays all three candidates' saved vectors/rankings and evaluates revised labels without models/GPU. The default output `dense-evidence-benchmark-v1/rescored-evidence-v2/` already exists; supply a fresh `--output-dir` to repeat. Original v1 labels/results remain untouched. Label-only score changes are not encoder improvement; v2 was reviewed after seeing v1 errors and is not an independent held-out evaluation. Q14 still needs policy resolution.
+
+### Neighbor context with fixed token budgets
+
+`evaluate_neighbor_context.py` reuses the saved E5 vectors/evidence v2 to compare dense10, immediate same-document neighbors and dense30 under 2,048/4,096 context-token caps. No encoder/GPU/API/DB calls. Existing output is `artifacts/evaluation/vietstyle-bilingual-20261019/dense-evidence-benchmark-v1/neighbor-context-e5-v1/`; read comparison.md and IMPLEMENTATION.md. Use a fresh `--output-dir` to repeat. Context tokens use the pinned E5 tokenizer as a proxy, not the generation/chat tokenizer. Labels do not guide selection.
+
+Checks: `.venv/bin/python -m unittest discover -s tests -p test_neighbor_context.py -v`. Neighbor order is frozen parser serialization, not guaranteed physical PDF row order. This experimental policy is not integrated into production.
+
+### VietStyle E5 + BGE cross-encoder reranking (no context-token cap)
+
+`evaluate_vietstyle_reranker.py` reconstructs E5 top30 from saved vectors, runs the pinned local multilingual `BAAI/bge-reranker-v2-m3` CrossEncoder and scores its top10 against unchanged evidence v2. Both final outputs contain10 chunks; no context-token budget, neighbor expansion, translations or generation. Candidate-pool evidence@30 is reported separately. Existing Vinamilk CrossEncoder benchmark code remains unchanged.
+
+Completed output: `artifacts/evaluation/vietstyle-bilingual-20261019/dense-evidence-benchmark-v1/reranker-bge-v2-m3-v1/`; see comparison.md and IMPLEMENTATION.md. Reproduce saved-score verification with `.venv/bin/python scripts/retrieval/evaluate_vietstyle_reranker.py --verify-only`; a fresh GPU run requires a new `--output-dir`. Model runtime files must be cached; download command is in IMPLEMENTATION.md. Checks: `.venv/bin/python -m unittest discover -s tests -p test_vietstyle_reranker.py -v`.
+
+No production reranker was enabled: VI→VI complete evidence remained17/19 (fixedQ20, regressedQ15); VI→EN rose9→12/19. This is a small exploratory ranking benchmark, not generated-answer accuracy.

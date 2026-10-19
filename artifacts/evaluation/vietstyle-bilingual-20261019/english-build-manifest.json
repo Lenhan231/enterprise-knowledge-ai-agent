@@ -1,0 +1,338 @@
+{
+  "version": "corrected-en-v1",
+  "purpose": "Local simulated-data benchmark only; not an approved operational policy",
+  "translation": "Assistant-created from supplied English pack and frozen Vietnamese SOP; not an independent human translation certification",
+  "files": {
+    "01_Inventory_Management_Policy_Manual_EN.docx": {
+      "source_sha256": "55771ec9b0387a11998d248351b19d9defc323a816e604b395631f1ba06bebba",
+      "output_sha256": "55771ec9b0387a11998d248351b19d9defc323a816e604b395631f1ba06bebba",
+      "method": "Unchanged English manual"
+    },
+    "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf": {
+      "source_sha256": "3a9c476b1f08ddbf82a2295c2d4f333e9f7c4ffc631afe8d6374b4ea293de749",
+      "output_sha256": "2b9ab715075d45aa0281dac5ee25646dc83d7f6e4477059e29a542a032a2d0e0",
+      "pdf_pages": 3,
+      "extractable_characters": 4978,
+      "method": "Complete assistant translation of frozen VN SOP; regenerated selectable-text PDF"
+    },
+    "03_Policy_Rules_Registry_EN.csv": {
+      "source_sha256": "bc7c3fd2b50e1eeb2475ffc116447917408d3b5e39062e7b6e915029f13d431e",
+      "output_sha256": "91d6d1da80af85f77500af670edc39cc5fb699789282e49cb966595aa9d601f2",
+      "method": "Remaining text translated; original structure retained"
+    },
+    "04_Inventory_Control_and_Reorder_Planner_EN.xlsx": {
+      "source_sha256": "12cf63a79c57caca094dea823afe5e44f84f27fc5ec2874615fdb7613bd46bd2",
+      "output_sha256": "8ca01a18cd3aeedc1e6e55c697ef39b215ec2c5767ae1aa947d4a384d6ef7178",
+      "method": "Remaining text translated; original structure retained"
+    },
+    "05_Inventory_Policy_Training_Deck_EN.pptx": {
+      "source_sha256": "dab86eba38b4429c0640f859bfee5dc68a9b4b9e7fd7958ef1306e70711218b2",
+      "output_sha256": "ec44b0cd0ca94be9d33356c54128bbad58f08702bd055a5af00cde999e4f7189",
+      "method": "Remaining text translated; original structure retained"
+    }
+  },
+  "changes": [
+    {
+      "file": "03_Policy_Rules_Registry_EN.csv",
+      "policy_id": "INV-POL-003",
+      "before": "P1 trong 1 ngày làm việc",
+      "after": "P1 within 1 business day"
+    },
+    {
+      "file": "03_Policy_Rules_Registry_EN.csv",
+      "policy_id": "INV-POL-012",
+      "before": "Mỗi yêu cầu",
+      "after": "Each request"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Dùng để mô phỏng chính sách tồn kho trên Datathon 2026. Không phải hệ thống WMS/ERP sản xuất.",
+      "after": "For inventory policy simulation using Datathon 2026. This is not a production WMS/ERP system."
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Mục",
+      "after": "Item"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Nội dung",
+      "after": "Content"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Nguồn dữ liệu",
+      "after": "Data source"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Phạm vi",
+      "after": "Scope"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "2,412 SKU trong products.csv; 60,247 snapshot tồn kho; dữ liệu inventory từ 2012-07-31 đến 2022-12-31.",
+      "after": "2,412 SKUs in products.csv; 60,247 inventory snapshot records; inventory data from 2012-07-31 to 2022-12-31."
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Snapshot mẫu",
+      "after": "Sample snapshot"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "2022-12-31 — 424 SKU có bản ghi trong snapshot mới nhất. Không đại diện cho tồn kho hiện hành.",
+      "after": "2022-12-31 — 424 SKUs have records in the latest snapshot. This does not represent current inventory."
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Cách tính nhu cầu",
+      "after": "Demand calculation"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Avg monthly demand = trung bình units_sold của tối đa 3 snapshot gần nhất có sẵn cho SKU. Có thể không phải 3 tháng liên tiếp.",
+      "after": "Avg monthly demand = average units_sold across up to 3 most recent available snapshots for the SKU. These may not be 3 consecutive months."
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Tham số giả định",
+      "after": "Assumed parameters"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Lead time = 14 ngày; safety stock = 7 ngày; review period = 7 ngày. Chỉnh theo nhà cung cấp / SKU trước khi sử dụng.",
+      "after": "Lead time = 14 days; safety stock = 7 days; review period = 7 days. Adjust by supplier / SKU before use."
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "On-hand + Open PO − Backorder. Dataset không có Open PO / Backorder; workbook mặc định 0 và yêu cầu nhập số thực tế.",
+      "after": "On-hand + Open PO − Backorder. The dataset has no Open PO / Backorder data; the workbook defaults to 0 and requires actual values to be entered."
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "stockout_days ≥ 1 hoặc fill_rate < 95% hoặc calculated days of supply ≤ 14 ngày.",
+      "after": "stockout_days ≥ 1 or fill_rate < 95% or calculated days of supply ≤ 14 days."
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Calculated days of supply > 120 ngày. >180 ngày cần kế hoạch xử lý theo chính sách.",
+      "after": "Calculated days of supply > 120 days. >180 days requires a handling plan under the policy."
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Nếu stockout signal đồng thời calculated days of supply >120 ngày, trạng thái DATA CONFLICT; không tự động đề xuất PO.",
+      "after": "If a stockout signal occurs while calculated days of supply >120 days, set DATA CONFLICT; do not automatically recommend a PO."
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Giới hạn",
+      "after": "Limitations"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Dataset không xác nhận đơn vị tiền tệ, inbound lead time, MOQ, kho/vị trí, PO đang mở hoặc backorder. Cờ reorder_flag trong nguồn luôn bằng 0.",
+      "after": "The dataset does not confirm currency, inbound lead time, MOQ, warehouse/location, open POs, or backorders. The source reorder_flag is always 0."
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Hướng dẫn",
+      "after": "Instructions"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Điền Open PO / Backorder và lead time thực tế; xem KPI Summary; lọc Inventory Control theo Priority / Policy Decision; xác minh mọi DATA CONFLICT.",
+      "after": "Enter actual Open PO / Backorder and lead time; review KPI Summary; filter Inventory Control by Priority / Policy Decision; verify every DATA CONFLICT."
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet1.xml",
+      "before": "Tuyên bố",
+      "after": "Disclaimer"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet2.xml",
+      "before": "Policy Matrix | Ngưỡng & trách nhiệm",
+      "after": "Policy Matrix | Thresholds & Responsibilities"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet2.xml",
+      "before": "Các ngưỡng dưới đây là giả định mô phỏng, cần phê duyệt trước khi áp dụng thật.",
+      "after": "The thresholds below are simulation assumptions and require approval before real-world use."
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet2.xml",
+      "before": "Action bắt buộc",
+      "after": "Required action"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet2.xml",
+      "before": "P1 trong 1 ngày làm việc",
+      "after": "P1 within 1 business day"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet2.xml",
+      "before": "Mỗi yêu cầu",
+      "after": "Each request"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet4.xml",
+      "before": "Nguồn: inventory.csv; latest snapshot = 31/12/2022. Source rates describe the dataset and are not current company KPIs.",
+      "after": "Source: inventory.csv; latest snapshot = 31/12/2022. Source rates describe the dataset and are not current company KPIs."
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet4.xml",
+      "before": "stockout_flag=1 và overstock_flag=1 đồng thời",
+      "after": "stockout_flag=1 and overstock_flag=1 simultaneously"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet4.xml",
+      "before": "Ưu tiên xác minh trước khi đặt hàng",
+      "after": "Prioritize verification before ordering"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet4.xml",
+      "before": "Stockout / fill rate cần điều tra",
+      "after": "Stockout / fill rate requires investigation"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet4.xml",
+      "before": "Dừng bổ sung và lập kế hoạch xử lý",
+      "after": "Stop replenishment and prepare a handling plan"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet4.xml",
+      "before": "Chỉ đề xuất PO sau khi kiểm tra inventory position",
+      "after": "Propose a PO only after checking inventory position"
+    },
+    {
+      "file": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "part": "xl/worksheets/sheet4.xml",
+      "before": "Đề xuất mô phỏng; chưa gồm MOQ / PO inbound / backorder thực",
+      "after": "Simulation proposal; excludes actual MOQ / inbound PO / backorder"
+    },
+    {
+      "file": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "part": "ppt/slides/slide2.xml",
+      "before": "• 76.3% bản ghi bật overstock_flag",
+      "after": "• 76.3% of records have overstock_flag enabled"
+    },
+    {
+      "file": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "part": "ppt/slides/slide2.xml",
+      "before": "• 30,495 bản ghi bật đồng thời stockout + overstock",
+      "after": "• 30,495 records have both stockout + overstock enabled"
+    },
+    {
+      "file": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "part": "ppt/slides/slide2.xml",
+      "before": "• reorder_flag có tổng bằng 0",
+      "after": "• The total reorder_flag is 0"
+    },
+    {
+      "file": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "part": "ppt/slides/slide2.xml",
+      "before": "• Snapshot mới nhất trong file: 2022-12-31",
+      "after": "• Latest snapshot in the file: 2022-12-31"
+    },
+    {
+      "file": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "part": "ppt/slides/slide8.xml",
+      "before": "1. Giữ snapshot date và source file.",
+      "after": "1. Retain the snapshot date and source file."
+    },
+    {
+      "file": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "part": "ppt/slides/slide8.xml",
+      "before": "2. Trả lời kèm policy_id và trích dẫn nguồn.",
+      "after": "2. Include policy_id and source citations in answers."
+    },
+    {
+      "file": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "part": "ppt/slides/slide8.xml",
+      "before": "3. Không suy đoán lead time / currency / PO.",
+      "after": "3. Do not guess lead time / currency / PO."
+    },
+    {
+      "file": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "part": "ppt/slides/slide8.xml",
+      "before": "4. Mâu thuẫn → DATA CONFLICT.",
+      "after": "4. Conflicting data → DATA CONFLICT."
+    },
+    {
+      "file": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "part": "ppt/slides/slide8.xml",
+      "before": "5. Không tự ghi PO hoặc điều chỉnh tồn.",
+      "after": "5. Do not autonomously write POs or adjust inventory."
+    },
+    {
+      "file": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "part": "ppt/slides/slide8.xml",
+      "before": "• Chuẩn hóa master SKU / size / color",
+      "after": "• Standardize master SKU / size / color data"
+    },
+    {
+      "file": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "part": "ppt/slides/slide8.xml",
+      "before": "• Xác nhận định nghĩa flags và đơn vị đo",
+      "after": "• Confirm flag definitions and units of measure"
+    },
+    {
+      "file": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "part": "ppt/slides/slide8.xml",
+      "before": "• Bổ sung PO inbound, backorder, lead time, MOQ",
+      "after": "• Add inbound PO, backorder, lead time, and MOQ data"
+    },
+    {
+      "file": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "part": "ppt/slides/slide8.xml",
+      "before": "• Pilot trên nhóm A / SKU rủi ro",
+      "after": "• Pilot on class A / high-risk SKUs"
+    },
+    {
+      "file": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "part": "ppt/slides/slide8.xml",
+      "before": "• Theo dõi KPI và duyệt thay đổi chính sách",
+      "after": "• Monitor KPIs and approve policy changes"
+    }
+  ],
+  "checks": {
+    "workbook_coordinates_values_types_formulas_unchanged": true,
+    "csv_policy_ids_and_non_SLA_fields_unchanged": true,
+    "docx_byte_identical": true,
+    "no_detected_Vietnamese_diacritics_in_visible_text": true,
+    "pdf_extractable_text_and_required_policy_markers": true
+  },
+  "limitations": "Diacritic screening is a diagnostic, not a language classifier. PDF visual inspection is separate; Office rendering not automated. Old chunk/page labels cannot be reused without alignment. No missing README policy document was invented."
+}

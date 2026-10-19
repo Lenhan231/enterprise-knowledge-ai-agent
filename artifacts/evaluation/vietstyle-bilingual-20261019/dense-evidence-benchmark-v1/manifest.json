@@ -1,0 +1,55 @@
+{
+  "cases.json_sha256": "63965d79e46d26244e65dbd532e5e11076e321cb304a21e237e68e2af2fd37dc",
+  "indexed-corpus.jsonl_sha256": "b8f5aba0da18a0725ae17762bf083d9101b740f9b86d3a928674225e51db51e5",
+  "sources": {
+    "vi": {
+      "path": "artifacts/evaluation/embedding-comparison-20261018/parser-corpus.jsonl",
+      "sha256": "284501a33c514642cd092b9d0b59dbf63cc80950a729088cc7dd226b626c41c3"
+    },
+    "en": {
+      "path": "artifacts/evaluation/vietstyle-bilingual-20261019/corrected-english-parser-corpus.jsonl",
+      "sha256": "2be61cc3a9bf014c5090b256c98f7433acb67f44e003c312773a3242f035cd58"
+    }
+  },
+  "question_sources": {
+    "vi": {
+      "path": "artifacts/evaluation/embedding-comparison-20261018/vietstyle-cases.json",
+      "sha256": "4f62e9502f25bd2cf7d5f3c2c04511ae70e675fb1f74c8fb60b6fbc908d5df83"
+    },
+    "en": {
+      "path": "artifacts/evaluation/vietstyle-bilingual-20261019/benchmark-questions-en-v1.json",
+      "sha256": "cfd66852b022290c0b2bfa8ba5550e20ccf15c6bac6f259af0fed97fe4abaaf7"
+    }
+  },
+  "evidence": {
+    "path": "artifacts/evaluation/vietstyle-bilingual-20261019/evidence-v1/evidence.json",
+    "sha256": "012d0864c0b82d252c5a0164a29ddf76a81ef7c8a289259fa9cde8b33163a207"
+  },
+  "chunks": 1063,
+  "cases": 80,
+  "chunks_by_language": {
+    "vi": 532,
+    "en": 531
+  },
+  "directions": {
+    "vi->vi": 20,
+    "en->vi": 20,
+    "vi->en": 20,
+    "en->en": 20
+  },
+  "chunking": {
+    "tokenizer_model": "Qwen/Qwen3-Embedding-0.6B",
+    "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+    "max_tokens": 512,
+    "method": "Shared build_embedding_chunks with exact source_spans; unchanged across encoders"
+  },
+  "scope": "All five documents in target language compete. Target-language restriction is experimental, not production language detection. Gold labels never filter/rank chunks.",
+  "metric": "Required ready component coverage and complete-intent evidence success in top ten chunks; Q14 full-intent excluded",
+  "independent_intents": 20,
+  "code_sha256": {
+    "scripts/retrieval/prepare_vietstyle_evidence_benchmark.py": "156398c3cd4f08323c96ee503bb4874ebdc4d1d17971dff28cba0273f6546a0f",
+    "src/core/tokenization/embedding_chunker.py": "e183f26247451b4ab063faad02fbebfe6685da5b8cf37d2eb4a673d57b755dcd",
+    "src/core/tokenization/token_counter.py": "64a90e597991731b5f9a150533cdb28f344651c751a84336309ef18a565d3958",
+    "src/core/evaluation/evidence_metrics.py": "154ba6b72018b71508733d0ed79208b7862bcb6a2df73e8ed3ca7d80b92d0b34"
+  }
+}

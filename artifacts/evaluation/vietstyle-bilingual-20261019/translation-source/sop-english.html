@@ -1,0 +1,53 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body>
+<h1>VIETSTYLE COMMERCE</h1><h2>SOP-INV-002<br>Cycle Count Procedure and Inventory Adjustment</h2>
+<p><b>Version v1.0 | 16/10/2026 | Owner: Inventory Manager</b></p>
+<p><b>SIMULATION DOCUMENT FOR DATATHON 2026.</b> Operating thresholds, lead times, KPIs, and approval levels are simulated proposals that must be approved by the business owner before real-world use. The dataset does not clearly specify currency and does not provide inbound PO, warehouse-level inventory, or backorder data. Do not treat sample results as current inventory figures.</p>
+<table><tr><th>Step</th><th>Required output</th></tr>
+<tr><td>1. Preparation</td><td>SKU / location list, count scope, and transaction freeze time if needed</td></tr>
+<tr><td>2. Independent count</td><td>Actual quantity; counter; timestamp; photos / exception notes</td></tr>
+<tr><td>3. Reconciliation</td><td>Absolute and percentage variance, and value impact if available</td></tr>
+<tr><td>4. Investigation</td><td>Root cause and supporting documents</td></tr>
+<tr><td>5. Approval</td><td>Approver independent of the counter / adjustment-entry person</td></tr>
+<tr><td>6. Update</td><td>Adjustment with an audit trail; notify the Planner if ROP is affected</td></tr></table>
+<h2>1. Purpose and Scope</h2>
+<p>Applies to fashion and outdoor SKUs in warehouses / fulfillment locations in the VietStyle Commerce model. This SOP covers cycle counts, event-triggered counts, and variance adjustments. It does not replace receiving procedures or QA for returned goods.</p>
+<h2>2. When Is an Ad Hoc Count Required?</h2><ul>
+<li>A SKU has a fill rate below 95% or experiences a stockout while the system still records high inventory.</li>
+<li>Both stockout_flag and overstock_flag are enabled; recalculated days of supply exceeds 120 days while a stockout signal remains.</li>
+<li>A SKU has recurring variances, high value, suspected loss, barcode errors, or size/color mismatches.</li>
+<li>After a major campaign, warehouse-location change, SKU-code change, large return, or system incident.</li></ul>
+<h2>3. Preparation Before Counting</h2><ul>
+<li>The Inventory Controller exports the SKU list, location, unit of measure, snapshot timestamp, and system quantity.</li>
+<li>The Warehouse Supervisor assigns counters; counters must not see system quantities when blind counting is used.</li>
+<li>Freeze transactions at the location being counted or record every transaction occurring during the count window.</li>
+<li>Prepare scanners, quarantine labels, recording forms, cameras, and a plan for goods being picked, packed, or transferred.</li></ul>
+<h2>4. Counting and Reconciliation</h2><ul>
+<li>Count by SKU + size + color + location; do not combine similar variants.</li>
+<li>Record actual quantity, unit of measure, counter, timestamp, and packaging condition.</li>
+<li>If a variance exists, have a second person recount before changing the data.</li>
+<li>Reconcile receipts, picks, shipments, returns, transfers, cancellations, and transactions pending synchronization.</li>
+<li>Absolute variance = |counted quantity - system quantity|; variance rate = variance / max(system quantity, 1).</li></ul>
+<h2>5. Handling Thresholds and Approval</h2>
+<table><tr><th>Situation</th><th>Minimum action</th><th>Approver</th></tr>
+<tr><td>No variance</td><td>Close the ticket; retain the audit trail</td><td>Warehouse Supervisor</td></tr>
+<tr><td>Small variance with a clear cause and evidence</td><td>Recount and document; update after approval</td><td>Inventory Controller / Supervisor</td></tr>
+<tr><td>Recurring, high-value variance or a variance above internal thresholds</td><td>Hold related transactions; investigate the root cause</td><td>Inventory Manager + Finance</td></tr>
+<tr><td>Suspected fraud / loss / counterfeit goods</td><td>Quarantine the SKU, preserve evidence, and notify Compliance / Operations</td><td>Operations / Compliance</td></tr></table>
+<h2>6. Do Not Automatically Reorder When Data Conflicts</h2>
+<p>If recalculated inventory indicates more than 120 days of supply but a stockout signal exists (stockout_days &gt;= 1 or fill_rate &lt; 95%), mark <b>DATA CONFLICT</b>. Temporarily block automatic PO recommendations and check available inventory, held stock, unshipped orders, the snapshot timestamp, and the days-of-supply formula. Reopen the replenishment decision only after the Inventory Controller records a conclusion.</p>
+<h2>7. System Update and Ticket Closure</h2><ul>
+<li>Every adjustment must include a ticket ID, policy ID, SKU, before/after quantities, reason code, evidence, data-entry person, and approver.</li>
+<li>Do not delete old transactions or directly edit source files; use traceable adjustment transactions.</li>
+<li>Notify the Planner when a variance affects ROP, target stock, or order fulfillment capability.</li>
+<li>Close the ticket after approval, successful system synchronization, and exception-report updates.</li></ul>
+<h2>8. Records Retention</h2>
+<p>Retain count lists, recount results, photos / supporting documents, root-cause analyses, approvals, transaction IDs, and synchronization timestamps for the retention period specified by the business. For AI/RAG data, retain metadata: policy_id, owner, effective_date, version, approval_status, and source_document.</p>
+<h2 style="page-break-before: always">Minimum Form Fields</h2>
+<table><tr><th>Field</th><th>Content</th></tr>
+<tr><td>Count ID / Date</td><td>Ticket ID / count timestamp</td></tr>
+<tr><td>SKU / Size / Color / Location</td><td>Variant and location identifiers</td></tr>
+<tr><td>System Qty / Counted Qty</td><td>System quantity / actual counted quantity</td></tr>
+<tr><td>Variance / Reason Code</td><td>Variance / reason</td></tr>
+<tr><td>Evidence / Counter / Reviewer</td><td>Evidence / counter / approver</td></tr>
+<tr><td>Adjustment Transaction ID</td><td>Post-approval adjustment transaction ID</td></tr></table>
+</body></html>

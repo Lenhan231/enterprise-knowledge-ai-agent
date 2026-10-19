@@ -2,6 +2,72 @@
 
 Updated: 2026-10-19, Asia/Saigon. Read this before continuing the user's work.
 
+## Latest update: laptop review completed
+
+The laptop completed agreed steps 1–4 against Huy `2aa9187`: fast-forwarded
+the checkout, independently replayed saved vectors, inspected representative
+failures, and reviewed production chunking. Read
+`artifacts/evaluation/laptop-review-20261019/REPORT.md` first, alongside the
+two earlier comparison reports below. This section supersedes the instructions
+below to start the laptop review; the earlier experiment descriptions remain
+historical context.
+
+- All **244 saved top-ten orders** and case metrics reproduced: 100 VietStyle
+  orders (including MiniLM) and 144 financial four-direction orders. Seventeen
+  file hash checks passed, six after explicitly recorded CRLF-to-LF text
+  normalization on Windows. Vector-file hashes matched byte-for-byte.
+- Original PDFs and cached pages were checked. Every extracted page word is
+  covered by the final 525 financial chunks. Encoder execution and tokenizer
+  audits were not rerun; replay uses saved vectors, not new embeddings.
+- Confirmed score inflation: Q18-en and Q19-en receive full page recall for
+  BGE and Qwen by retrieving only Long Hau page-8 header chunk 48, without
+  the requested figures. Revenue is in chunk 49; profit before tax in chunk 51.
+- Confirmed label limitation: Q14-en ranks the cover naming Ernst & Young
+  first for all models, but the label only accepts audit-report page 5.
+- Q01-en/Q03-en/Q06-en contain relevant text in the corpus but their first
+  labeled-page hits are below ten for every model. See `gold-page-ranks.md`
+  for all 48 queries; page hits still do not prove passage correctness.
+- Production parser-level table chunks preserve rows and repeat headers.
+  The final token splitter can cut overlong rows/sentences and does not add
+  explicit original parser-chunk identity/child-part metadata. These are
+  code-path risks, not demonstrated causes of every saved failure.
+- Windows Git autocrlf changes frozen text checkout hashes. The current
+  candidate runner requires exact raw hashes; address LF preservation before
+  future Windows reruns. The review records normalization explicitly and
+  does not modify historical inputs or weaken the candidate runner.
+
+Only review artifacts were added; no application code, live model, database,
+original benchmark results, or source labels were changed. No models were
+downloaded/loaded, and no GPU, inference API or database access was used.
+The full regression suite was not rerun; do not claim it is green.
+
+### Next session at home
+
+1. Pull `Huy`, check the worktree, and read the laptop review. Do not replay
+   completed GPU benchmarks merely because the GPU is available.
+2. The English VietStyle set had **not arrived** at the end of this session.
+   If it is now available, verify fact/number/table/question/evidence alignment
+   and freeze a new version before testing. Otherwise continue label and
+   chunking planning using saved evidence.
+3. Before implementing changes, explain file/function, old/new behavior,
+   reason and verification plan to the user. Proposed order: parser-to-child
+   traceability; sentence/row-aware final token fitting; a shared model input
+   recipe when a model is selected; answer-bearing and alternative labels.
+   These proposals are not yet implemented or benchmarked.
+4. Keep dense encoder experiments separate from translated-hybrid pipeline
+   tests. Do not convert the experimental 60-word rule into production policy.
+5. No final model has been chosen, and no live vector migration is requested.
+
+Offline replay (NumPy + standard library only):
+
+```bash
+.venv/bin/python artifacts/evaluation/laptop-review-20261019/review_saved.py
+```
+
+On Windows use `.venv/Scripts/python.exe -X utf8` instead. This regenerates
+`verification.json` and `gold-page-ranks.md` in the review folder; it does not
+load models, connect to services, or alter the original experiment folders.
+
 ## Where we are
 
 - Project: enterprise-knowledge-ai-agent. Working branch: `Huy`.

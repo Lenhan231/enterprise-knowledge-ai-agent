@@ -1,6 +1,14 @@
 # Handoff for Codex on another machine
 
-Updated: 2026-10-19, Asia/Saigon. Read this before continuing the user's work.
+Updated: 2026-10-20, Asia/Saigon. Read this before continuing the user's work.
+
+## School resume checkpoint: evidence v3 task complete, 2026-10-20
+
+The session stopped for allowance yesterday; user resumed and authorized finishing, pushing Huy and leaving this handoff. Existing work through code/v3 rescore was already committed as cca4226 (add VietStyle English evidence benchmark); this follow-up finishes documentation/verification. Read evidence-v3/README.md and dense-evidence-benchmark-v1/rescored-evidence-v3/comparison.md first.
+
+Implemented one new VI alternative for Q15.transaction_id: same explicit post-approval transaction-ID field in SOP parser5, chars[888,947), which the reranker already had at rank4. EN equivalent already labelled, unchanged. v3 hash cf022622eafcde551eac6ba26e3bd4f8aac7fc4239533dd951e5dbac1cb648e3; parent v2 hash6e7a502a4b99cd347940f8c28562ed19d082c2761e8f2e0bbf75f75d142a7f0b. All old spans, all other requirements, sources/questions/reference answers and Q15.history unchanged. Q14 still unresolved.66 components/61 required ready,199 spans(100VI/99EN),19 fully-ready intents. rescore script adds --previous-evidence, --previous-results-dir and optional --reranker-report, with saved-vector/logit/hash replay and independent character check.320 case rankings rescored;21 targeted tests passed on resume (17 evidence +4 reranker); no model/GPU/DB/API rerun. Q15 reranker2→3/4 but still incomplete because no-delete/direct-source-edit guard remains missing. VI->VI totals under v3: E5dense17/19, BGE-M3dense15/19, Qwen14/19, E5+BGE reranker17/19. Source/rankings unchanged: score changes reflect annotation only. v1/v2 artifacts preserved.
+
+Next authorized evidence-fix task is DONE; do not repeat downloads or GPU benchmarks. Suggested next experiment (not yet implemented): source/section context for short reranker passages, especially the missing history guard (Q15 rank27; Q13 rank21). Fixing the duplicate label does not itself improve retrieval. Keep reranker experimental; no production integration, re-embedding or database changes. User explicitly removed all total context-token caps; previous budgeted neighbor experiments are historical only. No new model comparison unless requested. Historical runners retain v2 for reproducibility; evaluate their saved outputs against v3 through documented rescore options. Use English by default; Vietnamese on request. Explain code before/after and checks.
 
 ## Latest: Q15 regression analyzed, 2026-10-19
 

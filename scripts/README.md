@@ -219,3 +219,7 @@ Checks: `.venv/bin/python -m unittest discover -s tests -p test_neighbor_context
 Completed output: `artifacts/evaluation/vietstyle-bilingual-20261019/dense-evidence-benchmark-v1/reranker-bge-v2-m3-v1/`; see comparison.md and IMPLEMENTATION.md. Reproduce saved-score verification with `.venv/bin/python scripts/retrieval/evaluate_vietstyle_reranker.py --verify-only`; a fresh GPU run requires a new `--output-dir`. Model runtime files must be cached; download command is in IMPLEMENTATION.md. Checks: `.venv/bin/python -m unittest discover -s tests -p test_vietstyle_reranker.py -v`.
 
 No production reranker was enabled: VI→VI complete evidence remained17/19 (fixedQ20, regressedQ15); VI→EN rose9→12/19. This is a small exploratory ranking benchmark, not generated-answer accuracy.
+
+### Evidence v3: Q15 duplicate form/prose evidence
+
+Current targeted label correction: `artifacts/evaluation/vietstyle-bilingual-20261019/evidence-v3/README.md`. Adds one VI prose alternative for Q15.transaction_id; English already covered. Keeps all history controls and older labels/results. `rescore_vietstyle_evidence.py` supports consecutive revisions using paired `--previous-evidence`/`--previous-results-dir` options and optional `--reranker-report`. Exact repeat command is in the v3 README. Completed comparison: `dense-evidence-benchmark-v1/rescored-evidence-v3/comparison.md`. No model/vector/ranking change; Q15 reranker recognizes3/4 components but remains incomplete.

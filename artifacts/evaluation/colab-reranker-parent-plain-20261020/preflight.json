@@ -1,0 +1,20 @@
+{
+  "status": "preflight_passed_not_inference",
+  "source_git_commit": "5733f222ecfe22e71ac36bbb95052019b402537d",
+  "control_mode": "plain",
+  "context_mode": "parent-plain",
+  "labels_sha256": "cf022622eafcde551eac6ba26e3bd4f8aac7fc4239533dd951e5dbac1cb648e3",
+  "model_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+  "passages": 1063,
+  "cases": 80,
+  "pairs_per_condition": 2400,
+  "modified_pairs": 69,
+  "passages_with_preceding_context": 13,
+  "max_control_pair_tokens": 507,
+  "max_parent_pair_tokens": 686,
+  "per_pair_limit": 1024,
+  "overlength_pairs": 0,
+  "context_token_budget": null,
+  "history_guard_preceding_source_verified": true,
+  "limits": "Uses only the cached pinned tokenizer. No reranker weights loaded, no inference or network."
+}

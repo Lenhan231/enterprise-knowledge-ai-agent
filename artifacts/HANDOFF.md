@@ -2,7 +2,112 @@
 
 Updated: 2026-10-20, Asia/Saigon. Read this before continuing the user's work.
 
+## Latest completed result: Q20 recovery with narrative-only context
+
+User requested solving Q20. Completed a general metadata policy: structured
+table candidates use plain original text; only non-table candidates receive the
+existing conservative preceding-source context. No question IDs, filename
+exceptions, label edits or score adjustments. Exact inputs already had saved
+plain/parent Colab scores, so this was verified offline without new inference,
+model download, API usage or GPU. Read
+`artifacts/evaluation/reranker-narrative-context-20261020/RESULTS.md`.
+
+VI->VI improves18/19 to19/19 eligible intents and60/61 to61/61 components.
+Q20 proposal_checks recovered; Q13 and Q15 gains retained. Other directions
+stay15/19,12/19,12/19; no required-component regressions across80 cases against
+the prior parent-plain variant. Q14 remains excluded from full success.
+Verified160 rankings/4800 saved entries, exact rendering/score lineage and
+independent character coverage. See verification.json, score-lineage.json and
+changes-vs-parent.json. Script: scripts/retrieval/evaluate_narrative_context.py;
+shared runner mode: narrative-parent. This supersedes Q20-pending notes below.
+Post-hoc diagnostic on a repeatedly inspected small set, not held-out proof or
+answer accuracy. Production integration remains pending. No commit/push done.
+
 ## School resume checkpoint: evidence v3 task complete, 2026-10-20
+
+### Newest result: Colab metadata-context ablation completed
+
+**Newest COMPLETED experiment:** plain vs plain+predecessor without metadata
+prefixes. User returned `reranker_parent_plain_results.zip`; reviewed and
+verified locally. Read `artifacts/evaluation/colab-reranker-parent-plain-20261020/RESULTS.md`
+and `findings.json`. All160 rankings/4800 score entries passed, same v3 labels,
+same E5 top30, pinned BGE reranker, both arms FP32 on Colab T4. VI→VI17→18/19,
+EN→EN14→15, VI→EN12→12, EN→VI12→12; components59→60/61,55→56,46→47,49→49.
+Q01VI stays complete. Q13guard21→5 gives9/9; Q15guard27→1 gives4/4. Q20 still
+regresses: workbook KPI summary13→6 pushes manual pre-PO checklist10→11.
+Only Q20VI remains incomplete in that direction (Q14 excluded). New plain
+control matches all80 previous plain FP32 orders/evidence exactly. No label
+changes or production rollout. Keep this variant promising but experimental;
+next possible work is Q20 final-selection/context-to-source-unit behavior and
+fresh human-reviewed/held-out cases, not automatic new model comparisons.
+All changes/results remain local/uncommitted unless a later commit records them.
+No local model download resumed. This completion supersedes the pending note
+immediately below.
+
+**Newest pending experiment:** user authorized plain-vs-predecessor without
+metadata prefixes and inspection of the next results. Prepared
+`artifacts/evaluation/colab-reranker-parent-plain-20261020/` (PLAN, preflight,
+notebook and22MB bundle). GPU execution requires the user to run Colab; no new
+results exist yet. Runner `--context-mode parent-plain` controls plain original
+text vs same13 predecessor mappings,69 changed pairs, max686tokens, v3 labels
+unchanged. No local model download/inference. Return ZIP:
+`reranker_parent_plain_results.zip`. Then run
+`analyze_results.py --parent-plain` from the original context-review folder;
+it verifies against the matching uploaded bundle rather than assuming current
+Git HEAD equals the experiment's source commit. Inspect Q01/Q13/Q15/Q20 and
+all directions. No new label changes or production configuration authorized.
+
+**Newer completed result:** user returned the predecessor experiment ZIP. Read
+`artifacts/evaluation/colab-reranker-parent-20261020/RESULTS.md` and `findings.json`.
+Local verification passed160 rankings/4800 saved entries; same v3 labels and
+E5 pools, paired metadata-only vs metadata+preceding-source-text on Colab T4
+float32. Guard Q13VI→VI21→5,8/9→9/9; Q15VI→VI21→1,3/4→4/4. Q20VI→VI regresses:
+workbook summary13→6 pushes manual proposal-checks10→11. Counts metadata→parent:
+VI→VI16→17/19, EN→EN14→15, VI→EN12→12 (partial Q13.freeze gained), EN→VI12→12.
+Components58→59/61,55→56,46→47,49→49 respectively. Earlier metadata-control
+orders/evidence match all80 cases exactly. Against ORIGINAL PLAIN reranker,
+VI→VI is still17/19: new failuresQ01/Q20 replace oldQ13/Q15. Do not claim an
+overall VI gain over plain or globally deploy. Source-body context helped the
+targeted short clauses; parent-without-metadata vs plain is a possible future
+ablation, not implemented. All experiment/review changes remain local and
+uncommitted unless a later commit records them. No local model download resumed.
+
+Follow-up requested: user said "start experiment" for actual preceding source
+text. Prepared `artifacts/evaluation/colab-reranker-parent-20261020/` with
+`PLAN.md`, new notebook,22MB input bundle and local tokenizer preflight. User
+must start Colab GPU execution; no remote notebook/session control is available
+from this laptop and no inference result exists yet. Compare **metadata-only
+control vs metadata + preceding source passage**, both on the same GPU, using
+`--context-mode parent`. Default metadata experiment stays backward compatible.
+Parent mode's legacy `plain_*` JSON keys mean metadata-only control; config
+explicitly records `control_mode=metadata`. Same candidates/v3 labels/top10.
+Conservative same-location/ACL/nonconflicting-section rule changes13 passages
+and69/2400 pairs; max718 tokens, no overlength. Additional source text is ranking-
+only and cannot earn coverage. No local model download or API calls. New files
+are uncommitted. Expected return ZIP: `reranker_parent_context_results.zip`.
+
+Read `artifacts/evaluation/colab-reranker-context-20261020/RESULTS.md` and
+`findings.json`. The user ran the prepared notebook and returned
+`reranker_context_results.zip`; the laptop verified the artifacts without
+loading a model. All 160 paired rankings/4,800 saved score entries and character
+coverage replayed. Same BGE revision, E5 top30, v3 labels, both arms float32
+on Colab A100, no total context-token cap. Short-input metadata prefixes
+(<=800 characters) yielded VI→VI **17→16/19**, components59→58/61; other
+directions unchanged (EN→EN14/19, VI→EN12/19, EN→VI12/19). No required-component
+gains; Q01.approval is the sole loss, training-deck cover rank10→14.
+Q13 guard21→21, still8/9; Q15 guard27→21, still3/4. Form table11→6 does not
+add coverage because the transaction-ID alternative was already recognized.
+Do not promote the prefix rule. A source-body/parent-context experiment remains
+unimplemented; metadata context alone did not fix the omissions.
+
+New runner `scripts/retrieval/evaluate_reranker_source_context.py`, notebook,
+portable22MB input bundle, results and analysis are local/uncommitted unless a
+later commit records them. Original returned ZIP is preserved. Local model
+download was paused/cancelled; never resume it implicitly. HF Inference API
+probe returned402 (no credits); no benchmark text was sent there. Colab ran
+the model remotely instead. No API key is needed for the notebook. Never
+commit `.env` or ignored `.venv` download/cache files. No production, database,
+label change or new embedding-model comparison was performed.
 
 The session stopped for allowance yesterday; user resumed and authorized finishing, pushing Huy and leaving this handoff. Existing work through code/v3 rescore was already committed as cca4226 (add VietStyle English evidence benchmark); this follow-up finishes documentation/verification. Read evidence-v3/README.md and dense-evidence-benchmark-v1/rescored-evidence-v3/comparison.md first.
 

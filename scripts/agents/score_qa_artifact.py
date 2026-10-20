@@ -14,7 +14,7 @@ from types import SimpleNamespace
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.agents.run_review1_grounded_qa import (  # noqa: E402
+from scripts.agents.qa_metrics import (  # noqa: E402
     case_passed,
     citation_metrics,
     missing_expected_facts,

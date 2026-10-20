@@ -7,12 +7,10 @@ import inspect
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from core.agents.analytics_agent import AnalyticsAgent
@@ -25,9 +23,7 @@ from core.models.agents import AgentRequest, AgentResult, VerifiedIdentity
 
 
 LOGGER = logging.getLogger(__name__)
-APP_DIR = Path(__file__).resolve().parent
-REPO_ROOT = APP_DIR.parents[1]
-STATIC_DIR = APP_DIR / "static"
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _local_development_identity() -> VerifiedIdentity | None:
@@ -82,6 +78,7 @@ class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     question: str = Field(min_length=1, max_length=2_000)
+    agent_mode: Literal["auto", "knowledge", "sql", "agentic"] = "auto"
     conversation_id: str | None = Field(default=None, max_length=128)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
@@ -103,7 +100,7 @@ class ChatRequest(BaseModel):
 
 def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None = None,
                knowledge_agent: Any | None = None, classifier: Any | None = None,
-               identity_resolver: Any | None = None) -> FastAPI:
+               identity_resolver: Any | None = None, llm: Any | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         runtime_agent = chat_agent
@@ -111,10 +108,11 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
         if runtime_agent is None:
             load_dotenv(REPO_ROOT / ".env", override=False)
             repository = commerce_repository or await create_repository_from_env()
-            analytics_agent = AnalyticsAgent(SQLAnalyticsAgent(repository))
+            knowledge = knowledge_agent or _LazyKnowledgeAgent()
+            analytics_agent = AnalyticsAgent(SQLAnalyticsAgent(repository, llm=llm))
             runtime_agent = AgentRouter(
-                classifier or _FallbackClassifier(), knowledge_agent or _LazyKnowledgeAgent(),
-                analytics_agent, _UnsupportedRoute(), _UnsupportedRoute(),
+                classifier or _FallbackClassifier(), knowledge, analytics_agent,
+                dashboard_agent=_UnsupportedRoute(),
             )
         application.state.chat_agent = runtime_agent
         try:
@@ -128,12 +126,6 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
         version="0.1.0",
         lifespan=lifespan,
     )
-    application.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-
-    @application.get("/", include_in_schema=False)
-    async def home() -> FileResponse:
-        return FileResponse(STATIC_DIR / "index.html")
-
     @application.get("/health")
     async def health() -> dict[str, str]:
         return {"status": "ok"}
@@ -152,15 +144,18 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
                     identity = _local_development_identity()
             if identity is not None and not isinstance(identity, VerifiedIdentity):
                 raise AnalyticsPermissionDenied("Request identity was not verified")
-            result = await request.app.state.chat_agent.run(
-                AgentRequest(
-                    question=payload.question,
-                    conversation_id=payload.conversation_id,
-                    metadata=payload.metadata,
-                    user_id=identity.subject if identity else None,
-                    identity=identity,
-                )
+            agent_request = AgentRequest(
+                question=payload.question,
+                conversation_id=payload.conversation_id,
+                metadata=payload.metadata,
+                user_id=identity.subject if identity else None,
+                identity=identity,
             )
+            chat_agent = request.app.state.chat_agent
+            if payload.agent_mode == "auto":
+                result = await chat_agent.run(agent_request)
+            else:
+                result = await chat_agent.run_mode(agent_request, payload.agent_mode)
             return AgentResult.model_validate(result)
         except AnalyticsPermissionDenied:
             raise HTTPException(

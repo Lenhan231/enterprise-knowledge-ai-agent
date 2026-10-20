@@ -30,7 +30,7 @@ class FakeRepository:
         self.parent_contexts = {}
         self.results = [RetrievedChunk(
             document_name="policy.pdf", chunk_index=7,
-            content="Relevant policy text", metadata={"document_id": "APL-CMP-001"},
+            content="Relevant policy text", metadata={"document_id": "VST-POL-001"},
             retrieval_score=0.81234,
         )]
 
@@ -63,8 +63,8 @@ class RetrievalServiceTest(unittest.TestCase):
         self.assertEqual(chunk.source, "policy.pdf")
         self.assertEqual(chunk.score, 0.81234)
         self.assertEqual(chunk.rank, 1)
-        self.assertEqual(chunk.document_id, "APL-CMP-001")
-        self.assertEqual(chunk.chunk_id, "APL-CMP-001::chunk::7")
+        self.assertEqual(chunk.document_id, "VST-POL-001")
+        self.assertEqual(chunk.chunk_id, "VST-POL-001::chunk::7")
         self.assertEqual(chunk.location.chunk_index, 7)
         self.assertIsNone(chunk.location.page_number)
         self.assertIsNone(chunk.location.section_title)

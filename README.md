@@ -1,102 +1,96 @@
 # Enterprise Knowledge AI Agent
 
-Trợ lý phân tích dữ liệu doanh nghiệp bằng tiếng Việt, sử dụng schema `commerce` trên Supabase PostgreSQL.
+FastAPI serves the Knowledge and SQL agents. One LangGraph-backed router handles
+automatic routing and the selected Knowledge, SQL, or Agentic mode. Streamlit
+provides a small demo client for choosing a mode and viewing answers, rows, and
+sources.
 
-## Cài đặt
+## Setup
 
 ```powershell
 uv sync
 ```
 
-Tạo `.env` và cấu hình hai kết nối tách biệt:
+Configure `.env` with the model key, document database, and least-privilege
+commerce reader:
 
 ```text
-DATABASE_URL=postgresql://...            # kho tài liệu/RAG
-ANALYTICS_DATABASE_URL=postgresql://...  # commerce reader chỉ đọc
+GROQ_API_KEY=...
+GROQ_MODEL=qwen/qwen3.8-27b  # optional; this is also the default
+DATABASE_URL=postgresql://...            # existing VietStyle knowledge index
+ANALYTICS_DATABASE_URL=postgresql://...  # read-only commerce role
 ```
 
-`ANALYTICS_DATABASE_URL` phải dùng login không phải superuser, không có quyền ghi,
-chỉ có `USAGE` trên schema `commerce` và `SELECT` trên các cột được phê duyệt.
-Chạy [scripts/provision_commerce_analytics_reader.sql](scripts/provision_commerce_analytics_reader.sql)
-bằng tài khoản quản trị để tạo role nhóm, sau đó tạo login/password trong secret
-manager của môi trường và grant login đó vào role. Ứng dụng tự kiểm tra quyền và từ
-chối khởi động analytics nếu nhận kết nối `postgres`/service role hoặc role có quyền ghi.
-Không đưa chuỗi kết nối vào frontend hoặc commit vào Git.
+`ANALYTICS_DATABASE_URL` must use a non-privileged role with `USAGE` on
+`commerce` and `SELECT` on the approved commerce tables. The application checks
+this role at startup. Keep credentials on the backend; the Streamlit client
+only calls FastAPI.
 
-## Chạy ứng dụng
+For local testing, opt in to the development analytics identity in `.env`:
+
+```text
+APP_ENV=development
+ALLOW_DEV_ANALYTICS=true
+DEV_ANALYTICS_IDENTITY=local-analyst
+```
+
+This local identity is disabled outside `APP_ENV=development`. Production
+requests need a server-authenticated `VerifiedIdentity` with `analytics:read`.
+
+## Run the demo
+
+Start the API in one terminal:
 
 ```powershell
-uvicorn src.app.main:app --reload --port 8000
+uv run python -m uvicorn app.main:app --app-dir src --reload --port 8000
 ```
 
-Mở `http://localhost:8000` để sử dụng giao diện chat tiếng Việt.
+Start Streamlit in another:
 
-### API chat
+```powershell
+uv run streamlit run src/app/streamlit_ui.py
+```
 
-```http
-POST /api/chat
-Content-Type: application/json
+Open the Streamlit URL it prints (usually `http://localhost:8501`). Set
+`API_BASE_URL` if FastAPI runs elsewhere; it defaults to
+`http://127.0.0.1:8000`.
 
+## API
+
+`POST /api/chat` accepts a question and optional mode:
+
+```json
 {
-  "question": "Doanh thu và giá vốn tháng 12/2022"
+  "question": "Show monthly revenue and COGS for 2022.",
+  "agent_mode": "sql"
 }
 ```
 
-Analytics chỉ chạy khi middleware xác thực đã gắn một `VerifiedIdentity` phía server
-với permission `analytics:read` vào `request.state.verified_identity`. `user_id` do
-client gửi bị từ chối; cài đặt mặc định không xác thực trả HTTP 403 cho analytics.
-Câu hỏi chính sách/tài liệu vẫn đi qua knowledge/RAG và không chạy SQL.
+Modes are `knowledge`, `sql`, and `agentic`. Omit `agent_mode` or set it to
+`auto` to keep the existing automatic routing behavior.
 
-Response tuân theo model `AgentResult`, bao gồm `answer`, `agent`, `evidence`, `data` và `metadata`.
-`/api/chat` đi qua `AgentRouter`: câu hỏi số liệu dùng analytics; câu hỏi về nội dung tài liệu dùng knowledge/RAG. Knowledge cần `DATABASE_URL` trỏ tới kho `document_chunks` và `GROQ_API_KEY`. Yêu cầu kết hợp đồng thời tài liệu với SQL hoặc tạo dashboard hiện trả thông báo chưa hỗ trợ.
+SQL mode generates a query from the approved `commerce.*` schema, validates it
+before execution and again at the repository boundary, and runs it in a
+read-only transaction with a five-second statement timeout. Results include
+rows and database source evidence. Agentic mode uses the same LangGraph router
+to select Knowledge, SQL, or both; each subagent is called no more than once.
 
-Với analytics, `data.table` chứa `columns` và `rows`; giao diện hiển thị bảng này. Chỉ số được chọn từ ontology, còn giá trị như `gross_profit = revenue - cogs` được tính trong code. Có thể hỏi cao nhất/thấp nhất, so sánh vùng hoặc các tháng trong năm, chọn vùng hoặc danh mục, và hỏi theo tháng hay năm. Kỳ hợp lệ nhưng không có hàng trả về thông báo “Không có dữ liệu”; yêu cầu thiếu thời gian hoặc tên nhóm không rõ sẽ được yêu cầu làm rõ.
+## Knowledge data and evaluation
 
-Các câu hỏi analytics hiện được hỗ trợ:
-
-- Doanh thu, giá vốn và lợi nhuận gộp theo tháng/năm; cực trị doanh thu theo ngày
-  hoặc tháng khi người dùng nêu rõ grain.
-- Doanh thu theo khu vực cho bất kỳ tập con khu vực nào có trong kết quả. Đây là
-  doanh thu tái dựng từ đơn đã giao, không phải `commerce.sales`.
-- Tồn kho theo danh mục tại đúng một ngày snapshot; không cộng số dư qua snapshot.
-- Lượt truy cập và tỷ lệ thoát, có thể nhóm theo nguồn truy cập.
-- Số đơn theo trạng thái, thiết bị, nguồn đơn hoặc khu vực; AOV theo khu vực;
-  điểm đánh giá theo danh mục/sản phẩm; thời gian giao hàng theo khu vực.
-- Tra cứu sản phẩm theo `product_id`.
-
-Các nghĩa chưa hỗ trợ được trả lời rõ ràng, hiện gồm tỷ lệ hoàn hàng, phân tích mức
-giảm theo promotion, tra cứu tự do theo tên và câu hỏi cần nhiều metric linh hoạt
-trong cùng một truy vấn. Không suy ra rằng mọi câu hỏi đều trả lời được chỉ vì bảng
-có tồn tại.
-
-Luồng text-to-SQL chỉ biên dịch kế hoạch semantic đã kiểm soát. Trước khi chạy,
-SQL được parse thành AST và bắt buộc là đúng một `SELECT`, chỉ dùng bảng/cột/join/hàm
-trong allowlist, có `LIMIT <= 200`, transaction read-only và statement timeout 5 giây.
-SQL sinh ra không xuất hiện trong response `/api/chat`.
-
-## Smoke test Supabase
-
-Script sau chạy ba truy vấn thật bằng `ANALYTICS_DATABASE_URL`, kiểm tra
-`AgentResult`/`Evidence` và xác minh transaction chỉ đọc:
+The existing VietStyle document index in Supabase is the knowledge source of
+truth; the application does not maintain a second local corpus. See [data/README.md](data/README.md).
+Run the existing VietStyle retrieval benchmark with its configured Supabase
+environment:
 
 ```powershell
-$env:PYTHONIOENCODING='utf-8'
+.venv\Scripts\python.exe evaluation/run_vietstyle_benchmark.py
+```
+
+To check the live commerce database and verify read-only enforcement:
+
+```powershell
 .venv\Scripts\python.exe scripts/smoke_test_supabase_analytics.py
 ```
 
-Ghi báo cáo JSON tái lập:
-
-```powershell
-.venv\Scripts\python.exe scripts/smoke_test_supabase_analytics.py `
-  --output artifacts/smoke/supabase_analytics_smoke.json
-```
-
-Write probe sử dụng `UPDATE ... WHERE FALSE` bên trong transaction `readonly=True`. Câu lệnh không thể sửa hàng nào và smoke test chỉ pass khi PostgreSQL chặn nó với SQLSTATE `25006`.
-
-## Chạy test
-
-```powershell
-.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_*.py'
-```
-
-Các test mặc định không gọi dịch vụ bên ngoài. Kiểm tra Supabase thật chỉ chạy khi chủ động gọi smoke-test script.
+The smoke test runs three generated, bounded queries and a write-blocking probe
+inside a read-only transaction.

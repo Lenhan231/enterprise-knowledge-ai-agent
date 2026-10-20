@@ -137,7 +137,7 @@ async def _main() -> int:
     targets = {route: _RouteTarget(route) for route in _ROUTES}
     router = AgentRouter(
         classifier, targets["knowledge"], targets["analytics"],
-        targets["hybrid"], targets["dashboard"], targets["report"],
+        dashboard_agent=targets["dashboard"], report_agent=targets["report"],
     )
     results = []
     try:

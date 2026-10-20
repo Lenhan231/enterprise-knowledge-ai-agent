@@ -34,7 +34,6 @@ LANGUAGES = {
     "05_Inventory_Policy_Training_Deck.pptx": "vn",
 }
 TOP_K = 10
-CANDIDATE_K = 100
 
 
 def fuse(rankings, weights, k=60):
@@ -137,19 +136,19 @@ def main():
                 translation_error = type(error).__name__
 
             dense = retrieval.retrieve(
-                RetrievalRequest(query=question, top_k=CANDIDATE_K),
+                RetrievalRequest(query=question, top_k=TOP_K),
                 company="Commerce Demo", roles=["admin"], method="dense", document_ids=document_ids,
             ).results
             lexical_rankings = []
             for language, query in (("en", translated), ("vn", question)):
                 if query and languages[language]:
                     lexical_rankings.append(retrieval.retrieve(
-                        RetrievalRequest(query=query, top_k=CANDIDATE_K),
+                        RetrievalRequest(query=query, top_k=TOP_K),
                         company="Commerce Demo", roles=["admin"], method="bm25",
                         document_ids=languages[language],
                     ).results)
             lexical, _ = fuse(lexical_rankings, [1.0] * len(lexical_rankings))
-            ranked, hybrid_scores = fuse([dense, lexical[:CANDIDATE_K]], [1.0, 2.0])
+            ranked, hybrid_scores = fuse([dense, lexical], [1.0, 2.0])
             contexts = [{
                 "source_id": f"S{index}",
                 "document_id": chunk.document_id,
@@ -194,7 +193,7 @@ def main():
             "retrieval_method": "translated_Hybrid",
             "scope": {"company": "Commerce Demo", "document_ids": document_ids,
                       "document_languages": {doc_id: lang for doc_id, (_, lang) in source_by_id.items()}},
-            "embedding_model": embedding_model, "top_k": TOP_K, "candidate_k": CANDIDATE_K,
+            "embedding_model": embedding_model, "top_k": TOP_K,
             "translation_model": translation_llm.model_name,
             "results": results,
             "summary": {

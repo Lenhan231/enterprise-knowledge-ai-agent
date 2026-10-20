@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.agents.run_review1_grounded_qa import case_passed, citation_metrics, cited_sources, missing_expected_facts
+from scripts.agents.qa_metrics import case_passed, citation_metrics, cited_sources, missing_expected_facts
 from scripts.agents.score_qa_artifact import summarize_human_reviews
 
 

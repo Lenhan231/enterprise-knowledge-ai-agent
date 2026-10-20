@@ -21,7 +21,7 @@ class SourceDownloader(ABC):
         destination.parent.mkdir(parents=True, exist_ok=True)
         request = urllib.request.Request(
             url,
-            headers={"User-Agent": "AppleCorpusDownloader/1.0"},
+            headers={"User-Agent": "EnterpriseKnowledgeAgent/1.0"},
         )
         with urllib.request.urlopen(request, timeout=90) as response, tempfile.NamedTemporaryFile(
             dir=destination.parent, delete=False

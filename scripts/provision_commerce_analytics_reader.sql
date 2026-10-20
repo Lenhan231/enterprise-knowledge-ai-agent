@@ -20,8 +20,12 @@ grant usage on schema commerce to commerce_analytics_reader;
 
 grant select (date, revenue, cogs)
     on commerce.sales to commerce_analytics_reader;
-grant select (order_id, order_date, zip, order_status, payment_method, device_type, order_source)
+grant select (order_id, order_date, customer_id, zip, order_status, payment_method, device_type, order_source)
     on commerce.orders to commerce_analytics_reader;
+grant select (customer_id, zip, city, signup_date, gender, age_group, acquisition_channel)
+    on commerce.customers to commerce_analytics_reader;
+grant select (order_id, payment_method, payment_value, installments)
+    on commerce.payments to commerce_analytics_reader;
 grant select (order_item_id, order_id, product_id, quantity, unit_price, discount_amount, promo_id, promo_id_2)
     on commerce.order_items to commerce_analytics_reader;
 grant select (zip, city, region, district)
@@ -54,9 +58,9 @@ declare
     table_name text;
 begin
     foreach table_name in array array[
-        'sales', 'orders', 'order_items', 'geography', 'inventory',
-        'products', 'promotions', 'returns', 'reviews', 'shipments',
-        'web_traffic'
+        'sales', 'orders', 'customers', 'payments', 'order_items',
+        'geography', 'inventory', 'products', 'promotions', 'returns',
+        'reviews', 'shipments', 'web_traffic'
     ] loop
         if not exists (
             select 1

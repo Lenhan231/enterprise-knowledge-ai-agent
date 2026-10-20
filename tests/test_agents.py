@@ -116,7 +116,7 @@ class AgentRoutingTest(unittest.IsolatedAsyncioTestCase):
         knowledge = Mock()
         knowledge.run = AsyncMock(return_value=AgentResult(answer="grounded", agent="knowledge"))
         unused = Mock()
-        router = AgentRouter(classifier, knowledge, unused, unused, unused)
+        router = AgentRouter(classifier, knowledge, unused, dashboard_agent=unused)
 
         result = await router.route(AgentRequest(question="Find the policy"))
 
@@ -129,7 +129,7 @@ class AgentRoutingTest(unittest.IsolatedAsyncioTestCase):
         analytics = Mock()
         analytics.run = AsyncMock(return_value=AgentResult(answer="Tóm tắt có căn cứ", agent="analytics"))
         unused = Mock()
-        router = AgentRouter(classifier, unused, analytics, unused, unused)
+        router = AgentRouter(classifier, unused, analytics, dashboard_agent=unused)
 
         result = await router.route(AgentRequest(question="Tóm tắt doanh thu và giá vốn năm 2025"))
 

@@ -17,7 +17,7 @@ class GroqProvider(LLMInterface):
         if not api_key:
             raise ValueError("GROQ_API_KEY is not set")
 
-        self.model_name = model or os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+        self.model_name = model or os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
         # Keep the historical attribute for existing benchmark callers.
         self.model = self.model_name
         self.temperature = temperature

@@ -1,0 +1,225 @@
+{
+  "298be61": {
+    "commit": "298be61f2a7e68ccd12ad746a5384ecd2efc1b43",
+    "exit_code": 0,
+    "stderr": "",
+    "result": {
+      "docx": {
+        "parsed_keys": [
+          "chunks",
+          "metadata",
+          "tables"
+        ],
+        "elements": [],
+        "chunks": [
+          {
+            "text": "Before table evidence.",
+            "type": null,
+            "document_id": "review-only",
+            "paragraph": 0
+          },
+          {
+            "text": "Columns: Field\nRow 1: Field: Table evidence",
+            "type": "table",
+            "document_id": "review-only",
+            "paragraph": 1
+          },
+          {
+            "text": "After table evidence.",
+            "type": null,
+            "document_id": "review-only",
+            "paragraph": 2
+          }
+        ]
+      },
+      "csv": {
+        "parsed_keys": [
+          "chunks",
+          "metadata",
+          "tables"
+        ],
+        "elements": [],
+        "chunks": [
+          {
+            "text": "Columns: Field | Value\nRow 1: Field: A | Value: 3",
+            "type": "table",
+            "document_id": "review-only",
+            "paragraph": null
+          }
+        ]
+      },
+      "markdown": {
+        "parsed_keys": [
+          "chunks",
+          "metadata",
+          "tables"
+        ],
+        "elements": [],
+        "chunks": [
+          {
+            "text": "Section: Policy\nSubsequent sentence with other content. Subsequent sentence with other content.",
+            "type": null,
+            "document_id": "review-only",
+            "paragraph": null
+          },
+          {
+            "text": "Section: Policy\nSubsequent sentence with other content. Subsequent sentence with other content.",
+            "type": null,
+            "document_id": "review-only",
+            "paragraph": null
+          },
+          {
+            "text": "Section: Policy\nSubsequent sentence with other content. Subsequent sentence with other content.",
+            "type": null,
+            "document_id": "review-only",
+            "paragraph": null
+          },
+          {
+            "text": "Section: Policy\nSubsequent sentence with other content. Subsequent sentence with other content.",
+            "type": null,
+            "document_id": "review-only",
+            "paragraph": null
+          },
+          {
+            "text": "Section: Policy\nSubsequent sentence with other content. Subsequent sentence with other content.",
+            "type": null,
+            "document_id": "review-only",
+            "paragraph": null
+          },
+          {
+            "text": "Section: Policy\nSubsequent sentence with other content. Subsequent sentence with other content.",
+            "type": null,
+            "document_id": "review-only",
+            "paragraph": null
+          },
+          {
+            "text": "Section: Policy\nSubsequent sentence with other content. Subsequent sentence with other content.",
+            "type": null,
+            "document_id": "review-only",
+            "paragraph": null
+          }
+        ]
+      }
+    }
+  },
+  "origin/main": {
+    "commit": "7c2162624c161a97c4a5d97b432089cf2ba2f489",
+    "exit_code": 0,
+    "stderr": "",
+    "result": {
+      "docx": {
+        "parsed_keys": [
+          "elements",
+          "metadata",
+          "tables"
+        ],
+        "elements": [
+          [
+            null,
+            "text"
+          ],
+          [
+            "table",
+            "text"
+          ],
+          [
+            null,
+            "text"
+          ]
+        ],
+        "chunks": [
+          {
+            "text": "Before table evidence.\n\nAfter table evidence.",
+            "type": "text",
+            "document_id": "review-only",
+            "paragraph": 2
+          },
+          {
+            "text": "Columns: Field\nRow 1: Field: Table evidence",
+            "type": "table",
+            "document_id": "review-only",
+            "paragraph": 1
+          }
+        ]
+      },
+      "csv": {
+        "parsed_keys": [
+          "elements",
+          "metadata",
+          "tables"
+        ],
+        "elements": [
+          [
+            "table",
+            "table"
+          ]
+        ],
+        "chunks": [
+          {
+            "text": "Columns: Field | Value\nRow 1: Field: A | Value: 3",
+            "type": "table",
+            "document_id": "review-only",
+            "paragraph": null
+          }
+        ]
+      },
+      "markdown": {
+        "parsed_keys": [
+          "elements",
+          "metadata",
+          "tables"
+        ],
+        "elements": [
+          [
+            null,
+            "text"
+          ]
+        ],
+        "chunks": [
+          {
+            "text": "Section: Policy\nSubsequent sentence with other content. Subsequent sentence with other content.",
+            "type": "text",
+            "document_id": "review-only",
+            "paragraph": null
+          },
+          {
+            "text": "Section: Policy\nSubsequent sentence with other content. Subsequent sentence with other content.",
+            "type": "text",
+            "document_id": "review-only",
+            "paragraph": null
+          },
+          {
+            "text": "Section: Policy\nSubsequent sentence with other content. Subsequent sentence with other content.",
+            "type": "text",
+            "document_id": "review-only",
+            "paragraph": null
+          },
+          {
+            "text": "Section: Policy\nSubsequent sentence with other content. Subsequent sentence with other content.",
+            "type": "text",
+            "document_id": "review-only",
+            "paragraph": null
+          },
+          {
+            "text": "Section: Policy\nSubsequent sentence with other content. Subsequent sentence with other content.",
+            "type": "text",
+            "document_id": "review-only",
+            "paragraph": null
+          },
+          {
+            "text": "Section: Policy\nSubsequent sentence with other content. Subsequent sentence with other content.",
+            "type": "text",
+            "document_id": "review-only",
+            "paragraph": null
+          },
+          {
+            "text": "Section: Policy\nSubsequent sentence with other content. Subsequent sentence with other content.",
+            "type": "text",
+            "document_id": "review-only",
+            "paragraph": null
+          }
+        ]
+      }
+    }
+  }
+}

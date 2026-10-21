@@ -6,7 +6,6 @@ import zipfile
 from typing import Any
 from xml.etree import ElementTree
 
-from core.document_processing.chunking.config import ChunkingConfig
 from core.document_processing.readers.office.scanned.image_ocr import (
     embedded_image_parts,
     ocr_embedded_image,
@@ -19,9 +18,8 @@ _XDR = "{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}"
 
 
 class XlsxScannedProcessor:
-    def __init__(self, config: dict[str, Any], chunking: ChunkingConfig):
+    def __init__(self, config: dict[str, Any]):
         self.config = config
-        self.chunking = chunking
 
     def process_sheet(
         self,
@@ -39,7 +37,7 @@ class XlsxScannedProcessor:
             return []
         drawing_root = ElementTree.fromstring(archive.read(drawing_part))
         drawing_relationships = relationship_targets(archive, drawing_part)
-        chunks = []
+        elements = []
         for image_index, anchor in enumerate(drawing_root):
             picture = anchor.find(f"{_XDR}pic")
             if picture is None:
@@ -53,7 +51,7 @@ class XlsxScannedProcessor:
             if column_node is not None and column_node.text is not None:
                 image_context["image_anchor_column"] = int(column_node.text) + 1
             for image_part in embedded_image_parts(picture, drawing_relationships):
-                chunks.extend(ocr_embedded_image(
-                    archive, image_part, self.config, self.chunking, image_context,
+                elements.extend(ocr_embedded_image(
+                    archive, image_part, self.config, image_context,
                 ))
-        return chunks
+        return elements

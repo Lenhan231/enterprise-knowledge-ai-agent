@@ -1,47 +1,42 @@
-"""Decode text uploads and create chunks for TXT and Markdown files."""
+"""Decode text uploads and return section-aware blocks."""
 
 from __future__ import annotations
 
 import re
 from typing import Any
 
-from core.document_processing.chunking.config import ChunkingConfig
-from core.document_processing.chunking.router import build_chunks
 from core.document_processing.headings import heading_level as structural_heading_level, section_metadata
 
 _MARKDOWN_HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 
 
 class TextProcessor:
-    """Decode TXT/Markdown files and pass their text to the shared chunker."""
+    """Decode TXT/Markdown files and preserve their section blocks."""
 
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
-        self.chunking = ChunkingConfig.from_config(self.config)
 
     def process_file(self, content: bytes, metadata: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
-        """Decode a UTF-8 text/Markdown upload and chunk it with source metadata."""
+        """Decode a UTF-8 text/Markdown upload into section-aware blocks."""
         text = content.decode("utf-8-sig")
-        return {"chunks": self._process_sections(text, metadata), "tables": []}
+        return {"elements": self._process_sections(text, metadata), "tables": []}
 
     def process(self, document: dict[str, Any]) -> list[dict[str, Any]]:
         text = document.get("content", document.get("text"))
         if not isinstance(text, str):
             raise ValueError("Document must contain a text or content string")
-        return build_chunks(text, self.chunking, kind="text", metadata=document.get("metadata", {}))
+        return [{"text": text, "metadata": document.get("metadata", {})}]
 
     def _process_sections(self, text: str, metadata: dict[str, Any]) -> list[dict[str, Any]]:
         """Keep explicit Markdown and conservative plain-text headings with their sections."""
         is_markdown = str(metadata.get("format", "")).upper() == "MD"
-        chunks = []
+        elements = []
         section_lines: list[str] = []
         section_context = {**metadata, **section_metadata(None, None)}
 
         def flush() -> None:
             if section_lines and "".join(section_lines).strip():
-                chunks.extend(build_chunks(
-                    "".join(section_lines), self.chunking, kind="text", metadata=section_context,
-                ))
+                elements.append({"text": "".join(section_lines), "metadata": dict(section_context)})
 
         for line in text.splitlines(keepends=True):
             heading = _MARKDOWN_HEADING.match(line.strip()) if is_markdown else None
@@ -70,4 +65,4 @@ class TextProcessor:
                     }
             section_lines.append(line)
         flush()
-        return chunks
+        return elements

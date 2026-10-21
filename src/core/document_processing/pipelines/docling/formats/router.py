@@ -11,8 +11,8 @@ from core.document_processing.pipelines.docling.processor import DoclingProcesso
 def process_file(filename: str, content: bytes, metadata: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
     if filename.lower().endswith(".txt"):
         result = TextProcessor(config).process_file(content, metadata)
-        for chunk in result["chunks"]:
-            chunk["metadata"].update({
+        for element in result["elements"]:
+            element["metadata"].update({
                 "parser": "native.text",
                 "text_extraction_method": "native.text",
             })

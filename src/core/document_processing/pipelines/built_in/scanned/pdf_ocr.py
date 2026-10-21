@@ -131,8 +131,8 @@ class PDFOCRProcessor:
         metadata = {
             "engine": "tesseract",
             "language": self.config.get("ocr_language", "vie+eng"),
-            "table_psm": self.config["tesseract_table_psm"],
-            "render_scale": self.config["ocr_table_render_scale"],
+            "table_psm": self.config.get("tesseract_table_psm", 3),
+            "render_scale": self.config.get("ocr_table_render_scale", 2.5),
         }
         if orientation_correction_degrees:
             metadata["orientation_correction_degrees"] = orientation_correction_degrees

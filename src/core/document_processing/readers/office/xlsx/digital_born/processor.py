@@ -7,8 +7,6 @@ import zipfile
 from typing import Any
 from xml.etree import ElementTree
 
-from core.document_processing.chunking.config import ChunkingConfig
-from core.document_processing.chunking.router import build_chunks
 from core.document_processing.headings import section_metadata
 from ...scanned.image_ocr import relationship_targets
 from ..scanned.processor import XlsxScannedProcessor
@@ -45,7 +43,6 @@ def _make_headers(header_cells: dict[int, str]) -> list[str]:
 class XlsxProcessor:
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
-        self.chunking = ChunkingConfig.from_config(config or {})
 
     def process(self, archive: zipfile.ZipFile, metadata: dict) -> dict:
         ns = {"m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
@@ -57,13 +54,13 @@ class XlsxProcessor:
         if "xl/sharedStrings.xml" in archive.namelist():
             shared_root = ElementTree.fromstring(archive.read("xl/sharedStrings.xml"))
             shared = ["".join(t.text or "" for t in item.iter(f"{_X}t")) for item in shared_root.findall("m:si", ns)]
-        chunks, tables = [], []
-        scanned = XlsxScannedProcessor(self.config, self.chunking)
+        elements, tables = [], []
+        scanned = XlsxScannedProcessor(self.config)
         for sheet_index, sheet in enumerate(workbook.findall("m:sheets/m:sheet", ns), 1):
             target = rels[sheet.attrib[f"{_R}id"]].lstrip("/")
             path = target if target.startswith("xl/") else "xl/" + target
             root = ElementTree.fromstring(archive.read(path))
-            chunks.extend(scanned.process_sheet(
+            elements.extend(scanned.process_sheet(
                 archive,
                 root,
                 path,
@@ -129,5 +126,5 @@ class XlsxProcessor:
                 "table_index": table_index,
                 **section_metadata(sheet.attrib["name"], 1),
             }
-            chunks.extend(build_chunks(table, self.chunking, kind="table", metadata=table_chunk_metadata))
-        return {"chunks": chunks, "tables": tables}
+            elements.append({"element_type": "table", "table_ref": table_index, "metadata": table_chunk_metadata})
+        return {"elements": elements, "tables": tables}

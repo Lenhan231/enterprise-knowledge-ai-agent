@@ -1,21 +1,18 @@
-"""Turn extracted PDF pages into provenance-aware parser chunks."""
+"""Turn extracted PDF pages into provenance-aware text blocks."""
 
 from __future__ import annotations
 
 import re
 from typing import Any, Dict
 
-from core.document_processing.chunking.text.chunk_builder import build_text_chunk
-from core.document_processing.chunking.text.router import split_ranges
 from core.document_processing.headings import section_metadata
 
 
 class PDFTextChunker:
-    """Build page-local text chunks with heading and OCR provenance."""
+    """Build page-local semantic blocks with heading and OCR provenance."""
 
-    def __init__(self, config, chunking):
+    def __init__(self, config):
         self.config = config
-        self.chunking = chunking
 
     def process(self, extraction, document: Dict[str, Any]) -> list[Dict[str, Any]]:
         (
@@ -31,7 +28,7 @@ class PDFTextChunker:
             metadata.pop(key, None)
         metadata.update(pdf_metadata)
 
-        chunks = []
+        elements = []
         current_section_title = None
         current_heading_level = None
         page_sections = re.compile(r"--- Page (\d+) ---").split(pdf_text)
@@ -47,24 +44,19 @@ class PDFTextChunker:
                     heading_positions.append((position, heading, level))
                     search_from = position + len(heading)
 
-            heading_index = 0
+            boundaries = [position for position, _heading, _level in heading_positions]
+            boundaries = sorted(set([0, *boundaries]))
             diagnostics_attached = False
-            for start, end in split_ranges(
-                page_text,
-                size=self.chunking.size,
-                overlap=self.chunking.overlap,
-                strategy=self.chunking.strategy,
-            ):
+            for segment_index, start in enumerate(boundaries):
+                end = boundaries[segment_index + 1] if segment_index + 1 < len(boundaries) else len(page_text)
+                while heading_positions and heading_positions[0][0] <= start:
+                    _position, current_section_title, current_heading_level = heading_positions.pop(0)
                 text = page_text[start:end].strip()
                 if not text:
                     continue
-                while heading_index < len(heading_positions) and heading_positions[heading_index][0] < end:
-                    current_section_title = heading_positions[heading_index][1]
-                    current_heading_level = heading_positions[heading_index][2]
-                    heading_index += 1
-                chunks.append(build_text_chunk(
-                    text,
-                    {
+                elements.append({
+                    "text": text,
+                    "metadata": {
                         **metadata,
                         "page_number": page_number,
                         "text_extraction_method": ocr_pages.get(page_number, "pymupdf.get_text"),
@@ -91,10 +83,8 @@ class PDFTextChunker:
                             },
                         } if page_number in ocr_pages else {}),
                     },
-                    self.chunking,
-                    index=len(chunks),
-                ))
+                })
                 if page_number in ocr_diagnostics:
                     diagnostics_attached = True
 
-        return chunks
+        return elements

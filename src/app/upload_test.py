@@ -206,7 +206,9 @@ async def create_upload_test(
     processing_started = time.perf_counter()
     try:
         parsed = document_processor.process(filename, content, source_metadata)
-        parsed = document_processor.prepare_upload_test_output(parsed, source_metadata, parser_engine)
+        from core.document_processing.chunking.processor import ChunkingProcessor
+
+        parsed = ChunkingProcessor(config).process(parsed)
     except (ValueError, RuntimeError) as error:
         status_code = 503 if isinstance(error, RuntimeError) else 422
         raise HTTPException(status_code, f"Upload Test processing failed: {error}") from error

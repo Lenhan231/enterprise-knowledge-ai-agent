@@ -12,8 +12,6 @@ from .table_processor import PDFTableProcessor
 from .text_extractor import PDFTextExtractor
 from .text_chunks import PDFTextChunker
 from .pdf_images import caption_pdf_images, extract_pdf_images
-from core.document_processing.chunking.config import ChunkingConfig
-from core.document_processing.chunking.router import build_chunks
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +26,6 @@ class BuiltInProcessor:
             config: Configuration dictionary with processing options
         """
         self.config = dict(config or {})
-        self.chunking = ChunkingConfig.from_config(self.config)
         self.config.setdefault("extract_images", False)
         self.config.setdefault(
             "ocr_fallback",
@@ -82,7 +79,7 @@ class BuiltInProcessor:
 
         self.ocr = PDFOCRProcessor(self.config, self.tesseract_data_dir, self.ocr_available)
         self.tables = PDFTableProcessor()
-        self.text_chunker = PDFTextChunker(self.config, self.chunking)
+        self.text_chunker = PDFTextChunker(self.config)
         self.text_extractor = PDFTextExtractor(
             self.config, self.page_numbers, self.ocr, self.tables,
             ocr_page=self._ocr_page,
@@ -110,13 +107,13 @@ class BuiltInProcessor:
 
     def process(self, document: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Process a PDF document into chunks.
+        Parse a PDF into semantic text blocks and structured tables.
 
         Args:
             document: Document dictionary with PDF content
 
         Returns:
-            A result with retrieval chunks and separately extracted tables
+            Blocks and tables; shared chunking runs in DocumentProcessor.
         """
         # Get file path from metadata if available
         file_path = None
@@ -134,13 +131,16 @@ class BuiltInProcessor:
             )
 
         extraction = self._extract_pdf(pdf_source, file_path=file_path)
-        chunks = self.text_chunker.process(extraction, document)
+        elements = self.text_chunker.process(extraction, document)
         tables = extraction[2]
-        for table in tables:
-            chunks.extend(build_chunks(
-                table, self.chunking, kind="table", metadata={"parser": "pymupdf"},
-            ))
-        result = {"chunks": chunks, "tables": tables}
+        for table_index, table in enumerate(tables):
+            table.setdefault("table_index", table_index)
+            table.setdefault("metadata", {}).setdefault("parser", "pymupdf")
+            elements.append({
+                "element_type": "table", "table_ref": table_index,
+                "metadata": {**table["metadata"], "table_index": table["table_index"]},
+            })
+        result = {"elements": elements, "tables": tables}
         return self._caption_pdf_images(result, pdf_source, document)
 
     @staticmethod

@@ -5,21 +5,16 @@ from __future__ import annotations
 import math
 from typing import Any
 
-from core.document_processing.chunking.config import ChunkingConfig
-from core.document_processing.chunking.router import build_chunks
-
-
 def map_result(
     result: Any,
     config: dict[str, Any],
-    chunking: ChunkingConfig,
     table_item_type: type,
     do_ocr: bool,
     docling_version: str | None,
     source_format: str,
 ) -> dict[str, Any]:
     """Normalize Docling items, provenance, structured tables, and parser metadata."""
-    chunks: list[dict[str, Any]] = []
+    elements: list[dict[str, Any]] = []
     tables: list[dict[str, Any]] = []
     section_path: list[str] = []
     table_number_by_page: dict[int | None, int] = {}
@@ -84,9 +79,10 @@ def map_result(
             if page_number is not None:
                 table["page_number"] = page_number
             tables.append(table)
-            chunks.extend(build_chunks(
-                tables[-1], chunking, kind="table", metadata=base_metadata,
-            ))
+            elements.append({
+                "element_type": "table", "table_ref": len(tables) - 1,
+                "metadata": {**base_metadata, "table_index": table_index},
+            })
             continue
 
         if label in {"page_header", "page_footer", "picture", "chart"} or not text:
@@ -101,7 +97,7 @@ def map_result(
             "caption": "figure_caption",
             "footnote": "footnote",
         }.get(label, "paragraph")
-        chunks.append({
+        elements.append({
             "text": text,
             "metadata": {
                 **base_metadata,
@@ -113,10 +109,8 @@ def map_result(
             },
         })
 
-    for index, chunk in enumerate(chunks):
-        chunk["metadata"]["chunk_index"] = index
     return {
-        "chunks": chunks,
+        "elements": elements,
         "tables": tables,
         "metadata": {"docling_version": docling_version},
     }

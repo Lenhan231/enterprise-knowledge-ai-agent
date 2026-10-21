@@ -10,8 +10,8 @@ from core.document_processing.readers.text.digital_born.processor import TextPro
 def process(runtime: Any, content: bytes, document: dict[str, Any]) -> dict[str, Any]:
     metadata = document.get("metadata", {})
     result = TextProcessor(runtime.config).process_file(content, metadata)
-    for chunk in result["chunks"]:
-        chunk["metadata"].update({
+    for element in result["elements"]:
+        element["metadata"].update({
             "parser": "native.text",
             "text_extraction_method": "native.text",
         })

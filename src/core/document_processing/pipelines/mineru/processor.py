@@ -10,8 +10,6 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from core.document_processing.chunking.config import ChunkingConfig
-
 from .result_mapper import MineruResultMapper
 
 logger = logging.getLogger(__name__)
@@ -22,8 +20,7 @@ class MineruProcessor:
 
     def __init__(self, config: dict[str, Any]):
         self.config = config
-        self.chunking = ChunkingConfig.from_config(config)
-        self.result_mapper = MineruResultMapper(config, self.chunking)
+        self.result_mapper = MineruResultMapper(config)
 
     def process(self, source: bytes | str | Path, file_path: str | None, document: dict[str, Any]) -> dict[str, Any]:
         from .formats.router import process

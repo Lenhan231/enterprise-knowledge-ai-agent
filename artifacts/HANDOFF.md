@@ -2,6 +2,20 @@
 
 Updated: 2026-10-20, Asia/Saigon. Read this before continuing the user's work.
 
+## New task: fresh question review packet prepared
+
+User authorized preparing fresh questions and comparison. See
+`artifacts/evaluation/fresh-review-20261020/README.md` and REVIEW.md:24 question
+texts,12 paired bilingual intents,48 directional cases; exact chunk-content
+excerpts/offsets and a human review CSV. Assistant draft, not independently
+held-out. Some overlap with older broad intents; equivalents and novelty need
+review. Three structured-table intents, one mixed PDF, eight narrative; no
+workbook-specific table question yet. Existing benchmark untouched. No new
+inference/download. Saved old-question scores cannot evaluate new questions.
+Review/approve labels first, then adapt the Colab runner/evidence adapter and
+freeze E5 top30 pools for plain/parent-plain/narrative-parent comparison.
+Draft labels use indexed-chunk offsets, not evidence-v3 parser offsets.
+
 ## Latest completed result: Q20 recovery with narrative-only context
 
 User requested solving Q20. Completed a general metadata policy: structured

@@ -1,0 +1,629 @@
+{
+  "dataset_id": "fresh-review-20261020",
+  "cases": [
+    {
+      "id": "F01-vi-to-vi",
+      "intent_id": "F01",
+      "question": "Khi nhận hàng phát hiện thiếu hoặc hư hỏng, phải ghi nhận lúc nào và cần những bằng chứng gì?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F01-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F01-vi-to-en",
+      "intent_id": "F01",
+      "question": "Khi nhận hàng phát hiện thiếu hoặc hư hỏng, phải ghi nhận lúc nào và cần những bằng chứng gì?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F01-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F01-en-to-vi",
+      "intent_id": "F01",
+      "question": "When an inbound delivery is short or damaged, when must the exception be recorded and what evidence is required?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F01-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F01-en-to-en",
+      "intent_id": "F01",
+      "question": "When an inbound delivery is short or damaged, when must the exception be recorded and what evidence is required?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F01-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F02-vi-to-vi",
+      "intent_id": "F02",
+      "question": "Sau khi chiến dịch kết thúc, cần đối chiếu forecast với những chỉ số nào để cập nhật kế hoạch?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F02-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F02-vi-to-en",
+      "intent_id": "F02",
+      "question": "Sau khi chiến dịch kết thúc, cần đối chiếu forecast với những chỉ số nào để cập nhật kế hoạch?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F02-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F02-en-to-vi",
+      "intent_id": "F02",
+      "question": "After a campaign ends, which outcomes must be compared with the forecast to revise the plan?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F02-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F02-en-to-en",
+      "intent_id": "F02",
+      "question": "After a campaign ends, which outcomes must be compared with the forecast to revise the plan?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F02-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F03-vi-to-vi",
+      "intent_id": "F03",
+      "question": "Một PO khẩn cấp phải ghi rõ ba thông tin gì?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F03-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F03-vi-to-en",
+      "intent_id": "F03",
+      "question": "Một PO khẩn cấp phải ghi rõ ba thông tin gì?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F03-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F03-en-to-vi",
+      "intent_id": "F03",
+      "question": "Which three details must be documented for an emergency purchase order?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F03-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F03-en-to-en",
+      "intent_id": "F03",
+      "question": "Which three details must be documented for an emergency purchase order?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F03-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F04-vi-to-vi",
+      "intent_id": "F04",
+      "question": "Nếu hàng tồn vượt 240 ngày, ai phải đánh giá và đánh giá những phương án kế toán nào?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F04-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F04-vi-to-en",
+      "intent_id": "F04",
+      "question": "Nếu hàng tồn vượt 240 ngày, ai phải đánh giá và đánh giá những phương án kế toán nào?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F04-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F04-en-to-vi",
+      "intent_id": "F04",
+      "question": "For stock exceeding 240 days, who evaluates it and which accounting actions are considered?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F04-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F04-en-to-en",
+      "intent_id": "F04",
+      "question": "For stock exceeding 240 days, who evaluates it and which accounting actions are considered?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F04-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F05-vi-to-vi",
+      "intent_id": "F05",
+      "question": "Nhu cầu bình quân trong workbook dùng tối đa bao nhiêu snapshot, và có bắt buộc là các tháng liên tiếp không?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F05-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F05-vi-to-en",
+      "intent_id": "F05",
+      "question": "Nhu cầu bình quân trong workbook dùng tối đa bao nhiêu snapshot, và có bắt buộc là các tháng liên tiếp không?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F05-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F05-en-to-vi",
+      "intent_id": "F05",
+      "question": "How many snapshots can the workbook use for average demand, and must they be consecutive months?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F05-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F05-en-to-en",
+      "intent_id": "F05",
+      "question": "How many snapshots can the workbook use for average demand, and must they be consecutive months?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F05-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F06-vi-to-vi",
+      "intent_id": "F06",
+      "question": "Theo phụ lục A, những trường nào nên được giữ cùng nhau trong một chunk chính sách dùng cho RAG?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F06-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F06-vi-to-en",
+      "intent_id": "F06",
+      "question": "Theo phụ lục A, những trường nào nên được giữ cùng nhau trong một chunk chính sách dùng cho RAG?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F06-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F06-en-to-vi",
+      "intent_id": "F06",
+      "question": "According to Appendix A, which fields should stay together in a policy chunk used for RAG?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F06-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F06-en-to-en",
+      "intent_id": "F06",
+      "question": "According to Appendix A, which fields should stay together in a policy chunk used for RAG?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F06-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F07-vi-to-vi",
+      "intent_id": "F07",
+      "question": "Khi áp dụng blind count, ai phân công người đếm và người đếm có được xem số lượng hệ thống không?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F07-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F07-vi-to-en",
+      "intent_id": "F07",
+      "question": "Khi áp dụng blind count, ai phân công người đếm và người đếm có được xem số lượng hệ thống không?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F07-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F07-en-to-vi",
+      "intent_id": "F07",
+      "question": "During a blind count, who assigns the counters and may they see the system quantities?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F07-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F07-en-to-en",
+      "intent_id": "F07",
+      "question": "During a blind count, who assigns the counters and may they see the system quantities?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F07-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F08-vi-to-vi",
+      "intent_id": "F08",
+      "question": "Có được gộp các biến thể gần giống nhau khi kiểm kê không, và cần đếm theo các chiều nào?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F08-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F08-vi-to-en",
+      "intent_id": "F08",
+      "question": "Có được gộp các biến thể gần giống nhau khi kiểm kê không, và cần đếm theo các chiều nào?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F08-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F08-en-to-vi",
+      "intent_id": "F08",
+      "question": "May similar variants be combined during a count, and which identifiers must distinguish counted stock?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F08-vi",
+      "category": "narrative"
+    },
+    {
+      "id": "F08-en-to-en",
+      "intent_id": "F08",
+      "question": "May similar variants be combined during a count, and which identifiers must distinguish counted stock?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F08-en",
+      "category": "narrative"
+    },
+    {
+      "id": "F09-vi-to-vi",
+      "intent_id": "F09",
+      "question": "Với điều chỉnh tồn nhỏ có đủ bằng chứng, ai phê duyệt và thời hạn xử lý là bao lâu?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F09-vi",
+      "category": "table"
+    },
+    {
+      "id": "F09-vi-to-en",
+      "intent_id": "F09",
+      "question": "Với điều chỉnh tồn nhỏ có đủ bằng chứng, ai phê duyệt và thời hạn xử lý là bao lâu?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F09-en",
+      "category": "table"
+    },
+    {
+      "id": "F09-en-to-vi",
+      "intent_id": "F09",
+      "question": "For a small inventory adjustment with sufficient evidence, who approves it and what is the processing deadline?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F09-vi",
+      "category": "table"
+    },
+    {
+      "id": "F09-en-to-en",
+      "intent_id": "F09",
+      "question": "For a small inventory adjustment with sufficient evidence, who approves it and what is the processing deadline?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F09-en",
+      "category": "table"
+    },
+    {
+      "id": "F10-vi-to-vi",
+      "intent_id": "F10",
+      "question": "Thanh lý, scrap hoặc ghi giảm giá trị cần những bên nào phê duyệt và theo thẩm quyền nào?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F10-vi",
+      "category": "table"
+    },
+    {
+      "id": "F10-vi-to-en",
+      "intent_id": "F10",
+      "question": "Thanh lý, scrap hoặc ghi giảm giá trị cần những bên nào phê duyệt và theo thẩm quyền nào?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F10-en",
+      "category": "table"
+    },
+    {
+      "id": "F10-en-to-vi",
+      "intent_id": "F10",
+      "question": "Which parties approve disposal, scrap, or a write-down, and which authority governs it?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F10-vi",
+      "category": "table"
+    },
+    {
+      "id": "F10-en-to-en",
+      "intent_id": "F10",
+      "question": "Which parties approve disposal, scrap, or a write-down, and which authority governs it?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F10-en",
+      "category": "table"
+    },
+    {
+      "id": "F11-vi-to-vi",
+      "intent_id": "F11",
+      "question": "Nhóm B đóng góp khoảng bao nhiêu phần trăm giá trị tiêu thụ, được kiểm kê bao lâu một lần và có SLA điều tra bao lâu?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F11-vi",
+      "category": "table"
+    },
+    {
+      "id": "F11-vi-to-en",
+      "intent_id": "F11",
+      "question": "Nhóm B đóng góp khoảng bao nhiêu phần trăm giá trị tiêu thụ, được kiểm kê bao lâu một lần và có SLA điều tra bao lâu?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F11-en",
+      "category": "table"
+    },
+    {
+      "id": "F11-en-to-vi",
+      "intent_id": "F11",
+      "question": "Approximately what consumption-value share defines class B, how often is it counted, and what is its variance-investigation SLA?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F11-vi",
+      "category": "table"
+    },
+    {
+      "id": "F11-en-to-en",
+      "intent_id": "F11",
+      "question": "Approximately what consumption-value share defines class B, how often is it counted, and what is its variance-investigation SLA?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F11-en",
+      "category": "table"
+    },
+    {
+      "id": "F12-vi-to-vi",
+      "intent_id": "F12",
+      "question": "Theo bảng ngưỡng xử lý trong SOP, chênh lệch lặp lại hoặc giá trị lớn cần hành động gì và ai duyệt?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F12-vi",
+      "category": "mixed_pdf"
+    },
+    {
+      "id": "F12-vi-to-en",
+      "intent_id": "F12",
+      "question": "Theo bảng ngưỡng xử lý trong SOP, chênh lệch lặp lại hoặc giá trị lớn cần hành động gì và ai duyệt?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F12-en",
+      "category": "mixed_pdf"
+    },
+    {
+      "id": "F12-en-to-vi",
+      "intent_id": "F12",
+      "question": "According to the SOP handling-threshold table, what action and approvers apply to recurring or high-value variances?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F12-vi",
+      "category": "mixed_pdf"
+    },
+    {
+      "id": "F12-en-to-en",
+      "intent_id": "F12",
+      "question": "According to the SOP handling-threshold table, what action and approvers apply to recurring or high-value variances?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "evidence_id": "F12-en",
+      "category": "mixed_pdf"
+    }
+  ]
+}

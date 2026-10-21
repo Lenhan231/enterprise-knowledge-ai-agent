@@ -1,6 +1,275 @@
 # Handoff for Codex on another machine
 
-Updated: 2026-10-20, Asia/Saigon. Read this before continuing the user's work.
+Updated: 2026-10-21, Asia/Saigon. Read this before continuing the user's work.
+
+## Latest: complete production E5 switch and Huy push, 2026-10-21
+
+User explicitly requested switching entirely from MiniLM, with no parallel legacy
+index. Previous production config was sentence-transformers/all-MiniLM-L6-v2;
+532 chunks in 5 documents, vector(384). Production now uses
+intfloat/multilingual-e5-base, revision d128750597153bb5987e10b1c3493a34e5a4502a,
+768 dimensions, normalized vectors, query:/passage: prefixes, 512-token encoder.
+The SAME public.document_chunks table was atomically migrated; no sidecar table
+was created. All row IDs, document/chunk identities, content, status/timestamps
+were verified unchanged. ACL and other non-embedding metadata retained. The 532
+cached E5 vectors exactly matched all current live chunk names/texts and were
+hash-verified before reuse. No model/corpus downloads or external API calls.
+
+Code updates: pinned E5 profile/default, correct query/passage prefixes,
+normalization/dimension checks, pinned tokenizer revision, four-token prefix
+reserve for future ingestion. Local ignored .env updated to E5/local/512.
+IMPORTANT FOR TEAM: pull Huy and explicitly change EMBEDDING_MODEL in existing
+.env to intfloat/multilingual-e5-base, then restart. Old MiniLM query encoders are
+incompatible with the now-768-dimensional database. BGE model availability is a
+separate requirement; the optional reranker still loads lazily/cached-only unless
+RERANKER_ALLOW_DOWNLOAD=1 is explicitly configured on compute host.
+
+Read docs/e5-production-rollout.md and docs/translated-hybrid-rerank.md.
+Operational migration script scripts/retrieval/migrate_e5_index.py is dry-run by
+default and refuses different content/model. It now must NOT be rerun against the
+already migrated index. A restricted recovery-only snapshot is under ignored
+.venv/e5-migration-recovery/minilm-index.json; not staged or pushed, not a live
+MiniLM fallback. First apply attempt failed its Vector-to-NumPy verification and
+fully rolled back; fixed adapter conversion and retry passed every vector check.
+Guarded Supabase SQL handles new empty installations/already-E5 databases and
+refuses populated MiniLM casts without actual replacement vectors.
+
+Validation: 57 targeted model/retrieval/parser tests passed under E5 config;
+4 additional frozen benchmark/replay tests passed; freeze self-check passed with
+unchanged manifest c8f9dae06fd70e9e897912aa4a0a7488e98993c88af2b182a1406db72c51f6f3.
+Actual offline cached E5 inference produced a normalized 768-dimensional query;
+actual authorized dense SQL returned 3 ranked results (~827ms retrieval, startup
+excluded). This is a connectivity/model/index smoke, NOT a new quality benchmark
+or live Groq/BGE/generation validation. See artifacts/evaluation/
+e5-production-rollout-20261021/{preflight,migration,live-smoke}.json.
+
+Reviewed changes committed separately: parser 8e9196f, frozen benchmark 94286f9,
+optional translated hybrid+BGE 03385d2, followed by E5 rollout+handoff commit.
+Pushing only Huy; main/teammate branches unchanged. Frozen artifacts retain their
+original bytes/line endings (so generic whitespace checks on historical CSV/patch
+context can warn); code checks pass. Earlier no-commit/no-index-change entries
+below describe history and are superseded by this section.
+
+## Latest: optional translated-hybrid + BGE integration, 2026-10-21
+
+User authorized phase 2 after parser adaptation. Added `translated_hybrid_rerank`
+to shared contracts, RetrievalService, RAG type annotations, AskRequest, and UI.
+Reuses existing translated_hybrid candidate searches (at least 30 fused candidates,
+300/branch for the normal top10 request) then original-query/original-chunk BGE
+reranking. New src/core/retrieval/reranker.py pins benchmark BGE revision,
+FP32/batch4/paircap1024/raw logits/stable ties. Lazy shared model, serialized
+inference; CPU/cached-only by default. Explicit RERANKER_ALLOW_DOWNLOAD=1 permits
+weights download on compute host; RERANKER_DEVICE=cuda chooses GPU. Tests did not
+download or infer model weights, send API questions, or access/write the database.
+
+Read docs/translated-hybrid-rerank.md for before/after, teammate invocation,
+configuration and limitations. Source IDs/ACL/company/metadata/document filters
+remain intact. Translation failure reranks dense candidates and reports this in
+details. Missing reranker weights fail explicitly. Existing hybrid stays default.
+No guessed document language: verified mapping available through existing shared
+service/RAG parameters; current HTTP UI path has no language-map fields, so it
+runs translated search across the authorized corpus and language_aware=false.
+
+IMPORTANT: reuses configured application embedding service/current index; no E5
+migration or index compatibility certification. Benchmark E5-base768 result cannot
+be claimed for MiniLM384 production index. Existing 5000-character generation
+context cap retained. Live end-to-end model/GPU/LLM validation remains for compute
+host. No commit/push or history merge performed; working tree also contains phase1
+and earlier benchmark files. Keep changes reviewable rather than staging blindly.
+
+Validation: 49 targeted tests passed (command in docs), git diff --check passed.
+New tests/test_translated_hybrid_rerank.py covers 7 cases including complete
+KnowledgeAgent->RAG->retrieval->rerank->evidence propagation and API acceptance.
+Legacy test_app_request_models separately failed import of removed
+CandidateReviewRequest; unrelated pre-existing main-refactor test drift. Full
+legacy suite not certified. See phase2 validation.json for test command.
+
+## Latest: main parser adapted locally, scope constrained, 2026-10-21
+
+User authorized main parser adaptation first; then expressed concern about
+scope and conflicts with teammates. Read parser-main-integration-20261021/
+README.md,validation.json,main-relative-fixes.patch. Main re-fetched at7c21626.
+Ported main's parser/chunker delta into working tree with explicit paths and
+preservation checks after broad src patch was rejected by automatic review.
+No Git history merge/commit/push; Huy HEAD279be53. No remote branch touched.
+Before publishing, record actual upstream ancestry and separate source sync
+from our fixes; current working-tree port is NOT a completed Git merge.
+
+Only3 parser files differ from main: document_processor(top-level table type
+normalized),chunking/processor(only skip true heading-only text,never body),
+scanned/pdf_ocr(default OCR table metadata when fallback off). Upload and
+Upload Test explicitly call parse then chunk; preserved Huy translated_hybrid
+support and existing Upload Test embedding_status/error API fields. Two
+processing benchmark scripts migrated to canonical imports and chunk stage.
+No tokenizer/retrieval implementation,model,DB/vector or evidence change.
+682 saved artifact/tokenizer/retrieval files unchanged before this handoff
+update; ignored before.patch/backups under .venv/parser-main-integration-20261021.
+
+21 targeted tests pass(8 new parser/upload integration +existing token/source
+mapping/evidence tests). Native PDF/Office/CSV checks, optional table contracts
+mocked,storage/DB/embedding mocked in upload tests. No model/API/download/live
+DB writes. Processing script --help,Python syntax and diff whitespace pass.
+Legacy tests still have pre-existing old import paths/obsolete API behavior;
+full suite not claimed. No optional OCR-engine model download/run. Existing
+PDF flat-text/table duplication not redesigned. Keep next work narrow:
+application translated-hybrid + plain BGE reranking integration after user
+agrees to continue. All code and previous benchmark work still uncommitted.
+
+## Latest: translated-hybrid result returned and verified, 2026-10-21
+
+User returned Downloads/translated_fresh_results; copied byte-for-byte into
+artifacts/evaluation/colab-translated-hybrid-fresh-v1/colab-results,original
+retained. Matching exact input ZIP local replay passes48 candidate pairs,
+96 rankings/2880 scores,shared-input lineage and independent char coverage.
+Read RESULTS.md,findings.json,verification.json/import-manifest.json. Labels
+still frozen manifest c8f9dae..., no new inference/API or label changes.
+
+NVIDIA L4 FP32 BGE, same-run dense/plain vs translated-hybrid/plain controls.
+Complete per12: dense12/12/12/10 vs hybrid12/12/12/12 for VI→VI,EN→EN,VI→EN,
+EN→VI. Overall46/48→48/48,components107/112→112/112. No component/fullcase
+regressions. Both control views match original fresh run evidence48/48.
+F03 EN→VI Manual5 denseglobal187→hybridcandidate4→rerank2; all3 fields gained.
+F08 EN→VI SOP2 denseglobal33→hybridcandidate6→rerank1; both components gained.
+All candidate30 availability recovered. Zero truncation(maxpair502/1024).
+
+Important: all24 translations API-valid but F08 translates inventory stock
+as 'cổ phiếu'(financial shares). Retrieval succeeds despite semantic error;
+do not equate48/48 with translation fidelity or production answer accuracy.
+Do not silently fix translations or relabel after seeing outputs. This is
+small development followup targeting known misses, not held-out evidence.
+Suggested next: independent questions + terminology review, then controlled
+integration with main (table-order issue still separate). No integration,
+DB/vector change, generation run or deployment. All work still uncommitted.
+
+## Latest: translated-hybrid fresh comparison prepared, 2026-10-21
+
+User authorized next benchmark with frozen questions/evidence; explicitly
+approved sending ONLY24 simulated question texts to Groq after automatic
+approval review requested consent. Calls completed24/24, zero failures,
+existing QueryTranslator auto language detection + Groq openai/gpt-oss-20b.
+No documents, labels or credentials were translation inputs. Outputs/usage
+saved once; no repeated API calls needed. Production/core code unchanged.
+
+See artifacts/evaluation/colab-translated-hybrid-fresh-v1/README.md,translations.json,
+lexical-inputs.json,candidate-inputs.json,translation-summary.json. PostgreSQL
+simple lexemes extracted over supplied frozen text in a READ ONLY transaction;
+no document table reads/writes. Offline BM25 same production cleanup/formula;
+two numeric SQL parity checks passed. Stable chunk-ID tie break substitutes
+for unavailable live DB row UUIDs (documented adapter difference).
+
+Uses ACTUAL translated_hybrid.search with frozen repository/translator adapter:
+original-query dense, target-language matched original/automatic translated
+BM25, RRF60/dense1/BM252. Internal300 per branch(top_k30*10), fused30 for BGE,
+final10. All5 target-language docs/admin scope, verified frozen language map.
+Original E5 query/document vectors reused, no new E5/model download locally.
+Candidate pools frozen before BGE scoring. Same-run NEW dense/plain and
+hybrid/plain controls on Colab, shared identical-input score reuse. No
+predecessor context, generation or label edits. Review all gains/losses and
+F03/F08; this follow-up uses development data, not held-out proof.
+
+New scripts: fresh_translated_candidates.py,prepare_translated_fresh_inputs.py
+(--allow-groq only with consent; refuses to replace frozen candidate inputs),
+evaluate_translated_fresh_reranker.py,prepare_translated_fresh_colab.py.
+Three offline tests pass(BM25/scopes,fallback,full synthetic artifact replay/
+wrong-rank rejection). Extracted-final-bundle preflight and ZIP/syntax pass.
+Notebook and~3.8MB ZIP ready under colab-translated-hybrid-fresh-v1; copies in
+Windows Downloads/translated-hybrid-fresh-v1. User must upload input ZIP to
+Colab /content, unzip to translated_fresh_experiment, install bundled extra
+requirements, run script --output-dir /content/translated_fresh_results
+--allow-download, verify/download returned folder. No key/DB access on Colab.
+GPU run is PENDING, no translated-hybrid quality result yet. Compare through
+the matching extracted bundle, not later HEAD. All changes uncommitted.
+
+Integrity note: working frozen REVIEW.md contained stray 'run' after 'receipt'.
+Preserved edit outside frozen set at fresh-review-assessment-20261021/
+REVIEW-before-stray-run-restore.md, restored exact original ZIP bytes. Frozen
+manifest still c8f9dae..., questions/evidence scoring labels unchanged.
+
+## Latest: fresh benchmark returned and verified, 2026-10-21
+
+User returned Downloads/fresh_reviewed_results folder. Copied byte-for-byte to
+artifacts/evaluation/colab-fresh-reviewed-v1/colab-results; original retained.
+Read RESULTS.md and findings.json. Matching uploaded input ZIP extracted to
+ignored .venv/colab-review-inputs/<zip_sha>; offline verifier passed48 dense
+pools,144 rankings,4320 scores,exact rendering/lineage and independent char
+coverage. Preserved original Colab audit as colab-verification.json; added
+import-manifest.json. No new GPU/model inference locally.
+
+NVIDIA L4 FP32; complete48 cases, zero truncation(maxpair678/1024,query42/512).
+Full evidence per12: dense VI→VI12,EN→EN11,VI→EN8,EN→VI8; ALL THREE rerankers
+plain/parent-plain/narrative-parent12,12,12,10, matching candidate30 availability.
+Components per28: dense28,26,19,18; rerankers28,28,28,23. All variants have
+identical per-case evidence; no regressions vs dense. No extra-context gain
+on this fresh set; do not present original post-hoc19/19 as held-out proof.
+Remaining EN→VI F03 Manual5 dense187(all3 fields absent frompool), F08 SOP2
+rank33(both components absent). Rerankers cannot recover absent candidates.
+Suggested followup: cross-language candidate generation/translated-hybrid
+comparison under same frozen scope; modest pool expansion may helpF08 but
+notF03. No followup experiment run/label edits/production changes. All work
+still uncommitted; user has not requested commit/push in this resumed task.
+
+## Latest: fresh Colab benchmark prepared, not yet run, 2026-10-21
+
+User requested running the fresh benchmark and prefers Colab GPU. Prepared
+artifacts/evaluation/colab-fresh-reviewed-v1/fresh_reviewed_colab.ipynb and
+fresh_reviewed_colab_inputs.zip(~3.5MB). No Colab runtime-control tool exists
+in this session; user must upload notebook, select GPU, upload ZIP, run cells,
+and return fresh_reviewed_results.zip. Downloads/inference happen on Colab,
+not locally. No new model weights downloaded locally or local embedding/
+reranker inference. Cached tokenizer-only exhaustive check: query max42/512,
+all possible query/passage/variant pairs max682/1024; zero truncation.
+
+New evaluate_fresh_reviewed_reranker.py reuses existing renderer, dense-pool,
+scorer and independent character audit. Fresh validator handles new set,
+avoids old Q01-Q20 loader. E5 pinned d128750... query: prefix/FP32/cap512;
+24 new query embeddings, existing1063 document vectors hash/order-checked;
+48 top30 pools frozen with target-language/admin filters, all5 target docs.
+BGE953dc6... FP32/cap1024 same runtime: plain,parent-plain,narrative-parent,
+final10. Identical inputs reuse ONLY matching scores from this NEW run;
+narrative=plain tables,parent narrative. Old-question scores not reused.
+Original anchors only earn evidence; no total context budget or generation.
+Report dense baseline,candidate30 availability,three reranked variants/all
+four directions,components and paired gains/losses. Shared computation times
+are NOT independent per-arm latency. Fresh extension is user-approved,
+assistant-prepared,not independent held-out proof. Core/production unchanged.
+
+Portable builder: prepare_fresh_reviewed_colab.py. Bundle CRC/code syntax,
+extracted-bundle preflight and offline synthetic replay passed; changed
+scores and wrong rankings rejected. Test: .venv/bin/python -m unittest
+discover -s tests -p test_fresh_reviewed_reranker.py. On return verify with
+scripts INSIDE the matching extracted input bundle, not a later Git HEAD.
+Notebook ends with verification/download. Failed checkpoints are partial,
+not completed benchmarks. Prepared files and previous freeze remain uncommitted.
+
+## Latest: fresh evidence v1 frozen and main reviewed, 2026-10-21
+
+User approved the evidence proposals and authorized freezing; completed
+artifacts/evaluation/fresh-reviewed-v1/. 12 bilingual paired intents,24 texts,
+48 directional cases,28 required components per direction,72 exact parser
+spans. Applied F04 days-of-supply and F09 Manual-specific clarifications;
+F02 deck,F05 workbook README,F12 separately extracted SOP table alternatives;
+narrowed F06-F08. Converted indexed offsets through saved source_spans into
+real parser-source coordinates; existing score_evidence reused unchanged.
+Assistant-prepared/reviewed,user-approved in chat,not independently certified
+or held-out. Original draft/proposals/sources unchanged. Manifest uses LF
+canonical hashes; historical draft CRLF hashes preserved. Script:
+scripts/retrieval/freeze_fresh_review_set.py --verify-only --self-check
+passes30 original-anchor alternative checks,56 component isolation checks,
+24 full/empty oracle pairs and3 tamper checks. Build refuses overwrite.
+Do NOT pass new set through old Q01-Q20-hardcoded validator/loader. Fresh
+runner adapter/new query vectors/top30 pools/new inference remain next steps;
+no retrieval benchmark/model download/DB change occurred. Do not reuse old
+question logits. See README and assessment/freeze-verification.json.
+
+User also requested main review after freeze. Fetched main7c21626, two commits
+absent from Huy(7e3b483 parsing/chunking split;7c21626 docs). No merge/pull.
+See artifacts/evaluation/main-review-20261021/REVIEW.md and processing-checks.json.
+Confirmed DOCX table-order regression: top-level table type ignored during
+nested metadata normalization, so table moves to end and short prose merges
+across it. Old/new isolated source-archive fixture verified. CSV control passes.
+Markdown first-fact deletion reproduces on both old/new: pre-existing issue.
+Frozen benchmarks unaffected; fix order contract before new parsing snapshots.
+No production fixes applied. Freeze/review changes remain uncommitted.
 
 ## New task: fresh question review packet prepared
 

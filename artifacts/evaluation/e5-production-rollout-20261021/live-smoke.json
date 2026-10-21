@@ -1,0 +1,29 @@
+{
+  "model": "intfloat/multilingual-e5-base",
+  "revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+  "vector_dimensions": 768,
+  "query_vector_norm": 1.0000000473007893,
+  "database_vectors": 532,
+  "database_dimensions": 768,
+  "results": [
+    {
+      "chunk_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+      "source": "03_Policy_Rules_Registry.csv",
+      "score": 0.789816476735508
+    },
+    {
+      "chunk_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+      "source": "03_Policy_Rules_Registry.csv",
+      "score": 0.789317824366483
+    },
+    {
+      "chunk_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+      "source": "03_Policy_Rules_Registry.csv",
+      "score": 0.786890817469907
+    }
+  ],
+  "retrieval_latency_ms": 827.1197429994572,
+  "total_seconds": 31.842668981000315,
+  "offline_model_cache_only": true,
+  "external_api_calls": false
+}

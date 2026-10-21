@@ -1,10 +1,12 @@
 # src/core/tokenization/token_counter.py
 from transformers import AutoTokenizer
+from core.embeddings.settings import E5_MODEL, E5_REVISION
 
 
 class TokenCounter:
     def __init__(self, model_name: str):
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+        options = {"revision": E5_REVISION} if model_name == E5_MODEL else {}
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True, **options)
 
     def count(self, text: str) -> int:
         token_ids = self.tokenizer.encode(

@@ -143,7 +143,7 @@ def _commerce_reference_metadata(
 class AskRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     question: str = Field(default="", min_length=3, max_length=1000)
-    retrieval_method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid"] = "hybrid"
+    retrieval_method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank"] = "hybrid"
     business_decision_domain: str | None = None
     commerce_decision_support: bool = False
     decision_suggestions: bool = False

@@ -1,0 +1,11 @@
+{
+  "status": "offline_targeted_passed",
+  "tests_passed": 49,
+  "command": "PYTHONPATH=src:tests HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 .venv/bin/python -m unittest test_translated_hybrid_rerank test_translated_hybrid test_retrieval_service test_document_scope test_parser_chunking_integration test_embedding_chunker test_token_counter test_evidence_metrics",
+  "live_model_inference": false,
+  "external_api_calls": false,
+  "database_changes": false,
+  "default_changed": false,
+  "separate_legacy_test_issue": "test_app_request_models imports removed CandidateReviewRequest",
+  "setup": "docs/translated-hybrid-rerank.md"
+}

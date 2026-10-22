@@ -1,0 +1,965 @@
+{
+  "dataset_id": "heldout-review2-v1",
+  "cases": [
+    {
+      "id": "H01-vi-to-vi",
+      "intent_id": "H01",
+      "question": "Theo phần mục đích của Manual, chính sách tồn kho phải cân bằng bốn yếu tố nào?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H01-vi-to-en",
+      "intent_id": "H01",
+      "question": "Theo phần mục đích của Manual, chính sách tồn kho phải cân bằng bốn yếu tố nào?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H01-en-to-vi",
+      "intent_id": "H01",
+      "question": "According to the Manual purpose section, which four factors should the inventory policy balance?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H01-en-to-en",
+      "intent_id": "H01",
+      "question": "According to the Manual purpose section, which four factors should the inventory policy balance?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H02-vi-to-vi",
+      "intent_id": "H02",
+      "question": "Phần mô tả dataset liệt kê những nhóm hàng nào đang được quan sát?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H02-vi-to-en",
+      "intent_id": "H02",
+      "question": "Phần mô tả dataset liệt kê những nhóm hàng nào đang được quan sát?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H02-en-to-vi",
+      "intent_id": "H02",
+      "question": "Which product categories are listed as observed in the dataset description?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H02-en-to-en",
+      "intent_id": "H02",
+      "question": "Which product categories are listed as observed in the dataset description?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H03-vi-to-vi",
+      "intent_id": "H03",
+      "question": "Nếu lịch sử nhu cầu chưa đủ tin cậy để phân nhóm ABC, tài liệu cho phép làm gì và phải rà soát lại sau bao nhiêu chu kỳ?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H03-vi-to-en",
+      "intent_id": "H03",
+      "question": "Nếu lịch sử nhu cầu chưa đủ tin cậy để phân nhóm ABC, tài liệu cho phép làm gì và phải rà soát lại sau bao nhiêu chu kỳ?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H03-en-to-vi",
+      "intent_id": "H03",
+      "question": "When demand history is not reliable enough for ABC classification, what temporary approach is allowed and after how many cycles must it be reviewed?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H03-en-to-en",
+      "intent_id": "H03",
+      "question": "When demand history is not reliable enough for ABC classification, what temporary approach is allowed and after how many cycles must it be reviewed?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H04-vi-to-vi",
+      "intent_id": "H04",
+      "question": "Mục Hồ sơ bắt buộc và lưu trữ của Manual yêu cầu giữ những nhóm hồ sơ nào?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H04-vi-to-en",
+      "intent_id": "H04",
+      "question": "Mục Hồ sơ bắt buộc và lưu trữ của Manual yêu cầu giữ những nhóm hồ sơ nào?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H04-en-to-vi",
+      "intent_id": "H04",
+      "question": "Which record groups must be retained under the Manual Required Records and Retention section?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H04-en-to-en",
+      "intent_id": "H04",
+      "question": "Which record groups must be retained under the Manual Required Records and Retention section?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H05-vi-to-vi",
+      "intent_id": "H05",
+      "question": "Trong xử lý hàng chậm luân chuyển, ba nguyên nhân nào khiến giảm giá không được dùng làm biện pháp mặc định?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H05-vi-to-en",
+      "intent_id": "H05",
+      "question": "Trong xử lý hàng chậm luân chuyển, ba nguyên nhân nào khiến giảm giá không được dùng làm biện pháp mặc định?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H05-en-to-vi",
+      "intent_id": "H05",
+      "question": "For slow-moving inventory, which three root causes mean discounting must not be the default response?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H05-en-to-en",
+      "intent_id": "H05",
+      "question": "For slow-moving inventory, which three root causes mean discounting must not be the default response?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "narrative"
+    },
+    {
+      "id": "H06-vi-to-vi",
+      "intent_id": "H06",
+      "question": "Trong sheet Inventory Control của snapshot mẫu, Product ID 17 (DragonWear MA-17) có size, màu và On-hand Units là gì?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H06-vi-to-en",
+      "intent_id": "H06",
+      "question": "Trong sheet Inventory Control của snapshot mẫu, Product ID 17 (DragonWear MA-17) có size, màu và On-hand Units là gì?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H06-en-to-vi",
+      "intent_id": "H06",
+      "question": "In the sample Inventory Control sheet, what are the size, color, and On-hand Units for Product ID 17 (DragonWear MA-17)?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H06-en-to-en",
+      "intent_id": "H06",
+      "question": "In the sample Inventory Control sheet, what are the size, color, and On-hand Units for Product ID 17 (DragonWear MA-17)?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H07-vi-to-vi",
+      "intent_id": "H07",
+      "question": "Đọc dòng Product ID 18 (DragonWear MA-18) trong Inventory Control: Stockout Days và Fill Rate ghi bao nhiêu?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H07-vi-to-en",
+      "intent_id": "H07",
+      "question": "Đọc dòng Product ID 18 (DragonWear MA-18) trong Inventory Control: Stockout Days và Fill Rate ghi bao nhiêu?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H07-en-to-vi",
+      "intent_id": "H07",
+      "question": "Read the Inventory Control row for Product ID 18 (DragonWear MA-18): what Stockout Days and Fill Rate values are recorded?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H07-en-to-en",
+      "intent_id": "H07",
+      "question": "Read the Inventory Control row for Product ID 18 (DragonWear MA-18): what Stockout Days and Fill Rate values are recorded?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H08-vi-to-vi",
+      "intent_id": "H08",
+      "question": "Trong Inventory Control, Product ID 19 có Units Sold (Latest) và Avg Monthly Demand (3 snapshots) bao nhiêu?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H08-vi-to-en",
+      "intent_id": "H08",
+      "question": "Trong Inventory Control, Product ID 19 có Units Sold (Latest) và Avg Monthly Demand (3 snapshots) bao nhiêu?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H08-en-to-vi",
+      "intent_id": "H08",
+      "question": "In Inventory Control, what Units Sold (Latest) and Avg Monthly Demand (3 snapshots) are recorded for Product ID 19?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H08-en-to-en",
+      "intent_id": "H08",
+      "question": "In Inventory Control, what Units Sold (Latest) and Avg Monthly Demand (3 snapshots) are recorded for Product ID 19?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H09-vi-to-vi",
+      "intent_id": "H09",
+      "question": "Theo KPI Summary của workbook, nhóm GenZ có bao nhiêu SKU, On-hand Units và Units Sold (Latest)?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H09-vi-to-en",
+      "intent_id": "H09",
+      "question": "Theo KPI Summary của workbook, nhóm GenZ có bao nhiêu SKU, On-hand Units và Units Sold (Latest)?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H09-en-to-vi",
+      "intent_id": "H09",
+      "question": "According to the workbook KPI Summary, how many SKUs, On-hand Units, and Units Sold (Latest) are recorded for GenZ?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H09-en-to-en",
+      "intent_id": "H09",
+      "question": "According to the workbook KPI Summary, how many SKUs, On-hand Units, and Units Sold (Latest) are recorded for GenZ?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H10-vi-to-vi",
+      "intent_id": "H10",
+      "question": "Theo bảng ngưỡng xử lý của SOP kiểm kê, nếu không có chênh lệch thì cần làm gì và ai là người duyệt?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H10-vi-to-en",
+      "intent_id": "H10",
+      "question": "Theo bảng ngưỡng xử lý của SOP kiểm kê, nếu không có chênh lệch thì cần làm gì và ai là người duyệt?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H10-en-to-vi",
+      "intent_id": "H10",
+      "question": "According to the cycle-count SOP handling-threshold table, when there is no variance, what actions are required and who is the approver?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H10-en-to-en",
+      "intent_id": "H10",
+      "question": "According to the cycle-count SOP handling-threshold table, when there is no variance, what actions are required and who is the approver?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "table_numeric"
+    },
+    {
+      "id": "H11-vi-to-vi",
+      "intent_id": "H11",
+      "question": "So sánh hai dòng Inventory Control của Product ID 1 và Product ID 3: mỗi sản phẩm có size, màu và On-hand Units nào?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H11-vi-to-en",
+      "intent_id": "H11",
+      "question": "So sánh hai dòng Inventory Control của Product ID 1 và Product ID 3: mỗi sản phẩm có size, màu và On-hand Units nào?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H11-en-to-vi",
+      "intent_id": "H11",
+      "question": "Compare the Inventory Control rows for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H11-en-to-en",
+      "intent_id": "H11",
+      "question": "Compare the Inventory Control rows for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H12-vi-to-vi",
+      "intent_id": "H12",
+      "question": "Trong Exception Log, Product ID 2212 và 927 có Calculated DOS và Review Status lần lượt là gì?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H12-vi-to-en",
+      "intent_id": "H12",
+      "question": "Trong Exception Log, Product ID 2212 và 927 có Calculated DOS và Review Status lần lượt là gì?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H12-en-to-vi",
+      "intent_id": "H12",
+      "question": "In the Exception Log, what are the Calculated DOS and Review Status values for Product IDs 2212 and 927 respectively?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H12-en-to-en",
+      "intent_id": "H12",
+      "question": "In the Exception Log, what are the Calculated DOS and Review Status values for Product IDs 2212 and 927 respectively?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H13-vi-to-vi",
+      "intent_id": "H13",
+      "question": "Khi chuẩn bị PO trong ngân sách và đúng tham số đã duyệt, Planner chuyển cho ai duyệt? Hồ sơ nhà cung cấp phải duy trì những thông tin nào và cập nhật theo tần suất nào?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H13-vi-to-en",
+      "intent_id": "H13",
+      "question": "Khi chuẩn bị PO trong ngân sách và đúng tham số đã duyệt, Planner chuyển cho ai duyệt? Hồ sơ nhà cung cấp phải duy trì những thông tin nào và cập nhật theo tần suất nào?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H13-en-to-vi",
+      "intent_id": "H13",
+      "question": "When preparing a PO within budget and approved parameters, whom does the Planner submit it to for approval? Which supplier information must be maintained, and how often must it be updated?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H13-en-to-en",
+      "intent_id": "H13",
+      "question": "When preparing a PO within budget and approved parameters, whom does the Planner submit it to for approval? Which supplier information must be maintained, and how often must it be updated?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H14-vi-to-vi",
+      "intent_id": "H14",
+      "question": "Đối chiếu Product ID 8 và 9 trong Inventory Control: On-hand Units và Units Sold (Latest) của từng sản phẩm là bao nhiêu?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H14-vi-to-en",
+      "intent_id": "H14",
+      "question": "Đối chiếu Product ID 8 và 9 trong Inventory Control: On-hand Units và Units Sold (Latest) của từng sản phẩm là bao nhiêu?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H14-en-to-vi",
+      "intent_id": "H14",
+      "question": "Compare Product IDs 8 and 9 in Inventory Control: what are the On-hand Units and Units Sold (Latest) for each product?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H14-en-to-en",
+      "intent_id": "H14",
+      "question": "Compare Product IDs 8 and 9 in Inventory Control: what are the On-hand Units and Units Sold (Latest) for each product?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H15-vi-to-vi",
+      "intent_id": "H15",
+      "question": "Theo KPI Summary, Streetwear có bao nhiêu SKU và On-hand Units; đối chiếu với mô tả dữ liệu, toàn bộ products.csv có bao nhiêu SKU?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H15-vi-to-en",
+      "intent_id": "H15",
+      "question": "Theo KPI Summary, Streetwear có bao nhiêu SKU và On-hand Units; đối chiếu với mô tả dữ liệu, toàn bộ products.csv có bao nhiêu SKU?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H15-en-to-vi",
+      "intent_id": "H15",
+      "question": "According to KPI Summary, how many SKUs and On-hand Units are listed for Streetwear, and how many SKUs are in the full products.csv master according to the data description?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H15-en-to-en",
+      "intent_id": "H15",
+      "question": "According to KPI Summary, how many SKUs and On-hand Units are listed for Streetwear, and how many SKUs are in the full products.csv master according to the data description?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "multi_chunk"
+    },
+    {
+      "id": "H16-vi-to-vi",
+      "intent_id": "H16",
+      "question": "Nếu gom nhật ký trả hàng, đơn bán, ưu đãi và vận chuyển thành một nguồn, có thể dùng nó thay sổ tồn chính thức không, hay chỉ phục vụ mục đích gì?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H16-vi-to-en",
+      "intent_id": "H16",
+      "question": "Nếu gom nhật ký trả hàng, đơn bán, ưu đãi và vận chuyển thành một nguồn, có thể dùng nó thay sổ tồn chính thức không, hay chỉ phục vụ mục đích gì?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H16-en-to-vi",
+      "intent_id": "H16",
+      "question": "If returns, order, promotion, and delivery logs are combined, can they replace the authoritative inventory book, or what purpose may they serve instead?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H16-en-to-en",
+      "intent_id": "H16",
+      "question": "If returns, order, promotion, and delivery logs are combined, can they replace the authoritative inventory book, or what purpose may they serve instead?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H17-vi-to-vi",
+      "intent_id": "H17",
+      "question": "Hàng đến có vẻ đủ số thùng rồi; để xác nhận giao đúng đơn, kho còn phải đối chiếu những thông tin nào theo Manual?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H17-vi-to-en",
+      "intent_id": "H17",
+      "question": "Hàng đến có vẻ đủ số thùng rồi; để xác nhận giao đúng đơn, kho còn phải đối chiếu những thông tin nào theo Manual?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H17-en-to-vi",
+      "intent_id": "H17",
+      "question": "A delivery appears to contain the expected number of cartons; to confirm that the right order arrived, what details must the warehouse reconcile under the Manual?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H17-en-to-en",
+      "intent_id": "H17",
+      "question": "A delivery appears to contain the expected number of cartons; to confirm that the right order arrived, what details must the warehouse reconcile under the Manual?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H18-vi-to-vi",
+      "intent_id": "H18",
+      "question": "Doanh nghiệp không muốn bê nguyên các KPI mẫu vào vận hành. Theo tài liệu, ba yếu tố kinh doanh nào phải dùng để hiệu chỉnh các mục tiêu này?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H18-vi-to-en",
+      "intent_id": "H18",
+      "question": "Doanh nghiệp không muốn bê nguyên các KPI mẫu vào vận hành. Theo tài liệu, ba yếu tố kinh doanh nào phải dùng để hiệu chỉnh các mục tiêu này?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H18-en-to-vi",
+      "intent_id": "H18",
+      "question": "The business does not want to copy the sample KPI targets unchanged into operations. Which three business factors should be used to calibrate those targets?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H18-en-to-en",
+      "intent_id": "H18",
+      "question": "The business does not want to copy the sample KPI targets unchanged into operations. Which three business factors should be used to calibrate those targets?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H19-vi-to-vi",
+      "intent_id": "H19",
+      "question": "Khách trả hàng vì sai cỡ hoặc giao chậm. Theo tài liệu, có cần gắn mã lý do trả hàng không, và thông tin này phải phản hồi tới những bộ phận nào?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H19-vi-to-en",
+      "intent_id": "H19",
+      "question": "Khách trả hàng vì sai cỡ hoặc giao chậm. Theo tài liệu, có cần gắn mã lý do trả hàng không, và thông tin này phải phản hồi tới những bộ phận nào?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H19-en-to-vi",
+      "intent_id": "H19",
+      "question": "A customer returns an item because it did not fit or arrived late. Under the policy, must a return-reason code be assigned, and which departments should receive that feedback?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H19-en-to-en",
+      "intent_id": "H19",
+      "question": "A customer returns an item because it did not fit or arrived late. Under the policy, must a return-reason code be assigned, and which departments should receive that feedback?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H20-vi-to-vi",
+      "intent_id": "H20",
+      "question": "Trong bảng vai trò của Manual, ai chịu trách nhiệm tổ chức phân quyền, giải nghĩa các trường dữ liệu, quản lý nhật ký và kiểm soát AI?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H20-vi-to-en",
+      "intent_id": "H20",
+      "question": "Trong bảng vai trò của Manual, ai chịu trách nhiệm tổ chức phân quyền, giải nghĩa các trường dữ liệu, quản lý nhật ký và kiểm soát AI?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H20-en-to-vi",
+      "intent_id": "H20",
+      "question": "In the Manual roles table, who is responsible for access permissions, the meaning of data fields, logging, and AI controls?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    },
+    {
+      "id": "H20-en-to-en",
+      "intent_id": "H20",
+      "question": "In the Manual roles table, who is responsible for access permissions, the meaning of data fields, logging, and AI controls?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "category": "paraphrase_terminology"
+    }
+  ]
+}

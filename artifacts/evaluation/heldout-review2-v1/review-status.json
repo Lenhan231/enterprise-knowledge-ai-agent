@@ -1,0 +1,10 @@
+{
+  "status": "user_approved_requested_edits_assistant_source_verified",
+  "requested_changes": [
+    "H10 replace with SOP",
+    "H19 clarify wording",
+    "H13 shorten wording"
+  ],
+  "manifest_sha256": "3f424cac026e098fb2cff98c03137e74e61cf48b7e4a219c503312a60b1a6a14",
+  "independent_human_annotation_certification": false
+}

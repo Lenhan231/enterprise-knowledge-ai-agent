@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "revision": "reviewed-r1",
+  "question_texts": 40,
+  "e5_query_max_tokens": 50,
+  "bge_query_max_tokens": 45,
+  "bge_document_max_tokens": 472,
+  "bge_conservative_pair_upper_bound": 521,
+  "model_inference": false,
+  "external_api_calls": false,
+  "models_downloaded": false
+}

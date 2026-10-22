@@ -1,6 +1,138 @@
+## 2026-10-22 — Review2 report completed and checkpoint validated
+
+User authorized saving the work milestone and writing Huy's section. Added docs/review2/huy-retrieval-report.vi.md (tokenization, E5/schema, pipeline,80-case results, latency, all11 losses, limitations and reproducibility), huy-speaking-notes.vi.md (~5min speaking outline/Q&A), and retrieval-report-stats.json. Updated group presentation-plan to use80case/RTX2060/86.25% as main, old48case development as historical, and added navigation from artifacts/review2/README.md.
+
+New report-only tokenizer audit (cached, no inference/API): VI224845 andEN224358 prefixed/special-token inputs,total449203; longest476/512, zero overlength. Actual E5 document vectors SHA25696a9ab9cbd5c624d19f51f28890223272b19d3c29e58dddf3024b359e50fa663 match original E5 candidate. Frozen corpus row metadata still labels prior Qwen model/token counts; report explicitly distinguishes stale source-preparation metadata from actual E5 vector manifest and freshly counted E5 tokens. Do not edit frozen files to hide this provenance limitation.
+
+Cached weight files E5=1060.68MiB, BGE=2165.86MiB. Recorded Torch peak2.212GiB from sequential loading, not production co-resident models/all desktop VRAM. No extra benchmark/model inference, API calls or production source edits made for this report.
+
+WSL Git had no HTTPS credentials. Existing Windows GCM account EroEroz successfully fetched Huy via Git for Windows with per-command safe.directory/credential.helper only, no global config change or token printing. Use that transport to push the authorized checkpoint. Validation before checkpoint:10 targeted metric/replay tests +3 bundle tests passed; final80-case artifact replay passed; documentation links/fences passed. All frozen benchmark and85 archived file hashes also verified against staged git blobs. Copied frozen code/CSV whitespace kept byte-identical; authored code/docs whitespace check passed. No likely token/credential patterns found in staged text. Final commit ID is obtained from git log, not a self-referential value in this file.
+
+## 2026-10-22 — Artifact navigation/archiving completed
+
+User authorized organizing artifacts. Added artifacts/README.md, review2/README.md, evaluation/README.md, archive/README.md, inventory-20261022.csv and cleanup-20261022.json. Reference scan covered1,048 source/notebook/data/doc files and280 direct evaluation entries. Archived79 unreferenced historical JSON plus main-review-20261021 and retrieval-metrics-20261022-initial (81 top-level entries, all contents SHA256 verified). No files deleted. Updated the initial-report link in development metrics REPORT and old handoff destinations. Production source and all frozen heldout files/manifest unchanged.
+
+Archive map/hashes are in cleanup-20261022.json; restore only if old destinations are free. Existing corpus/vector/translation bundles and helpers with location-dependent root discovery stay in evaluation to preserve reruns. Remaining team OCR/generation reports were kept when referenced or portability unknown. Root docs make clear that archiving improves navigation, not disk usage. Current Review2 benchmark remains at evaluation/heldout-review2-v1/runs/review2-reviewed-r1-sql-20261022; use default SQL backend for reproducibility. All changes still uncommitted/unpushed.
+
+## 2026-10-22 — Reviewed heldout benchmark completed (80/80, SQL/CUDA)
+
+User approved replacing H10 with SOP, clarifying H19 and shortening H13, then running benchmark; explicitly consented via async question to send40 new simulated question texts to Groq. Completed all authorized work; no commit/push requested or performed.
+
+Folder: `artifacts/evaluation/heldout-review2-v1/`. Start `RESULTS.vi.md`; full report/metrics/case failures in `runs/review2-reviewed-r1-sql-20261022/REPORT.vi.md`. Version reviewed-r1, manifest SHA256 **3f424cac026e098fb2cff98c03137e74e61cf48b7e4a219c503312a60b1a6a14**. Draft archived `history/draft-before-approved-edits.zip`; assistant review/audit describe old draft, not remaining H10 errors.
+
+Changes: H10 now asks no-variance SOP table actions/approver (close ticket + retain audit trail + Warehouse Supervisor), accepting exact table/body duplicates in SOP VI/EN. H13 shorter with same labels, prior Q20 approval overlap disclosed. H19 asks whether code assigned + feedback departments, not unspecified code values. Synced questions/cases/evidence/authoring specs/REVIEW/overlap and refroze BEFORE inference.61 requirements/148 spans;20 intents/40texts/80cases. Source+empty oracles40 pairs, multi-chunk10,3 unittest checks, tokenizer50 E5 query /521 conservative BGE pair all passed. No human-certified annotation claim.
+
+Groq40/40 translations succeeded; prepared/ checkpoint+manifest frozen, API mean.560s. No labels/documents sent; no later translation corrections. Run used cached E5/BGE on RTX2060 FP32 batch4, production SQL on TEMP frozen1063chunks10docs, scope5 target-language docs/admin. No public Supabase writes or model downloads. All80 cases completed; saved logits/rankings/metrics/evidence replay verified.
+
+ALL80 metrics P@10 /R@10 /MRR@10 /nDCG@10; full evidence; mean/median/p95 ms:
+- Dense .09625/.65625/.558591/.559436;52/80(65%);546/488/941ms.
+- Dense+BGE .11875/.7875/.82125/.773126;62/80(77.5%);1691/1549/2416ms.
+- Translated hybrid raw .11875/.791667/.658993/.669387;63/80(78.75%);2437/2370/3165ms.
+- Translated hybrid+BGE .13375/.882292/.900000/.863527;69/80(86.25%);3609/3578/4605ms.
+Final components208/244; macro coverage.89375. P@10 label ceiling15.5%. Gain vsdense+21.25pp cluster-bootstrap20 intents CI[10,35]; vsdense+BGE+8.75pp CI[0,20]. No original-query hybrid arm in new set, so BM25/fusion/translation effects aren't isolated. Only E5 embedding tested in this run.
+
+Final language full cases: VI→VI17/20;VI→EN17/20;EN→VI17/20;EN→EN18/20. Categoryfull: narrative19/20,table18/20,multi12/20,paraphrase20/20. Final improves8 cases vsdense+BGE, regressesH04 VI→EN only. Reranker rescues6 fromraw hybrid, zero full-evidence regressions vsraw.
+
+All11 final failures are missing from pool30 before rerank: H04 VI→EN1, H08 targetVI2, H11all4, H14all4. Verified with fresh productionSQL TEMP read using saved vectors/cache:11/11 exact top30 parity (`candidate-diagnostics.json`). H04 correctdense rank19, lexical absenttop300, fusion33; translation uses “file categories/storage” for “records/retention”. H08 goldlexical46/68→fusion84/72. H11Product3fusion211–354; H14Product9fusion42–200. Suggest future identifier/row-aware retrieval, multi-ID candidate joins, translation terminology. No tuning applied to this heldout set after results.
+
+IMPORTANT offline limitation: diagnostic adapter top30 matchedSQL only1/11 failedcases (`offline-adapter-diagnostics.json`). OfflineBM25 ties break by string chunkID, SQL by numeric rowID; table ties affect ranks. Main benchmark and full rerun verified on SQL, unaffected. **Use default --backend sql to reproduce these scores**; don't claim optionaloffline equal or mix latency. No full offline80 inference performed or frozen code altered to tune after results.
+
+Recheck artifacts:
+`.venv/bin/python artifacts/evaluation/heldout-review2-v1/run.py verify-run artifacts/evaluation/heldout-review2-v1/runs/review2-reviewed-r1-sql-20261022`
+Fresh rerun with same prepared inputs:
+`.venv/bin/python artifacts/evaluation/heldout-review2-v1/run.py run --name review2-reviewed-r1-sql-repeat-02`
+
+Keep inputs/code/prepared/runs together. Warm-stage latency excludes live API translation/generation/model startup; generation/faithfulness/RBAC/OCR not measured. New set uses known simulatedcorpus and6 whole-identical VI/EN table evidence chunks; don't claim unseen-domain or pure cross-language proof. Earlier Oct22 dev metrics/reports/docs remain uncommitted. Only tracked-file diff is handoff; production source unchanged.
+
+## 2026-10-22 — Assistant source review of heldout questions
+
+User requested review while studying. Added `heldout-review2-v1/ASSISTANT_REVIEW.vi.md` (3-minute priority list, all20 dispositions, bilingual rewrite suggestions) and `assistant-review-audit.json`. Frozen draft/questions/labels/manifest remain unchanged; no retrieval inference, translations, API calls, commits or pushes.
+
+Important findings before first benchmark:
+- H10: VI timing alternative H10.timing.vi.a0 at Manual parser5 [547,569) only says check inventory etc before PO issuance, not exceptional-PO approval timing. Actual approval table VI13/EN14 is valid. Label-only diagnostic using correct table alone gives VI Recall.5/nDCG.6131 vs EN Recall1/nDCG1 with full evidence1 for both. Remove invalid alternative if retaining question; preserve table spans. H10 repeats facts explicitly present in old Q20.exception_approval (optional) and a larger old Q20.human_approval bundle. Recommend replacement if requiring new facts.
+- H19: wording “mã hóa ra sao” can imply exact reason code values; source only requires assigning a reason code, no codebook. Proposed VI/EN rewrite asks whether a code must be assigned + departments.
+- H13: valid 2-chunk join, but ordinary Planner→Procurement approval already in Q20; supplier information/frequency new. Suggested shorter wording.
+- Eight table-number intents keep English field labels and identical answer rows VI/EN; six H06/H07/H08/H11/H12/H14 have whole identical evidence chunks, H09/H15 KPI chunk differs in notes. Separate table vs prose results; avoid claiming all80 are pure cross-language tests.
+- Evidence source coverage: Manual13 intents, XLSX9, Deck3, Registry1, SOP PDF0 (overlapping counts). No no-answer/RBAC/generation/OCR measurement. Full evidence and Recall differ with valid alternative sources; report explains H02/H13/H15/H18.
+- No edits applied to frozen inputs; assistant review is not human signoff. User can inspect only H10/H19/H13 and the report's priority section. If revising before inference, preserve draft, sync all question/case/evidence views and authoring specs, regenerate manifest/map, then verify/tests. Do not mark reviewer Huy unless he actually approves.
+
+## 2026-10-22 — New pre-results retrieval question set (heldout-review2-v1)
+
+User requested a separate new question set, existing proposal/Review 2 retrieval metrics, and one folder for reruns/results. Created `artifacts/evaluation/heldout-review2-v1/`; start with its README.md and REVIEW.md.
+
+- 20 new intents (5 narrative, 5 table/numeric, 5 two-chunk, 5 paraphrase), VI/EN = 40 texts / 80 directional cases. Same previously seen simulated corpus; assistant-authored, related-development-topic audit provided. Human review PENDING; do not claim independent annotator validation or unseen-domain generalization.
+- 60 required evidence components / 141 exact source spans. Full/empty source oracles passed all 40 intent/language pairs; 10 two-chunk checks confirm one chunk insufficient and a pair sufficient. No retrieval/model inference on new questions yet.
+- Frozen self-contained corpus/vector/parser/PG lexeme snapshots, pinned E5/BGE/model/code revisions and SHA-256 manifest. Uses cached local E5 + BGE, no production-code change or public DB writes.
+- `run.py verify` validates inputs; `review --reviewer NAME` records operator self-report only after actual review; `prepare --allow-groq` FUTURE opt-in sends 40 new simulated question texts (not labels/documents) and extracts query lexemes read-only; `run --name NAME` creates results beneath runs/NAME, default production SQL on temporary frozen tables; optional --backend offline must be reported separately. `verify-run FOLDER` replays stored logits/metrics, not fresh inference.
+- Groq not called for this set. Prior consent covered 24 older questions, not these 40; obtain consent before calling prepare. No benchmark scores/results claimed for this set. Runs/ and prepared/ currently empty placeholders.
+- 3 standard-library tests passed (source/two-chunk oracle, frozen-file tampering, synthetic score/ranking replay + corruption/missing-method detection). `test_bundle.py` runs without pytest. Tokenizer-only local-cache preflight passed; see tokenizer-preflight.json. No downloads.
+- Metrics: P/R@10, MRR@10, nDCG@10, full/component evidence@10, mean/median/p95 warm retrieval latency, grouped by language direction/category. Excludes generation and API translation time; historical preparation API times stored separately. Query encoding measured once per 40 unique texts and reused for two target-language cases. No ROUGE/faithfulness claims.
+- User should review REVIEW.md before the first inference run. Keep prior development sets and Oct22 metrics/latency reports. This work is uncommitted/unpushed.
+
 # Handoff for Codex on another machine
 
-Updated: 2026-10-21, Asia/Saigon. Read this before continuing the user's work.
+Updated: 2026-10-22, Asia/Saigon. Read this before continuing the user's work.
+
+## Latest: supplemental metrics, GPU timing and downside report, 2026-10-22
+
+User requested more benchmark metrics/evidence and analysis of downsides before
+Review 2. Used Ponytail workflow: reuse frozen rankings/scorer; no label/question
+edits or new model downloads/API calls. Added two evaluation-only scripts:
+- scripts/retrieval/evaluate_fresh_retrieval_metrics.py
+- scripts/retrieval/benchmark_fresh_stage_latency.py
+and tests/test_fresh_retrieval_metrics.py. Production code/index unchanged today.
+
+Canonical report: artifacts/evaluation/retrieval-metrics-20261022/REPORT.vi.md;
+slide table: SLIDE_SUMMARY.vi.md; JSON/CSV/qrels include all 48 cases x6 methods.
+Initial analysis is preserved under artifacts/archive/retrieval-metrics-20261022-initial, including
+its evaluator snapshot; canonical version additionally probes context for every
+ablation. Frozen source hashes/manifest unchanged; original replayers verified.
+
+Primary results (P@10/R@10/MRR@10/nDCG@10, full evidence):
+Dense .1000/.802083/.618948/.656541,39/48,91/112 components;
+Dense+BGE .11875/.947917/.958333/.950274,46/48,107/112;
+Translated hybrid+BGE .125/1/.989583/.990639,48/48,112/112.
+Additional controls BM25 original39/48; identity-query hybrid41/48; translated
+hybrid without BGE47/48. Identity hybrid uses production translated-hybrid fusion
+with identity queries and frozen lexemes, not a separate legacy SQL baseline.
+Qrels are any exact mapped non-whitespace overlap with required evidence,
+including partial spans and OR alternatives; unjudged treated nonrelevant but
+labels are not exhaustive. 18 intent/language gold sets have1 chunk,6 have2;
+P@10 annotated ceiling is12.5%, not evidence that87.5% context is wrong.
+
+GPU timing fully completed48 cases x3 arms on cached RTX2060/FP32/batch4. Uses
+session-local TEMP documents/document_chunks tables with1063 frozen chunks and
+real production SQL; rollback on close, no writes to public production tables.
+All144 new top10 rankings exactly match frozen outputs; integrated selector
+smoke passed. See retrieval-latency-20261022/{results,run-provenance,
+live-frozen-parity}.json. Median/p95 warm E5+SQL+BGE stages: dense0.533/0.988s;
+dense+BGE1.441/1.899s; translated+BGE3.420/4.166s. API translation replayed from
+cache, not timed as real API; generation/UI/concurrency excluded. One pass over
+48 cases, not multi-seed latency certification. Model init+warmup75.3s; PyTorch
+peak allocated3.25GiB, not total device/process memory. No truncation.
+
+Downsides: hybrid without translation EN->VI7/12 vs dense8/12 (F01 regression).
+F12 EN->VI nDCG1->.91972 due gold ranks1,2->1,3, without evidence regression.
+F03 VI->EN untranslated-hybrid gold2->translated gold4 before BGE. Known F08
+stock->financial-shares translation error remains. Cluster bootstrap resamples
+12 paired intents, not48 independent questions; +2 full cases has95% interval
+[0,+10.42]percentage points. Development/synthetic/oracle-language-scope limits
+remain; do not claim production100% accuracy or independent generalization.
+
+Actual RAG context packing with provider/cache mocked: dense loses3 initially
+complete cases; raw translated hybrid loses F08 EN->VI (47/48 top10 ->46/48
+packed). Dense+BGE stays46/48; translated+BGE stays48/48. Not generation scoring.
+NEW BUG FOR AN: controlled synthetic probe at actual5000-char cap shows an answer
+citing S2 is accepted after S2 was removed from prompt; validator uses original
+contexts instead of prompt_contexts. See citation-validation-probe.json and
+reproduce_citation_validation.py. This is not a real-LLM failure rate. Not fixed
+in production during this benchmark-only task; coordinate with An before demo.
+
+16 targeted metric/evidence replay tests passed, freeze self-check passed. New
+metric tests cover exact ranking values/cutoff, duplicates, partial alternatives,
+source clipping, intent-cluster bootstrap, actual cap removing gold. Report and
+handoff prepared locally; NOT committed/pushed in this task. Preserve user's
+untracked docs/review2/ plans/diagrams.
 
 ## Latest: complete production E5 switch and Huy push, 2026-10-21
 
@@ -263,7 +395,7 @@ question logits. See README and assessment/freeze-verification.json.
 
 User also requested main review after freeze. Fetched main7c21626, two commits
 absent from Huy(7e3b483 parsing/chunking split;7c21626 docs). No merge/pull.
-See artifacts/evaluation/main-review-20261021/REVIEW.md and processing-checks.json.
+See artifacts/archive/main-review-20261021/REVIEW.md and processing-checks.json.
 Confirmed DOCX table-order regression: top-level table type ignored during
 nested metadata normalization, so table moves to end and short prose merges
 across it. Old/new isolated source-archive fixture verified. CSV control passes.

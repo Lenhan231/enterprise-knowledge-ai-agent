@@ -1,0 +1,176 @@
+[
+  {
+    "intent_id": "F01",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11"
+    ]
+  },
+  {
+    "intent_id": "F01",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12"
+    ]
+  },
+  {
+    "intent_id": "F02",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::12",
+      "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6"
+    ]
+  },
+  {
+    "intent_id": "F02",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::13",
+      "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::6"
+    ]
+  },
+  {
+    "intent_id": "F03",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5"
+    ]
+  },
+  {
+    "intent_id": "F03",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6"
+    ]
+  },
+  {
+    "intent_id": "F04",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10"
+    ]
+  },
+  {
+    "intent_id": "F04",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11"
+    ]
+  },
+  {
+    "intent_id": "F05",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17"
+    ]
+  },
+  {
+    "intent_id": "F05",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::18",
+      "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::0"
+    ]
+  },
+  {
+    "intent_id": "F06",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::16"
+    ]
+  },
+  {
+    "intent_id": "F06",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::17"
+    ]
+  },
+  {
+    "intent_id": "F07",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1"
+    ]
+  },
+  {
+    "intent_id": "F07",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1"
+    ]
+  },
+  {
+    "intent_id": "F08",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2"
+    ]
+  },
+  {
+    "intent_id": "F08",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::2"
+    ]
+  },
+  {
+    "intent_id": "F09",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13"
+    ]
+  },
+  {
+    "intent_id": "F09",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14"
+    ]
+  },
+  {
+    "intent_id": "F10",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13"
+    ]
+  },
+  {
+    "intent_id": "F10",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14"
+    ]
+  },
+  {
+    "intent_id": "F11",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::6"
+    ]
+  },
+  {
+    "intent_id": "F11",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::7"
+    ]
+  },
+  {
+    "intent_id": "F12",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+      "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7"
+    ]
+  },
+  {
+    "intent_id": "F12",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+      "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6"
+    ]
+  }
+]

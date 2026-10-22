@@ -1,0 +1,3154 @@
+{
+  "configuration": {
+    "status": "completed",
+    "device": "NVIDIA GeForce RTX 2060",
+    "dtype": "float32",
+    "candidate_k": 30,
+    "final_k": 10,
+    "batch_size": 4,
+    "passes": 1,
+    "cases_requested": 48,
+    "translation": "frozen replay; no API calls, API latency excluded",
+    "persistent_database_writes": false,
+    "database": "session-local frozen-corpus replica on configured PostgreSQL server",
+    "scope": "5 target-language documents; 1063 passages in 10 documents total",
+    "timing": "CUDA synchronized; warm model; fresh SQL and reranker inference per arm; query encoding timed once per case and shared across arms",
+    "seed": 20261022,
+    "cold_model_load_ms": 75286.06508499979,
+    "max_pair_tokens": 500,
+    "limits": "Not full production/API/LLM latency; temporary SQL table size/IDs differ from production; one observation per case and method, not multi-seed inference stability.",
+    "integrated_selector_smoke": "passed",
+    "cases_completed": 48,
+    "cuda_peak_allocated_bytes": 3484646912
+  },
+  "results": [
+    {
+      "id": "F01-vi-to-vi",
+      "direction": "vi->vi",
+      "embedding_ms": 12.935993000610324,
+      "methods": {
+        "dense": {
+          "candidate_ms": 992.8569529993183,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 1005.7929459999286,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 343.6298229999011,
+          "rerank_ms": 1209.0294420004284,
+          "warm_stages_ms": 1565.5952580009398,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2799.129085000459,
+          "rerank_ms": 988.2069519999277,
+          "warm_stages_ms": 3800.272030000997,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F01-vi-to-en",
+      "direction": "vi->en",
+      "embedding_ms": 17.144882999673428,
+      "methods": {
+        "dense_bge": {
+          "candidate_ms": 338.3292819999042,
+          "rerank_ms": 1057.9636610000307,
+          "warm_stages_ms": 1413.4378259996083,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::9",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 655.3461630001038,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 672.4910459997773,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::2",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::9",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2094.3556909996914,
+          "rerank_ms": 1007.4867779994747,
+          "warm_stages_ms": 3118.9873519988396,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::9",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F01-en-to-vi",
+      "direction": "en->vi",
+      "embedding_ms": 12.367758999971556,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 1796.3495789999797,
+          "rerank_ms": 1077.6687220004533,
+          "warm_stages_ms": 2886.3860600004045,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 345.74124200025835,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 358.1090010002299,
+          "ranking": [
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::9",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 341.82476200021483,
+          "rerank_ms": 1113.3143639999616,
+          "warm_stages_ms": 1467.506885000148,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::466",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::462",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::461",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::484",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::483",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::465"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F01-en-to-en",
+      "direction": "en->en",
+      "embedding_ms": 8.077614000285394,
+      "methods": {
+        "dense": {
+          "candidate_ms": 337.92071900006704,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 345.99833300035243,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::2",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::9",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 1774.7968970006696,
+          "rerank_ms": 1035.7375550001962,
+          "warm_stages_ms": 2818.612066001151,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::0",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::16",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 336.32010800010903,
+          "rerank_ms": 952.7112210007544,
+          "warm_stages_ms": 1297.1089430011489,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::16",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F02-vi-to-vi",
+      "direction": "vi->vi",
+      "embedding_ms": 10.294241999872611,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 2441.3461769991045,
+          "rerank_ms": 1011.7062729996178,
+          "warm_stages_ms": 3463.346691998595,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::12",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 342.8483179995965,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 353.1425599994691,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::12",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::1",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 341.92979499948706,
+          "rerank_ms": 983.5194930001308,
+          "warm_stages_ms": 1335.7435299994904,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::12",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::6",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F02-vi-to-en",
+      "direction": "vi->en",
+      "embedding_ms": 8.17061699945043,
+      "methods": {
+        "dense": {
+          "candidate_ms": 652.3565659999804,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 660.5271829994308,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::13",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 336.7159099998389,
+          "rerank_ms": 1082.7744100006385,
+          "warm_stages_ms": 1427.6609369999278,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::13",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::2",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::459"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2407.9727309999726,
+          "rerank_ms": 967.8189810001641,
+          "warm_stages_ms": 3383.962328999587,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::13",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::2",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::5",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::9"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F02-en-to-vi",
+      "direction": "en->vi",
+      "embedding_ms": 12.731082000755123,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 1829.2547820001346,
+          "rerank_ms": 980.6429400005072,
+          "warm_stages_ms": 2822.628804001397,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::12",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 342.5443260002794,
+          "rerank_ms": 1116.1888179995003,
+          "warm_stages_ms": 1471.4642260005348,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::12",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::472"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 658.9177159994506,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 671.6487980002057,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::12",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::458",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::462",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::479",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::460",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::471"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F02-en-to-en",
+      "direction": "en->en",
+      "embedding_ms": 8.008840000002238,
+      "methods": {
+        "dense": {
+          "candidate_ms": 337.4930729996777,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 345.5019129996799,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::13",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::2",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::2"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 1775.963197999772,
+          "rerank_ms": 921.2301210000078,
+          "warm_stages_ms": 2705.202158999782,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::13",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::2",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::5"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 338.54545499980304,
+          "rerank_ms": 924.0115960001276,
+          "warm_stages_ms": 1270.565890999933,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::13",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::2",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::9",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::0"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F03-vi-to-vi",
+      "direction": "vi->vi",
+      "embedding_ms": 11.586884999815084,
+      "methods": {
+        "dense": {
+          "candidate_ms": 658.8442990005206,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 670.4311840003356,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::11",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::1",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2619.2283580003277,
+          "rerank_ms": 1015.4118629998266,
+          "warm_stages_ms": 3646.2271059999694,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::11",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 382.4770319997697,
+          "rerank_ms": 955.9366840003349,
+          "warm_stages_ms": 1350.0006009999197,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::11",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F03-vi-to-en",
+      "direction": "vi->en",
+      "embedding_ms": 8.663819000503281,
+      "methods": {
+        "dense_bge": {
+          "candidate_ms": 390.55688099961117,
+          "rerank_ms": 1185.486802000014,
+          "warm_stages_ms": 1584.7075020001284,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::16",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::3",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::3",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 3246.297616999982,
+          "rerank_ms": 1079.9867579999045,
+          "warm_stages_ms": 4334.94819400039,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::7",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::3",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::1",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 396.41992100041534,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 405.0837400009186,
+          "ranking": [
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::2",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::8",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F03-en-to-vi",
+      "direction": "en->vi",
+      "embedding_ms": 13.816515000144136,
+      "methods": {
+        "dense": {
+          "candidate_ms": 352.3479360001147,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 366.16445100025885,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::440",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::359",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::445",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::415",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::203",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::363"
+          ],
+          "full_evidence": false,
+          "component_coverage": 0.0
+        },
+        "dense_bge": {
+          "candidate_ms": 342.2036219999427,
+          "rerank_ms": 1518.6255660000825,
+          "warm_stages_ms": 1874.6457030001693,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::78",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::35",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::363",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::362",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::68",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::45"
+          ],
+          "full_evidence": false,
+          "component_coverage": 0.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2796.001062999494,
+          "rerank_ms": 972.2003879996919,
+          "warm_stages_ms": 3782.01796599933,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F03-en-to-en",
+      "direction": "en->en",
+      "embedding_ms": 10.461098000632774,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 2203.27478299987,
+          "rerank_ms": 1160.1702849993671,
+          "warm_stages_ms": 3373.9061659998697,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::16",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::2",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::0",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::3",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 337.8771540001253,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 348.3382520007581,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::16",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::2",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::7"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 336.6099229997417,
+          "rerank_ms": 990.1447060001374,
+          "warm_stages_ms": 1337.2157270005118,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::16",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::2",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::3"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F04-vi-to-vi",
+      "direction": "vi->vi",
+      "embedding_ms": 13.312647000020661,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 2943.808471999546,
+          "rerank_ms": 1060.3076439992947,
+          "warm_stages_ms": 4017.428762998861,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 342.84056700016663,
+          "rerank_ms": 1067.6526959996409,
+          "warm_stages_ms": 1423.8059099998281,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 342.3613880004268,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 355.6740350004475,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F04-vi-to-en",
+      "direction": "vi->en",
+      "embedding_ms": 8.314634999806003,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 2154.755794999801,
+          "rerank_ms": 1547.3868959998072,
+          "warm_stages_ms": 3710.457325999414,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::15",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::9",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::0"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 336.9863429998077,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 345.3009779996137,
+          "ranking": [
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::7",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::2",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5"
+          ],
+          "full_evidence": false,
+          "component_coverage": 0.0
+        },
+        "dense_bge": {
+          "candidate_ms": 336.4523680002094,
+          "rerank_ms": 1153.5211440004787,
+          "warm_stages_ms": 1498.288147000494,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::9",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::3",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::1"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F04-en-to-vi",
+      "direction": "en->vi",
+      "embedding_ms": 12.240041999575624,
+      "methods": {
+        "dense": {
+          "candidate_ms": 976.4623900000515,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 988.7024319996272,
+          "ranking": [
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::7"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 342.59724500043376,
+          "rerank_ms": 1243.6325700000452,
+          "warm_stages_ms": 1598.4698570000546,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::7",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2760.4971400005525,
+          "rerank_ms": 1091.0755210006755,
+          "warm_stages_ms": 3863.8127030008036,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::7",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F04-en-to-en",
+      "direction": "en->en",
+      "embedding_ms": 8.313725999869348,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 2168.587908000518,
+          "rerank_ms": 1235.4463290002968,
+          "warm_stages_ms": 3412.347963000684,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::9",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::2",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::9",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 336.11111600021104,
+          "rerank_ms": 992.7667310003017,
+          "warm_stages_ms": 1337.191573000382,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::9",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::2",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::9"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 653.0000720003954,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 661.3137980002648,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::2",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::9",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::0",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::7"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F05-vi-to-vi",
+      "direction": "vi->vi",
+      "embedding_ms": 13.288562000525417,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 2637.591360999977,
+          "rerank_ms": 1106.5064809999967,
+          "warm_stages_ms": 3757.386404000499,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::11",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::3",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::1",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::1"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 343.2047539999985,
+          "rerank_ms": 1278.8308620001771,
+          "warm_stages_ms": 1635.324178000701,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::459",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::192",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::28",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::410",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::201",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::26",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 657.752402999904,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 671.0409650004294,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::1",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F05-vi-to-en",
+      "direction": "vi->en",
+      "embedding_ms": 8.611596999799076,
+      "methods": {
+        "dense_bge": {
+          "candidate_ms": 337.24339499985945,
+          "rerank_ms": 1732.6985899999272,
+          "warm_stages_ms": 2078.5535819995857,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::18",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::0",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::459",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::457",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::466",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::440",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::235",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::192",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::203",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::419"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 969.8917599998822,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 978.5033569996813,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::18",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::28",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::459",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::0",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::201",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::192",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::410",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::26",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::167"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2487.3785179997867,
+          "rerank_ms": 1278.7558070003797,
+          "warm_stages_ms": 3774.7459219999655,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::18",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::0",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::459",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::457",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::466",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::444",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::441",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::460",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::437",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::448"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F05-en-to-vi",
+      "direction": "en->vi",
+      "embedding_ms": 15.274134000719641,
+      "methods": {
+        "dense": {
+          "candidate_ms": 342.08857100020396,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 357.3627050009236,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::459",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::463",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::482",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::460",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::447",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::457",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::440",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::466"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 1818.7124959995344,
+          "rerank_ms": 965.6963570005246,
+          "warm_stages_ms": 2799.6829870007787,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::1",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::3",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 342.44721199956984,
+          "rerank_ms": 1466.0987959996419,
+          "warm_stages_ms": 1823.8201419999314,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::472",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::466",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::453",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::462",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::460",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::459",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::441",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::444"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F05-en-to-en",
+      "direction": "en->en",
+      "embedding_ms": 22.61251199979597,
+      "methods": {
+        "dense": {
+          "candidate_ms": 653.2016410001233,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 675.8141529999193,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::18",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::0",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::15",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::9",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::459",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::463"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2474.003835000076,
+          "rerank_ms": 1172.394928000358,
+          "warm_stages_ms": 3669.01127500023,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::18",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::0",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::466",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::460",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::442",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::459",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::436",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::441",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::444",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::463"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 336.5670579996731,
+          "rerank_ms": 1278.5143339997376,
+          "warm_stages_ms": 1637.6939039992067,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::18",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::0",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::472",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::466",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::460",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::459",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::441",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::444",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::463",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::457"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F06-vi-to-vi",
+      "direction": "vi->vi",
+      "embedding_ms": 9.281413999815413,
+      "methods": {
+        "dense": {
+          "candidate_ms": 974.640731999898,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 983.9221459997134,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::16",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::7",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::6"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2120.3026740004134,
+          "rerank_ms": 1050.7423449998896,
+          "warm_stages_ms": 3180.3264330001184,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::16",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 342.6738119997026,
+          "rerank_ms": 1069.6526649999214,
+          "warm_stages_ms": 1421.6078909994394,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::16",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F06-vi-to-en",
+      "direction": "vi->en",
+      "embedding_ms": 11.165136000272469,
+      "methods": {
+        "dense_bge": {
+          "candidate_ms": 652.912102999835,
+          "rerank_ms": 1406.6908189997775,
+          "warm_stages_ms": 2070.768057999885,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::17",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::7",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::7",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::9",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 969.2253650000566,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 980.3905010003291,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::17",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::3"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2467.892998000025,
+          "rerank_ms": 1036.4987709999696,
+          "warm_stages_ms": 3515.556905000267,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::17",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::7",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::7",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::9",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::3"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F06-en-to-vi",
+      "direction": "en->vi",
+      "embedding_ms": 12.732540000797599,
+      "methods": {
+        "dense": {
+          "candidate_ms": 342.94899799988343,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 355.68153800068103,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::16",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::7",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::11"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 1831.8756879998546,
+          "rerank_ms": 1104.082668999581,
+          "warm_stages_ms": 2948.6908970002332,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::16",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 344.0789369997219,
+          "rerank_ms": 1423.3403610005553,
+          "warm_stages_ms": 1780.1518380010748,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::16",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F06-en-to-en",
+      "direction": "en->en",
+      "embedding_ms": 9.548490000270249,
+      "methods": {
+        "dense": {
+          "candidate_ms": 652.6699260002715,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 662.2184160005418,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::17",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::7",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::3",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 336.29326700065576,
+          "rerank_ms": 1024.0057729997716,
+          "warm_stages_ms": 1369.8475300006976,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::17",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::7",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::18",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2803.3021210003426,
+          "rerank_ms": 1106.4054290000058,
+          "warm_stages_ms": 3919.2560400006187,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::17",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::7",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::3",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::18",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F07-vi-to-vi",
+      "direction": "vi->vi",
+      "embedding_ms": 11.493811999571335,
+      "methods": {
+        "dense_bge": {
+          "candidate_ms": 343.2647569998153,
+          "rerank_ms": 1029.6178700000382,
+          "warm_stages_ms": 1384.3764389994249,
+          "ranking": [
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::6"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2131.653279000602,
+          "rerank_ms": 1015.6705209992651,
+          "warm_stages_ms": 3158.8176119994387,
+          "ranking": [
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::6"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 342.5994110002648,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 354.09322299983614,
+          "ranking": [
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F07-vi-to-en",
+      "direction": "vi->en",
+      "embedding_ms": 14.784531999794126,
+      "methods": {
+        "dense_bge": {
+          "candidate_ms": 336.8319809997047,
+          "rerank_ms": 1171.8256359999941,
+          "warm_stages_ms": 1523.442148999493,
+          "ranking": [
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::2",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2744.205871000304,
+          "rerank_ms": 1043.1461719999788,
+          "warm_stages_ms": 3802.136575000077,
+          "ranking": [
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::2",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::2",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 336.2497890002487,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 351.03432100004284,
+          "ranking": [
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::2",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F07-en-to-vi",
+      "direction": "en->vi",
+      "embedding_ms": 11.234426999180869,
+      "methods": {
+        "dense": {
+          "candidate_ms": 341.7745319993628,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 353.0089589985437,
+          "ranking": [
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 1810.6998000002932,
+          "rerank_ms": 1090.5222729998059,
+          "warm_stages_ms": 2912.45649999928,
+          "ranking": [
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::6"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 345.2697239999907,
+          "rerank_ms": 1139.433936000387,
+          "warm_stages_ms": 1495.9380869995584,
+          "ranking": [
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F07-en-to-en",
+      "direction": "en->en",
+      "embedding_ms": 8.974413000032655,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 2421.637174999887,
+          "rerank_ms": 995.8875390002504,
+          "warm_stages_ms": 3426.49912700017,
+          "ranking": [
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::5",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::2"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 338.8368650003031,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 347.81127800033573,
+          "ranking": [
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::2",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 339.95385200068995,
+          "rerank_ms": 998.167796999951,
+          "warm_stages_ms": 1347.0960620006736,
+          "ranking": [
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::5",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::2"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F08-vi-to-vi",
+      "direction": "vi->vi",
+      "embedding_ms": 7.832920000510057,
+      "methods": {
+        "dense": {
+          "candidate_ms": 657.9209669998818,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 665.7538870003918,
+          "ranking": [
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::6",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::7",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::6"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 343.90517300016654,
+          "rerank_ms": 945.9713989999727,
+          "warm_stages_ms": 1297.7094920006493,
+          "ranking": [
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::7",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::6",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2467.2604409997803,
+          "rerank_ms": 981.9149599998127,
+          "warm_stages_ms": 3457.008321000103,
+          "ranking": [
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::7",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::6",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::6"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F08-vi-to-en",
+      "direction": "vi->en",
+      "embedding_ms": 11.897839999619464,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 2166.161215000102,
+          "rerank_ms": 1080.5484750007963,
+          "warm_stages_ms": 3258.6075300005177,
+          "ranking": [
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::2",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::0",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::8",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 336.9055840003057,
+          "rerank_ms": 1221.625187000427,
+          "warm_stages_ms": 1570.4286110003522,
+          "ranking": [
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::2",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::453",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 653.040962999512,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 664.9388029991314,
+          "ranking": [
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::2",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F08-en-to-vi",
+      "direction": "en->vi",
+      "embedding_ms": 11.972893999882217,
+      "methods": {
+        "dense_bge": {
+          "candidate_ms": 343.71497800020734,
+          "rerank_ms": 1415.5668930006868,
+          "warm_stages_ms": 1771.2547650007764,
+          "ranking": [
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::183",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::56",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::403",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::9"
+          ],
+          "full_evidence": false,
+          "component_coverage": 0.0
+        },
+        "dense": {
+          "candidate_ms": 974.5562140005859,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 986.5291080004681,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::466",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::444",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::9"
+          ],
+          "full_evidence": false,
+          "component_coverage": 0.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2126.4074289993005,
+          "rerank_ms": 1004.9311949996991,
+          "warm_stages_ms": 3143.3115179988818,
+          "ranking": [
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F08-en-to-en",
+      "direction": "en->en",
+      "embedding_ms": 7.472735999726865,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 2178.6672540001746,
+          "rerank_ms": 1014.2882780000946,
+          "warm_stages_ms": 3200.428267999996,
+          "ranking": [
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::2",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::5",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::16",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::7",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::0"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 339.01467500072613,
+          "rerank_ms": 1059.673230000044,
+          "warm_stages_ms": 1406.160641000497,
+          "ranking": [
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::2",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::5",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 655.7243560000643,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 663.1970919997912,
+          "ranking": [
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::2",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::15",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::13",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F09-vi-to-vi",
+      "direction": "vi->vi",
+      "embedding_ms": 12.555173999317049,
+      "methods": {
+        "dense": {
+          "candidate_ms": 342.2505540002021,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 354.80572799951915,
+          "ranking": [
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::0",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2299.934067999857,
+          "rerank_ms": 1100.6552210001246,
+          "warm_stages_ms": 3413.1444629992984,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::11",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 342.76090000003023,
+          "rerank_ms": 1060.474238000097,
+          "warm_stages_ms": 1415.7903119994444,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::11",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F09-vi-to-en",
+      "direction": "vi->en",
+      "embedding_ms": 9.641872999964107,
+      "methods": {
+        "dense": {
+          "candidate_ms": 652.5326559994937,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 662.1745289994578,
+          "ranking": [
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::2",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3"
+          ],
+          "full_evidence": false,
+          "component_coverage": 0.0
+        },
+        "dense_bge": {
+          "candidate_ms": 337.0593760000702,
+          "rerank_ms": 1169.82190500039,
+          "warm_stages_ms": 1516.5231540004243,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 3125.036190999708,
+          "rerank_ms": 1111.3983660006852,
+          "warm_stages_ms": 4246.0764300003575,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::1"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F09-en-to-vi",
+      "direction": "en->vi",
+      "embedding_ms": 11.36145899999974,
+      "methods": {
+        "dense_bge": {
+          "candidate_ms": 343.8740100000359,
+          "rerank_ms": 1098.5001929993814,
+          "warm_stages_ms": 1453.735661999417,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2132.7138509996075,
+          "rerank_ms": 1132.9530050006724,
+          "warm_stages_ms": 3277.0283150002797,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 345.91804499996215,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 357.2795039999619,
+          "ranking": [
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::7",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::8",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7"
+          ],
+          "full_evidence": false,
+          "component_coverage": 0.0
+        }
+      }
+    },
+    {
+      "id": "F09-en-to-en",
+      "direction": "en->en",
+      "embedding_ms": 13.623333000396087,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 2166.7482539996854,
+          "rerank_ms": 1021.6897310001514,
+          "warm_stages_ms": 3202.061318000233,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::2",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 337.59400400049344,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 351.21733700088953,
+          "ranking": [
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::2",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 337.06060700023954,
+          "rerank_ms": 1048.485871999219,
+          "warm_stages_ms": 1399.1698119998546,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::2",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::0"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F10-vi-to-vi",
+      "direction": "vi->vi",
+      "embedding_ms": 11.190311000063957,
+      "methods": {
+        "dense": {
+          "candidate_ms": 343.3215420000124,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 354.51185300007637,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::2",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::8"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 1813.9524559992424,
+          "rerank_ms": 1006.0340939999151,
+          "warm_stages_ms": 2831.1768609992214,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::4",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 343.2442820003416,
+          "rerank_ms": 932.5780090002809,
+          "warm_stages_ms": 1287.0126020006865,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::4",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F10-vi-to-en",
+      "direction": "vi->en",
+      "embedding_ms": 8.979894999356475,
+      "methods": {
+        "dense": {
+          "candidate_ms": 652.3554069999591,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 661.3353019993156,
+          "ranking": [
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11"
+          ],
+          "full_evidence": false,
+          "component_coverage": 0.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2468.426417000046,
+          "rerank_ms": 1441.2761390003652,
+          "warm_stages_ms": 3918.6824509997678,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::2",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::2",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 336.95271299984597,
+          "rerank_ms": 1020.2229690003151,
+          "warm_stages_ms": 1366.1555769995175,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::2",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F10-en-to-vi",
+      "direction": "en->vi",
+      "embedding_ms": 10.27000600061001,
+      "methods": {
+        "dense": {
+          "candidate_ms": 657.8277720000187,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 668.0977780006288,
+          "ranking": [
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::0",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::11"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 341.646703999686,
+          "rerank_ms": 982.9193839996151,
+          "warm_stages_ms": 1334.836093999911,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::7",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::9",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2452.5000860003274,
+          "rerank_ms": 1011.884696999914,
+          "warm_stages_ms": 3474.6547890008515,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::7",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F10-en-to-en",
+      "direction": "en->en",
+      "embedding_ms": 14.999736999925517,
+      "methods": {
+        "dense_bge": {
+          "candidate_ms": 339.2958609993002,
+          "rerank_ms": 947.433307999745,
+          "warm_stages_ms": 1301.7289059989707,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::2",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::3",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::7"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 653.7333030000809,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 668.7330400000064,
+          "ranking": [
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::9",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::8",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11"
+          ],
+          "full_evidence": false,
+          "component_coverage": 0.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2093.3536090005873,
+          "rerank_ms": 1046.1257430006299,
+          "warm_stages_ms": 3154.4790890011427,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::2"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F11-vi-to-vi",
+      "direction": "vi->vi",
+      "embedding_ms": 14.040696999472857,
+      "methods": {
+        "dense_bge": {
+          "candidate_ms": 341.72049300013896,
+          "rerank_ms": 1059.1172029999143,
+          "warm_stages_ms": 1414.878392999526,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::6",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 658.5627199992814,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 672.6034169987543,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::6",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2133.7477569995826,
+          "rerank_ms": 1027.4471929997162,
+          "warm_stages_ms": 3175.2356469987717,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::6",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::7",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F11-vi-to-en",
+      "direction": "vi->en",
+      "embedding_ms": 13.086801000099513,
+      "methods": {
+        "dense_bge": {
+          "candidate_ms": 336.5952340000149,
+          "rerank_ms": 1274.6615850001035,
+          "warm_stages_ms": 1624.343620000218,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::7",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 3102.6566749997073,
+          "rerank_ms": 1201.6719370003557,
+          "warm_stages_ms": 4317.4154130001625,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::7",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::7",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 336.5332920002402,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 349.6200930003397,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::2",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F11-en-to-vi",
+      "direction": "en->vi",
+      "embedding_ms": 18.744604999483272,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 1812.5828960000945,
+          "rerank_ms": 1184.6092730002056,
+          "warm_stages_ms": 3015.9367739997833,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::6",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::7",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 658.6449280002853,
+          "rerank_ms": 1234.3146090006485,
+          "warm_stages_ms": 1911.704142000417,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::6",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::7",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 975.2541799998653,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 993.9987849993486,
+          "ranking": [
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::6",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::7",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F11-en-to-en",
+      "direction": "en->en",
+      "embedding_ms": 10.148104000109015,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 2471.9685520003623,
+          "rerank_ms": 1128.8532410007974,
+          "warm_stages_ms": 3610.9698970012687,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 338.60863899917604,
+          "rerank_ms": 1147.6304560001154,
+          "warm_stages_ms": 1496.3871989994004,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::9"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 336.4045289999922,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 346.5526330001012,
+          "ranking": [
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::7",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::8",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F12-vi-to-vi",
+      "direction": "vi->vi",
+      "embedding_ms": 8.948039999268076,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 2126.7215320003743,
+          "rerank_ms": 1087.4861570000576,
+          "warm_stages_ms": 3223.1557289997,
+          "ranking": [
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 343.02525200018863,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 351.9732919994567,
+          "ranking": [
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 341.85980500024016,
+          "rerank_ms": 1075.5399830004535,
+          "warm_stages_ms": 1426.3478279999617,
+          "ranking": [
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F12-vi-to-en",
+      "direction": "vi->en",
+      "embedding_ms": 12.467243000173767,
+      "methods": {
+        "dense": {
+          "candidate_ms": 652.376106999327,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 664.8433499995008,
+          "ranking": [
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::10",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::2",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::0"
+          ],
+          "full_evidence": false,
+          "component_coverage": 0.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2466.8520819996047,
+          "rerank_ms": 1100.015932000133,
+          "warm_stages_ms": 3579.3352569999115,
+          "ranking": [
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::9",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::0",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense_bge": {
+          "candidate_ms": 336.9520250007554,
+          "rerank_ms": 1263.2216619995233,
+          "warm_stages_ms": 1612.6409300004525,
+          "ranking": [
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::9",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::11",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::7"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F12-en-to-vi",
+      "direction": "en->vi",
+      "embedding_ms": 9.070306000467099,
+      "methods": {
+        "translated_hybrid_bge": {
+          "candidate_ms": 2762.171153000054,
+          "rerank_ms": 1111.3387170007627,
+          "warm_stages_ms": 3882.5801760012837,
+          "ranking": [
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::0",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 342.8740330000437,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 351.9443390005108,
+          "ranking": [
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::9",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::11",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::0",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2"
+          ],
+          "full_evidence": false,
+          "component_coverage": 0.0
+        },
+        "dense_bge": {
+          "candidate_ms": 341.85364400036633,
+          "rerank_ms": 1046.0064409999177,
+          "warm_stages_ms": 1396.9303910007511,
+          "ranking": [
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+            "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::0",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+            "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+            "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+            "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    },
+    {
+      "id": "F12-en-to-en",
+      "direction": "en->en",
+      "embedding_ms": 14.119373999164964,
+      "methods": {
+        "dense_bge": {
+          "candidate_ms": 652.4175550002838,
+          "rerank_ms": 1037.6327679996393,
+          "warm_stages_ms": 1704.169696999088,
+          "ranking": [
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::9",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::0",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "translated_hybrid_bge": {
+          "candidate_ms": 2792.4967279996054,
+          "rerank_ms": 1045.2379819998896,
+          "warm_stages_ms": 3851.85408399866,
+          "ranking": [
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::9",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::0",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        },
+        "dense": {
+          "candidate_ms": 336.4996099999189,
+          "rerank_ms": 0.0,
+          "warm_stages_ms": 350.61898399908387,
+          "ranking": [
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::4",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::3",
+            "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::3",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::5",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::8",
+            "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::5",
+            "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::1",
+            "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::4"
+          ],
+          "full_evidence": true,
+          "component_coverage": 1.0
+        }
+      }
+    }
+  ],
+  "summary": {
+    "dense": {
+      "candidate_ms": {
+        "median": 524.3876640001872,
+        "p95": 975.0394731998767,
+        "mean": 545.9992864999966
+      },
+      "rerank_ms": {
+        "median": 0.0,
+        "p95": 0.0,
+        "mean": 0.0
+      },
+      "warm_stages_ms": {
+        "median": 532.8054615001747,
+        "p95": 987.9417685999215,
+        "mean": 557.6214805416461
+      },
+      "complete_evidence_cases": 39
+    },
+    "dense_bge": {
+      "candidate_ms": {
+        "median": 341.8392030002906,
+        "p95": 560.766319100048,
+        "mean": 361.7607552708553
+      },
+      "rerank_ms": {
+        "median": 1079.157196500546,
+        "p95": 1451.1333437499616,
+        "mean": 1137.6573882708954
+      },
+      "warm_stages_ms": {
+        "median": 1440.6982994996724,
+        "p95": 1898.7336883503303,
+        "mean": 1511.0403375834
+      },
+      "complete_evidence_cases": 46
+    },
+    "translated_hybrid_bge": {
+      "candidate_ms": {
+        "median": 2353.9533994999147,
+        "p95": 3047.059803949651,
+        "mean": 2348.3590362083078
+      },
+      "rerank_ms": {
+        "median": 1055.5249944995921,
+        "p95": 1263.5974897003507,
+        "mean": 1082.4823673750832
+      },
+      "warm_stages_ms": {
+        "median": 3419.8217949997343,
+        "p95": 4166.049746549834,
+        "mean": 3442.4635976250406
+      },
+      "complete_evidence_cases": 48
+    }
+  }
+}

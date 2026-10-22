@@ -1,0 +1,23 @@
+{
+  "targeted_tests_passed": 16,
+  "frozen_source_hashes_unchanged": true,
+  "freeze_self_check": "passed",
+  "live_latency_cases": 48,
+  "new_rankings_matching_frozen": 144,
+  "latency_run_source_snapshot_verified": true,
+  "production_embedding_groups": [
+    [
+      "intfloat/multilingual-e5-base",
+      768,
+      532
+    ]
+  ],
+  "production_documents": 5,
+  "production_vector_type": "vector(768)",
+  "production_code_changed": false,
+  "production_database_writes": false,
+  "new_external_api_calls": 0,
+  "new_model_downloads": 0,
+  "citation_probe": "synthetic dangling citation accepted; reported, not fixed",
+  "committed_or_pushed": false
+}

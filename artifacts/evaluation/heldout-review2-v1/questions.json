@@ -1,0 +1,245 @@
+{
+  "dataset_id": "heldout-review2-v1",
+  "status": "user_approved_requested_edits_assistant_source_verified_not_run",
+  "intents": [
+    {
+      "id": "H01",
+      "category": "narrative",
+      "question": {
+        "vi": "Theo phần mục đích của Manual, chính sách tồn kho phải cân bằng bốn yếu tố nào?",
+        "en": "According to the Manual purpose section, which four factors should the inventory policy balance?"
+      },
+      "reference_answer_vi": "Mức sẵn hàng, chi phí lưu kho, vốn bị chiếm dụng và độ chính xác dữ liệu.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H02",
+      "category": "narrative",
+      "question": {
+        "vi": "Phần mô tả dataset liệt kê những nhóm hàng nào đang được quan sát?",
+        "en": "Which product categories are listed as observed in the dataset description?"
+      },
+      "reference_answer_vi": "Streetwear, Outdoor, Casual, GenZ.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H03",
+      "category": "narrative",
+      "question": {
+        "vi": "Nếu lịch sử nhu cầu chưa đủ tin cậy để phân nhóm ABC, tài liệu cho phép làm gì và phải rà soát lại sau bao nhiêu chu kỳ?",
+        "en": "When demand history is not reliable enough for ABC classification, what temporary approach is allowed and after how many cycles must it be reviewed?"
+      },
+      "reference_answer_vi": "Dùng nhóm tạm và rà soát sau 3 chu kỳ.",
+      "related_development_topics": [
+        "Q03: ABC topic, but new insufficient-history rule"
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H04",
+      "category": "narrative",
+      "question": {
+        "vi": "Mục Hồ sơ bắt buộc và lưu trữ của Manual yêu cầu giữ những nhóm hồ sơ nào?",
+        "en": "Which record groups must be retained under the Manual Required Records and Retention section?"
+      },
+      "reference_answer_vi": "PR/PO và phê duyệt; hồ sơ nhận hàng; hồ sơ kiểm kê/điều chỉnh; hàng trả về và QA; KPI/exception/parameter changes/audit trail.",
+      "related_development_topics": [
+        "Q15: records topic; new complete retention inventory"
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H05",
+      "category": "narrative",
+      "question": {
+        "vi": "Trong xử lý hàng chậm luân chuyển, ba nguyên nhân nào khiến giảm giá không được dùng làm biện pháp mặc định?",
+        "en": "For slow-moving inventory, which three root causes mean discounting must not be the default response?"
+      },
+      "reference_answer_vi": "Không mặc định giảm giá nếu nguyên nhân là sai dữ liệu, sai phân bổ size hoặc đơn hàng đang bị giữ.",
+      "related_development_topics": [
+        "Q07: slow-stock topic, new non-discounting causes"
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H06",
+      "category": "table_numeric",
+      "question": {
+        "vi": "Trong sheet Inventory Control của snapshot mẫu, Product ID 17 (DragonWear MA-17) có size, màu và On-hand Units là gì?",
+        "en": "In the sample Inventory Control sheet, what are the size, color, and On-hand Units for Product ID 17 (DragonWear MA-17)?"
+      },
+      "reference_answer_vi": "Size M, màu silver, 28 đơn vị tồn theo snapshot mẫu.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H07",
+      "category": "table_numeric",
+      "question": {
+        "vi": "Đọc dòng Product ID 18 (DragonWear MA-18) trong Inventory Control: Stockout Days và Fill Rate ghi bao nhiêu?",
+        "en": "Read the Inventory Control row for Product ID 18 (DragonWear MA-18): what Stockout Days and Fill Rate values are recorded?"
+      },
+      "reference_answer_vi": "Stockout Days = 2; Fill Rate = 0.9333 (93.33%); giá trị lịch sử, không phải hiện hành.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H08",
+      "category": "table_numeric",
+      "question": {
+        "vi": "Trong Inventory Control, Product ID 19 có Units Sold (Latest) và Avg Monthly Demand (3 snapshots) bao nhiêu?",
+        "en": "In Inventory Control, what Units Sold (Latest) and Avg Monthly Demand (3 snapshots) are recorded for Product ID 19?"
+      },
+      "reference_answer_vi": "Units Sold Latest = 3; Avg Monthly Demand = 2.333333333333333 (xấp xỉ 2.3333).",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H09",
+      "category": "table_numeric",
+      "question": {
+        "vi": "Theo KPI Summary của workbook, nhóm GenZ có bao nhiêu SKU, On-hand Units và Units Sold (Latest)?",
+        "en": "According to the workbook KPI Summary, how many SKUs, On-hand Units, and Units Sold (Latest) are recorded for GenZ?"
+      },
+      "reference_answer_vi": "44 SKU; 5126 On-hand Units; 199 Units Sold Latest.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H10",
+      "category": "table_numeric",
+      "question": {
+        "vi": "Theo bảng ngưỡng xử lý của SOP kiểm kê, nếu không có chênh lệch thì cần làm gì và ai là người duyệt?",
+        "en": "According to the cycle-count SOP handling-threshold table, when there is no variance, what actions are required and who is the approver?"
+      },
+      "reference_answer_vi": "Đóng phiếu; lưu audit trail; người duyệt: Warehouse Supervisor.",
+      "related_development_topics": [
+        "Q13: count-workflow topic; new explicit no-variance table row, not the recurring/high-value branch in F12."
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H11",
+      "category": "multi_chunk",
+      "question": {
+        "vi": "So sánh hai dòng Inventory Control của Product ID 1 và Product ID 3: mỗi sản phẩm có size, màu và On-hand Units nào?",
+        "en": "Compare the Inventory Control rows for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?"
+      },
+      "reference_answer_vi": "ID1: M/black/3; ID3: XL/blue/151.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H12",
+      "category": "multi_chunk",
+      "question": {
+        "vi": "Trong Exception Log, Product ID 2212 và 927 có Calculated DOS và Review Status lần lượt là gì?",
+        "en": "In the Exception Log, what are the Calculated DOS and Review Status values for Product IDs 2212 and 927 respectively?"
+      },
+      "reference_answer_vi": "2212: DOS25440; 927: DOS6323.333333333334; cả hai có Review Status CONFLICT - VERIFY BEFORE PO.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H13",
+      "category": "multi_chunk",
+      "question": {
+        "vi": "Khi chuẩn bị PO trong ngân sách và đúng tham số đã duyệt, Planner chuyển cho ai duyệt? Hồ sơ nhà cung cấp phải duy trì những thông tin nào và cập nhật theo tần suất nào?",
+        "en": "When preparing a PO within budget and approved parameters, whom does the Planner submit it to for approval? Which supplier information must be maintained, and how often must it be updated?"
+      },
+      "reference_answer_vi": "Planner → Procurement Manager; duy trì lead time thực tế, MOQ, lịch giao, tỷ lệ giao đủ/đúng hạn; mỗi lần nhận/hằng tháng.",
+      "related_development_topics": [
+        "Q20: normal Planner-to-Procurement approval flow reused; supplier metrics and update-frequency requirements are new."
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H14",
+      "category": "multi_chunk",
+      "question": {
+        "vi": "Đối chiếu Product ID 8 và 9 trong Inventory Control: On-hand Units và Units Sold (Latest) của từng sản phẩm là bao nhiêu?",
+        "en": "Compare Product IDs 8 and 9 in Inventory Control: what are the On-hand Units and Units Sold (Latest) for each product?"
+      },
+      "reference_answer_vi": "ID8: On-hand101/Sold1; ID9: On-hand83/Sold6.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H15",
+      "category": "multi_chunk",
+      "question": {
+        "vi": "Theo KPI Summary, Streetwear có bao nhiêu SKU và On-hand Units; đối chiếu với mô tả dữ liệu, toàn bộ products.csv có bao nhiêu SKU?",
+        "en": "According to KPI Summary, how many SKUs and On-hand Units are listed for Streetwear, and how many SKUs are in the full products.csv master according to the data description?"
+      },
+      "reference_answer_vi": "Streetwear196SKU/45085units; product master2412SKU. Không nhầm hai phạm vi.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H16",
+      "category": "paraphrase_terminology",
+      "question": {
+        "vi": "Nếu gom nhật ký trả hàng, đơn bán, ưu đãi và vận chuyển thành một nguồn, có thể dùng nó thay sổ tồn chính thức không, hay chỉ phục vụ mục đích gì?",
+        "en": "If returns, order, promotion, and delivery logs are combined, can they replace the authoritative inventory book, or what purpose may they serve instead?"
+      },
+      "reference_answer_vi": "Chỉ hỗ trợ phân tích nguyên nhân; không thay thế inventory ledger.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H17",
+      "category": "paraphrase_terminology",
+      "question": {
+        "vi": "Hàng đến có vẻ đủ số thùng rồi; để xác nhận giao đúng đơn, kho còn phải đối chiếu những thông tin nào theo Manual?",
+        "en": "A delivery appears to contain the expected number of cartons; to confirm that the right order arrived, what details must the warehouse reconcile under the Manual?"
+      },
+      "reference_answer_vi": "Đối chiếu PO, SKU, size, màu, số lượng, tình trạng bao bì, chứng từ giao hàng.",
+      "related_development_topics": [
+        "F01: receiving topic; new pre-receipt reconciliation fields"
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H18",
+      "category": "paraphrase_terminology",
+      "question": {
+        "vi": "Doanh nghiệp không muốn bê nguyên các KPI mẫu vào vận hành. Theo tài liệu, ba yếu tố kinh doanh nào phải dùng để hiệu chỉnh các mục tiêu này?",
+        "en": "The business does not want to copy the sample KPI targets unchanged into operations. Which three business factors should be used to calibrate those targets?"
+      },
+      "reference_answer_vi": "Mức dịch vụ, margin và chiến lược tồn kho.",
+      "related_development_topics": [
+        "Q05: KPI topic; new calibration dimensions"
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H19",
+      "category": "paraphrase_terminology",
+      "question": {
+        "vi": "Khách trả hàng vì sai cỡ hoặc giao chậm. Theo tài liệu, có cần gắn mã lý do trả hàng không, và thông tin này phải phản hồi tới những bộ phận nào?",
+        "en": "A customer returns an item because it did not fit or arrived late. Under the policy, must a return-reason code be assigned, and which departments should receive that feedback?"
+      },
+      "reference_answer_vi": "Gắn return-reason code; phản hồi Merchandising, QA, Logistics.",
+      "related_development_topics": [
+        "Q04/Q16: returns topic; new reason-coding feedback destinations"
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    },
+    {
+      "id": "H20",
+      "category": "paraphrase_terminology",
+      "question": {
+        "vi": "Trong bảng vai trò của Manual, ai chịu trách nhiệm tổ chức phân quyền, giải nghĩa các trường dữ liệu, quản lý nhật ký và kiểm soát AI?",
+        "en": "In the Manual roles table, who is responsible for access permissions, the meaning of data fields, logging, and AI controls?"
+      },
+      "reference_answer_vi": "System / Data Owner.",
+      "related_development_topics": [
+        "Q02/Q14: roles topic; new data-governance owner"
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+    }
+  ],
+  "revision": "reviewed-r1"
+}

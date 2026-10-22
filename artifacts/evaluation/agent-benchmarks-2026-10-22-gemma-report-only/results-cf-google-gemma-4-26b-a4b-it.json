@@ -1,0 +1,752 @@
+{
+  "dataset": "commerce-agent-benchmarks-v1",
+  "model_key": "cloudflare_gemma_4",
+  "model": "@cf/google/gemma-4-26b-a4b-it",
+  "judge_model": "openai/gpt-oss-120b",
+  "summary": {
+    "case_count": 25,
+    "by_agent": {
+      "report": {
+        "case_count": 25,
+        "status_counts": {
+          "run_error": 7,
+          "score_partial": 18
+        },
+        "mean_agent_latency_seconds": 50.549,
+        "ragas": {
+          "faithfulness": {
+            "mean": null,
+            "scored_cases": 0
+          },
+          "answer_relevancy": {
+            "mean": 0.7915,
+            "scored_cases": 18
+          },
+          "context_precision": {
+            "mean": 1.0,
+            "scored_cases": 3
+          }
+        }
+      }
+    },
+    "sql": {
+      "safety_pass_rate": null,
+      "safety_cases": 0,
+      "semantic_correctness_rate": null,
+      "semantic_cases": 0,
+      "abstention_accuracy": null,
+      "abstention_cases": 0
+    },
+    "hallucination_rate": null,
+    "hallucination_note": "Requires manual claim-level review; not inferred from faithfulness."
+  },
+  "results": [
+    {
+      "case_id": "R01",
+      "agent": "report",
+      "question": "Tạo báo cáo doanh thu và COGS tháng 12/2022 theo template đã tải lên.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Revenue Performance Report\n\nunavailable in source data\n\n\n## Report title\n\nunavailable in source data\n\n\n## Reporting period\n\nDecember 2022\n\n\n## Executive summary\n\nThe requested revenue and COGS data for December 2022 could not be retrieved due to a failure in the data processing operation [S1].\n\n\n## KPI table\n\nunavailable in source data\n\n\n| Metric | Value | Period | Source |\n| --- | --- | --- | --- |\n| Metric | Value | Period | Source |\n| Revenue | unavailable in source data | December 2022 | unavailable in source data |\n| COGS | unavailable in source data | December 2022 | unavailable in source data |\n## Monthly trend\n\nunavailable in source data\n\n\n## Segment/region breakdown\n\nunavailable in source data\n\n\n## Limitations and assumptions\n\nThe data retrieval process failed during the text_to_sql operation, meaning no validated analytics results are available [S1].\n\n\n## Sources and evidence\n\nThe report is based on the provided validated analytics result logs [S1].\n",
+      "contexts": [],
+      "reference": "[\"Doanh thu 52,454,936.20\", \"COGS 53,489,673.44\", \"kỳ báo cáo 2022-12\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 74.386,
+      "total_case_seconds": 84.373,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.8559,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R02",
+      "agent": "report",
+      "question": "Tạo báo cáo xu hướng doanh thu và COGS từng tháng trong năm 2022 theo template.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Revenue Performance Report\n\nunavailable in source data\n\n\n## Report title\n\nunavailable in source data\n\n\n## Reporting period\n\nunavailable in source data\n\n\n## Executive summary\n\nunavailable in source data\n\n\n## KPI table\n\nunavailable in source data\n\n\n| Metric | Value | Period | Source |\n| --- | --- | --- | --- |\n| Metric | Value | Period | Source |\n| Revenue | unavailable in source data | 2022 | unavailable in source data |\n| COGS | unavailable in source data | 2022 | unavailable in source data |\n## Monthly trend\n\nunavailable in source data\n\n\n## Segment/region breakdown\n\nunavailable in source data\n\n\n## Limitations and assumptions\n\nThe provided source data contains no valid analytics results or SQL execution data [S1].\n\n\n## Sources and evidence\n\nThe source data contains a failed text_to_sql operation with no rows returned [S1].\n",
+      "contexts": [],
+      "reference": "[\"12 tháng trong năm 2022\", \"doanh thu và COGS cho từng tháng\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 68.585,
+      "total_case_seconds": 74.92,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.8292,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R03",
+      "agent": "report",
+      "question": "Tạo báo cáo so sánh doanh thu thuần theo region trong tháng 12/2022.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Revenue Performance Report\n\nunavailable in source data\n\n\n## Report title\n\nunavailable in source data\n\n\n## Reporting period\n\nunavailable in source data\n\n\n## Executive summary\n\nThe requested comparison of net revenue by region for December 2022 could not be generated because the source data contains no validated analytics results [S1].\n\n\n## KPI table\n\nunavailable in source data\n\n\n| Metric | Value | Period | Source |\n| --- | --- | --- | --- |\n| Metric | Value | Period | Source |\n| Net Revenue by Region | unavailable in source data | December 2022 | unavailable in source data |\n## Monthly trend\n\nunavailable in source data\n\n\n## Segment/region breakdown\n\nunavailable in source data\n\n\n## Limitations and assumptions\n\nThe data retrieval process failed during the text-to-SQL operation, resulting in no rows being returned [S1].\n\n\n## Sources and evidence\n\nThe report is based on the provided validated analytics result rows [S1].\n",
+      "contexts": [],
+      "reference": "[\"East region có giá trị net sales 14,079,268.92 theo định nghĩa trong benchmark\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 41.541,
+      "total_case_seconds": 48.713,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.865,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R04",
+      "agent": "report",
+      "question": "Tạo báo cáo xếp hạng category theo doanh thu thuần của order items năm 2022.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Revenue Performance Report\n\nunavailable in source data\n\n\n## Report title\n\nBáo cáo xếp hạng category theo doanh thu thuần của order items năm 2022\n\n\n## Reporting period\n\nNăm 2022\n\n\n## Executive summary\n\nunavailable in source data\n\n\n## KPI table\n\nunavailable in source data\n\n\n| Metric | Value | Period | Source |\n| --- | --- | --- | --- |\n| Metric | Value | Period | Source |\n| Category Revenue Ranking | unavailable in source data | 2022 | unavailable in source data |\n## Monthly trend\n\nunavailable in source data\n\n\n## Segment/region breakdown\n\nunavailable in source data\n\n\n## Limitations and assumptions\n\nThe requested data could not be retrieved because the generated query failed planning or SQL validation [1].\n\n\n## Sources and evidence\n\nValidated analytics result rows [1]\n",
+      "contexts": [],
+      "reference": "[\"Xếp hạng dùng tất cả nhóm category có dữ liệu\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 53.538,
+      "total_case_seconds": 60.303,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.7887,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R05",
+      "agent": "report",
+      "question": "Tạo báo cáo cơ cấu order_status của các đơn hàng trong năm 2022.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 46.188,
+      "error": "ValueError: Report draft must contain one data block per template table",
+      "langchain_callback_events": 1,
+      "status": "run_error"
+    },
+    {
+      "case_id": "R06",
+      "agent": "report",
+      "question": "Tạo báo cáo số lượng đơn hàng theo payment_method và device_type trong năm 2022.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Executive Decision Brief\n\nunavailable in source data\n\n\n## Report title\n\nOrder Quantity by Payment Method and Device Type (2022)\n\n\n## Reporting period\n\nYear 2022\n\n\n## Executive summary\n\nunavailable in source data\n\n\n## Business highlights\n\nunavailable in source data\n\n\n## Risks and limitations\n\nThe SQL query failed validation, preventing data retrieval [S1].\n\n\n## Recommended decisions\n\nunavailable in source data\n\n\n## Evidence and sources\n\nData unavailable due to SQL validation error [S1].\n",
+      "contexts": [],
+      "reference": "[\"Bảng riêng cho payment_method và device_type hoặc ghi chú hai breakdown\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 61.551,
+      "total_case_seconds": 71.001,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.0,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R07",
+      "agent": "report",
+      "question": "Tạo báo cáo return_count và refund_total theo return_reason cho năm 2022.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Executive Decision Brief\n\nunavailable in source data\n\n\n## Report title\n\nReturn Count and Refund Total by Reason (2022)\n\n\n## Reporting period\n\nYear 2022\n\n\n## Executive summary\n\nData unavailable due to SQL validation failure.\n\n\n## Business highlights\n\nunavailable in source data\n\n\n## Risks and limitations\n\nThe generated query failed planning or SQL validation.\n\n\n## Recommended decisions\n\nunavailable in source data\n\n\n## Evidence and sources\n\nValidated analytics result rows [S1]\n",
+      "contexts": [],
+      "reference": "[\"COUNT(return_id)\", \"SUM(refund_amount)\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 51.83,
+      "total_case_seconds": 58.852,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.8585,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R08",
+      "agent": "report",
+      "question": "Tạo báo cáo hàng trả về theo category, gồm số lượt và tổng refund trong 2022.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Revenue Performance Report\n\nunavailable in source data\n\n\n## Report title\n\nBáo cáo hàng trả về theo category năm 2022\n\n\n## Reporting period\n\n2022\n\n\n## Executive summary\n\nunavailable in source data\n\n\n## KPI table\n\nunavailable in source data\n\n\n| Metric | Value | Period | Source |\n| --- | --- | --- | --- |\n| Metric | Value | Period | Source |\n| Số lượt trả về theo category | unavailable in source data | 2022 | unavailable in source data |\n| Tổng refund theo category | unavailable in source data | 2022 | unavailable in source data |\n## Monthly trend\n\nunavailable in source data\n\n\n## Segment/region breakdown\n\nunavailable in source data\n\n\n## Limitations and assumptions\n\nThe provided source data contains no valid analytics results; the SQL generation process failed validation [S1].\n\n\n## Sources and evidence\n\nThe report is based on provided validated analytics result rows [S1].\n",
+      "contexts": [],
+      "reference": "[\"Nhóm theo products.category\", \"nêu kỳ return_date trong năm 2022\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 37.022,
+      "total_case_seconds": 48.203,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.7684,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R09",
+      "agent": "report",
+      "question": "Tạo báo cáo thời gian giao hàng trung bình theo region cho các đơn đặt trong năm 2022.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Executive Decision Brief\n\nunavailable in source data\n\n\n## Report title\n\nAverage Delivery Time by Region (2022)\n\n\n## Reporting period\n\nYear 2022\n\n\n## Executive summary\n\nData unavailable due to SQL validation failure.\n\n\n## Business highlights\n\nunavailable in source data\n\n\n## Risks and limitations\n\nThe generated query failed planning and SQL validation.\n\n\n## Recommended decisions\n\nunavailable in source data\n\n\n## Evidence and sources\n\nValidated analytics result rows [S1]\n",
+      "contexts": [],
+      "reference": "[\"Dùng delivery_date - ship_date\", \"loại bản ghi thiếu ngày giao/ship khỏi phép tính\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 51.384,
+      "total_case_seconds": 60.087,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.8528,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R10",
+      "agent": "report",
+      "question": "Tạo báo cáo tổng shipping_fee theo region trong năm 2022.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Executive Decision Brief\n\nunavailable in source data\n\n\n## Report title\n\nTotal shipping fee by region in 2022\n\n\n## Reporting period\n\nYear 2022\n\n\n## Executive summary\n\nData unavailable due to SQL validation failure.\n\n\n## Business highlights\n\nunavailable in source data\n\n\n## Risks and limitations\n\nThe generated query failed planning or SQL validation [S1].\n\n\n## Recommended decisions\n\nunavailable in source data\n\n\n## Evidence and sources\n\nValidated analytics result rows [S1].\n",
+      "contexts": [],
+      "reference": "[\"SUM(shipping_fee) theo region\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 41.41,
+      "total_case_seconds": 52.568,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.9028,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R11",
+      "agent": "report",
+      "question": "Tạo báo cáo web sessions, visitors, page views và average bounce rate theo traffic_source trong năm 2022.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Executive Decision Brief\n\nunavailable in source data\n\n\n## Report title\n\nWeb Traffic Analysis 2022\n\n\n## Reporting period\n\nYear 2022\n\n\n## Executive summary\n\nData unavailable due to SQL validation failure [S1].\n\n\n## Business highlights\n\nunavailable in source data\n\n\n## Risks and limitations\n\nQuery failed planning or SQL validation [S1].\n\n\n## Recommended decisions\n\nunavailable in source data\n\n\n## Evidence and sources\n\nSource [S1] contains no valid analytics rows.\n",
+      "contexts": [],
+      "reference": "[\"Nhóm theo traffic_source\", \"nêu rõ cách tính average bounce rate\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 52.611,
+      "total_case_seconds": 61.109,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.786,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R12",
+      "agent": "report",
+      "question": "Tạo báo cáo số promotion bắt đầu trong năm 2022 theo promo_type và discount_value trung bình.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Revenue Performance Report\n\nunavailable in source data\n\n\n## Report title\n\nunavailable in source data\n\n\n## Reporting period\n\nunavailable in source data\n\n\n## Executive summary\n\nThe requested analysis for promotions starting in 2022 by promo_type and average discount_value could not be performed because the source data contains no valid records [S1].\n\n\n## KPI table\n\nunavailable in source data\n\n\n| Metric | Value | Period | Source |\n| --- | --- | --- | --- |\n| Metric | Value | Period | Source |\n| Promotion Count (2022) | unavailable in source data | unavailable in source data | S1 |\n| Avg Discount Value | unavailable in source data | unavailable in source data | S1 |\n## Monthly trend\n\nunavailable in source data\n\n\n## Segment/region breakdown\n\nunavailable in source data\n\n\n## Limitations and assumptions\n\nThe source data provided contains no validated analytics results; the only available record indicates a failed SQL validation attempt [S1].\n\n\n## Sources and evidence\n\nThe report is based on the provided validated analytics result rows [S1].\n",
+      "contexts": [],
+      "reference": "[\"Nhóm theo promo_type\", \"không trộn scale percentage và fixed discount\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 54.455,
+      "total_case_seconds": 66.196,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.8438,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R13",
+      "agent": "report",
+      "question": "Tạo báo cáo tồn kho theo category tại snapshot 2022-12-31.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Inventory Exception Report\n\nBáo cáo phân tích tồn kho theo danh mục dựa trên dữ liệu snapshot ngày 2022-12-31 [S1].\n\n\n## Report title\n\nBáo cáo tồn kho theo category - Snapshot 2022-12-31\n\n\n## Snapshot date and coverage\n\nDữ liệu được trích xuất tại thời điểm 2022-12-31 [S1, S2, S3, S4].\n\n\n## KPI summary\n\nTại thời điểm snapshot, có 424 SKU được ghi nhận [S1]. Tỷ lệ bật cờ overstock là 76.3% [S1]. Có 67.3% bản ghi bật cờ stockout [S1]. Có 30,495 bản ghi bật đồng thời cả stockout và overstock [S1].\n\n\n## Exception table\n\nDanh sách các sản phẩm có ghi nhận trạng thái tồn kho bất thường [S2, S3, S4].\n\n\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| --- | --- | --- | --- | --- | --- | --- |\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| 1832 | GenZ | 12 | unavailable in source data | 0 | 1 | unavailable in source data |\n| 2255 | Outdoor | 824 | unavailable in source data | 0 | 1 | unavailable in source data |\n| 2214 | Outdoor | 446 | unavailable in source data | 1 | 1 | unavailable in source data |\n## Policy thresholds\n\nCác ngưỡng chính sách tồn kho được coi là bản thảo mô phỏng, không phải chính sách đã phê duyệt [S1].\n\n\n## Required actions\n\nunavailable in source data\n\n\n## Data limitations\n\nDữ liệu là cơ sở mô phỏng, không phản ánh tồn kho thực tế [S1]. Các giá trị như Calculated Days of Supply và Reorder Point không có sẵn trong dữ liệu được cung cấp [S2, S3, S4].\n\n\n## Sources and evidence\n\nDựa trên tài liệu 05_Inventory_Policy_Training_Deck.pptx [S1] và 04_Inventory_Control_and_Reorder_Planner.xlsx [S2, S3, S4].\n",
+      "contexts": [
+        "01 | Bối cảnh dữ liệu Dataset là cơ sở mô phỏng; không phản ánh tồn kho hiện tại. 2,412 SKU trong product master 60,247 Bản ghi inventory theo snapshot 424 SKU có snapshot 31/12/2022 67.3% Bản ghi bật stockout_flag Nhóm hàng • Streetwear • Outdoor • Casual • GenZ Vấn đề dữ liệu cần kiểm soát • 76.3% bản ghi bật overstock_flag • 30,495 bản ghi bật đồng thời stockout + overstock • reorder_flag có tổng bằng 0 • Snapshot mới nhất trong file: 2022-12-31 VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 2",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 66: Snapshot Date: 2022-12-31 | Product ID: 1832 | Product Name: SaigonCore YY-27 | Category: GenZ | Segment: Trendy | Size: S | Color: orange | On-hand Units: 12 | Units Sold (Latest): 2 | Avg Monthly Demand (3 snapshots): 3.333333333333333 | Avg Daily Demand: | Stockout Days: 0 | Fill Rate: 1 | Source Stockout Flag: 0 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 4371.085384615384 | COGS (source): 3285.307775076923 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 221: Snapshot Date: 2022-12-31 | Product ID: 2255 | Product Name: VietMotion RP-52 | Category: Outdoor | Segment: Activewear | Size: XL | Color: purple | On-hand Units: 824 | Units Sold (Latest): 25 | Avg Monthly Demand (3 snapshots): 12 | Avg Daily Demand: | Stockout Days: 0 | Fill Rate: 1 | Source Stockout Flag: 0 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 715.600871757925 | COGS (source): 679.8208281700287 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 208: Snapshot Date: 2022-12-31 | Product ID: 2214 | Product Name: VietMotion RP-11 | Category: Outdoor | Segment: Activewear | Size: L | Color: white | On-hand Units: 446 | Units Sold (Latest): 12 | Avg Monthly Demand (3 snapshots): 10.66666666666667 | Avg Daily Demand: | Stockout Days: 2 | Fill Rate: 0.9333 | Source Stockout Flag: 1 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 4408.759136690647 | COGS (source): 4188.321179856114 | On-hand COGS Value:"
+      ],
+      "reference": "[\"Snapshot ngày 2022-12-31\", \"đếm SKU trong snapshot\", \"tổng stock_on_hand theo category\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx"
+      ],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 54.818,
+      "total_case_seconds": 81.063,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.8092,
+        "context_precision": 1.0
+      },
+      "score_errors": {
+        "faithfulness": "InstructorRetryException: Error code: 400 - {'error': {'message': \"Failed to validate JSON. Please adjust your prompt. See 'failed_generation' for more details.\", 'type': 'invalid_request_error', 'code': 'json_validate_failed', 'failed_generation': ''}}"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R14",
+      "agent": "report",
+      "question": "Tạo báo cáo stockout rate theo category tại snapshot 2022-12-31.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Inventory Exception Report\n\nStockout rate report by category for snapshot 2022-12-31.\n\n\n## Report title\n\nStockout Rate by Category Analysis\n\n\n## Snapshot date and coverage\n\n2022-12-31 [S1, S2, S3, S4]\n\n\n## KPI summary\n\nBased on the provided data, the stockout rate for the analyzed products is 100% across all identified categories (GenZ, Casual, Streetwear) as all sampled items have a Source Stockout Flag of 1 [S1, S2, S3, S4].\n\n\n## Exception table\n\nDetailed product stockout status as of 2022-12-31.\n\n\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| --- | --- | --- | --- | --- | --- | --- |\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| 1813 | GenZ | 12 | unavailable in source data | 1 | 1 | unavailable in source data |\n| 1916 | Casual | 458 | unavailable in source data | 1 | 1 | unavailable in source data |\n| 1868 | Streetwear | 31 | unavailable in source data | 1 | 1 | unavailable in source data |\n## Policy thresholds\n\nInventory policy thresholds are unavailable in source data.\n\n\n## Required actions\n\nunavailable in source data\n\n\n## Data limitations\n\nThe analysis is limited to the specific product rows provided in the source files [S1, S2, S3, S4].\n\n\n## Sources and evidence\n\n04_Inventory_Control_and_Reorder_Planner.xlsx [S1, S2, S3, S4]\n",
+      "contexts": [
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 61: Snapshot Date: 2022-12-31 | Product ID: 1813 | Product Name: SaigonCore YY-08 | Category: GenZ | Segment: Trendy | Size: M | Color: blue | On-hand Units: 12 | Units Sold (Latest): 3 | Avg Monthly Demand (3 snapshots): 1.666666666666667 | Avg Daily Demand: | Stockout Days: 1 | Fill Rate: 0.9667 | Source Stockout Flag: 1 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 1700.37 | COGS (source): 905.2769879999998 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 31: Snapshot Date: 2022-12-31 | Product ID: 1916 | Product Name: UrbanVN MA-09 | Category: Casual | Segment: All-weather | Size: S | Color: green | On-hand Units: 458 | Units Sold (Latest): 7 | Avg Monthly Demand (3 snapshots): 4.333333333333333 | Avg Daily Demand: | Stockout Days: 1 | Fill Rate: 0.9667 | Source Stockout Flag: 1 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 3559.950301129235 | COGS (source): 3381.952786072773 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 360: Snapshot Date: 2022-12-31 | Product ID: 1868 | Product Name: BambooCraft UM-06 | Category: Streetwear | Segment: Balanced | Size: S | Color: pink | On-hand Units: 31 | Units Sold (Latest): 4 | Avg Monthly Demand (3 snapshots): 4.333333333333333 | Avg Daily Demand: | Stockout Days: 1 | Fill Rate: 0.9667 | Source Stockout Flag: 1 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 14247.51249329759 | COGS (source): 13535.13686863271 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 79: Snapshot Date: 2022-12-31 | Product ID: 2395 | Product Name: VietMotion YY-04 | Category: GenZ | Segment: Trendy | Size: XL | Color: purple | On-hand Units: 273 | Units Sold (Latest): 16 | Avg Monthly Demand (3 snapshots): 12 | Avg Daily Demand: | Stockout Days: 1 | Fill Rate: 0.9667 | Source Stockout Flag: 1 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 1987.569124423963 | COGS (source): 1152.392578341014 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 220: Snapshot Date: 2022-12-31 | Product ID: 2254 | Product Name: VietMotion RP-51 | Category: Outdoor | Segment: Activewear | Size: L | Color: white | On-hand Units: 828 | Units Sold (Latest): 25 | Avg Monthly Demand (3 snapshots): 12 | Avg Daily Demand: | Stockout Days: 1 | Fill Rate: 0.9667 | Source Stockout Flag: 1 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 715.600871757925 | COGS (source): 486.6801528825648 | On-hand COGS Value:"
+      ],
+      "reference": "[\"Stockout rate tính từ stockout_flag / SKU trong snapshot\"]",
+      "evidence_sources": [
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx"
+      ],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 56.019,
+      "total_case_seconds": 94.007,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.8986,
+        "context_precision": 1.0
+      },
+      "score_errors": {
+        "faithfulness": "InstructorRetryException: Error code: 400 - {'error': {'message': \"Failed to generate JSON. Please adjust your prompt. See 'failed_generation' for more details.\", 'type': 'invalid_request_error', 'code': 'json_validate_failed', 'failed_generation': 'max completion tokens reached before generating a valid document'}}"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R15",
+      "agent": "report",
+      "question": "Tạo báo cáo SKU đồng thời có stockout_flag và overstock_flag ở snapshot 2022-12-31.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Inventory Exception Report\n\nBáo cáo các SKU có tín hiệu mâu thuẫn (đồng thời bật stockout_flag và overstock_flag) tại thời điểm snapshot 2022-12-31 [S1, S2].\n\n\n## Report title\n\nBáo cáo SKU có tín hiệu Stockout và Overstock đồng thời\n\n\n## Snapshot date and coverage\n\nSnapshot date: 2022-12-31 [S1, S2].\n\n\n## KPI summary\n\nTổng số SKU bật đồng thời stockout_flag và overstock_flag tại snapshot 2022-12-31 là 232 SKU [S1].\n\n\n## Exception table\n\nBảng liệt kê các SKU có tín hiệu mâu thuẫn.\n\n\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| --- | --- | --- | --- | --- | --- | --- |\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data | 1 | 1 | Chuyển sang trạng thái DATA CONFLICT; yêu cầu Inventory Controller xác minh [S1] |\n## Policy thresholds\n\nCác ngưỡng chính sách hiện tại được coi là bản thảo mô phỏng [S2].\n\n\n## Required actions\n\nKhi tín hiệu mâu thuẫn, chuyển sang trạng thái DATA CONFLICT; chặn PO tự động và yêu cầu Inventory Controller xác minh [S1].\n\n\n## Data limitations\n\nDataset là cơ sở mô phỏng, không phản ánh tồn kho hiện tại [S2]. Dữ liệu có tín hiệu mâu thuẫn cần được xác minh lại, không phải bằng chứng chắc chắn về tình trạng thực tế của từng SKU [S1].\n\n\n## Sources and evidence\n\nNguồn: 01_Inventory_Management_Policy_Manual.docx [S1], 05_Inventory_Policy_Training_Deck.pptx [S2].\n",
+      "contexts": [
+        "11. Kiểm soát chất lượng dữ liệu\nTrong inventory.csv, 67.3% bản ghi có stockout_flag=1, 76.3% có overstock_flag=1, 30,495 bản ghi bật đồng thời hai cờ, và tổng reorder_flag bằng 0. Trên snapshot 2022-12-31, 232 SKU bật đồng thời stockout_flag và overstock_flag. Đây là tín hiệu cần xác minh, không phải bằng chứng rằng từng SKU chắc chắn thiếu và dư hàng cùng lúc.\nTính lại days of supply từ tồn khả dụng và nhu cầu bình quân; lưu cả giá trị gốc và giá trị tính lại.\nKiểm tra định nghĩa của stockout_flag, overstock_flag, reorder_flag trước khi dùng cho quyết định.\nGắn source file, snapshot date, công thức, thời điểm cập nhật và người sở hữu dữ liệu.\nKhi tín hiệu mâu thuẫn, chuyển sang trạng thái DATA CONFLICT; chặn PO tự động và yêu cầu Inventory Controller xác minh.\nKhông để AI tự sửa dữ liệu nguồn hoặc tự phát hành PO. Câu trả lời AI cần nêu snapshot date, nguồn và mức độ tin cậy.",
+        "01 | Bối cảnh dữ liệu Dataset là cơ sở mô phỏng; không phản ánh tồn kho hiện tại. 2,412 SKU trong product master 60,247 Bản ghi inventory theo snapshot 424 SKU có snapshot 31/12/2022 67.3% Bản ghi bật stockout_flag Nhóm hàng • Streetwear • Outdoor • Casual • GenZ Vấn đề dữ liệu cần kiểm soát • 76.3% bản ghi bật overstock_flag • 30,495 bản ghi bật đồng thời stockout + overstock • reorder_flag có tổng bằng 0 • Snapshot mới nhất trong file: 2022-12-31 VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 2"
+      ],
+      "reference": "[\"Danh sách hoặc số lượng conflict theo category\", \"khuyến nghị DATA CONFLICT investigation\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 47.412,
+      "total_case_seconds": 63.629,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.9006,
+        "context_precision": 1.0
+      },
+      "score_errors": {
+        "faithfulness": "InstructorRetryException: Error code: 400 - {'error': {'message': \"Failed to validate JSON. Please adjust your prompt. See 'failed_generation' for more details.\", 'type': 'invalid_request_error', 'code': 'json_validate_failed', 'failed_generation': ''}}"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R16",
+      "agent": "report",
+      "question": "Tạo báo cáo các SKU có days_of_supply cao nhất tại snapshot 2022-12-31 và đề xuất bước rà soát theo chính sách.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Inventory Exception Report\n\nunavailable in source data\n\n\n## Report title\n\nSKU Analysis: Highest Days of Supply (Snapshot 2022-12-31)\n\n\n## Snapshot date and coverage\n\nSnapshot date: 2022-12-31. Coverage: unavailable in source data.\n\n\n## KPI summary\n\nNo validated analytics results were available to calculate KPI summaries for days of supply.\n\n\n## Exception table\n\nThe following table attempts to list SKUs with the highest days of supply; however, no data was successfully retrieved from the source.\n\n\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| --- | --- | --- | --- | --- | --- | --- |\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data |\n## Policy thresholds\n\nInventory policy thresholds are treated as simulated drafts and are not approved policy. Currency is unavailable in source data.\n\n\n## Required actions\n\nDue to the lack of validated data, specific review steps for individual SKUs cannot be proposed. General recommendation: Investigate data retrieval errors in the analytics pipeline.\n\n\n## Data limitations\n\nThe text_to_sql operation failed to return rows due to query validation errors. No SKU-level data is available.\n\n\n## Sources and evidence\n\nData sourced from validated analytics result rows [S1].\n",
+      "contexts": [],
+      "reference": "[\"Top SKU theo days_of_supply\", \">120 ngày cần rà soát; >180 ngày cần kế hoạch xử lý (ngưỡng mô phỏng)\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 51.85,
+      "total_case_seconds": 64.566,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.8138,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R17",
+      "agent": "report",
+      "question": "Tạo báo cáo điều khiển kiểm kê ABC, tần suất cycle count và SLA theo chính sách.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 51.045,
+      "error": "ValueError: Report draft must contain one data block per template table",
+      "langchain_callback_events": 1,
+      "status": "run_error"
+    },
+    {
+      "case_id": "R18",
+      "agent": "report",
+      "question": "Tạo báo cáo quy trình xử lý discrepancy, vai trò phê duyệt và dữ liệu audit trail bắt buộc.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 62.23,
+      "error": "ValueError: Report draft must contain one data block per template table",
+      "langchain_callback_events": 1,
+      "status": "run_error"
+    },
+    {
+      "case_id": "R19",
+      "agent": "report",
+      "question": "Tạo báo cáo kiểm soát hàng trả về: quarantine, QA grading và điều kiện đưa hàng trở lại tồn khả dụng.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 36.098,
+      "error": "RuntimeError: Cloudflare Workers AI request failed (HTTP 429): {\"errors\":[{\"message\":\"AiError: AiError: Capacity temporarily exceeded, please try again. (033e3169-d074-4a68-8f70-862810721cf0)\",\"code\":3040}],\"success\":false,\"result\":{},\"messages\":[]}",
+      "langchain_callback_events": 1,
+      "status": "run_error"
+    },
+    {
+      "case_id": "R20",
+      "agent": "report",
+      "question": "Tạo báo cáo readiness trước campaign, bao gồm checklist tồn kho và các dữ liệu còn thiếu.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 42.521,
+      "error": "ValueError: Report draft must contain one data block per template table",
+      "langchain_callback_events": 1,
+      "status": "run_error"
+    },
+    {
+      "case_id": "R21",
+      "agent": "report",
+      "question": "Tạo executive brief tổng hợp doanh thu, COGS, trả hàng và các giới hạn của commerce dataset trong năm 2022.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Executive Decision Brief\n\nunavailable in source data\n\n\n## Report title\n\nExecutive Brief: 2022 Commerce Dataset Analysis\n\n\n## Reporting period\n\n2022\n\n\n## Executive summary\n\nThe analysis of revenue, COGS, and returns for the year 2022 could not be completed due to technical limitations in the data processing stage [S1].\n\n\n## Business highlights\n\nunavailable in source data\n\n\n## Risks and limitations\n\nThe primary limitation is the failure of the text-to-SQL operation, which prevented the generation of valid queries for data extraction [S1].\n\n\n## Recommended decisions\n\nunavailable in source data\n\n\n## Evidence and sources\n\nData extraction failed during the SQL validation phase [S1].\n",
+      "contexts": [],
+      "reference": "[\"Mỗi KPI có period + nguồn\", \"phân biệt doanh thu/COGS/refund\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 35.762,
+      "total_case_seconds": 43.72,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.8469,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R22",
+      "agent": "report",
+      "question": "Tạo báo cáo quản trị tồn kho kết hợp số liệu snapshot 2022-12-31 và các quy tắc DATA CONFLICT trong SOP.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 60.091,
+      "error": "ValueError: Report draft must contain one data block per template table",
+      "langchain_callback_events": 1,
+      "status": "run_error"
+    },
+    {
+      "case_id": "R23",
+      "agent": "report",
+      "question": "Dùng template minimal_user_template_v1 để lập báo cáo doanh thu tháng 12/2022; giữ nguyên tiêu đề và thứ tự section.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 50.454,
+      "error": "ValueError: Report draft must contain one data block per template table",
+      "langchain_callback_events": 1,
+      "status": "run_error"
+    },
+    {
+      "case_id": "R24",
+      "agent": "report",
+      "question": "Dùng một template do người dùng tải lên có bảng KPI ba cột Metric, Value, Source; tạo báo cáo stockout theo category tại 2022-12-31.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Inventory Exception Report\n\nStockout report by category as of 2022-12-31.\n\n\n## Report title\n\nStockout Analysis Report\n\n\n## Snapshot date and coverage\n\n2022-12-31\n\n\n## KPI summary\n\nunavailable in source data\n\n\n## Exception table\n\nThe exception table contains no data for the requested period.\n\n\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| --- | --- | --- | --- | --- | --- | --- |\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data |\n## Policy thresholds\n\nInventory policy thresholds are treated as simulated drafts and are not approved policy. Currency is unavailable in source data.\n\n\n## Required actions\n\nunavailable in source data\n\n\n## Data limitations\n\nThe analytical query could not be completed because the question requires clarification before a safe query can be generated [S1].\n\n\n## Sources and evidence\n\nValidated analytics result [S1].\n",
+      "contexts": [],
+      "reference": "[\"Giữ cấu trúc bảng/heading của template\", \"tất cả giá trị có nguồn hoặc tính toán được\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ]
+      },
+      "latency_seconds": 45.32,
+      "total_case_seconds": 56.337,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.8361,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    },
+    {
+      "case_id": "R25",
+      "agent": "report",
+      "question": "Tạo báo cáo doanh thu năm 2025 và tồn kho hiện tại năm 2026 theo template executive brief.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "# Executive Decision Brief\n\nunavailable in source data\n\n\n## Report title\n\nunavailable in source data\n\n\n## Reporting period\n\nunavailable in source data\n\n\n## Executive summary\n\nunavailable in source data\n\n\n## Business highlights\n\nunavailable in source data\n\n\n## Risks and limitations\n\nThe provided data contains no validated analytics results for revenue or inventory [S1].\n\n\n## Recommended decisions\n\nunavailable in source data\n\n\n## Evidence and sources\n\nValidated analytics result rows [S1]\n",
+      "contexts": [],
+      "reference": "\"abstain_or_limitation\"",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ]
+      },
+      "latency_seconds": 35.601,
+      "total_case_seconds": 43.877,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.7912,
+        "context_precision": null
+      },
+      "score_errors": {
+        "faithfulness": "ValueError: retrieved_contexts is missing. Please add retrieved_contexts to the test sample.",
+        "context_precision": "ValueError: retrieved_contexts cannot be empty"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial"
+    }
+  ]
+}

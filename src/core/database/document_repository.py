@@ -244,18 +244,8 @@ class DocumentRepository:
     def execute_authorized_analytics(
         self, query: str, role: str, username: str, company: str | None = None
     ) -> dict:
-        """Run validated SELECT SQL inside role-filtered CTEs and a read-only transaction."""
+        """Run validated document-metadata SQL inside a role-filtered read-only transaction."""
         query = validate_analytics_sql(query)
-        metric_cte = """authorized_financial_metrics AS (
-            SELECT id AS metric_id, company, fiscal_year, metric_name, metric_label, metric_value, unit,
-                   document_id, page_number, source_url, source_quote, source_reference,
-                   source_chunk_id, source_chunk_index, source_content_hash,
-                   source_note, entry_method
-            FROM public.extracted_financial_metrics
-            WHERE status = 'verified'
-              AND (allowed_roles @> %s::text[] OR %s = 'admin')
-              AND (%s::text IS NULL OR company = %s)
-        )"""
         document_cte = """authorized_documents AS (
             SELECT d.document_id, d.company, d.domain, d.title, d.document_type, d.format,
                    CASE WHEN d.fiscal_year ~ '^[0-9]{4}$' THEN d.fiscal_year::integer END AS fiscal_year,
@@ -266,9 +256,7 @@ class DocumentRepository:
                    OR (%s = 'document_uploader' AND uploaded_by = %s))
               AND (%s::text IS NULL OR company = %s)
         )"""
-        metric_ids: set[int] = set()
         document_ids: set[str] = set()
-        evidence = []
         documents = []
         self.conn.rollback()
         with self.conn.transaction():
@@ -276,50 +264,18 @@ class DocumentRepository:
                 cursor.execute("SET TRANSACTION READ ONLY")
                 cursor.execute("SET LOCAL statement_timeout = '3s'")
                 cursor.execute(
-                    f"WITH {metric_cte}, {document_cte} {query}",
-                    ([role], role, company, company, [role], role, role, username, company, company),
+                    f"WITH {document_cte} {query}",
+                    ([role], role, role, username, company, company),
                 )
                 columns = [item.name for item in cursor.description]
                 results = [dict(row) if isinstance(row, dict) else dict(zip(columns, row))
                            for row in cursor.fetchall()]
                 for row in results:
-                    ids = row.get("evidence_metric_ids")
-                    if isinstance(ids, (list, tuple)):
-                        metric_ids.update(value for value in ids if isinstance(value, int))
                     document_evidence_ids = row.get("evidence_document_ids")
                     if isinstance(document_evidence_ids, (list, tuple)):
                         document_ids.update(value for value in document_evidence_ids if isinstance(value, str))
-                if len(metric_ids) > 500 or len(document_ids) > 250:
+                if len(document_ids) > 250:
                     raise ValueError("Analytics matched too many source documents; narrow the request")
-                if metric_ids:
-                    ids = sorted(metric_ids)
-                    cursor.execute(
-                        """SELECT id AS metric_id, company, fiscal_year, metric_name, metric_label,
-                                  metric_value, unit, document_id, page_number, source_url, source_quote,
-                                  source_reference, source_note, entry_method, source_chunk_id,
-                                  source_chunk_index, source_content_hash
-                           FROM public.extracted_financial_metrics
-                           WHERE status='verified' AND id = ANY(%s)
-                             AND (allowed_roles @> %s::text[] OR %s = 'admin')
-                           ORDER BY company, fiscal_year, metric_name LIMIT 501""",
-                        (ids, [role], role),
-                    )
-                    evidence = cursor.fetchall()
-                    if len(evidence) > 500:
-                        raise ValueError("Analytics returned too many metric sources; narrow the request")
-                    source_document_ids = sorted({
-                        row["document_id"] for row in evidence if row["document_id"]
-                    })
-                    if source_document_ids:
-                        cursor.execute(
-                            """SELECT document_id, company, domain, title, source_url
-                               FROM public.documents WHERE document_id = ANY(%s)
-                                 AND (allowed_roles && %s::text[] OR %s = 'admin'
-                                      OR (%s = 'document_uploader' AND uploaded_by = %s))
-                               ORDER BY title""",
-                            (source_document_ids, [role], role, role, username),
-                        )
-                        documents = cursor.fetchall()
                 if document_ids:
                     ids = sorted(document_ids)
                     cursor.execute(
@@ -333,7 +289,7 @@ class DocumentRepository:
                         (ids, [role], role, role, username),
                     )
                     documents.extend(cursor.fetchall())
-        return {"results": results, "evidence": evidence, "documents": documents}
+        return {"results": results, "documents": documents}
 
     def commerce_dashboard(self, keys: tuple[str, ...] | None = None) -> dict:
         """Return descriptive dashboard aggregates from the private synthetic Commerce schema."""

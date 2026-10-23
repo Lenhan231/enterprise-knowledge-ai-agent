@@ -296,54 +296,25 @@ async function loadOcrTestRuns() {
     const config = run.processor_config || {};
     const engine = config.parser_engine;
     const selected = config.parser_settings?.[engine] || config;
-    const tesseractConfig = selected.tesseract_config || {};
-    const parserSettings = engine === "mineru"
-      ? `MinerU · force OCR ${selected.mineru_force_ocr ? "on" : "off"} · pages ${selected.mineru_page_range || "all"}`
-      : engine === "docling"
-      ? `Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`
-      : engine === "pp-structurev3"
-      ? `PP-StructureV3 · ${selected.paddle_device || "cpu"} · ${Math.round((selected.paddle_render_scale ?? 1.5) * 72)} DPI · formulas ${selected.paddle_formula_recognition ? "on" : "off"} · charts ${selected.paddle_chart_recognition ? "on" : "off"}`
-      : engine === "built_in"
-        ? `Built-in · PSM ${selected.tesseract_psm} · ${Math.round((selected.ocr_render_scale ?? 1.5) * 72)} DPI · threshold ${tesseractConfig.thresholding_method ?? 0} · table recognition ${tesseractConfig.textord_tablefind_recognize_tables ? "on" : "off"} · ${selected.tessdata_variant || "system"} data`
-        : "Parser settings unavailable";
-    const settings = config.layout_detector === "doclayout-yolo"
-      ? `${parserSettings} · YOLO overlay ${config.layout_image_size}px · confidence ${config.layout_confidence_threshold}`
-      : parserSettings;
-    const embeddingSummary = run.embedding_status === "not_run"
-      ? "embedding skipped"
-      : `historical embedding ${run.embedding_status}`;
+    const parserSettings = `Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`;
+    const settings = parserSettings;
     const previewSummary = run.page_count ? `${formatNumber(run.page_count)} page previews` : "no page previews";
     const processingSummary = `processing ${formatDuration(run.runtime_info?.processing_time_ms)}`;
-    return `<button type="button" class="ocr-run-button" data-ocr-run-id="${escapeHtml(run.run_id)}"><strong>${escapeHtml(run.source_filename)}</strong><span>${escapeHtml(new Date(run.created_at).toLocaleString())} · ${processingSummary} · ${previewSummary} · ${formatNumber(run.chunk_count)} parser chunks · ${embeddingSummary} · ${formatNumber(run.table_count)} tables · ${escapeHtml(settings)}</span></button>`;
+    return `<button type="button" class="ocr-run-button" data-ocr-run-id="${escapeHtml(run.run_id)}"><strong>${escapeHtml(run.source_filename)}</strong><span>${escapeHtml(new Date(run.created_at).toLocaleString())} · ${processingSummary} · ${previewSummary} · ${formatNumber(run.element_count)} parser elements · ${formatNumber(run.table_count)} tables · ${escapeHtml(settings)}</span></button>`;
   }).join("") || '<p class="loading-card">No upload tests yet. Upload a supported document above to create one.</p>';
 }
 
 function renderOcrTestDetails(run) {
-  const layoutPages = run.runtime_info?.layout_detections || [];
   const allPages = [...new Set([
     ...run.pages,
-    ...layoutPages.map((page) => page.page_number == null ? NaN : Number(page.page_number)).filter(Number.isFinite),
-    ...run.chunks.map((chunk) => chunk.metadata?.page_number == null ? NaN : Number(chunk.metadata.page_number)).filter(Number.isFinite),
+    ...run.elements.map((element) => element.metadata?.page_number == null ? NaN : Number(element.metadata.page_number)).filter(Number.isFinite),
     ...run.tables.map((table) => table.page_number == null ? NaN : Number(table.page_number)).filter(Number.isFinite),
   ])].sort((a, b) => a - b);
   const pageContent = allPages.map((pageNumber, pageIndex) => {
-    const layoutPage = layoutPages.find((page) => Number(page.page_number) === pageNumber);
-    const layoutRegions = layoutPage?.regions || [];
-    const layoutOverlay = layoutPage ? `<div class="ocr-layout-preview">
-      <img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">
-      <svg viewBox="0 0 ${Number(layoutPage.width)} ${Number(layoutPage.height)}" role="img" aria-label="${formatNumber(layoutRegions.length)} DocLayout-YOLO regions detected">
-        ${layoutRegions.map((region) => {
-          const [x1, y1, x2, y2] = region.bbox.map(Number);
-          const x = x1 * Number(layoutPage.width), y = y1 * Number(layoutPage.height);
-          const width = Math.max(0, (x2 - x1) * Number(layoutPage.width));
-          const height = Math.max(0, (y2 - y1) * Number(layoutPage.height));
-          const label = `${region.class} ${Number(region.score).toFixed(2)}`;
-          return `<g class="layout-region layout-region-${escapeHtml(region.class)}"><rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${width.toFixed(1)}" height="${height.toFixed(1)}"></rect><text x="${x.toFixed(1)}" y="${Math.max(12, y - 3).toFixed(1)}">${escapeHtml(label)}</text></g>`;
-        }).join("")}
-      </svg></div>` : `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
-    const chunks = run.chunks.filter((chunk) => Number(chunk.metadata?.page_number) === pageNumber);
+    const pagePreview = `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
+    const elements = run.elements.filter((element) => Number(element.metadata?.page_number) === pageNumber);
     const tables = run.tables.filter((table) => Number(table.page_number) === pageNumber);
-    const ocrDiagnostics = chunks.flatMap((chunk) => chunk.metadata?.ocr_diagnostics || []);
+    const ocrDiagnostics = elements.flatMap((element) => element.metadata?.ocr_diagnostics || []);
     const tablesHtml = tables.map((table) => {
       const data = table.structured_data || {};
       const context = table.context || {};
@@ -385,25 +356,25 @@ function renderOcrTestDetails(run) {
         <details class="candidate-source"><summary>Detailed parser metadata</summary><pre>${escapeHtml(JSON.stringify(metadata, null, 2))}</pre></details></article>`;
     }).join("");
     return `<details class="ocr-test-page" ${pageIndex === 0 ? "open" : ""}>
-      <summary>Page ${formatNumber(pageNumber)} · ${formatNumber(chunks.length)} parser chunks · ${formatNumber(tables.length)} tables</summary>
+      <summary>Page ${formatNumber(pageNumber)} · ${formatNumber(elements.length)} parser elements · ${formatNumber(tables.length)} tables</summary>
       <div class="ocr-test-page-content">
-      <section class="ocr-test-raw"><h4>Raw page</h4>${layoutOverlay}${layoutPage ? `<p class="corpus-note">DocLayout-YOLO · ${formatNumber(layoutRegions.length)} regions at ${formatNumber(run.processor_config?.layout_image_size)}px, threshold ${escapeHtml(run.processor_config?.layout_confidence_threshold)}</p>` : ""}</section>
+      <section class="ocr-test-raw"><h4>Raw page</h4>${pagePreview}</section>
       <section class="ocr-test-extracted"><h4>Extracted output</h4>
         ${renderOcrDiagnostics(ocrDiagnostics)}
-        <details class="ocr-test-chunks"><summary>Parser output · ${formatNumber(chunks.length)} chunks</summary>${chunks.map((chunk) => `<article class="ocr-test-chunk"><div class="candidate-heading"><strong>Chunk ${formatNumber(chunk.chunk_index + 1)}</strong><span>${formatNumber(chunk.metadata?.actual_char_count ?? chunk.content.length)} chars actual · ${formatNumber(chunk.metadata?.chunk_size_chars ?? 0)} char limit · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")} · ${escapeHtml(chunk.metadata?.layout_type || "text")}</span></div><pre>${escapeHtml(chunk.content)}</pre><details class="candidate-source"><summary>Chunk metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser chunks on this page.</p>'}</details>
+        <details class="ocr-test-elements"><summary>Document elements · ${formatNumber(elements.length)} elements</summary>${elements.map((element) => `<article class="ocr-test-element"><div class="candidate-heading"><strong>Element ${formatNumber(element.element_index + 1)}</strong><span>${formatNumber(element.content.length)} chars · ${escapeHtml(element.metadata?.element_type || "text")} · ${escapeHtml(element.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(element.content)}</pre><details class="candidate-source"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(element.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser elements on this page.</p>'}</details>
         <h4 class="ocr-test-table-heading">Extracted tables</h4>
         ${tablesHtml || '<p class="ocr-test-empty">No structured table detected on this page.</p>'}
       </section>
       </div>
     </details>`;
   }).join("");
-  const unpagedChunks = run.chunks.filter((chunk) => chunk.metadata?.page_number == null);
+  const unpagedElements = run.elements.filter((element) => element.metadata?.page_number == null);
   const unpagedTables = run.tables.filter((table) => table.page_number == null);
-  const unpagedOutput = unpagedChunks.length || unpagedTables.length
+  const unpagedOutput = unpagedElements.length || unpagedTables.length
     ? `<section class="ocr-test-page">
         <h3>Document content · no page previews</h3>
-        <section class="ocr-test-extracted"><h4>Extracted output · ${formatNumber(unpagedChunks.length)} shared chunks</h4>
-          ${unpagedChunks.map((chunk) => `<article class="ocr-test-chunk"><div class="candidate-heading"><strong>Chunk ${formatNumber(chunk.chunk_index + 1)}</strong><span>${formatNumber(chunk.metadata?.actual_char_count ?? chunk.content.length)} chars · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(chunk.content)}</pre><details class="candidate-source"><summary>Chunk metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser chunks.</p>'}
+        <section class="ocr-test-extracted"><h4>Extracted output · ${formatNumber(unpagedElements.length)} document elements</h4>
+          ${unpagedElements.map((element) => `<article class="ocr-test-element"><div class="candidate-heading"><strong>Element ${formatNumber(element.element_index + 1)}</strong><span>${formatNumber(element.content.length)} chars · ${escapeHtml(element.metadata?.element_type || "text")} · ${escapeHtml(element.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(element.content)}</pre><details class="candidate-source"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(element.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser elements.</p>'}
           <h4 class="ocr-test-table-heading">Extracted tables · ${formatNumber(unpagedTables.length)}</h4>
           ${unpagedTables.map((table) => {
             const data = table.structured_data || {};
@@ -420,10 +391,9 @@ function renderOcrTestDetails(run) {
     : "";
   const processingSummary = `Processing time: ${formatDuration(run.runtime_info?.processing_time_ms)}`;
   $("#ocr-test-results").innerHTML = `<article class="ocr-test-run">
-    <div class="candidate-heading"><strong>${escapeHtml(run.source_filename)}</strong><span>${processingSummary} · ${run.page_count ? `${formatNumber(run.page_count)} page previews` : "No page previews"} · ${formatNumber(run.chunks.length)} parser chunks · ${formatNumber(run.tables.length)} tables</span></div>
+    <div class="candidate-heading"><strong>${escapeHtml(run.source_filename)}</strong><span>${processingSummary} · ${run.page_count ? `${formatNumber(run.page_count)} page previews` : "No page previews"} · ${formatNumber(run.elements.length)} parser elements · ${formatNumber(run.tables.length)} tables</span></div>
     <p class="corpus-note">SHA-256: <code>${escapeHtml(run.source_sha256)}</code></p>
-    <p class="corpus-note">Tokenization and embedding are downstream stages and are not run by Upload Test.</p>
-    <details class="candidate-source"><summary>Parser configuration and versions</summary><pre>${escapeHtml(JSON.stringify({processor_config:run.processor_config,runtime_info:{...run.runtime_info,layout_detections:undefined}},null,2))}</pre></details>
+    <details class="candidate-source"><summary>Parser configuration and versions</summary><pre>${escapeHtml(JSON.stringify({processor_config:run.processor_config,runtime_info:run.runtime_info},null,2))}</pre></details>
     <div class="ocr-test-pages">${pageContent}${unpagedOutput}</div>
   </article>`;
 }
@@ -1415,15 +1385,11 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
   const button = $("#ocr-test-button");
   button.disabled = true;
   const parserEngine = form.elements.namedItem("parser_engine").value;
-  const useYoloOverlay = form.elements.namedItem("layout_detector").value === "doclayout-yolo";
-  const parserLabel = parserEngine === "pp-structurev3"
-    ? "PP-StructureV3"
-    : parserEngine === "mineru" ? "MinerU (local)"
-    : parserEngine === "docling" ? "Docling" : "Built-in";
-  $("#ocr-test-status").textContent = `Running ${parserLabel}, then shared cleanup and parser chunking. Tokenization and embedding are downstream${useYoloOverlay ? " (plus diagnostic YOLO overlay)" : ""}…`;
+  const parserLabel = "Docling";
+  $("#ocr-test-status").textContent = `Running ${parserLabel} with shared output cleanup…`;
   try {
     const result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
-    $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.chunk_count} parser chunks, ${result.table_count} tables. No production document was created.`;
+    $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.element_count} parser elements, ${result.table_count} tables. No production document was created.`;
     await loadOcrTestRuns();
     await openOcrTestRun(result.run_id);
     form.reset();

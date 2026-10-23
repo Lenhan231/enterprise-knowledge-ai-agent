@@ -460,74 +460,21 @@
     <section id="tab-ocr-lab" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-ocr-lab" hidden>
       <section class="candidate-review">
         <div class="section-heading">
-          <div><p class="eyebrow">ISOLATED UPLOAD TEST</p><h2>Compare parser output</h2></div>
+          <div><p class="eyebrow">ISOLATED UPLOAD TEST</p><h2>Run the Docling parser</h2></div>
         </div>
-        <p>Select one pipeline per run. Each pipeline has its own format adapters and settings; all use the same output cleanup, provenance fields, and chunking. Upload Test saves parser output for inspection and stops before tokenization, embedding, or vector creation.</p>
+        <p>Upload Test runs Docling and saves ordered document-processing elements and structured tables for inspection.</p>
         <form id="ocr-test-form" class="upload-form">
           <div class="ocr-test-field"><label for="ocr-test-file">Document to upload-test (up to 20 MiB; PDFs up to 50 pages)</label>
           <input id="ocr-test-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff" required></div>
           <div class="ocr-test-field"><label for="ocr-test-parser">Document parser</label>
-          <select id="ocr-test-parser" name="parser_engine"><option value="built_in" selected>Built-in</option><option value="pp-structurev3">Paddle PP-StructureV3</option><option value="mineru">MinerU · local</option><option value="docling">Docling · local</option></select></div>
-          <fieldset data-parser-settings="built_in"><legend>Built-in tuning · PyMuPDF + Tesseract for PDF, Tesseract for images</legend>
-          <div class="ocr-test-field"><label for="ocr-test-language">OCR language</label>
-          <select id="ocr-test-language" name="ocr_language"><option value="vie+eng" selected>Vietnamese + English · default</option><option value="eng">English only</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-psm">Tesseract page segmentation (text)</label>
-          <select id="ocr-test-psm" name="tesseract_psm"><option value="3">3 · automatic page segmentation</option><option value="11" selected>11 · sparse text (upload default)</option><option value="6">6 · uniform text block</option><option value="12">12 · sparse text with OSD</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-table-psm">Tesseract page segmentation (table)</label>
-          <select id="ocr-test-table-psm" name="tesseract_table_psm"><option value="3" selected>3 · automatic (current upload default)</option><option value="4">4 · single column</option><option value="6">6 · uniform text block</option><option value="11">11 · sparse text</option><option value="12">12 · sparse text with OSD</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-render-scale">Page OCR render scale</label>
-          <select id="ocr-test-render-scale" name="render_scale"><option value="2.5">2.5 · 180 DPI</option><option value="2.3194444444444446">2.32 · 167 DPI</option><option value="1.5" selected>1.5 · upload default (108 DPI)</option><option value="3.5">3.5 · detailed scan pages (252 DPI)</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-table-scale">Table OCR render scale</label>
-          <select id="ocr-test-table-scale" name="table_render_scale"><option value="2.5" selected>2.5 · 180 DPI</option><option value="2.3194444444444446">2.32 · 167 DPI</option><option value="1.5">1.5 · 108 DPI</option><option value="3.5">3.5 · 252 DPI</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-thresholding">Tesseract thresholding</label>
-          <select id="ocr-test-thresholding" name="thresholding_method"><option value="0" selected>0 · Otsu</option><option value="1">1 · Leptonica Otsu</option><option value="2">2 · Sauvola</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-spaces">Preserve interword spaces</label>
-          <select id="ocr-test-spaces" name="preserve_interword_spaces"><option value="false" selected>Off · benchmark candidate</option><option value="true">On</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-system-dawg">System dictionary</label>
-          <select id="ocr-test-system-dawg" name="load_system_dawg"><option value="true" selected>On · default</option><option value="false">Off</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-freq-dawg">Frequency dictionary</label>
-          <select id="ocr-test-freq-dawg" name="load_freq_dawg"><option value="true" selected>On · default</option><option value="false">Off</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-invert">Automatic image inversion</label>
-          <select id="ocr-test-invert" name="tessedit_do_invert"><option value="true" selected>On · default</option><option value="false">Off</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-table-recognition">Tesseract table recognition</label>
-          <select id="ocr-test-table-recognition" name="textord_tablefind_recognize_tables"><option value="false" selected>Off · mixed benchmark candidate</option><option value="true">On · text focused candidate</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-table-finding">Tesseract table finding</label>
-          <select id="ocr-test-table-finding" name="textord_tabfind_find_tables"><option value="true" selected>On · default</option><option value="false">Off</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-lstm-matrix">LSTM matrix decoding</label>
-          <select id="ocr-test-lstm-matrix" name="lstm_use_matrix"><option value="true" selected>On · default</option><option value="false">Off</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-lstm-rating">LSTM rating coefficient</label>
-          <select id="ocr-test-lstm-rating" name="lstm_rating_coefficient"><option value="5" selected>5 · default</option><option value="3">3</option><option value="7">7</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-tessdata">Traineddata variant</label>
-          <select id="ocr-test-tessdata" name="tessdata_variant"><option value="system" selected>System installed</option><option value="fast">tessdata_fast · requires TESSDATA_FAST_DIR</option><option value="best">tessdata_best · requires TESSDATA_BEST_DIR</option></select></div>
-          </fieldset>
-          <fieldset data-parser-settings="pp-structurev3" hidden><legend>PP-StructureV3 tuning</legend>
-            <div class="ocr-test-field"><label for="ocr-test-paddle-device">Device</label><select id="ocr-test-paddle-device" name="paddle_device"><option value="cpu" selected>CPU</option><option value="gpu:0">GPU 0</option></select></div>
-            <div class="ocr-test-field"><label for="ocr-test-paddle-scale">Page render scale</label><select id="ocr-test-paddle-scale" name="paddle_render_scale"><option value="1.5" selected>1.5 · 108 DPI</option><option value="2.5">2.5 · 180 DPI</option><option value="3.5">3.5 · 252 DPI</option></select></div>
-            <div class="ocr-test-field"><label for="ocr-test-paddle-formula">Formula recognition</label><select id="ocr-test-paddle-formula" name="paddle_formula_recognition"><option value="false" selected>Off</option><option value="true">On</option></select></div>
-            <div class="ocr-test-field"><label for="ocr-test-paddle-chart">Chart recognition</label><select id="ocr-test-paddle-chart" name="paddle_chart_recognition"><option value="false" selected>Off</option><option value="true">On</option></select></div>
-          </fieldset>
-          <fieldset data-parser-settings="mineru" hidden><legend>MinerU tuning</legend>
-            <div class="ocr-test-field"><label for="ocr-test-mineru-force-ocr">Force OCR</label><select id="ocr-test-mineru-force-ocr" name="mineru_force_ocr"><option value="false" selected>Off · preserve digital text when available</option><option value="true">On</option></select></div>
-            <div class="ocr-test-field"><label for="ocr-test-mineru-pages">Page range</label><input id="ocr-test-mineru-pages" name="mineru_page_range" type="text" placeholder="All pages, or 1-3,5"></div>
-          </fieldset>
+          <select id="ocr-test-parser" name="parser_engine"><option value="docling" selected>Docling</option></select></div>
           <fieldset data-parser-settings="docling" hidden><legend>Docling tuning</legend>
             <div class="ocr-test-field"><label for="ocr-test-docling-device">Device</label><select id="ocr-test-docling-device" name="docling_device"><option value="cpu" selected>CPU</option><option value="cuda">NVIDIA CUDA</option></select></div>
             <div class="ocr-test-field"><label for="ocr-test-docling-ocr">OCR</label><select id="ocr-test-docling-ocr" name="docling_ocr"><option value="true" selected>On · scanned pages</option><option value="false">Off · digital text only</option></select></div>
-            <div class="ocr-test-field"><label for="ocr-test-docling-language">RapidOCR language</label><select id="ocr-test-docling-language" name="docling_ocr_language"><option value="vi" selected>Vietnamese</option><option value="en">English</option></select></div>
+            <div class="ocr-test-field"><label for="ocr-test-docling-language">Tesseract language</label><select id="ocr-test-docling-language" name="docling_ocr_language"><option value="vie+eng" selected>Vietnamese + English</option><option value="eng">English only</option></select></div>
             <div class="ocr-test-field"><label for="ocr-test-docling-tables">Table structure recognition</label><select id="ocr-test-docling-tables" name="docling_table_structure"><option value="true" selected>On</option><option value="false">Off</option></select></div>
             <div class="ocr-test-field"><label for="ocr-test-docling-threads">CPU threads</label><input id="ocr-test-docling-threads" name="docling_num_threads" type="number" min="1" max="16" value="4"></div>
           </fieldset>
-          <fieldset class="upload-test-common"><legend>Shared chunking and token limit</legend>
-            <div class="ocr-test-field"><label for="upload-test-chunk-strategy">Chunking strategy</label><select id="upload-test-chunk-strategy" name="chunking_strategy"><option value="sentence" selected>Sentence and paragraph</option><option value="fixed">Fixed character window</option></select></div>
-            <div class="ocr-test-field"><label for="upload-test-chunk-size">Chunk character limit</label><input id="upload-test-chunk-size" name="chunk_size" type="number" min="100" max="5000" value="1100"></div>
-            <div class="ocr-test-field"><label for="upload-test-chunk-overlap">Fixed window overlap</label><input id="upload-test-chunk-overlap" name="chunk_overlap" type="number" min="0" max="1000" value="120"></div>
-          </fieldset>
-          <div class="ocr-test-field"><label for="ocr-test-layout-detector">Diagnostic layout overlay</label>
-          <select id="ocr-test-layout-detector" name="layout_detector"><option value="none" selected>Off</option><option value="doclayout-yolo">DocLayout-YOLO · show detected regions</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-layout-size">YOLO input size</label>
-          <select id="ocr-test-layout-size" name="layout_image_size"><option value="640" selected>640 · selected benchmark setting</option><option value="512">512</option><option value="768">768</option><option value="1024">1024</option></select></div>
-          <div class="ocr-test-field"><label for="ocr-test-layout-confidence">YOLO confidence threshold</label>
-          <select id="ocr-test-layout-confidence" name="layout_confidence_threshold"><option value="0.30" selected>0.30 · reproducible benchmark baseline</option><option value="0.50">0.50</option><option value="0.67">0.67 · calibrated HCMUS candidate</option></select></div>
           <button id="ocr-test-button" type="submit" class="primary-button">Run Upload Test</button>
           <p id="ocr-test-status" class="corpus-note" aria-live="polite"></p>
         </form>
@@ -589,6 +536,6 @@
     </div>
     </main>
   </div>
-  <script src="/static/app.js?v=upload-test-processing-time-20261017" defer></script>
+  <script src="/static/app.js?v=upload-test-elements-20261020" defer></script>
 </body>
 </html>

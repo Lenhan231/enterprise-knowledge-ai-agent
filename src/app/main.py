@@ -404,7 +404,7 @@ async def upload_document(
     parser_handoff = request.url.path == "/api/documents/parser-handoff"
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
-    from core.document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
+    from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
     if not filename or extension not in SUPPORTED_FORMATS:
         raise HTTPException(415, "Supported formats: PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG, TIF")
     if not title.strip() or not document_type.strip() or not domain.strip():
@@ -484,7 +484,7 @@ async def upload_document(
         })
         registered = True
         repository.update_processing_status(document_id, "processing")
-        from core.document_processing.document_processor import DocumentProcessor
+        from document_processing.document_processor import DocumentProcessor
         from core.database.parser_chunks_repository import ParserChunksRepository
         from core.database.structured_store import StructuredDataStore
 
@@ -503,6 +503,7 @@ async def upload_document(
         if synthetic_company_policy:
             metadata["source_type"] = "synthetic_demo_policy"
         processor = DocumentProcessor({
+            "parser_engine": "docling",
             "chunking_strategy": os.getenv("DOCUMENT_CHUNKING_STRATEGY", "sentence"),
             "paddle_layout": os.getenv("DOCUMENT_PADDLE_LAYOUT", "false").strip().lower() == "true",
             "paddle_chart_recognition": os.getenv(
@@ -515,9 +516,17 @@ async def upload_document(
             "ocr_language": ocr_language,
         })
         try:
-            from core.document_processing.chunking.processor import ChunkingProcessor
+            from core.chunking.processor import ChunkingProcessor
+            from core.database.document_processing_outputs_repository import (
+                DocumentProcessingOutputsRepository,
+            )
 
             parsed = processor.process(filename, content, metadata)
+            outputs_repository = DocumentProcessingOutputsRepository()
+            try:
+                outputs_repository.replace_document(document_id, parsed)
+            finally:
+                outputs_repository.close()
             processed = ChunkingProcessor(processor.config).process(parsed)
         except ValueError as error:
             raise HTTPException(422, str(error)) from error

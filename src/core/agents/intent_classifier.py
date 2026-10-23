@@ -94,21 +94,23 @@ class IntentClassifier:
             and len(financial_metrics) >= 1
             and len(set(re.findall(r"\b(?:19|20)\d{2}\b", text))) >= 2
         )
-        analytics = metadata_counts or bool(financial_metrics) or any(term in text for term in (
+        financial_metric = bool(financial_metrics) or any(term in text for term in (
+            "financial", "tài chính", "biên lợi nhuận",
+        ))
+        analytics = metadata_counts or (not financial_metric and any(term in text for term in (
             "trend", "compare", "growth", "tăng trưởng", "so sánh", "thống kê"
-        )) or any(term in text for term in (
+        ))) or (not financial_metric and any(term in text for term in (
             "by year", "by region", "by category", "by campaign", "highest", "lowest", "most", "fewest",
             "average", "median", "maximum", "minimum",
             "theo năm", "theo vùng", "theo khu vực", "theo danh mục", "theo campaign",
             "nhiều nhất", "ít nhất", "trung bình", "cao nhất", "thấp nhất",
-        ))
+        )))
         dashboard = any(term in text for term in ("dashboard", "chart", "visualize", "biểu đồ", "đồ thị"))
         report = not metadata_counts and (financial_summary or why_financial_change or any(term in text for term in (
             "summarize", "summarise", "summary of", "tóm tắt", "write a report",
             "draft a report", "generate a report", "prepare a report", "create a report",
             "viết báo cáo", "lập báo cáo", "tạo báo cáo",
         )))
-        financial_metric = bool(financial_metrics) or any(term in text for term in ("financial", "tài chính", "biên lợi nhuận"))
         asks_decision = any(term in text for term in ("should we", "recommend", "decision", "decide", "strategy", "what should", "nên", "đề xuất", "quyết định", "chiến lược", "có nên"))
         needs_source_context = financial_metric
         intent = "dashboard" if dashboard else "report" if report else "hybrid" if analytics and (needs_source_context or asks_decision) else "analytics" if analytics else "knowledge"
@@ -127,6 +129,13 @@ class IntentClassifier:
             })
 
         fallback = cls.fallback(question)
+        financial_question = bool(resolve_metric_names(text)) or any(term in text for term in (
+            "financial", "tài chính", "biên lợi nhuận",
+        ))
+        if financial_question and not metadata_counts:
+            # The retired metric store is no longer an analytics source. Keep
+            # financial questions on the document-grounded knowledge/report path.
+            return fallback
         if fallback.intent == "report" and result.output_mode != "dashboard":
             return fallback
         if fallback.needs_sql and (fallback.needs_knowledge or fallback.intent == "hybrid") and result.output_mode != "dashboard":

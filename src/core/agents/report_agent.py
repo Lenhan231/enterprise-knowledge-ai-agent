@@ -2469,16 +2469,7 @@ class ReportAgent(BaseAgent):
             "evidence_only": True,
         }
         report_request = request.model_copy(update={"metadata": report_metadata})
-        metric_data = None
-        if _is_financial_change_explanation(request.question) and self.analytics is not None:
-            metric_data = self.analytics.run(report_request)
         source_data = self.knowledge.run(report_request)
-        if metric_data is not None and source_data is not metric_data:
-            source_data = source_data.model_copy(update={
-                "evidence": source_data.evidence + metric_data.evidence,
-                "data": metric_data.data,
-                "metadata": {**source_data.metadata, **metric_data.metadata},
-            })
         allowed = {item.citation_id for item in source_data.evidence if item.citation_id}
         if not allowed:
             return source_data.model_copy(update={
@@ -2546,7 +2537,7 @@ class ReportAgent(BaseAgent):
             )) else ""
         )
         change_instruction = (
-            "The user asks why a reported financial metric changed between years. Use verified metric evidence only "
+            "The user asks why a reported financial metric changed between years. Use retrieved report evidence only "
             "to state the amounts and direction. Explain a cause only if the retrieved report evidence explicitly "
             "states it and cite that passage. A temporal association or nearby narrative is not proof of causation. "
             "If no cited source explicitly explains the change, say the reports establish the increase but do not "

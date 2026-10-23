@@ -8,10 +8,9 @@ RUN apt-get update \
     && python -m pip install --no-cache-dir uv==0.12.13
 
 COPY pyproject.toml uv.lock ./
-RUN uv sync --locked --no-dev --no-install-project
+RUN uv sync --locked --no-dev --no-install-project --extra docling
 
 COPY src ./src
-COPY data/vietnam_enterprises/manifest.json ./data/vietnam_enterprises/manifest.json
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONPATH="/app/src" \
     PORT="8000"

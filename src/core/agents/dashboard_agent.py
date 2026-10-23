@@ -1,4 +1,4 @@
-"""Return persisted, role-filtered corpus and verified metric data to the UI."""
+"""Return role-filtered Commerce aggregates for dashboard visualizations."""
 
 from math import isfinite
 import re

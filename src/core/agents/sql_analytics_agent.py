@@ -592,69 +592,46 @@ class SQLAnalyticsAgent(BaseAgent):
         if not role:
             raise ValueError("Analytics requires a trusted authenticated role")
         chart_instruction = (
-            " For a requested dashboard visualization, return individual observations only: project metric_name, "
-            "metric_label, fiscal_year, metric_value, unit, and document_id directly, without summing or averaging values. "
-            "Group by those exact fields and keep every fiscal year separate."
+            " For a requested dashboard visualization, return individual document observations without aggregation."
             if request.metadata.get("dashboard_visualization") else ""
         )
         prompt = (
             "Translate the analytics request into exactly one PostgreSQL SELECT. Return JSON only: "
-            '{"sql":"..."}. You may read only one source: authorized_financial_metrics '
-            "(metric_id, company, fiscal_year, metric_name, metric_label, metric_value, unit, document_id, "
-            "page_number, source_url, source_quote) or authorized_documents (document_id, company, domain, title, "
+            '{"sql":"..."}. You may read only authorized_documents (document_id, company, domain, title, '
             "document_type, format, fiscal_year, processing_status, source_url). They are already filtered "
             "for this user's role and company; do not add a company equality filter. "
             "Use only these columns. No joins, nested queries, CTEs, comments, semicolons, or functions other than "
-            "COUNT, SUM, AVG, MIN, MAX, ARRAY_AGG. For metric_name filters use canonical codes such as "
-            "net_revenue, total_consolidated_revenue, profit_after_tax, total_assets, cost_of_goods_sold, "
-            "gross_profit, cash_and_equivalents, inventory, employees, or state_budget_contribution. "
-            "For financial metrics, project metric_name and fiscal_year directly and return "
-            "ARRAY_AGG(DISTINCT metric_id) AS evidence_metric_ids. For documents, return "
-            "ARRAY_AGG(DISTINCT document_id) AS evidence_document_ids. Group by metric_name and fiscal_year "
-            "when aggregating. Use a numeric LIMIT at most 100. Do not invent data."
+            "COUNT, MIN, MAX, ARRAY_AGG. Return "
+            "ARRAY_AGG(DISTINCT document_id) AS evidence_document_ids. Group by selected document metadata "
+            "columns when aggregating; use a numeric LIMIT at most 100. Do not infer financial "
+            "values from document metadata or invent data."
             + chart_instruction + f"\n\nRequest: {request.question}"
         )
         query = _sql_from_model(self.llm.generate(prompt))
         data = self.repository.execute_authorized_analytics(
             query, role, request.user_id or "", request.metadata.get("company")
         )
-        source_name = "authorized_financial_metrics" if "from authorized_financial_metrics" in query.casefold() else "authorized_documents"
-        is_metric_query = source_name == "authorized_financial_metrics"
-        evidence_key = "evidence_metric_ids" if is_metric_query else "evidence_document_ids"
-        evidence_rows = data["evidence"] if is_metric_query else data["documents"]
+        evidence_key = "evidence_document_ids"
+        evidence_rows = data["documents"]
         evidence = [
             Evidence(
-                citation_id=f"M{index}" if is_metric_query else f"D{index}",
-                source_type="verified_metric" if is_metric_query else "document",
-                source=(
-                    f"{row['company']} {row.get('reporting_period', 'FY')} {row['fiscal_year']} · {row['metric_label']}"
-                    if is_metric_query else row["title"]
-                ),
-                content=(row.get("source_quote") or row.get("source_note")) if is_metric_query else None,
-                metadata=(
-                    {"metric_id": row.get("metric_id"), "document_id": row.get("document_id"),
-                     "page_number": row.get("page_number"), "chunk_index": row.get("source_chunk_index"),
-                     "source_chunk_id": row.get("source_chunk_id"), "source_content_hash": row.get("source_content_hash"),
-                     "extraction_method": row.get("extraction_method"), "extractor_version": row.get("extractor_version"),
-                     "source_url": row.get("source_url"), "metric_name": row["metric_name"],
-                     "company": row["company"], "fiscal_year": row["fiscal_year"],
-                     "metric_label": row["metric_label"], "metric_value": row["metric_value"], "unit": row["unit"]}
-                    if is_metric_query else
-                    {"document_id": row["document_id"], "company": row["company"],
-                     "domain": row["domain"], "source_url": row["source_url"]}
-                ),
+                citation_id=f"D{index}",
+                source_type="document",
+                source=row["title"],
+                metadata={"document_id": row["document_id"], "company": row["company"],
+                          "domain": row["domain"], "source_url": row["source_url"]},
             )
             for index, row in enumerate(evidence_rows, 1)
         ]
         evidence_by_id = {
-            (item.metadata.get("metric_id") if is_metric_query else item.metadata["document_id"]): item
+            item.metadata["document_id"]: item
             for item in evidence
         }
         result_rows = [
             row for row in data["results"]
             if isinstance(row.get(evidence_key), (list, tuple)) and row[evidence_key]
         ]
-        lines = ["Analytics results (computed from role-visible verified data):"]
+        lines = ["Analytics results (computed from role-visible document metadata):"]
         selected_ids = set()
         for row in result_rows:
             source_ids = row[evidence_key]
@@ -673,10 +650,7 @@ class SQLAnalyticsAgent(BaseAgent):
             answer=answer,
             agent="analytics",
             evidence=selected_evidence,
-            data={"results": result_rows, "financial": [
-                next(row for row in evidence_rows if row.get("metric_id") == item.metadata.get("metric_id"))
-                for item in selected_evidence if is_metric_query
-            ], "documents": data["documents"], "query_sql": query},
+            data={"results": result_rows, "documents": data["documents"], "query_sql": query},
         )
 
     def close(self) -> None:

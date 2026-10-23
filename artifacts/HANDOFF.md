@@ -1,3 +1,47 @@
+## 2026-10-23 - Laptop handoff: Review 2 slides next
+
+User is going outside and explicitly requested writing this handoff, committing and pushing to Huy. Previous completed checkpoint is `0cd149b` (already pushed); older entries saying uncommitted/unpushed describe historical states, not the current checkpoint.
+
+### Start here on the laptop
+
+- Pull branch Huy after saving any laptop changes; inspect git status first and do not overwrite local work.
+- Main task now: design a shared English-language Review 2 slide template for the whole group. Each member fills their section. User wants slide design before any new approximately 100-page PDF experiments.
+- User requested a copy-paste prompt for ChatGPT; it was supplied in the conversation. No usable PPTX/PDF/template has been created or saved in the repository. A Canva generation attempt produced an empty single-page design; do not describe it as completed. No pending Canva editing transaction remains.
+- Keep the frozen evidence, questions, vectors and benchmark results unchanged. No additional benchmark, model tuning, production changes, API calls or database writes are needed for the slide handoff.
+
+### Slide brief already agreed
+
+All slide text and placeholders should be English. Shared whole-group template, editable PPTX (optional PDF preview), 16:9, white/navy/teal, Arial or another portable font, titles 36-44 pt, body 22-28 pt, table/caption preferably at least 18 pt. Editable diagrams/tables; section-owner and source placeholders; speaker notes explaining what to fill. No invented results, citations, training curves, deployment/CI claims or repeated-run statistics.
+
+The prompt proposes 23 slides: title; roadmap; problem/motivation; objectives/scope; related work/baselines/gap; dataset overview; data preparation/quality/annotation; architecture; parsing/OCR; tokenization/chunking/provenance; embeddings/index; retrieval/reranking; grounded generation/agents; integration/deployment; experimental setup/reproducibility; metrics/scoring; method comparison; ablation; latency/model size/resources; failure analysis; limitations; conclusions/next steps; Q&A.
+
+Distinguish the proposed design from source requirements. The previously read Review 2 checklist calls for 18-25 slides and coverage of data, related methods/baselines, architecture/method, experiments/metrics, comparisons/ablation, failures and feasibility. Training-specific items apply only if training was actually performed. Three-seed mean/std and annotation agreement must not be claimed unless actually measured. Re-open `docs/review2/review2-task2-checklist.docx` to confirm exact wording, including English-language requirements, before stating something is mandatory. The user recalls the presentation language is English and has requested English slides regardless.
+
+### Authoritative files and numbers
+
+- `docs/review2/huy-retrieval-report.vi.md`: Huy's detailed report section.
+- `docs/review2/huy-speaking-notes.vi.md`: approximately five-minute speaking outline/Q&A.
+- `docs/review2/presentation-plan.md`: group outline, not an actual slide deck.
+- `docs/review2/retrieval-report-stats.json`: measured token/model/resource facts.
+- `artifacts/review2/README.md`: navigation for Review 2.
+- `artifacts/evaluation/heldout-review2-v1/RESULTS.vi.md`: main benchmark entry.
+- `artifacts/evaluation/heldout-review2-v1/runs/review2-reviewed-r1-sql-20261022/REPORT.vi.md`: full final report.
+
+Main benchmark: 20 intents x 2 query languages x 2 document languages = 80 cases, not 80 independent questions. Frozen simulated corpus 1,063 chunks / 10 documents, controlled five-document target-language scope. E5 `intfloat/multilingual-e5-base` + BGE `BAAI/bge-reranker-v2-m3`, RTX 2060, production SQL on temporary tables. Full evidence@10: dense 52/80 (65%); dense+BGE 62/80 (77.5%); translated hybrid raw 63/80 (78.75%); translated hybrid+BGE 69/80 (86.25%). Final Recall@10 .882292, MRR@10 .900000, nDCG@10 .863527, P@10 .13375. Mean/median/p95 warm retrieval latency 3609/3578/4605 ms. Translation API preparation mean approximately .560 s per query is separate; generation was not benchmarked. Old 48-case 100% result is development evidence, not the headline result.
+
+All 11 final losses lack required evidence in the top-30 candidate pool before reranking: H04 VI-to-EN (1), H08 target VI (2), H11 (4), H14 (4). Table/multi-row cases remain a limitation. No original-query hybrid arm in the new 80-case run, so do not attribute all gains solely to translation. Assistant-authored/source-checked labels are not independently certified human annotations. Optional offline adapter has tie-order differences; use default SQL backend for reproducing the recorded result.
+
+Frozen corpus JSONL has stale Qwen model metadata from preparation; actual frozen vectors are verified E5 768-dimensional. Report discloses this; do not silently rewrite frozen files. Cached E5 token audit including prefix/special tokens: 449,203 total, longest 476/512, zero overlength. Production default retrieval method remains ordinary `hybrid`; opt in to `translated_hybrid_rerank`. HTTP/UI still does not supply verified document-language mapping. These are relevant limits when describing production readiness.
+
+### Verification and git transport
+
+For artifact replay (not a fresh inference run):
+`.venv/bin/python artifacts/evaluation/heldout-review2-v1/run.py verify-run artifacts/evaluation/heldout-review2-v1/runs/review2-reviewed-r1-sql-20261022`
+
+Use Linux git for local status/staging/commit. Git for Windows on the WSL UNC path can report apparent modifications for Linux files; Linux git is authoritative for this checkout. WSL HTTPS git lacks credentials on this desktop. Existing Windows Git Credential Manager can fetch/push using Git for Windows with per-command `safe.directory` for `//wsl.localhost/Ubuntu/home/eroz/projects/enterprise-knowledge-ai-agent` and `credential.helper=manager`; no global configuration edits or token printing. Laptop authentication may differ.
+
+This handoff changes documentation only; no new inference or production behavior. Latest commit ID can be obtained from git log after committing this entry.
+
 ## 2026-10-22 — Review2 report completed and checkpoint validated
 
 User authorized saving the work milestone and writing Huy's section. Added docs/review2/huy-retrieval-report.vi.md (tokenization, E5/schema, pipeline,80-case results, latency, all11 losses, limitations and reproducibility), huy-speaking-notes.vi.md (~5min speaking outline/Q&A), and retrieval-report-stats.json. Updated group presentation-plan to use80case/RTX2060/86.25% as main, old48case development as historical, and added navigation from artifacts/review2/README.md.

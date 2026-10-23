@@ -1,0 +1,4727 @@
+{
+  "format_version": 1,
+  "source": "local review store",
+  "exported_at": "2026-10-23T00:46:56.147949+00:00",
+  "reviews": [
+    {
+      "page_key": "E2E-BAO-HO-LAO-DONG-2009:p13",
+      "draft_revision": null,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+        "source_page_number": 13,
+        "source_pdf": "bao-ho-lao-dong-annual-report-2009.pdf",
+        "source_pdf_sha256": "1be902dc4beff1ab405fee343d7df80dfa44cdba2a34969a442f092617cb6cf3",
+        "source_page_pdf": "pages/E2E-BAO-HO-LAO-DONG-2009-p13.pdf",
+        "source_page_pdf_sha256": "755e9cb4853e1c5d289ef3f533210f3a54fb0a1c336a3db4cc4bc08671a5f505",
+        "source_image": "raw/baoholaodong-p13.png",
+        "source_image_sha256": "2604cbc8d163f36777e31ce67310baca3c8c26c5f433594d391e366b329d3986",
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "CÔNG TY CỔ PHẦN TẠP PHẨM VÀ BẢO HỘ LAO ĐỘNG\nSố 11A - Cát Linh - Đống Đa - Hà Nội\nBÁO CÁO TÀI CHÍNH\nCho năm tài chính kết thúc ngày 31/12/2009\nBẢNG CÂN ĐỐI KẾ TOÁN\nTại ngày 31 tháng 12 năm 2009\nĐơn vị tính: VND\nTÀI SẢN | Mã số | Thuyết minh | Tại ngày 31/12/2009 | Tại ngày 01/01/2009\nA. TÀI SẢN NGẮN HẠN | 100 |  | 78.183.532.235 | 76.505.298.444\nI. Tiền và các khoản tương đương tiền | 110 | V.1 | 975.479.488 | 6.770.086.314\n1. Tiền | 111 |  | 975.479.488 | 6.770.086.314\n2. Các khoản tương đương tiền | 112 |  | - | -\nII. Các khoản đầu tư tài chính ngắn hạn | 120 |  | 2.000.000.000 | -\n1. Đầu tư ngắn hạn | 121 | V.2 | 2.000.000.000 | -\nIII. Các khoản phải thu | 130 |  | 35.291.185.252 | 41.517.312.710\n1. Phải thu khách hàng | 131 |  | 32.584.874.245 | 38.070.122.504\n2. Trả trước cho người bán | 132 |  | 2.716.433.707 | 3.163.220.809\n5. Các khoản phải thu khác | 135 | V.3 | 227.868.625 | 283.969.397\n6. Dự phòng phải thu ngắn hạn khó đòi | 139 |  | (237.991.325) | -\nIV. Hàng tồn kho | 140 | V.4 | 38.767.728.366 | 27.777.172.478\n1. Hàng tồn kho | 141 |  | 38.767.728.366 | 27.777.172.478\nV. Tài sản ngắn hạn khác | 150 |  | 1.149.139.129 | 440.726.942\n2. Thuế GTGT được khấu trừ | 152 |  | 1.149.139.129 | 427.730.942\n5. Tài sản ngắn hạn khác | 158 |  | - | 12.996.000\nB. TÀI SẢN DÀI HẠN | 200 |  | 2.367.621.915 | 1.871.703.050\nI. Các khoản phải thu dài hạn | 210 |  | - | -\nII. Tài sản cố định | 220 |  | 2.066.815.112 | 1.805.158.050\n1. Tài sản cố định hữu hình | 221 | V.5 | 1.169.057.592 | 1.345.461.578\n- Nguyên giá | 222 |  | 4.255.896.804 | 4.255.896.804\n- Giá trị hao mòn lũy kế | 223 |  | (3.086.839.212) | (2.910.435.226)\n2. Tài sản cố định thuê tài chính | 224 |  | - | -\n3. Tài sản cố định vô hình | 227 |  | 12.631.048 | -\n- Nguyên giá | 228 |  | 15.000.000 | -\n- Giá trị hao mòn lũy kế | 229 |  | (2.368.952) | -\n4. Chi phí xây dựng cơ bản dở dang | 230 |  | 885.126.472 | 459.696.472\nIII. Bất động sản đầu tư | 240 |  | - | -\nIV. Các khoản đầu tư tài chính dài hạn | 250 |  | - | -\nV. Tài sản dài hạn khác | 260 |  | 300.806.803 | 66.545.000\n1. Chi phí trả trước dài hạn | 261 | V.6 | 300.806.803 | 66.545.000\nTỔNG CỘNG TÀI SẢN | 270 |  | 80.551.154.150 | 78.377.001.494\nCác Thuyết minh Báo cáo tài chính từ trang 9 đến trang 19 là một bộ phận hợp thành của Báo cáo tài chính\n5",
+        "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; no Tesseract or Docling output used.",
+        "layout_regions": [
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.15,
+              0.035,
+              0.9,
+              0.067
+            ],
+            "region_id": "R01",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.39308826838858013,
+              0.07599358995290396,
+              0.6524101070918511,
+              0.09264165957772307
+            ],
+            "region_id": "R02",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.38,
+              0.09591198915965032,
+              0.67,
+              0.11091198915965032
+            ],
+            "region_id": "R03",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.7364972493355653,
+              0.12072320387786778,
+              0.8994547007799965,
+              0.13781756827220462
+            ],
+            "region_id": "R04",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.155,
+              0.137,
+              0.897,
+              0.823
+            ],
+            "region_id": "R05",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.15,
+              0.943,
+              0.9,
+              0.98
+            ],
+            "region_id": "R06",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          }
+        ],
+        "layout_types_draft": [
+          "text",
+          "title",
+          "table"
+        ],
+        "reading_order": [],
+        "table_reference_draft": {
+          "grid": [
+            [
+              "TÀI SẢN",
+              "Mã số",
+              "Thuyết minh",
+              "Tại ngày 31/12/2009",
+              "Tại ngày 01/01/2009"
+            ],
+            [
+              "A. TÀI SẢN NGẮN HẠN",
+              "100",
+              "",
+              "78.183.532.235",
+              "76.505.298.444"
+            ],
+            [
+              "I. Tiền và các khoản tương đương tiền",
+              "110",
+              "V.1",
+              "975.479.488",
+              "6.770.086.314"
+            ],
+            [
+              "1. Tiền",
+              "111",
+              "",
+              "975.479.488",
+              "6.770.086.314"
+            ],
+            [
+              "2. Các khoản tương đương tiền",
+              "112",
+              "",
+              "-",
+              "-"
+            ],
+            [
+              "II. Các khoản đầu tư tài chính ngắn hạn",
+              "120",
+              "",
+              "2.000.000.000",
+              "-"
+            ],
+            [
+              "1. Đầu tư ngắn hạn",
+              "121",
+              "V.2",
+              "2.000.000.000",
+              "-"
+            ],
+            [
+              "III. Các khoản phải thu",
+              "130",
+              "",
+              "35.291.185.252",
+              "41.517.312.710"
+            ],
+            [
+              "1. Phải thu khách hàng",
+              "131",
+              "",
+              "32.584.874.245",
+              "38.070.122.504"
+            ],
+            [
+              "2. Trả trước cho người bán",
+              "132",
+              "",
+              "2.716.433.707",
+              "3.163.220.809"
+            ],
+            [
+              "5. Các khoản phải thu khác",
+              "135",
+              "V.3",
+              "227.868.625",
+              "283.969.397"
+            ],
+            [
+              "6. Dự phòng phải thu ngắn hạn khó đòi",
+              "139",
+              "",
+              "(237.991.325)",
+              "-"
+            ],
+            [
+              "IV. Hàng tồn kho",
+              "140",
+              "V.4",
+              "38.767.728.366",
+              "27.777.172.478"
+            ],
+            [
+              "1. Hàng tồn kho",
+              "141",
+              "",
+              "38.767.728.366",
+              "27.777.172.478"
+            ],
+            [
+              "V. Tài sản ngắn hạn khác",
+              "150",
+              "",
+              "1.149.139.129",
+              "440.726.942"
+            ],
+            [
+              "2. Thuế GTGT được khấu trừ",
+              "152",
+              "",
+              "1.149.139.129",
+              "427.730.942"
+            ],
+            [
+              "5. Tài sản ngắn hạn khác",
+              "158",
+              "",
+              "-",
+              "12.996.000"
+            ],
+            [
+              "B. TÀI SẢN DÀI HẠN",
+              "200",
+              "",
+              "2.367.621.915",
+              "1.871.703.050"
+            ],
+            [
+              "I. Các khoản phải thu dài hạn",
+              "210",
+              "",
+              "-",
+              "-"
+            ],
+            [
+              "II. Tài sản cố định",
+              "220",
+              "",
+              "2.066.815.112",
+              "1.805.158.050"
+            ],
+            [
+              "1. Tài sản cố định hữu hình",
+              "221",
+              "V.5",
+              "1.169.057.592",
+              "1.345.461.578"
+            ],
+            [
+              "- Nguyên giá",
+              "222",
+              "",
+              "4.255.896.804",
+              "4.255.896.804"
+            ],
+            [
+              "- Giá trị hao mòn lũy kế",
+              "223",
+              "",
+              "(3.086.839.212)",
+              "(2.910.435.226)"
+            ],
+            [
+              "2. Tài sản cố định thuê tài chính",
+              "224",
+              "",
+              "-",
+              "-"
+            ],
+            [
+              "3. Tài sản cố định vô hình",
+              "227",
+              "",
+              "12.631.048",
+              "-"
+            ],
+            [
+              "- Nguyên giá",
+              "228",
+              "",
+              "15.000.000",
+              "-"
+            ],
+            [
+              "- Giá trị hao mòn lũy kế",
+              "229",
+              "",
+              "(2.368.952)",
+              "-"
+            ],
+            [
+              "4. Chi phí xây dựng cơ bản dở dang",
+              "230",
+              "",
+              "885.126.472",
+              "459.696.472"
+            ],
+            [
+              "III. Bất động sản đầu tư",
+              "240",
+              "",
+              "-",
+              "-"
+            ],
+            [
+              "IV. Các khoản đầu tư tài chính dài hạn",
+              "250",
+              "",
+              "-",
+              "-"
+            ],
+            [
+              "V. Tài sản dài hạn khác",
+              "260",
+              "",
+              "300.806.803",
+              "66.545.000"
+            ],
+            [
+              "1. Chi phí trả trước dài hạn",
+              "261",
+              "V.6",
+              "300.806.803",
+              "66.545.000"
+            ],
+            [
+              "TỔNG CỘNG TÀI SẢN",
+              "270",
+              "",
+              "80.551.154.150",
+              "78.377.001.494"
+            ]
+          ],
+          "draft_origin": "Transcribed and checked visually against the original source-page image with the local view_image tool; no Docling output used. Empty strings represent visually empty cells; hyphens and parentheses are preserved as printed.",
+          "source_candidate_id": "SOT-E2E-04",
+          "source_candidate_status": "owner_reviewed_against_original_source",
+          "table_name": "BẢNG CÂN ĐỐI KẾ TOÁN Tại ngày 31 tháng 12 năm 2009"
+        },
+        "owner_reviewed_at": "2026-10-21"
+      },
+      "updated_at": "2026-10-23T00:46:55.955661+00:00"
+    },
+    {
+      "page_key": "E2E-BAO-HO-LAO-DONG-2009:p14",
+      "draft_revision": 2,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+        "source_page_number": 14,
+        "source_pdf": "bao-ho-lao-dong-annual-report-2009.pdf",
+        "source_pdf_sha256": "1be902dc4beff1ab405fee343d7df80dfa44cdba2a34969a442f092617cb6cf3",
+        "source_page_pdf": "",
+        "source_page_pdf_sha256": "",
+        "source_image": "raw/baoholaodong-p14.png",
+        "source_image_sha256": "adeec6a7d763a2e54b618cf0f8b2f2c434ed5e411816f82a33a05f27b0f0e1d9",
+        "image_width": 984,
+        "image_height": 1352,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "CÔNG TY CỔ PHẦN TẠP PHẨM VÀ BẢO HỘ LAO ĐỘNG\nSố 11A - Cát Linh - Đống Đa - Hà Nội\nBÁO CÁO TÀI CHÍNH\nCho năm tài chính kết thúc ngày 31/12/2009\nBẢNG CÂN ĐỐI KẾ TOÁN (TIẾP)\nTại ngày 31 tháng 12 năm 2009\nĐơn vị tính: VND\nNGUỒN VỐN | Mã số | Thuyết minh | Tại ngày 31/12/2009 | Tại ngày 01/01/2009\nA. NỢ PHẢI TRẢ | 300 |  | 67.409.277.347 | 67.319.028.601\nI. Nợ ngắn hạn | 310 |  | 67.308.141.622 | 67.217.892.876\n1. Vay và nợ ngắn hạn | 311 | V.7 | 4.146.000.000 | 10.485.898.600\n2. Phải trả người bán | 312 |  | 46.074.254.673 | 51.387.654.475\n3. Người mua trả tiền trước | 313 |  | 8.434.760.577 | 3.128.207.967\n4. Thuế và các khoản phải nộp Nhà nước | 314 | V.8 | 845.378.892 | 533.111.352\n5. Phải trả người lao động | 315 |  | 457.468.390 | 585.089.937\n6. Chi phí phải trả | 316 | V.9 | 55.948.583 | 31.051.629\n9. Các khoản phải trả, phải nộp ngắn hạn khác | 319 | V.10 | 7.294.330.507 | 1.066.878.916\nII. Nợ dài hạn | 330 |  | 101.135.725 | 101.135.725\n6. Dự phòng trợ cấp mất việc làm | 336 |  | 101.135.725 | 101.135.725\nB. VỐN CHỦ SỞ HỮU | 400 |  | 13.141.876.803 | 11.057.972.893\nI. Vốn chủ sở hữu | 410 | V.11 | 13.137.126.259 | 11.042.315.402\n1. Vốn đầu tư của chủ sở hữu | 411 |  | 10.000.000.000 | 10.000.000.000\n6. Chênh lệch tỉ giá hối đoái | 416 |  | 1.217.776 | -\n7. Quỹ đầu tư phát triển | 417 |  | 610.727.409 | 451.851.338\n8. Quỹ dự phòng tài chính | 418 |  | 252.430.940 | 199.472.250\n10. Lợi nhuận chưa phân phối | 420 |  | 2.272.750.134 | 390.991.814\nII. Quỹ khác | 430 |  | 4.750.544 | 15.657.491\n1. Quỹ khen thưởng, phúc lợi | 431 |  | 4.750.544 | 15.657.491\nTỔNG CỘNG NGUỒN VỐN | 440 |  | 80.551.154.150 | 78.377.001.494\nHà Nội, ngày 05 tháng 03 năm 2010\nKế toán trưởng: Trần Thị Tuyết Nga\nGiám đốc: Đỗ Mạnh Tuấn\nCác Thuyết minh Báo cáo tài chính từ trang 9 đến trang 19 là một bộ phận hợp thành của Báo cáo tài chính\n6",
+        "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; owner must verify transcript, boxes, and table cells before approval. No Tesseract or Docling output used.",
+        "layout_regions": [
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.15,
+              0.039,
+              0.89,
+              0.067
+            ],
+            "region_id": "R01",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.36558971492453884,
+              0.07818635241250185,
+              0.6655897149245389,
+              0.09811811447501108
+            ],
+            "region_id": "R02",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.4078256008943544,
+              0.09793176206250923,
+              0.6278256008943544,
+              0.11593176206250923
+            ],
+            "region_id": "R03",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.155471771939631,
+              0.12286078571222128,
+              0.8849999999999999,
+              0.5933833893129893
+            ],
+            "region_id": "R04",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "figure",
+            "bbox_norm": [
+              0.1831078814980436,
+              0.6356092029382292,
+              0.36046394633873674,
+              0.777756094137993
+            ],
+            "region_id": "R05",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "region_id": "R06",
+            "label": "figure",
+            "bbox_norm": [
+              0.6092789267747345,
+              0.6042282857551781,
+              0.8876467300167692,
+              0.7824171074172738
+            ],
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.15046394633873672,
+              0.9357270482500368,
+              0.88,
+              0.969
+            ],
+            "region_id": "R07",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.5,
+              0.976,
+              0.51,
+              0.99
+            ],
+            "region_id": "R08",
+            "coordinate_system": "normalized_top_left_0_1"
+          }
+        ],
+        "layout_types_draft": [
+          "text",
+          "title",
+          "table",
+          "figure"
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "R07",
+          "R05",
+          "R08"
+        ],
+        "table_presence_reviewed": false,
+        "draft_completeness": "full_visual_transcription_draft_requires_owner_review",
+        "table_reference_drafts": [
+          {
+            "grid": [
+              [
+                "NGUỒN VỐN",
+                "Mã số",
+                "Thuyết minh",
+                "Tại ngày 31/12/2009",
+                "Tại ngày 01/01/2009"
+              ],
+              [
+                "A. NỢ PHẢI TRẢ",
+                "300",
+                "",
+                "67.409.277.347",
+                "67.319.028.601"
+              ],
+              [
+                "I. Nợ ngắn hạn",
+                "310",
+                "",
+                "67.308.141.622",
+                "67.217.892.876"
+              ],
+              [
+                "1. Vay và nợ ngắn hạn",
+                "311",
+                "V.7",
+                "4.146.000.000",
+                "10.485.898.600"
+              ],
+              [
+                "2. Phải trả người bán",
+                "312",
+                "",
+                "46.074.254.673",
+                "51.387.654.475"
+              ],
+              [
+                "3. Người mua trả tiền trước",
+                "313",
+                "",
+                "8.434.760.577",
+                "3.128.207.967"
+              ],
+              [
+                "4. Thuế và các khoản phải nộp Nhà nước",
+                "314",
+                "V.8",
+                "845.378.892",
+                "533.111.352"
+              ],
+              [
+                "5. Phải trả người lao động",
+                "315",
+                "",
+                "457.468.390",
+                "585.089.937"
+              ],
+              [
+                "6. Chi phí phải trả",
+                "316",
+                "V.9",
+                "55.948.583",
+                "31.051.629"
+              ],
+              [
+                "9. Các khoản phải trả, phải nộp ngắn hạn khác",
+                "319",
+                "V.10",
+                "7.294.330.507",
+                "1.066.878.916"
+              ],
+              [
+                "II. Nợ dài hạn",
+                "330",
+                "",
+                "101.135.725",
+                "101.135.725"
+              ],
+              [
+                "6. Dự phòng trợ cấp mất việc làm",
+                "336",
+                "",
+                "101.135.725",
+                "101.135.725"
+              ],
+              [
+                "B. VỐN CHỦ SỞ HỮU",
+                "400",
+                "",
+                "13.141.876.803",
+                "11.057.972.893"
+              ],
+              [
+                "I. Vốn chủ sở hữu",
+                "410",
+                "V.11",
+                "13.137.126.259",
+                "11.042.315.402"
+              ],
+              [
+                "1. Vốn đầu tư của chủ sở hữu",
+                "411",
+                "",
+                "10.000.000.000",
+                "10.000.000.000"
+              ],
+              [
+                "6. Chênh lệch tỉ giá hối đoái",
+                "416",
+                "",
+                "1.217.776",
+                "-"
+              ],
+              [
+                "7. Quỹ đầu tư phát triển",
+                "417",
+                "",
+                "610.727.409",
+                "451.851.338"
+              ],
+              [
+                "8. Quỹ dự phòng tài chính",
+                "418",
+                "",
+                "252.430.940",
+                "199.472.250"
+              ],
+              [
+                "10. Lợi nhuận chưa phân phối",
+                "420",
+                "",
+                "2.272.750.134",
+                "390.991.814"
+              ],
+              [
+                "II. Quỹ khác",
+                "430",
+                "",
+                "4.750.544",
+                "15.657.491"
+              ],
+              [
+                "1. Quỹ khen thưởng, phúc lợi",
+                "431",
+                "",
+                "4.750.544",
+                "15.657.491"
+              ],
+              [
+                "TỔNG CỘNG NGUỒN VỐN",
+                "440",
+                "",
+                "80.551.154.150",
+                "78.377.001.494"
+              ]
+            ],
+            "region_id": "R04",
+            "draft_origin": "Manual visual transcription from original source-page image; owner review required before scoring.",
+            "source_candidate_id": "VISUAL-DRAFT-BAOHO-P14-T1",
+            "source_candidate_status": "assistant_visual_draft"
+          }
+        ],
+        "draft_revision": 2,
+        "owner_reviewed_at": "2026-10-22T16:23:11.649Z",
+        "reviewed_draft_revision": 2
+      },
+      "updated_at": "2026-10-23T00:46:56.090172+00:00"
+    },
+    {
+      "page_key": "E2E-BAO-HO-LAO-DONG-2009:p21",
+      "draft_revision": 6,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+        "source_page_number": 21,
+        "source_pdf": "bao-ho-lao-dong-annual-report-2009.pdf",
+        "source_pdf_sha256": "1be902dc4beff1ab405fee343d7df80dfa44cdba2a34969a442f092617cb6cf3",
+        "source_page_pdf": "",
+        "source_page_pdf_sha256": "",
+        "source_image": "raw/baoholaodong-p21.png",
+        "source_image_sha256": "501d4f9202ac459444e992d380b1a46f8913609403d235f2413e9cba1f931d05",
+        "image_width": 982,
+        "image_height": 1350,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "CÔNG TY CỔ PHẦN TẠP PHẨM VÀ BẢO HỘ LAO ĐỘNG\nBÁO CÁO TÀI CHÍNH\nCho năm tài chính kết thúc ngày 31/12/2009\nTHUYẾT MINH BÁO CÁO TÀI CHÍNH (TIẾP)\nCác thuyết minh này là bộ phận hợp thành và cần được đọc đồng thời với Báo cáo tài chính.\nV. THÔNG TIN BỔ SUNG CHO CÁC KHOẢN MỤC TRÌNH BÀY TRONG BẢNG CÂN ĐỐI KẾ TOÁN\n1. Tiền và các khoản tương đương tiền\nBảng 1:\n | Tại ngày 31/12/2009 VND | Tại ngày 01/01/2009 VND\nTiền mặt | 453.139.986 | 107.547.064\nTiền gửi ngân hàng | 508.612.402 | 3.962.539.250\nTiền đang chuyển | 13.727.100 | 2.700.000.000\nTổng cộng | 975.479.488 | 6.770.086.314\n2. Đầu tư ngắn hạn\nLà khoản góp vốn với Công ty TNHH Phát triển Công nghệ và Thương mại Tôn Vinh để thực hiện hợp đồng kinh doanh số 05/HĐ/2009/TPBH-TOVI.\n3. Các khoản phải thu khác\nBảng 3:\n | Tại ngày 31/12/2009 VND | Tại ngày 01/01/2009 VND\nPhải thu về cổ phần hoá | - | 26.600.000\nPhải thu Ông Nghiêm Quang Tùng | 78.954.497 | 175.954.497\nPhải thu khác | 148.914.128 | 81.414.900\nTổng cộng | 227.868.625 | 283.969.397\n4. Hàng tồn kho\nBảng 4:\n | Tại ngày 31/12/2009 VND | Tại ngày 01/01/2009 VND\nHàng hoá | 38.767.728.366 | 27.777.172.478\nCộng giá gốc hàng tồn kho | 38.767.728.366 | 27.777.172.478\n13",
+        "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; owner must verify transcript, boxes, and table cells before approval. No Tesseract or Docling output used.",
+        "layout_regions": [
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.151,
+              0.03212082732312875,
+              0.8768306316377865,
+              0.06
+            ],
+            "region_id": "R01",
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.151,
+              0.071,
+              0.681,
+              0.084
+            ],
+            "region_id": "R02",
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.14764617104527664,
+              0.08393402276927395,
+              0.8676461710452766,
+              0.09993402276927395
+            ],
+            "region_id": "R03",
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.151,
+              0.114,
+              0.881,
+              0.143
+            ],
+            "region_id": "R04",
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.151,
+              0.16,
+              0.53,
+              0.177
+            ],
+            "region_id": "R05",
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.212,
+              0.19,
+              0.869,
+              0.319
+            ],
+            "region_id": "R06",
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.15323588596981555,
+              0.33205485009240276,
+              0.3515030743432085,
+              0.35349443643083833
+            ],
+            "region_id": "R07",
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.212,
+              0.36637360910770955,
+              0.874,
+              0.397
+            ],
+            "region_id": "R08",
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.151,
+              0.41174721821541915,
+              0.41689826718837336,
+              0.4281208273231287
+            ],
+            "region_id": "R09",
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.212,
+              0.4437472182154192,
+              0.869,
+              0.581
+            ],
+            "region_id": "R10",
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.151,
+              0.594,
+              0.3206875349357183,
+              0.6101208273231287
+            ],
+            "region_id": "R11",
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.212,
+              0.6254944364308384,
+              0.869,
+              0.728
+            ],
+            "region_id": "R12",
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.501,
+              0.963,
+              0.519,
+              0.981
+            ],
+            "region_id": "R13",
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          }
+        ],
+        "layout_types_draft": [
+          "table",
+          "text",
+          "title"
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "R05",
+          "R06",
+          "R07",
+          "R08",
+          "R09",
+          "R10",
+          "R11",
+          "R12",
+          "R13"
+        ],
+        "table_presence_reviewed": false,
+        "draft_completeness": "full_visual_transcription_draft_requires_owner_review",
+        "table_reference_drafts": [
+          {
+            "grid": [
+              [
+                "Tiền mặt",
+                "453.139.986",
+                "107.547.064"
+              ],
+              [
+                "Tiền gửi ngân hàng",
+                "508.612.402",
+                "3.962.539.250"
+              ],
+              [
+                "Tiền đang chuyển",
+                "13.727.100",
+                "2.700.000.000"
+              ],
+              [
+                "Tổng cộng",
+                "975.479.488",
+                "6.770.086.314"
+              ]
+            ],
+            "region_id": "R06",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "source_candidate_id": "VISUAL-DRAFT-BAOHO-P21-T1",
+            "source_candidate_status": "assistant_visual_draft",
+            "table_name": ""
+          },
+          {
+            "grid": [
+              [
+                "Phải thu về cổ phần hoá",
+                "-",
+                "26.600.000"
+              ],
+              [
+                "Phải thu Ông Nghiêm Quang Tùng",
+                "78.954.497",
+                "175.954.497"
+              ],
+              [
+                "Phải thu khác",
+                "148.914.128",
+                "81.414.900"
+              ],
+              [
+                "Tổng cộng",
+                "227.868.625",
+                "283.969.397"
+              ]
+            ],
+            "region_id": "R10",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "source_candidate_id": "VISUAL-DRAFT-BAOHO-P21-T2",
+            "source_candidate_status": "assistant_visual_draft",
+            "table_name": ""
+          },
+          {
+            "grid": [
+              [
+                "Hàng hoá",
+                "38.767.728.366",
+                "27.777.172.478"
+              ],
+              [
+                "Cộng giá gốc hàng tồn kho",
+                "38.767.728.366",
+                "27.777.172.478"
+              ]
+            ],
+            "region_id": "R12",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "source_candidate_id": "VISUAL-DRAFT-BAOHO-P21-T3",
+            "source_candidate_status": "assistant_visual_draft",
+            "table_name": ""
+          }
+        ],
+        "draft_revision": 6,
+        "bbox_draft_metadata": {
+          "provider": "codex_cli",
+          "model": "Codex CLI configured model",
+          "generated_at": "2026-10-22T16:34:48.102299+00:00"
+        },
+        "content_draft_metadata": {
+          "provider": "codex_cli",
+          "task": "table",
+          "model": "Codex CLI configured model",
+          "generated_at": "2026-10-23T00:36:08.391511+00:00",
+          "uncertain_items": []
+        },
+        "owner_reviewed_at": "2026-10-23T00:46:50.353Z",
+        "reviewed_draft_revision": 6
+      },
+      "updated_at": "2026-10-23T00:46:55.217842+00:00"
+    },
+    {
+      "page_key": "E2E-BAO-HO-LAO-DONG-2009:p24",
+      "draft_revision": null,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+        "source_page_number": 24,
+        "source_pdf": "bao-ho-lao-dong-annual-report-2009.pdf",
+        "source_pdf_sha256": "1be902dc4beff1ab405fee343d7df80dfa44cdba2a34969a442f092617cb6cf3",
+        "source_page_pdf": "pages/E2E-BAO-HO-LAO-DONG-2009-p24.pdf",
+        "source_page_pdf_sha256": "d061c23cde417237711d4f846cd7ab56d1527d91a5f88ea2e46f2a1bf19c45da",
+        "source_image": "raw/baoholaodong-p24.png",
+        "source_image_sha256": "a65be5dab4ed29618a519b18bee59bc40c1eae327111eca560c73eb2d21d26f8",
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "CÔNG TY CỔ PHẦN TẠP PHẨM VÀ BẢO HỘ LAO ĐỘNG\nSố 11A - Cát Linh - Đống Đa - Hà Nội\nBÁO CÁO TÀI CHÍNH\nCho năm tài chính kết thúc ngày 31/12/2009\nTHUYẾT MINH BÁO CÁO TÀI CHÍNH (TIẾP)\nCác thuyết minh này là bộ phận hợp thành và cần được đọc đồng thời với Báo cáo tài chính\nV. THÔNG TIN BỔ SUNG CHO CÁC KHOẢN MỤC TRÌNH BÀY TRONG BẢNG CÂN ĐỐI KẾ TOÁN (TIẾP)\n11. Vốn chủ sở hữu\n11a. Bảng đối chiếu biến động vốn chủ sở hữu\n | Vốn đầu tư của chủ sở hữu VND | Chênh lệch tỷ giá hối đoái | Quỹ đầu tư phát triển VND | Quỹ dự phòng tài chính VND | Lợi nhuận chưa phân phối VND | Tổng cộng VND\nTại ngày 01/01/2008 | 10.000.000.000 | - | 451.851.338 | 199.472.250 | - | 10.651.323.588\n- Lãi trong năm | - | - | - | - | 2.544.191.814 | 2.544.191.814\n- Trích lập quỹ | - | - | - | - | (40.000.000) | (40.000.000)\n- Chi trả cổ tức | - | - | - | - | (2.000.000.000) | (2.000.000.000)\n- Thù lao HĐQT, Ban kiểm soát | - | - | - | - | (38.100.000) | (38.100.000)\n- Chi khác cho cổ đông | - | - | - | - | (75.100.000) | (75.100.000)\nTại ngày 31/12/2008 | 10.000.000.000 | - | 451.851.338 | 199.472.250 | 390.991.814 | 11.042.315.402\nTại ngày 01/01/2009 | 10.000.000.000 | - | 451.851.338 | 199.472.250 | 390.991.814 | 11.042.315.402\n- Trích quỹ, phân phối lợi nhuận | - | - | 158.876.071 | 52.958.690 | (300.991.814) | (89.157.053)\n- Lãi trong năm | - | - | - | - | 3.391.675.134 | 3.391.675.134\n- Đánh giá chênh lệch tỷ giá cuối năm | - | 1.217.776 | - | - | - | 1.217.776\n- Chia cổ tức (*) | - | - | - | - | (1.100.000.000) | (1.100.000.000)\n- Thù lao HĐQT, Ban kiểm soát | - | - | - | - | (53.925.000) | (53.925.000)\n- Chi khác | - | - | - | - | (55.000.000) | (55.000.000)\nTại ngày 31/12/2009 | 10.000.000.000 | 1.217.776 | 610.727.409 | 252.430.940 | 2.272.750.134 | 13.137.126.259\n(*) Bao gồm khoản tạm chia cổ tức năm 2009, số tiền 1.000.000.000 (tương đương 10% vốn chủ sở hữu) theo kế hoạch chia cổ tức tại Nghị quyết Đại hội đồng cổ đông ngày 14/4/2009.\n16",
+        "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; no Tesseract or Docling output used.",
+        "layout_regions": [
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.14,
+              0.035,
+              0.92,
+              0.105
+            ],
+            "region_id": "R01",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.14,
+              0.115,
+              0.92,
+              0.245
+            ],
+            "region_id": "R02",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.14,
+              0.25,
+              0.5,
+              0.285
+            ],
+            "region_id": "R03",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.18,
+              0.29,
+              0.92,
+              0.765
+            ],
+            "region_id": "R04",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.18,
+              0.775,
+              0.92,
+              0.845
+            ],
+            "region_id": "R05",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.385,
+              0.951,
+              0.405,
+              0.974
+            ],
+            "region_id": "R06",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          }
+        ],
+        "layout_types_draft": [
+          "text",
+          "title",
+          "table"
+        ],
+        "reading_order": [],
+        "table_reference_draft": {
+          "grid": [
+            [
+              "",
+              "Vốn đầu tư của chủ sở hữu VND",
+              "Chênh lệch tỷ giá hối đoái",
+              "Quỹ đầu tư phát triển VND",
+              "Quỹ dự phòng tài chính VND",
+              "Lợi nhuận chưa phân phối VND",
+              "Tổng cộng VND"
+            ],
+            [
+              "Tại ngày 01/01/2008",
+              "10.000.000.000",
+              "-",
+              "451.851.338",
+              "199.472.250",
+              "-",
+              "10.651.323.588"
+            ],
+            [
+              "- Lãi trong năm",
+              "-",
+              "-",
+              "-",
+              "-",
+              "2.544.191.814",
+              "2.544.191.814"
+            ],
+            [
+              "- Trích lập quỹ",
+              "-",
+              "-",
+              "-",
+              "-",
+              "(40.000.000)",
+              "(40.000.000)"
+            ],
+            [
+              "- Chi trả cổ tức",
+              "-",
+              "-",
+              "-",
+              "-",
+              "(2.000.000.000)",
+              "(2.000.000.000)"
+            ],
+            [
+              "- Thù lao HĐQT, Ban kiểm soát",
+              "-",
+              "-",
+              "-",
+              "-",
+              "(38.100.000)",
+              "(38.100.000)"
+            ],
+            [
+              "- Chi khác cho cổ đông",
+              "-",
+              "-",
+              "-",
+              "-",
+              "(75.100.000)",
+              "(75.100.000)"
+            ],
+            [
+              "Tại ngày 31/12/2008",
+              "10.000.000.000",
+              "-",
+              "451.851.338",
+              "199.472.250",
+              "390.991.814",
+              "11.042.315.402"
+            ],
+            [
+              "Tại ngày 01/01/2009",
+              "10.000.000.000",
+              "-",
+              "451.851.338",
+              "199.472.250",
+              "390.991.814",
+              "11.042.315.402"
+            ],
+            [
+              "- Trích quỹ, phân phối lợi nhuận",
+              "-",
+              "-",
+              "158.876.071",
+              "52.958.690",
+              "(300.991.814)",
+              "(89.157.053)"
+            ],
+            [
+              "- Lãi trong năm",
+              "-",
+              "-",
+              "-",
+              "-",
+              "3.391.675.134",
+              "3.391.675.134"
+            ],
+            [
+              "- Đánh giá chênh lệch tỷ giá cuối năm",
+              "-",
+              "1.217.776",
+              "-",
+              "-",
+              "-",
+              "1.217.776"
+            ],
+            [
+              "- Chia cổ tức (*)",
+              "-",
+              "-",
+              "-",
+              "-",
+              "(1.100.000.000)",
+              "(1.100.000.000)"
+            ],
+            [
+              "- Thù lao HĐQT, Ban kiểm soát",
+              "-",
+              "-",
+              "-",
+              "-",
+              "(53.925.000)",
+              "(53.925.000)"
+            ],
+            [
+              "- Chi khác",
+              "-",
+              "-",
+              "-",
+              "-",
+              "(55.000.000)",
+              "(55.000.000)"
+            ],
+            [
+              "Tại ngày 31/12/2009",
+              "10.000.000.000",
+              "1.217.776",
+              "610.727.409",
+              "252.430.940",
+              "2.272.750.134",
+              "13.137.126.259"
+            ]
+          ],
+          "draft_origin": "Assistant visual draft from 150 DPI image-only scan; user review required before scoring.",
+          "source_candidate_id": "TBL-225",
+          "source_candidate_status": "owner_reviewed_against_original_source"
+        },
+        "owner_reviewed_at": "2026-10-21"
+      },
+      "updated_at": "2026-10-23T00:46:55.955866+00:00"
+    },
+    {
+      "page_key": "E2E-BAO-HO-LAO-DONG-2009:p4",
+      "draft_revision": 4,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+        "source_page_number": 4,
+        "source_pdf": "bao-ho-lao-dong-annual-report-2009.pdf",
+        "source_pdf_sha256": "1be902dc4beff1ab405fee343d7df80dfa44cdba2a34969a442f092617cb6cf3",
+        "source_page_pdf": "",
+        "source_page_pdf_sha256": "",
+        "source_image": "raw/baoholaodong-p04.png",
+        "source_image_sha256": "3348f4fbbf39fba0314bd406bcc2a807920a50361d72c71b496414b91f03e8d2",
+        "image_width": 983,
+        "image_height": 1350,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "I. Năm 2009 kết quả kinh doanh của công ty tăng trưởng khá hơn năm 2008:\n- Doanh thu đạt: 673,6 tỷ tăng 21,6 % so với năm 2008\n- Lợi nhuận trước thuế 4,11 tỷ tăng 19,8 % so với năm 2008\n- Không phát sinh thêm các khoản nợ đọng, tình hình tài chính lành mạnh.\n2. Tình hình thực hiện so với kế hoạch:\n- Doanh thu bán hàng tăng trên 22,47 %/kế hoạch năm 2009\n- Lợi nhuận trước thuế đạt 4.111.121.375 đồng tăng 17,16 %/kế hoạch năm 2009.\n- 06 tháng cuối năm 2009 công ty đã có công tác chuẩn bị từng bước nhằm khởi động các dự án đã định. Kế hoạch từ tháng 01/2010 đến tháng 12/2013 thực hiện xong các dự án\n3. Triển vọng và kế hoạch trong tương lai:\nDự kiến năm 2010 doanh thu bán hàng 680 tỉ, lợi nhuận trước thuế 4,0 tỉ, cổ tức 20%/ vốn điều lệ.\nIII. Báo cáo của Ban giám đốc\n1. Báo cáo tình hình tài chính tóm tắt\na/ Khả năng sinh lời:\n- Tỉ suất lợi nhuận trước thuế/ vốn điều lệ đạt 41,11%\n- Tỉ suất lợi nhuận sau thuế/ vốn điều lệ đạt 33,91%\nCÁC CHỈ TIÊU TÀI CHÍNH CƠ BẢN\nSTT | CHỈ TIÊU | Đ/V TÍNH | NĂM 2008 | NĂM 2009\n1 | Cơ cấu tài sản | % |  | \n | Tài sản dài hạn/Tổng tài sản |  | 2.39 | 2.94\n | Tài sản ngắn hạn/Tổng tài sản |  | 97.61 | 97.06\n2 | Cơ cấu nguồn vốn | % |  | \n | Nợ phải trả/Tổng nguồn vốn |  | 85.87 | 83.69\n | Nguồn vốn chủ sở hữu/Tổng nguồn vốn |  | 14.11 | 16.31\n3 | Khả năng thanh toán | Lần |  | \n | Khả năng thanh toán nhanh |  | 0.10 | 0.01\n | Khả năng thanh toán hiện hành |  | 1.16 | 1.19\n4 | Tỷ suất lợi nhuận | % |  | \n | Tỷ suất lợi nhuận sau thuế/Tổng tài sản |  | 3.25 | 4.21\n | Tỷ suất lợi nhuận sau thuế/Doanh thu thuần |  | 0.46 | 0.50\n | Tỷ suất lợi nhuận sau thuế/nguồn vốn chủ sở hữu |  | 23.01 | 25.82\nBảng cân đối kế toán, báo cáo kết quả hoạt động kinh doanh, báo cáo lưu chuyển tiền tệ, thuyết minh BCTC, báo cáo kiểm toán (Các báo cáo kèm theo được Scan tại các trang cuối).\nCác báo cáo tài chính đã được kiểm toán theo qui định của pháp luật về kế toán.\nBáo cáo tài chính năm 2009 của công ty được kiểm toán theo qui định (báo cáo tài chính đã gửi Ủy ban chứng khoán Nhà nước)\nb/ Giá trị sổ sách tại thời điểm 31/12/2009: 80.551.154.150 đồng\nc/ Tổng số cổ phiếu theo từng loại: (đã chuyển đổi giá trị mỗi cổ phiếu là 10.000 đồng thay cho 100.000 đồng trước đó.)\n- Vốn điều lệ 10 tỉ VNĐ\n- Cổ phiếu phổ thông 1.000.000 cổ phiếu (mệnh giá 10.000 đ/CP).\n- Số lượng cổ phiếu đang lưu hành theo từng loại: 1.000.000 cổ phiếu\n- Cổ tức/lợi nhuận tạm chia cho các thành viên góp vốn = 2.000.000.000 đ/3.391.675.134 đ)\n3",
+        "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; owner must verify transcript, regions, and table cells before approval. No Tesseract or Docling output used.",
+        "layout_regions": [
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.16,
+              0.02,
+              0.91,
+              0.231
+            ],
+            "region_id": "R01",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.13,
+              0.239,
+              0.41,
+              0.26
+            ],
+            "region_id": "R02",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.16,
+              0.26,
+              0.46,
+              0.285
+            ],
+            "region_id": "R03",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.216,
+              0.286,
+              0.66,
+              0.342
+            ],
+            "region_id": "R04",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.39,
+              0.355,
+              0.69,
+              0.38
+            ],
+            "region_id": "R05",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.162,
+              0.389,
+              0.858,
+              0.632
+            ],
+            "region_id": "R06",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.16,
+              0.644,
+              0.92,
+              0.88
+            ],
+            "region_id": "R07",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.52,
+              0.887,
+              0.555,
+              0.903
+            ],
+            "region_id": "R08",
+            "coordinate_system": "normalized_top_left_0_1"
+          }
+        ],
+        "layout_types_draft": [
+          "table",
+          "text",
+          "title"
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "R05",
+          "R06",
+          "R07",
+          "R08"
+        ],
+        "table_presence_reviewed": false,
+        "draft_completeness": "full_visual_transcription_draft_requires_owner_review",
+        "table_reference_drafts": [
+          {
+            "grid": [
+              [
+                "STT",
+                "CHỈ TIÊU",
+                "ĐV TÍNH",
+                "NĂM 2008",
+                "NĂM 2009"
+              ],
+              [
+                "1",
+                "Cơ cấu tài sản",
+                "%",
+                "",
+                ""
+              ],
+              [
+                "",
+                "Tài sản dài hạn/Tổng tài sản",
+                "",
+                "2.39",
+                "2.94"
+              ],
+              [
+                "",
+                "Tài sản ngắn hạn/Tổng tài sản",
+                "",
+                "97.61",
+                "97.06"
+              ],
+              [
+                "2",
+                "Cơ cấu nguồn vốn",
+                "%",
+                "",
+                ""
+              ],
+              [
+                "",
+                "Nợ phải trả/Tổng nguồn vốn",
+                "",
+                "85.87",
+                "83.69"
+              ],
+              [
+                "",
+                "Nguồn vốn chủ sở hữu/Tổng nguồn vốn",
+                "",
+                "14.11",
+                "16.31"
+              ],
+              [
+                "3",
+                "Khả năng thanh toán",
+                "Lần",
+                "",
+                ""
+              ],
+              [
+                "",
+                "Khả năng thanh toán nhanh",
+                "",
+                "0.10",
+                "0.01"
+              ],
+              [
+                "",
+                "Khả năng thanh toán hiện hành",
+                "",
+                "1.16",
+                "1.19"
+              ],
+              [
+                "4",
+                "Tỷ suất lợi nhuận",
+                "%",
+                "",
+                ""
+              ],
+              [
+                "",
+                "Tỷ suất lợi nhuận sau thuế/Tổng tài sản",
+                "",
+                "3.25",
+                "4.21"
+              ],
+              [
+                "",
+                "Tỷ suất lợi nhuận sau thuế/Doanh thu thuần",
+                "",
+                "0.46",
+                "0.50"
+              ],
+              [
+                "",
+                "Tỷ suất lợi nhuận sau thuế/nguồn vốn chủ sở hữu",
+                "",
+                "23.01",
+                "25.82"
+              ]
+            ],
+            "region_id": "R06",
+            "draft_origin": "Manual visual transcription from original source-page image; verify every cell against the source before approval.",
+            "source_candidate_id": "BAOHO-P04-T1",
+            "source_candidate_status": "assistant_visual_draft",
+            "table_name": "CÁC CHỈ TIÊU TÀI CHÍNH CƠ BẢN"
+          }
+        ],
+        "draft_revision": 4,
+        "owner_reviewed_at": "2026-10-21T16:06:56.230Z",
+        "reviewed_draft_revision": 4
+      },
+      "updated_at": "2026-10-23T00:46:56.046436+00:00"
+    },
+    {
+      "page_key": "E2E-BAO-HO-LAO-DONG-2009:p7",
+      "draft_revision": 8,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+        "source_page_number": 7,
+        "source_pdf": "bao-ho-lao-dong-annual-report-2009.pdf",
+        "source_pdf_sha256": "1be902dc4beff1ab405fee343d7df80dfa44cdba2a34969a442f092617cb6cf3",
+        "source_page_pdf": "",
+        "source_page_pdf_sha256": "",
+        "source_image": "raw/baoholaodong-p07.png",
+        "source_image_sha256": "35b8eee008a388c888c2a920e55382cec0c24ad10e633419733477ac7f6a57b8",
+        "image_width": 980,
+        "image_height": 1348,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "- Cao Duy Hà nhận thù lao 8,5 tháng 2009: 15,077 triệu đồng\n- Bà Lê Thị Kim Yến nhận thù lao 8,5 tháng 2009: 15,077 triệu đồng\nb/ Ban kiểm soát gồm 03 thành viên được nhận thù lao năm 2009 = 41,443 triệu đồng\n- Bà Lê Thị Thứ nhận thù lao năm 2009: 17,813 triệu đồng\n- Bà Mai Thu Hoàn nhận thù lao năm 2009: 11,815 triệu đồng\n- Ông Lê Quang Tính nhận thù lao năm 2008: 11,815 triệu đồng\nNgoài thù lao hàng tháng các thành viên trực tiếp điều hành được hưởng các chế độ đối với người lao động.\n4. Số lượng thành viên HĐQT, BKS đã có chứng chỉ đào tạo về quản trị công ty:\n5. Tỷ lệ sở hữu cổ phần/vốn góp và những thay đổi trong tỷ lệ nắm giữ cổ phần/vốn góp của thành viên HĐQT/Hội đồng thành viên:\n- Năm 2009 để phục vụ công tác quản lý về lưu ký chứng khoán, Công ty chuyển đổi giá trị cổ phiếu theo qui định về giao dịch chứng khoán mỗi cổ phiếu có giá trị 10.000 đồng thay vì giá trị 100.000 đồng/CP trước đó. Do đó số lượng cổ phiếu của công ty trước đây là 100.000 cổ phiếu chuyển đổi lại là 1.000.000 cổ phiếu tương đương giá trị vốn góp không thay đổi là 10 tỷ VNĐ\n- Đại diện phần vốn Nhà nước là Tổng Cty đầu tư và kinh doanh vốn Nhà nước cử ông Hoàng Anh Trung và ông Cao Duy Hà làm đại diện chiếm tỉ lệ: 43,29% bằng 432.905 CP\n- Chủ tịch HĐQT ông Đỗ Mạnh Tuấn nắm giữ: 0,46% bằng 4.605 CP\n- Thành viên HĐQT bà Trương Kim Thoa nắm giữ: 0,40% bằng 4.005 CP\n- Thành viên HĐQT bà Lê Thị Kim Yến - Cty CP Gia Lộc Phát:\n13,2% bằng 132.000 CP\n- Trưởng Ban kiểm soát bà Lê Thị Thứ nắm giữ: 0,05% bằng 500 CP\n- Thành viên BKS bà Mai Thu Hoàn nắm giữ: 0,15% bằng 1.500 CP\n- Thành viên BKS ông Lê Quang Tính nắm giữ: 0,48% bằng 4.805 CP\n2. Các dữ liệu thống kê về cổ đông/thành viên góp vốn\nTheo giấy chứng nhận đăng ký kinh doanh số 0103007321 ngày 06/4/2005 đăng ký thay đổi lần 2 ngày 33/01/2007 do sở Kế hoạch và đầu tư thành phố Hà nội cấp, vốn điều lệ của công ty đăng ký là 10.000.000.000 VN đồng, chia thành 1.000.000 cổ phần với mệnh giá 10.000 đồng/cổ phần, các cổ đông sáng lập là 162 cổ đông. Qua quá trình hoạt động từ năm 2005 đến 31/12/2009 các cổ đông đã chuyển nhượng đến thời điểm còn 113 cổ đông:\n- Tổng công ty đầu tư và kinh doanh vốn Nhà nước nắm giữ 432.905 cổ phần tương ứng với 4.329.050.000 đồng, chiếm 43,29% vốn điều lệ.\n- Cổ đông cá nhân và pháp nhân khác gồm 112 cổ đông, nắm giữ 567.095 cổ phần tương ứng với 5.670.950.000 đồng, chiếm 56,71% vốn điều lệ.\nNhững biến động:\n- Năm 2009 các cổ đông chuyển nhượng 117.290 cổ phần tương ứng với 1.172.900.000 đồng\n- Số cổ đông hiện hữu (đến 31/12/2009) là 113 cổ đông.\n- Danh sách các cổ đông lớn tính đến 31/12/2009:\nSố TT | Tên cổ đông | Mã cổ đông | Địa chỉ | Ngành nghề kinh doanh | Số lượng và tỉ lệ sở hữu đến 31/12/2007 | Số lượng | Tỉ lệ(%)\n- 6 -",
+        "ocr_draft_source": "Codex CLI transcript/table draft from source page; Codex CLI configured model; verify against the original image.",
+        "layout_regions": [
+          {
+            "region_id": "R01",
+            "label": "text",
+            "bbox_norm": [
+              0.20661172460801602,
+              0.018713020735802884,
+              0.8617344400425628,
+              0.14789836566634534
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R02",
+            "label": "text",
+            "bbox_norm": [
+              0.15704471013564897,
+              0.1528418512602953,
+              0.9252987874792113,
+              0.3094505181489072
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R03",
+            "label": "text",
+            "bbox_norm": [
+              0.15752233815745573,
+              0.31567329252608056,
+              0.9193434637941227,
+              0.5058614553214282
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R04",
+            "label": "title",
+            "bbox_norm": [
+              0.1530893526298228,
+              0.5113812458096214,
+              0.6737904975091366,
+              0.5300841805229671
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R05",
+            "label": "text",
+            "bbox_norm": [
+              0.15256708211384215,
+              0.5353812458096212,
+              0.9262989227621614,
+              0.6152870773218989
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R06",
+            "label": "text",
+            "bbox_norm": [
+              0.1702988551206863,
+              0.6126188033660133,
+              0.9324636136551634,
+              0.6919208380472277
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R07",
+            "label": "text",
+            "bbox_norm": [
+              0.17177651696323054,
+              0.6949207888715934,
+              0.9246871981541454,
+              0.7802178049826131
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R09",
+            "label": "text",
+            "bbox_norm": [
+              0.5117186135601883,
+              0.8847274952523395,
+              0.5743446863410913,
+              0.903454841709221
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R08",
+            "label": "table",
+            "bbox_norm": [
+              0.15104467631491147,
+              0.7915395184741548,
+              0.8763882077505092,
+              0.8819157457135811
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R10",
+            "label": "text",
+            "bbox_norm": [
+              0.514,
+              0.945,
+              0.561,
+              0.96
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R12",
+            "label": "figure",
+            "bbox_norm": [
+              0,
+              0.49426736162984575,
+              0.05620946867012599,
+              0.6245693594293346
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          }
+        ],
+        "layout_types_draft": [
+          "text",
+          "title",
+          "table",
+          "figure"
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "R05",
+          "R06",
+          "R07",
+          "R09",
+          "R08",
+          "R10",
+          "R12"
+        ],
+        "table_presence_reviewed": false,
+        "draft_completeness": "codex_visual_draft_requires_owner_review",
+        "table_reference_drafts": [
+          {
+            "region_id": "R08",
+            "source_candidate_id": "AI-CODEX-7-T1",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "Số TT",
+                "Tên cổ đông",
+                "Mã cổ đông",
+                "Địa chỉ",
+                "Ngành nghề kinh doanh",
+                "Số lượng và tỉ lệ sở hữu đến 31/12/2007",
+                ""
+              ],
+              [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "Số lượng",
+                "Tỉ lệ(%)"
+              ]
+            ],
+            "table_name": ""
+          }
+        ],
+        "draft_revision": 8,
+        "bbox_draft_metadata": {
+          "provider": "codex_cli",
+          "model": "Codex CLI configured model",
+          "generated_at": "2026-10-21T16:25:34.618937+00:00"
+        },
+        "ai_draft_metadata": {
+          "provider": "codex_cli",
+          "model": "Codex CLI configured model",
+          "generated_at": "2026-10-21T16:37:05.159651+00:00",
+          "uncertain_items": [
+            "Con dấu đỏ bên trái bị cắt khỏi ảnh; chỉ đọc được các mảnh chữ, không đủ để chép chính xác.",
+            "Ngày ghi là “33/01/2007” trong ảnh; giữ nguyên phần đọc được dù ngày này có vẻ bất thường."
+          ]
+        },
+        "transcript_table_draft_metadata": {
+          "provider": "codex_cli",
+          "model": "Codex CLI configured model",
+          "generated_at": "2026-10-22T16:08:17.614771+00:00",
+          "uncertain_items": [
+            "Trong đoạn thông tin đăng ký kinh doanh, ngày đọc được là “33/01/2007”; ngày này có vẻ bất thường nhưng được giữ nguyên theo ảnh."
+          ]
+        },
+        "content_draft_metadata": {
+          "provider": "codex_cli",
+          "task": "table",
+          "model": "Codex CLI configured model",
+          "generated_at": "2026-10-22T16:14:58.045060+00:00",
+          "uncertain_items": []
+        },
+        "owner_reviewed_at": "2026-10-22T16:28:34.523Z",
+        "reviewed_draft_revision": 8
+      },
+      "updated_at": "2026-10-23T00:46:56.061081+00:00"
+    },
+    {
+      "page_key": "E2E-BAO-HO-LAO-DONG-2009:p9",
+      "draft_revision": 2,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+        "source_page_number": 9,
+        "source_pdf": "bao-ho-lao-dong-annual-report-2009.pdf",
+        "source_pdf_sha256": "1be902dc4beff1ab405fee343d7df80dfa44cdba2a34969a442f092617cb6cf3",
+        "source_page_pdf": "",
+        "source_page_pdf_sha256": "",
+        "source_image": "raw/baoholaodong-p09.png",
+        "source_image_sha256": "ebf48ebacffef5fd09f881e6a36abfbb9131e45aebe988a63e24d9353ef02894",
+        "image_width": 982,
+        "image_height": 1350,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "CÔNG TY CỔ PHẦN TẠP PHẨM VÀ BẢO HỘ LAO ĐỘNG\nSố 11A – Cát Linh – Đống Đa – Hà Nội\nBÁO CÁO CỦA BAN GIÁM ĐỐC\nBan Giám đốc Công ty Cổ phần Tạp phẩm và Bảo hộ Lao động đệ trình báo cáo này cùng với Báo cáo tài chính đã được kiểm toán cho năm tài chính kết thúc ngày 31/12/2009.\nKHÁI QUÁT CHUNG\nCông ty Cổ phần Tạp phẩm và Bảo hộ Lao động (“Công ty”), tiền thân là Công ty Tạp phẩm và Bảo hộ Lao động, được thành lập theo Quyết định số 153/TM-TCCB của Bộ Thương mại (nay là Bộ Công Thương) ngày 10/03/1995. Công ty được chuyển đổi (Cổ phần hoá) từ doanh nghiệp Nhà nước theo Quyết định số 1215/QĐ-BTM ngày 27/08/2004 của Bộ Thương mại.\nTrụ sở chính: 11A, Phố Cát Linh, Phường Quốc Tử Giám, Quận Đống Đa, Thành phố Hà Nội.\nHOẠT ĐỘNG SẢN XUẤT KINH DOANH CHÍNH\nCông ty hoạt động theo Giấy chứng nhận đăng ký kinh doanh Công ty Cổ phần số 0103007321 ngày 06/04/2005 đăng ký thay đổi lần thứ 2 ngày 22/01/2007 do Sở Kế hoạch và Đầu tư Thành phố Hà Nội cấp.\nHoạt động sản xuất kinh doanh chính trong năm 2009 của Công ty bao gồm:\n- Kinh doanh hàng tiêu dùng, dụng cụ gia đình, trang thiết bị hàng bảo hộ lao động, an toàn lao động, các thiết bị văn phòng phẩm, trang trí nội thất, vật liệu xây dựng, đồ điện dân dụng, điện tử, nguyên nhiên liệu, phụ vụ sản xuất, giày dép các loại, gỗ các loại;\n- Hàng thực phẩm, thực phẩm công nghệ bánh kẹo, đường, rượu bia, đồ uống, thuốc lá;\n- Kinh doanh xuất nhập khẩu trực tiếp các mặt hàng công ty kinh doanh;\n- Kinh doanh nhà, dịch vụ kho, cho thuê văn phòng làm việc;\n- Mua bán thiết bị máy tính, thiết bị văn phòng, điện tử, điện lạnh, thiết bị điều hòa nhiệt độ, dụng cụ hệ thống điện, thiết bị vệ sinh;\n- Mua bán máy tính./.\nTÌNH HÌNH TÀI CHÍNH VÀ KẾT QUẢ HOẠT ĐỘNG KINH DOANH\nTình hình tài chính của Công ty tại ngày 31/12/2009 cũng như kết quả hoạt động kinh doanh và tình hình lưu chuyển tiền tệ cho năm tài chính kết thúc cùng ngày được trình bày trên Báo cáo tài chính từ trang 5 đến trang 19 kèm theo.\nSỰ KIỆN SAU NGÀY KẾT THÚC NIÊN ĐỘ KẾ TOÁN\nBan Giám đốc Công ty khẳng định rằng, không có sự kiện sau ngày kết thúc niên độ kế toán nào yêu cầu phải điều chỉnh hoặc công bố trong Báo cáo tài chính.\nKIỂM TOÁN VIÊN\nBáo cáo tài chính kèm theo được kiểm toán bởi Công ty TNHH Dịch vụ Kiểm toán và Tư vấn UHY.\n1",
+        "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; owner must verify transcript, boxes, and table cells before approval. No Tesseract or Docling output used.",
+        "layout_regions": [
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.145,
+              0.04,
+              0.88,
+              0.071
+            ],
+            "region_id": "R01",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.35,
+              0.08,
+              0.67,
+              0.103
+            ],
+            "region_id": "R02",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.145,
+              0.115,
+              0.88,
+              0.146528927735357
+            ],
+            "region_id": "R03",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.14386783495526537,
+              0.15335246878215827,
+              0.3211265538872382,
+              0.17435246878215827
+            ],
+            "region_id": "R04",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.145,
+              0.18564669580151777,
+              0.8811320786660786,
+              0.279058690887038
+            ],
+            "region_id": "R05",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.1472643732787973,
+              0.28588223193383927,
+              0.5188338224956625,
+              0.3058822319338393
+            ],
+            "region_id": "R06",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.145,
+              0.319,
+              0.8871950103542096,
+              0.36623595384048346
+            ],
+            "region_id": "R07",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.13707471511887345,
+              0.37717726295344545,
+              0.879999956810672,
+              0.5459996137079152
+            ],
+            "region_id": "R08",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.145,
+              0.56,
+              0.69,
+              0.58
+            ],
+            "region_id": "R09",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.145,
+              0.5883528864903202,
+              0.88,
+              0.6376466958015178
+            ],
+            "region_id": "R10",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.14386783495526542,
+              0.647529345443519,
+              0.6488678349552655,
+              0.671529345443519
+            ],
+            "region_id": "R11",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.145,
+              0.68,
+              0.88,
+              0.7092351184241594
+            ],
+            "region_id": "R12",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.145,
+              0.7167057729806405,
+              0.34,
+              0.7417057729806406
+            ],
+            "region_id": "R13",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.145,
+              0.75,
+              0.88,
+              0.78
+            ],
+            "region_id": "R14",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.503,
+              0.963,
+              0.515,
+              0.976
+            ],
+            "region_id": "R15",
+            "coordinate_system": "normalized_top_left_0_1"
+          }
+        ],
+        "layout_types_draft": [
+          "text",
+          "title"
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "R05",
+          "R06",
+          "R07",
+          "R08",
+          "R09",
+          "R10",
+          "R11",
+          "R12",
+          "R13",
+          "R14",
+          "R15"
+        ],
+        "table_presence_reviewed": false,
+        "draft_completeness": "full_visual_transcription_draft_requires_owner_review",
+        "table_reference_drafts": [],
+        "draft_revision": 2,
+        "owner_reviewed_at": "2026-10-21T16:24:59.711Z",
+        "reviewed_draft_revision": 2
+      },
+      "updated_at": "2026-10-23T00:46:56.075662+00:00"
+    },
+    {
+      "page_key": "E2E-LONG-HAU-2008:p15",
+      "draft_revision": 1,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-LONG-HAU-2008",
+        "source_page_number": 15,
+        "source_pdf": "long-hau-audited-financial-statements-2008.pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "",
+        "source_page_pdf_sha256": "",
+        "source_image": "raw/longhau-p15.png",
+        "source_image_sha256": "f349872f4a775c528bf44188f27f7eea669af47fd8427614a87cc93262f2450a",
+        "image_width": 952,
+        "image_height": 1348,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ Phần Long Hậu\nB09-DN\nTHUYẾT MINH BÁO CÁO TÀI CHÍNH RIÊNG (tiếp theo)\nvào ngày 31 tháng 12 năm 2008 và cho năm kết thúc cùng ngày\n7. TÀI SẢN CỐ ĐỊNH HỮU HÌNH\nBảng 7 — Ngàn VNĐ\n | Nhà cửa | Máy móc | Phương tiện vận tải | Thiết bị văn phòng | Tổng cộng\nNguyên giá |  |  |  |  | \nSố đầu năm | 2.921.106 | 502.410 | 3.104.994 | 181.953 | 6.710.463\nTăng trong năm | 972.297 | 682.390 | 3.575.677 | 453.058 | 5.683.422\nGiảm trong năm | - | (182.185) | - | - | (182.185)\nSố cuối năm | 3.893.403 | 1.002.615 | 6.680.671 | 635.011 | 12.211.700\nGiá trị hao mòn lũy kế |  |  |  |  | \nSố đầu năm | 92.786 | 50.804 | 338.058 | 34.128 | 515.776\nKhấu hao trong năm | 117.028 | 77.397 | 898.002 | 94.236 | 1.186.663\nGiảm trong năm | - | (39.669) | - | - | (39.669)\nSố cuối năm | 209.814 | 88.532 | 1.236.060 | 128.364 | 1.662.770\nGiá trị còn lại |  |  |  |  | \nSố đầu năm | 2.828.320 | 451.606 | 2.766.936 | 147.825 | 6.194.687\nSố cuối năm | 3.683.589 | 914.083 | 5.444.611 | 506.647 | 10.548.930\n8. XÂY DỰNG CƠ BẢN DỞ DANG\nBảng 8 — Ngàn VNĐ\n | Số cuối năm | Số cuối năm\nHệ thống cung cấp nước | 16.304.341 | -\nXe rửa đường | 2.159.149 | -\nTổng cộng | 18.463.490 | -\n9. ĐẦU TƯ DÀI HẠN\n9.1 Đầu tư vào công ty liên kết\nBảng 9.1 — Ngàn VNĐ\n | % Sở hữu | Chi phí đầu tư - Số cuối năm | Chi phí đầu tư - Số đầu năm\nCông ty cổ phần BourBon An Hòa | 25 | 75.000.000 | -\nCông ty Cổ phần Cảng Sài Gòn - Hiệp Phước | 20 | 30.000.000 | -\nTổng cộng |  | 105.000.000 | -\n13",
+        "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; owner must verify transcript, boxes, and table cells before approval. No Tesseract or Docling output used.",
+        "layout_regions": [
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.124,
+              0.043,
+              0.88,
+              0.065
+            ],
+            "region_id": "R01",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.124,
+              0.075,
+              0.66,
+              0.102
+            ],
+            "region_id": "R02",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.124,
+              0.102,
+              0.68,
+              0.124
+            ],
+            "region_id": "R03",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.124,
+              0.128,
+              0.58,
+              0.15
+            ],
+            "region_id": "R04",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.18,
+              0.16,
+              0.875,
+              0.465
+            ],
+            "region_id": "R05",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.124,
+              0.49,
+              0.55,
+              0.515
+            ],
+            "region_id": "R06",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.18,
+              0.53,
+              0.87,
+              0.635
+            ],
+            "region_id": "R07",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.124,
+              0.65,
+              0.42,
+              0.675
+            ],
+            "region_id": "R08",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.124,
+              0.687,
+              0.58,
+              0.712
+            ],
+            "region_id": "R09",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.18,
+              0.72,
+              0.875,
+              0.855
+            ],
+            "region_id": "R10",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.49,
+              0.95,
+              0.52,
+              0.97
+            ],
+            "region_id": "R11",
+            "coordinate_system": "normalized_top_left_0_1"
+          }
+        ],
+        "layout_types_draft": [
+          "table",
+          "text",
+          "title"
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "R05",
+          "R06",
+          "R07",
+          "R08",
+          "R09",
+          "R10",
+          "R11"
+        ],
+        "table_presence_reviewed": false,
+        "draft_completeness": "full_visual_transcription_draft_requires_owner_review",
+        "table_reference_drafts": [
+          {
+            "grid": [
+              [
+                "",
+                "Nhà cửa",
+                "Máy móc",
+                "Phương tiện vận tải",
+                "Thiết bị văn phòng",
+                "Tổng cộng"
+              ],
+              [
+                "Nguyên giá",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              [
+                "Số đầu năm",
+                "2.921.106",
+                "502.410",
+                "3.104.994",
+                "181.953",
+                "6.710.463"
+              ],
+              [
+                "Tăng trong năm",
+                "972.297",
+                "682.390",
+                "3.575.677",
+                "453.058",
+                "5.683.422"
+              ],
+              [
+                "Giảm trong năm",
+                "-",
+                "(182.185)",
+                "-",
+                "-",
+                "(182.185)"
+              ],
+              [
+                "Số cuối năm",
+                "3.893.403",
+                "1.002.615",
+                "6.680.671",
+                "635.011",
+                "12.211.700"
+              ],
+              [
+                "Giá trị hao mòn lũy kế",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              [
+                "Số đầu năm",
+                "92.786",
+                "50.804",
+                "338.058",
+                "34.128",
+                "515.776"
+              ],
+              [
+                "Khấu hao trong năm",
+                "117.028",
+                "77.397",
+                "898.002",
+                "94.236",
+                "1.186.663"
+              ],
+              [
+                "Giảm trong năm",
+                "-",
+                "(39.669)",
+                "-",
+                "-",
+                "(39.669)"
+              ],
+              [
+                "Số cuối năm",
+                "209.814",
+                "88.532",
+                "1.236.060",
+                "128.364",
+                "1.662.770"
+              ],
+              [
+                "Giá trị còn lại",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              [
+                "Số đầu năm",
+                "2.828.320",
+                "451.606",
+                "2.766.936",
+                "147.825",
+                "6.194.687"
+              ],
+              [
+                "Số cuối năm",
+                "3.683.589",
+                "914.083",
+                "5.444.611",
+                "506.647",
+                "10.548.930"
+              ]
+            ],
+            "region_id": "R05",
+            "draft_origin": "Manual visual transcription from original source-page image; owner review required before scoring.",
+            "source_candidate_id": "VISUAL-DRAFT-LONGHAU-P15-T1",
+            "source_candidate_status": "assistant_visual_draft"
+          },
+          {
+            "grid": [
+              [
+                "",
+                "Số cuối năm",
+                "Số cuối năm"
+              ],
+              [
+                "Hệ thống cung cấp nước",
+                "16.304.341",
+                "-"
+              ],
+              [
+                "Xe rửa đường",
+                "2.159.149",
+                "-"
+              ],
+              [
+                "Tổng cộng",
+                "18.463.490",
+                "-"
+              ]
+            ],
+            "region_id": "R07",
+            "draft_origin": "Manual visual transcription from original source-page image; owner review required before scoring.",
+            "source_candidate_id": "VISUAL-DRAFT-LONGHAU-P15-T2",
+            "source_candidate_status": "assistant_visual_draft"
+          },
+          {
+            "grid": [
+              [
+                "",
+                "% Sở hữu",
+                "Chi phí đầu tư - Số cuối năm",
+                "Chi phí đầu tư - Số đầu năm"
+              ],
+              [
+                "Công ty cổ phần BourBon An Hòa",
+                "25",
+                "75.000.000",
+                "-"
+              ],
+              [
+                "Công ty Cổ phần Cảng Sài Gòn - Hiệp Phước",
+                "20",
+                "30.000.000",
+                "-"
+              ],
+              [
+                "Tổng cộng",
+                "",
+                "105.000.000",
+                "-"
+              ]
+            ],
+            "region_id": "R10",
+            "draft_origin": "Manual visual transcription from original source-page image; owner review required before scoring.",
+            "source_candidate_id": "VISUAL-DRAFT-LONGHAU-P15-T3",
+            "source_candidate_status": "assistant_visual_draft"
+          }
+        ],
+        "draft_revision": 1,
+        "owner_reviewed_at": "2026-10-21T08:27:29.952Z",
+        "reviewed_draft_revision": 1
+      },
+      "updated_at": "2026-10-23T00:46:56.030862+00:00"
+    },
+    {
+      "page_key": "E2E-LONG-HAU-2008:p17",
+      "draft_revision": null,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-LONG-HAU-2008",
+        "source_page_number": 17,
+        "source_pdf": "long-hau-audited-financial-statements-2008.pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "pages/E2E-LONG-HAU-2008-p17.pdf",
+        "source_page_pdf_sha256": "c446d6367ec5c002b178552b40837f98d0ce9089db206c4d1d6e9a87f85771e7",
+        "source_image": "raw/longhau-p17.png",
+        "source_image_sha256": "13d347a220003ec10bd751e8d99c3c0af959faaa0901bf4d10957d491b4bd407",
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ Phần Long Hậu\nB09-DN\nTHUYẾT MINH BÁO CÁO TÀI CHÍNH RIÊNG (tiếp theo)\nvào ngày 31 tháng 12 năm 2008 và cho năm kết thúc cùng ngày\n13. Vốn chủ sở hữu\n13.1 Bảng đối chiếu biến động của vốn chủ sở hữu\nNgàn VNĐ\n | Vốn cổ phần đã góp | Quỹ đầu tư và phát triển | Quỹ dự phòng tài chính | Lợi nhuận chưa phân phối | Quỹ khen thưởng và phúc lợi | Tổng cộng\nNăm trước |  |  |  |  |  | \nSố đầu năm | 27.900.000 | - | - | 156.256 | - | 28.056.256\nGóp vốn | 135.545.160 | - | - | - | - | 135.545.160\nLợi nhuận trong năm | - | - | - | 45.297.647 | - | 45.297.647\nTrích lập quỹ | - | - | - | (168.186) | 168.186 | -\nSử dụng các nguồn quỹ | - | - | - | - | (168.186) | (168.186)\nSố cuối năm | 163.445.160 | - | - | 45.285.717 | - | 208.730.877\nNăm nay |  |  |  |  |  | \nSố đầu năm | 163.445.160 | - | - | 45.285.717 | - | 208.730.877\nGóp vốn | 36.554.840 | - | - | - | - | 36.554.840\nLợi nhuận trong năm | - | - | - | 143.110.413 | - | 143.110.413\nTrích lập quỹ | - | 4.529.765 | 2.264.882 | (12.288.667) | 5.494.020 | -\nSử dụng các nguồn quỹ | - | - | - | - | (4.203.492) | (4.203.492)\nCổ tức đã trả | - | - | - | (27.031.684) | - | (27.031.684)\nSố cuối năm | 200.000.000 | 4.529.765 | 2.264.882 | 149.075.779 | 1.290.528 | 357.160.954\n15",
+        "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; no Tesseract or Docling output used.",
+        "layout_regions": [
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.035,
+              0.6073933435823874,
+              0.14887457442968405,
+              0.9561409167245302
+            ],
+            "region_id": "R01",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.17475899317889962,
+              0.6382338732959225,
+              0.259485282121762,
+              0.9568247541480305
+            ],
+            "region_id": "R02",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.2652410068211003,
+              0.07045359869764307,
+              0.78,
+              0.91
+            ],
+            "region_id": "R03",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.925,
+              0.514,
+              0.941,
+              0.531
+            ],
+            "region_id": "R04",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "region_id": "R05",
+            "label": "text",
+            "bbox_norm": [
+              0.05353123827256438,
+              0.07727177257038273,
+              0.09854758067037113,
+              0.14330102305113696
+            ],
+            "coordinate_system": "normalized_top_left_0_1"
+          }
+        ],
+        "layout_types_draft": [
+          "text",
+          "title",
+          "table"
+        ],
+        "reading_order": [],
+        "table_reference_draft": {
+          "grid": [
+            [
+              "",
+              "Vốn cổ phần đã góp",
+              "Quỹ đầu tư và phát triển",
+              "Quỹ dự phòng tài chính",
+              "Lợi nhuận chưa phân phối",
+              "Quỹ khen thưởng và phúc lợi",
+              "Tổng cộng"
+            ],
+            [
+              "Năm trước",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            [
+              "Số đầu năm",
+              "27.900.000",
+              "-",
+              "-",
+              "156.256",
+              "-",
+              "28.056.256"
+            ],
+            [
+              "Góp vốn",
+              "135.545.160",
+              "-",
+              "-",
+              "-",
+              "-",
+              "135.545.160"
+            ],
+            [
+              "Lợi nhuận trong năm",
+              "-",
+              "-",
+              "-",
+              "45.297.647",
+              "-",
+              "45.297.647"
+            ],
+            [
+              "Trích lập quỹ",
+              "-",
+              "-",
+              "-",
+              "(168.186)",
+              "168.186",
+              "-"
+            ],
+            [
+              "Sử dụng các nguồn quỹ",
+              "-",
+              "-",
+              "-",
+              "-",
+              "(168.186)",
+              "(168.186)"
+            ],
+            [
+              "Số cuối năm",
+              "163.445.160",
+              "-",
+              "-",
+              "45.285.717",
+              "-",
+              "208.730.877"
+            ],
+            [
+              "Năm nay",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            [
+              "Số đầu năm",
+              "163.445.160",
+              "-",
+              "-",
+              "45.285.717",
+              "-",
+              "208.730.877"
+            ],
+            [
+              "Góp vốn",
+              "36.554.840",
+              "-",
+              "-",
+              "-",
+              "-",
+              "36.554.840"
+            ],
+            [
+              "Lợi nhuận trong năm",
+              "-",
+              "-",
+              "-",
+              "143.110.413",
+              "-",
+              "143.110.413"
+            ],
+            [
+              "Trích lập quỹ",
+              "-",
+              "4.529.765",
+              "2.264.882",
+              "(12.288.667)",
+              "5.494.020",
+              "-"
+            ],
+            [
+              "Sử dụng các nguồn quỹ",
+              "-",
+              "-",
+              "-",
+              "-",
+              "(4.203.492)",
+              "(4.203.492)"
+            ],
+            [
+              "Cổ tức đã trả",
+              "-",
+              "-",
+              "-",
+              "(27.031.684)",
+              "-",
+              "(27.031.684)"
+            ],
+            [
+              "Số cuối năm",
+              "200.000.000",
+              "4.529.765",
+              "2.264.882",
+              "149.075.779",
+              "1.290.528",
+              "357.160.954"
+            ]
+          ],
+          "draft_origin": "Assistant visual draft from upright scan crop; user grid and difficulty review required before scoring.",
+          "source_candidate_id": "TBL-224",
+          "source_candidate_status": "owner_reviewed_against_original_source",
+          "table_name": "Công ty Cổ Phần Long Hậu B09-DN THUYẾT MINH BÁO CÁO TÀI CHÍNH RIÊNG (tiếp theo)"
+        },
+        "owner_reviewed_at": "2026-10-21"
+      },
+      "updated_at": "2026-10-23T00:46:55.955709+00:00"
+    },
+    {
+      "page_key": "E2E-LONG-HAU-2008:p3",
+      "draft_revision": 2,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-LONG-HAU-2008",
+        "source_page_number": 3,
+        "source_pdf": "long-hau-audited-financial-statements-2008.pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "",
+        "source_page_pdf_sha256": "",
+        "source_image": "raw/longhau-p03.png",
+        "source_image_sha256": "74eee624438571cc4a32a269f80f14860538ad6475c834b4ee7d51afeb5303b1",
+        "image_width": 952,
+        "image_height": 1348,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ Phần Long Hậu\nBÁO CÁO CỦA HỘI ĐỒNG QUẢN TRỊ\n\nHội đồng Quản trị Công ty Cổ Phần Long Hậu (“Công ty”) trình bày báo cáo này và các báo cáo tài chính riêng của Công ty vào ngày 31 tháng 12 năm 2008 và cho năm kết thúc cùng ngày.\n\nCÔNG TY\n\nCông ty là một công ty cổ phần được thành lập tại Việt Nam theo Giấy Chứng nhận đăng ký kinh doanh số 5003000142 ngày 23 tháng 5 năm 2006 do Sở Kế hoạch và Đầu tư Tỉnh Long An cấp và Giấy chứng nhận đầu tư số 50221000001 ngày 1 tháng 12 năm 2006 do Ban Quản Lý Các Khu Công Nghiệp Long An cấp và theo các Giấy phép Điều chỉnh sau đây:\n\n | Ngày cấp\nGiấy Chứng nhận Đầu tư số 50221000001 – Điều chỉnh lần 1 | 3 tháng 5 năm 2007\nGiấy Chứng nhận Đăng ký Kinh doanh số 5003000142 – Điều chỉnh lần 1 | 9 tháng 11 năm 2007\nGiấy Chứng nhận Đăng ký Kinh doanh số 5003000142 – Điều chỉnh lần 2 | 19 tháng 2 năm 2008\n\nHoạt động chính của Công ty là xây dựng cơ sở hạ tầng cho khu công nghiệp và cho thuê lại đất đã phát triển cơ sở hạ tầng.\n\nCông ty có trụ sở chính tại Xã Long Hậu, Huyện Cần Giuộc, Tỉnh Long An.\n\nKẾT QUẢ HOẠT ĐỘNG KINH DOANH VÀ CỔ TỨC\n\nLãi sau thuế trong năm kết thúc ngày 31 tháng 12 năm 2008 là 143.110.413 ngàn đồng Việt Nam (2007: 45.297.647 ngàn đồng Việt Nam).\n\nTrong năm, Công ty đã chi trả cổ tức trị giá 27.031.684 ngàn đồng Việt Nam (2007: 0) được trích từ tổng lợi nhuận chưa phân phối vào cuối năm là 149.075.779 ngàn đồng Việt Nam (2007: 45.285.717).\n\nCÁC SỰ KIỆN PHÁT SINH SAU NGÀY KẾT THÚC NĂM TÀI CHÍNH\n\nKhông có sự kiện trọng yếu nào phát sinh sau ngày kết thúc năm tài chính đòi hỏi phải được điều chỉnh hay trình bày trong các báo cáo tài chính riêng.\n\nHỘI ĐỒNG QUẢN TRỊ\n\nCác thành viên Hội đồng Quản trị trong năm và vào ngày lập báo cáo này như sau:\n\nÔng Bùi Văn Ánh                         Chủ tịch\nÔng Đoàn Hồng Dũng                     Thành viên - Tổng Giám đốc\nÔng Diệp Đăng Dũng                      Thành viên\nÔng Đoàn Hồng Tâm                       Thành viên\nBà Võ Thị Huyền Lan                    Thành viên\nBà Phạm Thị Như Anh                    Thành viên\n\nKIỂM TOÁN VIÊN\n\nCông ty kiểm toán Ernst & Young bày tỏ nguyện vọng được tiếp tục làm công tác kiểm toán cho Công ty.\n\n1",
+        "ocr_draft_source": "Manual visual transcription from the original source-page image using local view_image; owner review still required. No Tesseract or Docling output used.",
+        "layout_regions": [
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.038,
+              0.54,
+              0.062
+            ],
+            "region_id": "R01",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.125,
+              0.072,
+              0.55,
+              0.09
+            ],
+            "region_id": "R02",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.115,
+              0.89,
+              0.145
+            ],
+            "region_id": "R03",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.125,
+              0.168,
+              0.34,
+              0.188
+            ],
+            "region_id": "R04",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.197,
+              0.89,
+              0.252
+            ],
+            "region_id": "R05",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.125,
+              0.2578728914616574,
+              0.8945016245195688,
+              0.316
+            ],
+            "region_id": "R06",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.327,
+              0.89,
+              0.386
+            ],
+            "region_id": "R07",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.125,
+              0.407,
+              0.69,
+              0.429
+            ],
+            "region_id": "R08",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.436,
+              0.89,
+              0.519
+            ],
+            "region_id": "R09",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.125,
+              0.546,
+              0.75,
+              0.569
+            ],
+            "region_id": "R10",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.574,
+              0.89,
+              0.604
+            ],
+            "region_id": "R11",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.125,
+              0.625,
+              0.45,
+              0.648
+            ],
+            "region_id": "R12",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.652,
+              0.89,
+              0.672
+            ],
+            "region_id": "R13",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.125,
+              0.675,
+              0.72,
+              0.758
+            ],
+            "region_id": "R14",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.125,
+              0.782,
+              0.36,
+              0.804
+            ],
+            "region_id": "R15",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.813,
+              0.89,
+              0.843
+            ],
+            "region_id": "R16",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.485,
+              0.949,
+              0.515,
+              0.971
+            ],
+            "region_id": "R17",
+            "coordinate_system": "normalized_top_left_0_1"
+          }
+        ],
+        "layout_types_draft": [
+          "table",
+          "text",
+          "title"
+        ],
+        "reading_order": [],
+        "table_reference_draft": null,
+        "table_presence_reviewed": false,
+        "draft_completeness": "full_visual_transcription_draft_requires_owner_review",
+        "table_reference_drafts": [
+          {
+            "grid": [
+              [
+                "",
+                "Ngày cấp"
+              ],
+              [
+                "Giấy Chứng nhận Đầu tư số 50221000001 – Điều chỉnh lần 1",
+                "3 tháng 5 năm 2007"
+              ],
+              [
+                "Giấy Chứng nhận Đăng ký Kinh doanh số 5003000142 – Điều chỉnh lần 1",
+                "9 tháng 11 năm 2007"
+              ],
+              [
+                "Giấy Chứng nhận Đăng ký Kinh doanh số 5003000142 – Điều chỉnh lần 2",
+                "19 tháng 2 năm 2008"
+              ]
+            ],
+            "region_id": "R06",
+            "draft_origin": "Manual visual transcription from original page image; requires owner review.",
+            "source_candidate_id": "LONG-HAU-P03-T1",
+            "source_candidate_status": "assistant_visual_draft",
+            "table_name": "CÁC SỰ KIỆN PHÁT SINH SAU NGÀY KẾT THÚC NĂM TÀI CHÍNH"
+          },
+          {
+            "grid": [
+              [
+                "Ông Bùi Văn Ánh",
+                "Chủ tịch"
+              ],
+              [
+                "Ông Đoàn Hồng Dũng",
+                "Thành viên - Tổng Giám đốc"
+              ],
+              [
+                "Ông Diệp Đăng Dũng",
+                "Thành viên"
+              ],
+              [
+                "Ông Đoàn Hồng Tâm",
+                "Thành viên"
+              ],
+              [
+                "Bà Võ Thị Huyền Lan",
+                "Thành viên"
+              ],
+              [
+                "Bà Phạm Thị Như Anh",
+                "Thành viên"
+              ]
+            ],
+            "region_id": "R14",
+            "draft_origin": "Manual visual transcription from original page image; requires owner review.",
+            "source_candidate_id": "LONG-HAU-P03-T2",
+            "source_candidate_status": "assistant_visual_draft",
+            "table_name": "HỘI ĐỒNG QUẢN TRỊ"
+          }
+        ],
+        "draft_revision": 2,
+        "owner_reviewed_at": "2026-10-21T08:27:01.028Z",
+        "reviewed_draft_revision": 2
+      },
+      "updated_at": "2026-10-23T00:46:55.955925+00:00"
+    },
+    {
+      "page_key": "E2E-LONG-HAU-2008:p4",
+      "draft_revision": 2,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-LONG-HAU-2008",
+        "source_page_number": 4,
+        "source_pdf": "long-hau-audited-financial-statements-2008.pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "",
+        "source_page_pdf_sha256": "",
+        "source_image": "raw/longhau-p04.png",
+        "source_image_sha256": "3646eacad6d7de8a286a8cf432c88884516115dcba645f0d8818d513cbb0f393",
+        "image_width": 952,
+        "image_height": 1348,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ Phần Long Hậu\nBÁO CÁO CỦA HỘI ĐỒNG QUẢN TRỊ (tiếp theo)\n\nCÔNG BỐ TRÁCH NHIỆM CỦA BAN GIÁM ĐỐC ĐỐI VỚI CÁC BÁO CÁO TÀI CHÍNH RIÊNG\n\nBan Giám đốc chịu trách nhiệm đảm bảo các báo cáo tài chính cho từng năm tài chính phản ánh trung thực và hợp lý tình hình hoạt động, kết quả hoạt động kinh doanh và tình hình lưu chuyển tiền tệ của Công ty trong năm. Trong quá trình lập các báo cáo tài chính này, Ban Giám đốc cần phải:\n\n• lựa chọn các chính sách kế toán thích hợp và áp dụng các chính sách này một cách nhất quán;\n• thực hiện các đánh giá và ước tính một cách hợp lý và thận trọng;\n• nêu rõ các chuẩn mực kế toán áp dụng cho Công ty có được tuân thủ hay không và tất cả những sai lệch trọng yếu so với những chuẩn mực này đã được trình bày và giải thích trong các báo cáo tài chính; và\n• lập các báo cáo tài chính trên cơ sở nguyên tắc hoạt động liên tục trừ trường hợp không thể cho rằng Công ty sẽ tiếp tục hoạt động.\n\nBan Giám đốc cam kết rằng Công ty đã tuân thủ những yêu cầu nêu trên trong việc lập các báo cáo tài chính riêng.\n\nBan Giám đốc chịu trách nhiệm đảm bảo việc các sổ sách kế toán thích hợp được lưu giữ để phản ánh tình hình tài chính của Công ty, với mức độ chính xác hợp lý, tại bất kỳ thời điểm nào và đảm bảo rằng các sổ sách kế toán tuân thủ các hệ thống kế toán đã được áp dụng. Ban Giám đốc cũng chịu trách nhiệm về việc quản lý các tài sản của Công ty và do đó phải thực hiện các biện pháp thích hợp để ngăn chặn và phát hiện các hành vi gian lận và những vi phạm khác.\n\nPHÊ DUYỆT CÁC BÁO CÁO TÀI CHÍNH\n\nChúng tôi phê duyệt các báo cáo tài chính riêng kèm theo. Các báo cáo này phản ánh trung thực và hợp lý tình hình tài chính của Công ty vào ngày 31 tháng 12 năm 2008, kết quả hoạt động kinh doanh và tình hình lưu chuyển tiền tệ cho năm kết thúc cùng ngày phù hợp với Chuẩn mực Kế toán và Hệ thống Kế toán Việt Nam và tuân thủ các quy định có liên quan.\n\nThay mặt Hội đồng Quản trị:\n\nCÔNG TY CỔ PHẦN LONG HẬU\nĐoàn Hồng Dũng\nThành viên - Tổng Giám đốc\n\nNgày 12 tháng 3 năm 2009\n\n2",
+        "ocr_draft_source": "Manual visual transcription from the original source-page image using local view_image; stamp and handwritten signature overlap the printed signer area, so only legible seal text and printed details are transcribed. Owner review still required. No Tesseract or Docling output used.",
+        "layout_regions": [
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.043,
+              0.55,
+              0.062
+            ],
+            "region_id": "R01",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.125,
+              0.074,
+              0.57,
+              0.091
+            ],
+            "region_id": "R02",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.125,
+              0.115,
+              0.85,
+              0.133
+            ],
+            "region_id": "R03",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.145,
+              0.89,
+              0.19
+            ],
+            "region_id": "R04",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.12049837548043119,
+              0.19282086143591987,
+              0.8854983754804312,
+              0.3133093509218264
+            ],
+            "region_id": "R05",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.327,
+              0.89,
+              0.357
+            ],
+            "region_id": "R06",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.368,
+              0.89,
+              0.432
+            ],
+            "region_id": "R07",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.125,
+              0.46,
+              0.57,
+              0.48
+            ],
+            "region_id": "R08",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.49,
+              0.89,
+              0.545
+            ],
+            "region_id": "R09",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.568,
+              0.55,
+              0.588
+            ],
+            "region_id": "R10",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "figure",
+            "bbox_norm": [
+              0.08,
+              0.59,
+              0.79,
+              0.706
+            ],
+            "region_id": "R11",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.666,
+              0.47,
+              0.694
+            ],
+            "region_id": "R12",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.72,
+              0.43,
+              0.742
+            ],
+            "region_id": "R13",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.485,
+              0.95,
+              0.515,
+              0.972
+            ],
+            "region_id": "R14",
+            "coordinate_system": "normalized_top_left_0_1"
+          }
+        ],
+        "layout_types_draft": [
+          "figure",
+          "text",
+          "title"
+        ],
+        "reading_order": [],
+        "table_reference_draft": null,
+        "table_presence_reviewed": false,
+        "draft_completeness": "full_visual_transcription_draft_requires_owner_review",
+        "draft_revision": 2,
+        "owner_reviewed_at": "2026-10-21T08:27:15.454Z",
+        "reviewed_draft_revision": 2
+      },
+      "updated_at": "2026-10-23T00:46:55.978797+00:00"
+    },
+    {
+      "page_key": "E2E-LONG-HAU-2008:p6",
+      "draft_revision": null,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-LONG-HAU-2008",
+        "source_page_number": 6,
+        "source_pdf": "long-hau-audited-financial-statements-2008.pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "pages/E2E-LONG-HAU-2008-p06.pdf",
+        "source_page_pdf_sha256": "2654c35f3e52bd8c0e4e263e853aa4c2635737d4628dbd5f10b593d694f92297",
+        "source_image": "raw/longhau-p06.png",
+        "source_image_sha256": "703c03e6658f5c413025fc4f9b2c6d0d21235ef553434c375eee07326d9fe86c",
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ Phần Long Hậu\nB01-DN\nBẢNG CÂN ĐỐI KẾ TOÁN RIÊNG\nngày 31 tháng 12 năm 2008\nNgàn VNĐ\nMã số | TÀI SẢN | Thuyết minh | Số cuối năm | Số đầu năm\n100 | A. TÀI SẢN NGẮN HẠN |  | 377.399.288 | 427.575.630\n110 | I. Tiền | 3 | 69.205.529 | 139.116.313\n111 | 1. Tiền |  | 29.332.863 | 110.271.626\n112 | 2. Các khoản tương đương tiền |  | 39.872.666 | 28.844.687\n120 | II. Các khoản đầu tư ngắn hạn |  | - | 21.221.000\n121 | 1. Đầu tư ngắn hạn |  | - | 21.221.000\n130 | III. Các khoản phải thu |  | 134.623.680 | 92.547.808\n131 | 1. Phải thu khách hàng |  | 120.555.482 | 82.982.094\n132 | 2. Trả trước cho người bán |  | 7.537.435 | 7.011.646\n135 | 3. Các khoản phải thu khác | 4 | 6.530.763 | 2.554.068\n140 | IV. Hàng tồn kho |  | 165.130.646 | 160.975.490\n141 | 1. Chi phí phát triển Khu Công nghiệp | 5 | 165.130.646 | 160.975.490\n150 | V. Tài sản ngắn hạn khác |  | 8.439.433 | 13.715.019\n151 | 1. Chi phí trả trước ngắn hạn |  | 111.468 | 35.081\n152 | 2. Thuế giá trị gia tăng được khấu trừ |  | - | 6.153.118\n158 | 3. Tài sản ngắn hạn khác | 6 | 8.327.965 | 7.526.820\n200 | B. TÀI SẢN DÀI HẠN |  | 200.354.177 | 7.829.441\n210 | I. Khoản phải thu |  | 17.483.413 | 898.665\n211 | 1. Phải thu khách hàng |  | 17.483.413 | 898.665\n220 | II. Tài sản cố định |  | 29.012.420 | 6.194.687\n221 | 1. Tài sản cố định hữu hình | 7 | 10.548.930 | 6.194.687\n222 | Nguyên giá |  | 12.211.700 | 6.710.463\n223 | Giá trị hao mòn lũy kế |  | (1.662.770) | (515.776)\n230 | 2. Chi phí xây dựng cơ bản dở dang | 8 | 18.463.490 | -\n250 | III. Tài sản dài hạn khác |  | 153.858.344 | 736.089\n252 | 1. Đầu tư vào công ty liên kết | 9.1 | 105.000.000 | -\n258 | 2. Đầu tư vào dài hạn khác | 9.2 | 50.050.007 | -\n259 | 3. Dự phòng giảm giá đầu tư tài chính dài hạn | 9.2 | (1.880.000) | -\n261 | 4. Chi phí trả trước dài hạn |  | 688.337 | 736.089\n270 | TỔNG CỘNG TÀI SẢN |  | 577.753.465 | 435.405.071\n4",
+        "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; no Tesseract or Docling output used.",
+        "layout_regions": [
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.124,
+              0.038,
+              0.878,
+              0.071
+            ],
+            "region_id": "R01",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.124,
+              0.072,
+              0.63,
+              0.113
+            ],
+            "region_id": "R02",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.79,
+              0.119,
+              0.88,
+              0.14
+            ],
+            "region_id": "R03",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.124,
+              0.145,
+              0.88,
+              0.8
+            ],
+            "region_id": "R04",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.49,
+              0.956,
+              0.52,
+              0.978
+            ],
+            "region_id": "R05",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          }
+        ],
+        "layout_types_draft": [
+          "text",
+          "title",
+          "table"
+        ],
+        "reading_order": [],
+        "table_reference_draft": {
+          "source_candidate_id": "TBL-221",
+          "source_candidate_status": "owner_reviewed_against_original_source",
+          "draft_origin": "Assistant visual draft from scan image; user grid review required before scoring.",
+          "grid": [
+            [
+              "Mã số",
+              "TÀI SẢN",
+              "Thuyết minh",
+              "Số cuối năm",
+              "Số đầu năm"
+            ],
+            [
+              "100",
+              "A. TÀI SẢN NGẮN HẠN",
+              "",
+              "377.399.288",
+              "427.575.630"
+            ],
+            [
+              "110",
+              "I. Tiền",
+              "3",
+              "69.205.529",
+              "139.116.313"
+            ],
+            [
+              "111",
+              "1. Tiền",
+              "",
+              "29.332.863",
+              "110.271.626"
+            ],
+            [
+              "112",
+              "2. Các khoản tương đương tiền",
+              "",
+              "39.872.666",
+              "28.844.687"
+            ],
+            [
+              "120",
+              "II. Các khoản đầu tư ngắn hạn",
+              "",
+              "-",
+              "21.221.000"
+            ],
+            [
+              "121",
+              "1. Đầu tư ngắn hạn",
+              "",
+              "-",
+              "21.221.000"
+            ],
+            [
+              "130",
+              "III. Các khoản phải thu",
+              "",
+              "134.623.680",
+              "92.547.808"
+            ],
+            [
+              "131",
+              "1. Phải thu khách hàng",
+              "",
+              "120.555.482",
+              "82.982.094"
+            ],
+            [
+              "132",
+              "2. Trả trước cho người bán",
+              "",
+              "7.537.435",
+              "7.011.646"
+            ],
+            [
+              "135",
+              "3. Các khoản phải thu khác",
+              "4",
+              "6.530.763",
+              "2.554.068"
+            ],
+            [
+              "140",
+              "IV. Hàng tồn kho",
+              "",
+              "165.130.646",
+              "160.975.490"
+            ],
+            [
+              "141",
+              "1. Chi phí phát triển Khu Công nghiệp",
+              "5",
+              "165.130.646",
+              "160.975.490"
+            ],
+            [
+              "150",
+              "V. Tài sản ngắn hạn khác",
+              "",
+              "8.439.433",
+              "13.715.019"
+            ],
+            [
+              "151",
+              "1. Chi phí trả trước ngắn hạn",
+              "",
+              "111.468",
+              "35.081"
+            ],
+            [
+              "152",
+              "2. Thuế giá trị gia tăng được khấu trừ",
+              "",
+              "-",
+              "6.153.118"
+            ],
+            [
+              "158",
+              "3. Tài sản ngắn hạn khác",
+              "6",
+              "8.327.965",
+              "7.526.820"
+            ],
+            [
+              "200",
+              "B. TÀI SẢN DÀI HẠN",
+              "",
+              "200.354.177",
+              "7.829.441"
+            ],
+            [
+              "210",
+              "I. Khoản phải thu",
+              "",
+              "17.483.413",
+              "898.665"
+            ],
+            [
+              "211",
+              "1. Phải thu khách hàng",
+              "",
+              "17.483.413",
+              "898.665"
+            ],
+            [
+              "220",
+              "II. Tài sản cố định",
+              "",
+              "29.012.420",
+              "6.194.687"
+            ],
+            [
+              "221",
+              "1. Tài sản cố định hữu hình",
+              "7",
+              "10.548.930",
+              "6.194.687"
+            ],
+            [
+              "222",
+              "Nguyên giá",
+              "",
+              "12.211.700",
+              "6.710.463"
+            ],
+            [
+              "223",
+              "Giá trị hao mòn lũy kế",
+              "",
+              "(1.662.770)",
+              "(515.776)"
+            ],
+            [
+              "230",
+              "2. Chi phí xây dựng cơ bản dở dang",
+              "8",
+              "18.463.490",
+              "-"
+            ],
+            [
+              "250",
+              "III. Tài sản dài hạn khác",
+              "",
+              "153.858.344",
+              "736.089"
+            ],
+            [
+              "252",
+              "1. Đầu tư vào công ty liên kết",
+              "9.1",
+              "105.000.000",
+              "-"
+            ],
+            [
+              "258",
+              "2. Đầu tư vào dài hạn khác",
+              "9.2",
+              "50.050.007",
+              "-"
+            ],
+            [
+              "259",
+              "3. Dự phòng giảm giá đầu tư tài chính dài hạn",
+              "9.2",
+              "(1.880.000)",
+              "-"
+            ],
+            [
+              "261",
+              "4. Chi phí trả trước dài hạn",
+              "",
+              "688.337",
+              "736.089"
+            ],
+            [
+              "270",
+              "TỔNG CỘNG TÀI SẢN",
+              "",
+              "577.753.465",
+              "435.405.071"
+            ]
+          ]
+        },
+        "owner_reviewed_at": "2026-10-21T16:19:29.809Z",
+        "table_reference_drafts": [
+          {
+            "grid": [
+              [
+                "Mã số",
+                "TÀI SẢN",
+                "Thuyết minh",
+                "Số cuối năm",
+                "Số đầu năm"
+              ],
+              [
+                "100",
+                "A. TÀI SẢN NGẮN HẠN",
+                "",
+                "377.399.288",
+                "427.575.630"
+              ],
+              [
+                "110",
+                "I. Tiền",
+                "3",
+                "69.205.529",
+                "139.116.313"
+              ],
+              [
+                "111",
+                "1. Tiền",
+                "",
+                "29.332.863",
+                "110.271.626"
+              ],
+              [
+                "112",
+                "2. Các khoản tương đương tiền",
+                "",
+                "39.872.666",
+                "28.844.687"
+              ],
+              [
+                "120",
+                "II. Các khoản đầu tư ngắn hạn",
+                "",
+                "-",
+                "21.221.000"
+              ],
+              [
+                "121",
+                "1. Đầu tư ngắn hạn",
+                "",
+                "-",
+                "21.221.000"
+              ],
+              [
+                "130",
+                "III. Các khoản phải thu",
+                "",
+                "134.623.680",
+                "92.547.808"
+              ],
+              [
+                "131",
+                "1. Phải thu khách hàng",
+                "",
+                "120.555.482",
+                "82.982.094"
+              ],
+              [
+                "132",
+                "2. Trả trước cho người bán",
+                "",
+                "7.537.435",
+                "7.011.646"
+              ],
+              [
+                "135",
+                "3. Các khoản phải thu khác",
+                "4",
+                "6.530.763",
+                "2.554.068"
+              ],
+              [
+                "140",
+                "IV. Hàng tồn kho",
+                "",
+                "165.130.646",
+                "160.975.490"
+              ],
+              [
+                "141",
+                "1. Chi phí phát triển Khu Công nghiệp",
+                "5",
+                "165.130.646",
+                "160.975.490"
+              ],
+              [
+                "150",
+                "V. Tài sản ngắn hạn khác",
+                "",
+                "8.439.433",
+                "13.715.019"
+              ],
+              [
+                "151",
+                "1. Chi phí trả trước ngắn hạn",
+                "",
+                "111.468",
+                "35.081"
+              ],
+              [
+                "152",
+                "2. Thuế giá trị gia tăng được khấu trừ",
+                "",
+                "-",
+                "6.153.118"
+              ],
+              [
+                "158",
+                "3. Tài sản ngắn hạn khác",
+                "6",
+                "8.327.965",
+                "7.526.820"
+              ],
+              [
+                "200",
+                "B. TÀI SẢN DÀI HẠN",
+                "",
+                "200.354.177",
+                "7.829.441"
+              ],
+              [
+                "210",
+                "I. Khoản phải thu",
+                "",
+                "17.483.413",
+                "898.665"
+              ],
+              [
+                "211",
+                "1. Phải thu khách hàng",
+                "",
+                "17.483.413",
+                "898.665"
+              ],
+              [
+                "220",
+                "II. Tài sản cố định",
+                "",
+                "29.012.420",
+                "6.194.687"
+              ],
+              [
+                "221",
+                "1. Tài sản cố định hữu hình",
+                "7",
+                "10.548.930",
+                "6.194.687"
+              ],
+              [
+                "222",
+                "Nguyên giá",
+                "",
+                "12.211.700",
+                "6.710.463"
+              ],
+              [
+                "223",
+                "Giá trị hao mòn lũy kế",
+                "",
+                "(1.662.770)",
+                "(515.776)"
+              ],
+              [
+                "230",
+                "2. Chi phí xây dựng cơ bản dở dang",
+                "8",
+                "18.463.490",
+                "-"
+              ],
+              [
+                "250",
+                "III. Tài sản dài hạn khác",
+                "",
+                "153.858.344",
+                "736.089"
+              ],
+              [
+                "252",
+                "1. Đầu tư vào công ty liên kết",
+                "9.1",
+                "105.000.000",
+                "-"
+              ],
+              [
+                "258",
+                "2. Đầu tư vào dài hạn khác",
+                "9.2",
+                "50.050.007",
+                "-"
+              ],
+              [
+                "259",
+                "3. Dự phòng giảm giá đầu tư tài chính dài hạn",
+                "9.2",
+                "(1.880.000)",
+                "-"
+              ],
+              [
+                "261",
+                "4. Chi phí trả trước dài hạn",
+                "",
+                "688.337",
+                "736.089"
+              ],
+              [
+                "270",
+                "TỔNG CỘNG TÀI SẢN",
+                "",
+                "577.753.465",
+                "435.405.071"
+              ]
+            ],
+            "draft_origin": "Assistant visual draft from scan image; user grid review required before scoring.",
+            "source_candidate_id": "TBL-221",
+            "source_candidate_status": "owner_reviewed_against_original_source",
+            "table_name": "BẢNG CÂN ĐỐI KẾ TOÁN RIÊNG ngày 31 tháng 12 năm 2008"
+          }
+        ],
+        "table_presence_reviewed": false,
+        "reviewed_draft_revision": null
+      },
+      "updated_at": "2026-10-23T00:46:55.955805+00:00"
+    },
+    {
+      "page_key": "E2E-LONG-HAU-2008:p7",
+      "draft_revision": 1,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-LONG-HAU-2008",
+        "source_page_number": 7,
+        "source_pdf": "long-hau-audited-financial-statements-2008.pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "",
+        "source_page_pdf_sha256": "",
+        "source_image": "raw/longhau-p07.png",
+        "source_image_sha256": "3529ccdf8f9fcdd698b8311f3baeee8781eb67dabc20e4da67925f81a29869f6",
+        "image_width": 952,
+        "image_height": 1348,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ phần Long Hậu\nB01-DN\nBẢNG CÂN ĐỐI KẾ TOÁN RIÊNG (tiếp theo)\nngày 31 tháng 12 năm 2008\nNgàn VNĐ\nMã số | NGUỒN VỐN | Thuyết minh | Số cuối năm | Số đầu năm\n300 | A. NỢ PHẢI TRẢ |  | 220.592.511 | 226.674.194\n310 | I. Nợ ngắn hạn |  | 173.858.958 | 150.352.818\n312 | 1. Phải trả người bán |  | 10.722.810 | 3.976.870\n313 | 2. Người mua trả tiền trước |  | 163.545 | -\n314 | 3. Thuế phải nộp | 10 | 10.769.778 | 1.707.233\n315 | 4. Phải trả người lao động |  | 710.717 | 339.624\n316 | 5. Chi phí phải trả | 11 | 69.811.320 | 56.029.930\n319 | 6. Các khoản phải trả, phải nộp ngắn hạn khác | 12 | 81.680.788 | 88.299.161\n330 | II. Nợ dài hạn |  | 46.733.553 | 76.321.376\n333 | 1. Phải trả dài hạn khác |  | 600.000 | -\n334 | 2. Vay dài hạn |  | - | 60.000.000\n335 | 3. Thuế thu nhập hoãn lại phải trả | 17.3 | 46.004.322 | 16.294.376\n336 | 4. Dự phòng trợ cấp mất việc làm |  | 129.231 | 27.000\n400 | B. VỐN CHỦ SỞ HỮU | 13 | 357.160.954 | 208.730.877\n410 | I. Vốn chủ sở hữu |  | 355.870.426 | 208.730.877\n411 | 1. Vốn cổ phần đã góp |  | 200.000.000 | 163.445.160\n417 | 2. Quỹ đầu tư phát triển |  | 4.529.765 | -\n418 | 3. Quỹ dự phòng tài chính |  | 2.264.882 | -\n420 | 4. Lợi nhuận chưa phân phối |  | 149.075.779 | 45.285.717\n410 | II. Nguồn quỹ khác |  | 1.290.528 | -\n | 1. Quỹ khen thưởng, phúc lợi |  | 1.290.528 | -\n440 | TỔNG CỘNG NGUỒN VỐN |  | 577.753.465 | 435.405.071\nNguyễn Công Hiệp\nKế toán trưởng\nĐoàn Hồng Dũng\nTổng Giám đốc\nNgày 12 tháng 3 năm 2009\n5",
+        "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; all table rows transcribed as a draft. Verify each value and box against the source before approval. No Tesseract or Docling output used.",
+        "layout_regions": [
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.043,
+              0.88,
+              0.064
+            ],
+            "region_id": "R01",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.125,
+              0.075,
+              0.58,
+              0.104
+            ],
+            "region_id": "R02",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.098,
+              0.47,
+              0.104
+            ],
+            "region_id": "R03",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.79,
+              0.13,
+              0.88,
+              0.143
+            ],
+            "region_id": "R04",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.124,
+              0.143,
+              0.874,
+              0.623
+            ],
+            "region_id": "R05",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "figure",
+            "bbox_norm": [
+              0.16,
+              0.639,
+              0.79,
+              0.769
+            ],
+            "region_id": "R06",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.124,
+              0.716,
+              0.87,
+              0.785
+            ],
+            "region_id": "R07",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.49,
+              0.956,
+              0.51,
+              0.968
+            ],
+            "region_id": "R08",
+            "coordinate_system": "normalized_top_left_0_1"
+          }
+        ],
+        "layout_types_draft": [
+          "figure",
+          "table",
+          "text",
+          "title"
+        ],
+        "reading_order": [],
+        "table_reference_draft": {
+          "grid": [
+            [
+              "Mã số",
+              "NGUỒN VỐN",
+              "Thuyết minh",
+              "Số cuối năm",
+              "Số đầu năm"
+            ],
+            [
+              "300",
+              "A. NỢ PHẢI TRẢ",
+              "",
+              "220.592.511",
+              "226.674.194"
+            ],
+            [
+              "310",
+              "I. Nợ ngắn hạn",
+              "",
+              "173.858.958",
+              "150.352.818"
+            ],
+            [
+              "312",
+              "1. Phải trả người bán",
+              "",
+              "10.722.810",
+              "3.976.870"
+            ],
+            [
+              "313",
+              "2. Người mua trả tiền trước",
+              "",
+              "163.545",
+              "-"
+            ],
+            [
+              "314",
+              "3. Thuế phải nộp",
+              "10",
+              "10.769.778",
+              "1.707.233"
+            ],
+            [
+              "315",
+              "4. Phải trả người lao động",
+              "",
+              "710.717",
+              "339.624"
+            ],
+            [
+              "316",
+              "5. Chi phí phải trả",
+              "11",
+              "69.811.320",
+              "56.029.930"
+            ],
+            [
+              "319",
+              "6. Các khoản phải trả, phải nộp ngắn hạn khác",
+              "12",
+              "81.680.788",
+              "88.299.161"
+            ],
+            [
+              "330",
+              "II. Nợ dài hạn",
+              "",
+              "46.733.553",
+              "76.321.376"
+            ],
+            [
+              "333",
+              "1. Phải trả dài hạn khác",
+              "",
+              "600.000",
+              "-"
+            ],
+            [
+              "334",
+              "2. Vay dài hạn",
+              "",
+              "-",
+              "60.000.000"
+            ],
+            [
+              "335",
+              "3. Thuế thu nhập hoãn lại phải trả",
+              "17.3",
+              "46.004.322",
+              "16.294.376"
+            ],
+            [
+              "336",
+              "4. Dự phòng trợ cấp mất việc làm",
+              "",
+              "129.231",
+              "27.000"
+            ],
+            [
+              "400",
+              "B. VỐN CHỦ SỞ HỮU",
+              "13",
+              "357.160.954",
+              "208.730.877"
+            ],
+            [
+              "410",
+              "I. Vốn chủ sở hữu",
+              "",
+              "355.870.426",
+              "208.730.877"
+            ],
+            [
+              "411",
+              "1. Vốn cổ phần đã góp",
+              "",
+              "200.000.000",
+              "163.445.160"
+            ],
+            [
+              "417",
+              "2. Quỹ đầu tư phát triển",
+              "",
+              "4.529.765",
+              "-"
+            ],
+            [
+              "418",
+              "3. Quỹ dự phòng tài chính",
+              "",
+              "2.264.882",
+              "-"
+            ],
+            [
+              "420",
+              "4. Lợi nhuận chưa phân phối",
+              "",
+              "149.075.779",
+              "45.285.717"
+            ],
+            [
+              "410",
+              "II. Nguồn quỹ khác",
+              "",
+              "1.290.528",
+              "-"
+            ],
+            [
+              "",
+              "1. Quỹ khen thưởng, phúc lợi",
+              "",
+              "1.290.528",
+              "-"
+            ],
+            [
+              "440",
+              "TỔNG CỘNG NGUỒN VỐN",
+              "",
+              "577.753.465",
+              "435.405.071"
+            ]
+          ],
+          "draft_origin": "Manual visual draft transcribed from original source image; owner must verify all cells before scoring.",
+          "table_name": "BẢNG CÂN ĐỐI KẾ TOÁN RIÊNG (tiếp theo) ngày 31 tháng 12 năm 2008"
+        },
+        "table_presence_reviewed": false,
+        "draft_completeness": "full_visual_transcription_draft_requires_owner_review",
+        "draft_revision": 1,
+        "owner_reviewed_at": "2026-10-21T08:27:21.689Z",
+        "reviewed_draft_revision": 1
+      },
+      "updated_at": "2026-10-23T00:46:55.999232+00:00"
+    },
+    {
+      "page_key": "E2E-LONG-HAU-2008:p8",
+      "draft_revision": null,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-LONG-HAU-2008",
+        "source_page_number": 8,
+        "source_pdf": "long-hau-audited-financial-statements-2008.pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "pages/E2E-LONG-HAU-2008-p08.pdf",
+        "source_page_pdf_sha256": "f7989435fc24d779bce3b5854a53d1fe5df9d4928ee79deeb216a3b82b3ed57c",
+        "source_image": "raw/longhau-p08.png",
+        "source_image_sha256": "b789028ad6dedff44f2bc148844171f3d4232fcbe4d7cfb82680787e85462e41",
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ Phần Long Hậu\nB02-DN\nBÁO CÁO KẾT QUẢ HOẠT ĐỘNG KINH DOANH RIÊNG\ncho năm kết thúc ngày 31 tháng 12 năm 2008\nNgàn VNĐ\nNguyễn Công Hiệp\nKế toán trưởng\nĐoàn Hồng Dũng\nTổng Giám đốc\nNgày 12 tháng 3 năm 2009\nMã số | CHỈ TIÊU | Thuyết minh | Năm nay | Năm trước\n01 | 1. Doanh thu | 14.1 | 331.212.837 | 156.430.834\n02 | 2. Các khoản giảm trừ doanh thu |  | - | -\n10 | 3. Doanh thu thuần | 14.1 | 331.212.837 | 156.430.834\n11 | 4. Giá vốn hàng bán |  | (151.356.838) | (80.483.293)\n20 | 5. Lợi nhuận gộp |  | 179.855.999 | 75.947.541\n21 | 6. Doanh thu hoạt động tài chính | 14.2 | 18.958.095 | 1.313.010\n22 | 7. Chi phí tài chính | 15 | (4.817.705) | (5.144)\n24 | 8. Chi phí bán hàng |  | (4.693.809) | (6.582.035)\n25 | 9. Chi phí quản lý doanh nghiệp |  | (16.996.599) | (9.267.582)\n30 | 10. Lợi nhuận thuần từ hoạt động kinh doanh |  | 172.305.981 | 61.405.790\n31 | 11. Thu nhập khác | 16 | 656.889 | 201.149\n32 | 12. Chi phí khác |  | (142.511) | (14.916)\n40 | 13. Lợi nhuận khác |  | 514.378 | 186.233\n50 | 14. Tổng lợi nhuận kế toán trước thuế |  | 172.820.359 | 61.592.023\n51 | 15. Chi phí thuế TNDN hiện hành | 17.2 | - | -\n52 | 16. Chi phí thuế TNDN hoãn lại | 17.3 | (29.709.946) | (16.294.376)\n60 | 17. Lợi nhuận sau thuế |  | 143.110.413 | 45.297.647\n70 | 18. Lãi cơ bản trên cổ phiếu (VNĐ) | 19 | 7.719 | 4.189\n6",
+        "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; no Tesseract or Docling output used.",
+        "layout_regions": [
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.124,
+              0.038,
+              0.878,
+              0.071
+            ],
+            "region_id": "R01",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.124,
+              0.072,
+              0.67,
+              0.113
+            ],
+            "region_id": "R02",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.79,
+              0.119,
+              0.88,
+              0.14
+            ],
+            "region_id": "R03",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.122,
+              0.145,
+              0.88,
+              0.744
+            ],
+            "region_id": "R04",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.12,
+              0.765,
+              0.88,
+              0.91
+            ],
+            "region_id": "R05",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.49,
+              0.956,
+              0.52,
+              0.978
+            ],
+            "region_id": "R06",
+            "bbox_status": "owner_reviewed_against_original_source",
+            "coordinate_system": "normalized_top_left_0_1"
+          }
+        ],
+        "layout_types_draft": [
+          "text",
+          "title",
+          "table",
+          "figure"
+        ],
+        "reading_order": [],
+        "table_reference_draft": {
+          "grid": [
+            [
+              "Mã số",
+              "CHỈ TIÊU",
+              "Thuyết minh",
+              "Năm nay",
+              "Năm trước"
+            ],
+            [
+              "01",
+              "1. Doanh thu",
+              "14.1",
+              "331.212.837",
+              "156.430.834"
+            ],
+            [
+              "02",
+              "2. Các khoản giảm trừ doanh thu",
+              "",
+              "-",
+              "-"
+            ],
+            [
+              "10",
+              "3. Doanh thu thuần",
+              "14.1",
+              "331.212.837",
+              "156.430.834"
+            ],
+            [
+              "11",
+              "4. Giá vốn hàng bán",
+              "",
+              "(151.356.838)",
+              "(80.483.293)"
+            ],
+            [
+              "20",
+              "5. Lợi nhuận gộp",
+              "",
+              "179.855.999",
+              "75.947.541"
+            ],
+            [
+              "21",
+              "6. Doanh thu hoạt động tài chính",
+              "14.2",
+              "18.958.095",
+              "1.313.010"
+            ],
+            [
+              "22",
+              "7. Chi phí tài chính",
+              "15",
+              "(4.817.705)",
+              "(5.144)"
+            ],
+            [
+              "24",
+              "8. Chi phí bán hàng",
+              "",
+              "(4.693.809)",
+              "(6.582.035)"
+            ],
+            [
+              "25",
+              "9. Chi phí quản lý doanh nghiệp",
+              "",
+              "(16.996.599)",
+              "(9.267.582)"
+            ],
+            [
+              "30",
+              "10. Lợi nhuận thuần từ hoạt động kinh doanh",
+              "",
+              "172.305.981",
+              "61.405.790"
+            ],
+            [
+              "31",
+              "11. Thu nhập khác",
+              "16",
+              "656.889",
+              "201.149"
+            ],
+            [
+              "32",
+              "12. Chi phí khác",
+              "",
+              "(142.511)",
+              "(14.916)"
+            ],
+            [
+              "40",
+              "13. Lợi nhuận khác",
+              "",
+              "514.378",
+              "186.233"
+            ],
+            [
+              "50",
+              "14. Tổng lợi nhuận kế toán trước thuế",
+              "",
+              "172.820.359",
+              "61.592.023"
+            ],
+            [
+              "51",
+              "15. Chi phí thuế TNDN hiện hành",
+              "17.2",
+              "-",
+              "-"
+            ],
+            [
+              "52",
+              "16. Chi phí thuế TNDN hoãn lại",
+              "17.3",
+              "(29.709.946)",
+              "(16.294.376)"
+            ],
+            [
+              "60",
+              "17. Lợi nhuận sau thuế",
+              "",
+              "143.110.413",
+              "45.297.647"
+            ],
+            [
+              "70",
+              "18. Lãi cơ bản trên cổ phiếu (VNĐ)",
+              "19",
+              "7.719",
+              "4.189"
+            ]
+          ],
+          "draft_origin": "Assistant visual draft from scan image; user review required before scoring.",
+          "source_candidate_id": "TBL-222",
+          "source_candidate_status": "owner_reviewed_against_original_source",
+          "table_name": "BÁO CÁO KẾT QUẢ HOẠT ĐỘNG KINH DOANH RIÊNG cho năm kết thúc ngày 31 tháng 12 năm 2008"
+        },
+        "owner_reviewed_at": "2026-10-21"
+      },
+      "updated_at": "2026-10-23T00:46:55.955740+00:00"
+    },
+    {
+      "page_key": "E2E-LONG-HAU-2008:p9",
+      "draft_revision": 1,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "E2E-LONG-HAU-2008",
+        "source_page_number": 9,
+        "source_pdf": "long-hau-audited-financial-statements-2008.pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "",
+        "source_page_pdf_sha256": "",
+        "source_image": "raw/longhau-p09.png",
+        "source_image_sha256": "14ed14682a7b39c54bffb5c15db90c8eeaddcc4aa4de87246ef7908c80d5f1a9",
+        "image_width": 952,
+        "image_height": 1348,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ Phần Long Hậu\nB03-DN\nBÁO CÁO LƯU CHUYỂN TIỀN TỆ RIÊNG\ncho năm kết thúc ngày 31 tháng 12 năm 2008\nNgàn VNĐ\nMã số | Chỉ tiêu | Thuyết minh | Năm nay | Năm trước\n | I. LƯU CHUYỂN TIỀN TỪ HOẠT ĐỘNG KINH DOANH |  |  | \n01 | Lợi nhuận trước thuế |  | 172.820.359 | 61.592.023\n | Điều chỉnh cho các khoản: |  |  | \n02 | Khấu hao tài sản cố định | 7 | 1.186.663 | 468.491\n03 | Các khoản dự phòng |  | 1.982.231 | 27.000\n04 | Lãi chênh lệch tỷ giá chưa thực hiện |  | (2.298.839) | -\n05 | Lỗ thanh lý tài sản cố định |  | 90.135 | -\n05 | Lãi từ hoạt động đầu tư |  | (12.128.184) | (1.265.055)\n08 | Lãi từ hoạt động kinh doanh trước thay đổi vốn lưu động |  | 161.652.365 | 60.822.459\n09 | Tăng các khoản phải thu |  | (49.117.585) | (101.419.012)\n10 | Tăng hàng tồn kho |  | (144.985.614) | (184.342.733)\n11 | Tăng các khoản phải trả |  | 161.726.282 | 174.622.552\n12 | (Tăng) giảm chi phí trả trước |  | (28.635) | 794.016\n16 | Các khoản chi khác từ hoạt động kinh doanh | 13.1 | (4.203.492) | -\n20 | Lưu chuyển tiền thuần từ hoạt động kinh doanh |  | 125.043.321 | (49.522.718)\n | II. LƯU CHUYỂN TIỀN TỪ HOẠT ĐỘNG ĐẦU TƯ |  |  | \n21 | Tiền chi để mua sắm và xây dựng tài sản cố định |  | (20.936.596) | (5.669.288)\n22 | Tiền chi đầu tư chứng khoán |  | 52.381 | -\n25 | Tiền chi đầu tư đầu tư |  | (133.829.007) | (21.221.000)\n27 | Tiền thu lãi cho vay, cổ tức và lợi nhuận được chia |  | 12.128.184 | 1.265.055\n30 | Lưu chuyển tiền thuần từ hoạt động đầu tư |  | (142.585.038) | (25.625.233)\n | III. LƯU CHUYỂN TIỀN TỪ HOẠT ĐỘNG TÀI CHÍNH |  |  | \n31 | Nhận vốn góp |  | 20.822.880 | 135.545.160\n33 | Tiền vay |  | - | 60.000.000\n34 | Tiền đã trả nợ gốc vay |  | (60.000.000) | -\n36 | Cổ tức, lợi nhuận đã trả cho chủ sở hữu |  | (13.546.384) | -\n40 | Lưu chuyển tiền thuần từ hoạt động tài chính |  | (52.723.504) | 195.545.160\n50 | Lưu chuyển tiền thuần trong năm |  | (70.265.221) | 120.397.209\n60 | Tiền tồn đầu năm | 3 | 139.116.313 | 18.719.104\n61 | Ảnh hưởng của biến động tỷ giá |  | 354.437 | -\n70 | Tiền tồn cuối năm | 3 | 69.205.529 | 139.116.313\nNguyễn Công Hiệp — Kế toán trưởng\nĐoàn Hồng Dũng — Tổng Giám đốc\nNgày 12 tháng 3 năm 2009\n7",
+        "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; owner must verify transcript, boxes, and table cells before approval. No Tesseract or Docling output used.",
+        "layout_regions": [
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.043,
+              0.88,
+              0.066
+            ],
+            "region_id": "R01",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "title",
+            "bbox_norm": [
+              0.125,
+              0.074,
+              0.63,
+              0.102
+            ],
+            "region_id": "R02",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.102,
+              0.57,
+              0.128
+            ],
+            "region_id": "R03",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.79,
+              0.12,
+              0.88,
+              0.132
+            ],
+            "region_id": "R04",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "table",
+            "bbox_norm": [
+              0.125,
+              0.134,
+              0.876,
+              0.809
+            ],
+            "region_id": "R05",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "figure",
+            "bbox_norm": [
+              0.19,
+              0.812,
+              0.83,
+              0.924
+            ],
+            "region_id": "R06",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.125,
+              0.88,
+              0.86,
+              0.95
+            ],
+            "region_id": "R07",
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "label": "text",
+            "bbox_norm": [
+              0.493,
+              0.956,
+              0.51,
+              0.97
+            ],
+            "region_id": "R08",
+            "coordinate_system": "normalized_top_left_0_1"
+          }
+        ],
+        "layout_types_draft": [
+          "figure",
+          "table",
+          "text",
+          "title"
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "R05",
+          "R06",
+          "R07",
+          "R08"
+        ],
+        "table_presence_reviewed": false,
+        "draft_completeness": "full_visual_transcription_draft_requires_owner_review",
+        "table_reference_drafts": [
+          {
+            "grid": [
+              [
+                "Mã số",
+                "Chỉ tiêu",
+                "Thuyết minh",
+                "Năm nay",
+                "Năm trước"
+              ],
+              [
+                "",
+                "I. LƯU CHUYỂN TIỀN TỪ HOẠT ĐỘNG KINH DOANH",
+                "",
+                "",
+                ""
+              ],
+              [
+                "01",
+                "Lợi nhuận trước thuế",
+                "",
+                "172.820.359",
+                "61.592.023"
+              ],
+              [
+                "",
+                "Điều chỉnh cho các khoản:",
+                "",
+                "",
+                ""
+              ],
+              [
+                "02",
+                "Khấu hao tài sản cố định",
+                "7",
+                "1.186.663",
+                "468.491"
+              ],
+              [
+                "03",
+                "Các khoản dự phòng",
+                "",
+                "1.982.231",
+                "27.000"
+              ],
+              [
+                "04",
+                "Lãi chênh lệch tỷ giá chưa thực hiện",
+                "",
+                "(2.298.839)",
+                "-"
+              ],
+              [
+                "05",
+                "Lỗ thanh lý tài sản cố định",
+                "",
+                "90.135",
+                "-"
+              ],
+              [
+                "05",
+                "Lãi từ hoạt động đầu tư",
+                "",
+                "(12.128.184)",
+                "(1.265.055)"
+              ],
+              [
+                "08",
+                "Lãi từ hoạt động kinh doanh trước thay đổi vốn lưu động",
+                "",
+                "161.652.365",
+                "60.822.459"
+              ],
+              [
+                "09",
+                "Tăng các khoản phải thu",
+                "",
+                "(49.117.585)",
+                "(101.419.012)"
+              ],
+              [
+                "10",
+                "Tăng hàng tồn kho",
+                "",
+                "(144.985.614)",
+                "(184.342.733)"
+              ],
+              [
+                "11",
+                "Tăng các khoản phải trả",
+                "",
+                "161.726.282",
+                "174.622.552"
+              ],
+              [
+                "12",
+                "(Tăng) giảm chi phí trả trước",
+                "",
+                "(28.635)",
+                "794.016"
+              ],
+              [
+                "16",
+                "Các khoản chi khác từ hoạt động kinh doanh",
+                "13.1",
+                "(4.203.492)",
+                "-"
+              ],
+              [
+                "20",
+                "Lưu chuyển tiền thuần từ hoạt động kinh doanh",
+                "",
+                "125.043.321",
+                "(49.522.718)"
+              ],
+              [
+                "",
+                "II. LƯU CHUYỂN TIỀN TỪ HOẠT ĐỘNG ĐẦU TƯ",
+                "",
+                "",
+                ""
+              ],
+              [
+                "21",
+                "Tiền chi để mua sắm và xây dựng tài sản cố định",
+                "",
+                "(20.936.596)",
+                "(5.669.288)"
+              ],
+              [
+                "22",
+                "Tiền chi đầu tư chứng khoán",
+                "",
+                "52.381",
+                "-"
+              ],
+              [
+                "25",
+                "Tiền chi đầu tư đầu tư",
+                "",
+                "(133.829.007)",
+                "(21.221.000)"
+              ],
+              [
+                "27",
+                "Tiền thu lãi cho vay, cổ tức và lợi nhuận được chia",
+                "",
+                "12.128.184",
+                "1.265.055"
+              ],
+              [
+                "30",
+                "Lưu chuyển tiền thuần từ hoạt động đầu tư",
+                "",
+                "(142.585.038)",
+                "(25.625.233)"
+              ],
+              [
+                "",
+                "III. LƯU CHUYỂN TIỀN TỪ HOẠT ĐỘNG TÀI CHÍNH",
+                "",
+                "",
+                ""
+              ],
+              [
+                "31",
+                "Nhận vốn góp",
+                "",
+                "20.822.880",
+                "135.545.160"
+              ],
+              [
+                "33",
+                "Tiền vay",
+                "",
+                "-",
+                "60.000.000"
+              ],
+              [
+                "34",
+                "Tiền đã trả nợ gốc vay",
+                "",
+                "(60.000.000)",
+                "-"
+              ],
+              [
+                "36",
+                "Cổ tức, lợi nhuận đã trả cho chủ sở hữu",
+                "",
+                "(13.546.384)",
+                "-"
+              ],
+              [
+                "40",
+                "Lưu chuyển tiền thuần từ hoạt động tài chính",
+                "",
+                "(52.723.504)",
+                "195.545.160"
+              ],
+              [
+                "50",
+                "Lưu chuyển tiền thuần trong năm",
+                "",
+                "(70.265.221)",
+                "120.397.209"
+              ],
+              [
+                "60",
+                "Tiền tồn đầu năm",
+                "3",
+                "139.116.313",
+                "18.719.104"
+              ],
+              [
+                "61",
+                "Ảnh hưởng của biến động tỷ giá",
+                "",
+                "354.437",
+                "-"
+              ],
+              [
+                "70",
+                "Tiền tồn cuối năm",
+                "3",
+                "69.205.529",
+                "139.116.313"
+              ]
+            ],
+            "region_id": "R05",
+            "draft_origin": "Manual visual transcription from original source-page image; owner review required before scoring.",
+            "source_candidate_id": "VISUAL-DRAFT-LONGHAU-P09-T1",
+            "source_candidate_status": "assistant_visual_draft"
+          }
+        ],
+        "draft_revision": 1,
+        "owner_reviewed_at": "2026-10-21T08:27:25.479Z",
+        "reviewed_draft_revision": 1
+      },
+      "updated_at": "2026-10-23T00:46:56.018866+00:00"
+    },
+    {
+      "page_key": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b:p26",
+      "draft_revision": 2,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b",
+        "doc_title": "BAO-HO-LAO-DONG-2009",
+        "source_page_number": 26,
+        "source_pdf": "uploads/UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b.pdf",
+        "source_pdf_name": "bao-ho-lao-dong-ar-2009-vn.pdf",
+        "source_pdf_sha256": "1be902dc4beff1ab405fee343d7df80dfa44cdba2a34969a442f092617cb6cf3",
+        "source_page_pdf": "pages/UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p0026.pdf",
+        "source_page_pdf_sha256": "9084e78d89f83ba8d8333782845fc57028bef6a2ef7bb63c8a5a9c53ed3477c7",
+        "source_image": "raw/upload-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p0026.png",
+        "source_image_sha256": "44d2f9531ec02bbad9281c8ac7c33187e9cee6d1c9b9e69fa94afdb98cbcad63",
+        "image_width": 1224,
+        "image_height": 1685,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "CÔNG TY CỔ PHẦN TẠP PHẨM VÀ BẢO HỘ LAO ĐỘNG                         BÁO CÁO TÀI CHÍNH\nSố 11A - Cát Linh - Đống Đa - Hà Nội                         Cho năm tài chính kết thúc ngày 31/12/2009\nTHUYẾT MINH BÁO CÁO TÀI CHÍNH (TIẾP)\nCác thuyết minh này là bộ phận hợp thành và cần được đọc đồng thời với Báo cáo tài chính\nVI. THÔNG TIN BỔ SUNG CHO CÁC KHOẢN MỤC TRÌNH BÀY TRONG BÁO CÁO KẾT QUẢ HOẠT ĐỘNG KINH DOANH\n1. Tổng Doanh thu bán hàng và cung cấp dịch vụ\nNăm 2009\nVND\nNăm 2008\nVND\nTổng doanh thu bán hàng và cung cấp dịch vụ | 673.627.731.858 | 553.969.043.363\nTrong đó:\n+ Doanh thu bán hàng, cung cấp dịch vụ | 667.720.255.968 | 549.963.293.967\n+ Doanh thu cho thuê kho tàng, văn phòng | 5.907.475.890 | 4.005.749.396\nCác khoản giảm trừ doanh thu | - | -\nDoanh thu thuần về bán hàng và cung cấp dịch vụ | 673.627.731.858 | 553.969.043.363\n2. Giá vốn hàng bán\nNăm 2009\nVND\nNăm 2008\nVND\nGiá vốn bán hàng, cung cấp dịch vụ | 662.167.292.407 | 544.101.377.496\nGiá vốn cho thuê kho tàng, văn phòng | - | -\nTổng cộng | 662.167.292.407 | 544.101.377.496\n3. Doanh thu hoạt động tài chính\nNăm 2009\nVND\nNăm 2008\nVND\nLãi tiền gửi, tiền cho vay | 1.276.731.793 | 1.048.576.062\nLãi chênh lệch tỉ giá đã thực hiện | 16.911.738 | 20.651.787\nLãi chênh lệch tỉ giá chưa thực hiện | - | 4.489.517\nTổng cộng | 1.293.643.531 | 1.073.717.366\n4. Chi phí hoạt động tài chính\nNăm 2009\nVND\nNăm 2008\nVND\nChi phí lãi vay | 628.960.545 | 1.090.991.058\nLỗ chênh lệch tỉ giá đã thực hiện | 1.046.489.022 | 62.613.336\nTổng cộng | 1.675.449.567 | 1.153.604.394\n18",
+        "ocr_draft_source": "Codex CLI vision draft from source page; Codex CLI configured model; verify against the original image.",
+        "layout_regions": [
+          {
+            "region_id": "R01",
+            "label": "text",
+            "bbox_norm": [
+              0.15139653832353192,
+              0.03253273193772356,
+              0.8813965383235319,
+              0.06553273193772355
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R02",
+            "label": "title",
+            "bbox_norm": [
+              0.148,
+              0.074,
+              0.877,
+              0.105
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R03",
+            "label": "text",
+            "bbox_norm": [
+              0.148,
+              0.116,
+              0.878,
+              0.146
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R04",
+            "label": "text",
+            "bbox_norm": [
+              0.14460344008180404,
+              0.15817758777024635,
+              0.573442960113619,
+              0.17871140446135578
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R05",
+            "label": "text",
+            "bbox_norm": [
+              0.14686781336060137,
+              0.3724206080429243,
+              0.3565462923084816,
+              0.39142060804292433
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R06",
+            "label": "table",
+            "bbox_norm": [
+              0.21113220823406245,
+              0.18677578358341712,
+              0.8841322082340625,
+              0.3537757835834171
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R07",
+            "label": "text",
+            "bbox_norm": [
+              0.14686781336060137,
+              0.3731308963778787,
+              0.5648678133606013,
+              0.39313089637787874
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R08",
+            "label": "table",
+            "bbox_norm": [
+              0.2077356483158667,
+              0.4043084684616173,
+              0.883,
+              0.508
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R09",
+            "label": "text",
+            "bbox_norm": [
+              0.1344138251112082,
+              0.5178412160858487,
+              0.5524138251112081,
+              0.5388412160858487
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R10",
+            "label": "table",
+            "bbox_norm": [
+              0.20886781336060134,
+              0.5474393805260037,
+              0.883,
+              0.675
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R11",
+            "label": "text",
+            "bbox_norm": [
+              0.14007473671353746,
+              0.6820187724830793,
+              0.5570747367135374,
+              0.7030187724830793
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R12",
+            "label": "table",
+            "bbox_norm": [
+              0.21,
+              0.7120842206720187,
+              0.8818678349552654,
+              0.82
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R13",
+            "label": "text",
+            "bbox_norm": [
+              0.50839658151286,
+              0.9551309277508943,
+              0.5343965815128601,
+              0.9721309277508943
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          }
+        ],
+        "layout_types_draft": [
+          "table",
+          "text",
+          "title"
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "R05",
+          "R06",
+          "R07",
+          "R08",
+          "R09",
+          "R10",
+          "R11",
+          "R12",
+          "R13"
+        ],
+        "table_presence_reviewed": false,
+        "table_reference_drafts": [
+          {
+            "region_id": "R06",
+            "source_candidate_id": "AI-CODEX-26-T1",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "Năm 2009\nVND",
+                "Năm 2008\nVND"
+              ],
+              [
+                "Tổng doanh thu bán hàng và cung cấp dịch vụ",
+                "673.627.731.858",
+                "553.969.043.363"
+              ],
+              [
+                "Trong đó:",
+                "",
+                ""
+              ],
+              [
+                "+ Doanh thu bán hàng, cung cấp dịch vụ",
+                "667.720.255.968",
+                "549.963.293.967"
+              ],
+              [
+                "+ Doanh thu cho thuê kho tàng, văn phòng",
+                "5.907.475.890",
+                "4.005.749.396"
+              ],
+              [
+                "Các khoản giảm trừ doanh thu",
+                "-",
+                "-"
+              ],
+              [
+                "Doanh thu thuần về bán hàng và cung cấp dịch vụ",
+                "673.627.731.858",
+                "553.969.043.363"
+              ]
+            ],
+            "table_name": "1. Tổng Doanh thu bán hàng và cung cấp dịch vụ"
+          },
+          {
+            "region_id": "R08",
+            "source_candidate_id": "AI-CODEX-26-T2",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "Năm 2009\nVND",
+                "Năm 2008\nVND"
+              ],
+              [
+                "Giá vốn bán hàng, cung cấp dịch vụ",
+                "662.167.292.407",
+                "544.101.377.496"
+              ],
+              [
+                "Giá vốn cho thuê kho tàng, văn phòng",
+                "-",
+                "-"
+              ],
+              [
+                "Tổng cộng",
+                "662.167.292.407",
+                "544.101.377.496"
+              ]
+            ],
+            "table_name": "2. Giá vốn hàng bán"
+          },
+          {
+            "region_id": "R10",
+            "source_candidate_id": "AI-CODEX-26-T3",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "Năm 2009\nVND",
+                "Năm 2008\nVND"
+              ],
+              [
+                "Lãi tiền gửi, tiền cho vay",
+                "1.276.731.793",
+                "1.048.576.062"
+              ],
+              [
+                "Lãi chênh lệch tỉ giá đã thực hiện",
+                "16.911.738",
+                "20.651.787"
+              ],
+              [
+                "Lãi chênh lệch tỉ giá chưa thực hiện",
+                "-",
+                "4.489.517"
+              ],
+              [
+                "Tổng cộng",
+                "1.293.643.531",
+                "1.073.717.366"
+              ]
+            ],
+            "table_name": "3. Doanh thu hoạt động tài chính"
+          },
+          {
+            "region_id": "R12",
+            "source_candidate_id": "AI-CODEX-26-T4",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "Năm 2009\nVND",
+                "Năm 2008\nVND"
+              ],
+              [
+                "Chi phí lãi vay",
+                "628.960.545",
+                "1.090.991.058"
+              ],
+              [
+                "Lỗ chênh lệch tỉ giá đã thực hiện",
+                "1.046.489.022",
+                "62.613.336"
+              ],
+              [
+                "Tổng cộng",
+                "1.675.449.567",
+                "1.153.604.394"
+              ]
+            ],
+            "table_name": "4. Chi phí hoạt động tài chính"
+          }
+        ],
+        "draft_revision": 2,
+        "draft_completeness": "codex_visual_draft_requires_owner_review",
+        "ai_draft_metadata": {
+          "provider": "codex_cli",
+          "model": "Codex CLI configured model",
+          "generated_at": "2026-10-21T15:55:02.663565+00:00",
+          "uncertain_items": []
+        },
+        "owner_reviewed_at": "2026-10-21T16:00:43.439Z",
+        "reviewed_draft_revision": 2
+      },
+      "updated_at": "2026-10-21T16:57:43.155480+00:00"
+    }
+  ]
+}

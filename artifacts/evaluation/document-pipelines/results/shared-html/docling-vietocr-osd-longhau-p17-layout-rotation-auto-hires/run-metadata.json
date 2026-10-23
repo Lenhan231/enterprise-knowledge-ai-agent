@@ -1,0 +1,102 @@
+{
+  "dataset": "shared-html-owner-reviewed",
+  "engine": "docling-vietocr",
+  "run_id": "docling-vietocr-osd-longhau-p17-layout-rotation-auto-hires",
+  "started_at_utc": "2026-10-21T14:34:55.365041+00:00",
+  "finished_at_utc": "2026-10-21T14:35:33.190387+00:00",
+  "device": "CPU",
+  "ocr": "Docling layout + Tesseract OSD per OCR crop + RapidOCR detection + VietOCR vgg_seq2seq greedy",
+  "layout_model": "Layout heron",
+  "table_structure": "Docling TableFormer accurate + per-crop Tesseract OSD; OCR cell matching",
+  "threads": 2,
+  "page_filter": "E2E-LONG-HAU-2008-p17",
+  "page_count": 1,
+  "successful_pages": 1,
+  "failed_pages": 0,
+  "wall_seconds": 37.825,
+  "peak_process_rss_mib": 2143.9,
+  "prediction_generation_seconds": 37.825,
+  "reused_raw_outputs": false,
+  "raw_output_directory": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/docling-vietocr-osd-longhau-p17-layout-rotation-auto-hires/raw_pages",
+  "predictions": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/docling-vietocr-osd-longhau-p17-layout-rotation-auto-hires/predictions.jsonl",
+  "pages": [
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 25.939
+    }
+  ],
+  "table_orientation_detections": [
+    {
+      "page_id": "E2E-LONG-HAU-2008-p17",
+      "table_index_1based": 1,
+      "bbox_scaled": [
+        318,
+        136,
+        860,
+        1530
+      ],
+      "rotation_clockwise": 90,
+      "osd_confidence": 6.96,
+      "minimum_osd_confidence": 5.0
+    }
+  ],
+  "layout_orientation_detections": [
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "osd_rotation_clockwise": 90,
+      "osd_confidence": 7.61,
+      "minimum_osd_confidence": 5.0,
+      "source_size": [
+        595,
+        842
+      ],
+      "osd_size": [
+        1273,
+        1800
+      ]
+    }
+  ],
+  "ocr_orientation_detections": [
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "ocr_region_index_1based": 1,
+      "bbox": [
+        0.0,
+        3.0,
+        440.0,
+        841.0
+      ],
+      "crop_size": [
+        1320,
+        2514
+      ],
+      "osd_orientation_degrees": 270,
+      "correction_clockwise": 90,
+      "osd_confidence": 9.64
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "ocr_region_index_1based": 2,
+      "bbox": [
+        540.0,
+        418.0,
+        594.0,
+        569.0
+      ],
+      "crop_size": [
+        162,
+        453
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    }
+  ],
+  "inference_wall_seconds": 37.825,
+  "inference_page_seconds": {
+    "E2E-LONG-HAU-2008-p17": 25.939
+  },
+  "inference_successful_pages": 1,
+  "docling_version": "2.129.0"
+}

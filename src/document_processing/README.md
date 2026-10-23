@@ -30,6 +30,37 @@ handle chunking, tokenization, embeddings, or retrieval indexing.
 `pipeline_id` records the configured parser engine; `parser` identifies the
 component that produced an element or table. See [`docs/metadata.md`](docs/metadata.md).
 
+## Module Docker image
+
+Build from the repository root:
+
+```sh
+docker build -f docker/Dockerfile.document-processing -t document-processing .
+docker run --rm document-processing
+```
+
+The image contains `document_processing`, Docling, and
+Vietnamese/English Tesseract. It does not install the full application's
+dependencies or include the FastAPI app, database credentials, or Streamlit.
+The default command checks imports; success prints
+`PASS: Docling and document_processing imports` and exits with code 0.
+This check does not run Docling inference on a real document.
+
+Override the command to use the parser from your own Python script:
+
+```sh
+docker run --rm -v "$PWD:/work" -v document-processing-cache:/root/.cache \
+  document-processing python /work/your_script.py
+```
+
+Your script can call `DocumentProcessor().process(filename, content, metadata)`
+and save the parsed output as JSON for the separate chunking image.
+Model weights are downloaded when conversion first needs them; the cache
+volume retains them between runs. This image has no HTTP server or exposed port.
+
+For the independent chunking image, see
+[`core/chunking/README.md`](../core/chunking/README.md#module-docker-image).
+
 ## Local owner store UI
 
 Install the optional Streamlit UI and run it on loopback:

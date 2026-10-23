@@ -30,3 +30,26 @@ chunk can be traced to its source table.
 
 The parser-chunk output is the end of this module's responsibility. Model-
 specific token limits and retrieval indexing are handled downstream.
+
+## Module Docker image
+
+Build from the repository root:
+
+```sh
+docker build -f docker/Dockerfile.chunking -t chunking .
+docker run --rm chunking
+```
+
+This image contains only `core/chunking` and Python. The module uses the
+standard library, so no model or third-party dependency is installed.
+The default command chunks sample text; success prints
+`PASS: core.chunking smoke check` and exits with code 0.
+
+Override the command to run your own script against saved parser JSON:
+
+```sh
+docker run --rm -v "$PWD:/work" chunking python /work/your_script.py
+```
+
+The script loads the JSON and calls `ChunkingProcessor().process(parsed)`.
+This image has no HTTP server or exposed port.

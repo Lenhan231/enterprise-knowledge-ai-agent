@@ -4,6 +4,9 @@ env
 __pycache__
 *.py[cod]
 .env
+.env.*
+!.env.example
+**/.owner_store
 .pytest_cache
 .mypy_cache
 .ruff_cache

@@ -1,0 +1,9 @@
+FROM python:3.11-slim
+WORKDIR /app
+
+COPY src/core/chunking ./src/core/chunking
+
+ENV PYTHONPATH="/app/src" \
+    PYTHONUNBUFFERED="1"
+
+CMD ["python", "-c", "from core.chunking.processor import ChunkingProcessor; output = ChunkingProcessor().process({'elements': [{'text': 'Docker module check.', 'metadata': {'page_number': 1}}], 'tables': []}); assert output['chunks'][0]['text'] == 'Docker module check.'; print('PASS: core.chunking smoke check')"]

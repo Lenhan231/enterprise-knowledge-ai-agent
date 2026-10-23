@@ -2,7 +2,7 @@
   "dataset": "commerce-agent-benchmarks-v1",
   "model_key": "gpt_oss_120b",
   "model": "openai/gpt-oss-120b",
-  "judge_model": "openai/gpt-oss-20b",
+  "judge_model": "RAGAS library metrics; Codex CLI gpt-5.6-luna (medium); first 9 cases manually scored",
   "summary": {
     "case_count": 75,
     "by_agent": {
@@ -38,16 +38,16 @@
     },
     "ragas_partial": {
       "faithfulness": {
-        "mean": null,
-        "scored_cases": 0
+        "mean": 0.3405,
+        "scored_cases": 57
       },
       "answer_relevancy": {
-        "mean": null,
-        "scored_cases": 0
+        "mean": 0.7828,
+        "scored_cases": 63
       },
       "context_precision": {
-        "mean": null,
-        "scored_cases": 0
+        "mean": 0.4277,
+        "scored_cases": 57
       }
     }
   },
@@ -70,15 +70,11 @@
       "total_case_seconds": 58.543,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1,
+        "answer_relevancy": 1,
+        "context_precision": 1
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
@@ -106,15 +102,11 @@
       "total_case_seconds": 31.68,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1,
+        "answer_relevancy": 1,
+        "context_precision": 1
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
@@ -140,15 +132,11 @@
       "total_case_seconds": 30.011,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1,
+        "answer_relevancy": 1,
+        "context_precision": 1
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
@@ -174,15 +162,11 @@
       "total_case_seconds": 42.176,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1,
+        "answer_relevancy": 1,
+        "context_precision": 1
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
@@ -208,15 +192,11 @@
       "total_case_seconds": 43.68,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1,
+        "answer_relevancy": 1,
+        "context_precision": 1
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
@@ -244,15 +224,11 @@
       "total_case_seconds": 37.156,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1,
+        "answer_relevancy": 1,
+        "context_precision": 1
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
@@ -282,9 +258,9 @@
       "total_case_seconds": 42.372,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1,
+        "answer_relevancy": 1,
+        "context_precision": 1
       },
       "score_errors": {
         "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
@@ -362,15 +338,11 @@
       "total_case_seconds": 27.083,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1,
+        "answer_relevancy": 1,
+        "context_precision": 1
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
@@ -396,21 +368,17 @@
       "total_case_seconds": 28.489,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.983,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "K11",
@@ -432,21 +400,17 @@
       "total_case_seconds": 32.065,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9627,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "K12",
@@ -474,21 +438,17 @@
       "total_case_seconds": 26.702,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.8095,
+        "answer_relevancy": 0.9669,
+        "context_precision": 0.8875
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "K13",
@@ -508,21 +468,17 @@
       "total_case_seconds": 28.196,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9836,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "K14",
@@ -542,21 +498,17 @@
       "total_case_seconds": 27.078,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9639,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "K15",
@@ -578,21 +530,17 @@
       "total_case_seconds": 28.757,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.9062,
+        "answer_relevancy": 0.947,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "K16",
@@ -618,21 +566,17 @@
       "total_case_seconds": 25.597,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.8947,
+        "answer_relevancy": 0.9158,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "K17",
@@ -656,21 +600,17 @@
       "total_case_seconds": 42.332,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.4444,
+        "answer_relevancy": 0.9266,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "K18",
@@ -692,21 +632,17 @@
       "total_case_seconds": 28.102,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.9,
+        "answer_relevancy": 0.9601,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "K19",
@@ -728,21 +664,17 @@
       "total_case_seconds": 27.393,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.8,
+        "answer_relevancy": 0.9894,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "K20",
@@ -770,21 +702,17 @@
       "total_case_seconds": 35.389,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.8611,
+        "answer_relevancy": 0.9834,
+        "context_precision": 0.75
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "K21",
@@ -804,21 +732,17 @@
       "total_case_seconds": 31.094,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9518,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "K22",
@@ -840,21 +764,17 @@
       "total_case_seconds": 41.181,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.5556,
+        "answer_relevancy": 0.9953,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "K23",
@@ -871,20 +791,19 @@
       "langchain_callback_events": 5,
       "scores": {
         "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "context_precision": null,
+        "answer_relevancy": 0.0
       },
       "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
       },
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "score_partial"
     },
     {
       "case_id": "K24",
@@ -910,21 +829,17 @@
       "total_case_seconds": 36.725,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8811,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "K25",
@@ -941,20 +856,19 @@
       "langchain_callback_events": 5,
       "scores": {
         "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "context_precision": null,
+        "answer_relevancy": 0.0
       },
       "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
       },
       "sql_safety_pass": null,
       "abstention_expected": true,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "score_partial"
     },
     {
       "case_id": "S01",
@@ -988,21 +902,17 @@
       "total_case_seconds": 3.614,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.997,
+        "context_precision": 0.5
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S02",
@@ -1092,21 +1002,17 @@
       "total_case_seconds": 3.879,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.96,
+        "answer_relevancy": 0.9342,
+        "context_precision": 0.5
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S03",
@@ -1140,21 +1046,17 @@
       "total_case_seconds": 3.161,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.99,
+        "context_precision": 0.5
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S04",
@@ -1232,21 +1134,17 @@
       "total_case_seconds": 3.698,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.8571,
+        "answer_relevancy": 0.9007,
+        "context_precision": 0.5
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S05",
@@ -1300,21 +1198,17 @@
       "total_case_seconds": 4.968,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9852,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S06",
@@ -1364,21 +1258,17 @@
       "total_case_seconds": 7.48,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9068,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S07",
@@ -1420,21 +1310,17 @@
       "total_case_seconds": 9.608,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.914,
+        "context_precision": 0.5
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S08",
@@ -1460,21 +1346,17 @@
       "total_case_seconds": 9.254,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": false,
       "abstention_expected": false,
       "abstention_observed": true,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S09",
@@ -1529,21 +1411,17 @@
       "total_case_seconds": 5.535,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8784,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S10",
@@ -1619,21 +1497,17 @@
       "total_case_seconds": 14.108,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8392,
+        "context_precision": 0.25
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S11",
@@ -1659,21 +1533,17 @@
       "total_case_seconds": 6.825,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7383,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": false,
       "abstention_expected": false,
       "abstention_observed": true,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S12",
@@ -1721,21 +1591,17 @@
       "total_case_seconds": 5.471,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9476,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S13",
@@ -1761,21 +1627,17 @@
       "total_case_seconds": 4.687,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7378,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": false,
       "abstention_expected": false,
       "abstention_observed": true,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S14",
@@ -1821,21 +1683,17 @@
       "total_case_seconds": 11.072,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S15",
@@ -1918,21 +1776,17 @@
       "total_case_seconds": 14.914,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9347,
+        "context_precision": 0.3333
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S16",
@@ -1978,21 +1832,17 @@
       "total_case_seconds": 11.984,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8384,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S17",
@@ -2047,21 +1897,17 @@
       "total_case_seconds": 9.759,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9757,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S18",
@@ -2114,21 +1960,17 @@
       "total_case_seconds": 11.644,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8654,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S19",
@@ -2177,21 +2019,17 @@
       "total_case_seconds": 11.277,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8346,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S20",
@@ -2217,21 +2055,17 @@
       "total_case_seconds": 4.741,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7429,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": false,
       "abstention_expected": false,
       "abstention_observed": true,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S21",
@@ -2279,21 +2113,17 @@
       "total_case_seconds": 4.64,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9967,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S22",
@@ -2359,21 +2189,17 @@
       "total_case_seconds": 10.112,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9069,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S23",
@@ -2408,21 +2234,17 @@
       "total_case_seconds": 12.584,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.5,
+        "answer_relevancy": 0.9442,
+        "context_precision": 0.5
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": false,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S24",
@@ -2456,21 +2278,17 @@
       "total_case_seconds": 2.94,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8979,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": true,
       "abstention_expected": true,
       "abstention_observed": false,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "S25",
@@ -2496,21 +2314,17 @@
       "total_case_seconds": 3.139,
       "langchain_callback_events": 5,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8838,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": false,
       "abstention_expected": true,
       "abstention_observed": true,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R01",
@@ -2543,21 +2357,17 @@
       "total_case_seconds": 45.295,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8436,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R03",
@@ -2579,20 +2389,19 @@
       "langchain_callback_events": 1,
       "scores": {
         "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "context_precision": null,
+        "answer_relevancy": 0.0
       },
       "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
       },
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "score_partial"
     },
     {
       "case_id": "R04",
@@ -2619,21 +2428,17 @@
       "total_case_seconds": 47.673,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8455,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R05",
@@ -2656,21 +2461,17 @@
       "total_case_seconds": 31.05,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8413,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R06",
@@ -2693,21 +2494,17 @@
       "total_case_seconds": 45.028,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8607,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R07",
@@ -2730,21 +2527,17 @@
       "total_case_seconds": 32.872,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8751,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R08",
@@ -2769,21 +2562,17 @@
       "total_case_seconds": 32.278,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8601,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R09",
@@ -2805,20 +2594,19 @@
       "langchain_callback_events": 1,
       "scores": {
         "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "context_precision": null,
+        "answer_relevancy": 0.0
       },
       "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
       },
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "score_partial"
     },
     {
       "case_id": "R10",
@@ -2845,21 +2633,17 @@
       "total_case_seconds": 33.428,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8746,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R11",
@@ -2882,21 +2666,17 @@
       "total_case_seconds": 45.142,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8757,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R12",
@@ -2919,21 +2699,17 @@
       "total_case_seconds": 46.328,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8627,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R13",
@@ -2956,21 +2732,17 @@
       "total_case_seconds": 41.978,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8474,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R14",
@@ -3003,21 +2775,17 @@
       "total_case_seconds": 44.154,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.7429,
+        "answer_relevancy": 0.878,
+        "context_precision": 0.6792
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R15",
@@ -3044,21 +2812,17 @@
       "total_case_seconds": 80.166,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.2414,
+        "answer_relevancy": 0.8961,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R16",
@@ -3081,21 +2845,17 @@
       "total_case_seconds": 82.6,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.874,
+        "context_precision": 0.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R17",
@@ -3122,21 +2882,17 @@
       "total_case_seconds": 32.828,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.5909,
+        "answer_relevancy": 0.834,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R18",
@@ -3167,21 +2923,17 @@
       "total_case_seconds": 30.989,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.8028,
+        "answer_relevancy": 0.7931,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R19",
@@ -3216,21 +2968,17 @@
       "total_case_seconds": 45.303,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.4054,
+        "answer_relevancy": 0.8286,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R20",
@@ -3263,21 +3011,17 @@
       "total_case_seconds": 37.986,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.6232,
+        "answer_relevancy": 0.8172,
+        "context_precision": 1.0
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R21",
@@ -3299,20 +3043,19 @@
       "langchain_callback_events": 1,
       "scores": {
         "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "context_precision": null,
+        "answer_relevancy": 0.0
       },
       "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
       },
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "score_partial"
     },
     {
       "case_id": "R22",
@@ -3344,20 +3087,19 @@
       "langchain_callback_events": 1,
       "scores": {
         "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "context_precision": null,
+        "answer_relevancy": 0.0
       },
       "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
       },
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "score_partial"
     },
     {
       "case_id": "R24",
@@ -3390,21 +3132,17 @@
       "total_case_seconds": 42.119,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.5128,
+        "answer_relevancy": 0.8103,
+        "context_precision": 0.4778
       },
-      "score_errors": {
-        "faithfulness": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "answer_relevancy": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped",
-        "context_precision": "deferred: manual scoring required; Ragas judge validation failed or scoring was skipped"
-      },
+      "score_errors": {},
       "sql_safety_pass": null,
       "abstention_expected": false,
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "generated"
+      "status": "scored"
     },
     {
       "case_id": "R25",

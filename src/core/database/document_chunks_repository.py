@@ -201,6 +201,7 @@ class DocumentChunkRepository:
         method: Literal["dense", "bm25", "hybrid"] = "hybrid",
         dense_weight: float = 1.0, bm25_weight: float = 2.0, rrf_k: int = 60,
         document_ids: list[str] | None = None,
+        metadata_filter: dict | None = None,
     ) -> list[RetrievedChunk]:
         """Compatibility boundary dispatching to the method-specific SQL modules."""
         if method not in {"dense", "bm25", "hybrid"}:
@@ -212,7 +213,7 @@ class DocumentChunkRepository:
         from core.retrieval.methods import bm25, dense, hybrid
 
         options = {"query": query, "company": company, "roles": roles,
-                   "document_ids": document_ids}
+                   "document_ids": document_ids, "metadata_filter": metadata_filter}
         if method == "dense":
             return dense.search(self, query_embedding, limit, **options)
         if method == "bm25":

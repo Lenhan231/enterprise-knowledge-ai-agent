@@ -19,6 +19,67 @@ SQL = "SELECT p.product_id FROM commerce.products AS p LIMIT 20"
 
 
 class ChatAPITest(unittest.TestCase):
+    def test_report_upload_requires_verified_analytics_identity(self):
+        report = AsyncMock()
+        report.generate_from_template.return_value = (
+            AgentResult(answer="done", agent="report"), b"# Report\n", "text/markdown; charset=utf-8",
+        )
+        with TestClient(create_app(
+            chat_agent=object(), report_agent=report, identity_resolver=lambda _request: None,
+        )) as client:
+            denied = client.post("/api/report", data={"question": "Create report"}, files={
+                "template": ("report.md", b"# Report\n", "text/markdown"),
+            })
+        self.assertEqual(denied.status_code, 403)
+        report.generate_from_template.assert_not_awaited()
+
+    def test_report_upload_returns_rendered_markdown(self):
+        report = AsyncMock()
+        report.generate_from_template.return_value = (
+            AgentResult(answer="done", agent="report"), b"# Report\n\nEvidence [S1].\n",
+            "text/markdown; charset=utf-8",
+        )
+        with TestClient(create_app(
+            chat_agent=object(), report_agent=report,
+            identity_resolver=lambda _request: ANALYST,
+        )) as client:
+            response = client.post("/api/report", data={"question": "Create report"}, files={
+                "template": ("report.md", b"# Report\n", "text/markdown"),
+            })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"# Report\n\nEvidence [S1].\n")
+        self.assertEqual(response.headers["content-disposition"], 'attachment; filename="report.md"')
+        report.generate_from_template.assert_awaited_once()
+
+    def test_report_upload_rejects_non_template(self):
+        with TestClient(create_app(
+            chat_agent=object(), report_agent=AsyncMock(),
+            identity_resolver=lambda _request: ANALYST,
+        )) as client:
+            response = client.post("/api/report", data={"question": "Create report"}, files={
+                "template": ("report.pdf", b"PDF", "application/pdf"),
+            })
+        self.assertEqual(response.status_code, 422)
+
+    def test_chat_defaults_to_reranker_and_accepts_hybrid_override(self):
+        class Agent:
+            async def run_mode(self, request, mode):
+                return AgentResult(answer=mode, agent=mode,
+                                   metadata={"retrieval_method": request.metadata["retrieval_method"]})
+
+            async def run(self, request):
+                return await self.run_mode(request, "knowledge")
+
+        with TestClient(create_app(chat_agent=Agent())) as client:
+            default = client.post("/api/chat", json={"question": "test", "agent_mode": "knowledge"})
+            hybrid = client.post("/api/chat", json={
+                "question": "test", "agent_mode": "knowledge",
+                "retrieval_method": "hybrid",
+            })
+
+        self.assertEqual(default.json()["metadata"]["retrieval_method"], "translated_hybrid_rerank")
+        self.assertEqual(hybrid.json()["metadata"]["retrieval_method"], "hybrid")
+
     def test_selected_modes_and_legacy_auto_routing(self):
         class Agent:
             def __init__(self):
@@ -45,6 +106,19 @@ class ChatAPITest(unittest.TestCase):
         self.assertEqual([response.status_code for response in responses], [200, 200, 200])
         self.assertEqual(automatic.json()["answer"], "automatic")
         self.assertEqual(invalid.status_code, 422)
+
+    def test_dashboard_mode_is_available_to_the_api(self):
+        class Agent:
+            async def run_mode(self, request, mode):
+                return AgentResult(answer=mode, agent=mode)
+
+        with TestClient(create_app(chat_agent=Agent())) as client:
+            response = client.post("/api/chat", json={
+                "question": "show inventory", "agent_mode": "dashboard",
+            })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["agent"], "dashboard")
 
     def test_default_router_handles_generic_sql_mode_with_verified_identity(self):
         repository = AsyncMock()

@@ -19,7 +19,7 @@ class FakeRAGService:
     def __init__(self):
         self.closed = False
 
-    def generate_answer(self, question):
+    def generate_answer(self, question, retrieval_method="translated_hybrid_rerank"):
         return RAGResult(answer=f"Câu trả lời cho: {question}")
 
     def close(self):

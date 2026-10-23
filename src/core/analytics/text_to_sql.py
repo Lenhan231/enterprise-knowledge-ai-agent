@@ -78,7 +78,7 @@ APPROVED_DATE_COLUMNS = frozenset({
 
 APPROVED_FUNCTIONS = frozenset({
     "ABS", "AND", "AVG", "CEIL", "COALESCE", "COUNT", "DATE_PART", "DATE_TRUNC", "EXTRACT", "FLOOR", "GREATEST",
-    "LEAST", "LOWER", "MAX", "MIN", "NULLIF", "ROUND", "STRING_AGG", "SUM", "TIMESTAMP_TRUNC", "UPPER",
+    "LEAST", "LOWER", "MAX", "MIN", "NULLIF", "OR", "ROUND", "STRING_AGG", "SUM", "TIMESTAMP_TRUNC", "UPPER",
 })
 FORBIDDEN_NODES = (exp.Command, exp.Into, exp.Lock, exp.Union, exp.Insert, exp.Update, exp.Delete, exp.Drop, exp.Create)
 

@@ -56,19 +56,19 @@ class AgentRouter:
         graph.add_edge("invalid", END)
         self.graph = graph.compile()
 
-    async def run(self, request: AgentRequest) -> AgentResult:
-        return await self._invoke(request, "auto")
+    async def run(self, request: AgentRequest, *, config=None) -> AgentResult:
+        return await self._invoke(request, "auto", config=config)
 
     async def route(self, request: AgentRequest) -> AgentResult:
         return await self.run(request)
 
-    async def run_mode(self, request: AgentRequest, mode: str) -> AgentResult:
-        if mode not in {"knowledge", "sql", "agentic"}:
+    async def run_mode(self, request: AgentRequest, mode: str, *, config=None) -> AgentResult:
+        if mode not in {"knowledge", "sql", "dashboard", "agentic"}:
             raise ValueError("Unsupported agent mode")
-        return await self._invoke(request, mode)
+        return await self._invoke(request, mode, config=config)
 
-    async def _invoke(self, request: AgentRequest, mode: str) -> AgentResult:
-        state = await self.graph.ainvoke({"request": request, "mode": mode})
+    async def _invoke(self, request: AgentRequest, mode: str, *, config=None) -> AgentResult:
+        state = await self.graph.ainvoke({"request": request, "mode": mode}, config=config)
         self.last_destination = state["route"]
         return AgentResult.model_validate(state["result"])
 
@@ -78,6 +78,8 @@ class AgentRouter:
             return {"route": "knowledge"}
         if mode == "sql":
             return {"route": "analytics"}
+        if mode == "dashboard":
+            return {"route": "dashboard"}
         if mode == "agentic":
             try:
                 prompt = (

@@ -33,6 +33,18 @@ class FakeRetrieval:
         pass
 
 
+class MethodAwareRetrieval:
+    def __init__(self):
+        self.method = None
+
+    def retrieve(self, request, method="hybrid"):
+        self.method = method
+        return RetrievalResponse(query=request.query, method=method, latency_ms=0, results=[context()])
+
+    def close(self):
+        pass
+
+
 class FakeLLM:
     def __init__(self, answer):
         self.answer = answer
@@ -65,6 +77,16 @@ def context(document_id="DOC-1", rank=1):
 
 
 class RAGServiceTest(unittest.TestCase):
+    def test_defaults_to_reranker_and_allows_explicit_hybrid(self):
+        retrieval = MethodAwareRetrieval()
+        service = RAGService(retrieval, FakeLLM("Answer [S1]"))
+
+        service.generate_answer("Question")
+        self.assertEqual(retrieval.method, "translated_hybrid_rerank")
+
+        service.retrieve_contexts("Question", retrieval_method="hybrid")
+        self.assertEqual(retrieval.method, "hybrid")
+
     def test_empty_retrieval_uses_vietnamese_message(self):
         result = RAGService(FakeRetrieval([]), FakeLLM("unused")).generate_answer("Câu hỏi")
 

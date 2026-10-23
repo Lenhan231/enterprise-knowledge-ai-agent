@@ -18,10 +18,12 @@ def search(
     *, query: str | None = None, company: str | None = None,
     roles: list[str] | None = None,
     document_ids: list[str] | None = None,
+    metadata_filter: dict | None = None,
 ) -> list[RetrievedChunk]:
     eligible, parameters = eligible_cte(
         query_embedding, query, company, roles,
         include_vector=True, include_lexical=False, document_ids=document_ids,
+        metadata_filter=metadata_filter,
     )
     parameters.extend((limit * 10, limit))
     sql = "WITH " + eligible + """,

@@ -10,12 +10,16 @@ from pathlib import Path
 from typing import Any, Literal
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+from fastapi.responses import StreamingResponse
+from io import BytesIO
 
 from core.agents.analytics_agent import AnalyticsAgent
+from core.agents.dashboard_agent import InventoryDashboardAgent
 from core.agents.intent_classifier import IntentClassifier
 from core.agents.knowledge_agent import KnowledgeAgent
+from core.agents.report_agent import ReportAgent
 from core.agents.router import AgentRouter
 from core.agents.sql_analytics_agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
 from core.database.commerce_repository import create_repository_from_env
@@ -78,7 +82,8 @@ class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     question: str = Field(min_length=1, max_length=2_000)
-    agent_mode: Literal["auto", "knowledge", "sql", "agentic"] = "auto"
+    agent_mode: Literal["auto", "knowledge", "sql", "dashboard", "agentic"] = "auto"
+    retrieval_method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank"] = "translated_hybrid_rerank"
     conversation_id: str | None = Field(default=None, max_length=128)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
@@ -100,21 +105,26 @@ class ChatRequest(BaseModel):
 
 def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None = None,
                knowledge_agent: Any | None = None, classifier: Any | None = None,
-               identity_resolver: Any | None = None, llm: Any | None = None) -> FastAPI:
+               identity_resolver: Any | None = None, llm: Any | None = None,
+               report_agent: Any | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         runtime_agent = chat_agent
+        runtime_report_agent = report_agent
         owns_agent = runtime_agent is None
         if runtime_agent is None:
             load_dotenv(REPO_ROOT / ".env", override=False)
             repository = commerce_repository or await create_repository_from_env()
             knowledge = knowledge_agent or _LazyKnowledgeAgent()
             analytics_agent = AnalyticsAgent(SQLAnalyticsAgent(repository, llm=llm))
+            runtime_report_agent = runtime_report_agent or ReportAgent(knowledge, analytics_agent, llm=llm)
             runtime_agent = AgentRouter(
                 classifier or _FallbackClassifier(), knowledge, analytics_agent,
-                dashboard_agent=_UnsupportedRoute(),
+                dashboard_agent=InventoryDashboardAgent(repository),
+                report_agent=runtime_report_agent,
             )
         application.state.chat_agent = runtime_agent
+        application.state.report_agent = runtime_report_agent
         try:
             yield
         finally:
@@ -147,7 +157,7 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
             agent_request = AgentRequest(
                 question=payload.question,
                 conversation_id=payload.conversation_id,
-                metadata=payload.metadata,
+                metadata={**payload.metadata, "retrieval_method": payload.retrieval_method},
                 user_id=identity.subject if identity else None,
                 identity=identity,
             )
@@ -162,6 +172,50 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
                 status_code=403,
                 detail="Bạn không có quyền truy cập dữ liệu phân tích.",
             ) from None
+
+    @application.post("/api/report")
+    async def report(request: Request, question: str = Form(...), template: UploadFile = File(...)):
+        try:
+            question = ChatRequest(question=question).question
+            identity = None
+            if identity_resolver is not None:
+                identity = identity_resolver(request)
+                if inspect.isawaitable(identity):
+                    identity = await identity
+            else:
+                identity = getattr(request.state, "verified_identity", None)
+                if identity is None:
+                    identity = _local_development_identity()
+            if not isinstance(identity, VerifiedIdentity) or "analytics:read" not in identity.permissions:
+                raise AnalyticsPermissionDenied("A verified analytics identity is required")
+            filename = Path(template.filename or "").name
+            extension = Path(filename).suffix.casefold()
+            if extension == ".docx":
+                if template.content_type != "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                    raise HTTPException(status_code=422, detail="DOCX content type is required")
+            elif extension == ".md":
+                if template.content_type not in {"text/markdown", "text/plain", "application/octet-stream"}:
+                    raise HTTPException(status_code=422, detail="Markdown content type is required")
+            else:
+                raise HTTPException(status_code=422, detail="Template must be a DOCX or Markdown file")
+            content = await template.read(10 * 1024 * 1024 + 1)
+            agent_request = AgentRequest(question=question.strip(), user_id=identity.subject, identity=identity)
+            result, payload, media_type = await request.app.state.report_agent.generate_from_template(
+                agent_request, filename, content,
+            )
+            return StreamingResponse(BytesIO(payload), media_type=media_type, headers={
+                "Content-Disposition": f'attachment; filename="report{extension}"',
+                "X-Report-Status": "generated",
+            })
+        except AnalyticsPermissionDenied:
+            raise HTTPException(status_code=403, detail="Verified analytics permission is required") from None
+        except HTTPException:
+            raise
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from None
+        except Exception as error:
+            LOGGER.error("api_report_failed error_type=%s", type(error).__name__)
+            raise HTTPException(status_code=503, detail="Report generation is temporarily unavailable") from None
         except Exception as error:
             LOGGER.error("api_chat_failed error_type=%s", type(error).__name__)
             raise HTTPException(

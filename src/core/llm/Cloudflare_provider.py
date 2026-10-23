@@ -45,6 +45,7 @@ class CloudflareProvider(LLMInterface):
             "messages": [{"role": "user", "content": prompt}],
             "temperature": self.temperature,
             "max_tokens": 1000,
+            "chat_template_kwargs": {"enable_thinking": False},
         }).encode("utf-8")
         request = Request(
             self.endpoint,
@@ -69,9 +70,15 @@ class CloudflareProvider(LLMInterface):
             raise RuntimeError("Cloudflare Workers AI returned invalid JSON") from error
 
         try:
-            answer = result["choices"][0]["message"]["content"]
+            choice = result["choices"][0]
+            message = choice["message"]
+            answer = message.get("content")
         except (KeyError, IndexError, TypeError) as error:
             raise RuntimeError("Cloudflare Workers AI response did not contain a chat completion") from error
         if not isinstance(answer, str) or not answer.strip():
-            raise RuntimeError("Cloudflare Workers AI returned empty output")
+            raise RuntimeError(
+                "Cloudflare Workers AI returned empty output "
+                f"(finish_reason={choice.get('finish_reason')!r}, "
+                f"message_fields={sorted(message)})"
+            )
         return answer.strip()

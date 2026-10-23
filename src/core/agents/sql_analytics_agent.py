@@ -45,7 +45,8 @@ def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analyti
     metadata.setdefault("ok", bool(payload.get("ok", False)))
     if payload.get("limitations"):
         metadata["limitations"] = list(payload["limitations"])
-    data = {key: value for key, value in payload.items() if key not in {"answer", "evidence", "metadata"}}
+    data = {key: value for key, value in payload.items()
+            if key not in {"answer", "evidence", "metadata", "sql", "attempted_sql", "parameters"}}
     answer = payload.get("answer")
     if not isinstance(answer, str) or not answer.strip():
         answer = "Query completed." if payload.get("ok") else "The analytics request could not be completed."

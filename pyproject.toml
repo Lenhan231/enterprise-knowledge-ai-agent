@@ -38,6 +38,7 @@ dependencies = [
     "streamlit>=1.50,<2.0",
     "ragas>=0.4.3",
     "langchain-google-vertexai>=3.2.4",
+    "python-docx>=1.2,<2",
 ]
 
 [project.scripts]

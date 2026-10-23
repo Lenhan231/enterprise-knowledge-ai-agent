@@ -80,7 +80,11 @@ class RAGService:
         limit: int = 5,
         company: str | None = None,
         roles: list[str] | None = None,
-        retrieval_method: str = "dense",
+        retrieval_method: str = "translated_hybrid_rerank",
+        metadata_filter: dict | None = None,
+        document_ids: list[str] | None = None,
+        query_language: str = "auto",
+        document_languages: dict[str, str] | None = None,
     ) -> list[dict]:
         request = RetrievalRequest(query=question, top_k=limit)
         parameters = inspect.signature(self.retrieval_service.retrieve).parameters
@@ -95,11 +99,20 @@ class RAGService:
             options["roles"] = roles
         if "method" in parameters:
             options["method"] = retrieval_method
+        for name, value in (
+            ("metadata_filter", metadata_filter),
+            ("document_ids", document_ids),
+            ("query_language", query_language),
+            ("document_languages", document_languages),
+        ):
+            if name in parameters and value is not None:
+                options[name] = value
         retrieved = self.retrieval_service.retrieve(request, **options)
 
         return [
             {
                 "document_name": context.source,
+                "chunk_id": getattr(context, "chunk_id", None),
                 "chunk_index": context.location.chunk_index,
                 "content": context.text,
                 "metadata": context.metadata,
@@ -108,6 +121,7 @@ class RAGService:
                 "similarity_score": context.score,
                 "retrieval_score": context.score,
                 "retrieval_method": getattr(context, "retrieval_method", retrieved.method),
+                "retrieval_details": getattr(retrieved, "retrieval_details", {}),
                 "source_id": f"S{index}",
             }
             for index, context in enumerate(retrieved.results, start=1)
@@ -119,7 +133,11 @@ class RAGService:
         limit: int = 5,
         company: str | None = None,
         roles: list[str] | None = None,
-        retrieval_method: str = "dense",
+        retrieval_method: str = "translated_hybrid_rerank",
+        metadata_filter: dict | None = None,
+        document_ids: list[str] | None = None,
+        query_language: str = "auto",
+        document_languages: dict[str, str] | None = None,
     ) -> RAGResult:
         contexts = self.retrieve_contexts(
             question,
@@ -127,6 +145,10 @@ class RAGService:
             company=company,
             roles=roles,
             retrieval_method=retrieval_method,
+            metadata_filter=metadata_filter,
+            document_ids=document_ids,
+            query_language=query_language,
+            document_languages=document_languages,
         )
         return self.generate_from_contexts(question, contexts)
 

@@ -1,0 +1,364 @@
+{
+  "schema_version": "1.0",
+  "principle": "Static dashboard outlines only. The agent chooses an approved outline and supplies bounded data/insights; it must not invent arbitrary page structure, HTML, SQL, or chart types.",
+  "global_rules": [
+    "All numeric values must originate from validated read-only analytics results.",
+    "Default current-state inventory requests to the latest available snapshot; current available snapshot in this dataset is 2022-12-31.",
+    "Never aggregate stock_on_hand across snapshots unless snapshot_date is part of the grouping.",
+    "Show date coverage and limitations when users ask about current/2025-2026 figures.",
+    "The commerce dataset does not confirm a currency unit; do not display $/VND unless configured and verified.",
+    "Treat simulated policy thresholds from VietStyle documents as drafts requiring human approval."
+  ],
+  "outlines": [
+    {
+      "id": "executive_overview",
+      "title": "Executive Overview",
+      "use_cases": [
+        "business overview",
+        "KPI summary",
+        "executive decision support"
+      ],
+      "filters": [
+        {
+          "id": "date_range",
+          "source": "commerce.sales.date",
+          "required": true
+        },
+        {
+          "id": "region",
+          "source": "commerce.geography.region",
+          "required": false
+        }
+      ],
+      "sections": [
+        {
+          "id": "kpi_cards",
+          "component": "static_kpi_row",
+          "metrics": [
+            {
+              "id": "revenue",
+              "source": "commerce.sales.revenue",
+              "aggregation": "SUM"
+            },
+            {
+              "id": "cogs",
+              "source": "commerce.sales.cogs",
+              "aggregation": "SUM"
+            },
+            {
+              "id": "revenue_minus_cogs",
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)-SUM(cogs)"
+            },
+            {
+              "id": "orders",
+              "source": "commerce.orders.order_id",
+              "aggregation": "COUNT"
+            }
+          ]
+        },
+        {
+          "id": "monthly_revenue_cogs",
+          "component": "line_chart",
+          "x": "month",
+          "series": [
+            "revenue",
+            "cogs"
+          ],
+          "source": "commerce.sales",
+          "note": "Display only if date_range spans more than one month."
+        },
+        {
+          "id": "regional_performance",
+          "component": "bar_chart",
+          "x": "region",
+          "y": "net_sales",
+          "source_tables": [
+            "commerce.orders",
+            "commerce.order_items",
+            "commerce.geography"
+          ],
+          "formula": "SUM(quantity*unit_price-discount_amount)"
+        },
+        {
+          "id": "key_findings",
+          "component": "fixed_insight_list",
+          "max_items": 3
+        },
+        {
+          "id": "limitations",
+          "component": "fixed_source_coverage_note"
+        }
+      ]
+    },
+    {
+      "id": "sales_performance",
+      "title": "Sales Performance",
+      "use_cases": [
+        "sales trend",
+        "category ranking",
+        "revenue and cost analysis"
+      ],
+      "filters": [
+        {
+          "id": "date_range",
+          "source": "commerce.sales.date",
+          "required": true
+        },
+        {
+          "id": "category",
+          "source": "commerce.products.category",
+          "required": false
+        },
+        {
+          "id": "region",
+          "source": "commerce.geography.region",
+          "required": false
+        }
+      ],
+      "sections": [
+        {
+          "id": "kpi_cards",
+          "component": "static_kpi_row",
+          "metrics": [
+            "revenue",
+            "cogs",
+            "revenue_minus_cogs"
+          ]
+        },
+        {
+          "id": "revenue_over_time",
+          "component": "line_chart",
+          "x": "month",
+          "series": [
+            "revenue",
+            "cogs"
+          ],
+          "source": "commerce.sales"
+        },
+        {
+          "id": "category_sales",
+          "component": "horizontal_bar_chart",
+          "x": "category",
+          "y": "net_sales",
+          "source_tables": [
+            "commerce.orders",
+            "commerce.order_items",
+            "commerce.products"
+          ]
+        },
+        {
+          "id": "region_sales",
+          "component": "bar_chart",
+          "x": "region",
+          "y": "net_sales",
+          "source_tables": [
+            "commerce.orders",
+            "commerce.order_items",
+            "commerce.geography"
+          ]
+        },
+        {
+          "id": "notes",
+          "component": "fixed_limitation_note",
+          "text": "Metric definitions and currency unit must be disclosed."
+        }
+      ]
+    },
+    {
+      "id": "inventory_control",
+      "title": "Inventory Control & Exceptions",
+      "use_cases": [
+        "stockout",
+        "overstock",
+        "inventory snapshot",
+        "inventory exceptions"
+      ],
+      "filters": [
+        {
+          "id": "snapshot_date",
+          "source": "commerce.inventory.snapshot_date",
+          "default": "latest_available",
+          "required": true
+        },
+        {
+          "id": "category",
+          "source": "commerce.inventory.category",
+          "required": false
+        }
+      ],
+      "sections": [
+        {
+          "id": "kpi_cards",
+          "component": "static_kpi_row",
+          "metrics": [
+            "sku_count",
+            "stockout_rate",
+            "overstock_rate",
+            "mean_fill_rate",
+            "high_days_of_supply_count"
+          ]
+        },
+        {
+          "id": "stockout_by_category",
+          "component": "bar_chart",
+          "x": "category",
+          "y": "stockout_rate",
+          "source": "commerce.inventory",
+          "aggregation": "fraction(stockout_flag)",
+          "group_by": [
+            "snapshot_date",
+            "category"
+          ]
+        },
+        {
+          "id": "inventory_flags",
+          "component": "stacked_bar_chart",
+          "x": "category",
+          "series": [
+            "stockout_flag_count",
+            "overstock_flag_count",
+            "both_flags_count"
+          ],
+          "source": "commerce.inventory"
+        },
+        {
+          "id": "exception_table",
+          "component": "data_table",
+          "columns": [
+            "product_id",
+            "product_name",
+            "category",
+            "stock_on_hand",
+            "days_of_supply",
+            "stockout_flag",
+            "overstock_flag",
+            "reorder_flag"
+          ],
+          "sort": "days_of_supply desc",
+          "row_limit": 25
+        },
+        {
+          "id": "policy_note",
+          "component": "fixed_limitation_note",
+          "text": "Policy thresholds are simulation drafts; snapshot coverage ends 2022-12-31."
+        }
+      ]
+    },
+    {
+      "id": "digital_traffic",
+      "title": "Digital Traffic",
+      "use_cases": [
+        "web analytics",
+        "traffic source analysis"
+      ],
+      "filters": [
+        {
+          "id": "date_range",
+          "source": "commerce.web_traffic.date",
+          "required": true
+        },
+        {
+          "id": "traffic_source",
+          "source": "commerce.web_traffic.traffic_source",
+          "required": false
+        }
+      ],
+      "sections": [
+        {
+          "id": "kpi_cards",
+          "component": "static_kpi_row",
+          "metrics": [
+            "sessions",
+            "unique_visitors",
+            "page_views",
+            "average_bounce_rate"
+          ]
+        },
+        {
+          "id": "sessions_over_time",
+          "component": "line_chart",
+          "x": "month",
+          "y": "sessions",
+          "source": "commerce.web_traffic"
+        },
+        {
+          "id": "traffic_source_share",
+          "component": "bar_chart",
+          "x": "traffic_source",
+          "y": "sessions",
+          "source": "commerce.web_traffic"
+        },
+        {
+          "id": "limitations",
+          "component": "fixed_source_coverage_note"
+        }
+      ]
+    },
+    {
+      "id": "returns_fulfillment",
+      "title": "Returns & Fulfillment",
+      "use_cases": [
+        "returns analysis",
+        "delivery performance",
+        "shipping fees"
+      ],
+      "filters": [
+        {
+          "id": "date_range",
+          "source": "commerce.orders.order_date",
+          "required": true
+        },
+        {
+          "id": "region",
+          "source": "commerce.geography.region",
+          "required": false
+        }
+      ],
+      "sections": [
+        {
+          "id": "kpi_cards",
+          "component": "static_kpi_row",
+          "metrics": [
+            "return_count",
+            "refund_total",
+            "average_delivery_days",
+            "shipping_fee_total"
+          ]
+        },
+        {
+          "id": "returns_by_reason",
+          "component": "bar_chart",
+          "x": "return_reason",
+          "y": "return_count",
+          "source": "commerce.returns"
+        },
+        {
+          "id": "delivery_by_region",
+          "component": "bar_chart",
+          "x": "region",
+          "y": "average_delivery_days",
+          "source_tables": [
+            "commerce.orders",
+            "commerce.shipments",
+            "commerce.geography"
+          ]
+        },
+        {
+          "id": "exceptions",
+          "component": "data_table",
+          "columns": [
+            "return_reason",
+            "return_count",
+            "refund_total"
+          ],
+          "row_limit": 20
+        },
+        {
+          "id": "limitations",
+          "component": "fixed_source_coverage_note"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+/src/core/evaluation/evidence_metrics.py text eol=lf
+/scripts/retrieval/evaluate_fresh_reviewed_reranker.py text eol=lf
+/scripts/retrieval/evaluate_reranker_source_context.py text eol=lf
+/src/core/retrieval/methods/translated_hybrid.py text eol=lf
+/scripts/retrieval/fresh_translated_candidates.py text eol=lf
+/artifacts/evaluation/colab-fresh-reviewed-v1/**/*.json text eol=lf
+/artifacts/evaluation/colab-fresh-reviewed-v1/**/*.md text eol=lf
+/artifacts/evaluation/colab-fresh-reviewed-v1/**/*.txt text eol=lf
+/artifacts/evaluation/colab-translated-hybrid-fresh-v1/**/*.json text eol=lf
+/artifacts/evaluation/colab-translated-hybrid-fresh-v1/**/*.md text eol=lf
+/artifacts/evaluation/colab-translated-hybrid-fresh-v1/**/*.txt text eol=lf
+/artifacts/evaluation/vietstyle-bilingual-20261019/dense-evidence-benchmark-v1/**/*.json text eol=lf
+/artifacts/evaluation/vietstyle-bilingual-20261019/dense-evidence-benchmark-v1/**/*.jsonl text eol=lf

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import json
 from typing import Any
 
 import numpy as np
@@ -39,6 +40,7 @@ def eligible_cte(
     include_vector: bool,
     include_lexical: bool,
     document_ids: list[str] | None = None,
+    metadata_filter: dict[str, Any] | None = None,
 ) -> tuple[str, list[Any]]:
     """Build the common ready-document and ACL filter before any ranking limit."""
     parameters: list[Any] = []
@@ -64,6 +66,9 @@ def eligible_cte(
     if document_ids is not None:
         filters += " AND d.document_id = ANY(%s::text[])"
         parameters.append(document_ids)
+    if metadata_filter:
+        filters += " AND c.metadata @> %s::jsonb"
+        parameters.append(json.dumps(metadata_filter, ensure_ascii=False, sort_keys=True))
     lexical_field = ", to_tsvector('simple', c.content) AS document_vector" if include_lexical else ""
     cte = f"""
         eligible AS MATERIALIZED (

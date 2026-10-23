@@ -21,7 +21,7 @@ class FakeEmbeddings(Embeddings):
 
 class EmbeddingServiceTest(unittest.TestCase):
     def setUp(self):
-        self.service = EmbeddingService(backend=FakeEmbeddings())
+        self.service = EmbeddingService("sentence-transformers/all-MiniLM-L6-v2", backend=FakeEmbeddings())
 
     def test_embed_documents_delegates_as_a_batch(self):
         self.assertEqual(self.service.embed_documents(["a", "abcd"]), [[1.0], [4.0]])

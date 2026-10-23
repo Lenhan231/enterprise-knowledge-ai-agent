@@ -24,6 +24,7 @@ class KnowledgeAgent(BaseAgent):
         result = await asyncio.to_thread(
             self.rag.generate_answer,
             request.question,
+            retrieval_method=request.metadata.get("retrieval_method", "translated_hybrid_rerank"),
         )
         cited = set(result.source_ids)
 
@@ -34,11 +35,13 @@ class KnowledgeAgent(BaseAgent):
                 source=context["document_name"],
                 content=context["content"],
                 metadata={
+                    **context["metadata"],
                     "chunk_index": context["chunk_index"],
                     "similarity_score": (
                         context["similarity_score"]
                     ),
-                    **context["metadata"],
+                    "retrieval_method": context.get("retrieval_method", "translated_hybrid_rerank"),
+                    "retrieval_details": context.get("retrieval_details", {}),
                 },
             )
             for context in result.contexts

@@ -7,15 +7,11 @@ Optional: evaluation/reference_answers.json mapping Q01..Q24 -> verified answer.
 import asyncio
 import csv
 import json
-import os
 import re
 from pathlib import Path
 
-from openai import AsyncOpenAI
-from ragas.llms import llm_factory
-from ragas.embeddings.base import embedding_factory
-from ragas.metrics.collections import Faithfulness, AnswerRelevancy, ContextPrecision
 from dotenv import load_dotenv
+from evaluation.ragas_judge import build_ragas_metrics
 
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env")
@@ -45,31 +41,7 @@ async def main():
     references = load_verified_references()
     if len(data["results"]) != 24:
         raise ValueError("Benchmark artifact is not the expected 24-case dataset")
-    gemini_key = os.getenv("GEMINI_API_KEY")
-    if not gemini_key:
-        raise RuntimeError("GEMINI_API_KEY is required for the RAGAS judge")
-    faithfulness_model = os.getenv("RAGAS_FAITHFULNESS_MODEL", "gemini-3.1-flash-lite")
-    judge_model = os.getenv("RAGAS_JUDGE_MODEL", "gemini-3.1-flash-lite")
-    context_precision_model = os.getenv("RAGAS_CONTEXT_PRECISION_MODEL", "gemini-3.1-flash-lite")
-    gemini_client = AsyncOpenAI(
-        api_key=gemini_key,
-        base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-        timeout=60,
-    )
-    metric_judges = {
-        "faithfulness": llm_factory(faithfulness_model, client=gemini_client, max_tokens=1024),
-        "answer_relevancy": llm_factory(judge_model, client=gemini_client, max_tokens=1024),
-        "context_precision": llm_factory(context_precision_model, client=gemini_client, max_tokens=1024),
-    }
-    embeddings = embedding_factory(
-        "huggingface",
-        model=os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"),
-    )
-    metrics = {
-        "faithfulness": Faithfulness(llm=metric_judges["faithfulness"]),
-        "answer_relevancy": AnswerRelevancy(llm=metric_judges["answer_relevancy"], embeddings=embeddings),
-        "context_precision": ContextPrecision(llm=metric_judges["context_precision"]),
-    }
+    metrics = build_ragas_metrics()
     records = []
     if OUTPUT.exists():
         with OUTPUT.open(newline="", encoding="utf-8-sig") as f:

@@ -1,0 +1,4097 @@
+{
+  "dataset": "commerce-agent-benchmarks-v1",
+  "model_key": "qwen3",
+  "model": "qwen/qwen3.8-27b",
+  "judge_model": "Luna 5.6 Medium (Codex CLI)",
+  "run_date": "2026-10-23",
+  "evaluation_config": {
+    "cases_per_agent": 25,
+    "agents": [
+      "knowledge",
+      "sql",
+      "report"
+    ],
+    "metrics": [
+      "faithfulness",
+      "answer_relevancy",
+      "context_precision"
+    ],
+    "retry_policy": "one retry for transient failures; two attempts maximum"
+  },
+  "summary": {
+    "case_count": 37,
+    "by_agent": {
+      "knowledge": {
+        "case_count": 25,
+        "answered_cases": 25,
+        "run_errors": 0,
+        "mean_agent_latency_seconds": 43.461,
+        "latency_cases": 25,
+        "ragas": {
+          "faithfulness": {
+            "mean": 0.9909,
+            "scored_cases": 22,
+            "eligible_cases": 22,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "answer_relevancy": {
+            "mean": 0.8408,
+            "scored_cases": 25,
+            "eligible_cases": 25,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "context_precision": {
+            "mean": 1.0,
+            "scored_cases": 22,
+            "eligible_cases": 22,
+            "coverage": 1.0,
+            "score_errors": 0
+          }
+        }
+      },
+      "sql": {
+        "case_count": 12,
+        "answered_cases": 12,
+        "run_errors": 0,
+        "mean_agent_latency_seconds": 6.865,
+        "latency_cases": 12,
+        "ragas": {
+          "faithfulness": {
+            "mean": 0.25,
+            "scored_cases": 12,
+            "eligible_cases": 12,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "answer_relevancy": {
+            "mean": 0.7915,
+            "scored_cases": 12,
+            "eligible_cases": 12,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "context_precision": {
+            "mean": 0.0625,
+            "scored_cases": 12,
+            "eligible_cases": 12,
+            "coverage": 1.0,
+            "score_errors": 0
+          }
+        }
+      }
+    },
+    "ragas": {
+      "faithfulness": {
+        "mean": 0.7294,
+        "scored_cases": 34,
+        "eligible_cases": 34,
+        "coverage": 1.0,
+        "score_errors": 0
+      },
+      "answer_relevancy": {
+        "mean": 0.8248,
+        "scored_cases": 37,
+        "eligible_cases": 37,
+        "coverage": 1.0,
+        "score_errors": 0
+      },
+      "context_precision": {
+        "mean": 0.6691,
+        "scored_cases": 34,
+        "eligible_cases": 34,
+        "coverage": 1.0,
+        "score_errors": 0
+      }
+    },
+    "sql": {
+      "safety_pass_rate": 0.5833,
+      "safety_cases": 12,
+      "semantic_correctness_rate": 0.75,
+      "semantic_cases": 12,
+      "abstention_accuracy": 0.5833,
+      "abstention_cases": 12
+    },
+    "hallucination_rate": null,
+    "hallucination_note": "Requires manual claim-level review; not inferred from faithfulness."
+  },
+  "results": [
+    {
+      "case_id": "K01",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Mã tài liệu, phiên bản, ngày ban hành và trạng thái phê duyệt của Bộ chính sách quản lý tồn kho là gì?",
+      "answer": "Mã tài liệu của Bộ chính sách quản lý tồn kho là INV-MAN-001, phiên bản là v1.0 và ngày ban hành là 16/10/2026 [S1]. Các nguồn được cung cấp không chứa thông tin về \"trạng thái phê duyệt\" cụ thể cho tài liệu này, do đó không đủ thông tin để trả lời phần này [S1].",
+      "contexts": [
+        "VIETSTYLE COMMERCE\nBỘ CHÍNH SÁCH QUẢN LÝ TỒN KHO\nMã tài liệu: INV-MAN-001Phiên bản: v1.0 | 16/10/2026Phạm vi: SKU thời trang, streetwear và outdoor; bán lẻ / thương mại điện tử"
+      ],
+      "reference": "[\"INV-MAN-001\", \"v1.0\", \"16/10/2026\", \"tài liệu mô phỏng / chưa được phê duyệt chính thức\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 47.45,
+      "total_case_seconds": 238.818,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8427,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 47.45,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 57.854,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 86.979,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 46.534,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K02",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Snapshot tồn kho mới nhất trong bộ dữ liệu là ngày nào và có bao nhiêu SKU có bản ghi tại ngày đó?",
+      "answer": "Snapshot tồn kho mới nhất trong bộ dữ liệu là ngày 2022-12-31 và có 424 SKU có bản ghi tại ngày đó [S1].",
+      "contexts": [
+        "2. Phạm vi và cơ sở dữ liệu\nDataset có 2,412 SKU trong products.csv và 60,247 bản ghi inventory.csv, bao phủ 2012-07-31 đến 2022-12-31. Snapshot mới nhất là 2022-12-31 với 424 SKU có bản ghi. Nhóm hàng quan sát gồm Streetwear, Outdoor, Casual và GenZ. Sales.csv bao phủ 2012-07-04 đến 2022-12-31. Dữ liệu trả về, đơn hàng, khuyến mãi và giao hàng có thể dùng để phân tích nguyên nhân nhưng không thay thế sổ cái tồn kho.\nDataset không cung cấp đầy đủ purchase orders inbound, MOQ, lead time nhà cung cấp, backorder, vị trí kho hoặc đơn vị tiền tệ được xác nhận. Vì vậy, các trường này phải được bổ sung trước khi triển khai chính sách mua hàng trong môi trường thật."
+      ],
+      "reference": "[\"2022-12-31\", \"424 SKU\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 34.886,
+      "total_case_seconds": 169.057,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9989,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 34.886,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 40.858,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 55.083,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 38.23,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K03",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Ai chịu trách nhiệm về KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách?",
+      "answer": "Inventory Manager chịu trách nhiệm về KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách [S1].",
+      "contexts": [
+        "Section: 3. Vai trò và trách nhiệm\nColumns: Vai trò | Trách nhiệm chính\nRow 1: Vai trò: Inventory Manager | Trách nhiệm chính: Chịu trách nhiệm KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách.\nRow 2: Vai trò: Inventory Controller / Planner | Trách nhiệm chính: Tính nhu cầu, ROP, target stock; rà soát cảnh báo và lập đề xuất PO.\nRow 3: Vai trò: Procurement | Trách nhiệm chính: Quản lý nhà cung cấp, MOQ, lead time, PO và xác nhận lịch giao.\nRow 4: Vai trò: Warehouse Supervisor | Trách nhiệm chính: Nhận hàng, put-away, kiểm kê, điều tra chênh lệch và kỷ luật thao tác.\nRow 5: Vai trò: Returns QA | Trách nhiệm chính: Kiểm tra hàng trả về; phân loại bán lại, sửa chữa, cách ly hoặc loại bỏ.\nRow 6: Vai trò: Finance | Trách nhiệm chính: Đối chiếu giá vốn, điều chỉnh giá trị tồn và phê duyệt ghi giảm theo thẩm quyền.\nRow 7: Vai trò: System / Data Owner | Trách nhiệm chính: Quản lý quyền truy cập, định nghĩa trường dữ liệu, nhật ký và kiểm soát AI."
+      ],
+      "reference": "[\"Inventory Manager\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 58.813,
+      "total_case_seconds": 218.033,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8513,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 58.813,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 41.123,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 91.333,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 26.764,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K04",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Vai trò nào tính nhu cầu, ROP, target stock và rà soát cảnh báo tồn kho?",
+      "answer": "Vai trò Inventory Controller / Planner chịu trách nhiệm tính nhu cầu, ROP, target stock; rà soát cảnh báo và lập đề xuất PO [S1].",
+      "contexts": [
+        "Section: 3. Vai trò và trách nhiệm\nColumns: Vai trò | Trách nhiệm chính\nRow 1: Vai trò: Inventory Manager | Trách nhiệm chính: Chịu trách nhiệm KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách.\nRow 2: Vai trò: Inventory Controller / Planner | Trách nhiệm chính: Tính nhu cầu, ROP, target stock; rà soát cảnh báo và lập đề xuất PO.\nRow 3: Vai trò: Procurement | Trách nhiệm chính: Quản lý nhà cung cấp, MOQ, lead time, PO và xác nhận lịch giao.\nRow 4: Vai trò: Warehouse Supervisor | Trách nhiệm chính: Nhận hàng, put-away, kiểm kê, điều tra chênh lệch và kỷ luật thao tác.\nRow 5: Vai trò: Returns QA | Trách nhiệm chính: Kiểm tra hàng trả về; phân loại bán lại, sửa chữa, cách ly hoặc loại bỏ.\nRow 6: Vai trò: Finance | Trách nhiệm chính: Đối chiếu giá vốn, điều chỉnh giá trị tồn và phê duyệt ghi giảm theo thẩm quyền.\nRow 7: Vai trò: System / Data Owner | Trách nhiệm chính: Quản lý quyền truy cập, định nghĩa trường dữ liệu, nhật ký và kiểm soát AI."
+      ],
+      "reference": "[\"Inventory Controller / Planner\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 62.157,
+      "total_case_seconds": 207.561,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8522,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 62.157,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 58.407,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 62.611,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 24.386,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K05",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Công thức Inventory Position được định nghĩa thế nào?",
+      "answer": "Công thức Inventory Position được định nghĩa là: Inventory Position = On-hand + Open PO − Backorder [S1].",
+      "contexts": [
+        "03 | Quy tắc bổ sung hàng Thông số mặc định chỉ để mô phỏng; cần thay bằng dữ liệu nhà cung cấp. Công thức Inventory Position = On-hand + Open PO − Backorder ROP = Daily Demand × (Lead Time + Safety Days) Target = Daily Demand × (Lead Time + Safety Days + Review Period) THAM SỐ KHỞI TẠO Lead time: 14 ngày Safety stock: 7 ngày Review period: 7 ngày Reorder trigger: Inventory Position ≤ ROP Nếu có stockout/service signal nhưng calculated days of supply >120 ngày → DATA CONFLICT. Khóa đề xuất PO tự động, xác minh giao dịch và nhu cầu trước khi mua. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 4"
+      ],
+      "reference": "[\"On-hand + Open PO − Backorder\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 63.263,
+      "total_case_seconds": 187.086,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9995,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 63.263,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 37.654,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 57.026,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 29.142,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K06",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Công thức Reorder Point (ROP) và các tham số mô phỏng mặc định là gì?",
+      "answer": "Công thức tính Reorder Point (ROP) là Nhu cầu/ngày nhân với tổng của Lead time và Safety days [S2].\nCác tham số mô phỏng mặc định bao gồm lead time là 14 ngày, safety stock là 7 ngày và review period là 7 ngày [S1][S2].",
+      "contexts": [
+        "03 | Quy tắc bổ sung hàng Thông số mặc định chỉ để mô phỏng; cần thay bằng dữ liệu nhà cung cấp. Công thức Inventory Position = On-hand + Open PO − Backorder ROP = Daily Demand × (Lead Time + Safety Days) Target = Daily Demand × (Lead Time + Safety Days + Review Period) THAM SỐ KHỞI TẠO Lead time: 14 ngày Safety stock: 7 ngày Review period: 7 ngày Reorder trigger: Inventory Position ≤ ROP Nếu có stockout/service signal nhưng calculated days of supply >120 ngày → DATA CONFLICT. Khóa đề xuất PO tự động, xác minh giao dịch và nhu cầu trước khi mua. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 4",
+        "4. Chính sách bổ sung hàng\nMô hình tham chiếu cho SKU có nhu cầu tương đối ổn định:\nInventory position = On-hand + Open PO − Backorder\nReorder Point (ROP) = Nhu cầu/ngày × (Lead time + Safety days)\nTarget Stock = Nhu cầu/ngày × (Lead time + Safety days + Review period)\nGiả định khởi tạo trong bộ mô phỏng: lead time 14 ngày, safety stock 7 ngày, review period 7 ngày. Các giá trị này có thể chỉnh theo nhà cung cấp / nhóm hàng; không phải lead time được suy ra từ dữ liệu.\nRà soát đề xuất bổ sung ít nhất mỗi tuần và trước chiến dịch khuyến mãi.\nTrước khi phát hành PO, kiểm tra tồn kho khả dụng, PO đang mở, hàng đang giữ, backorder, MOQ, ngân sách và lịch giao.\nNếu có stockout signal cùng days of supply > 120 ngày, không tự động mua thêm; mở điều tra P1.\nKhông đặt hàng bổ sung cho SKU vượt 120 ngày tồn kho trừ khi có phê duyệt chiến dịch, cam kết khách hàng hoặc lý do được ghi nhận.\nMọi PO khẩn cấp phải ghi rõ nguyên nhân, ảnh hưởng dịch vụ và người phê duyệt."
+      ],
+      "reference": "[\"ROP = nhu cầu/ngày × (Lead time + Safety days)\", \"lead time 14 ngày\", \"safety days 7 ngày\", \"tham số là giả định mô phỏng\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 48.925,
+      "total_case_seconds": 225.033,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9925,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 48.925,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 60.743,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 79.649,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 35.714,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K07",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Target Stock được tính theo công thức nào và review period mặc định là bao lâu?",
+      "answer": "Target Stock được tính theo công thức: Nhu cầu/ngày × (Lead time + Safety days + Review period) [S1].\nReview period mặc định (tham số khởi tạo) là 7 ngày [S1].",
+      "contexts": [
+        "4. Chính sách bổ sung hàng\nMô hình tham chiếu cho SKU có nhu cầu tương đối ổn định:\nInventory position = On-hand + Open PO − Backorder\nReorder Point (ROP) = Nhu cầu/ngày × (Lead time + Safety days)\nTarget Stock = Nhu cầu/ngày × (Lead time + Safety days + Review period)\nGiả định khởi tạo trong bộ mô phỏng: lead time 14 ngày, safety stock 7 ngày, review period 7 ngày. Các giá trị này có thể chỉnh theo nhà cung cấp / nhóm hàng; không phải lead time được suy ra từ dữ liệu.\nRà soát đề xuất bổ sung ít nhất mỗi tuần và trước chiến dịch khuyến mãi.\nTrước khi phát hành PO, kiểm tra tồn kho khả dụng, PO đang mở, hàng đang giữ, backorder, MOQ, ngân sách và lịch giao.\nNếu có stockout signal cùng days of supply > 120 ngày, không tự động mua thêm; mở điều tra P1.\nKhông đặt hàng bổ sung cho SKU vượt 120 ngày tồn kho trừ khi có phê duyệt chiến dịch, cam kết khách hàng hoặc lý do được ghi nhận.\nMọi PO khẩn cấp phải ghi rõ nguyên nhân, ảnh hưởng dịch vụ và người phê duyệt."
+      ],
+      "reference": "[\"Daily demand × (Lead time + Safety days + Review period)\", \"review period 7 ngày\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 70.765,
+      "total_case_seconds": 237.075,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9859,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 70.765,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 39.857,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 87.882,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 38.571,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K08",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Điều kiện nào kích hoạt DATA CONFLICT và cần làm gì trước khi đề xuất mua hàng?",
+      "answer": "Điều kiện kích hoạt trạng thái DATA CONFLICT là khi có tín hiệu thiếu hàng (stockout signal) đồng thời với số ngày cung cấp tính toán (calculated days of supply) lớn hơn 120 ngày [S1]. Tín hiệu thiếu hàng được xác định khi số ngày thiếu hàng (stockout_days) lớn hơn hoặc bằng 1, hoặc tỷ lệ lấp đầy (fill_rate) nhỏ hơn 95%, hoặc số ngày cung cấp tính toán nhỏ hơn hoặc bằng 14 ngày [S2].\n\nTrước khi đề xuất mua hàng, cần thực hiện các bước sau:\n- Khóa đề xuất đơn đặt hàng (PO) tự động [S1].\n- Xác minh giao dịch và nhu cầu trước khi mua [S1].\n- Kiểm tra tồn khả dụng, hàng giữ, đơn chưa xuất, snapshot timestamp và công thức days of supply [S3].\n- Chỉ mở lại quyết định bổ sung sau khi Inventory Controller ghi nhận kết luận [S3].",
+      "contexts": [
+        "03 | Quy tắc bổ sung hàng Thông số mặc định chỉ để mô phỏng; cần thay bằng dữ liệu nhà cung cấp. Công thức Inventory Position = On-hand + Open PO − Backorder ROP = Daily Demand × (Lead Time + Safety Days) Target = Daily Demand × (Lead Time + Safety Days + Review Period) THAM SỐ KHỞI TẠO Lead time: 14 ngày Safety stock: 7 ngày Review period: 7 ngày Reorder trigger: Inventory Position ≤ ROP Nếu có stockout/service signal nhưng calculated days of supply >120 ngày → DATA CONFLICT. Khóa đề xuất PO tự động, xác minh giao dịch và nhu cầu trước khi mua. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 4",
+        "Section: README\nColumns: Mục | Nội dung\nRow 8: Mục: Inventory position | Nội dung: On-hand + Open PO − Backorder. Dataset không có Open PO / Backorder; workbook mặc định 0 và yêu cầu nhập số thực tế.\nRow 9: Mục: Stockout signal | Nội dung: stockout_days ≥ 1 hoặc fill_rate < 95% hoặc calculated days of supply ≤ 14 ngày.\nRow 10: Mục: Overstock signal | Nội dung: Calculated days of supply > 120 ngày. >180 ngày cần kế hoạch xử lý theo chính sách.\nRow 11: Mục: Conflict gate | Nội dung: Nếu stockout signal đồng thời calculated days of supply >120 ngày, trạng thái DATA CONFLICT; không tự động đề xuất PO.\nRow 12: Mục: Giới hạn | Nội dung: Dataset không xác nhận đơn vị tiền tệ, inbound lead time, MOQ, kho/vị trí, PO đang mở hoặc backorder. Cờ reorder_flag trong nguồn luôn bằng 0.\nRow 13: Mục: Hướng dẫn | Nội dung: Điền Open PO / Backorder và lead time thực tế; xem KPI Summary; lọc Inventory Control theo Priority / Policy Decision; xác minh mọi DATA CONFLICT.",
+        "Section: 7. Cập nhật hệ thống và đóng phiếu\nNgưỡng xử lý và phê duyệt Tình huống Hành động tối thiểu Người duyệt Không chênh lệch Đóng phiếu; lưu audit trail Warehouse Supervisor Chênh lệch nhỏ, có nguyên nhân rõ và bằng chứng Recount + biên bản; cập nhật sau duyệt Inventory Controller / Supervisor Chênh lệch lặp lại, giá trị lớn hoặc vượt ngưỡng nội bộ Giữ giao dịch liên quan; điều tra nguyên nhân gốc Inventory Manager + Finance Nghi ngờ gian lận / mất mát / hàng giả Cách ly SKU, bảo toàn bằng chứng, thông báo Compliance / Operations Operations / Compliance 6. Không tự động đặt hàng khi dữ liệu mâu thuẫn Nếu tồn kho tính lại cho thấy dư hàng trên 120 ngày nhưng có stockout signal (stockout_days ≥ 1 hoặc fill_rate < 95%), đánh dấu DATA CONFLICT. Tạm khóa đề xuất PO tự động, kiểm tra tồn khả dụng, hàng giữ, đơn chưa xuất, snapshot timestamp và công thức days of supply. Chỉ mở lại quyết định bổ sung sau khi Inventory Controller ghi nhận kết luận. 7. Cập nhật hệ thống và đóng phiếu • Mỗi điều chỉnh phải có mã phiếu, policy ID, SKU, số lượng trước/sau, mã nguyên nhân, bằng chứng, người nhập và người duyệt."
+      ],
+      "reference": "[\"stockout/service thấp đồng thời days of supply >120 ngày; hoặc stockout_flag và overstock_flag cùng bật\", \"tạm khóa/dừng đề xuất PO tự động\", \"kiểm tra giao dịch, snapshot, đơn đang treo và cách tính nhu cầu\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 45.795,
+      "total_case_seconds": 257.789,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9905,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 45.795,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 71.966,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 67.214,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 72.813,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K09",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Tần suất kiểm kê tham chiếu cho nhóm ABC A, B và C là bao nhiêu?",
+      "answer": "Tần suất kiểm kê tham chiếu cho các nhóm ABC được quy định như sau:\n- Nhóm A: Hằng tuần [S1].\n- Nhóm B: Hằng tháng [S1].\n- Nhóm C: Hằng quý [S1].",
+      "contexts": [
+        "Section: 5. Phân loại ABC và lịch kiểm kê\nColumns: Nhóm | Tiêu chí tham chiếu | Tần suất | SLA điều tra\nRow 1: Nhóm: A | Tiêu chí tham chiếu: Nhóm SKU đóng góp xấp xỉ 80% giá trị tiêu thụ năm | Tần suất: Hằng tuần | SLA điều tra: Điều tra chênh lệch ngay trong ngày\nRow 2: Nhóm: B | Tiêu chí tham chiếu: Nhóm tiếp theo đóng góp xấp xỉ 15% | Tần suất: Hằng tháng | SLA điều tra: Điều tra trong 2 ngày làm việc\nRow 3: Nhóm: C | Tiêu chí tham chiếu: Phần còn lại, xấp xỉ 5% | Tần suất: Hằng quý | SLA điều tra: Điều tra trong 5 ngày làm việc"
+      ],
+      "reference": "[\"A khoảng 80% giá trị tiêu thụ năm: hàng tuần\", \"B khoảng 15% tiếp theo: hàng tháng\", \"C khoảng 5% còn lại: hàng quý\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 35.57,
+      "total_case_seconds": 180.524,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9751,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 35.57,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 62.341,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 60.287,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 22.326,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K10",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Mục tiêu fill rate mô phỏng là bao nhiêu và khi nào cần cảnh báo P1?",
+      "answer": "Mục tiêu fill rate mô phỏng là ≥ 98% [S1]. Cảnh báo P1 được kích hoạt khi fill rate dưới 95% [S1].",
+      "contexts": [
+        "Section: 6. Ngưỡng vận hành và KPI\nColumns: KPI | Mục tiêu / ngưỡng giả lập | Hành động\nRow 1: KPI: Fill rate | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng ≥ 98% | Hành động: Dưới 95%: cảnh báo P1 và phân tích nguyên nhân\nRow 2: KPI: Days of supply | Mục tiêu / ngưỡng giả lập: Tham chiếu 28–60 ngày tùy nhóm hàng | Hành động: >120 ngày: overstock review; >180 ngày: kế hoạch xử lý bắt buộc\nRow 3: KPI: Inventory record accuracy | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng ≥ 98% | Hành động: Sai lệch có giá trị cao hoặc lặp lại: kiểm tra nguyên nhân gốc\nRow 4: KPI: Stockout rate | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng < 2% dòng SKU/ngày | Hành động: Theo dõi riêng stockout thật và cờ dữ liệu\nRow 5: KPI: Aged / slow-moving stock | Mục tiêu / ngưỡng giả lập: Không để tồn >180 ngày không có kế hoạch | Hành động: Chuyển kho, bundle, markdown hoặc thanh lý theo phê duyệt"
+      ],
+      "reference": "[\"mục tiêu mô phỏng ≥98%\", \"dưới 95%: cảnh báo P1 và phân tích nguyên nhân\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 36.447,
+      "total_case_seconds": 147.898,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9833,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 36.447,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 20.911,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 76.607,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 13.932,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K11",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Ngưỡng days of supply nào yêu cầu rà soát overstock và khi nào phải có kế hoạch xử lý?",
+      "answer": "Ngưỡng days of supply yêu cầu rà soát overstock là khi vượt quá 120 ngày [S1][S2][S3][S4][S5]. Kế hoạch xử lý bắt buộc phải có khi days of supply vượt quá 180 ngày [S1][S2][S3][S4][S5].",
+      "contexts": [
+        "Section: 6. Ngưỡng vận hành và KPI\nColumns: KPI | Mục tiêu / ngưỡng giả lập | Hành động\nRow 1: KPI: Fill rate | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng ≥ 98% | Hành động: Dưới 95%: cảnh báo P1 và phân tích nguyên nhân\nRow 2: KPI: Days of supply | Mục tiêu / ngưỡng giả lập: Tham chiếu 28–60 ngày tùy nhóm hàng | Hành động: >120 ngày: overstock review; >180 ngày: kế hoạch xử lý bắt buộc\nRow 3: KPI: Inventory record accuracy | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng ≥ 98% | Hành động: Sai lệch có giá trị cao hoặc lặp lại: kiểm tra nguyên nhân gốc\nRow 4: KPI: Stockout rate | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng < 2% dòng SKU/ngày | Hành động: Theo dõi riêng stockout thật và cờ dữ liệu\nRow 5: KPI: Aged / slow-moving stock | Mục tiêu / ngưỡng giả lập: Không để tồn >180 ngày không có kế hoạch | Hành động: Chuyển kho, bundle, markdown hoặc thanh lý theo phê duyệt",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 6: policy_id: INV-POL-006 | policy_name: Hàng dư thừa / chậm luân chuyển | trigger: Calculated days of supply > 120 ngày; > 180 ngày cần kế hoạch xử lý | rule_or_required_action: Dừng mua bổ sung; rà soát chuyển kho, bundle, markdown hoặc thanh lý; bảo vệ biên lợi nhuận | owner: Merchandising + Procurement | sla_or_frequency: Rà soát hằng tháng | approval: Markdown theo thẩm quyền giá | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+        "Section: README\nColumns: Mục | Nội dung\nRow 8: Mục: Inventory position | Nội dung: On-hand + Open PO − Backorder. Dataset không có Open PO / Backorder; workbook mặc định 0 và yêu cầu nhập số thực tế.\nRow 9: Mục: Stockout signal | Nội dung: stockout_days ≥ 1 hoặc fill_rate < 95% hoặc calculated days of supply ≤ 14 ngày.\nRow 10: Mục: Overstock signal | Nội dung: Calculated days of supply > 120 ngày. >180 ngày cần kế hoạch xử lý theo chính sách.\nRow 11: Mục: Conflict gate | Nội dung: Nếu stockout signal đồng thời calculated days of supply >120 ngày, trạng thái DATA CONFLICT; không tự động đề xuất PO.\nRow 12: Mục: Giới hạn | Nội dung: Dataset không xác nhận đơn vị tiền tệ, inbound lead time, MOQ, kho/vị trí, PO đang mở hoặc backorder. Cờ reorder_flag trong nguồn luôn bằng 0.\nRow 13: Mục: Hướng dẫn | Nội dung: Điền Open PO / Backorder và lead time thực tế; xem KPI Summary; lọc Inventory Control theo Priority / Policy Decision; xác minh mọi DATA CONFLICT.",
+        "Section: Policy Matrix\nColumns: Policy ID | Chính sách | Trigger | Hành động bắt buộc | Owner | SLA / Tần suất | Approval\nRow 5: Policy ID: INV-POL-005 | Chính sách: Điều chỉnh tồn kho | Trigger: Có chênh lệch giữa đếm thực tế và hệ thống | Hành động bắt buộc: Không điều chỉnh khi chưa có biên bản, mã nguyên nhân và bằng chứng; phân tách người đếm và người duyệt | Owner: Warehouse Supervisor + Inventory Controller | SLA / Tần suất: Trong 1 ngày làm việc | Approval: Sai lệch lớn cần Finance/Operations\nRow 6: Policy ID: INV-POL-006 | Chính sách: Hàng dư thừa / chậm luân chuyển | Trigger: Calculated days of supply > 120 ngày; > 180 ngày cần kế hoạch xử lý | Hành động bắt buộc: Dừng mua bổ sung; rà soát chuyển kho, bundle, markdown hoặc thanh lý; bảo vệ biên lợi nhuận | Owner: Merchandising + Procurement | SLA / Tần suất: Rà soát hằng tháng | Approval: Markdown theo thẩm quyền giá",
+        "05 | Dư thừa, trả hàng và cách ly Tồn kho cao không có nghĩa là hàng sẵn sàng bán. DAYS OF SUPPLY >120 Tạm dừng bổ sung; kiểm tra forecast, size/màu và hàng đang chuyển. >180 NGÀY Lập kế hoạch chuyển kho, bundle, markdown hoặc thanh lý có phê duyệt. HÀNG TRẢ VỀ Quarantine → QA → A-grade bán lại / B-grade sửa / C-grade xử lý riêng. Hàng trả về chỉ được cộng vào tồn khả dụng sau khi QA xác nhận tình trạng và cập nhật disposition. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 6"
+      ],
+      "reference": "[\">120 ngày: rà soát overstock / dừng bổ sung\", \">180 ngày: kế hoạch xử lý bắt buộc\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 46.019,
+      "total_case_seconds": 230.003,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9988,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 46.019,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 26.371,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 57.471,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 100.141,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K12",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Cần có những gì trước khi điều chỉnh tồn kho trong hệ thống?",
+      "answer": "Trước khi điều chỉnh tồn kho trong hệ thống, cần đảm bảo có biên bản, mã nguyên nhân và bằng chứng [S4].\nMỗi điều chỉnh phải có mã phiếu, policy ID, SKU, số lượng trước/sau, mã nguyên nhân, bằng chứng, người nhập và người duyệt [S1].\nCần phân tách người đếm và người duyệt [S4].\nNgười duyệt phải là người độc lập với người đếm hoặc người nhập điều chỉnh [S2].",
+      "contexts": [
+        "Section: 7. Cập nhật hệ thống và đóng phiếu\nNgưỡng xử lý và phê duyệt Tình huống Hành động tối thiểu Người duyệt Không chênh lệch Đóng phiếu; lưu audit trail Warehouse Supervisor Chênh lệch nhỏ, có nguyên nhân rõ và bằng chứng Recount + biên bản; cập nhật sau duyệt Inventory Controller / Supervisor Chênh lệch lặp lại, giá trị lớn hoặc vượt ngưỡng nội bộ Giữ giao dịch liên quan; điều tra nguyên nhân gốc Inventory Manager + Finance Nghi ngờ gian lận / mất mát / hàng giả Cách ly SKU, bảo toàn bằng chứng, thông báo Compliance / Operations Operations / Compliance 6. Không tự động đặt hàng khi dữ liệu mâu thuẫn Nếu tồn kho tính lại cho thấy dư hàng trên 120 ngày nhưng có stockout signal (stockout_days ≥ 1 hoặc fill_rate < 95%), đánh dấu DATA CONFLICT. Tạm khóa đề xuất PO tự động, kiểm tra tồn khả dụng, hàng giữ, đơn chưa xuất, snapshot timestamp và công thức days of supply. Chỉ mở lại quyết định bổ sung sau khi Inventory Controller ghi nhận kết luận. 7. Cập nhật hệ thống và đóng phiếu • Mỗi điều chỉnh phải có mã phiếu, policy ID, SKU, số lượng trước/sau, mã nguyên nhân, bằng chứng, người nhập và người duyệt.",
+        "Section: VÀ ĐIỀU CHỈNH TỒN KHO\nVietStyle Commerce • SOP-INV-002 • Tài liệu mô phỏng Trang 1 VIETSTYLE COMMERCE SOP-INV-002 QUY TRÌNH KIỂM KÊ VÀ ĐIỀU CHỈNH TỒN KHO Phiên bản v1.0 • 16/10/2026 • Chủ sở hữu: Inventory Manager TÀI LIỆU MÔ PHỎNG CHO DATATHON 2026. Các ngưỡng vận hành, lead time, KPI và cấp phê duyệt là đề xuất giả lập cần được chủ sở hữu nghiệp vụ phê duyệt trước khi áp dụng thực tế. Dataset không xác định rõ đơn vị tiền tệ và không cung cấp dữ liệu PO inbound, tồn kho theo kho hoặc backorder; không dùng kết quả mẫu như số liệu tồn kho hiện hành. Bước Đầu ra bắt buộc 1. Chuẩn bị Danh sách SKU / vị trí, phạm vi đếm, thời điểm freeze giao dịch nếu cần 2. Đếm độc lập Số lượng thực tế; người đếm; thời gian; ảnh / ghi chú ngoại lệ 3. Đối chiếu Chênh lệch tuyệt đối và %, giá trị ảnh hưởng nếu có 4. Điều tra Nguyên nhân gốc và chứng từ liên quan 5. Phê duyệt Người duyệt độc lập với người đếm / nhập điều chỉnh 6. Cập nhật Điều chỉnh có audit trail; thông báo cho Planner nếu ảnh hưởng ROP",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 5: policy_id: INV-POL-005 | policy_name: Điều chỉnh tồn kho | trigger: Có chênh lệch giữa đếm thực tế và hệ thống | rule_or_required_action: Không điều chỉnh khi chưa có biên bản, mã nguyên nhân và bằng chứng; phân tách người đếm và người duyệt | owner: Warehouse Supervisor + Inventory Controller | sla_or_frequency: Trong 1 ngày làm việc | approval: Sai lệch lớn cần Finance/Operations | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions"
+      ],
+      "reference": "[\"biên bản\", \"mã nguyên nhân\", \"bằng chứng\", \"người đếm tách biệt người nhập/điều chỉnh và người phê duyệt\", \"audit trail\"]",
+      "evidence_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 32.458,
+      "total_case_seconds": 209.032,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9351,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 32.458,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 45.964,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 48.404,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 82.206,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K13",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Ai cần tham gia phê duyệt khi chênh lệch tồn kho lặp lại, có giá trị lớn hoặc vượt ngưỡng nội bộ?",
+      "answer": "Khi chênh lệch tồn kho lặp lại, có giá trị lớn hoặc vượt ngưỡng nội bộ, người cần tham gia phê duyệt là Inventory Manager và Finance [S1][S2].",
+      "contexts": [
+        "Section: 7. Cập nhật hệ thống và đóng phiếu\nNgưỡng xử lý và phê duyệt Tình huống Hành động tối thiểu Người duyệt Không chênh lệch Đóng phiếu; lưu audit trail Warehouse Supervisor Chênh lệch nhỏ, có nguyên nhân rõ và bằng chứng Recount + biên bản; cập nhật sau duyệt Inventory Controller / Supervisor Chênh lệch lặp lại, giá trị lớn hoặc vượt ngưỡng nội bộ Giữ giao dịch liên quan; điều tra nguyên nhân gốc Inventory Manager + Finance Nghi ngờ gian lận / mất mát / hàng giả Cách ly SKU, bảo toàn bằng chứng, thông báo Compliance / Operations Operations / Compliance 6. Không tự động đặt hàng khi dữ liệu mâu thuẫn Nếu tồn kho tính lại cho thấy dư hàng trên 120 ngày nhưng có stockout signal (stockout_days ≥ 1 hoặc fill_rate < 95%), đánh dấu DATA CONFLICT. Tạm khóa đề xuất PO tự động, kiểm tra tồn khả dụng, hàng giữ, đơn chưa xuất, snapshot timestamp và công thức days of supply. Chỉ mở lại quyết định bổ sung sau khi Inventory Controller ghi nhận kết luận. 7. Cập nhật hệ thống và đóng phiếu • Mỗi điều chỉnh phải có mã phiếu, policy ID, SKU, số lượng trước/sau, mã nguyên nhân, bằng chứng, người nhập và người duyệt.",
+        "Columns: Tình huống | Hành động tối thiểu | Người duyệt\nRow 1: Tình huống: Không chênh lệch | Hành động tối thiểu: Đóng phiếu; lưu audit trail | Người duyệt: Warehouse Supervisor\nRow 2: Tình huống: Chênh lệch nhỏ, có nguyên\nnhân rõ và bằng chứng | Hành động tối thiểu: Recount + biên bản; cập nhật sau duyệt | Người duyệt: Inventory Controller /\nSupervisor\nRow 3: Tình huống: Chênh lệch lặp lại, giá trị lớn\nhoặc vượt ngưỡng nội bộ | Hành động tối thiểu: Giữ giao dịch liên quan; điều tra nguyên nhân gốc | Người duyệt: Inventory Manager +\nFinance\nRow 4: Tình huống: Nghi ngờ gian lận / mất mát /\nhàng giả | Hành động tối thiểu: Cách ly SKU, bảo toàn bằng chứng, thông báo\nCompliance / Operations | Người duyệt: Operations / Compliance"
+      ],
+      "reference": "[\"Inventory Manager + Finance\", \"giữ giao dịch liên quan và điều tra nguyên nhân gốc\"]",
+      "evidence_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 31.49,
+      "total_case_seconds": 203.032,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9381,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 31.49,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 50.343,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 65.245,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 55.954,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K14",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Những tình huống nào cần kiểm kê đột xuất theo SOP?",
+      "answer": "Theo SOP, các tình huống cần kiểm kê đột xuất bao gồm:\n*   SKU có fill rate dưới 95% hoặc phát sinh stockout nhưng hệ thống vẫn ghi nhận lượng tồn cao [S1].\n*   Cờ stockout_flag và overstock_flag cùng bật; days of supply tính lại >120 ngày nhưng vẫn có stockout signal [S1].\n*   SKU có sai lệch lặp lại, hàng giá trị cao, nghi ngờ mất mát, lỗi barcode hoặc sai size/màu [S1].\n*   Sau campaign lớn, thay đổi vị trí kho, đổi mã SKU, trả hàng số lượng lớn hoặc sự cố hệ thống [S1].",
+      "contexts": [
+        "Section: 3. Chuẩn bị trước khi đếm\nVietStyle Commerce • SOP-INV-002 • Tài liệu mô phỏng Trang 2 1. Mục đích và phạm vi Áp dụng cho SKU thời trang và outdoor trong kho / điểm xử lý đơn của mô hình VietStyle Commerce. SOP bao gồm kiểm kê chu kỳ, kiểm kê theo sự kiện và điều chỉnh chênh lệch. Không dùng SOP này để thay thế quy trình nhận hàng hoặc QA hàng trả về. 2. Khi nào phải kiểm kê đột xuất? • SKU có fill rate dưới 95% hoặc phát sinh stockout nhưng hệ thống vẫn ghi nhận lượng tồn cao. • Cờ stockout_flag và overstock_flag cùng bật; days of supply tính lại >120 ngày nhưng vẫn có stockout signal. • SKU có sai lệch lặp lại, hàng giá trị cao, nghi ngờ mất mát, lỗi barcode hoặc sai size/màu. • Sau campaign lớn, thay đổi vị trí kho, đổi mã SKU, trả hàng số lượng lớn hoặc sự cố hệ thống. 3. Chuẩn bị trước khi đếm • Inventory Controller xuất danh sách SKU, vị trí, đơn vị tính, snapshot timestamp và số lượng hệ thống. • Warehouse Supervisor phân công người đếm; người đếm không được xem số lượng hệ thống nếu tổ chức áp dụng blind count."
+      ],
+      "reference": "[\"fill rate dưới 95% hoặc stockout nhưng hệ thống vẫn ghi tồn cao\", \"stockout_flag và overstock_flag cùng bật hoặc days of supply >120 kèm stockout signal\", \"sai lệch lặp lại, hàng giá trị cao, nghi mất mát, lỗi barcode/sai size-màu\", \"sau campaign lớn, đổi vị trí/mã SKU, trả hàng lớn hoặc sự cố hệ thống\"]",
+      "evidence_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 28.609,
+      "total_case_seconds": 166.362,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9897,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 28.609,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 38.854,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 69.558,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 29.341,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K15",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Liệt kê trình tự tối thiểu của quy trình cycle count và đầu ra bắt buộc ở mỗi bước.",
+      "answer": "Trình tự tối thiểu của quy trình kiểm kê chu kỳ (cycle count) và đầu ra bắt buộc ở mỗi bước bao gồm:\n\n1. **Bước 1: Chuẩn bị** – Đầu ra bắt buộc là danh sách SKU/vị trí, phạm vi đếm, thời điểm freeze giao dịch nếu cần [S1][S2].\n2. **Bước 2: Đếm độc lập** – Đầu ra bắt buộc là số lượng thực tế; người đếm; thời gian; ảnh/ghi chú ngoại lệ [S1][S2].\n3. **Bước 3: Đối chiếu** – Đầu ra bắt buộc là chênh lệch tuyệt đối và %, giá trị ảnh hưởng nếu có [S1][S2].\n4. **Bước 4: Điều tra** – Đầu ra bắt buộc là nguyên nhân gốc và chứng từ liên quan [S1][S2].\n5. **Bước 5: Phê duyệt** – Đầu ra bắt buộc là người duyệt độc lập với người đếm/nhập điều chỉnh [S1][S2].\n6. **Bước 6: Cập nhật** – Đầu ra bắt buộc là điều chỉnh có audit trail; thông báo cho Planner nếu ảnh hưởng ROP [S1][S2].",
+      "contexts": [
+        "Columns: Bước | Đầu ra bắt buộc\nRow 1: Bước: 1. Chuẩn bị | Đầu ra bắt buộc: Danh sách SKU / vị trí, phạm vi đếm, thời điểm freeze giao dịch nếu cần\nRow 2: Bước: 2. Đếm độc lập | Đầu ra bắt buộc: Số lượng thực tế; người đếm; thời gian; ảnh / ghi chú ngoại lệ\nRow 3: Bước: 3. Đối chiếu | Đầu ra bắt buộc: Chênh lệch tuyệt đối và %, giá trị ảnh hưởng nếu có\nRow 4: Bước: 4. Điều tra | Đầu ra bắt buộc: Nguyên nhân gốc và chứng từ liên quan\nRow 5: Bước: 5. Phê duyệt | Đầu ra bắt buộc: Người duyệt độc lập với người đếm / nhập điều chỉnh\nRow 6: Bước: 6. Cập nhật | Đầu ra bắt buộc: Điều chỉnh có audit trail; thông báo cho Planner nếu ảnh hưởng ROP",
+        "Section: VÀ ĐIỀU CHỈNH TỒN KHO\nVietStyle Commerce • SOP-INV-002 • Tài liệu mô phỏng Trang 1 VIETSTYLE COMMERCE SOP-INV-002 QUY TRÌNH KIỂM KÊ VÀ ĐIỀU CHỈNH TỒN KHO Phiên bản v1.0 • 16/10/2026 • Chủ sở hữu: Inventory Manager TÀI LIỆU MÔ PHỎNG CHO DATATHON 2026. Các ngưỡng vận hành, lead time, KPI và cấp phê duyệt là đề xuất giả lập cần được chủ sở hữu nghiệp vụ phê duyệt trước khi áp dụng thực tế. Dataset không xác định rõ đơn vị tiền tệ và không cung cấp dữ liệu PO inbound, tồn kho theo kho hoặc backorder; không dùng kết quả mẫu như số liệu tồn kho hiện hành. Bước Đầu ra bắt buộc 1. Chuẩn bị Danh sách SKU / vị trí, phạm vi đếm, thời điểm freeze giao dịch nếu cần 2. Đếm độc lập Số lượng thực tế; người đếm; thời gian; ảnh / ghi chú ngoại lệ 3. Đối chiếu Chênh lệch tuyệt đối và %, giá trị ảnh hưởng nếu có 4. Điều tra Nguyên nhân gốc và chứng từ liên quan 5. Phê duyệt Người duyệt độc lập với người đếm / nhập điều chỉnh 6. Cập nhật Điều chỉnh có audit trail; thông báo cho Planner nếu ảnh hưởng ROP"
+      ],
+      "reference": "[\"chuẩn bị danh sách SKU/vị trí/phạm vi\", \"đếm độc lập và ghi người đếm/thời gian/bằng chứng\", \"đối chiếu chênh lệch tuyệt đối và phần trăm\", \"điều tra nguyên nhân/chứng từ\", \"phê duyệt độc lập\", \"cập nhật có audit trail\"]",
+      "evidence_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 37.142,
+      "total_case_seconds": 163.704,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9195,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 37.142,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 48.125,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 53.931,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 24.505,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K16",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Hàng trả về được phân loại A-grade, B-grade và C-grade như thế nào?",
+      "answer": "Hàng trả về phải được đưa vào trạng thái cách ly (QUARANTINE) cho đến khi bộ phận QA kiểm tra và phân loại [S1].\nCụ thể, hàng A-grade sẽ được đưa về bán lại [S1].\nHàng B-grade sẽ được sửa hoặc đóng gói lại nếu được duyệt [S1].\nHàng C-grade sẽ được giữ riêng để trả nhà cung cấp, hủy bỏ (scrap) hoặc ghi giảm [S1].\nViệc phân loại này cần được hoàn thành trong vòng 2 ngày làm việc [S2].",
+      "contexts": [
+        "8. Nhận hàng, trả hàng và hàng cách ly\nĐối chiếu PO, SKU, size, màu, số lượng, tình trạng bao bì và chứng từ giao hàng.\nGhi nhận thiếu / thừa / hư hỏng trước khi xác nhận nhận hàng; ảnh chụp và biên bản bắt buộc cho ngoại lệ.\nHàng trả về phải vào trạng thái QUARANTINE cho đến khi QA kiểm tra; không cộng vào available-to-promise trước khi đạt điều kiện.\nA-grade: đưa về bán; B-grade: sửa / đóng gói lại nếu được duyệt; C-grade: giữ riêng để trả nhà cung cấp, scrap hoặc ghi giảm.\nGắn mã nguyên nhân trả hàng (ví dụ sai size, lỗi sản phẩm, giao trễ) để phản hồi cho Merchandising, QA và Logistics.",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 7: policy_id: INV-POL-007 | policy_name: Hàng trả về | trigger: Nhận hàng trả về từ khách | rule_or_required_action: Cách ly đến khi QA phân loại: A-grade bán lại; B-grade sửa/đóng gói lại; C-grade hỏng/thiếu phụ kiện xử lý riêng | owner: Returns QA + Warehouse | sla_or_frequency: Trong 2 ngày làm việc | approval: Scrap/ghi giảm cần phê duyệt | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions"
+      ],
+      "reference": "[\"A-grade bán lại\", \"B-grade sửa chữa/đóng gói lại\", \"C-grade hỏng hoặc thiếu phụ kiện xử lý riêng\", \"hàng trả về phải cách ly qua QA trước khi cộng lại vào tồn khả dụng\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 31.39,
+      "total_case_seconds": 246.184,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9227,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 31.39,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 57.966,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 85.423,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 71.405,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K17",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Nếu stockout_flag và overstock_flag cùng bật, có được tự động phát hành PO không?",
+      "answer": "Không được tự động phát hành PO khi stockout_flag và overstock_flag cùng bật [S1]. Trong trường hợp này, hệ thống phải chuyển sang trạng thái DATA CONFLICT, chặn PO tự động và yêu cầu Inventory Controller xác minh [S1]. Hành động bắt buộc là tạm khóa PO tự động, đồng thời kiểm tra giao dịch, snapshot, đơn hàng treo và cách tính nhu cầu [S2]. Quy định này cũng được xác nhận trong chính sách bổ sung hàng, nêu rõ nếu có stockout signal cùng days of supply > 120 ngày (tương ứng với tín hiệu mâu thuẫn), không được tự động mua thêm mà phải mở điều tra P1 [S5].",
+      "contexts": [
+        "11. Kiểm soát chất lượng dữ liệu\nTrong inventory.csv, 67.3% bản ghi có stockout_flag=1, 76.3% có overstock_flag=1, 30,495 bản ghi bật đồng thời hai cờ, và tổng reorder_flag bằng 0. Trên snapshot 2022-12-31, 232 SKU bật đồng thời stockout_flag và overstock_flag. Đây là tín hiệu cần xác minh, không phải bằng chứng rằng từng SKU chắc chắn thiếu và dư hàng cùng lúc.\nTính lại days of supply từ tồn khả dụng và nhu cầu bình quân; lưu cả giá trị gốc và giá trị tính lại.\nKiểm tra định nghĩa của stockout_flag, overstock_flag, reorder_flag trước khi dùng cho quyết định.\nGắn source file, snapshot date, công thức, thời điểm cập nhật và người sở hữu dữ liệu.\nKhi tín hiệu mâu thuẫn, chuyển sang trạng thái DATA CONFLICT; chặn PO tự động và yêu cầu Inventory Controller xác minh.\nKhông để AI tự sửa dữ liệu nguồn hoặc tự phát hành PO. Câu trả lời AI cần nêu snapshot date, nguồn và mức độ tin cậy.",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 3: policy_id: INV-POL-003 | policy_name: Xác minh mâu thuẫn tồn kho | trigger: Có tín hiệu stockout/service thấp đồng thời days of supply > 120; hoặc cờ stockout và overstock cùng bật | rule_or_required_action: Tạm khóa PO tự động; kiểm tra giao dịch, snapshot, đơn hàng treo và cách tính nhu cầu | owner: Inventory Controller | sla_or_frequency: P1 trong 1 ngày làm việc | approval: Quản lý kho duyệt kết luận | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+        "4. Chính sách bổ sung hàng\nMô hình tham chiếu cho SKU có nhu cầu tương đối ổn định:\nInventory position = On-hand + Open PO − Backorder\nReorder Point (ROP) = Nhu cầu/ngày × (Lead time + Safety days)\nTarget Stock = Nhu cầu/ngày × (Lead time + Safety days + Review period)\nGiả định khởi tạo trong bộ mô phỏng: lead time 14 ngày, safety stock 7 ngày, review period 7 ngày. Các giá trị này có thể chỉnh theo nhà cung cấp / nhóm hàng; không phải lead time được suy ra từ dữ liệu.\nRà soát đề xuất bổ sung ít nhất mỗi tuần và trước chiến dịch khuyến mãi.\nTrước khi phát hành PO, kiểm tra tồn kho khả dụng, PO đang mở, hàng đang giữ, backorder, MOQ, ngân sách và lịch giao.\nNếu có stockout signal cùng days of supply > 120 ngày, không tự động mua thêm; mở điều tra P1.\nKhông đặt hàng bổ sung cho SKU vượt 120 ngày tồn kho trừ khi có phê duyệt chiến dịch, cam kết khách hàng hoặc lý do được ghi nhận.\nMọi PO khẩn cấp phải ghi rõ nguyên nhân, ảnh hưởng dịch vụ và người phê duyệt."
+      ],
+      "reference": "[\"không\", \"tạm khóa đề xuất PO tự động\", \"kiểm tra tồn khả dụng, đơn đang giữ, snapshot timestamp và công thức days of supply\", \"Inventory Controller ghi kết luận trước khi mở lại quyết định bổ sung\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 54.794,
+      "total_case_seconds": 191.712,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9443,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 54.794,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 30.865,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 41.977,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 64.075,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K18",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Kế hoạch tồn kho cho campaign cần bắt đầu trước bao lâu và cần xác minh các yếu tố nào?",
+      "answer": "Kế hoạch tồn kho cho campaign cần bắt đầu trước tối thiểu 4 tuần [S1][S2][S4]. Các yếu tố cần xác minh bao gồm: dự báo nhu cầu (forecast) theo SKU, size và màu; kiểm tra tồn kho (stock), đơn đặt hàng mở (PO), thời gian giao hàng (lead time) và số lượng đặt hàng tối thiểu (MOQ); xác nhận mức giảm giá (discount), kênh (channel) và cờ cộng dồn ưu đãi (stackable flag) [S1][S2][S4].",
+      "contexts": [
+        "06 | Khuyến mãi và KPI Campaign phải có kế hoạch tồn kho trước khi chạy. Trước campaign (T−4 tuần) • Forecast theo SKU / size / màu • Kiểm tra stock, PO, lead time, MOQ • Xác nhận discount, channel, stackable flag • Duyệt tăng target stock nếu cần Sau campaign • Sell-through / tồn còn lại • Return rate và lý do trả • Sai số forecast và hành động điều chỉnh Fill rate ≥98% mục tiêu giả lập Inventory accuracy ≥98% mục tiêu giả lập Stockout rate <2% mục tiêu giả lập Aged stock >180 ngày phải có kế hoạch KPI là ngưỡng mô phỏng, cần hiệu chỉnh theo margin và mức dịch vụ. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 7",
+        "9. Khuyến mãi và mùa vụ\nTối thiểu 4 tuần trước campaign, Merchandising và Planner thống nhất forecast theo SKU / size / màu.\nKiểm tra promotions.csv hoặc hệ thống campaign: ngày bắt đầu/kết thúc, kênh, mức giảm, điều kiện đơn tối thiểu và stackable_flag.\nChỉ tăng target stock khi có forecast hoặc phê duyệt; không đặt hàng chỉ dựa vào traffic hoặc doanh thu tổng.\nSau campaign, đối chiếu forecast với sell-through, tồn còn lại và return rate để cập nhật kế hoạch.",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 8: policy_id: INV-POL-008 | policy_name: Quản lý khuyến mãi | trigger: Campaign/promotion được lên lịch | rule_or_required_action: Dự báo nhu cầu trước tối thiểu 4 tuần; kiểm tra tồn kho, lead time, stackable_flag và mức giảm; chốt kế hoạch sau duyệt | owner: Merchandising + Planner | sla_or_frequency: T-4 tuần | approval: Không tự cộng dồn ưu đãi nếu không được phép | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions"
+      ],
+      "reference": "[\"tối thiểu 4 tuần trước campaign\", \"forecast theo SKU/size/color\", \"stock, PO, lead time, MOQ\", \"discount, channel và stackable_flag\", \"phê duyệt trước khi chốt\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 29.723,
+      "total_case_seconds": 256.204,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9992,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 29.723,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 47.273,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 91.067,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 88.141,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K19",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Những trường tối thiểu nào cần lưu trong phiếu điều chỉnh tồn kho?",
+      "answer": "Các trường tối thiểu cần lưu trong phiếu điều chỉnh tồn kho bao gồm: Count ID / Date (Mã phiếu / thời điểm kiểm kê), SKU / Size / Color / Location (Định danh biến thể và vị trí), System Qty / Counted Qty (Số hệ thống / số đếm thực tế), Variance / Reason Code (Chênh lệch / nguyên nhân), Evidence / Counter / Reviewer (Bằng chứng / người đếm / người duyệt) và Adjustment Transaction ID (Mã giao dịch điều chỉnh sau duyệt) [S4].",
+      "contexts": [
+        "Section: 8. Hồ sơ lưu trữ\nVietStyle Commerce • SOP-INV-002 • Tài liệu mô phỏng Trang 3 • Cập nhật Planner khi chênh lệch ảnh hưởng ROP, target stock hoặc khả năng đáp ứng đơn hàng. • Đóng phiếu khi đã duyệt, hệ thống đồng bộ thành công và báo cáo ngoại lệ được cập nhật. 8. Hồ sơ lưu trữ Lưu danh sách đếm, kết quả recount, ảnh / chứng từ, phân tích nguyên nhân, phê duyệt, transaction ID và thời điểm đồng bộ theo thời hạn lưu hồ sơ do doanh nghiệp quy định. Với dữ liệu phục vụ AI/RAG, giữ metadata: policy_id, owner, effective_date, version, approval_status và source_document. Biểu mẫu tối thiểu Field Nội dung Count ID / Date Mã phiếu / thời điểm kiểm kê SKU / Size / Color / Location Định danh biến thể và vị trí System Qty / Counted Qty Số hệ thống / số đếm thực tế Variance / Reason Code Chênh lệch / nguyên nhân Evidence / Counter / Reviewer Bằng chứng / người đếm / người duyệt Adjustment Transaction ID Mã giao dịch điều chỉnh sau duyệt"
+      ],
+      "reference": "[\"Count ID/date\", \"SKU/size/color/location\", \"system quantity và counted quantity\", \"variance/reason code\", \"evidence/counter/reviewer\", \"Adjustment Transaction ID\"]",
+      "evidence_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 40.772,
+      "total_case_seconds": 147.378,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9973,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 40.772,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 47.648,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 45.029,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 13.929,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K20",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Những trường dữ liệu còn thiếu khiến hệ thống chưa thể đề xuất PO đáng tin cậy?",
+      "answer": "Các trường dữ liệu còn thiếu khiến hệ thống chưa thể đề xuất PO đáng tin cậy bao gồm: Open PO, Backorder, inbound lead time, MOQ, kho/vị trí, và đơn vị tiền tệ [S4].\n\nCụ thể, dataset hiện tại không xác nhận các thông tin về inbound lead time, MOQ, kho/vị trí, PO đang mở hoặc backorder [S4]. Ngoài ra, workbook mặc định giá trị Open PO và Backorder bằng 0 và yêu cầu người dùng phải nhập số thực tế để tính toán vị trí tồn kho (Inventory position) chính xác [S4].",
+      "contexts": [
+        "Section: README\nColumns: Mục | Nội dung\nRow 8: Mục: Inventory position | Nội dung: On-hand + Open PO − Backorder. Dataset không có Open PO / Backorder; workbook mặc định 0 và yêu cầu nhập số thực tế.\nRow 9: Mục: Stockout signal | Nội dung: stockout_days ≥ 1 hoặc fill_rate < 95% hoặc calculated days of supply ≤ 14 ngày.\nRow 10: Mục: Overstock signal | Nội dung: Calculated days of supply > 120 ngày. >180 ngày cần kế hoạch xử lý theo chính sách.\nRow 11: Mục: Conflict gate | Nội dung: Nếu stockout signal đồng thời calculated days of supply >120 ngày, trạng thái DATA CONFLICT; không tự động đề xuất PO.\nRow 12: Mục: Giới hạn | Nội dung: Dataset không xác nhận đơn vị tiền tệ, inbound lead time, MOQ, kho/vị trí, PO đang mở hoặc backorder. Cờ reorder_flag trong nguồn luôn bằng 0.\nRow 13: Mục: Hướng dẫn | Nội dung: Điền Open PO / Backorder và lead time thực tế; xem KPI Summary; lọc Inventory Control theo Priority / Policy Decision; xác minh mọi DATA CONFLICT."
+      ],
+      "reference": "[\"PO inbound/open PO đầy đủ\", \"MOQ\", \"lead time nhà cung cấp thực tế\", \"backorder\", \"vị trí kho\", \"đơn vị tiền tệ chưa được xác nhận\"]",
+      "evidence_sources": [
+        "04_Inventory_Control_and_Reorder_Planner.xlsx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 35.437,
+      "total_case_seconds": 143.373,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.8,
+        "answer_relevancy": 0.942,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 35.437,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 37.531,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 57.438,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 12.967,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K21",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Trong bộ dữ liệu mô phỏng, số SKU ở product master, số bản ghi inventory và số bản ghi vừa bật stockout vừa overstock là bao nhiêu?",
+      "answer": "Trong bộ dữ liệu mô phỏng, số SKU ở product master là 2,412 [S1].\nSố bản ghi inventory là 60,247 [S1].\nSố bản ghi vừa bật stockout vừa overstock là 30,495 [S1].",
+      "contexts": [
+        "01 | Bối cảnh dữ liệu Dataset là cơ sở mô phỏng; không phản ánh tồn kho hiện tại. 2,412 SKU trong product master 60,247 Bản ghi inventory theo snapshot 424 SKU có snapshot 31/12/2022 67.3% Bản ghi bật stockout_flag Nhóm hàng • Streetwear • Outdoor • Casual • GenZ Vấn đề dữ liệu cần kiểm soát • 76.3% bản ghi bật overstock_flag • 30,495 bản ghi bật đồng thời stockout + overstock • reorder_flag có tổng bằng 0 • Snapshot mới nhất trong file: 2022-12-31 VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 2"
+      ],
+      "reference": "[\"2,412 SKU\", \"60,247 bản ghi inventory\", \"30,495 bản ghi bật đồng thời stockout và overstock\", \"snapshot mới nhất 2022-12-31\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 42.689,
+      "total_case_seconds": 173.094,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9876,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 42.689,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 47.564,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 61.961,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 20.879,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K22",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Tại sao không được cộng stock_on_hand qua nhiều snapshot để mô tả tồn kho hiện tại?",
+      "answer": "Không đủ thông tin trong các tài liệu được truy xuất.",
+      "contexts": [],
+      "reference": "[\"nhiều snapshot của cùng SKU sẽ bị cộng lặp\", \"dùng snapshot mới nhất cho câu hỏi hiện trạng hoặc nhóm riêng theo snapshot_date\"]",
+      "evidence_sources": [],
+      "agent_metadata": {},
+      "latency_seconds": 44.6,
+      "total_case_seconds": 91.088,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.0,
+        "context_precision": null
+      },
+      "metric_eligibility": {
+        "faithfulness": false,
+        "answer_relevancy": true,
+        "context_precision": false
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 44.6,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 46.487,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K23",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Người dùng có role procurement có thể đọc Policy Rules Registry và Inventory Management Policy Manual theo metadata phân quyền hiện tại không?",
+      "answer": "Không đủ thông tin trong các tài liệu được truy xuất.",
+      "contexts": [],
+      "reference": "[\"Policy Rules Registry có procurement trong allowed_roles\", \"Inventory Management Policy Manual chỉ liệt kê employee, finance_analyst, admin nên procurement không được phép đọc\"]",
+      "evidence_sources": [],
+      "agent_metadata": {},
+      "latency_seconds": 46.063,
+      "total_case_seconds": 90.803,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.0,
+        "context_precision": null
+      },
+      "metric_eligibility": {
+        "faithfulness": false,
+        "answer_relevancy": true,
+        "context_precision": false
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 46.063,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 44.74,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K24",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Agent có được tự phát hành purchase order hoặc tự sửa tồn kho không?",
+      "answer": "Không, AI Agent không được tự phát hành purchase order (PO) hoặc tự sửa tồn kho [S1].\nTheo chính sách, AI Agent chỉ được đọc dữ liệu được phân quyền và đưa ra đề xuất, không có quyền tự phát hành PO hoặc tự sửa tồn kho [S1].\nQuy tắc kiểm soát yêu cầu AI Agent chỉ dùng dữ liệu được phân quyền, trích dẫn nguồn và snapshot date, đồng thời không tự ghi PO hay điều chỉnh tồn kho [S3].\nTrong trường hợp có mâu thuẫn dữ liệu, AI Agent phải chuyển cho người duyệt và không được tự động xử lý [S3].\nHệ thống cũng quy định rõ rằng không để AI tự sửa dữ liệu nguồn hoặc tự phát hành PO [S2].",
+      "contexts": [
+        "02 | Mô hình vận hành Tách quyền ra quyết định khỏi thao tác nhập liệu. PLAN Forecast / campaign ROP & target stock → APPROVE Budget / supplier PO authorization → RECEIVE PO match QC & put-away → CONTROL Cycle count Exception handling → LEARN KPI / root cause Forecast update Nguyên tắc kiểm soát: người đếm ≠ người nhập điều chỉnh ≠ người duyệt. AI Agent chỉ đọc dữ liệu được phân quyền và đề xuất; không tự phát hành PO hoặc tự sửa tồn kho. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 3",
+        "11. Kiểm soát chất lượng dữ liệu\nTrong inventory.csv, 67.3% bản ghi có stockout_flag=1, 76.3% có overstock_flag=1, 30,495 bản ghi bật đồng thời hai cờ, và tổng reorder_flag bằng 0. Trên snapshot 2022-12-31, 232 SKU bật đồng thời stockout_flag và overstock_flag. Đây là tín hiệu cần xác minh, không phải bằng chứng rằng từng SKU chắc chắn thiếu và dư hàng cùng lúc.\nTính lại days of supply từ tồn khả dụng và nhu cầu bình quân; lưu cả giá trị gốc và giá trị tính lại.\nKiểm tra định nghĩa của stockout_flag, overstock_flag, reorder_flag trước khi dùng cho quyết định.\nGắn source file, snapshot date, công thức, thời điểm cập nhật và người sở hữu dữ liệu.\nKhi tín hiệu mâu thuẫn, chuyển sang trạng thái DATA CONFLICT; chặn PO tự động và yêu cầu Inventory Controller xác minh.\nKhông để AI tự sửa dữ liệu nguồn hoặc tự phát hành PO. Câu trả lời AI cần nêu snapshot date, nguồn và mức độ tin cậy.",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 12: policy_id: INV-POL-012 | policy_name: AI / báo cáo tự động | trigger: AI Agent tạo câu trả lời hoặc đề xuất PO | rule_or_required_action: Chỉ dùng dữ liệu được phân quyền; trích dẫn nguồn và snapshot date; không tự ghi PO/điều chỉnh tồn kho; mâu thuẫn phải chuyển người duyệt | owner: System Owner + Inventory Controller | sla_or_frequency: Mỗi yêu cầu | approval: Human approval bắt buộc | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions"
+      ],
+      "reference": "[\"không\", \"AI chỉ truy vấn/đề xuất\", \"phê duyệt của con người là bắt buộc\", \"trích nguồn và snapshot date\", \"mâu thuẫn phải chuyển người chịu trách nhiệm\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 50.021,
+      "total_case_seconds": 214.343,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.974,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 50.021,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 29.7,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 63.843,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 70.78,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "K25",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Hãy cho biết tồn kho thực tế hôm nay của một SKU bất kỳ trong năm 2026, cùng lead time và PO inbound của nhà cung cấp.",
+      "answer": "Không đủ thông tin trong các tài liệu được truy xuất.",
+      "contexts": [],
+      "reference": "[\"không thể xác minh tồn kho 2026 từ dataset kết thúc 2022-12-31\", \"lead time thực tế và PO inbound không được cung cấp\", \"cần yêu cầu nguồn dữ liệu cập nhật hoặc từ chối kết luận\"]",
+      "evidence_sources": [],
+      "agent_metadata": {},
+      "latency_seconds": 31.24,
+      "total_case_seconds": 76.476,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.0,
+        "context_precision": null
+      },
+      "metric_eligibility": {
+        "faithfulness": false,
+        "answer_relevancy": true,
+        "context_precision": false
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": true,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 31.239,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 45.236,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "S01",
+      "agent": "sql",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Tổng doanh thu và giá vốn (COGS) tháng 12/2022 là bao nhiêu?",
+      "answer": "I couldn't safely run the generated query: Function is not approved: CAST",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"field\": \"revenue\", \"equals\": 52454936.2}, {\"field\": \"cogs\", \"equals\": 53489673.44}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "SQLValidationError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 5.436,
+      "total_case_seconds": 134.718,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7296,
+        "context_precision": 0.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": false,
+      "sql_semantic_correctness": false,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 5.436,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 36.451,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 66.468,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 26.362,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "S02",
+      "agent": "sql",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Trình bày doanh thu và COGS theo từng tháng trong năm 2022.",
+      "answer": "Dưới đây là bảng tổng hợp doanh thu (Revenue) và giá vốn hàng bán (COGS) theo từng tháng trong năm 2022 dựa trên dữ liệu được cung cấp [S1]:\n\n| Tháng | Doanh thu (Revenue) | Giá vốn hàng bán (COGS) |\n| :--- | :--- | :--- |\n| Tháng 1 | 59,663,486.32 | 50,851,459.60 |\n| Tháng 2 | 79,103,095.50 | 65,285,573.13 |\n| Tháng 3 | 137,537,949.28 | 121,666,971.00 |\n| Tháng 4 | 141,305,508.81 | 124,361,629.97 |\n| Tháng 5 | 139,027,887.16 | 113,951,506.27 |\n| Tháng 6 | 135,812,426.69 | 117,710,885.93 |\n| Tháng 7 | 98,141,777.72 | 91,605,928.72 |\n| Tháng 8 | 113,542,943.47 | 94,033,378.34 |\n| Tháng 9 | 85,764,286.59 | 78,395,242.27 |\n| Tháng 10 | 75,194,452.31 | 61,969,893.80 |\n| Tháng 11 | 52,200,081.64 | 47,098,021.50 |\n| Tháng 12 | 52,454,936.20 | 53,489,673.44 |\n\n**Nhận xét từ dữ liệu:**\n*   Doanh thu đạt mức cao nhất vào tháng 4 (141,305,508.81) và thấp nhất vào tháng 11 (52,200,081.64) [S1].\n*   Trong tháng 12, giá vốn hàng bán (53,489,673.44) cao hơn doanh thu (52,454,936.20), dẫn đến lỗ gộp trong tháng này [S1].\n\nSources: [S1] commerce.sales",
+      "contexts": [
+        "{}",
+        "[{\"month\": \"2022-01-01 00:00:00+00:00\", \"total_revenue\": \"59663486.32\", \"total_cogs\": \"50851459.60\"}, {\"month\": \"2022-02-01 00:00:00+00:00\", \"total_revenue\": \"79103095.50\", \"total_cogs\": \"65285573.13\"}, {\"month\": \"2022-03-01 00:00:00+00:00\", \"total_revenue\": \"137537949.28\", \"total_cogs\": \"121666971.00\"}, {\"month\": \"2022-04-01 00:00:00+00:00\", \"total_revenue\": \"141305508.81\", \"total_cogs\": \"124361629.97\"}, {\"month\": \"2022-05-01 00:00:00+00:00\", \"total_revenue\": \"139027887.16\", \"total_cogs\": \"113951506.27\"}, {\"month\": \"2022-06-01 00:00:00+00:00\", \"total_revenue\": \"135812426.69\", \"total_cogs\": \"117710885.93\"}, {\"month\": \"2022-07-01 00:00:00+00:00\", \"total_revenue\": \"98141777.72\", \"total_cogs\": \"91605928.72\"}, {\"month\": \"2022-08-01 00:00:00+00:00\", \"total_revenue\": \"113542943.47\", \"total_cogs\": \"94033378.34\"}, {\"month\": \"2022-09-01 00:00:00+00:00\", \"total_revenue\": \"85764286.59\", \"total_cogs\": \"78395242.27\"}, {\"month\": \"2022-10-01 00:00:00+00:00\", \"total_revenue\": \"75194452.31\", \"total_cogs\": \"61969893.80\"}, {\"month\": \"2022-11-01 00:00:00+00:00\", \"total_revenue\": \"52200081.64\", \"total_cogs\": \"47098021.50\"}, {\"month\": \"2022-12-01 00:00:00+00:00\", \"total_revenue\": \"52454936.20\", \"total_cogs\": \"53489673.44\"}]"
+      ],
+      "reference": "[{\"row_count\": 12}]",
+      "evidence_sources": [
+        "commerce.sales"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.sales"
+        ],
+        "explanation": "Aggregates revenue and COGS by month for the year 2022 using the sales table.",
+        "ok": true
+      },
+      "latency_seconds": 4.688,
+      "total_case_seconds": 141.984,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8831,
+        "context_precision": 0.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": true,
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "month": "2022-01-01 00:00:00+00:00",
+          "total_revenue": "59663486.32",
+          "total_cogs": "50851459.60"
+        },
+        {
+          "month": "2022-02-01 00:00:00+00:00",
+          "total_revenue": "79103095.50",
+          "total_cogs": "65285573.13"
+        },
+        {
+          "month": "2022-03-01 00:00:00+00:00",
+          "total_revenue": "137537949.28",
+          "total_cogs": "121666971.00"
+        },
+        {
+          "month": "2022-04-01 00:00:00+00:00",
+          "total_revenue": "141305508.81",
+          "total_cogs": "124361629.97"
+        },
+        {
+          "month": "2022-05-01 00:00:00+00:00",
+          "total_revenue": "139027887.16",
+          "total_cogs": "113951506.27"
+        },
+        {
+          "month": "2022-06-01 00:00:00+00:00",
+          "total_revenue": "135812426.69",
+          "total_cogs": "117710885.93"
+        },
+        {
+          "month": "2022-07-01 00:00:00+00:00",
+          "total_revenue": "98141777.72",
+          "total_cogs": "91605928.72"
+        },
+        {
+          "month": "2022-08-01 00:00:00+00:00",
+          "total_revenue": "113542943.47",
+          "total_cogs": "94033378.34"
+        },
+        {
+          "month": "2022-09-01 00:00:00+00:00",
+          "total_revenue": "85764286.59",
+          "total_cogs": "78395242.27"
+        },
+        {
+          "month": "2022-10-01 00:00:00+00:00",
+          "total_revenue": "75194452.31",
+          "total_cogs": "61969893.80"
+        },
+        {
+          "month": "2022-11-01 00:00:00+00:00",
+          "total_revenue": "52200081.64",
+          "total_cogs": "47098021.50"
+        },
+        {
+          "month": "2022-12-01 00:00:00+00:00",
+          "total_revenue": "52454936.20",
+          "total_cogs": "53489673.44"
+        }
+      ],
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 4.688,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 41.779,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 67.982,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 27.535,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "S03",
+      "agent": "sql",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Tháng nào có tổng doanh thu cao nhất trong năm 2022?",
+      "answer": "Tháng 4 năm 2022 có tổng doanh thu cao nhất với 141.305.508,81 [S1].\n\nSources: [S1] commerce.sales",
+      "contexts": [
+        "{}",
+        "[{\"month\": \"2022-04-01 00:00:00+00:00\", \"total_revenue\": \"141305508.81\"}]"
+      ],
+      "reference": "[{\"row_count\": 1}, {\"field\": \"revenue\", \"non_null\": true}]",
+      "evidence_sources": [
+        "commerce.sales"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.sales"
+        ],
+        "explanation": "The query filters sales data for the year 2022, groups the revenue by month, sums the revenue for each month, and returns the month with the highest total revenue.",
+        "ok": true
+      },
+      "latency_seconds": 4.44,
+      "total_case_seconds": 149.5,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9494,
+        "context_precision": 0.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": true,
+      "sql_semantic_correctness": false,
+      "sql_rows": [
+        {
+          "month": "2022-04-01 00:00:00+00:00",
+          "total_revenue": "141305508.81"
+        }
+      ],
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 4.44,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 41.094,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 68.981,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 34.985,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "S04",
+      "agent": "sql",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Tính doanh thu trừ giá vốn theo từng tháng trong năm 2022.",
+      "answer": "Doanh thu trừ giá vốn (lợi nhuận gộp) theo từng tháng trong năm 2022 như sau [S1]:\n\n*   **Tháng 1:** 8.812.026,72\n*   **Tháng 2:** 13.817.522,37\n*   **Tháng 3:** 15.870.978,28\n*   **Tháng 4:** 16.943.878,84\n*   **Tháng 5:** 25.076.380,89\n*   **Tháng 6:** 18.101.540,76\n*   **Tháng 7:** 6.535.849,00\n*   **Tháng 8:** 19.509.565,13\n*   **Tháng 9:** 7.369.044,32\n*   **Tháng 10:** 13.224.558,51\n*   **Tháng 11:** 5.102.060,14\n*   **Tháng 12:** -1.034.737,24\n\nSources: [S1] commerce.sales",
+      "contexts": [
+        "{}",
+        "[{\"month\": \"2022-01-01 00:00:00+00:00\", \"profit\": \"8812026.72\"}, {\"month\": \"2022-02-01 00:00:00+00:00\", \"profit\": \"13817522.37\"}, {\"month\": \"2022-03-01 00:00:00+00:00\", \"profit\": \"15870978.28\"}, {\"month\": \"2022-04-01 00:00:00+00:00\", \"profit\": \"16943878.84\"}, {\"month\": \"2022-05-01 00:00:00+00:00\", \"profit\": \"25076380.89\"}, {\"month\": \"2022-06-01 00:00:00+00:00\", \"profit\": \"18101540.76\"}, {\"month\": \"2022-07-01 00:00:00+00:00\", \"profit\": \"6535849.00\"}, {\"month\": \"2022-08-01 00:00:00+00:00\", \"profit\": \"19509565.13\"}, {\"month\": \"2022-09-01 00:00:00+00:00\", \"profit\": \"7369044.32\"}, {\"month\": \"2022-10-01 00:00:00+00:00\", \"profit\": \"13224558.51\"}, {\"month\": \"2022-11-01 00:00:00+00:00\", \"profit\": \"5102060.14\"}, {\"month\": \"2022-12-01 00:00:00+00:00\", \"profit\": \"-1034737.24\"}]"
+      ],
+      "reference": "[{\"row_count\": 12}]",
+      "evidence_sources": [
+        "commerce.sales"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.sales"
+        ],
+        "explanation": "Calculates the monthly profit (revenue minus cost of goods sold) for the year 2022 by truncating the sales date to the month and summing the difference.",
+        "ok": true
+      },
+      "latency_seconds": 5.327,
+      "total_case_seconds": 168.139,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9021,
+        "context_precision": 0.5
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": true,
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "month": "2022-01-01 00:00:00+00:00",
+          "profit": "8812026.72"
+        },
+        {
+          "month": "2022-02-01 00:00:00+00:00",
+          "profit": "13817522.37"
+        },
+        {
+          "month": "2022-03-01 00:00:00+00:00",
+          "profit": "15870978.28"
+        },
+        {
+          "month": "2022-04-01 00:00:00+00:00",
+          "profit": "16943878.84"
+        },
+        {
+          "month": "2022-05-01 00:00:00+00:00",
+          "profit": "25076380.89"
+        },
+        {
+          "month": "2022-06-01 00:00:00+00:00",
+          "profit": "18101540.76"
+        },
+        {
+          "month": "2022-07-01 00:00:00+00:00",
+          "profit": "6535849.00"
+        },
+        {
+          "month": "2022-08-01 00:00:00+00:00",
+          "profit": "19509565.13"
+        },
+        {
+          "month": "2022-09-01 00:00:00+00:00",
+          "profit": "7369044.32"
+        },
+        {
+          "month": "2022-10-01 00:00:00+00:00",
+          "profit": "13224558.51"
+        },
+        {
+          "month": "2022-11-01 00:00:00+00:00",
+          "profit": "5102060.14"
+        },
+        {
+          "month": "2022-12-01 00:00:00+00:00",
+          "profit": "-1034737.24"
+        }
+      ],
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 5.326,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 58.743,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 63.67,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 40.399,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "S05",
+      "agent": "sql",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Trong năm 2022 có bao nhiêu đơn hàng theo từng order_status?",
+      "answer": "I couldn't safely run the generated query: The final SELECT needs LIMIT 1..200.",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "SQLValidationError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 2.491,
+      "total_case_seconds": 114.349,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7526,
+        "context_precision": 0.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": false,
+      "sql_semantic_correctness": true,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 2.491,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 27.778,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 67.653,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 16.426,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "S06",
+      "agent": "sql",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Trong năm 2022, số đơn hàng theo từng payment_method là bao nhiêu?",
+      "answer": "Trong năm 2022, số lượng đơn hàng theo từng phương thức thanh toán như sau [S1]:\n\n*   **credit_card**: 19.868 đơn\n*   **cod**: 5.376 đơn\n*   **paypal**: 5.335 đơn\n*   **apple_pay**: 3.581 đơn\n*   **bank_transfer**: 1.844 đơn\n\nSources: [S1] commerce.orders",
+      "contexts": [
+        "{}",
+        "[{\"payment_method\": \"apple_pay\", \"order_count\": 3581}, {\"payment_method\": \"bank_transfer\", \"order_count\": 1844}, {\"payment_method\": \"cod\", \"order_count\": 5376}, {\"payment_method\": \"credit_card\", \"order_count\": 19868}, {\"payment_method\": \"paypal\", \"order_count\": 5335}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [
+        "commerce.orders"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.orders"
+        ],
+        "explanation": "Counts the number of orders for each payment method in the year 2022 by filtering the orders table on the year of order_date and grouping by payment_method.",
+        "ok": true
+      },
+      "latency_seconds": 9.354,
+      "total_case_seconds": 138.299,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9558,
+        "context_precision": 0.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": true,
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "payment_method": "apple_pay",
+          "order_count": 3581
+        },
+        {
+          "payment_method": "bank_transfer",
+          "order_count": 1844
+        },
+        {
+          "payment_method": "cod",
+          "order_count": 5376
+        },
+        {
+          "payment_method": "credit_card",
+          "order_count": 19868
+        },
+        {
+          "payment_method": "paypal",
+          "order_count": 5335
+        }
+      ],
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 9.354,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 39.163,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 59.249,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 30.533,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "S07",
+      "agent": "sql",
+      "model": "qwen/qwen3.8-27b",
+      "question": "So sánh số đơn hàng theo device_type trong năm 2022.",
+      "answer": "I couldn't safely run the generated query: The final SELECT needs LIMIT 1..200.",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "SQLValidationError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 2.608,
+      "total_case_seconds": 152.992,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7617,
+        "context_precision": 0.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": false,
+      "sql_semantic_correctness": true,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 2.608,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 49.938,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 72.071,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 28.374,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "S08",
+      "agent": "sql",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Doanh thu thuần theo khu vực trong tháng 12/2022 là bao nhiêu?",
+      "answer": "The table commerce.sales does not have an approved join key to commerce.orders (only date is available, which is not an approved join). Please specify if revenue should be calculated from commerce.order_items (quantity * unit_price - discount_amount) or if there is a different intended relationship.",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"field\": \"region\", \"contains\": \"East\"}, {\"field\": \"net_sales\", \"equals\": 14079268.92}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "clarification_required": true,
+        "ok": false,
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ]
+      },
+      "latency_seconds": 23.207,
+      "total_case_seconds": 100.477,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": false,
+      "sql_semantic_correctness": false,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 23.207,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 22.868,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 44.763,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 9.639,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "S09",
+      "agent": "sql",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Xếp hạng các category theo doanh thu thuần của sản phẩm trong năm 2022.",
+      "answer": "I couldn't safely run the generated query: Column is not approved: oi.order_date",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 20]}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "SQLValidationError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 1.48,
+      "total_case_seconds": 110.434,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.742,
+        "context_precision": 0.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": false,
+      "sql_semantic_correctness": true,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 1.48,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 34.322,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 48.861,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 25.772,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "S10",
+      "agent": "sql",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Liệt kê 10 sản phẩm bán ra nhiều nhất theo tổng quantity trong năm 2022.",
+      "answer": "Dưới đây là 10 sản phẩm bán ra nhiều nhất theo tổng số lượng (quantity) trong năm 2022:\n\n1. SaigonFlex UM-54: 8.976 [S1]\n2. SaigonFlex UM-11: 4.266 [S1]\n3. SaigonFlex UM-56: 2.784 [S1]\n4. SaigonFlex UM-66: 2.730 [S1]\n5. SaigonFlex UM-75: 2.613 [S1]\n6. HanoiStreet UE-17: 2.532 [S1]\n7. MekongFit UE-18: 2.478 [S1]\n8. SaigonFlex UM-12: 2.355 [S1]\n9. HanoiStreet YY-10: 2.091 [S1]\n10. SaigonFlex UC-50: 1.683 [S1]\n\nSources: [S1] commerce.order_items; [S2] commerce.products; [S3] commerce.orders",
+      "contexts": [
+        "{}",
+        "{}",
+        "{}",
+        "[{\"product_name\": \"SaigonFlex UM-54\", \"total_quantity\": 8976}, {\"product_name\": \"SaigonFlex UM-11\", \"total_quantity\": 4266}, {\"product_name\": \"SaigonFlex UM-56\", \"total_quantity\": 2784}, {\"product_name\": \"SaigonFlex UM-66\", \"total_quantity\": 2730}, {\"product_name\": \"SaigonFlex UM-75\", \"total_quantity\": 2613}, {\"product_name\": \"HanoiStreet UE-17\", \"total_quantity\": 2532}, {\"product_name\": \"MekongFit UE-18\", \"total_quantity\": 2478}, {\"product_name\": \"SaigonFlex UM-12\", \"total_quantity\": 2355}, {\"product_name\": \"HanoiStreet YY-10\", \"total_quantity\": 2091}, {\"product_name\": \"SaigonFlex UC-50\", \"total_quantity\": 1683}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 10]}]",
+      "evidence_sources": [
+        "commerce.order_items",
+        "commerce.products",
+        "commerce.orders"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.order_items",
+          "commerce.products",
+          "commerce.orders"
+        ],
+        "explanation": "Joins order_items with products and orders to filter for the year 2022, sums the quantity per product, and returns the top 10 products by total quantity sold.",
+        "ok": true
+      },
+      "latency_seconds": 7.333,
+      "total_case_seconds": 173.331,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9394,
+        "context_precision": 0.25
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": true,
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "product_name": "SaigonFlex UM-54",
+          "total_quantity": 8976
+        },
+        {
+          "product_name": "SaigonFlex UM-11",
+          "total_quantity": 4266
+        },
+        {
+          "product_name": "SaigonFlex UM-56",
+          "total_quantity": 2784
+        },
+        {
+          "product_name": "SaigonFlex UM-66",
+          "total_quantity": 2730
+        },
+        {
+          "product_name": "SaigonFlex UM-75",
+          "total_quantity": 2613
+        },
+        {
+          "product_name": "HanoiStreet UE-17",
+          "total_quantity": 2532
+        },
+        {
+          "product_name": "MekongFit UE-18",
+          "total_quantity": 2478
+        },
+        {
+          "product_name": "SaigonFlex UM-12",
+          "total_quantity": 2355
+        },
+        {
+          "product_name": "HanoiStreet YY-10",
+          "total_quantity": 2091
+        },
+        {
+          "product_name": "SaigonFlex UC-50",
+          "total_quantity": 1683
+        }
+      ],
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 7.333,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 53.147,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 48.868,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 63.982,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "S11",
+      "agent": "sql",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Số đơn hàng theo acquisition_channel của khách hàng trong năm 2022 là bao nhiêu?",
+      "answer": "Trong năm 2022, số lượng đơn hàng theo kênh tiếp cận (acquisition_channel) của khách hàng như sau [S1][S2]:\n\n*   **Organic search:** 10.744 đơn\n*   **Paid search:** 7.261 đơn\n*   **Social media:** 7.289 đơn\n*   **Email campaign:** 4.304 đơn\n*   **Referral:** 3.473 đơn\n*   **Direct:** 2.933 đơn\n\nSources: [S1] commerce.customers; [S2] commerce.orders",
+      "contexts": [
+        "{}",
+        "{}",
+        "[{\"acquisition_channel\": \"direct\", \"order_count\": 2933}, {\"acquisition_channel\": \"email_campaign\", \"order_count\": 4304}, {\"acquisition_channel\": \"organic_search\", \"order_count\": 10744}, {\"acquisition_channel\": \"paid_search\", \"order_count\": 7261}, {\"acquisition_channel\": \"referral\", \"order_count\": 3473}, {\"acquisition_channel\": \"social_media\", \"order_count\": 7289}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [
+        "commerce.customers",
+        "commerce.orders"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.customers",
+          "commerce.orders"
+        ],
+        "explanation": "Counts the number of orders for each customer acquisition channel in 2022 by joining customers and orders on customer_id, filtering orders by the year 2022, grouping by acquisition channel, and ordering the results alphabetically by channel.",
+        "ok": true
+      },
+      "latency_seconds": 4.296,
+      "total_case_seconds": 149.443,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.937,
+        "context_precision": 0.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": true,
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "acquisition_channel": "direct",
+          "order_count": 2933
+        },
+        {
+          "acquisition_channel": "email_campaign",
+          "order_count": 4304
+        },
+        {
+          "acquisition_channel": "organic_search",
+          "order_count": 10744
+        },
+        {
+          "acquisition_channel": "paid_search",
+          "order_count": 7261
+        },
+        {
+          "acquisition_channel": "referral",
+          "order_count": 3473
+        },
+        {
+          "acquisition_channel": "social_media",
+          "order_count": 7289
+        }
+      ],
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 4.296,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 48.817,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 41.625,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 54.704,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "S12",
+      "agent": "sql",
+      "model": "qwen/qwen3.8-27b",
+      "question": "AOV theo khu vực trong năm 2022 là bao nhiêu, dùng payment_value làm giá trị đơn hàng?",
+      "answer": "AOV theo khu vực trong năm 2022 (dựa trên payment_value) là:\n*   Central: 32,602.74 [S1]\n*   East: 31,429.41 [S1]\n*   West: 27,865.94 [S1]\n\nSources: [S1] commerce.orders; [S2] commerce.payments; [S3] commerce.geography",
+      "contexts": [
+        "{}",
+        "{}",
+        "{}",
+        "[{\"region\": \"Central\", \"aov\": \"32602.74\"}, {\"region\": \"East\", \"aov\": \"31429.41\"}, {\"region\": \"West\", \"aov\": \"27865.94\"}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [
+        "commerce.orders",
+        "commerce.payments",
+        "commerce.geography"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.orders",
+          "commerce.payments",
+          "commerce.geography"
+        ],
+        "explanation": "Calculates the Average Order Value (AOV) by region for the year 2022 using the payment_value from the payments table. It joins orders with payments and geography to get the region, filters by the year 2022, and groups by region.",
+        "ok": true
+      },
+      "latency_seconds": 11.722,
+      "total_case_seconds": 169.876,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9448,
+        "context_precision": 0.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": true,
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "region": "Central",
+          "aov": "32602.74"
+        },
+        {
+          "region": "East",
+          "aov": "31429.41"
+        },
+        {
+          "region": "West",
+          "aov": "27865.94"
+        }
+      ],
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 11.722,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 39.433,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 64.114,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 54.606,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    }
+  ]
+}

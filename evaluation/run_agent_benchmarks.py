@@ -9,6 +9,7 @@ import math
 import os
 import sys
 import time
+from datetime import date
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -25,9 +26,9 @@ from core.models.agents import AgentRequest, VerifiedIdentity
 from evaluation.ragas_judge import build_ragas_metrics
 
 DATA = ROOT / "evaluation/agent_benchmarks"
-OUTPUT_DIR = ROOT / "artifacts/evaluation/agent-benchmarks-2026-10-25"
+OUTPUT_DIR = ROOT / "artifacts/evaluation/agent-benchmarks-rerun-2026-10-23"
 IDENTITY = VerifiedIdentity(subject="agent-benchmark", permissions={"analytics:read"})
-JUDGE_QUOTA_EXHAUSTED = False
+METRIC_NAMES = ("faithfulness", "answer_relevancy", "context_precision")
 
 
 class CaseTrace(BaseCallbackHandler):
@@ -86,11 +87,133 @@ def _plain_report(payload, media_type):
     ])
 
 
-async def _score(metrics, case, answer, contexts, reference):
-    global JUDGE_QUOTA_EXHAUSTED
-    if not answer.strip():
-        return {name: None for name in metrics}, {name: "no answer" for name in metrics}
-    values, errors = {}, {}
+async def _generate_case(app, router, group, case, fixture, request, config):
+    if group == "report":
+        async def generate(_input):
+            return await app.state.report_agent.generate_from_template(
+                request, "benchmark.md", _report_template(fixture),
+            )
+        runnable = RunnableLambda(generate)
+        report_result, payload, media = await runnable.ainvoke({}, config=config)
+        return {
+            "answer": _plain_report(payload, media),
+            "contexts": [item.content or json.dumps(item.metadata, ensure_ascii=False, default=str)
+                         for item in report_result.evidence],
+            "evidence_sources": [item.source for item in report_result.evidence],
+            "agent_metadata": report_result.metadata,
+        }
+
+    mode = "knowledge" if group == "knowledge" else "sql"
+    result = await router.run_mode(request, mode, config=config)
+    contexts = [item.content or json.dumps(item.metadata, ensure_ascii=False, default=str)
+                for item in result.evidence]
+    rows = []
+    semantic = None
+    if group == "sql":
+        rows = (result.data or {}).get("rows", [])
+        if result.data:
+            contexts.append(json.dumps(rows, ensure_ascii=False, default=str))
+        semantic = _sql_checks_match(rows, case.get("expected_result_checks", []))
+    return {
+        "answer": result.answer,
+        "contexts": contexts,
+        "evidence_sources": [item.source for item in result.evidence],
+        "agent_metadata": result.metadata,
+        "sql_semantic_correctness": semantic,
+        "sql_rows": rows,
+    }
+
+
+def _is_transient_error(error):
+    if isinstance(error, (TimeoutError, asyncio.TimeoutError, ConnectionError)):
+        return True
+    status = getattr(error, "status_code", None) or getattr(error, "status", None)
+    text = str(error).casefold()
+    if any(token in text for token in ("tokens per day", "daily quota", "quota exceeded", "insufficient_quota")):
+        return False
+    if status in (408, 409, 429, 500, 502, 503, 504):
+        return True
+    return any(token in text for token in (
+        "http 408", "http 409", "http 429", "http 500", "http 502", "http 503", "http 504",
+        "error code: 408", "error code: 409", "error code: 429", "error code: 500",
+        "error code: 502", "error code: 503", "error code: 504",
+        "rate_limit_exceeded", "temporarily unavailable", "service unavailable",
+        "connection error", "connection reset", "connection refused", "timed out", "timeout",
+    ))
+
+
+async def _retry_operation(name, operation, *, retry_delay=2, timeout=180):
+    attempts = []
+    for number in (1, 2):
+        started = time.perf_counter()
+        try:
+            value = await asyncio.wait_for(operation(), timeout=timeout)
+            attempts.append({"attempt": number, "success": True, "transient_failure": False,
+                             "elapsed_seconds": round(time.perf_counter() - started, 3), "error": None})
+            return value, {"operation": name, "attempts": attempts,
+                           "first_attempt_success": attempts[0]["success"], "final_success": True}, None
+        except Exception as error:
+            transient = _is_transient_error(error)
+            attempts.append({"attempt": number, "success": False, "transient_failure": transient,
+                             "elapsed_seconds": round(time.perf_counter() - started, 3),
+                             "error": f"{type(error).__name__}: {str(error)[:500]}"})
+            if number == 1 and transient:
+                await asyncio.sleep(retry_delay)
+                continue
+            return None, {"operation": name, "attempts": attempts,
+                          "first_attempt_success": False, "final_success": False}, error
+
+
+def _metric_eligibility(record):
+    answered = isinstance(record.get("answer"), str) and bool(record["answer"].strip())
+    contexts = bool(record.get("contexts"))
+    reference = isinstance(record.get("reference"), str) and bool(record["reference"].strip())
+    return {
+        "faithfulness": answered and contexts,
+        "answer_relevancy": answered,
+        "context_precision": answered and contexts and reference,
+    }
+
+
+def _standardize_record(record):
+    result = {
+        "case_id": None, "agent": None, "model": None, "question": None,
+        "answer": None, "contexts": [], "reference": None, "evidence_sources": [],
+        "agent_metadata": {}, "latency_seconds": None, "total_case_seconds": None,
+        "langchain_callback_events": 0, "scores": {name: None for name in METRIC_NAMES},
+        "metric_eligibility": {name: False for name in METRIC_NAMES},
+        "score_errors": {name: None for name in METRIC_NAMES}, "sql_safety_pass": None,
+        "sql_semantic_correctness": None, "sql_rows": [], "abstention_expected": False,
+        "abstention_observed": None, "hallucination_rate": None,
+        "hallucination_review": "manual claim-level review required", "status": "run_error",
+        "scoring_status": "not_scored", "error": None, "operation_attempts": [],
+    }
+    result.update(record)
+    for name in ("scores", "metric_eligibility", "score_errors"):
+        if not isinstance(result[name], dict):
+            result[name] = {}
+    for name in METRIC_NAMES:
+        result["scores"].setdefault(name, None)
+        result["metric_eligibility"].setdefault(name, False)
+        result["score_errors"].setdefault(name, None)
+    for name in ("contexts", "evidence_sources", "sql_rows", "operation_attempts"):
+        if not isinstance(result[name], list):
+            result[name] = []
+    for name in ("agent_metadata",):
+        if not isinstance(result[name], dict):
+            result[name] = {}
+    for name in ("answer", "reference", "error"):
+        if result[name] is not None and not isinstance(result[name], str):
+            result[name] = str(result[name])
+    if not isinstance(result["langchain_callback_events"], int):
+        result["langchain_callback_events"] = 0
+    return result
+
+
+async def _score(metrics, case, answer, contexts, reference, *, judge_enabled=True):
+    record = {"answer": answer, "contexts": contexts, "reference": reference}
+    eligibility = _metric_eligibility(record)
+    values, errors, operations = {name: None for name in METRIC_NAMES}, {name: None for name in METRIC_NAMES}, []
     arguments = {
         "faithfulness": {"user_input": case["question"], "response": answer,
                          "retrieved_contexts": contexts},
@@ -98,43 +221,45 @@ async def _score(metrics, case, answer, contexts, reference):
         "context_precision": {"user_input": case["question"], "reference": reference,
                               "retrieved_contexts": contexts},
     }
-    for name, metric in metrics.items():
-        if JUDGE_QUOTA_EXHAUSTED:
-            values[name] = None
-            errors[name] = "deferred: Groq judge quota was exhausted"
+    for name in METRIC_NAMES:
+        if not eligibility[name]:
             continue
-        for attempt in range(2):
-            try:
-                value = await metric.ascore(**arguments[name])
-                values[name] = round(float(value.value), 4)
-                break
-            except Exception as error:
-                message = str(error)
-                lowered = message.casefold()
-                if "429" in lowered or "rate_limit" in lowered or "tokens per day" in lowered:
-                    JUDGE_QUOTA_EXHAUSTED = True
-                    values[name] = None
-                    errors[name] = "deferred: " + message[:450]
-                    break
-                if attempt == 1 or not any(token in lowered for token in
-                                           ("503", "unavailable", "timed out")):
-                    values[name] = None
-                    errors[name] = type(error).__name__ + ": " + message[:500]
-                    break
-                await asyncio.sleep(15)
-    return values, errors
+        if not judge_enabled or metrics is None:
+            errors[name] = "judge_skipped" if not judge_enabled else "judge_unavailable"
+            continue
+        metric = metrics.get(name)
+        if metric is None:
+            continue
+
+        async def run_metric():
+            result = await metric.ascore(**arguments[name])
+            score = float(result.value)
+            if not math.isfinite(score):
+                raise ValueError("RAGAS returned a non-finite score")
+            return score
+
+        value, attempt_log, error = await _retry_operation(
+            f"judge.{name}", run_metric,
+        )
+        operations.append(attempt_log)
+        if error is None:
+            values[name] = round(value, 4)
+        else:
+            errors[name] = f"{type(error).__name__}: {str(error)[:500]}"
+    return values, eligibility, errors, operations
 
 
 def _save(records, output, model_key, model_name):
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_suffix(".json.tmp")
-    temporary.write_text(json.dumps({"dataset": "commerce-agent-benchmarks-v1",
-                                    "model_key": model_key,
-                                    "model": model_name,
-                                    "judge_model": os.getenv("RAGAS_JUDGE_MODEL", "openai/gpt-oss-20b"),
-                                    "summary": _summary(records),
-                                    "results": records},
-                                    ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    payload = {"dataset": "commerce-agent-benchmarks-v1", "model_key": model_key,
+               "model": model_name, "judge_model": "Luna 5.6 Medium (Codex CLI)",
+               "run_date": date.today().isoformat(),
+               "evaluation_config": {"cases_per_agent": 25, "agents": ["knowledge", "sql", "report"],
+                                     "metrics": list(METRIC_NAMES),
+                                     "retry_policy": "one retry for transient failures; two attempts maximum"},
+               "summary": _summary(records), "results": records}
+    temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False, default=str), encoding="utf-8")
     temporary.replace(output)
 
 
@@ -143,33 +268,46 @@ def _summary(records):
     for agent in sorted({record["agent"] for record in records}):
         subset = [record for record in records if record["agent"] == agent]
         metrics = {}
-        for name in ("faithfulness", "answer_relevancy", "context_precision"):
-            values = [record.get("scores", {}).get(name) for record in subset
-                      if isinstance(record.get("scores", {}).get(name), (int, float))]
+        for name in METRIC_NAMES:
+            eligible = [record for record in subset if record["metric_eligibility"][name]]
+            values = [record["scores"][name] for record in eligible
+                      if isinstance(record["scores"][name], (int, float))
+                      and not isinstance(record["scores"][name], bool)
+                      and math.isfinite(record["scores"][name])]
             metrics[name] = {"mean": round(sum(values) / len(values), 4) if values else None,
-                             "scored_cases": len(values)}
+                             "scored_cases": len(values), "eligible_cases": len(eligible),
+                             "coverage": round(len(values) / len(eligible), 4) if eligible else None,
+                             "score_errors": sum(record["score_errors"][name] is not None for record in eligible)}
         latencies = [record["latency_seconds"] for record in subset
-                     if isinstance(record.get("latency_seconds"), (int, float))]
+                     if isinstance(record.get("latency_seconds"), (int, float)) and math.isfinite(record["latency_seconds"])]
         summary["by_agent"][agent] = {
             "case_count": len(subset),
-            "status_counts": {status: sum(record.get("status") == status for record in subset)
-                              for status in sorted({record.get("status", "unknown") for record in subset})},
+            "answered_cases": sum(record.get("status") == "completed" for record in subset),
+            "run_errors": sum(record.get("status") == "run_error" for record in subset),
             "mean_agent_latency_seconds": round(sum(latencies) / len(latencies), 3) if latencies else None,
+            "latency_cases": len(latencies),
             "ragas": metrics,
         }
+    summary["ragas"] = {}
+    for name in METRIC_NAMES:
+        eligible = [record for record in records if record["metric_eligibility"][name]]
+        values = [record["scores"][name] for record in eligible
+                  if isinstance(record["scores"][name], (int, float))
+                  and not isinstance(record["scores"][name], bool)
+                  and math.isfinite(record["scores"][name])]
+        summary["ragas"][name] = {"mean": round(sum(values) / len(values), 4) if values else None,
+                                   "scored_cases": len(values), "eligible_cases": len(eligible),
+                                   "coverage": round(len(values) / len(eligible), 4) if eligible else None,
+                                   "score_errors": sum(record["score_errors"][name] is not None for record in eligible)}
     sql_cases = [record for record in records if record["agent"] == "sql"]
-    safety = [record["sql_safety_pass"] for record in sql_cases if record.get("sql_safety_pass") is not None]
-    abstention = [record for record in sql_cases if record.get("abstention_observed") is not None]
+    safety = [record["sql_safety_pass"] for record in sql_cases if isinstance(record.get("sql_safety_pass"), bool)]
+    semantic = [record["sql_semantic_correctness"] for record in sql_cases if isinstance(record.get("sql_semantic_correctness"), bool)]
+    abstention = [record for record in sql_cases if isinstance(record.get("abstention_observed"), bool)]
     summary["sql"] = {
         "safety_pass_rate": round(sum(safety) / len(safety), 4) if safety else None,
         "safety_cases": len(safety),
-        "semantic_correctness_rate": round(sum(record["sql_semantic_correctness"]
-                                                  for record in sql_cases
-                                                  if record.get("sql_semantic_correctness") is not None) /
-                                            sum(record.get("sql_semantic_correctness") is not None
-                                                for record in sql_cases), 4)
-        if any(record.get("sql_semantic_correctness") is not None for record in sql_cases) else None,
-        "semantic_cases": sum(record.get("sql_semantic_correctness") is not None for record in sql_cases),
+        "semantic_correctness_rate": round(sum(semantic) / len(semantic), 4) if semantic else None,
+        "semantic_cases": len(semantic),
         "abstention_accuracy": round(sum(record["abstention_expected"] == record["abstention_observed"]
                                            for record in abstention) / len(abstention), 4)
         if abstention else None,
@@ -192,20 +330,24 @@ async def main():
         "api_key_env": ("CLOUDFLARE_API_TOKEN",),
     }}
     parser.add_argument("--model", choices=models, default="qwen3")
-    parser.add_argument("--judge-model", default=os.getenv("RAGAS_JUDGE_MODEL", "openai/gpt-oss-20b"))
+    parser.add_argument("--judge-model", choices=("gpt-5.6-luna",),
+                        default=os.getenv("RAGAS_CODEX_MODEL", "gpt-5.6-luna"))
     parser.add_argument("--output-dir", default=str(OUTPUT_DIR),
                         help="Use a separate directory to preserve prior benchmark runs")
     parser.add_argument("--agent", choices=("knowledge", "sql", "report"),
                         help="Limit the benchmark to one agent's questions")
+    parser.add_argument("--limit-cases", type=int,
+                        help="Run only the first N cases per selected agent (for smoke checks)")
+    parser.add_argument("--case-id", help="Run one named case (for targeted smoke checks)")
     parser.add_argument("--skip-scoring", action="store_true",
                         help="Run remaining agents without Ragas calls after judge quota is exhausted")
     parser.add_argument("--score-only", action="store_true",
                         help="Retry missing/failed Ragas metrics from saved agent outputs")
     args = parser.parse_args()
-    os.environ["RAGAS_JUDGE_MODEL"] = args.judge_model
+    os.environ["RAGAS_CODEX_MODEL"] = args.judge_model
     model_config = models[args.model]
     model_name = model_config["model"]
-    output = Path(args.output_dir) / f"results-{model_name.replace('@', '').replace('/', '-')}.json"
+    output = Path(args.output_dir) / f"results-rerun-{date.today().isoformat()}-{model_name.replace('@', '').replace('/', '-')}.json"
 
     def make_provider():
         if model_config.get("provider") == "cloudflare":
@@ -256,14 +398,20 @@ async def main():
             if not names:
                 continue
             selected = {name: metrics[name] for name in names}
-            scores, errors = await _score(selected, record, record["answer"],
-                                          record.get("contexts", []), record.get("reference", ""))
-            record.setdefault("scores", {}).update(scores)
-            record.setdefault("score_errors", {}).update(errors)
-            record["status"] = "scored" if all(record["scores"].get(name) is not None for name in metrics) else "score_partial"
+            scores, eligibility, errors, operations = await _score(
+                selected, record, record["answer"], record.get("contexts", []), record.get("reference", ""),
+            )
+            for name in selected:
+                record.setdefault("scores", {})[name] = scores[name]
+                record.setdefault("score_errors", {})[name] = errors[name]
+            record["metric_eligibility"] = eligibility
+            record["operation_attempts"] = record.get("operation_attempts", []) + operations
+            record["scoring_status"] = "complete" if all(
+                not eligibility[name] or record["scores"].get(name) is not None for name in METRIC_NAMES
+            ) else "partial"
+            record["status"] = "completed"
+            record = _standardize_record(record)
             _save(records, output, args.model, model_name)
-            if JUDGE_QUOTA_EXHAUSTED:
-                break
         print(output)
         return
 
@@ -274,6 +422,16 @@ async def main():
     }
     if args.agent:
         datasets = {args.agent: datasets[args.agent]}
+    if args.case_id:
+        datasets = {group: [case for case in cases if case["id"] == args.case_id]
+                    for group, cases in datasets.items()}
+        datasets = {group: cases for group, cases in datasets.items() if cases}
+        if not datasets:
+            parser.error(f"Unknown case ID: {args.case_id}")
+    if args.limit_cases is not None:
+        if args.limit_cases < 1:
+            parser.error("--limit-cases must be at least 1")
+        datasets = {group: cases[:args.limit_cases] for group, cases in datasets.items()}
     fixtures = {item["id"]: item for item in _load("report_template_fixtures.json")["templates"]}
     try:
         metrics = None if args.skip_scoring else build_ragas_metrics()
@@ -285,7 +443,7 @@ async def main():
     from core.agents.knowledge_agent import KnowledgeAgent
     from core.rag.rag_service import RAGService
     app = create_app(llm=provider, knowledge_agent=KnowledgeAgent(RAGService(llm=provider)))
-    completed = {record["case_id"] for record in records if record.get("answer")}
+    completed = {record["case_id"] for record in records if record.get("status") == "completed"}
     async with app.router.lifespan_context(app):
         router = app.state.chat_agent
         for group, cases in datasets.items():
@@ -299,73 +457,53 @@ async def main():
                 request = AgentRequest(question=case["question"], identity=IDENTITY,
                                        metadata={"retrieval_method": "translated_hybrid_rerank"})
                 start = time.perf_counter()
-                record = {"case_id": case["id"], "agent": group, "question": case["question"],
-                          "model": model_name}
-                try:
-                    agent_start = time.perf_counter()
-                    if group == "report":
-                        fixture = fixtures[case["template_fixture_id"]]
-                        async def generate(_input):
-                            return await app.state.report_agent.generate_from_template(
-                                request, "benchmark.md", _report_template(fixture),
-                            )
-                        runnable = RunnableLambda(generate)
-                        report_result, payload, media = await runnable.ainvoke({}, config=config)
-                        answer = _plain_report(payload, media)
-                        contexts = [item.content or json.dumps(item.metadata, ensure_ascii=False, default=str)
-                                    for item in report_result.evidence]
-                        result_metadata = report_result.metadata
-                        evidence = [item.source for item in report_result.evidence]
-                    else:
-                        mode = "knowledge" if group == "knowledge" else "sql"
-                        result = await router.run_mode(request, mode, config=config)
-                        answer = result.answer
-                        contexts = [item.content or json.dumps(item.metadata, ensure_ascii=False, default=str)
-                                    for item in result.evidence]
-                        if group == "sql" and result.data:
-                            contexts.append(json.dumps(result.data.get("rows", []), ensure_ascii=False, default=str))
-                        if group == "sql":
-                            rows = result.data.get("rows", [])
-                            record["sql_semantic_correctness"] = _sql_checks_match(
-                                rows, case.get("expected_result_checks", []),
-                            )
-                            record["sql_rows"] = rows
-                        evidence = [item.source for item in result.evidence]
-                        result_metadata = result.metadata
-                    agent_latency = round(time.perf_counter() - agent_start, 3)
+                record = _standardize_record({"case_id": case["id"], "agent": group,
+                                              "question": case["question"], "model": model_name})
+                fixture = fixtures.get(case.get("template_fixture_id"))
+                agent_start = time.perf_counter()
+                output_data, model_attempts, model_error = await _retry_operation(
+                    "model_generation",
+                    lambda: _generate_case(app, router, group, case, fixture, request, config),
+                )
+                record["operation_attempts"].append(model_attempts)
+                record["latency_seconds"] = round(time.perf_counter() - agent_start, 3)
+                if model_error is not None:
+                    record.update({"error": f"{type(model_error).__name__}: {str(model_error)[:500]}",
+                                   "langchain_callback_events": trace.events, "status": "run_error",
+                                   "total_case_seconds": round(time.perf_counter() - start, 3)})
+                else:
                     expected = case.get("expected_facts") or case.get("expected_result_checks") or []
                     reference = json.dumps(expected, ensure_ascii=False, default=str)
-                    if metrics is None:
-                        scores = {"faithfulness": None, "answer_relevancy": None, "context_precision": None}
-                        score_errors = {name: "deferred: manual scoring required; Ragas was skipped" for name in scores}
-                    else:
-                        scores, score_errors = await _score(metrics, case, answer, contexts, reference)
-                    record.update({
-                        "answer": answer,
-                        "contexts": contexts,
-                        "reference": reference,
-                        "evidence_sources": evidence,
-                        "agent_metadata": result_metadata,
-                        "latency_seconds": agent_latency,
-                        "total_case_seconds": round(time.perf_counter() - start, 3),
-                        "langchain_callback_events": trace.events,
-                        "scores": scores,
-                        "score_errors": score_errors,
-                        "sql_safety_pass": (result_metadata.get("ok") if group == "sql" else None),
-                        "abstention_expected": case.get("expected_behavior") == "abstain",
-                        "abstention_observed": (not result_metadata.get("ok", True) if group == "sql" else None),
-                        "hallucination_rate": None,
-                        "hallucination_review": "manual claim-level review required",
-                        "status": ("generated" if args.skip_scoring else
-                                   "scored" if not score_errors else "score_partial"),
-                    })
-                except Exception as error:
-                    record.update({"latency_seconds": round(time.perf_counter() - start, 3),
-                                   "error": type(error).__name__ + ": " + str(error)[:500],
-                                   "langchain_callback_events": trace.events, "status": "run_error"})
+                    scoring_started = time.perf_counter()
+                    scores, eligibility, score_errors, judge_attempts = await _score(
+                        metrics, case, output_data["answer"], output_data["contexts"], reference,
+                        judge_enabled=not args.skip_scoring,
+                    )
+                    record.update(output_data)
+                    record["reference"] = reference
+                    record["scores"] = scores
+                    record["metric_eligibility"] = eligibility
+                    record["score_errors"] = score_errors
+                    record["operation_attempts"].extend(judge_attempts)
+                    metadata = output_data.get("agent_metadata") or {}
+                    record["agent_metadata"] = metadata
+                    record["sql_safety_pass"] = metadata.get("ok") if group == "sql" else None
+                    record["abstention_expected"] = case.get("expected_behavior") == "abstain"
+                    record["abstention_observed"] = (
+                        not metadata.get("ok", True) if group == "sql" else None
+                    )
+                    record["langchain_callback_events"] = trace.events
+                    record["status"] = "completed"
+                    record["scoring_status"] = (
+                        "not_applicable" if not any(eligibility.values()) else
+                        "complete" if all(not eligibility[name] or scores[name] is not None for name in METRIC_NAMES)
+                        else "partial"
+                    )
+                    record["total_case_seconds"] = round(time.perf_counter() - start, 3)
+                record = _standardize_record(record)
                 records.append(record)
                 _save(records, output, args.model, model_name)
-                print(f"{case['id']}: {record['status']}", flush=True)
+                print(f"{case['id']}: {record['status']} ({record['scoring_status']})", flush=True)
     print(output)
 
 

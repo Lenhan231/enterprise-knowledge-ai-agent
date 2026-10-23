@@ -1,3 +1,121 @@
+## 2026-10-23 - PC resume: slides and new document checkpoint
+
+User requested commit/push to Huy before switching to PC. Read the current
+commit ID from git log; this entry supersedes earlier local/uncommitted notes.
+
+NEXT TASK: finish the shared Canva Review2 presentation. The23-slide template
+is on Canva; laptop export was C:/Users/Eroz/Downloads/Review 2.pdf, not tracked.
+Paste-ready English Huy content is docs/review2/huy-canva-content.en.md.
+Latest discussion: members used different datasets/hardware/metrics, so give
+parsing/OCR, retrieval and generation their own experiment setup/results pages;
+combine setup+metrics where useful to stay within18–25 main slides. Don't imply
+cross-machine latency is a controlled comparison. Architecture/limits/next
+steps can stay shared. User needed help with slides10,12,15: keep text short,
+move detailed configs/hashes to backup. Proposed method does NOT mean tuning:
+our measured proposal combines pretrained E5, translated BM25, RRF and BGE;
+no new model/algorithm invention or fine-tuning claim.
+
+Use existing reviewed-r1 80-case result for Review2:69/80 complete evidence@10,
+86.25%, NOT generated-answer accuracy. No new benchmark is needed just to fill
+slides. Finish demo readiness/coordinate other members' measured evidence.
+After Review2, freeze reviewed new inputs, run current system unchanged, then
+tune candidate retrieval on separate development questions.
+
+NEW DOCUMENTS INCLUDED: artifacts/datasets/README.md points to Bảo An (50pages,
+30 draft bilingual intents) and user's translated VietStyle (54physical pages,
+50policy pages, DOCX/PDF). They are different policies. Do not transfer Bảo An
+labels to VietStyle. Both user-created ZIP archives match their folders; root
+artifacts/datasets.zip contains only Bảo An, datasets/vietstyle-operations-vi-v1.zip
+contains VietStyle. Original English download and Canva export stay outside
+repo on laptop. VN files work directly on PC; rebuilding translation needs the
+original English DOCX. PDF generation scripts use Windows Arial/Word; don't
+assume they run unchanged under WSL. Existing outputs do not need rebuilding.
+
+Before checkpoint: dataset manifests and both ZIP contents/hash matches checked,
+text scanned for likely credentials, no likely matches. Added -text attributes
+for dataset and generator bytes to preserve manifest hashes on PC/WSL. No new
+retrieval/generation inference, API calls, DB writes or regression tests.
+
+## 2026-10-23 - User's downloaded VietStyle policy translated to Vietnamese
+
+User supplied English `VietStyle_Enterprise_Operating_Policy_v1.0.docx` and PDF
+in C:/Users/Eroz/Downloads and requested conversion to Vietnamese. Created
+`artifacts/datasets/vietstyle-operations-vi-v1/` with VN DOCX/PDF/Markdown,
+paragraph translation TSV/alignment, README, verification and hashes. Source
+English files unchanged. This is separate from Bảo An; it preserves the user's
+source policies, not the synthetic handbook's thresholds.
+
+All1228 paragraphs/56 tables retained; all1174 nonempty paragraphs/identifiers
+appear in PDF after whitespace normalization. PDF still54 physical pages,
+50 numbered policy pages plus front matter/appendices. Numeric comparison
+matches apart from three date translations adding numeric month10/12 where
+English spelled October/December. Sample six pages visually inspected.
+Installed Word exported PDF via COM outside sandbox after sandbox session
+failed; hidden automation instance closed in finally. No external API, model,
+DB access, benchmark inference or regression tests. Translation does not
+independently validate source legal/technical assertions or fix inconsistencies.
+
+Builder: scripts/evaluation/translate_vietstyle_policy.py; paragraph-index
+mapping requires original source DOCX. Bảo An question labels cannot simply
+be reused against VietStyle: policies differ. Prepare separate reviewed labels
+before benchmarking. All new deliverables local/uncommitted; no push requested.
+
+## 2026-10-23 - New 50-page Vietnamese synthetic PDF generated
+
+User requested a single50-page document meeting the earlier operations-handbook
+criteria and chose "Vietnamese document; Vietnamese/English questions" via async
+reply. Created `artifacts/datasets/bao-an-operations-vi-v1/`; start README.md.
+PDF `bao-an-operations.vi.pdf`: exactly50 A4 pages,48 digital and2 image-only
+grayscale form pages43–44 (~173DPI). Fictional Bảo An policies/people/events;
+different thresholds from older VietStyle, HR/procurement/warehouse/IT, mixed
+tables/prose, similar item IDs, exception boundaries, matrix across47–48.
+Source is source.json + handbook.vi.md; generators under scripts/evaluation/.
+
+Separate questions.draft.json/REVIEW.md contain30 intents,60VI/EN texts,
+26answerable and4unanswerable. Target documents VI only: two query-language
+directions, not four. Labels have exact segment-local Unicode evidence,
+requirements/alternatives and draft answers; NOT old evidence-v3 parser offsets.
+Independent review and alternative-source expansion remain pending. Source and
+questions were co-authored: controlled synthetic challenge, not independently
+held-out evidence. Review.csv includes a human checklist.
+
+Validated exact50 pages, digital/scan separation, font glyphs, all digital
+segment text against extraction after whitespace/separator normalization, layout
+bounds and evidence selectors. Sampled six pages visually (cover, thresholds,
+item table, scan, continued matrix). Fixed Arial Unicode aliases so hyphens,
+spaces and semicolons extract as authored; fixed goods/IT-scope ambiguity before
+final generation. Scan OCR accuracy not measured. No models/API/DB calls or
+benchmark/regression tests. manifest.json hashes outputs and generator sources.
+
+For future PDF/OCR experiments ingest ONLY the PDF: source.json/Markdown include
+scan transcriptions; indexing them would bypass OCR and leak evaluation sources.
+Questions/answers/review files must also stay out of index. Freeze reviewed
+version before unchanged-baseline run, then tune on separate development cases.
+Existing frozen benchmark untouched; no new results for Review2 slides.
+User's Canva content and this dataset remain local/uncommitted, no push done.
+
+## 2026-10-23 - Canva template reviewed; Huy's English slide content prepared
+
+User created the shared template in Canva and exported
+`C:/Users/Eroz/Downloads/Review 2.pdf` (23 slides). Read its text and the newly
+downloaded mixed training/RAG checklist. No visual-layout audit performed.
+User agreed to use existing benchmark evidence for Review2, defer tuning, and
+proceed with slides. Team's single 50-page PDF is still a future proposal;
+topic/language and contents are not agreed, no document or benchmark exists.
+
+Created `docs/review2/huy-canva-content.en.md`: paste-ready English text,
+suggested visuals, speaker notes and evidence references for template slides
+10–12 and15–21, plus contributions to shared6/7/5/22 and an estimated five-minute
+speaking route. Uses reviewed-r1 80-case results and measured RTX2060 timing;
+discloses annotation/scope/ablation limits and separates retrieval from answer
+accuracy. Production measured pipeline uses original chunks, not historical
+narrative-parent experiment. No new experiments, inference, API/database calls,
+model downloads or tests. Canva PDF/design not edited; no PPTX created.
+Next: user pastes/adapts content in Canva, coordinate shared pages/remaining
+generation/data/deployment evidence with teammates, review readability once
+filled. Prior "no template exists" entry below describes an older state.
+New content and this handoff update are local/uncommitted.
+
 ## 2026-10-23 - Laptop handoff: Review 2 slides next
 
 User is going outside and explicitly requested writing this handoff, committing and pushing to Huy. Previous completed checkpoint is `0cd149b` (already pushed); older entries saying uncommitted/unpushed describe historical states, not the current checkpoint.

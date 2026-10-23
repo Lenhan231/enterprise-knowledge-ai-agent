@@ -1,0 +1,24 @@
+{
+  "source_docx_sha256": "23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc",
+  "pdf_physical_pages": 54,
+  "numbered_policy_pages_in_order": true,
+  "docx_paragraphs": 1228,
+  "docx_tables": 56,
+  "nonempty_paragraphs": 1174,
+  "missing_pdf_paragraphs": [],
+  "numeric_difference_indexes": [
+    11,
+    37,
+    1222
+  ],
+  "numeric_differences_explained": "Indexes11/1222 October to numeric10; index37 December to numeric12; no other numeric changes",
+  "sample_visual_review_pages": [
+    1,
+    2,
+    3,
+    21,
+    52,
+    54
+  ],
+  "benchmark_run": false
+}

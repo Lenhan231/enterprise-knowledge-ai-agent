@@ -26,7 +26,7 @@ PAGE_DRAFT_SCHEMA = {
                 "required": ["region_id", "label", "bbox_norm"],
                 "properties": {
                     "region_id": {"type": "string"},
-                    "label": {"type": "string", "enum": ["title", "text", "table", "figure"]},
+                    "label": {"type": "string", "enum": ["title", "title_table", "text", "table", "figure", "seal"]},
                     "bbox_norm": {
                         "type": "array", "minItems": 4, "maxItems": 4,
                         "items": {"type": "number", "minimum": 0, "maximum": 1},
@@ -55,7 +55,7 @@ PAGE_DRAFT_SCHEMA = {
 
 class DraftRegion(BaseModel):
     region_id: str = Field(min_length=1)
-    label: Literal["title", "text", "table", "figure"]
+    label: Literal["title", "title_table", "text", "table", "figure", "seal"]
     bbox_norm: list[float] = Field(min_length=4, max_length=4)
 
 
@@ -81,6 +81,8 @@ def validate_page_draft(draft: GeneratedPageDraft) -> None:
         x1, y1, x2, y2 = region.bbox_norm
         if not all(map(math.isfinite, region.bbox_norm)):
             raise ValueError("Codex returned a non-finite region coordinate")
+        region.bbox_norm = [min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)]
+        x1, y1, x2, y2 = region.bbox_norm
         if not (0 <= x1 < x2 <= 1 and 0 <= y1 < y2 <= 1):
             raise ValueError(
                 "Codex returned an invalid normalized region box "

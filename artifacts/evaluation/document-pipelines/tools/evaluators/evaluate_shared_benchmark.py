@@ -17,7 +17,7 @@ from metrics.iou_metrics import iou, matched_pairs  # noqa: E402
 from metrics.table_metrics import score_tables  # noqa: E402
 
 IOU_THRESHOLD = 0.5
-CLASSES = ("title", "text", "table", "figure")
+CLASSES = ("title", "title_table", "text", "table", "figure", "seal")
 
 
 def read_jsonl(path: Path) -> list[dict]:
@@ -42,7 +42,7 @@ def validate(predictions: list[dict]) -> dict[tuple[str, int], dict]:
         if page_key in by_page:
             raise ValueError(f"Duplicate prediction for {page_key}")
         for element in row.get("elements", []):
-            if element.get("label") not in {"text", "title", "figure", "other"}:
+            if element.get("label") not in {"text", "title", "title_table", "figure", "seal", "other"}:
                 raise ValueError(f"Invalid element label on {page_key}: {element.get('label')}")
             validate_box(element.get("bbox_norm"), page_key)
         for table in row.get("tables", []):

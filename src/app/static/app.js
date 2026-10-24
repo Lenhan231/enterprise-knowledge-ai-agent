@@ -838,7 +838,7 @@ async function loadWorkspace(user) {
   ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
     $(selector).hidden = !canUseAnalytics;
   });
-  ["sql", "agentic"].forEach((mode) => {
+  ["sql"].forEach((mode) => {
     $("#agent-mode option[value='" + mode + "']").hidden = !canUseAnalytics;
   });
   if (user.role !== "document_processing_owner") {

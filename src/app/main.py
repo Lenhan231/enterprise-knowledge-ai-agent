@@ -21,7 +21,8 @@ from core.database.document_repository import DocumentRepository
 from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES
 from supabase import create_client
 from app.security import (
-    DOCUMENT_ROLES, ROLE_PERMISSIONS, _current_user, _require_same_origin,
+    DOCUMENT_ROLES, ROLE_PERMISSIONS, _current_user, _is_trusted_frontend_origin,
+    _require_same_origin,
     _roles_with_permission, auth_scheme, require_permission, require_roles,
 )
 from app.upload_test import (
@@ -165,7 +166,9 @@ def login(request: LoginRequest):
     if account is None or not secrets.compare_digest(account[0], request.password):
         raise HTTPException(401, "Invalid username or password")
     response = JSONResponse({"username": request.username, "role": account[1], "expires_in": 3600})
-    response.set_cookie("enterprise_session", _issue_token(request.username, account[1]), httponly=True, secure=os.getenv("AUTH_COOKIE_SECURE", "false").lower() == "true", samesite="lax", max_age=3600, path="/")
+    secure_cookie = os.getenv("AUTH_COOKIE_SECURE", "false").lower() == "true" \
+        or _is_trusted_frontend_origin(request.headers.get("origin"))
+    response.set_cookie("enterprise_session", _issue_token(request.username, account[1]), httponly=True, secure=secure_cookie, samesite="lax", max_age=3600, path="/")
     return response
 
 

@@ -73,7 +73,20 @@ def require_roles(*roles: str):
     return dependency
 
 
+def _trusted_frontend_origins() -> set[str]:
+    return {
+        value.strip().rstrip("/")
+        for value in os.getenv("TRUSTED_FRONTEND_ORIGINS", "").split(",")
+        if value.strip()
+    }
+
+
+def _is_trusted_frontend_origin(origin: str | None) -> bool:
+    return bool(origin and origin.rstrip("/") in _trusted_frontend_origins())
+
+
 def _require_same_origin(request: Request) -> None:
     origin = request.headers.get("origin")
-    if origin and origin.rstrip("/") != str(request.base_url).rstrip("/"):
+    if origin and origin.rstrip("/") != str(request.base_url).rstrip("/") \
+            and not _is_trusted_frontend_origin(origin):
         raise HTTPException(403, "Cross-origin uploads are not allowed")

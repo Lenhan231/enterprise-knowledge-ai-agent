@@ -749,6 +749,7 @@ function askOverWebSocket(payload, onStatus) {
 async function api(path, options = {}) {
   const headers = { ...(options.headers || {}) };
   if (!(options.body instanceof FormData)) headers["Content-Type"] = "application/json";
+  headers["ngrok-skip-browser-warning"] = "1";
   const response = await fetch(path, { credentials: "same-origin", ...options, headers });
   if (response.status === 401) {
     $("#login-view").hidden = false;
@@ -756,7 +757,11 @@ async function api(path, options = {}) {
     $("#login-brand-sidebar").hidden = false;
     throw new Error("Sign in to continue");
   }
-  const data = await response.json();
+  let data;
+  try { data = await response.json(); }
+  catch {
+    throw new Error(`Server returned a non-JSON response (HTTP ${response.status}); check the backend tunnel and Vercel rewrite.`);
+  }
   if (!response.ok) {
     const detail = Array.isArray(data.detail)
       ? data.detail.map((issue) => {

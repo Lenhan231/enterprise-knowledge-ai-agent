@@ -1,0 +1,196 @@
+{
+  "dataset": "commerce-agent-benchmarks-v1",
+  "model_key": "gpt_oss_120b",
+  "model": "openai/gpt-oss-120b",
+  "judge_model": "Luna 5.6 Medium (Codex CLI)",
+  "run_date": "2026-10-24",
+  "evaluation_config": {
+    "cases_per_agent": 25,
+    "agents": [
+      "knowledge",
+      "sql",
+      "report"
+    ],
+    "metrics": [
+      "faithfulness",
+      "answer_relevancy",
+      "context_precision"
+    ],
+    "retry_policy": "one retry for transient failures; two attempts maximum"
+  },
+  "summary": {
+    "case_count": 1,
+    "by_agent": {
+      "knowledge": {
+        "case_count": 1,
+        "answered_cases": 1,
+        "run_errors": 0,
+        "mean_agent_latency_seconds": 102.918,
+        "latency_cases": 1,
+        "ragas": {
+          "faithfulness": {
+            "mean": 1.0,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "answer_relevancy": {
+            "mean": 0.9729,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "context_precision": {
+            "mean": 1.0,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          }
+        }
+      }
+    },
+    "ragas": {
+      "faithfulness": {
+        "mean": 1.0,
+        "scored_cases": 1,
+        "eligible_cases": 1,
+        "coverage": 1.0,
+        "score_errors": 0
+      },
+      "answer_relevancy": {
+        "mean": 0.9729,
+        "scored_cases": 1,
+        "eligible_cases": 1,
+        "coverage": 1.0,
+        "score_errors": 0
+      },
+      "context_precision": {
+        "mean": 1.0,
+        "scored_cases": 1,
+        "eligible_cases": 1,
+        "coverage": 1.0,
+        "score_errors": 0
+      }
+    },
+    "sql": {
+      "safety_pass_rate": null,
+      "safety_cases": 0,
+      "semantic_correctness_rate": null,
+      "semantic_cases": 0,
+      "abstention_accuracy": null,
+      "abstention_cases": 0
+    },
+    "hallucination_rate": null,
+    "hallucination_note": "Requires manual claim-level review; not inferred from faithfulness."
+  },
+  "results": [
+    {
+      "case_id": "K07",
+      "agent": "knowledge",
+      "model": "openai/gpt-oss-120b",
+      "question": "Target Stock được tính theo công thức nào và review period mặc định là bao lâu?",
+      "answer": "Target Stock được tính bằng công thức:  \n\n**Target Stock = Nhu cầu/ngày × (Lead time + Safety days + Review period)**  \n\nTrong đó “Nhu cầu/ngày” là Daily Demand (Avg daily demand). [S1][S2]  \n\nThời gian Review period mặc định được thiết lập là **7 ngày**. [S1][S2][S3]",
+      "contexts": [
+        "4. Chính sách bổ sung hàng\nMô hình tham chiếu cho SKU có nhu cầu tương đối ổn định:\nInventory position = On-hand + Open PO − Backorder\nReorder Point (ROP) = Nhu cầu/ngày × (Lead time + Safety days)\nTarget Stock = Nhu cầu/ngày × (Lead time + Safety days + Review period)\nGiả định khởi tạo trong bộ mô phỏng: lead time 14 ngày, safety stock 7 ngày, review period 7 ngày. Các giá trị này có thể chỉnh theo nhà cung cấp / nhóm hàng; không phải lead time được suy ra từ dữ liệu.\nRà soát đề xuất bổ sung ít nhất mỗi tuần và trước chiến dịch khuyến mãi.\nTrước khi phát hành PO, kiểm tra tồn kho khả dụng, PO đang mở, hàng đang giữ, backorder, MOQ, ngân sách và lịch giao.\nNếu có stockout signal cùng days of supply > 120 ngày, không tự động mua thêm; mở điều tra P1.\nKhông đặt hàng bổ sung cho SKU vượt 120 ngày tồn kho trừ khi có phê duyệt chiến dịch, cam kết khách hàng hoặc lý do được ghi nhận.\nMọi PO khẩn cấp phải ghi rõ nguyên nhân, ảnh hưởng dịch vụ và người phê duyệt.",
+        "03 | Quy tắc bổ sung hàng Thông số mặc định chỉ để mô phỏng; cần thay bằng dữ liệu nhà cung cấp. Công thức Inventory Position = On-hand + Open PO − Backorder ROP = Daily Demand × (Lead Time + Safety Days) Target = Daily Demand × (Lead Time + Safety Days + Review Period) THAM SỐ KHỞI TẠO Lead time: 14 ngày Safety stock: 7 ngày Review period: 7 ngày Reorder trigger: Inventory Position ≤ ROP Nếu có stockout/service signal nhưng calculated days of supply >120 ngày → DATA CONFLICT. Khóa đề xuất PO tự động, xác minh giao dịch và nhu cầu trước khi mua. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 4",
+        "Section: README\nColumns: Mục | Nội dung\nRow 1: Mục: Nguồn dữ liệu | Nội dung: datathon-2026-round-1.zip: inventory.csv, products.csv, promotions.csv, returns.csv, orders.csv, sales.csv.\nRow 2: Mục: Phạm vi | Nội dung: 2,412 SKU trong products.csv; 60,247 snapshot tồn kho; dữ liệu inventory từ 2012-07-31 đến 2022-12-31.\nRow 3: Mục: Snapshot mẫu | Nội dung: 2022-12-31 — 424 SKU có bản ghi trong snapshot mới nhất. Không đại diện cho tồn kho hiện hành.\nRow 4: Mục: Cách tính nhu cầu | Nội dung: Avg monthly demand = trung bình units_sold của tối đa 3 snapshot gần nhất có sẵn cho SKU. Có thể không phải 3 tháng liên tiếp.\nRow 5: Mục: Tham số giả định | Nội dung: Lead time = 14 ngày; safety stock = 7 ngày; review period = 7 ngày. Chỉnh theo nhà cung cấp / SKU trước khi sử dụng.\nRow 6: Mục: ROP | Nội dung: Avg daily demand × (Lead time + Safety days). Avg daily demand = Avg monthly demand / 30.\nRow 7: Mục: Target stock | Nội dung: Avg daily demand × (Lead time + Safety days + Review period)."
+      ],
+      "reference": "[\"Daily demand × (Lead time + Safety days + Review period)\", \"review period 7 ngày\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 102.918,
+      "total_case_seconds": 162.688,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9729,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 102.918,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 17.186,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 22.06,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 20.523,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    }
+  ]
+}

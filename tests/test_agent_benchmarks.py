@@ -6,7 +6,7 @@ from pathlib import Path
 from evaluation import run_agent_benchmarks
 from evaluation.run_agent_benchmarks import (
     _metric_eligibility, _retry_operation, _score, _sql_checks_match,
-    _summary, _standardize_record,
+    _summary, _standardize_record, _is_transient_error,
 )
 
 
@@ -39,6 +39,10 @@ class AgentBenchmarkAssetsTest(unittest.TestCase):
         self.assertFalse(attempts["first_attempt_success"])
         self.assertTrue(attempts["final_success"])
         self.assertEqual([item["attempt"] for item in attempts["attempts"]], [1, 2])
+
+    def test_known_citation_and_codex_auth_failures_are_retried(self):
+        self.assertTrue(_is_transient_error(ValueError("Generated answer contains no source citations")))
+        self.assertTrue(_is_transient_error(RuntimeError("Missing bearer or basic authentication in header; error: reconnect")))
 
     def test_nontransient_failure_is_not_retried(self):
         class InvalidOperation:

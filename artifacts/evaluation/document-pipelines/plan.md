@@ -11,7 +11,7 @@ All active labels come from the shared local review UI in [`data/review.html`](d
 - Tables: reviewed cell grids and their corresponding layout boxes; multiple tables per page are supported.
 - End-to-end: pages with reviewed OCR, layout, and one or more reviewed tables. It scores all tables on each selected page.
 
-The 2026-10-23 checkpoint recorded 30 owner-reviewed pages: 30 OCR pages, 30 layout pages, 38 table grids, and 23 end-to-end pages. The current Kaggle snapshot contains 50 unique owner-reviewed page identities and runs Docling only.
+The 2026-10-23 checkpoint recorded 30 owner-reviewed pages: 30 OCR pages, 30 layout pages, 38 table grids, and 23 end-to-end pages. The current Kaggle snapshot contains 51 unique owner-reviewed page identities and runs Docling only.
 
 At that checkpoint, the latest addition was 13 pages from PHR's audited 2009 financial statements (source PDF pages 4, 5, and 7–17). All 13 contributed OCR and layout references; 12 reviewed table grids covered eight pages, so eight pages entered the E2E cohort. The other five pages had no reviewed table grid. The 30-page checkpoint comprised Bao Ho Lao Dong (9), Long Hau (8), and PHR (13).
 

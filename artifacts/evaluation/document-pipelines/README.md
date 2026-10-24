@@ -24,6 +24,19 @@ To handle tables with different orientations, add `--table-rotation auto` to the
 
 To test orientation-aware layout inference, add `--layout-rotation auto`. OSD runs on a larger page render; only the layout model receives the rotated image, and its detected boxes are mapped back to source coordinates. On p17 the rotated layout trial had lower F1 than baseline (15.38% vs 22.22%); after correcting OCR block order, CER was 8.92% vs 9.08%. See [the p17 trial](results/shared-html/docling-vietocr-osd-longhau-p17-layout-rotation-auto-hires/).
 
+## Docling tuning on the 51-page Kaggle snapshot
+
+These runs use the same 51 owner-reviewed pages and manifest SHA-256 (`e74023390e9e7a72bb44112d0ed303cf2eea45d14d30405b67d5ade0b2b1aeb5`), with Docling 2.129.0 on a Tesla T4. The baseline uses Heron layout and RapidOCR detection + VietOCR vgg_seq2seq greedy recognition at width 512; TableFormer accurate and OCR cell matching stay enabled.
+
+| Variant | OCR CER / WER | Layout F1 | Table detection F1 | Cell CER | Exact grids |
+|---|---:|---:|---:|---:|---:|
+| Heron, width 512, greedy ([baseline](results/shared-html/docling-vietocr-kaggle-owner-reviewed-51-20261024/)) | 12.56% / 23.70% | 36.66% | 79.63% | 61.07% | 1.67% |
+| Heron, width 768 ([run](results/shared-html/docling-vietocr-width768-kaggle-owner-reviewed-51-20261024/)) | 18.79% / 30.66% | 35.16% | 79.63% | 61.21% | 1.67% |
+| Heron, width 512, beam search ([run](results/shared-html/docling-vietocr-beamsearch-kaggle-owner-reviewed-51-20261024/)) | 17.38% / 27.79% | 35.16% | 79.63% | 61.46% | 1.67% |
+| Egret Medium, width 512, greedy ([run](results/shared-html/docling-vietocr-egret-medium-kaggle-owner-reviewed-51-20261024/)) | 12.66% / 23.24% | 29.90% | 79.61% | 52.52% | 3.33% |
+
+Width 768 and beam search both reduce OCR quality on this scan cohort, so keep greedy width 512 for recognition. Egret Medium trades 6.76 F1 points of layout quality for substantially better table-cell transcription and a small WER gain. There is no single winner across layers; retain Heron as the balanced baseline and use Egret only when table-cell accuracy is the priority.
+
 ## Active data
 
 - [`data/local-review-state.json`](data/local-review-state.json) stores edits from the local review server.

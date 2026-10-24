@@ -17,6 +17,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from urllib.parse import quote, urlsplit
+from dotenv import load_dotenv
 
 from core.database.document_repository import DocumentRepository
 from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES
@@ -35,6 +36,10 @@ from app.upload_test import (
 logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def _lifespan(application: FastAPI):
+    load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=False)
+    if os.getenv("RERANKER_PRELOAD") == "1":
+        from core.retrieval.reranker import _load_model
+        _load_model()
     yield
     runtime = getattr(application.state, "agent_router", None)
     if runtime is not None:

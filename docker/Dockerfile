@@ -13,6 +13,7 @@ RUN uv sync --locked --no-dev --no-install-project --extra docling
 COPY src ./src
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONPATH="/app/src" \
+    RERANKER_PRELOAD="1" \
     PORT="8000"
 EXPOSE 8000
 CMD ["sh", "-c", "exec uvicorn src.app.main:app --host 0.0.0.0 --port \"${PORT:-8000}\""]

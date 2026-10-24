@@ -690,6 +690,25 @@ function renderAgentInventoryDashboard(dashboard) {
   </section>`;
 }
 
+async function loadInventorySnapshot() {
+  const panel = $("#inventory-snapshot");
+  panel.hidden = false;
+  panel.innerHTML = '<p class="analysis-empty">Loading latest inventory snapshot…</p>';
+  try {
+    const result = await api("/api/agents/chat", {
+      method: "POST",
+      body: JSON.stringify({
+        question: "Show the latest inventory snapshot and stock exceptions.",
+        agent_mode: "dashboard",
+      }),
+    });
+    const dashboard = renderAgentInventoryDashboard(result.data?.dashboard);
+    panel.innerHTML = dashboard || '<p class="analysis-empty">No inventory snapshot is available.</p>';
+  } catch (error) {
+    panel.innerHTML = `<p class="analysis-empty">Inventory snapshot unavailable: ${escapeHtml(error.message)}</p>`;
+  }
+}
+
 function renderAgentRows(data) {
   const groups = [["Results", data], ...["sql", "analytics", "knowledge"].map((key) => [key, data?.[key]])];
   return groups.map(([label, value]) => {
@@ -789,12 +808,18 @@ async function loadWorkspace(user) {
   $(".agent-overview").hidden = ["document_processing_owner", "document_uploader"].includes(user.role);
   $(".stats").hidden = user.role === "document_processing_owner";
   const canUseAnalytics = ["admin", "finance_analyst", "sustainability_analyst", "operations", "executive"].includes(user.role);
+  $("#inventory-snapshot").hidden = !canUseAnalytics;
   ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
     $(selector).hidden = !canUseAnalytics;
   });
-  ["sql", "dashboard", "agentic"].forEach((mode) => {
+  ["sql", "agentic"].forEach((mode) => {
     $("#agent-mode option[value='" + mode + "']").hidden = !canUseAnalytics;
   });
+  if (user.role !== "document_processing_owner") {
+    try { renderCorpus(await api("/api/dashboard")); }
+    catch (error) { $("#connection-status").textContent = `Knowledge base unavailable: ${error.message}`; }
+  }
+  if (canUseAnalytics) await loadInventorySnapshot();
   if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
     try {
       const capability = await api("/api/documents/upload-capability");

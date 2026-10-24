@@ -22,11 +22,15 @@ ROLE_PERMISSIONS = {
     "executive": {"view_corpus", "ask_documents", "view_analytics"},
     "admin": {
         "view_corpus", "ask_documents", "view_analytics", "upload_documents",
-        "classify_documents", "review_metrics", "manage_access", "manage_knowledge",
-        "view_agent_monitoring", "run_upload_tests", "review_upload_tests",
+        "classify_documents", "manage_access", "manage_knowledge",
+        "view_agent_monitoring", "list_processing_documents",
     },
     "document_uploader": {"view_corpus", "upload_documents", "classify_documents"},
-    "tester": {"run_upload_tests", "review_upload_tests"},
+    "document_processing_owner": {
+        "view_corpus", "upload_documents", "classify_documents",
+        "process_documents", "list_processing_documents",
+        "run_upload_tests", "review_upload_tests",
+    },
 }
 
 auth_scheme = HTTPBearer(auto_error=False)
@@ -55,7 +59,7 @@ def _current_user(request: Request | WebSocket, credentials: HTTPAuthorizationCr
         payload = jwt.decode(token, secret, algorithms=["HS256"])
     except InvalidTokenError:
         raise HTTPException(401, "Invalid or expired session") from None
-    if payload.get("role") not in DOCUMENT_ROLES | {"document_uploader", "tester"}:
+    if payload.get("role") not in ROLE_PERMISSIONS:
         raise HTTPException(401, "Invalid or expired session")
     return payload
 

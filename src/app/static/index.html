@@ -32,7 +32,7 @@
       <p class="eyebrow">SECURE ENTERPRISE ACCESS</p>
       <h1>Sign in to your knowledge workspace</h1>
       <label for="username">Username</label>
-      <input id="username" name="username" autocomplete="username" placeholder="e.g. admin, analyst, viewer, tester" required>
+      <input id="username" name="username" autocomplete="username" placeholder="e.g. admin, analyst, document-processing-owner" required>
       <label for="password">Password</label>
       <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
       <p id="login-error" class="error-message" hidden></p>
@@ -49,7 +49,6 @@
       </a>
       <nav id="workspace-tabs" class="workspace-tabs" role="tablist" aria-label="Workspace navigation">
         <button id="tab-button-knowledge" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="tab-knowledge" data-tab-target="knowledge">Knowledge Q&amp;A</button>
-        <button id="tab-button-analytics" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-analytics" data-tab-target="analytics" hidden>Commerce Dashboard</button>
         <button id="tab-button-upload" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-upload" data-tab-target="upload" hidden>Upload Documents</button>
         <button id="tab-button-processing" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-processing" data-tab-target="processing" hidden>Document Processing</button>
         <button id="tab-button-ocr-lab" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-ocr-lab" data-tab-target="ocr-lab" hidden>Upload Test</button>
@@ -137,15 +136,6 @@
           <div class="ask-controls">
             <span id="question-hint">Use precise questions for exact passage retrieval and primary source citations.</span>
             <div class="ask-actions">
-              <label class="retrieval-picker" for="retrieval-method">
-                Strategy:
-                <select id="retrieval-method" name="retrieval_method">
-                  <option value="hybrid" selected>Hybrid (Dense + BM25)</option>
-                  <option value="dense">Dense (Vector Embeddings)</option>
-                  <option value="bm25">BM25 (Full-text Keyword)</option>
-                  <option value="parent">Parent Context (Extended)</option>
-                </select>
-              </label>
               <button id="ask-button" type="submit" class="submit-query-btn">
                 <span>Ask documents</span>
               </button>
@@ -155,123 +145,6 @@
         <div id="answer-panel" class="answer-panel" hidden aria-live="polite"></div>
       </section>
 
-      <section class="corpus-section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">DECISION-SUPPORT LIBRARY</p>
-            <h2>Commerce decision-support sources</h2>
-          </div>
-          <span id="source-count" class="source-count"></span>
-        </div>
-        <div id="company-grid" class="company-grid">
-          <div class="loading-card">Loading decision-support sources…</div>
-        </div>
-      </section>
-      <p class="corpus-note">External retailer and platform guidance applies only to its named publisher. Fictional Commerce Demo policies apply only to this mock dataset. Check each source’s scope before acting.</p>
-    </section>
-
-    <!-- TAB 2: ANALYTICS / BUSINESS ANALYSIS -->
-    <section id="tab-analytics" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-analytics" hidden>
-      <section id="analytics-section" class="analytics-section" hidden>
-        <div id="analysis-summary" class="analysis-summary" aria-label="Analysis coverage" hidden></div>
-
-        <section id="commerce-dashboard" class="commerce-dashboard" aria-labelledby="commerce-dashboard-title" hidden>
-          <div class="commerce-dashboard-heading">
-            <div><p class="eyebrow">COMMERCE OPERATIONS · DATABASE AGGREGATES</p><h2 id="commerce-dashboard-title">Commerce decision dashboard</h2>
-              <p>Values are computed from the private Commerce schema. This competition dataset is synthetic.</p></div>
-            <div class="commerce-dashboard-filters">
-              <label>Year <select id="commerce-year-filter" aria-label="Filter Commerce dashboard by year"><option value="">All available years</option></select></label>
-            </div>
-          </div>
-          <p id="commerce-dashboard-status" class="loading-card" role="status" hidden></p>
-          <div class="commerce-dashboard-layout">
-            <nav class="commerce-dashboard-tabs" role="tablist" aria-label="Commerce decision domains" aria-orientation="vertical">
-              <button type="button" role="tab" aria-selected="true" aria-controls="commerce-view-inventory" data-commerce-view="inventory">Inventory allocation</button>
-              <button type="button" role="tab" aria-selected="false" aria-controls="commerce-view-promotions" data-commerce-view="promotions">Promotion planning</button>
-              <button type="button" role="tab" aria-selected="false" aria-controls="commerce-view-logistics" data-commerce-view="logistics">Nationwide logistics</button>
-            </nav>
-            <div class="commerce-dashboard-content">
-              <div id="commerce-domain-cards" class="commerce-kpi-grid" aria-live="polite"></div>
-              <details class="commerce-financial-context"><summary>Dataset sales context (not a decision-domain KPI)</summary>
-                <div id="commerce-sales-table" class="commerce-table-wrap"></div>
-              </details>
-          <section id="commerce-view-inventory" class="commerce-view" role="tabpanel">
-            <h3>Inventory health by year</h3><p>2012 is a partial year. Fill rate is the mean of the dataset's source values. Stockout and overstock are product-snapshot flags, may overlap, and are not unique incidents. Anomalous days-of-supply values are omitted.</p>
-            <div id="commerce-inventory-chart" class="commerce-chart-card"></div>
-            <h3>Average fill rate by year</h3><div id="commerce-inventory-fill-rate-chart" class="commerce-chart-card"></div>
-            <div id="commerce-inventory-table" class="commerce-table-wrap"></div>
-            <h3>Latest inventory snapshot in selected year by product category <span id="commerce-inventory-latest-date"></span></h3><div id="commerce-inventory-category" class="commerce-table-wrap"></div>
-          </section>
-          <section id="commerce-view-promotions" class="commerce-view" role="tabpanel" hidden>
-            <h3>Delivered order-item outcomes by promotion tag</h3><p>Descriptive comparison only, not causal uplift. Mixed orders can appear in both groups; no holdout/control assignment is available. Gross-profit and gross-margin values are merchandise proxies using catalog COGS, not contribution margin or ROI.</p>
-            <div id="commerce-promotion-chart" class="commerce-chart-card"></div>
-            <div id="commerce-promotion-table" class="commerce-table-wrap"></div>
-            <details id="commerce-campaign-details">
-              <summary>Campaign-window results</summary>
-              <p>Tagged item outcomes within each campaign's declared dates. An item with two different promotion IDs can appear in both campaigns; totals are not additive or causal lift. Validate catalog COGS before relying on the gross-profit proxy.</p>
-              <div id="commerce-campaign-table" class="commerce-table-wrap"></div>
-            </details>
-          </section>
-          <section id="commerce-view-logistics" class="commerce-view" role="tabpanel" hidden>
-            <h3>Transit time and shipping fee by region</h3><p>Actual elapsed ship-to-delivery days; the data does not identify carriers, warehouse origins, route capacity, or promised SLA.</p>
-            <div id="commerce-logistics-chart" class="commerce-chart-card"></div>
-            <div id="commerce-logistics-table" class="commerce-table-wrap"></div>
-          </section>
-            </div>
-          </div>
-          <details class="commerce-data-notes"><summary>Dataset scope and decision limits</summary><ul id="commerce-data-notes-list"></ul></details>
-          <section class="analysis-section commerce-decision-question" aria-labelledby="business-question-title">
-            <div class="analysis-section-heading">
-              <div><p class="eyebrow">DATABASE + COMPANY REFERENCES</p><h3 id="business-question-title">Ask a Commerce decision question</h3></div>
-              <span>Answers combine synthetic Commerce data with domain-scoped operating references or clearly labeled Demo policies.</span>
-            </div>
-            <form id="business-question-form" class="business-question-form">
-              <label class="visually-hidden" for="business-question">Analytical question</label>
-              <textarea id="business-question" maxlength="1000" placeholder="Example: Should we rebalance inventory toward categories with repeated stockout snapshots? State what lead-time and warehouse data are still needed."></textarea>
-              <label>Question domain <select id="business-question-domain" aria-label="Choose a domain or detect it from the question">
-                <option value="">Detect from my question</option>
-                <option value="inventory_allocation">Inventory allocation</option>
-                <option value="promotion_planning">Promotion planning</option>
-                <option value="nationwide_logistics">Nationwide logistics</option>
-              </select></label>
-              <button id="business-question-button" type="submit" class="submit-query-btn"><span>Analyze decision evidence</span></button>
-            </form>
-            <div class="decision-question-prompts" aria-label="Domain-focused analysis prompts">
-              <span>Suggested questions for this domain</span>
-              <div id="decision-domain-questions" class="decision-question-list"></div>
-              <button type="button" data-decision-suggestions>
-                <strong>Generate conditional action recommendations</strong>
-                <small>The agent will combine Commerce SQL observations with domain-scoped references. Conditions and recommendations stay server-side.</small>
-              </button>
-            </div>
-            <div id="business-answer-panel" class="answer-panel" hidden aria-live="polite"></div>
-          </section>
-        </section>
-
-        <section class="analysis-section" aria-labelledby="operations-title">
-          <div class="analysis-section-heading">
-            <div>
-              <p class="eyebrow">EVIDENCE BASE COVERAGE</p>
-              <h3 id="operations-title">Knowledge base supporting the analysis</h3>
-            </div>
-            <span id="analysis-coverage-note"></span>
-          </div>
-          <div class="analytics-grid">
-            <article class="analytics-card">
-              <h4>Documents by business domain</h4>
-              <div id="domain-chart" class="domain-chart"></div>
-            </article>
-            <article class="analytics-card">
-              <h4>Reports by fiscal year &amp; processing status</h4>
-              <div id="processing-chart" class="domain-chart"></div>
-            </article>
-            <article class="analytics-card">
-              <h4>Indexed passage quality</h4>
-              <div id="quality-chart" class="quality-chart"></div>
-            </article>
-          </div>
-        </section>
-      </section>
     </section>
 
     <!-- TAB: UPLOAD / KNOWLEDGE SOURCES -->
@@ -302,92 +175,20 @@
                 <input id="upload-title" name="title" required maxlength="200" placeholder="Filled from the filename; you can edit it">
                 <small class="upload-field-hint">This title is shown in search results and the knowledge list.</small>
               </div>
-              <div class="upload-field upload-field-wide">
-                <label for="upload-ocr-language">OCR language for scans and images</label>
-                <select id="upload-ocr-language" name="ocr_language">
-                  <option value="vie+eng" selected>Vietnamese + English · default</option>
-                  <option value="eng">English only</option>
-                </select>
-                <small class="upload-field-hint">Choose the main language on scanned pages. The parser records this setting with OCR output.</small>
-              </div>
             </div>
           </section>
 
           <fieldset class="upload-access-step">
             <legend><span>2</span> Access</legend>
-            <small>Select who can retrieve this source in document Q&amp;A. This is the access control; Commerce tags below only route relevant guidance to decision support.</small>
+            <small>Select who can retrieve this source in document Q&amp;A.</small>
             <div id="upload-role-options" class="upload-role-options"></div>
             <p id="upload-role-selection" class="upload-role-selection" aria-live="polite">No roles selected yet.</p>
           </fieldset>
 
-          <section class="upload-step upload-commerce-step">
-            <h3><span>3</span> Optional: Commerce decision support</h3>
-            <label class="upload-use-option upload-reference-toggle">
-              <input id="upload-commerce-reference" name="commerce_decision_support" type="checkbox">
-              <span><strong>Use this source to guide Commerce decisions</strong><small>Choose this only when the source gives a method, attributed example, or scoped operating rule for inventory, promotions, or logistics. It remains available to document Q&amp;A either way.</small></span>
-            </label>
-            <p class="corpus-note upload-use-note">Decision tags route guidance; they do not grant access or change dashboard data.</p>
-          </section>
-
-          <details id="upload-commerce-details" class="upload-commerce-details" hidden>
-          <summary>Commerce classification details</summary>
-          <fieldset id="upload-reference-fields" hidden>
-            <legend>Commerce source details</legend>
-            <div class="upload-field">
-              <label for="upload-reference-type">Source type</label>
-              <select id="upload-reference-type" name="reference_type">
-                <option value="">Choose a source type</option>
-                <option value="management_cookbook_reference">Management method · general guidance</option>
-                <option value="company_practice_reference">Company practice · example only</option>
-                <option value="company_policy_reference">External company policy · stated scope only</option>
-                <option value="platform_operating_rule">Platform operating rule</option>
-              </select>
-            </div>
-            <div class="upload-field">
-              <label for="upload-publisher">Source publisher</label>
-              <input id="upload-publisher" name="source_publisher" maxlength="200" placeholder="e.g. Walmart Inc.">
-            </div>
-
-            <div class="upload-field">
-              <label for="upload-reference-applicability">Applicability / scope</label>
-              <textarea id="upload-reference-applicability" name="reference_applicability" maxlength="1000" rows="2" placeholder="Who or what does this source apply to? State when it is only an external example."></textarea>
-            </div>
-
-            <fieldset id="upload-commerce-domains">
-              <legend>Use for these Commerce decisions</legend>
-              <label class="upload-domain-option"><input type="checkbox" name="knowledge_domains" value="inventory_allocation"><span><strong>Inventory allocation</strong><small>Stock levels, replenishment, and where to position inventory.</small></span></label>
-              <label class="upload-domain-option"><input type="checkbox" name="knowledge_domains" value="promotion_planning"><span><strong>Promotion planning</strong><small>Offer timing, discount depth, and promotion performance.</small></span></label>
-              <label class="upload-domain-option"><input type="checkbox" name="knowledge_domains" value="nationwide_logistics"><span><strong>Nationwide logistics</strong><small>Fulfilment, delivery capacity, and regional distribution.</small></span></label>
-            </fieldset>
-            <small class="upload-classification-help">Choose the source's real role: management methods are general guidance, company practices are attributed examples, and external policies apply only within their stated scope. An external policy never becomes a policy for the synthetic Commerce dataset.</small>
-          </fieldset>
-
-          <fieldset id="upload-synthetic-policy-option" hidden>
-            <legend>Fictional demo policy</legend>
-            <label><input id="upload-synthetic-policy" name="synthetic_company_policy" type="checkbox"> This is a fictional Commerce Demo policy (Admin only)</label>
-            <small>Use only for fictional demo procedures. The document will be labeled synthetic in RAG and citations.</small>
-          </fieldset>
-          </details>
-
-          <details class="upload-optional-metadata">
-            <summary>Optional source details</summary>
-            <div class="upload-field">
-              <label for="upload-year">Fiscal year</label>
-              <input id="upload-year" name="fiscal_year" type="number" min="1900" max="2100" placeholder="2024">
-            </div>
-            <div class="upload-field">
-              <label for="upload-source-url">Public source URL</label>
-              <input id="upload-source-url" name="source_url" type="url" pattern="https://.*" placeholder="https://…">
-            </div>
-          </details>
-
-          <aside id="upload-plan-summary" class="upload-plan-summary" role="status" aria-live="polite"></aside>
-
           <div class="upload-actions" style="display:flex;gap:10px;flex-wrap:wrap">
-            <button id="upload-button" type="submit" class="primary-button" data-upload-mode="production">Upload and index document</button>
-            <button id="parser-handoff-button" type="submit" class="secondary-button" data-upload-mode="parser-handoff">Save parser output to public</button>
+            <button id="upload-button" type="submit" class="primary-button" data-upload-mode="production">UPLOAD</button>
+            <button id="parser-handoff-button" type="submit" class="secondary-button" data-upload-mode="parser-handoff" hidden>Save parser output to public</button>
           </div>
-          <p class="corpus-note">Parser handoff saves parser chunks and extracted tables in public, then stops. It is not searchable until the downstream owner tokenizes and indexes it.</p>
           <div id="upload-status-wrap" class="upload-status-wrap" hidden>
             <div id="upload-progress" class="upload-progress" role="progressbar" aria-label="Document processing" aria-valuetext="Processing">
               <span></span>
@@ -536,6 +337,6 @@
     </div>
     </main>
   </div>
-  <script src="/static/app.js?v=upload-test-elements-20261020" defer></script>
+  <script src="/static/app.js?v=fixed-retrieval-knowledge-management-20261024" defer></script>
 </body>
 </html>

@@ -53,7 +53,7 @@ def _storage_client():
 
 def _role_accounts() -> dict[str, tuple[str, str]]:
     accounts = {}
-    for role in ("admin", "analyst", "viewer", "sustainability_analyst", "tester"):
+    for role in ("admin", "analyst", "viewer", "sustainability_analyst", "document_processing_owner"):
         username = os.getenv(f"DEMO_{role.upper()}_USERNAME")
         password = os.getenv(f"DEMO_{role.upper()}_PASSWORD")
         if username and password:
@@ -200,34 +200,6 @@ def dashboard_data(user: dict = Depends(require_permission("view_corpus"))):
             repository.close()
 
 
-_COMMERCE_DASHBOARD_KEYS_BY_DOMAIN = {
-    "inventory_allocation": ("sales_by_year", "inventory_by_year", "inventory_year_end_by_category"),
-    "promotion_planning": ("sales_by_year", "promotions_by_year"),
-    "nationwide_logistics": ("sales_by_year", "logistics_by_year_region"),
-}
-
-
-@app.get("/api/commerce/dashboard")
-def commerce_dashboard_data(
-    domain: Literal["inventory_allocation", "promotion_planning", "nationwide_logistics"] | None = None,
-    detail: Literal["campaigns"] | None = None,
-    user: dict = Depends(require_permission("view_analytics")),
-):
-    if detail and domain != "promotion_planning":
-        raise HTTPException(422, "Campaign details are only available for promotion planning.")
-    repository = None
-    try:
-        repository = DocumentRepository()
-        keys = ("promotions_by_campaign",) if detail == "campaigns" else _COMMERCE_DASHBOARD_KEYS_BY_DOMAIN.get(domain) if domain else None
-        return repository.commerce_dashboard(keys)
-    except Exception as error:
-        logger.exception("Could not load Commerce analytics")
-        raise HTTPException(503, "Commerce analytics are unavailable; check the Commerce schema migration.") from error
-    finally:
-        if repository is not None:
-            repository.close()
-
-
 @app.get("/api/documents/upload-capability")
 def upload_capability(user: dict = Depends(require_permission("view_corpus"))):
     return {"can_upload": "upload_documents" in ROLE_PERMISSIONS[user["role"]]}
@@ -239,7 +211,7 @@ def document_roles(user: dict = Depends(require_permission("classify_documents")
 
 
 @app.get("/api/admin/knowledge-documents")
-def admin_knowledge_documents(user: dict = Depends(require_permission("manage_knowledge"))):
+def admin_knowledge_documents(user: dict = Depends(require_permission("list_processing_documents"))):
     repository = None
     try:
         repository = DocumentRepository()
@@ -684,7 +656,7 @@ def inspect_processed_chunks(
     document_id: str, offset: int = 0, limit: int = 25,
     stage: Literal["parser", "indexed"] = "parser",
     source_chunk_id: int | None = None,
-    user: dict = Depends(require_permission("review_metrics")),
+    user: dict = Depends(require_permission("process_documents")),
 ):
     from core.database.parser_chunks_repository import ParserChunksRepository
 
@@ -729,7 +701,7 @@ def inspect_processed_chunks(
 def inspect_extracted_tables(
     document_id: str, table_offset: int = 0, table_limit: int = 50,
     row_offset: int = 0, row_limit: int = 100,
-    user: dict = Depends(require_permission("review_metrics")),
+    user: dict = Depends(require_permission("process_documents")),
 ):
     from core.database.structured_store import StructuredDataStore
 
@@ -818,9 +790,9 @@ def open_authorized_uploaded_source(
 @app.get("/api/admin/processing/{document_id}/source")
 def open_uploaded_source(
     document_id: str,
-    user: dict = Depends(require_permission("review_metrics")),
+    user: dict = Depends(require_permission("process_documents")),
 ):
-    """Admin review route retained for the processing inspector."""
+    """Processing-owner review route for the source inspector."""
     return _uploaded_source_response(document_id, user)
 
 

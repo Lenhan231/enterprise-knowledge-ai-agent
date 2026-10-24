@@ -6,6 +6,7 @@ import asyncio
 import logging
 from io import BytesIO
 from pathlib import Path
+from time import perf_counter
 from typing import Literal
 
 from dotenv import load_dotenv
@@ -83,6 +84,23 @@ def _agent_request(user: dict, question: str, **values):
     return AgentRequest(question=question, user_id=user["sub"], identity=identity, **values)
 
 
+def _record_agent_run(**event):
+    from core.database.agent_run_repository import AgentRunRepository
+
+    repository = None
+    try:
+        repository = AgentRunRepository()
+        repository.record_event(**event)
+    except Exception:
+        logger.exception("Could not record agent run telemetry")
+    finally:
+        if repository is not None:
+            try:
+                repository.close()
+            except Exception:
+                logger.exception("Could not close agent telemetry connection")
+
+
 @router.post("/chat")
 async def agent_chat(
     payload: AgentChatRequest, http_request: Request,
@@ -90,6 +108,14 @@ async def agent_chat(
 ):
     from core.agents.sql_analytics_agent import AnalyticsPermissionDenied
 
+    started = perf_counter()
+    agent_name = payload.agent_mode
+    retrieval_method = payload.retrieval_method
+    if retrieval_method not in {"dense", "bm25", "hybrid", "parent"}:
+        retrieval_method = "hybrid"
+    status = "failed"
+    error_type = "RequestFailed"
+    citation_count = 0
     try:
         runtime = await _get_runtime(http_request.app)
         agent_request = _agent_request(
@@ -97,13 +123,29 @@ async def agent_chat(
             metadata={**payload.metadata, "retrieval_method": payload.retrieval_method},
         )
         if payload.agent_mode == "auto":
-            return await runtime.run(agent_request)
-        return await runtime.run_mode(agent_request, payload.agent_mode)
-    except AnalyticsPermissionDenied:
+            result = await runtime.run(agent_request)
+        else:
+            result = await runtime.run_mode(agent_request, payload.agent_mode)
+        agent_name = result.agent
+        status = "completed"
+        error_type = None
+        citation_count = len(result.evidence)
+        return result
+    except AnalyticsPermissionDenied as error:
+        error_type = type(error).__name__
         raise HTTPException(403, "Your role cannot access Commerce analytics") from None
     except Exception as error:
+        error_type = type(error).__name__
         logger.exception("Agent request failed")
         raise HTTPException(503, "The agent service is unavailable") from error
+    finally:
+        await asyncio.to_thread(
+            _record_agent_run,
+            actor_role=user["role"], agent_name=agent_name,
+            retrieval_method=retrieval_method, status=status,
+            elapsed_ms=max(0, int((perf_counter() - started) * 1000)),
+            citation_count=citation_count, error_type=error_type,
+        )
 
 
 @router.post("/report")
@@ -113,6 +155,10 @@ async def generate_agent_report(
 ):
     from core.agents.sql_analytics_agent import AnalyticsPermissionDenied
 
+    started = perf_counter()
+    status = "failed"
+    error_type = "RequestFailed"
+    citation_count = 0
     try:
         content = await template.read(10 * 1024 * 1024 + 1)
         if len(content) > 10 * 1024 * 1024:
@@ -120,18 +166,32 @@ async def generate_agent_report(
         runtime = await _get_runtime(http_request.app)
         agent_request = _agent_request(user, AgentChatRequest(question=question).question)
         filename = Path(template.filename or "").name
-        _, output, media_type = await runtime.report_agent.generate_from_template(agent_request, filename, content)
+        result, output, media_type = await runtime.report_agent.generate_from_template(agent_request, filename, content)
+        status = "completed"
+        error_type = None
+        citation_count = len(result.evidence)
         extension = Path(filename).suffix.casefold()
         return StreamingResponse(BytesIO(output), media_type=media_type, headers={
             "Content-Disposition": f'attachment; filename="report{extension}"',
             "X-Report-Status": "generated",
         })
-    except AnalyticsPermissionDenied:
+    except AnalyticsPermissionDenied as error:
+        error_type = type(error).__name__
         raise HTTPException(403, "Verified analytics permission is required") from None
-    except HTTPException:
+    except HTTPException as error:
+        error_type = f"HTTP{error.status_code}"
         raise
     except ValueError as error:
+        error_type = type(error).__name__
         raise HTTPException(422, str(error)) from None
     except Exception as error:
+        error_type = type(error).__name__
         logger.exception("Report agent request failed")
         raise HTTPException(503, "The report service is unavailable") from error
+    finally:
+        await asyncio.to_thread(
+            _record_agent_run,
+            actor_role=user["role"], agent_name="report", retrieval_method="hybrid",
+            status=status, elapsed_ms=max(0, int((perf_counter() - started) * 1000)),
+            citation_count=citation_count, error_type=error_type,
+        )

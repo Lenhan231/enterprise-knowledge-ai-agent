@@ -870,8 +870,7 @@ async function loadWorkspace(user) {
   } catch (error) {
     syncWorkspaceTabs(user);
     if (error.message !== "Sign in to continue") {
-      $("#login-error").textContent = `Signed in, but the workspace could not load: ${error.message}`;
-      $("#login-error").hidden = false;
+      $("#connection-status").textContent = `Workspace loaded with an error: ${error.message}`;
     }
   }
 }

@@ -824,3 +824,19 @@ def access_matrix(user: dict = Depends(require_permission("manage_access"))):
             for role, permissions in ROLE_PERMISSIONS.items()
         ],
     }
+
+
+@app.get("/api/admin/agent-monitoring")
+def agent_monitoring(user: dict = Depends(require_permission("view_agent_monitoring"))):
+    from core.database.agent_run_repository import AgentRunRepository
+
+    repository = None
+    try:
+        repository = AgentRunRepository()
+        return repository.monitoring_snapshot()
+    except Exception as error:
+        logger.exception("Could not load agent monitoring")
+        raise HTTPException(503, "Agent monitoring data is unavailable") from error
+    finally:
+        if repository is not None:
+            repository.close()

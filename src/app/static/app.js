@@ -42,7 +42,12 @@ function selectWorkspaceTab(name) {
   const button = $(`[data-tab-target="${name}"]`);
   if (!button || button.hidden) return;
   activeTab = name;
-  $(".intro").hidden = false;
+  const isKnowledgeTab = name === "knowledge";
+  $(".intro").hidden = !isKnowledgeTab;
+  $(".agent-overview").hidden = !isKnowledgeTab
+    || ["document_processing_owner", "document_uploader"].includes(currentUser?.role);
+  $(".stats").hidden = !isKnowledgeTab || currentUser?.role === "document_processing_owner";
+  $("#inventory-snapshot").hidden = !isKnowledgeTab;
   document.querySelectorAll(".workspace-tab").forEach((tab) => {
     const selected = tab === button;
     tab.setAttribute("aria-selected", String(selected));

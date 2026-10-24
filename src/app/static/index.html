@@ -122,6 +122,36 @@
 
     <div id="inventory-snapshot" hidden aria-live="polite"></div>
 
+    <section class="stats" aria-label="Knowledge base coverage" hidden>
+      <article class="stat-card">
+        <div>
+          <span class="stat-label">Enterprises</span>
+          <strong id="company-name">—</strong>
+          <span class="stat-note">Visible in your role scope</span>
+        </div>
+      </article>
+      <article class="stat-card">
+        <div>
+          <span class="stat-label">Indexed Documents</span>
+          <strong id="document-count">—</strong>
+          <span class="stat-note">Role-visible searchable sources</span>
+        </div>
+      </article>
+      <article class="stat-card">
+        <div>
+          <span class="stat-label">Passages</span>
+          <strong id="chunk-count">—</strong>
+          <span class="stat-note">Available for document retrieval</span>
+        </div>
+      </article>
+      <article class="stat-card source-stat">
+        <div>
+          <span class="stat-label">Processing</span>
+          <strong id="processing-count">—</strong>
+          <span class="stat-note">Uploaded / OCR / chunking</span>
+        </div>
+      </article>
+    </section>
 
     <div class="workspace-content">
     <!-- TAB 1: KNOWLEDGE / Q&A -->
@@ -368,6 +398,6 @@
     </div>
     </main>
   </div>
-  <script src="/static/app.js?v=admin-tabs-20261024-9" defer></script>
+  <script src="/static/app.js?v=admin-tabs-20261024-7" defer></script>
 </body>
 </html>

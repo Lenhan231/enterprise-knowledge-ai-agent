@@ -97,6 +97,17 @@ document.querySelectorAll("[data-open-tab]").forEach((button) => {
   button.addEventListener("click", () => selectWorkspaceTab(button.dataset.openTab));
 });
 
+function renderCorpus(data) {
+  const companies = new Set(data.documents.map((doc) => doc.domain || "General").filter(Boolean));
+  $("#company-name").textContent = companies.size || 0;
+  $("#document-count").textContent = formatNumber(data.document_count);
+  $("#chunk-count").textContent = formatNumber(data.chunk_count);
+  const inFlight = data.documents.filter((doc) => !["ready", "parsed"].includes(doc.processing_status)).length;
+  $("#processing-count").textContent = formatNumber(inFlight);
+  $("#connection-status").textContent = "Agent workspace";
+  document.querySelector(".status-dot").classList.add("connected");
+}
+
 function renderParsedChunkInspector(documents) {
   const section = $("#parsed-chunk-inspector");
   const select = $("#parsed-document");
@@ -821,6 +832,7 @@ async function loadWorkspace(user) {
   $("#logout-button").hidden = false;
   $(".intro").hidden = user.role === "document_processing_owner";
   $(".agent-overview").hidden = ["document_processing_owner", "document_uploader"].includes(user.role);
+  $(".stats").hidden = user.role === "document_processing_owner";
   const canUseAnalytics = ["admin", "finance_analyst", "sustainability_analyst", "operations", "executive"].includes(user.role);
   $("#inventory-snapshot").hidden = false;
   ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
@@ -829,6 +841,10 @@ async function loadWorkspace(user) {
   ["sql", "agentic"].forEach((mode) => {
     $("#agent-mode option[value='" + mode + "']").hidden = !canUseAnalytics;
   });
+  if (user.role !== "document_processing_owner") {
+    try { renderCorpus(await api("/api/dashboard")); }
+    catch (error) { $("#connection-status").textContent = `Knowledge base unavailable: ${error.message}`; }
+  }
   if (canUseAnalytics) void loadInventorySnapshot();
   else $("#inventory-snapshot").innerHTML = '<p class="analysis-empty">Inventory snapshot requires analytics access.</p>';
   try {

@@ -805,9 +805,20 @@ async function loadWorkspace(user) {
   $("#monitoring-section").hidden = true;
   syncWorkspaceTabs();
   if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
+    const roles = Object.keys(UPLOAD_ROLE_LABELS);
+    $("#upload-role-options").innerHTML = roles.map((role) => {
+      const [label, description] = UPLOAD_ROLE_LABELS[role];
+      return `<label class="upload-role-option"><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}"><span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span></label>`;
+    }).join("");
+    $("#upload-role-options").querySelectorAll('input[name="allowed_roles"]').forEach((input) => {
+      input.addEventListener("change", updateUploadRoleSelection);
+    });
+    updateUploadRoleSelection();
     $("#upload-section").hidden = false;
-    $("#upload-button").disabled = true;
-    $("#upload-status").textContent = "Loading upload roles…";
+    $("#upload-button").disabled = false;
+    const canSaveParserOutput = user.role === "document_processing_owner";
+    $("#parser-handoff-button").hidden = !canSaveParserOutput;
+    $("#parser-handoff-button").disabled = !canSaveParserOutput;
   }
   $("#access-matrix").replaceChildren();
   $("#connection-status").textContent = "Knowledge base connected";
@@ -831,33 +842,6 @@ async function loadWorkspace(user) {
   }
   if (canUseAnalytics) void loadInventorySnapshot();
   else $("#inventory-snapshot").innerHTML = '<p class="analysis-empty">Inventory snapshot requires analytics access.</p>';
-  if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
-    try {
-      const { roles } = await api("/api/documents/roles");
-      $("#upload-role-options").innerHTML = roles.map((role) => {
-        const [label, description] = UPLOAD_ROLE_LABELS[role] || [role.replaceAll("_", " "), "Document Q&A access"];
-        return `<label class="upload-role-option"><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}"><span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span></label>`;
-      }).join("");
-      $("#upload-role-options").querySelectorAll('input[name="allowed_roles"]').forEach((input) => {
-        input.addEventListener("change", () => {
-          updateUploadRoleSelection();
-        });
-      });
-      updateUploadRoleSelection();
-      $("#upload-button").disabled = false;
-      const canSaveParserOutput = user.role === "document_processing_owner";
-      $("#parser-handoff-button").hidden = !canSaveParserOutput;
-      $("#parser-handoff-button").disabled = !canSaveParserOutput;
-      $("#upload-status").textContent = "";
-      delete $("#upload-status").dataset.state;
-    } catch (error) {
-      $("#upload-section").hidden = false;
-      $("#upload-button").disabled = true;
-      $("#parser-handoff-button").disabled = true;
-      $("#upload-status").dataset.state = "error";
-      $("#upload-status").textContent = `Upload permissions could not be loaded: ${error.message}`;
-    }
-  }
   try {
     if (user.role === "admin") {
       const access = await api("/api/admin/access-matrix");

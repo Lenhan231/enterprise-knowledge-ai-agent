@@ -820,6 +820,11 @@ async function loadWorkspace(user) {
     $("#parser-handoff-button").hidden = !canSaveParserOutput;
     $("#parser-handoff-button").disabled = !canSaveParserOutput;
   }
+  if (user.role === "admin") {
+    void refreshKnowledgeDocuments().catch((error) => {
+      $("#knowledge-documents-status").textContent = `Could not load knowledge-base files: ${error.message}`;
+    });
+  }
   $("#access-matrix").replaceChildren();
   $("#connection-status").textContent = "Knowledge base connected";
   $("#user-badge").textContent = `${user.username} · ${user.role}`;
@@ -849,7 +854,6 @@ async function loadWorkspace(user) {
       $("#admin-section").hidden = false;
       $("#monitoring-section").hidden = false;
       await refreshAgentMonitoring();
-      await refreshKnowledgeDocuments();
     }
     if (user.role === "document_processing_owner") {
       await refreshKnowledgeDocuments();

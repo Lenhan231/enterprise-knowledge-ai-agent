@@ -39,7 +39,23 @@ Project layout
 - src/core/retrieval and src/core/rag: role-scoped hybrid search and grounded answers
 - src/core/agents: runtime router for grounded QA, analytics, hybrid reports and dashboard data
 - [CLI tools](tools/README.md): reproducible CLI entry points grouped by workstream; see the [repository map](docs/technical/repository-ownership.md) for ownership and shared contracts
-- docker-compose.yml: FastAPI service; optional pgvector-only database profile (not the full Supabase stack)
+- docker-compose.yml: FastAPI service, separate document-processing and chunking check services, and an optional pgvector-only database profile (not the full Supabase stack)
+
+Run a module check independently from the repository root:
+
+```bash
+docker compose --profile checks run --build --rm document-processing-check
+docker compose --profile checks run --build --rm chunking-check
+docker compose --profile checks run --build --rm embedding-check
+docker compose --profile checks run --build --rm retrieval-check
+docker compose --profile checks run --build --rm agents-check
+```
+
+Each command builds and runs only its check container, then removes that
+container. Embedding downloads/loads the configured model and keeps its cache in
+a named volume; retrieval checks the configured database connection and vector
+registration without querying or changing rows. Normal `docker compose up`
+still starts only the web app.
 
 ## Dataset and knowledge sources
 

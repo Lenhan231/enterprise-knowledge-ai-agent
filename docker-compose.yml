@@ -1,11 +1,80 @@
 services:
   web:
+    image: enterprise-knowledge-ai-agent:local
     build:
       context: .
       dockerfile: docker/Dockerfile
     env_file: .env
     ports:
       - "127.0.0.1:8000:8000"
+
+  document-processing-check:
+    profiles: ["checks"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.document-processing
+
+  chunking-check:
+    profiles: ["checks"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.chunking
+
+  embedding-check:
+    profiles: ["checks"]
+    image: enterprise-knowledge-ai-agent:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      EMBEDDING_BACKEND: ${EMBEDDING_BACKEND:-local}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-intfloat/multilingual-e5-base}
+      EMBEDDING_MAX_SEQUENCE_LENGTH: ${EMBEDDING_MAX_SEQUENCE_LENGTH:-512}
+      HUGGINGFACE_API_KEY: ${HUGGINGFACE_API_KEY:-}
+      HF_HOME: /root/.cache/huggingface
+    volumes:
+      - embedding_model_cache:/root/.cache/huggingface
+    command:
+      - python
+      - -c
+      - >-
+        import math;
+        from core.embeddings import EmbeddingService;
+        vector = EmbeddingService().embed_query('Docker embedding check.');
+        assert vector and all(math.isfinite(value) for value in vector);
+        print(f'PASS: embedding loaded ({len(vector)} dimensions)')
+
+  retrieval-check:
+    profiles: ["checks"]
+    image: enterprise-knowledge-ai-agent:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+    command:
+      - python
+      - -c
+      - >-
+        from core.database.document_chunks_repository import DocumentChunkRepository;
+        repository = DocumentChunkRepository();
+        repository.close();
+        print('PASS: retrieval database connection and vector registration')
+
+  agents-check:
+    profiles: ["checks"]
+    image: enterprise-knowledge-ai-agent:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command:
+      - python
+      - -c
+      - >-
+        from app.main import app;
+        paths = {route.path for route in app.routes};
+        assert '/api/agents/chat' in paths and '/api/agents/report' in paths;
+        print('PASS: agent API routes registered')
 
   proxy:
     image: nginx:1.27-alpine
@@ -32,3 +101,4 @@ services:
 
 volumes:
   db_data:
+  embedding_model_cache:

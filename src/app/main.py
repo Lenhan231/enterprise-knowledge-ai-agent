@@ -80,7 +80,7 @@ def _role_accounts() -> dict[str, tuple[str, str]]:
     uploader_username = os.getenv("DEMO_UPLOADER_USERNAME")
     uploader_password = os.getenv("DEMO_UPLOADER_PASSWORD")
     if uploader_username and uploader_password:
-        accounts[uploader_username] = (uploader_password, "document_processing_owner")
+        accounts[uploader_username] = (uploader_password, "document_uploader")
     return {username: (password, role_map.get(role, role)) for username, (password, role) in accounts.items()}
 
 

@@ -76,7 +76,7 @@ browser. The demo has no user-registration or password-reset flow.
 
 - Viewer: corpus overview and document questions.
 - Analyst and Sustainability Analyst: viewer access plus the source-backed analytics dashboard.
-- Document Uploader demo login: document-processing owner access, including Document Processing and Upload Test.
+- Document Uploader: upload and classify documents; no document Q&A or analytics access.
 - Tester: isolated Upload Test only; parser chunks and tables stay outside the corpus.
 - Admin: analyst access plus upload, source review, access control, and knowledge-file management.
 

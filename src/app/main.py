@@ -160,15 +160,15 @@ def health():
 
 
 @app.post("/api/auth/login")
-def login(request: LoginRequest):
+def login(request: Request, payload: LoginRequest):
     accounts = _role_accounts()
-    account = accounts.get(request.username)
-    if account is None or not secrets.compare_digest(account[0], request.password):
+    account = accounts.get(payload.username)
+    if account is None or not secrets.compare_digest(account[0], payload.password):
         raise HTTPException(401, "Invalid username or password")
-    response = JSONResponse({"username": request.username, "role": account[1], "expires_in": 3600})
+    response = JSONResponse({"username": payload.username, "role": account[1], "expires_in": 3600})
     secure_cookie = os.getenv("AUTH_COOKIE_SECURE", "false").lower() == "true" \
         or _is_trusted_frontend_origin(request.headers.get("origin"))
-    response.set_cookie("enterprise_session", _issue_token(request.username, account[1]), httponly=True, secure=secure_cookie, samesite="lax", max_age=3600, path="/")
+    response.set_cookie("enterprise_session", _issue_token(payload.username, account[1]), httponly=True, secure=secure_cookie, samesite="lax", max_age=3600, path="/")
     return response
 
 

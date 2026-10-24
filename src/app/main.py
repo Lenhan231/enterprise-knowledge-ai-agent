@@ -1,4 +1,5 @@
 from pathlib import Path
+from contextlib import asynccontextmanager
 import hashlib
 import json
 import logging
@@ -25,14 +26,24 @@ from app.security import (
     _require_same_origin,
     _roles_with_permission, auth_scheme, require_permission, require_roles,
 )
+from app.agents import router as agents_router
 from app.upload_test import (
     create_upload_test, get_upload_test_preview, inspect_upload_test,
     list_upload_tests, router as upload_test_router,
 )
 
 logger = logging.getLogger(__name__)
-app = FastAPI(title="Commerce Decision Support")
+@asynccontextmanager
+async def _lifespan(application: FastAPI):
+    yield
+    runtime = getattr(application.state, "agent_router", None)
+    if runtime is not None:
+        await runtime.close()
+
+
+app = FastAPI(title="Commerce Decision Support", lifespan=_lifespan)
 app.include_router(upload_test_router)
+app.include_router(agents_router)
 
 APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"

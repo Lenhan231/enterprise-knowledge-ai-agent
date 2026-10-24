@@ -99,7 +99,7 @@ function renderCorpus(data) {
   $("#chunk-count").textContent = formatNumber(data.chunk_count);
   const inFlight = data.documents.filter((doc) => !["ready", "parsed"].includes(doc.processing_status)).length;
   $("#processing-count").textContent = formatNumber(inFlight);
-  $("#connection-status").textContent = "Knowledge base connected";
+  $("#connection-status").textContent = "Agent workspace";
   document.querySelector(".status-dot").classList.add("connected");
 }
 
@@ -569,11 +569,14 @@ function renderAnswer(data, panel = $("#answer-panel")) {
   const tokenUsage = usageStages.length
     ? `<details class="token-usage"><summary>Generation tokens · ${Number(usage.total?.total_tokens || 0).toLocaleString()} total</summary><ul>${usageStages.map(([label, value]) => `<li>${escapeHtml(label)}: ${Number(value.input_tokens || 0).toLocaleString()} in · ${Number(value.output_tokens || 0).toLocaleString()} out · ${Number(value.total_tokens).toLocaleString()} total</li>`).join("")}</ul><small>SQL and answer model calls only; embeddings and routing are not included.</small></details>`
     : "";
+  const limitations = Array.isArray(data.limitations) && data.limitations.length
+    ? `<p class="analysis-caveat answer-provenance-note"><strong>Limits:</strong> ${data.limitations.map(escapeHtml).join(" · ")}</p>`
+    : "";
   panel.innerHTML = `
     <div class="answer-header-wrap">
       <div class="answer-heading">
         <span class="answer-mark">${usedEvidenceFallback ? "EV" : "AI"}</span>
-        <div><span class="eyebrow">GROUNDED RESPONSE</span><h3>${usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer"}</h3></div>
+        <div><span class="eyebrow">${escapeHtml(({knowledge:"KNOWLEDGE AGENT",sql_analytics:"ANALYTICS AGENT",dashboard:"INVENTORY AGENT",report:"REPORT AGENT",agentic:"AGENTIC ROUTER",hybrid:"KNOWLEDGE + ANALYTICS"})[data.agent] || "AGENT RESPONSE")}</span><h3>${usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer"}</h3></div>
       </div>
       <div class="answer-actions-bar">
         <button type="button" class="action-btn" id="copy-answer-btn" title="Copy response text">Copy</button>
@@ -583,8 +586,11 @@ function renderAnswer(data, panel = $("#answer-panel")) {
     ${decisionModeNote}
     ${referenceRetrievalNote}
     ${questionSqlFallbackNote}
+    ${limitations}
     ${tokenUsage}
     <div class="answer-text">${renderAnswerBody(data.answer)}</div>
+    ${renderAgentInventoryDashboard(data.data?.dashboard)}
+    ${renderAgentRows(data.data)}
     ${renderDashboardVisualization(data.data?.visualization)}
     ${data.citation_validation_failed ? `<p class="error-message">The answer was withheld because it failed evidence validation.${data.decision_validation_failure ? ` <details><summary>Admin diagnostic</summary><code>${escapeHtml(data.decision_validation_failure)}</code>${data.decision_validation_numeric_tokens?.length ? `<p>Unsupported numeric claims: ${data.decision_validation_numeric_tokens.map(escapeHtml).join(", ")}</p>` : ""}</details>` : ""}</p>` : citations.length ? `
       <div class="citations">
@@ -669,6 +675,40 @@ function renderAnswer(data, panel = $("#answer-panel")) {
   panel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function renderAgentInventoryDashboard(dashboard) {
+  if (dashboard?.outline_id !== "inventory_control") return "";
+  const kpis = dashboard.kpis || {};
+  const metrics = [["SKUs", kpis.sku_count], ["Stockout rate", kpis.stockout_rate == null ? null : `${Number(kpis.stockout_rate).toFixed(1)}%`],
+    ["Overstock rate", kpis.overstock_rate == null ? null : `${Number(kpis.overstock_rate).toFixed(1)}%`],
+    ["Mean fill rate", kpis.mean_fill_rate == null ? null : `${(Number(kpis.mean_fill_rate) * 100).toFixed(1)}%`]];
+  const exceptions = dashboard.exceptions || [];
+  const columns = ["product_name", "category", "stock_on_hand", "days_of_supply", "stockout_flag", "overstock_flag", "reorder_flag"];
+  const rows = exceptions.slice(0, 25).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("");
+  return `<section class="agent-inventory-result"><div class="section-heading"><div><p class="eyebrow">LATEST SNAPSHOT · ${escapeHtml(dashboard.snapshot_date || "date unavailable")}</p><h3>${escapeHtml(dashboard.title || "Inventory Control & Exceptions")}</h3></div></div>
+    <div class="agent-result-kpis">${metrics.map(([label,value]) => `<article><span>${escapeHtml(label)}</span><strong>${escapeHtml(value ?? "Unavailable")}</strong></article>`).join("")}</div>
+    <h4>Flagged products</h4>${rows ? `<div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="no-citations">No inventory exceptions were returned.</p>`}
+  </section>`;
+}
+
+function renderAgentRows(data) {
+  const groups = [["Results", data], ...["sql", "analytics", "knowledge"].map((key) => [key, data?.[key]])];
+  return groups.map(([label, value]) => {
+    const rows = value?.rows;
+    if (!Array.isArray(rows) || !rows.length || !rows.every((row) => row && typeof row === "object" && !Array.isArray(row))) return "";
+    const columns = Object.keys(rows[0]).slice(0, 12);
+    return `<section class="agent-data-result"><h4>${escapeHtml(label)}</h4><div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${rows.slice(0, 50).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`;
+  }).join("");
+}
+
+function renderAgentResult(result) {
+  const citations = (result.evidence || []).map((item) => {
+    const metadata = item.metadata || {};
+    return { ...metadata, id: item.citation_id, title: item.source, source_type: item.source_type,
+      content: item.content, score: metadata.similarity_score };
+  });
+  renderAnswer({ ...result.metadata, ...result, citations });
+}
+
 function renderAgentMonitoring(data) {
   const summary = data.summary || {};
   const cards = [
@@ -698,52 +738,6 @@ async function refreshAgentMonitoring() {
   } finally {
     button.disabled = false;
   }
-}
-
-function askOverWebSocket(payload, onStatus) {
-  return new Promise((resolve, reject) => {
-    if (!window.WebSocket) {
-      reject(Object.assign(new Error("WebSocket is unavailable"), { safeToFallback: true }));
-      return;
-    }
-    const scheme = location.protocol === "https:" ? "wss:" : "ws:";
-    const socket = new WebSocket(`${scheme}//${location.host}/ws/ask`);
-    let sent = false;
-    let settled = false;
-    const timeout = setTimeout(() => {
-      if (settled) return;
-      settled = true;
-      socket.close();
-      reject(new Error("The answer request timed out"));
-    }, 120000);
-    const finish = (callback, value) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timeout);
-      callback(value);
-    };
-    socket.onopen = () => {
-      sent = true;
-      socket.send(JSON.stringify(payload));
-    };
-    socket.onmessage = (event) => {
-      let message;
-      try { message = JSON.parse(event.data); }
-      catch { finish(reject, new Error("The server returned an invalid WebSocket response")); return; }
-      if (message.type === "status") onStatus(message.status);
-      else if (message.type === "answer") finish(resolve, message);
-      else if (message.type === "error") {
-        const detail = Array.isArray(message.detail)
-          ? message.detail.map((item) => item.msg).join("; ")
-          : message.detail;
-        finish(reject, new Error(detail || "Question answering failed"));
-      }
-    };
-    socket.onerror = () => finish(reject, Object.assign(new Error("WebSocket connection failed"), { safeToFallback: !sent }));
-    socket.onclose = () => {
-      if (!settled) finish(reject, Object.assign(new Error("WebSocket closed before answering"), { safeToFallback: !sent }));
-    };
-  });
 }
 
 async function api(path, options = {}) {
@@ -792,8 +786,15 @@ async function loadWorkspace(user) {
   $("#user-badge").hidden = false;
   $("#logout-button").hidden = false;
   $(".intro").hidden = user.role === "document_processing_owner";
-  $(".agent-overview").hidden = user.role === "document_processing_owner";
+  $(".agent-overview").hidden = ["document_processing_owner", "document_uploader"].includes(user.role);
   $(".stats").hidden = user.role === "document_processing_owner";
+  const canUseAnalytics = ["admin", "finance_analyst", "sustainability_analyst", "operations", "executive"].includes(user.role);
+  ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
+    $(selector).hidden = !canUseAnalytics;
+  });
+  ["sql", "dashboard", "agentic"].forEach((mode) => {
+    $("#agent-mode option[value='" + mode + "']").hidden = !canUseAnalytics;
+  });
   if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
     try {
       const capability = await api("/api/documents/upload-capability");
@@ -826,8 +827,6 @@ async function loadWorkspace(user) {
     }
   }
   try {
-    const data = await api("/api/dashboard");
-    renderCorpus(data);
     if (user.role === "admin") {
       const access = await api("/api/admin/access-matrix");
       $("#access-matrix").innerHTML = access.roles.map((role) => `<article><strong>${escapeHtml(role.role)}</strong><span>${role.permissions.map(escapeHtml).join(" · ")}</span></article>`).join("");
@@ -847,7 +846,6 @@ async function loadWorkspace(user) {
     if (error.message !== "Sign in to continue") {
       $("#login-error").textContent = `Signed in, but the workspace could not load: ${error.message}`;
       $("#login-error").hidden = false;
-      $("#connection-status").textContent = "Signed in · data unavailable";
     }
   }
 }
@@ -1072,35 +1070,72 @@ function setupQuickPrompts() {
   });
 }
 
+$(".agent-grid").addEventListener("click", (event) => {
+  const card = event.target.closest("[data-agent-mode]");
+  if (card) {
+    $("#agent-mode").value = card.dataset.agentMode;
+    $("#question").value = card.dataset.agentPrompt;
+    $("#ask-form").requestSubmit();
+  } else if (event.target.closest("[data-open-report]")) {
+    $("#report-agent-form-section").hidden = false;
+    $("#report-agent-template").focus();
+  }
+});
+
 $("#ask-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const button = $("#ask-button");
   const question = $("#question").value.trim();
   if (!question) return;
   button.disabled = true;
-  button.innerHTML = '<span>Searching sources…</span>';
+  button.innerHTML = "<span>Working...</span>";
   const panel = $("#answer-panel");
-  renderSkeletonAnswer(panel, "Retrieving passages and preparing cited answer…");
+  renderSkeletonAnswer(panel, "Routing your request to the right agent...");
   try {
-    const payload = { question, retrieval_method: "hybrid" };
-    let data;
-    try {
-      data = await askOverWebSocket(payload, (status) => {
-        button.innerHTML = `<span>${escapeHtml(status || "Synthesizing answer...")}</span>`;
-      });
-    } catch (error) {
-      if (!error.safeToFallback) throw error;
-      data = await api("/api/ask", { method: "POST", body: JSON.stringify(payload) });
-    }
-    renderAnswer(data);
+    const data = await api("/api/agents/chat", { method: "POST", body: JSON.stringify({
+      question, agent_mode: $("#agent-mode").value, retrieval_method: "translated_hybrid_rerank",
+    }) });
+    $("#connection-status").textContent = "Agent services connected";
+    $(".status-dot").classList.add("connected");
+    renderAgentResult(data);
   } catch (error) {
-    panel.innerHTML = `<p class="error-message">${escapeHtml(error.message)}. Please check service configuration or connection.</p>`;
+    panel.innerHTML = '<p class="error-message">' + escapeHtml(error.message) + '. Please check service configuration or connection.</p>';
   } finally {
     button.disabled = false;
-    button.innerHTML = '<span>Run query</span>';
+    button.innerHTML = "<span>Ask agent</span>";
   }
 });
 
+$("#report-agent-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const button = $("#report-agent-submit");
+  const status = $("#report-agent-status");
+  button.disabled = true;
+  status.textContent = "Generating report from authorized sources...";
+  try {
+    const response = await fetch("/api/agents/report", {
+      method: "POST", body: new FormData(event.currentTarget), credentials: "same-origin",
+      headers: { "ngrok-skip-browser-warning": "1" },
+    });
+    if (!response.ok) {
+      let detail = "Report request failed (HTTP " + response.status + ")";
+      try { detail = (await response.json()).detail || detail; } catch {}
+      throw new Error(detail);
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "report" + ($("#report-agent-template").files[0]?.name.match(/\.[^.]+$/)?.[0] || ".docx");
+    link.click();
+    URL.revokeObjectURL(url);
+    status.textContent = "Report generated and downloaded.";
+  } catch (error) {
+    status.textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
 $("#monitoring-refresh").addEventListener("click", refreshAgentMonitoring);
 
 function updateUploadRoleSelection() {
@@ -1233,12 +1268,10 @@ $("#upload-form").addEventListener("submit", async (event) => {
       $("#upload-file-info").textContent = "Choose one file. Scanned PDFs and images use OCR; Admins can review extracted text and tables in Document Processing.";
     $("#upload-file-info").setAttribute("role", "status");
     try {
-      const workspace = await api("/api/dashboard");
-      renderCorpus(workspace);
       if (currentUser?.role === "admin") await refreshKnowledgeDocuments();
     } catch (error) {
       status.dataset.state = "warning";
-      status.textContent = `The file was processed successfully as ${result.document_id}, but the corpus overview could not refresh: ${error.message}`;
+      status.textContent = `The file was processed successfully as ${result.document_id}, but the admin document list could not refresh: ${error.message}`;
     }
     const parsedDocument = $("#parsed-document");
     if (currentUser?.role === "document_processing_owner") {

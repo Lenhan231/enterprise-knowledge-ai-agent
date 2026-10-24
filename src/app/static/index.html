@@ -52,7 +52,6 @@
         <button id="tab-button-upload" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-upload" data-tab-target="upload" hidden>Upload Documents</button>
         <button id="tab-button-processing" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-processing" data-tab-target="processing" hidden>Document Processing</button>
         <button id="tab-button-ocr-lab" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-ocr-lab" data-tab-target="ocr-lab" hidden>Upload Test</button>
-        <button id="tab-button-knowledge-management" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-knowledge-management" data-tab-target="knowledge-management" hidden>Knowledge Management</button>
         <button id="tab-button-access" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-access" data-tab-target="access" hidden>Access Control</button>
         <button id="tab-button-monitoring" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" data-tab-target="monitoring" hidden>Agent Monitoring</button>
       </nav>
@@ -286,39 +285,6 @@
 
     </section>
 
-    <section id="tab-knowledge-management" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-knowledge-management" hidden>
-      <section class="candidate-review knowledge-management-section">
-        <div class="section-heading">
-          <div><p class="eyebrow">ADMINISTRATION</p><h2>Knowledge-base files</h2></div>
-          <button id="knowledge-documents-refresh" class="secondary-button" type="button">Refresh</button>
-        </div>
-        <p>Manage which roles can retrieve each file. Remove or restore a source from AI retrieval without deleting its original file or parser output.</p>
-        <label class="knowledge-search-label" for="knowledge-documents-search">Find by title, publisher, domain, or ID</label>
-        <input id="knowledge-documents-search" class="knowledge-search" type="search" autocomplete="off">
-        <div class="knowledge-filters">
-          <label for="knowledge-domain-filter">Decision domain
-            <select id="knowledge-domain-filter">
-              <option value="all">All domains</option>
-              <option value="inventory_allocation">Inventory allocation</option>
-              <option value="promotion_planning">Promotion planning</option>
-              <option value="nationwide_logistics">Nationwide logistics</option>
-              <option value="general">General / unclassified</option>
-            </select>
-          </label>
-          <label for="knowledge-state-filter">Source state
-            <select id="knowledge-state-filter">
-              <option value="all">All states</option>
-              <option value="available">Available to AI</option>
-              <option value="removed">Removed from AI retrieval</option>
-              <option value="attention">Needs attention</option>
-            </select>
-          </label>
-        </div>
-        <p id="knowledge-documents-status" class="corpus-note" aria-live="polite"></p>
-        <div id="knowledge-documents-list" class="knowledge-documents-list"></div>
-      </section>
-    </section>
-
     <section id="tab-ocr-lab" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-ocr-lab" hidden>
       <section class="candidate-review">
         <div class="section-heading">
@@ -353,9 +319,8 @@
           <div>
             <p class="eyebrow">ROLE-BASED ACCESS CONTROL (RBAC)</p>
             <h2>Role permissions matrix</h2>
-            <p class="corpus-note">This matrix shows workspace capabilities by role. To choose who can read an individual document, manage its reader roles in Knowledge Management.</p>
+            <p class="corpus-note">This matrix shows workspace capabilities by role.</p>
           </div>
-          <button class="secondary-button" type="button" data-open-tab="knowledge-management">Manage file access</button>
         </div>
         <div id="access-matrix" class="access-matrix"></div>
       </section>
@@ -398,6 +363,6 @@
     </div>
     </main>
   </div>
-  <script src="/static/app.js?v=admin-tabs-20261024-7" defer></script>
+  <script src="/static/app.js?v=admin-tabs-20261024-8" defer></script>
 </body>
 </html>

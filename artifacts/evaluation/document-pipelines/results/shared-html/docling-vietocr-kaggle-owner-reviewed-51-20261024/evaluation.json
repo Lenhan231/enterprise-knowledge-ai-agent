@@ -430,10 +430,10 @@
       "micro": {
         "true_positive": 266,
         "predicted_regions": 840,
-        "reference_regions": 611,
+        "reference_regions": 673,
         "precision": 0.31666666666666665,
-        "recall": 0.4353518821603928,
-        "f1": 0.36664369400413505
+        "recall": 0.3952451708766716,
+        "f1": 0.35161929940515535
       },
       "per_class": {
         "title": {
@@ -443,6 +443,14 @@
           "precision": 0.3356164383561644,
           "recall": 0.5212765957446809,
           "f1": 0.4083333333333334
+        },
+        "title_table": {
+          "true_positive": 0,
+          "predicted_regions": 0,
+          "reference_regions": 28,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
         },
         "text": {
           "true_positive": 120,
@@ -467,6 +475,14 @@
           "precision": 0.6835443037974683,
           "recall": 0.40298507462686567,
           "f1": 0.5070422535211268
+        },
+        "seal": {
+          "true_positive": 0,
+          "predicted_regions": 0,
+          "reference_regions": 34,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
         }
       }
     },
@@ -1414,10 +1430,10 @@
       "micro": {
         "true_positive": 171,
         "predicted_regions": 542,
-        "reference_regions": 424,
+        "reference_regions": 477,
         "precision": 0.3154981549815498,
-        "recall": 0.4033018867924528,
-        "f1": 0.35403726708074534
+        "recall": 0.3584905660377358,
+        "f1": 0.3356231599607458
       },
       "per_class": {
         "title": {
@@ -1427,6 +1443,14 @@
           "precision": 0.30434782608695654,
           "recall": 0.4666666666666667,
           "f1": 0.3684210526315789
+        },
+        "title_table": {
+          "true_positive": 0,
+          "predicted_regions": 0,
+          "reference_regions": 28,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
         },
         "text": {
           "true_positive": 69,
@@ -1451,6 +1475,14 @@
           "precision": 0.5961538461538461,
           "recall": 0.33695652173913043,
           "f1": 0.4305555555555555
+        },
+        "seal": {
+          "true_positive": 0,
+          "predicted_regions": 0,
+          "reference_regions": 25,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
         }
       }
     },

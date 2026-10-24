@@ -26,16 +26,19 @@ To test orientation-aware layout inference, add `--layout-rotation auto`. OSD ru
 
 ## Docling tuning on the 51-page Kaggle snapshot
 
-These runs use the same 51 owner-reviewed pages and manifest SHA-256 (`e74023390e9e7a72bb44112d0ed303cf2eea45d14d30405b67d5ade0b2b1aeb5`), with Docling 2.129.0 on a Tesla T4. The baseline uses Heron layout and RapidOCR detection + VietOCR vgg_seq2seq greedy recognition at width 512; TableFormer accurate and OCR cell matching stay enabled.
+All runs below use the same 51 owner-reviewed pages and manifest SHA-256 (`e74023390e9e7a72bb44112d0ed303cf2eea45d14d30405b67d5ade0b2b1aeb5`), with Docling 2.129.0 on a Tesla T4. OCR uses RapidOCR detection + VietOCR vgg_seq2seq greedy recognition at width 512; tables use Docling TableFormer accurate with OCR cell matching. The baseline layout score was re-evaluated with the current six-label evaluator, so its layout F1 is 35.16% (the older 36.66% report used a four-label layout taxonomy).
 
 | Variant | OCR CER / WER | Layout F1 | Table detection F1 | Cell CER | Exact grids |
 |---|---:|---:|---:|---:|---:|
-| Heron, width 512, greedy ([baseline](results/shared-html/docling-vietocr-kaggle-owner-reviewed-51-20261024/)) | 12.56% / 23.70% | 36.66% | 79.63% | 61.07% | 1.67% |
-| Heron, width 768 ([run](results/shared-html/docling-vietocr-width768-kaggle-owner-reviewed-51-20261024/)) | 18.79% / 30.66% | 35.16% | 79.63% | 61.21% | 1.67% |
-| Heron, width 512, beam search ([run](results/shared-html/docling-vietocr-beamsearch-kaggle-owner-reviewed-51-20261024/)) | 17.38% / 27.79% | 35.16% | 79.63% | 61.46% | 1.67% |
+| Heron, width 512, greedy ([baseline](results/shared-html/docling-vietocr-kaggle-owner-reviewed-51-20261024/)) | 12.56% / 23.70% | 35.16% | 79.63% | 61.07% | 1.67% |
+| Heron 101, threshold 0.5 ([run](results/shared-html/docling-vietocr-heron101-threshold05-kaggle-owner-reviewed-51-20261025/)) | 10.12% / 20.26% | 36.20% | 83.64% | 63.76% | 3.33% |
+| Heron 101, threshold 0.5 + automatic table-crop rotation ([run](results/shared-html/docling-vietocr-heron101-threshold05-table-rotation-kaggle-owner-reviewed-51-20261025/)) | 8.79% / 18.90% | **36.20%** | **83.64%** | 59.03% | 3.33% |
+| Heron + automatic table-crop rotation ([run](results/shared-html/docling-vietocr-heron-table-rotation-kaggle-owner-reviewed-51-20261025/)) | 11.28% / 22.41% | 35.16% | 79.63% | 56.52% | 1.67% |
 | Egret Medium, width 512, greedy ([run](results/shared-html/docling-vietocr-egret-medium-kaggle-owner-reviewed-51-20261024/)) | 12.66% / 23.24% | 29.90% | 79.61% | 52.52% | 3.33% |
+| Egret Medium + automatic table-crop rotation ([run](results/shared-html/docling-vietocr-egret-medium-table-rotation-kaggle-owner-reviewed-51-20261025/)) | 12.41% / 22.83% | 29.90% | 79.61% | **51.94%** | 3.33% |
+| Egret Large ([run](results/shared-html/docling-vietocr-egret-large-kaggle-owner-reviewed-51-20261025/)) | 12.56% / 23.70% | 34.57% | 84.75% | 67.18% | 1.67% |
 
-Width 768 and beam search both reduce OCR quality on this scan cohort, so keep greedy width 512 for recognition. Egret Medium trades 6.76 F1 points of layout quality for substantially better table-cell transcription and a small WER gain. There is no single winner across layers; retain Heron as the balanced baseline and use Egret only when table-cell accuracy is the priority.
+Heron 101 + rotation is the best measured balance: layout F1 improves 1.04 points, table detection F1 improves 4.01 points, and cell CER falls 2.04 points versus baseline. Egret Medium + rotation gives the lowest cell CER (51.94%) at a 5.26-point lower layout F1 and 4.02-point lower table F1 than baseline. Automatic rotation used Tesseract OSD with confidence >=5 and rotated two table crops on Heron 101 and Heron, and one on Egret Medium. These are benchmark-specific candidates, not a production selection. Width 768 and beam search worsened OCR; disabling OCR cell matching raised cell CER to 100.11%. Raw metadata and outputs for other threshold/model trials are retained with each run.
 
 ## Active data
 

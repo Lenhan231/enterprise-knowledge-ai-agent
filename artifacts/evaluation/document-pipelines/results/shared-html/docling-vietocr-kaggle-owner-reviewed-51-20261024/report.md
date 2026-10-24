@@ -3,14 +3,12 @@
 **Run:** `docling-vietocr-kaggle-owner-reviewed-51-20261024` · **Predictions:** 51 pages · **Inference success:** 51
 **Runtime:** 1186.153s on Tesla T4 · peak inference RSS unavailable
 
-**OCR:** RapidOCR 3.9.2 detection + VietOCR vgg_seq2seq greedy recognition; Tesseract OSD per crop.
-
 ## Independent layer scores
 
 | Layer | Cohort | Metrics |
 |---|---:|---|
 | OCR | 51 pages | CER 12.56%; WER (PyVi) 23.70%; whitespace error 18.81% |
-| Layout | 51 pages | micro P/R/F1 31.67% / 43.54% / 36.66% |
+| Layout | 51 pages | micro P/R/F1 31.67% / 39.52% / 35.16% |
 | Table | 60 tables on 38 pages | detection P/R/F1 89.58% / 71.67% / 79.63%; cell CER 61.07%; cell WER (whitespace) 69.46%; exact grids 1.67% |
 
 ## End-to-end cohort
@@ -20,7 +18,7 @@
 | Layer | Metrics |
 |---|---|
 | OCR | CER 12.76%; WER (PyVi) 23.81% |
-| Layout | micro P/R/F1 31.55% / 40.33% / 35.40% |
+| Layout | micro P/R/F1 31.55% / 35.85% / 33.56% |
 | Table | detection P/R 89.58% / 71.67%; cell CER 61.07%; cell WER (whitespace) 69.46% |
 
 ## Notes

@@ -14,6 +14,7 @@ class IntentResult(BaseModel):
 
     needs_knowledge: bool
     needs_sql: bool
+    reason: str = ""
 
     output_mode: Literal[
         "answer",
@@ -21,3 +22,4 @@ class IntentResult(BaseModel):
     ]
 
     confidence: float
+    fallback: bool = False

@@ -30,7 +30,7 @@ class InventoryDashboardAgent:
                 data={"dashboard": {"outline_id": "inventory_control", "sections": []}},
             )
         snapshot = latest[0]["snapshot_date"]
-        filters = "i.snapshot_date = $1 AND ($2 IS NULL OR i.category = $2)"
+        filters = "i.snapshot_date = $1 AND i.category IS NOT DISTINCT FROM COALESCE($2, i.category)"
         queries = (
             "SELECT COUNT(i.product_id) AS sku_count, "
             "COUNT(*) FILTER (WHERE i.stockout_flag) * 100.0 / NULLIF(COUNT(*), 0) AS stockout_rate, "

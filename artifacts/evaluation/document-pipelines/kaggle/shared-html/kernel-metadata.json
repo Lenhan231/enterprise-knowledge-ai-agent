@@ -1,6 +1,6 @@
 {
-  "id": "letrongnhan/docling-shared-html-benchmark",
-  "title": "Docling Shared HTML Benchmark",
+  "id": "letrongnhan/docling-vietocr-shared-html-benchmark",
+  "title": "Docling VietOCR Shared HTML Benchmark",
   "code_file": "run.ipynb",
   "language": "python",
   "kernel_type": "notebook",

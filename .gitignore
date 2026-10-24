@@ -10,22 +10,25 @@ build/
 /.vscode
 */tests
 
-# Reproducible corpus artifacts (download from the committed manifest).
-/data/raw/apple/**/*.pdf
-/data/raw/vietnam_enterprises/
-/data/processed/apple/**/*.md
-/data/processed/vietnam_enterprises/
-/artifacts/evaluation/qa-review-private-key.json
-/artifacts/evaluation/qa-review-private-key-*.json
-
-# Generated OCR inputs and local benchmark/model cache outputs.
-/artifacts/evaluation/ocr-rendered/
-/artifacts/evaluation/ocr-kaggle-*/
-/artifacts/evaluation/kaggle-reranker-output/
-/artifacts/evaluation/kaggle-reranker-pulled/
-/artifacts/evaluation/kaggle-reranker-dataset/*.zip
-
 ponytail.md
 /rules
+/*graphify-out
 
-/supabase/.temp/
+/node_modules
+/package-lock.json
+/package.json
+/.agents
+/.claude
+/.continue
+/.qwen
+/.rovodev
+/.vibe
+/skills-lock.json
+
+/.claude    
+/.continue
+/.qwen
+/.rovodev
+/.vibe
+/.pytest_cache
+

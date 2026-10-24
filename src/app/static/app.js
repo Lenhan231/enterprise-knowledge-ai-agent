@@ -113,7 +113,7 @@ function renderCorpus(data) {
     company_policy_reference: "External policy · stated scope only",
     platform_operating_rule: "Platform operating rule",
   };
-  const companies = new Set(data.documents.map((doc) => doc.company).filter(Boolean));
+  const companies = new Set(data.documents.map((doc) => doc.domain || "General").filter(Boolean));
   $("#company-name").textContent = companies.size || 0;
   $("#document-count").textContent = formatNumber(data.document_count);
   $("#chunk-count").textContent = formatNumber(data.chunk_count);
@@ -124,14 +124,14 @@ function renderCorpus(data) {
   document.querySelector(".status-dot").classList.add("connected");
 
   const groups = Object.groupBy
-    ? Object.groupBy(data.documents, (doc) => doc.company)
+    ? Object.groupBy(data.documents, (doc) => doc.domain || "General")
     : data.documents.reduce((result, doc) => {
-      (result[doc.company] ??= []).push(doc);
+      (result[doc.domain || "General"] ??= []).push(doc);
       return result;
     }, {});
-  $("#company-grid").innerHTML = Object.entries(groups).map(([company, docs]) => `
+  $("#company-grid").innerHTML = Object.entries(groups).map(([domain, docs]) => `
     <article class="company-card">
-      <div class="company-card-head"><div><span class="company-kicker">${escapeHtml([...new Set(docs.flatMap((doc) => doc.knowledge_domains || []))].map((domain) => commerceLabels[domain] || domain).join(" · ") || docs[0].domain.replaceAll("_", " "))}</span><h3>${escapeHtml(company)}</h3></div><span class="doc-total">${formatNumber(docs.length)} doc${docs.length === 1 ? "" : "s"}</span></div>
+      <div class="company-card-head"><div><span class="company-kicker">${escapeHtml([...new Set(docs.flatMap((doc) => doc.knowledge_domains || []))].map((domain) => commerceLabels[domain] || domain).join(" · ") || (docs[0].domain || "General").replaceAll("_", " "))}</span><h3>${escapeHtml(domain.replaceAll("_", " "))}</h3></div><span class="doc-total">${formatNumber(docs.length)} doc${docs.length === 1 ? "" : "s"}</span></div>
       <div class="document-list">${docs.map((doc) => {
         const href = validSourceUrl(doc.source_url);
         const link = href
@@ -141,9 +141,9 @@ function renderCorpus(data) {
         const domains = (doc.knowledge_domains || []).map((domain) => commerceLabels[domain] || domain).join(", ");
         const reference = referenceLabels[doc.external_reference_type] || "";
         const attribution = [doc.source_publisher, reference, domains].filter(Boolean).join(" · ");
-        return `<article class="document-row"><div class="file-mark">${escapeHtml(doc.format)}</div><div class="document-info"><strong>${escapeHtml(doc.title)}</strong><span>${escapeHtml(doc.fiscal_year ? `FY ${doc.fiscal_year}` : attribution || "General")} · ${formatNumber(doc.chunks)} passages · ${escapeHtml(status)} · access: ${escapeHtml((doc.allowed_roles || []).join(", "))}</span>${attribution ? `<small>${escapeHtml(attribution)}</small>` : ""}${link}</div></article>`;
+        return `<article class="document-row"><div class="file-mark">${escapeHtml(doc.format)}</div><div class="document-info"><strong>${escapeHtml(doc.title)}</strong><span>${escapeHtml(attribution || "General")} · ${formatNumber(doc.chunks)} passages · ${escapeHtml(status)} · access: ${escapeHtml((doc.allowed_roles || []).join(", "))}</span>${attribution ? `<small>${escapeHtml(attribution)}</small>` : ""}${link}</div></article>`;
       }).join("")}</div>
-    </article>`).join("") || '<div class="loading-card">No company documents are indexed yet.</div>';
+    </article>`).join("") || '<div class="loading-card">No documents are indexed yet.</div>';
 }
 
 function renderParsedChunkInspector(documents) {
@@ -206,7 +206,7 @@ function renderKnowledgeDocuments() {
     return `<article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
       <div class="knowledge-document-copy"><strong>${escapeHtml(doc.title)}</strong>
         <span class="knowledge-source-kind ${doc.synthetic_company_policy ? "is-synthetic" : ""}">${escapeHtml(sourceKind)}</span>
-        <span>${escapeHtml(doc.source_publisher || doc.company || "Unknown publisher")} · ${escapeHtml(doc.format || "File")} · ${formatNumber(doc.chunk_count)} passages</span>
+        <span>${escapeHtml(doc.source_publisher || "Unknown publisher")} · ${escapeHtml(doc.format || "File")} · ${formatNumber(doc.chunk_count)} passages</span>
         <small>${escapeHtml(domains)} · ${escapeHtml(doc.processing_status || "unknown")} · ${knowledgeDocumentIsRetrievable(doc) ? "Available to AI" : doc.knowledge_base_active ? "Not retrievable" : "Removed from AI retrieval"}</small>
         <code>${escapeHtml(doc.document_id)}</code>${sourceLink}
         <details class="knowledge-access-editor"><summary>Access roles: ${escapeHtml((doc.allowed_roles || []).join(", ") || "none")}</summary>

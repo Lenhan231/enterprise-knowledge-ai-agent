@@ -53,29 +53,29 @@
       },
       "report": {
         "case_count": 25,
-        "answered_cases": 21,
-        "run_errors": 4,
-        "mean_agent_latency_seconds": 44.237,
+        "answered_cases": 25,
+        "run_errors": 0,
+        "mean_agent_latency_seconds": 46.575,
         "latency_cases": 25,
         "ragas": {
           "faithfulness": {
-            "mean": 0.2183,
-            "scored_cases": 18,
-            "eligible_cases": 18,
+            "mean": 0.2298,
+            "scored_cases": 20,
+            "eligible_cases": 20,
             "coverage": 1.0,
             "score_errors": 0
           },
           "answer_relevancy": {
-            "mean": 0.7286,
-            "scored_cases": 21,
-            "eligible_cases": 21,
+            "mean": 0.6794,
+            "scored_cases": 25,
+            "eligible_cases": 25,
             "coverage": 1.0,
             "score_errors": 0
           },
           "context_precision": {
-            "mean": 0.3333,
-            "scored_cases": 18,
-            "eligible_cases": 18,
+            "mean": 0.35,
+            "scored_cases": 20,
+            "eligible_cases": 20,
             "coverage": 1.0,
             "score_errors": 0
           }
@@ -114,23 +114,23 @@
     },
     "ragas": {
       "faithfulness": {
-        "mean": 0.4248,
-        "scored_cases": 64,
-        "eligible_cases": 64,
+        "mean": 0.422,
+        "scored_cases": 66,
+        "eligible_cases": 66,
         "coverage": 1.0,
         "score_errors": 0
       },
       "answer_relevancy": {
-        "mean": 0.7828,
-        "scored_cases": 70,
-        "eligible_cases": 70,
+        "mean": 0.7632,
+        "scored_cases": 74,
+        "eligible_cases": 74,
         "coverage": 1.0,
         "score_errors": 0
       },
       "context_precision": {
-        "mean": 0.4917,
-        "scored_cases": 64,
-        "eligible_cases": 64,
+        "mean": 0.492,
+        "scored_cases": 66,
+        "eligible_cases": 66,
         "coverage": 1.0,
         "score_errors": 0
       }
@@ -5827,23 +5827,34 @@
       "agent": "report",
       "model": "openai/gpt-oss-120b",
       "question": "Tạo báo cáo doanh thu và COGS tháng 12/2022 theo template đã tải lên.",
-      "answer": null,
-      "contexts": [],
-      "reference": null,
-      "evidence_sources": [],
-      "agent_metadata": {},
-      "latency_seconds": 61.497,
-      "total_case_seconds": 61.497,
+      "answer": "# Revenue Performance Report\n\nThis report presents the revenue and cost of goods sold (COGS) for the month of December 2022 based on the supplied data sources.\n\n\n## Report title\n\nRevenue and COGS Report December 2022\n\n\n## Reporting period\n\nDecember 2022\n\n\n## Executive summary\n\nFor December 2022 the total recorded revenue was 52,454,936.20 and the total COGS was 53,489,673.44. The figures are derived from the validated analytics result provided in source [S3]. No additional breakdowns are available in the source data.\n\n\n## KPI table\n\nKey performance indicators for the reporting period are summarized in the table below.\n\n\n| Metric | Value | Period | Source |\n| --- | --- | --- | --- |\n| Metric | Value | Period | Source |\n| Total Revenue | 52,454,936.20 | December 2022 | [S3] |\n| Total COGS | 53,489,673.44 | December 2022 | [S3] |\n## Monthly trend\n\nunavailable in source data\n\n\n## Segment/region breakdown\n\nunavailable in source data\n\n\n## Limitations and assumptions\n\nThe analysis is limited to the data supplied in sources [S1], [S2] and [S3]. No external data or assumptions have been applied.\n\n\n## Sources and evidence\n\n[S1], [S2], [S3]\n",
+      "contexts": [
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 17: Snapshot Date: 2022-12-31 | Product ID: 1249 | Product Name: VietMode MP-17 | Category: Casual | Segment: Activewear | Size: M | Color: yellow | On-hand Units: 3 | Units Sold (Latest): 1 | Avg Monthly Demand (3 snapshots): 1.333333333333333 | Avg Daily Demand: | Stockout Days: 2 | Fill Rate: 0.9333 | Source Stockout Flag: 1 | Source Overstock Flag: 0 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 4976.37 | COGS (source): 3661.613046 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 18: Snapshot Date: 2022-12-31 | Product ID: 1250 | Product Name: VietMode MP-18 | Category: Casual | Segment: Activewear | Size: L | Color: red | On-hand Units: 3 | Units Sold (Latest): 1 | Avg Monthly Demand (3 snapshots): 1.333333333333333 | Avg Daily Demand: | Stockout Days: 1 | Fill Rate: 0.9667 | Source Stockout Flag: 1 | Source Overstock Flag: 0 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 4976.37 | COGS (source): 3635.735922 | On-hand COGS Value:",
+        "{}"
+      ],
+      "reference": "[\"Doanh thu 52,454,936.20\", \"COGS 53,489,673.44\", \"kỳ báo cáo 2022-12\"]",
+      "evidence_sources": [
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "commerce.sales"
+      ],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": []
+      },
+      "latency_seconds": 81.992,
+      "total_case_seconds": 218.263,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8703,
+        "context_precision": 0.0
       },
       "metric_eligibility": {
-        "faithfulness": false,
-        "answer_relevancy": false,
-        "context_precision": false
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
       },
       "score_errors": {
         "faithfulness": null,
@@ -5857,23 +5868,65 @@
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "run_error",
-      "scoring_status": "not_scored",
-      "error": "RuntimeError: Groq returned empty output (status=incomplete, incomplete=IncompleteDetails(reason='max_output_tokens'))",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
       "operation_attempts": [
         {
           "operation": "model_generation",
           "attempts": [
             {
               "attempt": 1,
-              "success": false,
+              "success": true,
               "transient_failure": false,
-              "elapsed_seconds": 61.497,
-              "error": "RuntimeError: Groq returned empty output (status=incomplete, incomplete=IncompleteDetails(reason='max_output_tokens'))"
+              "elapsed_seconds": 81.992,
+              "error": null
             }
           ],
-          "first_attempt_success": false,
-          "final_success": false
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 40.619,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 46.523,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 49.129,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
         }
       ]
     },
@@ -8042,22 +8095,27 @@
       "agent": "report",
       "model": "openai/gpt-oss-120b",
       "question": "Dùng template minimal_user_template_v1 để lập báo cáo doanh thu tháng 12/2022; giữ nguyên tiêu đề và thứ tự section.",
-      "answer": null,
+      "answer": "# Minimal User Template\n\nunavailable in source data\n\n\n## 1. Summary\n\nunavailable in source data\n\n\n## 2. KPI Table\n\nunavailable in source data\n\n\n## 3. Evidence\n\nThe provided evidence indicates that no validated analytics results are available and the query could not be generated due to lack of clarification. [S1]\n\n\n## 4. Limitations\n\nThe source data does not contain the required revenue figures for December 2022, and the question lacks sufficient detail to produce a safe query. [S1]\n",
       "contexts": [],
-      "reference": null,
+      "reference": "[\"Giữ nguyên đủ bốn heading theo đúng thứ tự\", \"điền KPI table\"]",
       "evidence_sources": [],
-      "agent_metadata": {},
-      "latency_seconds": 43.476,
-      "total_case_seconds": 43.476,
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ]
+      },
+      "latency_seconds": 48.239,
+      "total_case_seconds": 98.935,
       "langchain_callback_events": 1,
       "scores": {
         "faithfulness": null,
-        "answer_relevancy": null,
+        "answer_relevancy": 0.0,
         "context_precision": null
       },
       "metric_eligibility": {
         "faithfulness": false,
-        "answer_relevancy": false,
+        "answer_relevancy": true,
         "context_precision": false
       },
       "score_errors": {
@@ -8072,23 +8130,37 @@
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "run_error",
-      "scoring_status": "not_scored",
-      "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m4jcwnjke9nsdhr5x4b27ggz` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199072, Requested 2300. Please try again in 9m52.704s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
       "operation_attempts": [
         {
           "operation": "model_generation",
           "attempts": [
             {
               "attempt": 1,
-              "success": false,
+              "success": true,
               "transient_failure": false,
-              "elapsed_seconds": 43.476,
-              "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m4jcwnjke9nsdhr5x4b27ggz` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199072, Requested 2300. Please try again in 9m52.704s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}"
+              "elapsed_seconds": 48.239,
+              "error": null
             }
           ],
-          "first_attempt_success": false,
-          "final_success": false
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 50.696,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
         }
       ]
     },
@@ -8097,23 +8169,40 @@
       "agent": "report",
       "model": "openai/gpt-oss-120b",
       "question": "Dùng một template do người dùng tải lên có bảng KPI ba cột Metric, Value, Source; tạo báo cáo stockout theo category tại 2022-12-31.",
-      "answer": null,
-      "contexts": [],
-      "reference": null,
-      "evidence_sources": [],
-      "agent_metadata": {},
-      "latency_seconds": 41.821,
-      "total_case_seconds": 41.821,
+      "answer": "# Inventory Exception Report\n\nThis report summarizes inventory exceptions identified on the snapshot date 2022‑12‑31, focusing on stock‑out conditions across product categories.\n\n\n## Report title\n\nStock‑out Summary by Category – 31 Dec 2022\n\n\n## Snapshot date and coverage\n\nSnapshot date: 2022‑12‑31. Coverage includes all product records present in the inventory control workbook.\n\n\n## KPI summary\n\nTotal products reviewed: 5. Products with stock‑out flag: 3. Categories affected: Streetwear (1), Outdoor (2).\n\n\n## Exception table\n\nThe table below lists products flagged for stock‑out, their current on‑hand inventory, and flag status.\n\n\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| --- | --- | --- | --- | --- | --- | --- |\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| 202 | Streetwear | 133 | unavailable in source data | 1 | 1 | unavailable in source data |\n| 2214 | Outdoor | 446 | unavailable in source data | 1 | 1 | unavailable in source data |\n| 794 | Outdoor | 1169 | unavailable in source data | 1 | 1 | unavailable in source data |\n## Policy thresholds\n\nThreshold values shown are draft simulations and not approved policy limits.\n\n\n## Required actions\n\nReview flagged items and consider replenishment actions where appropriate.\n\n\n## Data limitations\n\nDays of supply and recommended follow‑up fields are unavailable in the source data. All other fields are taken directly from the supplied workbook.\n\n\n## Sources and evidence\n\n[S1], [S2], [S3], [S4]\n",
+      "contexts": [
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 241: Snapshot Date: 2022-12-31 | Product ID: 202 | Product Name: IndigoViet UM-04 | Category: Streetwear | Segment: Balanced | Size: L | Color: orange | On-hand Units: 133 | Units Sold (Latest): 7 | Avg Monthly Demand (3 snapshots): 12 | Avg Daily Demand: | Stockout Days: 2 | Fill Rate: 0.9333 | Source Stockout Flag: 1 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 16231.71508474576 | COGS (source): 15420.12933050847 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 385: Snapshot Date: 2022-12-31 | Product ID: 2144 | Product Name: PhoenixWear UR-20 | Category: Streetwear | Segment: Standard | Size: S | Color: white | On-hand Units: 31 | Units Sold (Latest): 2 | Avg Monthly Demand (3 snapshots): 2.666666666666667 | Avg Daily Demand: | Stockout Days: 0 | Fill Rate: 1 | Source Stockout Flag: 0 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 5279.316428571428 | COGS (source): 3096.847017 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 208: Snapshot Date: 2022-12-31 | Product ID: 2214 | Product Name: VietMotion RP-11 | Category: Outdoor | Segment: Activewear | Size: L | Color: white | On-hand Units: 446 | Units Sold (Latest): 12 | Avg Monthly Demand (3 snapshots): 10.66666666666667 | Avg Daily Demand: | Stockout Days: 2 | Fill Rate: 0.9333 | Source Stockout Flag: 1 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 4408.759136690647 | COGS (source): 4188.321179856114 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 117: Snapshot Date: 2022-12-31 | Product ID: 794 | Product Name: HanoiStreet RP-82 | Category: Outdoor | Segment: Activewear | Size: L | Color: white | On-hand Units: 1169 | Units Sold (Latest): 31 | Avg Monthly Demand (3 snapshots): 16.66666666666667 | Avg Daily Demand: | Stockout Days: 1 | Fill Rate: 0.9667 | Source Stockout Flag: 1 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 1012.756364088948 | COGS (source): 962.1185458845003 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 360: Snapshot Date: 2022-12-31 | Product ID: 1868 | Product Name: BambooCraft UM-06 | Category: Streetwear | Segment: Balanced | Size: S | Color: pink | On-hand Units: 31 | Units Sold (Latest): 4 | Avg Monthly Demand (3 snapshots): 4.333333333333333 | Avg Daily Demand: | Stockout Days: 1 | Fill Rate: 0.9667 | Source Stockout Flag: 1 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 14247.51249329759 | COGS (source): 13535.13686863271 | On-hand COGS Value:",
+        "{}"
+      ],
+      "reference": "[\"Giữ cấu trúc bảng/heading của template\", \"tất cả giá trị có nguồn hoặc tính toán được\"]",
+      "evidence_sources": [
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "commerce.inventory"
+      ],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": []
+      },
+      "latency_seconds": 69.112,
+      "total_case_seconds": 287.284,
       "langchain_callback_events": 1,
       "scores": {
-        "faithfulness": null,
-        "answer_relevancy": null,
-        "context_precision": null
+        "faithfulness": 0.6667,
+        "answer_relevancy": 0.8159,
+        "context_precision": 1.0
       },
       "metric_eligibility": {
-        "faithfulness": false,
-        "answer_relevancy": false,
-        "context_precision": false
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
       },
       "score_errors": {
         "faithfulness": null,
@@ -8127,23 +8216,65 @@
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "run_error",
-      "scoring_status": "not_scored",
-      "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m4jcwnjke9nsdhr5x4b27ggz` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198975, Requested 3508. Please try again in 17m52.656s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
       "operation_attempts": [
         {
           "operation": "model_generation",
           "attempts": [
             {
               "attempt": 1,
-              "success": false,
+              "success": true,
               "transient_failure": false,
-              "elapsed_seconds": 41.821,
-              "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m4jcwnjke9nsdhr5x4b27ggz` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198975, Requested 3508. Please try again in 17m52.656s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}"
+              "elapsed_seconds": 69.112,
+              "error": null
             }
           ],
-          "first_attempt_success": false,
-          "final_success": false
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 50.114,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 64.521,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 103.536,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
         }
       ]
     },
@@ -8152,22 +8283,27 @@
       "agent": "report",
       "model": "openai/gpt-oss-120b",
       "question": "Tạo báo cáo doanh thu năm 2025 và tồn kho hiện tại năm 2026 theo template executive brief.",
-      "answer": null,
+      "answer": "# Executive Decision Brief\n\nunavailable in source data\n\n\n## Report title\n\nunavailable in source data\n\n\n## Reporting period\n\nunavailable in source data\n\n\n## Executive summary\n\nunavailable in source data\n\n\n## Business highlights\n\nunavailable in source data\n\n\n## Risks and limitations\n\nThe provided evidence indicates that the query could not be generated due to insufficient clarification, so reliable data for revenue 2025 and inventory 2026 is not available.\n\n\n## Recommended decisions\n\nunavailable in source data\n\n\n## Evidence and sources\n\nValidated analytics result rows indicate no data could be retrieved: {\"ok\": false, \"operation\": \"text_to_sql\", \"rows\": [], \"limitations\": [\"The question needs clarification before a safe query can be generated.\"]}\n",
       "contexts": [],
-      "reference": null,
+      "reference": "\"abstain_or_limitation\"",
       "evidence_sources": [],
-      "agent_metadata": {},
-      "latency_seconds": 31.514,
-      "total_case_seconds": 31.514,
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ]
+      },
+      "latency_seconds": 37.398,
+      "total_case_seconds": 94.512,
       "langchain_callback_events": 1,
       "scores": {
         "faithfulness": null,
-        "answer_relevancy": null,
+        "answer_relevancy": 0.0,
         "context_precision": null
       },
       "metric_eligibility": {
         "faithfulness": false,
-        "answer_relevancy": false,
+        "answer_relevancy": true,
         "context_precision": false
       },
       "score_errors": {
@@ -8182,23 +8318,37 @@
       "abstention_observed": null,
       "hallucination_rate": null,
       "hallucination_review": "manual claim-level review required",
-      "status": "run_error",
-      "scoring_status": "not_scored",
-      "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m4jcwnjke9nsdhr5x4b27ggz` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198902, Requested 2128. Please try again in 7m24.96s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
       "operation_attempts": [
         {
           "operation": "model_generation",
           "attempts": [
             {
               "attempt": 1,
-              "success": false,
+              "success": true,
               "transient_failure": false,
-              "elapsed_seconds": 31.514,
-              "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m4jcwnjke9nsdhr5x4b27ggz` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198902, Requested 2128. Please try again in 7m24.96s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}"
+              "elapsed_seconds": 37.398,
+              "error": null
             }
           ],
-          "first_attempt_success": false,
-          "final_success": false
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 57.114,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
         }
       ]
     }

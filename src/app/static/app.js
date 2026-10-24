@@ -792,6 +792,7 @@ async function loadWorkspace(user) {
   $("#user-badge").hidden = false;
   $("#logout-button").hidden = false;
   $(".intro").hidden = user.role === "document_processing_owner";
+  $(".agent-overview").hidden = user.role === "document_processing_owner";
   $(".stats").hidden = user.role === "document_processing_owner";
   if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
     try {

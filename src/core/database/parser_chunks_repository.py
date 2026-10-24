@@ -60,7 +60,7 @@ class ParserChunksRepository:
                    FROM public.document_parser_chunks c
                    JOIN public.documents d USING(document_id)
                    WHERE c.document_id = %s
-                     AND (%s::text IS NULL OR d.company = %s::text)
+                     AND (%s::text IS NULL OR c.metadata->>'company' = %s::text)
                    ORDER BY c.chunk_index LIMIT %s OFFSET %s""",
                 (document_id, company, company, limit, offset),
             )

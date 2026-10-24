@@ -58,7 +58,7 @@ class DocumentProcessingOutputsRepository:
                 """SELECT o.pipeline_id, o.elements, o.structured_tables, o.document_metadata
                    FROM public.document_processing_outputs o
                    JOIN public.documents d USING (document_id)
-                   WHERE o.document_id = %s AND d.company = %s""",
+                   WHERE o.document_id = %s AND o.document_metadata->>'company' = %s""",
                 (document_id, company),
             )
             row = cursor.fetchone()

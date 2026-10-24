@@ -808,7 +808,7 @@ async function loadWorkspace(user) {
   $(".agent-overview").hidden = ["document_processing_owner", "document_uploader"].includes(user.role);
   $(".stats").hidden = user.role === "document_processing_owner";
   const canUseAnalytics = ["admin", "finance_analyst", "sustainability_analyst", "operations", "executive"].includes(user.role);
-  $("#inventory-snapshot").hidden = !canUseAnalytics;
+  $("#inventory-snapshot").hidden = false;
   ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
     $(selector).hidden = !canUseAnalytics;
   });
@@ -820,6 +820,7 @@ async function loadWorkspace(user) {
     catch (error) { $("#connection-status").textContent = `Knowledge base unavailable: ${error.message}`; }
   }
   if (canUseAnalytics) await loadInventorySnapshot();
+  else $("#inventory-snapshot").innerHTML = '<p class="analysis-empty">Inventory snapshot requires analytics access.</p>';
   if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
     try {
       const capability = await api("/api/documents/upload-capability");

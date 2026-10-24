@@ -22,6 +22,14 @@ class ProcessingOwnerTest(unittest.TestCase):
             self.assertEqual(_role_accounts()['processing-owner-test'],
                              ('test-password', 'document_processing_owner'))
 
+    def test_uploader_account_uses_document_processing_owner_role(self):
+        with patch.dict(os.environ, {
+            'DEMO_UPLOADER_USERNAME': 'uploader-test',
+            'DEMO_UPLOADER_PASSWORD': 'test-password',
+        }):
+            self.assertEqual(_role_accounts()['uploader-test'],
+                             ('test-password', 'document_processing_owner'))
+
     def test_other_roles_cannot_access_processing_or_upload_test(self):
         from fastapi import HTTPException
         from starlette.requests import Request

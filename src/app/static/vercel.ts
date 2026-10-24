@@ -1,4 +1,5 @@
-﻿export const config = {
+export const config = {
+  // Rebuild trigger: keep Vercel's proxy config in the deployment source root.
   "$schema": "https://openapi.vercel.sh/vercel.json",
   framework: null,
   buildCommand: "",

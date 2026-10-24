@@ -819,7 +819,7 @@ async function loadWorkspace(user) {
     try { renderCorpus(await api("/api/dashboard")); }
     catch (error) { $("#connection-status").textContent = `Knowledge base unavailable: ${error.message}`; }
   }
-  if (canUseAnalytics) await loadInventorySnapshot();
+  if (canUseAnalytics) void loadInventorySnapshot();
   else $("#inventory-snapshot").innerHTML = '<p class="analysis-empty">Inventory snapshot requires analytics access.</p>';
   if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
     try {

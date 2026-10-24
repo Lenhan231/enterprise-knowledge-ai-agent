@@ -6,7 +6,6 @@ export const config: VercelConfig = {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   framework: null,
   buildCommand: "",
-  installCommand: "",
   outputDirectory: ".",
   trailingSlash: false,
   rewrites: [

@@ -10,6 +10,9 @@ if (backendUrl.protocol !== "https:" || backendUrl.username || backendUrl.passwo
 }
 
 export const config = {
+  framework: null,
+  buildCommand: null,
+  installCommand: null,
   outputDirectory: "src/app/static",
   rewrites: [
     { source: "/api/:path*", destination: `${backendUrl.origin}/api/:path*` },

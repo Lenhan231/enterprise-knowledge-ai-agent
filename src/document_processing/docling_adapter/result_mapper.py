@@ -36,6 +36,9 @@ def map_result(
             **({
                 "bbox": bbox,
                 "bbox_coordinate_system": "docling_page_coordinate",
+                "bbox_coordinate_origin": str(
+                    getattr(provenance.bbox.coord_origin, "value", provenance.bbox.coord_origin)
+                ).upper(),
             } if bbox is not None else {}),
             "parser": "docling",
             "docling_label": label,

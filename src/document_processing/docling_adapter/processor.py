@@ -205,6 +205,7 @@ class DoclingProcessor:
         )
         if self.config.get("docling_page_images", False):
             page_previews = {}
+            page_sizes = {}
             for page_number, page in result.document.pages.items():
                 image = getattr(page, "image", None)
                 pil_image = getattr(image, "pil_image", None)
@@ -212,5 +213,12 @@ class DoclingProcessor:
                     buffer = BytesIO()
                     pil_image.save(buffer, format="PNG")
                     page_previews[str(page_number)] = buffer.getvalue()
+                size = getattr(page, "size", None)
+                if size is not None:
+                    page_sizes[str(page_number)] = {
+                        "width": float(size.width),
+                        "height": float(size.height),
+                    }
             mapped["page_previews"] = page_previews
+            mapped["page_sizes"] = page_sizes
         return mapped

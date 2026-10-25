@@ -39,7 +39,7 @@ Không có bước khử nhiễu, deskew, dewarp hay tự điền dữ liệu tr
 
 ### Công cụ và tiêu chí gán nhãn
 
-Gán nhãn được thực hiện trong giao diện HTML local `data/review.html`; máy chủ và trạng thái nằm tại `data/review_server.py` và `data/local-review-state.json`. Dữ liệu đã duyệt được xuất theo track tại `data/ocr/reference.jsonl`, `data/layout/reference.jsonl`, `data/table/reference.jsonl` và `data/end-to-end/reference.jsonl`.
+Gán nhãn được thực hiện trong giao diện HTML local `data/review.html`; máy chủ và trạng thái nằm tại `review_server.py` và `data/local-review-state.json`. Dữ liệu đã duyệt được xuất theo track tại `data/ocr/reference.jsonl`, `data/layout/reference.jsonl`, `data/table/reference.jsonl` và `data/end-to-end/reference.jsonl`.
 
 Tiêu chí duyệt là đối chiếu trực quan từng nhãn với ảnh trang nguồn. Nội dung OCR phải bám sát chữ nhìn thấy; vùng layout phải có nhãn và hộp tọa độ chuẩn hóa đúng với vùng trên trang, đồng thời thể hiện thứ tự đọc; lưới bảng phải có cấu trúc hàng/cột phù hợp và gắn với một vùng bảng hợp lệ. Các kiểm tra cấu trúc xác nhận ID vùng, tọa độ trong miền chuẩn hóa, lưới chữ nhật và liên kết giữa lưới với vùng bảng. Những kiểm tra này không tự chứng minh nội dung phiên âm chính xác; trạng thái `owner_reviewed` biểu thị chủ dữ liệu đã xem và duyệt mẫu.
 

@@ -5,7 +5,7 @@
 ## Files
 
 - `raw/`: original page images. Keep these unchanged.
-- `local-review-state.json`: local review state saved by `review_server.py`.
+- `local-review-state.json`: local review state saved by [`../review_server.py`](../review_server.py).
 - `agents/`: task-specific Codex agents for page draft, transcript, table, and bbox. Each agent owns its instructions, schema, and output checks; `agents/codex_cli.py` is the shared CLI adapter.
 - `{ocr,layout,table,end-to-end}/reference.jsonl`: generated references for the active benchmark. Saves to the server rebuild these from pages marked `owner_reviewed`.
 - `auto_review_tracks.py`: routes reviewed annotations independently to each track. End-to-end rows include every reviewed table on a page; a page with no reviewed table grid is not in the E2E cohort.
@@ -17,7 +17,7 @@ Previous pilot references and the manual promoter are stored under `../archive/l
 Run from `artifacts/evaluation/document-pipelines/`:
 
 ```bash
-../../../.venv/bin/uvicorn review_server:app --app-dir data --host 127.0.0.1 --port 8767
+../../../.venv/bin/uvicorn review_server:app --host 127.0.0.1 --port 8767
 ```
 
 Open `http://127.0.0.1:8767`. The server writes changes to `local-review-state.json` and refreshes all four references. Pending pages are excluded. Structural checks only ensure that a record can be formed; owner approval comes from the review status you set after comparing with the source image.

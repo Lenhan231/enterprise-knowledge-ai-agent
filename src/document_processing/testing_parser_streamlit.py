@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from io import BytesIO
 import json
 import os
 import uuid
@@ -11,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 import streamlit as st
+from PIL import Image, ImageDraw
 
 from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
 
@@ -39,6 +41,56 @@ def _page_count(run_dir: Path) -> int:
 def _page_preview(run_dir: Path, page_number: int) -> bytes | None:
     preview_path = run_dir / f"page-{page_number}.png"
     return preview_path.read_bytes() if preview_path.is_file() else None
+
+
+def _page_preview_with_boxes(
+    preview: bytes,
+    elements: list[dict[str, Any]],
+    tables: list[dict[str, Any]],
+    page_size: dict[str, float] | None,
+    *,
+    default_origin: str,
+) -> bytes:
+    image = Image.open(BytesIO(preview)).convert("RGB")
+    draw = ImageDraw.Draw(image)
+    page_width = float((page_size or {}).get("width") or image.width)
+    page_height = float((page_size or {}).get("height") or image.height)
+    scale_x, scale_y = image.width / page_width, image.height / page_height
+
+    def draw_bbox(metadata: dict[str, Any], color: str, label: str) -> None:
+        bbox = metadata.get("bbox")
+        if not isinstance(bbox, list) or len(bbox) != 4:
+            return
+        try:
+            left, top_or_bottom, right, bottom_or_top = map(float, bbox)
+        except (TypeError, ValueError):
+            return
+        origin = str(metadata.get("bbox_coordinate_origin") or default_origin).upper()
+        if origin == "BOTTOMLEFT":
+            top, bottom = page_height - bottom_or_top, page_height - top_or_bottom
+        else:
+            top, bottom = top_or_bottom, bottom_or_top
+        xyxy = (
+            round(left * scale_x),
+            round(top * scale_y),
+            round(right * scale_x),
+            round(bottom * scale_y),
+        )
+        draw.rectangle(xyxy, outline=color, width=max(2, image.width // 900))
+        if label:
+            draw.text((xyxy[0] + 2, max(0, xyxy[1] - 14)), label, fill=color)
+
+    for element in elements:
+        metadata = element.get("metadata") or {}
+        kind = str(metadata.get("element_type") or metadata.get("docling_label") or "text")
+        color = "#ff9b69" if "title" in kind.lower() else "#58aeff"
+        draw_bbox(metadata, color, kind.replace("_", " "))
+    for table in tables:
+        draw_bbox(table.get("metadata") or {}, "#65d99b", "table")
+
+    output = BytesIO()
+    image.save(output, format="PNG")
+    return output.getvalue()
 
 
 def _process_upload(
@@ -279,9 +331,23 @@ else:
                 raw_column, extracted_column = st.columns(2, gap="large")
                 with raw_column:
                     with st.container(border=True):
-                        st.subheader(f"Raw page · {page_number}")
+                        st.subheader(f"Page preview · {page_number}")
                         preview = _page_preview(run_dir, page_number)
                         if preview is not None:
+                            show_boxes = st.checkbox("Show bounding boxes", value=True)
+                            if show_boxes:
+                                page_sizes = selected_output.get("page_sizes") or {}
+                                preview = _page_preview_with_boxes(
+                                    preview,
+                                    page_elements,
+                                    page_tables,
+                                    page_sizes.get(str(page_number)),
+                                    default_origin=(
+                                        "BOTTOMLEFT"
+                                        if Path(selected_manifest["filename"]).suffix.lower() == ".pdf"
+                                        else "TOPLEFT"
+                                    ),
+                                )
                             st.image(preview, use_container_width=True)
                         else:
                             st.info("Source page preview is not available for this file.")

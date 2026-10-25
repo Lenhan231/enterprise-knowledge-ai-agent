@@ -1,6 +1,7 @@
 # Document pipeline benchmark
 
-The active benchmark uses only owner-reviewed data entered through [`data/review.html`](data/review.html). The page images and local review state live under `data/`; each approved save refreshes references for OCR, layout, tables, and end-to-end.
+The active benchmark uses only owner-reviewed data entered through [`data/review.html`](data/review.html). Its **Results dashboard** tab shows saved pipeline outputs from every run folder. The page images and local review state live under `data/`; each approved save refreshes references for OCR, layout, tables, and end-to-end.
+
 
 ## Run and score
 
@@ -12,9 +13,9 @@ Run commands from this directory. The current local runner uses Docling on CPU:
   --predictions results/shared-html/docling-html-baseline/predictions.jsonl
 ```
 
-The runner writes normalized `page-prediction-v1` JSONL, raw page output, and run metadata to `results/shared-html/<run-id>/`. The evaluator writes `evaluation.json` and `report.md` beside the predictions. The current baseline is in [`results/shared-html/docling-html-baseline/`](results/shared-html/docling-html-baseline/).
+The runner writes normalized `page-prediction-v1` JSONL, raw page output, and run metadata to `results/shared-html/<run-id>/`. The evaluator writes `evaluation.json` and `report.md` beside the predictions. The local CPU smoke baseline is in [`results/shared-html/docling-html-baseline/`](results/shared-html/docling-html-baseline/); the latest full 51-page T4 runs are [`Docling + Tesseract`](results/shared-html/docling-kaggle-owner-reviewed-51-20261024/) and [`Docling + VietOCR`](results/shared-html/docling-vietocr-kaggle-owner-reviewed-51-20261024/).
 
-The runner records high-resolution page OSD for both OCR engines. The evaluator uses that page angle (confidence ≥ 5.0), or the highest-confidence OCR-region OSD as fallback, to sort blocks in upright reading order before OCR CER/WER. Without confident orientation evidence it keeps top-to-bottom, left-to-right order. This page-level sort assumes one dominant orientation per page.
+The runner records high-resolution page OSD for both OCR engines. The evaluator uses that page angle (confidence ≥ 5.0), or the highest-confidence OCR-region OSD as fallback, to sort blocks in upright reading order before OCR CER/WER. Without confident orientation evidence it keeps top-to-bottom, left-to-right order. This page-level sort assumes one dominant orientation per page. Reviewed `reading_order` sequences are present in the references but are not currently reported as a separate metric.
 
 For a recognizer-only OCR run using RapidOCR detection plus VietOCR, run `PYTHONPATH=/tmp/vietocr-benchmark-packages ../../../.venv/bin/python tools/runners/run_vietocr_benchmark.py`. It writes per-line and per-page predictions, OCR metrics, and runtime metadata to `results/shared-html/vietocr-html-<timestamp>/`; it does not create a Markdown report. VietOCR must be installed in the Python environment or added to `PYTHONPATH`.
 
@@ -32,7 +33,7 @@ To test orientation-aware layout inference, add `--layout-rotation auto`. OSD ru
 - OCR, layout, and table scores use all records in their reviewed track references. End-to-end scores use pages with reviewed OCR, layout, and one or more reviewed table grids; multiple tables on a page are supported.
 - Each table draft has an editable `table_name`; the table and end-to-end references carry it as descriptive metadata. Existing drafts default to an empty name until the source caption is checked. The table evaluator scores bbox and cell grids, so this metadata does not change benchmark scores.
 
-Start the review UI with `../../../.venv/bin/uvicorn review_server:app --app-dir data --host 127.0.0.1 --port 8767`, then open `http://127.0.0.1:8767`.
+Start the review UI with `../../../.venv/bin/uvicorn review_server:app --host 127.0.0.1 --port 8767`, then open `http://127.0.0.1:8767`.
 
 To add pages from another source, use **Thêm PDF** in the review UI and enter page numbers or ranges such as `1,3-5`. The local server stores the PDF, renders selected pages into `data/raw/`, and adds blank `needs_owner_review` drafts; only pages explicitly checked as reviewed enter the benchmark references. Uploads are limited to 50 MiB and 100 selected pages per request.
 

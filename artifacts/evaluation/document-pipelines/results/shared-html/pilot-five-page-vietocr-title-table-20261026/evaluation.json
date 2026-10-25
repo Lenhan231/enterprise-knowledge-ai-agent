@@ -1,0 +1,490 @@
+{
+  "dataset": "shared-html-owner-reviewed",
+  "engine": "docling-vietocr",
+  "run_id": "pilot-five-page-vietocr-title-table-20261026",
+  "layer_scores": {
+    "pages": 5,
+    "ocr": {
+      "pages": 5,
+      "micro_cer": 0.15699698305871432,
+      "micro_wer_pyvi": 0.20693222969477496,
+      "micro_whitespace_error": 0.20528455284552846,
+      "character_edits": 1353,
+      "reference_characters": 8618,
+      "word_edits": 400,
+      "reference_words": 1933,
+      "page_scores": [
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 13,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.020641194554238032,
+          "wer_pyvi": 0.05835010060362173,
+          "whitespace_error": 0.05263157894736842
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 24,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.06176016469377252,
+          "wer_pyvi": 0.1444954128440367,
+          "whitespace_error": 0.13647058823529412
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 17,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.765139116202946,
+          "wer_pyvi": 0.8191126279863481,
+          "whitespace_error": 0.8233333333333334
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 6,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.023130715438407747,
+          "wer_pyvi": 0.06601466992665037,
+          "whitespace_error": 0.05555555555555555
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 8,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.15793470007593013,
+          "wer_pyvi": 0.13758389261744966,
+          "whitespace_error": 0.1610738255033557
+        }
+      ]
+    },
+    "reading_order": {
+      "pages": 5,
+      "micro_pairwise_accuracy": 0.6428571428571429,
+      "concordant_pairs": 18,
+      "compared_pairs": 28,
+      "matched_regions": 19,
+      "reference_regions": 38,
+      "matched_region_recall": 0.5,
+      "page_scores": [
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 13,
+          "matched_regions": 5,
+          "reference_regions": 6,
+          "compared_pairs": 10,
+          "pairwise_accuracy": 0.7
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 24,
+          "matched_regions": 4,
+          "reference_regions": 8,
+          "compared_pairs": 6,
+          "pairwise_accuracy": 0.6666666666666666
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 17,
+          "matched_regions": 4,
+          "reference_regions": 8,
+          "compared_pairs": 6,
+          "pairwise_accuracy": 0.5
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 6,
+          "matched_regions": 3,
+          "reference_regions": 6,
+          "compared_pairs": 3,
+          "pairwise_accuracy": 0.6666666666666666
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 8,
+          "matched_regions": 3,
+          "reference_regions": 10,
+          "compared_pairs": 3,
+          "pairwise_accuracy": 0.6666666666666666
+        }
+      ]
+    },
+    "layout": {
+      "pages": 5,
+      "iou_threshold": 0.5,
+      "micro": {
+        "true_positive": 11,
+        "predicted_regions": 45,
+        "reference_regions": 33,
+        "precision": 0.24444444444444444,
+        "recall": 0.3333333333333333,
+        "f1": 0.28205128205128205
+      },
+      "per_class": {
+        "title": {
+          "true_positive": 1,
+          "predicted_regions": 7,
+          "reference_regions": 2,
+          "precision": 0.14285714285714285,
+          "recall": 0.5,
+          "f1": 0.22222222222222224
+        },
+        "title_table": {
+          "true_positive": 4,
+          "predicted_regions": 5,
+          "reference_regions": 5,
+          "precision": 0.8,
+          "recall": 0.8,
+          "f1": 0.8000000000000002
+        },
+        "text": {
+          "true_positive": 1,
+          "predicted_regions": 24,
+          "reference_regions": 14,
+          "precision": 0.041666666666666664,
+          "recall": 0.07142857142857142,
+          "f1": 0.052631578947368425
+        },
+        "table": {
+          "true_positive": 5,
+          "predicted_regions": 5,
+          "reference_regions": 5,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "figure": {
+          "true_positive": 0,
+          "predicted_regions": 4,
+          "reference_regions": 7,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        }
+      }
+    },
+    "table": {
+      "pages_with_reviewed_tables": 5,
+      "reference_tables": 5,
+      "predicted_tables": 5,
+      "matched_tables_iou50": 5,
+      "detection_precision": 1.0,
+      "detection_recall": 1.0,
+      "detection_f1": 1.0,
+      "micro_cell_cer": 0.43476702508960574,
+      "micro_cell_wer_whitespace": 0.5453736654804271,
+      "positional_cell_accuracy": 0.5038402457757296,
+      "exact_cell_body_precision": 0.5685557586837294,
+      "exact_cell_body_recall": 0.5,
+      "exact_cell_body_f1": 0.5320786997433703,
+      "shape_exact_rate": 0.6,
+      "exact_grid_rate": 0.0,
+      "items": [
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13-t1",
+          "matched": true,
+          "bbox_iou": 0.9722830602492779,
+          "cell_cer": 0.016046213093709884,
+          "cell_wer_whitespace": 0.07516339869281045,
+          "cell_accuracy": 0.8666666666666667,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24-t1",
+          "matched": true,
+          "bbox_iou": 0.9828477104661827,
+          "cell_cer": 0.04684512428298279,
+          "cell_wer_whitespace": 0.24242424242424243,
+          "cell_accuracy": 0.5714285714285714,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p17-t1",
+          "matched": true,
+          "bbox_iou": 0.9534524940796771,
+          "cell_cer": 1.7055555555555555,
+          "cell_wer_whitespace": 1.4968152866242037,
+          "cell_accuracy": 0.07563025210084033,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p6-t1",
+          "matched": true,
+          "bbox_iou": 0.9684284408127994,
+          "cell_cer": 0.8057553956834532,
+          "cell_wer_whitespace": 1.0520833333333333,
+          "cell_accuracy": 0.13125,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p8-t1",
+          "matched": true,
+          "bbox_iou": 0.9564101803483307,
+          "cell_cer": 0.004618937644341801,
+          "cell_wer_whitespace": 0.022857142857142857,
+          "cell_accuracy": 0.9578947368421052,
+          "shape_exact": true,
+          "exact_grid": false
+        }
+      ]
+    }
+  },
+  "end_to_end_scores": {
+    "pages": 5,
+    "ocr": {
+      "pages": 5,
+      "micro_cer": 0.15699698305871432,
+      "micro_wer_pyvi": 0.20693222969477496,
+      "micro_whitespace_error": 0.20528455284552846,
+      "character_edits": 1353,
+      "reference_characters": 8618,
+      "word_edits": 400,
+      "reference_words": 1933,
+      "page_scores": [
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 13,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.020641194554238032,
+          "wer_pyvi": 0.05835010060362173,
+          "whitespace_error": 0.05263157894736842
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 24,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.06176016469377252,
+          "wer_pyvi": 0.1444954128440367,
+          "whitespace_error": 0.13647058823529412
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 17,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.765139116202946,
+          "wer_pyvi": 0.8191126279863481,
+          "whitespace_error": 0.8233333333333334
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 6,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.023130715438407747,
+          "wer_pyvi": 0.06601466992665037,
+          "whitespace_error": 0.05555555555555555
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 8,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.15793470007593013,
+          "wer_pyvi": 0.13758389261744966,
+          "whitespace_error": 0.1610738255033557
+        }
+      ]
+    },
+    "reading_order": {
+      "pages": 5,
+      "micro_pairwise_accuracy": 0.6428571428571429,
+      "concordant_pairs": 18,
+      "compared_pairs": 28,
+      "matched_regions": 19,
+      "reference_regions": 38,
+      "matched_region_recall": 0.5,
+      "page_scores": [
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 13,
+          "matched_regions": 5,
+          "reference_regions": 6,
+          "compared_pairs": 10,
+          "pairwise_accuracy": 0.7
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 24,
+          "matched_regions": 4,
+          "reference_regions": 8,
+          "compared_pairs": 6,
+          "pairwise_accuracy": 0.6666666666666666
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 17,
+          "matched_regions": 4,
+          "reference_regions": 8,
+          "compared_pairs": 6,
+          "pairwise_accuracy": 0.5
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 6,
+          "matched_regions": 3,
+          "reference_regions": 6,
+          "compared_pairs": 3,
+          "pairwise_accuracy": 0.6666666666666666
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 8,
+          "matched_regions": 3,
+          "reference_regions": 10,
+          "compared_pairs": 3,
+          "pairwise_accuracy": 0.6666666666666666
+        }
+      ]
+    },
+    "layout": {
+      "pages": 5,
+      "iou_threshold": 0.5,
+      "micro": {
+        "true_positive": 11,
+        "predicted_regions": 45,
+        "reference_regions": 33,
+        "precision": 0.24444444444444444,
+        "recall": 0.3333333333333333,
+        "f1": 0.28205128205128205
+      },
+      "per_class": {
+        "title": {
+          "true_positive": 1,
+          "predicted_regions": 7,
+          "reference_regions": 2,
+          "precision": 0.14285714285714285,
+          "recall": 0.5,
+          "f1": 0.22222222222222224
+        },
+        "title_table": {
+          "true_positive": 4,
+          "predicted_regions": 5,
+          "reference_regions": 5,
+          "precision": 0.8,
+          "recall": 0.8,
+          "f1": 0.8000000000000002
+        },
+        "text": {
+          "true_positive": 1,
+          "predicted_regions": 24,
+          "reference_regions": 14,
+          "precision": 0.041666666666666664,
+          "recall": 0.07142857142857142,
+          "f1": 0.052631578947368425
+        },
+        "table": {
+          "true_positive": 5,
+          "predicted_regions": 5,
+          "reference_regions": 5,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "figure": {
+          "true_positive": 0,
+          "predicted_regions": 4,
+          "reference_regions": 7,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        }
+      }
+    },
+    "table": {
+      "pages_with_reviewed_tables": 5,
+      "reference_tables": 5,
+      "predicted_tables": 5,
+      "matched_tables_iou50": 5,
+      "detection_precision": 1.0,
+      "detection_recall": 1.0,
+      "detection_f1": 1.0,
+      "micro_cell_cer": 0.43476702508960574,
+      "micro_cell_wer_whitespace": 0.5453736654804271,
+      "positional_cell_accuracy": 0.5038402457757296,
+      "exact_cell_body_precision": 0.5685557586837294,
+      "exact_cell_body_recall": 0.5,
+      "exact_cell_body_f1": 0.5320786997433703,
+      "shape_exact_rate": 0.6,
+      "exact_grid_rate": 0.0,
+      "items": [
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13-t1",
+          "matched": true,
+          "bbox_iou": 0.9722830602492779,
+          "cell_cer": 0.016046213093709884,
+          "cell_wer_whitespace": 0.07516339869281045,
+          "cell_accuracy": 0.8666666666666667,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24-t1",
+          "matched": true,
+          "bbox_iou": 0.9828477104661827,
+          "cell_cer": 0.04684512428298279,
+          "cell_wer_whitespace": 0.24242424242424243,
+          "cell_accuracy": 0.5714285714285714,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p17-t1",
+          "matched": true,
+          "bbox_iou": 0.9534524940796771,
+          "cell_cer": 1.7055555555555555,
+          "cell_wer_whitespace": 1.4968152866242037,
+          "cell_accuracy": 0.07563025210084033,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p6-t1",
+          "matched": true,
+          "bbox_iou": 0.9684284408127994,
+          "cell_cer": 0.8057553956834532,
+          "cell_wer_whitespace": 1.0520833333333333,
+          "cell_accuracy": 0.13125,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p8-t1",
+          "matched": true,
+          "bbox_iou": 0.9564101803483307,
+          "cell_cer": 0.004618937644341801,
+          "cell_wer_whitespace": 0.022857142857142857,
+          "cell_accuracy": 0.9578947368421052,
+          "shape_exact": true,
+          "exact_grid": false
+        }
+      ]
+    }
+  },
+  "coverage": {
+    "owner_reviewed_pages": 5,
+    "pages_with_reviewed_table_grids": 5,
+    "end_to_end_pages_with_ocr_layout_and_tables": 5,
+    "prediction_pages": 5,
+    "inference_successful_pages": 5
+  },
+  "selected_reference_ids": [
+    "E2E-LONG-HAU-2008-p6",
+    "E2E-LONG-HAU-2008-p8",
+    "E2E-LONG-HAU-2008-p17",
+    "E2E-BAO-HO-LAO-DONG-2009-p13",
+    "E2E-BAO-HO-LAO-DONG-2009-p24"
+  ],
+  "runtime": {
+    "device": "CPU",
+    "inference_wall_seconds": 116.363,
+    "source_run_inference_wall_seconds": 1186.153,
+    "peak_process_rss_mib": 766.5
+  },
+  "caveats": [
+    "Owner-reviewed working references from the shared HTML review flow.",
+    "OCR block sorting uses high-confidence per-page OCR OSD orientation when available; otherwise top-to-bottom, left-to-right.",
+    "Full-page CER/WER compare the complete assembled page transcript in reading order and therefore include recognition, detection, table extraction, and ordering errors.",
+    "Reading-order pairwise accuracy is evaluated separately over regions matched by box IoU 0.50 regardless of label; matched-region recall reports how much of the reference order was scorable.",
+    "End-to-end cohort requires reviewed OCR, layout, and at least one reviewed table; it includes all reviewed tables per page."
+  ]
+}

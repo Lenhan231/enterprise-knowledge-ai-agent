@@ -49,6 +49,32 @@ def extract_grid(table: dict) -> list[list[str]]:
     return grid
 
 
+def label_table_titles(elements: list[dict], tables: list[dict], max_gap: float = 0.05) -> None:
+    """Relabel the closest heading or caption adjacent to each detected table."""
+    candidates = []
+    for index, element in enumerate(elements):
+        if element["label"] not in {"title", "text"}:
+            continue
+        left, top, right, bottom = element["bbox_norm"]
+        for table_index, table in enumerate(tables):
+            table_left, table_top, table_right, table_bottom = table["bbox_norm"]
+            title_width, title_height = right - left, bottom - top
+            horizontal_overlap = max(0.0, min(right, table_right) - max(left, table_left))
+            vertical_overlap = max(0.0, min(bottom, table_bottom) - max(top, table_top))
+            above_gap, side_gap = table_top - bottom, table_left - right
+            if title_width and horizontal_overlap / title_width >= 0.5 and 0 <= above_gap <= max_gap:
+                candidates.append((above_gap, index, table_index))
+            elif title_height and vertical_overlap / title_height >= 0.5 and 0 <= side_gap <= max_gap:
+                candidates.append((side_gap, index, table_index))
+
+    used_titles, used_tables = set(), set()
+    for _, element_index, table_index in sorted(candidates):
+        if element_index not in used_titles and table_index not in used_tables:
+            elements[element_index]["label"] = "title_table"
+            used_titles.add(element_index)
+            used_tables.add(table_index)
+
+
 def normalize_document(document: dict, reference: dict, engine: str, run_id: str) -> dict:
     page = next(iter(document.get("pages", {}).values()), {})
     width, height = float(page.get("size", {}).get("width", 0)), float(page.get("size", {}).get("height", 0))
@@ -90,6 +116,8 @@ def normalize_document(document: dict, reference: dict, engine: str, run_id: str
             columns, body = [f"column_{i + 1}" for i in range(len(grid[0]))], grid
         tables.append({"bbox_norm": normalized_box(provenance, width, height), "columns": columns, "rows": body})
 
+    label_table_titles(elements, tables)
+
     return {
         "schema_version": 1, "engine": engine, "run_id": run_id,
         "document_id": reference["document_id"],
@@ -101,9 +129,11 @@ def normalize_document(document: dict, reference: dict, engine: str, run_id: str
 def run(args: argparse.Namespace) -> None:
     references = read_jsonl(DATA_ROOT / "layout/reference.jsonl")
     if args.page_id:
-        references = [row for row in references if row["reference_id"] == args.page_id]
-        if not references:
-            raise SystemExit(f"No layout reference found for page: {args.page_id}")
+        selected_ids = set(args.page_id)
+        references = [row for row in references if row["reference_id"] in selected_ids]
+        missing_ids = selected_ids - {row["reference_id"] for row in references}
+        if missing_ids:
+            raise SystemExit(f"No layout reference found for page(s): {', '.join(sorted(missing_ids))}")
     output_dir = (args.output_dir or TRACK_ROOT / "results/shared-html" / args.run_id).resolve()
     raw_dir = output_dir / "raw_pages"
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -254,6 +284,12 @@ def run(args: argparse.Namespace) -> None:
     if reused_metadata:
         metadata["inference_wall_seconds"] = reused_metadata.get("inference_wall_seconds", reused_metadata.get("wall_seconds"))
         metadata["inference_peak_process_rss_mib"] = reused_metadata.get("peak_process_rss_mib")
+        for field in (
+            "page_orientation_detections", "ocr_orientation_detections",
+            "layout_orientation_detections", "table_orientation_detections",
+        ):
+            if field in reused_metadata:
+                metadata[field] = reused_metadata[field]
         metadata["inference_page_seconds"] = reused_metadata.get("inference_page_seconds", {
             item["reference_id"]: item["seconds"] for item in reused_metadata.get("pages", []) if "seconds" in item
         })
@@ -294,7 +330,7 @@ def main() -> None:
     parser.add_argument("--ocr-engine", choices=("tesseract", "vietocr"), default="tesseract")
     parser.add_argument("--layout-model", choices=("heron", "egret-medium"), default="heron")
     parser.add_argument("--output-dir", type=Path, help="Defaults to results/shared-html/<run-id>")
-    parser.add_argument("--page-id", help="Optionally run one owner-reviewed page for a focused comparison")
+    parser.add_argument("--page-id", action="append", help="Optionally run selected owner-reviewed pages; repeat for a cohort")
     parser.add_argument("--reuse-raw", type=Path, help="Normalize previously saved Docling raw page outputs without rerunning inference.")
     parser.add_argument("--reuse-metadata", type=Path, help="Inference metadata to preserve when --reuse-raw is used.")
     parser.add_argument("--ocr-languages", default="vie+eng")

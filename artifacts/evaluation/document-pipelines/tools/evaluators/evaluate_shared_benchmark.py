@@ -4,20 +4,18 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
-import unicodedata
 from pathlib import Path
 
 TRACK_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(TRACK_ROOT / "tools"))
 
-from metrics.text_metrics import character_error_count, token_error_count  # noqa: E402
-from metrics.iou_metrics import iou, matched_pairs  # noqa: E402
+from metrics.layout_metrics import CLASSES, score_layout  # noqa: E402
+from metrics.ocr_metrics import score_ocr  # noqa: E402
+from metrics.reading_order_metrics import score_reading_order  # noqa: E402
 from metrics.table_metrics import score_tables  # noqa: E402
 
 IOU_THRESHOLD = 0.5
-CLASSES = ("title", "title_table", "text", "table", "figure")
 
 
 def read_jsonl(path: Path) -> list[dict]:
@@ -26,10 +24,6 @@ def read_jsonl(path: Path) -> list[dict]:
 
 def key(row: dict) -> tuple[str, int]:
     return row["document_id"], int(row["source_page_number_1based"])
-
-
-def normalize(text: str) -> str:
-    return re.sub(r"\s+", " ", unicodedata.normalize("NFC", text).casefold()).strip()
 
 
 def validate(predictions: list[dict]) -> dict[tuple[str, int], dict]:
@@ -58,17 +52,6 @@ def validate_box(box: object, page_key: tuple[str, int]) -> None:
         raise ValueError(f"Invalid normalized box on {page_key}: {box}")
     if box[0] >= box[2] or box[1] >= box[3]:
         raise ValueError(f"Degenerate normalized box on {page_key}: {box}")
-
-
-def rotate_box_for_reading(box: list[float], clockwise: int) -> list[float]:
-    left, top, right, bottom = box
-    if clockwise == 90:
-        return [1 - bottom, left, 1 - top, right]
-    if clockwise == 180:
-        return [1 - right, 1 - bottom, 1 - left, 1 - top]
-    if clockwise == 270:
-        return [top, 1 - right, bottom, 1 - left]
-    return box
 
 
 def text_order_rotations(metadata: dict) -> dict[tuple[str, int], int]:
@@ -105,75 +88,6 @@ def text_order_rotations(metadata: dict) -> dict[tuple[str, int], int]:
     return rotations
 
 
-def score_ocr(
-    references: list[dict], predictions: dict,
-    reading_order_rotations: dict[tuple[str, int], int] | None = None,
-) -> dict:
-    from pyvi import ViTokenizer
-
-    char_edits = ref_chars = word_edits = ref_words = whitespace_edits = ref_syllables = 0
-    page_scores = []
-    for reference in references:
-        page_key = key(reference)
-        prediction = predictions[page_key]
-        predicted_tables = prediction.get("tables", [])
-        blocks = []
-        for element in prediction.get("elements", []):
-            text, box = str(element.get("text", "")).strip(), element.get("bbox_norm")
-            if not text or not box or any(iou(box, table["bbox_norm"]) > IOU_THRESHOLD for table in predicted_tables):
-                continue
-            blocks.append((box, text))
-        for table in predicted_tables:
-            serialized = "\n".join([" | ".join(table.get("columns", []))] + [" | ".join(row) for row in table.get("rows", [])])
-            if serialized.strip():
-                blocks.append((table["bbox_norm"], serialized))
-        rotation = (reading_order_rotations or {}).get(page_key, 0)
-        if rotation:
-            blocks = [(rotate_box_for_reading(box, rotation), text) for box, text in blocks]
-        blocks.sort(key=lambda item: (item[0][1], item[0][0]))
-        expected, actual = normalize(reference["ocr_reference_text"]), normalize("\n".join(text for _, text in blocks))
-        ce, nc = character_error_count(expected, actual)
-        ref_tokens, pred_tokens = ViTokenizer.tokenize(expected).split(), ViTokenizer.tokenize(actual).split()
-        we, nw = token_error_count(ref_tokens, pred_tokens)
-        ref_syl, pred_syl = expected.split(), actual.split()
-        se, ns = token_error_count(ref_syl, pred_syl)
-        char_edits += ce; ref_chars += nc; word_edits += we; ref_words += nw
-        whitespace_edits += se; ref_syllables += ns
-        page_scores.append({"document_id": page_key[0], "source_page_number_1based": page_key[1], "text_order_rotation_clockwise": rotation, "cer": ce / nc if nc else None, "wer_pyvi": we / nw if nw else None, "whitespace_error": se / ns if ns else None})
-    return {"pages": len(references), "micro_cer": char_edits / ref_chars if ref_chars else None,
-            "micro_wer_pyvi": word_edits / ref_words if ref_words else None,
-            "micro_whitespace_error": whitespace_edits / ref_syllables if ref_syllables else None,
-            "character_edits": char_edits, "reference_characters": ref_chars,
-            "word_edits": word_edits, "reference_words": ref_words, "page_scores": page_scores}
-
-
-def score_layout(references: list[dict], predictions: dict) -> dict:
-    counts = {label: [0, 0, 0] for label in CLASSES}  # TP, predicted, reference
-    page_count = 0
-    for reference in references:
-        prediction = predictions[key(reference)]
-        pred = [(e["label"], e["bbox_norm"]) for e in prediction.get("elements", []) if e["label"] != "other"]
-        pred += [("table", table["bbox_norm"]) for table in prediction.get("tables", [])]
-        gold = [(r["label"], r["bbox_norm"]) for r in reference.get("regions", [])]
-        for label in CLASSES:
-            p = [{"box": box} for cls, box in pred if cls == label]
-            g = [{"box": box} for cls, box in gold if cls == label]
-            matches = matched_pairs(p, g, lambda x: x["box"], lambda x: x["box"], IOU_THRESHOLD)
-            counts[label][0] += len(matches); counts[label][1] += len(p); counts[label][2] += len(g)
-        page_count += 1
-    tp = sum(v[0] for v in counts.values()); predicted = sum(v[1] for v in counts.values()); gold = sum(v[2] for v in counts.values())
-    precision = tp / predicted if predicted else 0; recall = tp / gold if gold else 0
-    per_class = {}
-    for label, (class_tp, class_pred, class_ref) in counts.items():
-        p = class_tp / class_pred if class_pred else 0; r = class_tp / class_ref if class_ref else 0
-        per_class[label] = {"true_positive": class_tp, "predicted_regions": class_pred, "reference_regions": class_ref,
-                            "precision": p, "recall": r, "f1": 2*p*r/(p+r) if p+r else 0}
-    return {"pages": page_count, "iou_threshold": IOU_THRESHOLD,
-            "micro": {"true_positive": tp, "predicted_regions": predicted, "reference_regions": gold,
-                      "precision": precision, "recall": recall, "f1": 2*precision*recall/(precision+recall) if precision+recall else 0},
-            "per_class": per_class}
-
-
 def score_cohort(
     ocr_refs: list[dict], layout_refs: list[dict], table_refs: list[dict],
     predictions: dict, reading_order_rotations: dict[tuple[str, int], int] | None = None,
@@ -182,8 +96,9 @@ def score_cohort(
     missing = keys - predictions.keys()
     if missing:
         raise ValueError(f"Missing predictions for {sorted(missing)}")
-    return {"pages": len(keys), "ocr": score_ocr(ocr_refs, predictions, reading_order_rotations),
-            "layout": score_layout(layout_refs, predictions),
+    return {"pages": len(keys), "ocr": score_ocr(ocr_refs, predictions, reading_order_rotations, IOU_THRESHOLD),
+            "reading_order": score_reading_order(layout_refs, predictions, IOU_THRESHOLD),
+            "layout": score_layout(layout_refs, predictions, IOU_THRESHOLD),
             "table": score_tables(table_refs, predictions, key, IOU_THRESHOLD)}
 
 
@@ -224,7 +139,7 @@ def evaluate(args: argparse.Namespace) -> dict:
         reading_order_rotations,
     )
     e2e_ocr = [{"document_id": r["document_id"], "source_page_number_1based": r["source_page_number_1based"], "ocr_reference_text": r["ocr_reference_text"]} for r in refs["end-to-end"]]
-    e2e_layout = [{"document_id": r["document_id"], "source_page_number_1based": r["source_page_number_1based"], "regions": r["layout_regions"]} for r in refs["end-to-end"]]
+    e2e_layout = [{"document_id": r["document_id"], "source_page_number_1based": r["source_page_number_1based"], "regions": r["layout_regions"], "reading_order": r.get("reading_order", [])} for r in refs["end-to-end"]]
     e2e_tables = []
     for row in refs["end-to-end"]:
         for table in row.get("table_references", []):
@@ -248,7 +163,8 @@ def evaluate(args: argparse.Namespace) -> dict:
                         "peak_process_rss_mib": metadata.get("inference_peak_process_rss_mib", metadata.get("peak_process_rss_mib"))},
             "caveats": ["Owner-reviewed working references from the shared HTML review flow.",
                          "OCR block sorting uses high-confidence per-page OCR OSD orientation when available; otherwise top-to-bottom, left-to-right.",
-                         "Reviewed reading_order sequences are present but are not reported as a separate metric; OCR text ordering uses OSD-derived page rotations when available.",
+                         "Full-page CER/WER compare the complete assembled page transcript in reading order and therefore include recognition, detection, table extraction, and ordering errors.",
+                         "Reading-order pairwise accuracy is evaluated separately over regions matched by box IoU 0.50 regardless of label; matched-region recall reports how much of the reference order was scorable.",
                          "End-to-end cohort requires reviewed OCR, layout, and at least one reviewed table; it includes all reviewed tables per page."]}
 
 
@@ -286,7 +202,8 @@ def render_report(result: dict) -> str:
     lines.extend([
              "## Independent layer scores", "",
              "| Layer | Cohort | Metrics |", "|---|---:|---|",
-             f"| OCR | {result['layer_scores']['ocr']['pages']} pages | CER {pct(result['layer_scores']['ocr']['micro_cer'])}; WER (PyVi) {pct(result['layer_scores']['ocr']['micro_wer_pyvi'])}; whitespace error {pct(result['layer_scores']['ocr']['micro_whitespace_error'])} |",
+             f"| OCR | {result['layer_scores']['ocr']['pages']} pages | full-page CER {pct(result['layer_scores']['ocr']['micro_cer'])}; full-page WER (PyVi) {pct(result['layer_scores']['ocr']['micro_wer_pyvi'])} |",
+             f"| Reading order | {result['layer_scores']['reading_order']['pages']} pages | pairwise accuracy {pct(result['layer_scores']['reading_order']['micro_pairwise_accuracy'])}; matched-region recall {pct(result['layer_scores']['reading_order']['matched_region_recall'])} |",
              f"| Layout | {result['layer_scores']['layout']['pages']} pages | micro P/R/F1 {pct(result['layer_scores']['layout']['micro']['precision'])} / {pct(result['layer_scores']['layout']['micro']['recall'])} / {pct(result['layer_scores']['layout']['micro']['f1'])} |",
              f"| Table | {result['layer_scores']['table']['reference_tables']} tables on {result['layer_scores']['table']['pages_with_reviewed_tables']} pages | detection P/R/F1 {pct(result['layer_scores']['table']['detection_precision'])} / {pct(result['layer_scores']['table']['detection_recall'])} / {pct(result['layer_scores']['table']['detection_f1'])}; cell CER {pct(result['layer_scores']['table']['micro_cell_cer'])}; cell WER (whitespace) {pct(result['layer_scores']['table']['micro_cell_wer_whitespace'])}; exact grids {pct(result['layer_scores']['table']['exact_grid_rate'])} |", "",
              "### Layout per-class scores", "",
@@ -301,7 +218,8 @@ def render_report(result: dict) -> str:
              "## End-to-end cohort", "",
              f"{result['end_to_end_scores']['pages']} pages have reviewed OCR, layout, and table references. Multiple reviewed tables on a page are all included.", "",
              "| Layer | Metrics |", "|---|---|",
-             f"| OCR | CER {pct(result['end_to_end_scores']['ocr']['micro_cer'])}; WER (PyVi) {pct(result['end_to_end_scores']['ocr']['micro_wer_pyvi'])} |",
+             f"| OCR | full-page CER {pct(result['end_to_end_scores']['ocr']['micro_cer'])}; full-page WER (PyVi) {pct(result['end_to_end_scores']['ocr']['micro_wer_pyvi'])} |",
+             f"| Reading order | pairwise accuracy {pct(result['end_to_end_scores']['reading_order']['micro_pairwise_accuracy'])}; matched-region recall {pct(result['end_to_end_scores']['reading_order']['matched_region_recall'])} |",
              f"| Layout | micro P/R/F1 {pct(result['end_to_end_scores']['layout']['micro']['precision'])} / {pct(result['end_to_end_scores']['layout']['micro']['recall'])} / {pct(result['end_to_end_scores']['layout']['micro']['f1'])} |",
              f"| Table | detection P/R {pct(result['end_to_end_scores']['table']['detection_precision'])} / {pct(result['end_to_end_scores']['table']['detection_recall'])}; cell CER {pct(result['end_to_end_scores']['table']['micro_cell_cer'])}; cell WER (whitespace) {pct(result['end_to_end_scores']['table']['micro_cell_wer_whitespace'])} |", "",
              "## Notes", ""])

@@ -1,6 +1,6 @@
 # Kaggle 5-page pipeline pilot
 
-This kernel reuses the current shared-HTML Docling/VietOCR inference pipeline with a separate, private 5-page input dataset. The images are one reviewed page from each of five source documents.
+This kernel uses the current shared-HTML Docling/VietOCR settings, including Docling Layout Heron 101 and the pinned Granite Vision 4.1 4B table structure model, with a separate private 5-page input dataset. The five images are one reviewed page from each of five source documents.
 
 Run from this directory after creating/updating the private dataset from `input-package/`:
 

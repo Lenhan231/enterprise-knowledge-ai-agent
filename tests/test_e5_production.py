@@ -47,9 +47,12 @@ class E5ProductionTest(unittest.TestCase):
             _load_backend.cache_clear()
 
     def test_sql_keeps_production_table_and_trusted_filters(self):
-        sql, params = eligible_cte([0.1] * 768, "question", "Company", ["employee"],
+        sql, params = eligible_cte([0.1] * 768, "question 2022", "Company", ["employee"],
             include_vector=True, include_lexical=True, document_ids=["DOC"], metadata_filter={"domain": "test"})
         self.assertIn("FROM document_chunks AS c", sql)
+        self.assertIn("d.year_or_version = %s", sql)
+        self.assertNotIn("d.fiscal_year", sql)
+        self.assertEqual(params[2:4], ["2022", "2022"])
         for clause in ["d.company = %s::text", "d.allowed_roles && %s::text[]",
                        "d.document_id = ANY(%s::text[])", "c.metadata @> %s::jsonb"]:
             self.assertIn(clause, sql)

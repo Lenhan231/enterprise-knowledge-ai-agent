@@ -27,8 +27,7 @@ class DocumentRepository:
                                     official_url,
                                     verification,
                                     rag_value,
-                                    document_type,
-                                    fiscal_year
+                                    document_type
                                     FROM documents
                                     ORDER by document_id""")
             return cursor.fetchall()

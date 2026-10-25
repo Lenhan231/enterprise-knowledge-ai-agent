@@ -75,7 +75,7 @@ def eligible_cte(
             SELECT c.id, c.document_name, c.chunk_index, c.content,
                    c.metadata || jsonb_build_object('document_type', d.document_type) AS metadata,
                    {vector_fields}
-                   coalesce(%s::text IS NOT NULL AND d.fiscal_year = %s, false) AS year_match
+                   coalesce(%s::text IS NOT NULL AND d.year_or_version = %s, false) AS year_match
                    {lexical_field}
             FROM document_chunks AS c
             JOIN documents AS d ON d.document_id = c.metadata->>'document_id'

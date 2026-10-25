@@ -1,7 +1,7 @@
 {
   "format_version": 1,
   "source": "local review store",
-  "exported_at": "2026-10-24T11:49:41.523160+00:00",
+  "exported_at": "2026-10-25T17:28:07.998514+00:00",
   "reviews": [
     {
       "page_key": "E2E-BAO-HO-LAO-DONG-2009:p13",
@@ -346,7 +346,7 @@
         "owner_reviewed_at": "2026-10-23T08:44:53.255Z",
         "reviewed_draft_revision": null
       },
-      "updated_at": "2026-10-24T11:49:40.625864+00:00"
+      "updated_at": "2026-10-25T17:28:06.812812+00:00"
     },
     {
       "page_key": "E2E-BAO-HO-LAO-DONG-2009:p14",
@@ -659,7 +659,7 @@
         "owner_reviewed_at": "2026-10-22T16:23:11.649Z",
         "reviewed_draft_revision": 2
       },
-      "updated_at": "2026-10-24T11:49:40.994268+00:00"
+      "updated_at": "2026-10-25T17:28:07.144596+00:00"
     },
     {
       "page_key": "E2E-BAO-HO-LAO-DONG-2009:p21",
@@ -993,7 +993,7 @@
         "owner_reviewed_at": "2026-10-23T08:43:00.387Z",
         "reviewed_draft_revision": 7
       },
-      "updated_at": "2026-10-24T11:49:41.104139+00:00"
+      "updated_at": "2026-10-25T17:28:07.284165+00:00"
     },
     {
       "page_key": "E2E-BAO-HO-LAO-DONG-2009:p24",
@@ -1275,7 +1275,7 @@
         },
         "owner_reviewed_at": "2026-10-21"
       },
-      "updated_at": "2026-10-24T11:49:40.626525+00:00"
+      "updated_at": "2026-10-25T17:28:06.825765+00:00"
     },
     {
       "page_key": "E2E-BAO-HO-LAO-DONG-2009:p4",
@@ -1515,7 +1515,7 @@
         "owner_reviewed_at": "2026-10-21T16:06:56.230Z",
         "reviewed_draft_revision": 4
       },
-      "updated_at": "2026-10-24T11:49:40.700157+00:00"
+      "updated_at": "2026-10-25T17:28:06.831983+00:00"
     },
     {
       "page_key": "E2E-BAO-HO-LAO-DONG-2009:p7",
@@ -1752,7 +1752,7 @@
         "owner_reviewed_at": "2026-10-22T16:28:34.523Z",
         "reviewed_draft_revision": 8
       },
-      "updated_at": "2026-10-24T11:49:40.780723+00:00"
+      "updated_at": "2026-10-25T17:28:06.961514+00:00"
     },
     {
       "page_key": "E2E-BAO-HO-LAO-DONG-2009:p9",
@@ -1967,7 +1967,7 @@
         "owner_reviewed_at": "2026-10-21T16:24:59.711Z",
         "reviewed_draft_revision": 2
       },
-      "updated_at": "2026-10-24T11:49:40.899307+00:00"
+      "updated_at": "2026-10-25T17:28:07.056223+00:00"
     },
     {
       "page_key": "E2E-LONG-HAU-2008:p15",
@@ -2348,7 +2348,7 @@
         "owner_reviewed_at": "2026-10-21T08:27:29.952Z",
         "reviewed_draft_revision": 1
       },
-      "updated_at": "2026-10-24T11:49:40.626951+00:00"
+      "updated_at": "2026-10-25T17:28:06.828302+00:00"
     },
     {
       "page_key": "E2E-LONG-HAU-2008:p17",
@@ -2638,7 +2638,7 @@
         },
         "owner_reviewed_at": "2026-10-21"
       },
-      "updated_at": "2026-10-24T11:49:40.619048+00:00"
+      "updated_at": "2026-10-25T17:28:06.811855+00:00"
     },
     {
       "page_key": "E2E-LONG-HAU-2008:p6",
@@ -2966,7 +2966,7 @@
             ]
           ]
         },
-        "owner_reviewed_at": "2026-10-23T09:00:12.660Z",
+        "owner_reviewed_at": "2026-10-25T15:23:36.016Z",
         "table_reference_drafts": [
           {
             "grid": [
@@ -3204,7 +3204,7 @@
         "table_presence_reviewed": false,
         "reviewed_draft_revision": null
       },
-      "updated_at": "2026-10-24T11:49:40.577267+00:00"
+      "updated_at": "2026-10-25T17:20:24.099113+00:00"
     },
     {
       "page_key": "E2E-LONG-HAU-2008:p8",
@@ -3501,7 +3501,7 @@
         "owner_reviewed_at": "2026-10-23T09:07:54.431Z",
         "reviewed_draft_revision": null
       },
-      "updated_at": "2026-10-24T11:49:40.613429+00:00"
+      "updated_at": "2026-10-25T17:28:06.735858+00:00"
     },
     {
       "page_key": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b:p26",
@@ -17152,6 +17152,2232 @@
         "reviewed_draft_revision": 2
       },
       "updated_at": "2026-10-24T11:49:39.404904+00:00"
+    },
+    {
+      "page_key": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2:p11",
+      "draft_revision": 2,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+        "doc_title": "2.BCTC da kiem toan 2008 (V)",
+        "source_page_number": 11,
+        "source_pdf": "uploads/UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2.pdf",
+        "source_pdf_name": "2.BCTC da kiem toan 2008 (V).pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "pages/UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p0011.pdf",
+        "source_page_pdf_sha256": "bc6ed39b440a68d7942463327b7ff5a384078eb1ddaa5e9002384d3588037285",
+        "source_image": "raw/upload-2-bctc-da-kiem-toan-2008-v-73147462f2-p0011.png",
+        "source_image_sha256": "8a73e9d11e6eccb7676f5064b2bbd10855dbac0fe15af20c2b62ad7d70f25d05",
+        "image_width": 1190,
+        "image_height": 1684,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ Phần Long Hậu                                      B09-DN\nTHUYẾT MINH BÁO CÁO TÀI CHÍNH RIÊNG (tiếp theo)\nvào ngày 31 tháng 12 năm 2008 và cho năm kết thúc cùng ngày\n\n2. TÓM TẮT CÁC CHÍNH SÁCH KẾ TOÁN CHỦ YẾU (tiếp theo)\n\nTiền\nTiền bao gồm tiền mặt tại quỹ và tiền gửi ngân hàng.\n\nĐầu tư\nĐầu tư vào công ty liên kết, chứng khoán và các hoạt động đầu tư khác được ghi nhận theo giá mua thực tế. Dự phòng được lập cho việc giảm giá trị của các khoản đầu tư có thể chuyển nhượng được trên thị trường vào ngày kết thúc năm tài chính.\n\nCác khoản phải thu\nCác khoản phải thu được trình bày trên báo cáo tài chính theo giá trị ghi sổ các khoản phải thu từ khách hàng và phải thu khác cùng với dự phòng được lập cho các khoản phải thu khó đòi.\n\nDự phòng nợ phải thu khó đòi thể hiện phần giá trị dự kiến bị tổn thất do các khoản phải thu không được khách hàng thanh toán phát sinh đối với số dư các khoản phải thu tại thời điểm kết thúc năm tài chính.\n\nTăng hoặc giảm số dư tài khoản dự phòng được hạch toán vào chi phí quản lý doanh nghiệp trong năm.\n\nHàng tồn kho\nChi phí phát triển khu công nghiệp được ghi nhận theo giá thấp hơn giữa giá thành và giá trị thuần có thể thực hiện được. Giá thành bao gồm các chi phí liên quan trực tiếp đến việc phát triển khu công nghiệp, bao gồm cả chi phí đi vay. Giá trị thuần có thể thực hiện được bao gồm giá bán hiện hành trừ đi chi phí ước tính để hoàn thành khu công nghiệp và các chi phí bán hàng và tiếp thị ước tính.\n\nTài sản cố định\nNguyên giá tài sản cố định bao gồm giá mua và những chi phí có liên quan trực tiếp đến việc đưa tài sản vào hoạt động như dự kiến. Các chi phí mua sắm, nâng cấp và đổi mới tài sản cố định được vốn hóa và chi phí bảo trì, sửa chữa được hạch toán vào báo cáo kết quả hoạt động kinh doanh. Khi tài sản được bán hay thanh lý, nguyên giá và giá trị hao mòn lũy kế được xóa sổ và bất kỳ các khoản lãi lỗ nào phát sinh do thanh lý tài sản đều được hạch toán vào báo cáo kết quả hoạt động kinh doanh.\n\nKhấu hao và khấu trừ\nKhấu hao tài sản cố định hữu hình và khấu trừ tài sản cố định vô hình được trích theo phương pháp khấu hao đường thẳng trong thời gian hữu dụng ước tính của các tài sản như sau:\n\nNhà cửa và vật kiến trúc | 25 năm\nPhương tiện vận tải | 6 năm\nMáy móc | 5 - 7 năm\nThiết bị văn phòng | 3 - 5 năm\n\nChi phí đi vay\nChi phí đi vay được hạch toán như chi phí phát sinh trong năm ngoại trừ các khoản được vốn hóa như theo nội dung của đoạn tiếp theo.\n\nChi phí đi vay liên quan trực tiếp được vốn hóa vào chi phí phát triển Khu Công nghiệp.\n\nCác khoản phải trả và trích trước\nCác khoản phải trả và trích trước được ghi nhận cho số tiền phải trả trong tương lai liên quan đến hàng hóa và dịch vụ đã nhận được không phụ thuộc vào việc Công ty đã nhận được hóa đơn của nhà cung cấp hay chưa.\n\n9",
+        "ocr_draft_source": "Codex CLI vision draft from source page; Codex CLI configured model; verify against the original image.",
+        "layout_regions": [
+          {
+            "region_id": "R01",
+            "label": "figure",
+            "bbox_norm": [
+              0,
+              0.018,
+              0.034,
+              0.982
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R02",
+            "label": "title",
+            "bbox_norm": [
+              0.123,
+              0.04,
+              0.876,
+              0.101
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R03",
+            "label": "title",
+            "bbox_norm": [
+              0.123,
+              0.126,
+              0.687,
+              0.146
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R05",
+            "label": "title",
+            "bbox_norm": [
+              0.18117402873244481,
+              0.1551441657898338,
+              0.25647212184268453,
+              0.1735806418638444
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R06",
+            "label": "text",
+            "bbox_norm": [
+              0.184,
+              0.177,
+              0.581,
+              0.194
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R07",
+            "label": "title",
+            "bbox_norm": [
+              0.183,
+              0.206,
+              0.2514740180606746,
+              0.21841935813615562
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R08",
+            "label": "text",
+            "bbox_norm": [
+              0.183,
+              0.228,
+              0.8885164760122625,
+              0.26646016893244906
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R10",
+            "label": "title",
+            "bbox_norm": [
+              0.183,
+              0.28231863696823833,
+              0.34059288015520184,
+              0.2955102048688551
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R11",
+            "label": "text",
+            "bbox_norm": [
+              0.18095039237178584,
+              0.2991915679006167,
+              0.8808947452312745,
+              0.3887241525724883
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R12",
+            "label": "text",
+            "bbox_norm": [
+              0.183,
+              0.39555036058395865,
+              0.886,
+              0.426
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R13",
+            "label": "title",
+            "bbox_norm": [
+              0.184229744106781,
+              0.4382751682376368,
+              0.306229744106781,
+              0.4532751682376368
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R14",
+            "label": "text",
+            "bbox_norm": [
+              0.18178890078583532,
+              0.45768136303176166,
+              0.886,
+              0.526
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R15",
+            "label": "title",
+            "bbox_norm": [
+              0.18421111627262088,
+              0.5402468763100058,
+              0.3252111162726209,
+              0.5562468763100058
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R16",
+            "label": "text",
+            "bbox_norm": [
+              0.18177029001013137,
+              0.5599433920360526,
+              0.8853851450050658,
+              0.645565513278244
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R17",
+            "label": "table",
+            "bbox_norm": [
+              0.183,
+              0.725,
+              0.675,
+              0.781
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R18",
+            "label": "title",
+            "bbox_norm": [
+              0.18422970998986865,
+              0.6569565553780835,
+              0.3818279912617034,
+              0.6709282393417674
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R19",
+            "label": "text",
+            "bbox_norm": [
+              0.183,
+              0.6756530711041305,
+              0.886,
+              0.718
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R20",
+            "label": "title",
+            "bbox_norm": [
+              0.18361485499493435,
+              0.7925371731332428,
+              0.3046003353828955,
+              0.8084061465767548
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R21",
+            "label": "text",
+            "bbox_norm": [
+              0.1811740116739886,
+              0.8128124378056197,
+              0.8847888837273792,
+              0.8434213715970953
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R22",
+            "label": "text",
+            "bbox_norm": [
+              0.1811553838398285,
+              0.8447972610026493,
+              0.8847702558932191,
+              0.868
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R23",
+            "label": "title",
+            "bbox_norm": [
+              0.18178890078583532,
+              0.874537221350613,
+              0.4577020750179046,
+              0.891696491617362
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R24",
+            "label": "text",
+            "bbox_norm": [
+              0.18484459910171536,
+              0.8951158979708878,
+              0.886,
+              0.937
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R25",
+            "label": "seal",
+            "bbox_norm": [
+              0.978,
+              0.5362100066086728,
+              1,
+              0.6582100066086728
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R26",
+            "label": "text",
+            "bbox_norm": [
+              0.49,
+              0.95,
+              0.51,
+              0.965
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          }
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R05",
+          "R06",
+          "R07",
+          "R08",
+          "R10",
+          "R11",
+          "R12",
+          "R13",
+          "R14",
+          "R15",
+          "R16",
+          "R17",
+          "R18",
+          "R19",
+          "R20",
+          "R21",
+          "R22",
+          "R23",
+          "R24",
+          "R25",
+          "R26"
+        ],
+        "table_presence_reviewed": false,
+        "table_reference_drafts": [
+          {
+            "region_id": "R17",
+            "table_name": "",
+            "source_candidate_id": "AI-CODEX-11-T1",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "Nhà cửa và vật kiến trúc",
+                "25 năm"
+              ],
+              [
+                "Phương tiện vận tải",
+                "6 năm"
+              ],
+              [
+                "Máy móc",
+                "5 - 7 năm"
+              ],
+              [
+                "Thiết bị văn phòng",
+                "3 - 5 năm"
+              ]
+            ]
+          }
+        ],
+        "draft_revision": 2,
+        "draft_completeness": "codex_visual_draft_requires_owner_review",
+        "ai_draft_metadata": {
+          "provider": "codex_cli",
+          "model": "Codex CLI configured model",
+          "generated_at": "2026-10-25T15:35:33.089181+00:00",
+          "uncertain_items": []
+        },
+        "owner_reviewed_at": "2026-10-25T15:38:58.200Z",
+        "reviewed_draft_revision": 2
+      },
+      "updated_at": "2026-10-25T15:38:58.696905+00:00"
+    },
+    {
+      "page_key": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2:p12",
+      "draft_revision": 2,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+        "doc_title": "2.BCTC da kiem toan 2008 (V)",
+        "source_page_number": 12,
+        "source_pdf": "uploads/UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2.pdf",
+        "source_pdf_name": "2.BCTC da kiem toan 2008 (V).pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "pages/UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p0012.pdf",
+        "source_page_pdf_sha256": "b8965d90f027a7a852675f24d26e28c79ba210758196a5aed6460b0b9d5b690b",
+        "source_image": "raw/upload-2-bctc-da-kiem-toan-2008-v-73147462f2-p0012.png",
+        "source_image_sha256": "a8732f2b45142208a171e2960476ec974e6232f0752bd0fd094a4c00ed180d21",
+        "image_width": 1190,
+        "image_height": 1684,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ Phần Long Hậu\nB09-DN\nTHUYẾT MINH BÁO CÁO TÀI CHÍNH RIÊNG (tiếp theo)\nvào ngày 31 tháng 12 năm 2008 và cho năm kết thúc cùng ngày\n\n2. TÓM TẮT CÁC CHÍNH SÁCH KẾ TOÁN CHỦ YẾU (tiếp theo)\n\nChi phí chờ phân bổ\nChi phí chờ phân bổ được phân bổ trong kỳ mà chi phí được trả trước cho hoặc trong kỳ mà Công ty tạo ra lợi ích từ các khoản chi phí phát sinh.\n\nTrích trước trợ cấp thôi việc\nTrợ cấp thôi việc cho nhân viên được trích trước vào cuối mỗi năm báo cáo cho toàn bộ công nhân viên đã làm việc tại Công ty được hơn 1 năm với mức trích bằng một nửa tháng lương cho mỗi năm làm việc.\n\nCác nghiệp vụ bằng ngoại tệ\nCác nghiệp vụ phát sinh bằng các đơn vị tiền tệ không phải là đơn vị tiền tệ ghi sổ kế toán của Công ty (VNĐ) được hạch toán theo tỷ giá giao dịch tại ngày phát sinh nghiệp vụ. Tại thời điểm cuối năm, tài sản và công nợ có gốc ngoại tệ được đánh giá lại theo tỷ giá quy định vào ngày kết thúc năm tài chính. Tất cả các khoản chênh lệch tỷ giá thực tế phát sinh trong kỳ và chênh lệch do đánh giá lại số dư cuối kỳ được kết chuyển vào báo cáo kết quả hoạt động kinh doanh của năm tài chính.\n\nPhân chia lợi nhuận\nLợi nhuận thuần sau thuế thu nhập doanh nghiệp có thể chia cho các nhà đầu tư sau khi được các cổ đông chấp thuận và sau khi đã trích lập các quỹ theo Điều lệ Công ty và các quy định pháp lý của Việt Nam. Cổ tức được công bố từ phần lợi nhuận chưa phân phối căn cứ dựa theo tỷ lệ góp vốn chủ sở hữu quy định trên Giấy Phép đầu tư.\n\nQuỹ dự phòng tài chính\nQuỹ dự phòng tài chính được trích lập từ lợi nhuận thuần của Công ty theo đề xuất của Hội đồng Quản trị và được các cổ đông phê duyệt tại Đại hội Cổ đông Thường niên. Quỹ được dành riêng nhằm bảo vệ các hoạt động kinh doanh của Công ty trước các rủi ro hoặc thiệt hại kinh doanh hoặc dự phòng cho các khoản lỗ hoặc thiệt hại và các trường hợp bất khả kháng ngoài dự kiến, ví dụ như hỏa hoạn, bất ổn kinh tế và tài chính của quốc gia hoặc của bất kỳ nơi nào khác, v.v..\n\nQuỹ đầu tư phát triển\nQuỹ đầu tư phát triển kinh doanh được trích lập từ lợi nhuận thuần của Công ty theo đề xuất của Hội đồng Quản trị và được các cổ đông phê duyệt tại Đại hội Cổ đông Thường niên. Quỹ này được trích lập nhằm mở rộng hoạt động kinh doanh hoặc đầu tư chiều sâu của Công ty.\n\nQuỹ khen thưởng và phúc lợi\nQuỹ khen thưởng và phúc lợi được trích lập từ lợi nhuận thuần của Công ty theo đề xuất của Hội đồng Quản trị và được các cổ đông phê duyệt tại Đại hội Cổ đông Thường niên. Quỹ này được trích lập nhằm khen thưởng và khuyến khích, đãi ngộ vật chất, đem lại phúc lợi chung và nâng cao đời sống vật chất và tinh thần cho công nhân viên.\n\nGhi nhận doanh thu\nDoanh thu được ghi nhận khi Công ty có khả năng nhận được các lợi ích kinh tế có thể xác định được một cách chắc chắn. Các điều kiện ghi nhận cụ thể sau đây cũng phải được đáp ứng trước khi ghi nhận doanh thu:\n\nDoanh thu kinh doanh cơ sở hạ tầng\nDoanh thu từ cho thuê lại đất đã phát triển cơ sở hạ tầng được hạch toán một lần theo phương pháp lô đất, tức là doanh thu được ghi nhận khi đất được chuyển giao cho bên đi thuê trên thực địa và toàn bộ số tiền chuyển nhượng đã được thu hoặc được ghi nhận là phải thu.\n\n10",
+        "ocr_draft_source": "Codex CLI vision draft from source page; Codex CLI configured model; verify against the original image.",
+        "layout_regions": [
+          {
+            "region_id": "R01",
+            "label": "title",
+            "bbox_norm": [
+              0.126,
+              0.044,
+              0.876,
+              0.101
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R02",
+            "label": "title",
+            "bbox_norm": [
+              0.126,
+              0.128,
+              0.656,
+              0.145
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R03",
+            "label": "text",
+            "bbox_norm": [
+              0.186,
+              0.158,
+              0.889,
+              0.935
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R04",
+            "label": "figure",
+            "bbox_norm": [
+              0,
+              0.019,
+              0.036,
+              0.99
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R05",
+            "label": "seal",
+            "bbox_norm": [
+              0.98,
+              0.544,
+              0.999,
+              0.66
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R06",
+            "label": "text",
+            "bbox_norm": [
+              0.493,
+              0.95,
+              0.519,
+              0.965
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          }
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "R05",
+          "R06"
+        ],
+        "table_presence_reviewed": false,
+        "table_reference_drafts": [],
+        "draft_revision": 2,
+        "draft_completeness": "codex_visual_draft_requires_owner_review",
+        "ai_draft_metadata": {
+          "provider": "codex_cli",
+          "model": "Codex CLI configured model",
+          "generated_at": "2026-10-25T16:01:52.157872+00:00",
+          "uncertain_items": []
+        },
+        "owner_reviewed_at": "2026-10-25T16:02:03.718Z",
+        "reviewed_draft_revision": 2
+      },
+      "updated_at": "2026-10-25T16:02:04.179496+00:00"
+    },
+    {
+      "page_key": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2:p13",
+      "draft_revision": 2,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+        "doc_title": "2.BCTC da kiem toan 2008 (V)",
+        "source_page_number": 13,
+        "source_pdf": "uploads/UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2.pdf",
+        "source_pdf_name": "2.BCTC da kiem toan 2008 (V).pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "pages/UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p0013.pdf",
+        "source_page_pdf_sha256": "b1b354f6720e3f0152046afecc40a68a914b086c67570f068ff536a3a82dfe44",
+        "source_image": "raw/upload-2-bctc-da-kiem-toan-2008-v-73147462f2-p0013.png",
+        "source_image_sha256": "fe268d4a4c9f86668d7103a17fd7a7b347aebe07dffeb2ec57bec329fdb78f5a",
+        "image_width": 1190,
+        "image_height": 1684,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ Phần Long Hậu\nB09-DN\nTHUYẾT MINH BÁO CÁO TÀI CHÍNH RIÊNG (tiếp theo)\nvào ngày 31 tháng 12 năm 2008 và cho năm kết thúc cùng ngày\n\n2. TÓM TẮT CÁC CHÍNH SÁCH KẾ TOÁN CHỦ YẾU (tiếp theo)\n\nGhi nhận doanh thu (tiếp theo)\nDoanh thu từ dịch vụ\nDoanh thu được ghi nhận khi dịch vụ hoàn tất\nTiền cho thuê\nThu nhập từ tiền cho thuê tài sản theo hợp đồng thuê hoạt động được hạch toán vào báo cáo kết quả hoạt động kinh doanh trong kỳ theo phương pháp đường thẳng trong suốt thời gian cho thuê.\nTiền lãi\nDoanh thu được ghi nhận khi tiền lãi phát sinh trên cơ sở dồn tích trừ khi khả năng thu hồi tiền lãi không chắc chắn.\nLãi trên cổ phiếu\nLãi cơ bản trên cổ phiếu được tính bằng cách chia lợi nhuận sau thuế thuộc về cổ đông sở hữu cổ phiếu phổ thông của Công ty trước khi trích quỹ khen thưởng, phúc lợi cho số lượng bình quân gia quyền của số cổ phiếu phổ thông đang lưu hành trong năm.\nThuế\nThuế hiện hành\nTài sản thuế và thuế phải nộp cho năm hiện hành và các năm trước được xác định bằng giá trị dự kiến phải nộp cho (hoặc được thu hồi từ) cơ quan thuế, sử dụng các mức thuế suất và các luật thuế có hiệu lực đến ngày kết thúc năm tài chính.\nThuế thu nhập hoãn lại\nThuế thu nhập hoãn lại được xác định cho các khoản chênh lệch tạm thời tại ngày kết thúc năm tài chính giữa cơ sở tính thuế thu nhập của các tài sản và nợ phải trả và giá trị ghi sổ của chúng cho mục đích báo cáo tài chính.\nGiá trị ghi sổ của tài sản thuế thu nhập doanh nghiệp hoãn lại được xem xét lại vào ngày kết thúc năm tài chính và được ghi giảm đến mức bảo đảm chắc chắn có đủ lợi nhuận tính thuế cho phép lợi ích của một phần hoặc toàn bộ tài sản thuế thu nhập hoãn lại được sử dụng. Các tài sản thuế thu nhập doanh nghiệp hoãn lại chưa ghi nhận trước đây được xem xét lại vào ngày kết thúc năm tài chính và được ghi nhận khi chắc chắn có đủ lợi nhuận tính thuế để có thể sử dụng các tài sản thuế thu nhập hoãn lại chưa ghi nhận này.\nTài sản thuế thu nhập hoãn lại và thuế thu nhập hoãn lại phải trả được xác định theo thuế suất dự tính sẽ áp dụng cho năm tài sản được thu hồi hay nợ phải trả được thanh toán, dựa trên các mức thuế suất và luật thuế có hiệu lực vào ngày kết thúc năm tài chính.\nCông ty chỉ bù trừ các tài sản thuế thu nhập hoãn lại và thuế thu nhập hoãn lại phải trả khi Công ty có quyền hợp pháp được bù trừ giữa tài sản thuế thu nhập hiện hành với thuế thu nhập hiện hành phải nộp và các tài sản thuế thu nhập hoãn lại và thuế thu nhập hoãn lại phải trả liên quan tới thuế thu nhập doanh nghiệp được quản lý bởi cùng một cơ quan thuế đối với cùng một đơn vị chịu thuế và Công ty dự định thanh toán thuế thu nhập hiện hành phải trả và tài sản thuế thu nhập hiện hành trên cơ sở thuần.\n11",
+        "ocr_draft_source": "Codex CLI vision draft from source page; Codex CLI configured model; verify against the original image.",
+        "layout_regions": [
+          {
+            "region_id": "R01",
+            "label": "figure",
+            "bbox_norm": [
+              0,
+              0.019,
+              0.036,
+              0.999
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R02",
+            "label": "text",
+            "bbox_norm": [
+              0.127,
+              0.04,
+              0.889,
+              0.063
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R03",
+            "label": "text",
+            "bbox_norm": [
+              0.813,
+              0.046,
+              0.877,
+              0.061
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R04",
+            "label": "text",
+            "bbox_norm": [
+              0.127,
+              0.074,
+              0.617,
+              0.102
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R05",
+            "label": "title",
+            "bbox_norm": [
+              0.12634170837155967,
+              0.12546515446315293,
+              0.6513417083715597,
+              0.140651823998959
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R06",
+            "label": "title",
+            "bbox_norm": [
+              0.18271271019569352,
+              0.15265922624673484,
+              0.45271271019569354,
+              0.16565922624673485
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R07",
+            "label": "title",
+            "bbox_norm": [
+              0.18337096294328642,
+              0.17541046482695924,
+              0.3521411595606216,
+              0.1889453103638063
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R08",
+            "label": "text",
+            "bbox_norm": [
+              0.188,
+              0.1927438912827691,
+              0.529,
+              0.20774389128276907
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R09",
+            "label": "title",
+            "bbox_norm": [
+              0.188,
+              0.215,
+              0.2988760436591481,
+              0.23
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R10",
+            "label": "text",
+            "bbox_norm": [
+              0.1846874878788958,
+              0.23326373538211573,
+              0.875,
+              0.275
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R11",
+            "label": "title",
+            "bbox_norm": [
+              0.18468748787889583,
+              0.28353484553684705,
+              0.26668748787889585,
+              0.29953484553684706
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R12",
+            "label": "text",
+            "bbox_norm": [
+              0.188,
+              0.306,
+              0.88,
+              0.333
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R13",
+            "label": "title",
+            "bbox_norm": [
+              0.188,
+              0.344,
+              0.344,
+              0.36
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R14",
+            "label": "text",
+            "bbox_norm": [
+              0.188,
+              0.367,
+              0.879,
+              0.408
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R15",
+            "label": "title",
+            "bbox_norm": [
+              0.18205445744810067,
+              0.41813936840980803,
+              0.2510544574481007,
+              0.43313936840980805
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R16",
+            "label": "title",
+            "bbox_norm": [
+              0.18865825274759285,
+              0.4381393821473882,
+              0.30165825274759284,
+              0.4521393821473882
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R17",
+            "label": "text",
+            "bbox_norm": [
+              0.188,
+              0.459,
+              0.877,
+              0.496
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R18",
+            "label": "title",
+            "bbox_norm": [
+              0.18007966032447464,
+              0.504674213946655,
+              0.37707966032447465,
+              0.519674213946655
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R19",
+            "label": "text",
+            "bbox_norm": [
+              0.18534574062648868,
+              0.5190623025634985,
+              0.8789495164855571,
+              0.7817978034818281
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R21",
+            "label": "seal",
+            "bbox_norm": [
+              0.977,
+              0.546,
+              1,
+              0.632
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R26",
+            "label": "text",
+            "bbox_norm": [
+              0.49,
+              0.951,
+              0.513,
+              0.966
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          }
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "R05",
+          "R06",
+          "R07",
+          "R08",
+          "R09",
+          "R10",
+          "R11",
+          "R12",
+          "R13",
+          "R14",
+          "R15",
+          "R16",
+          "R17",
+          "R18",
+          "R19",
+          "R21",
+          "R26"
+        ],
+        "table_presence_reviewed": false,
+        "table_reference_drafts": [],
+        "draft_revision": 2,
+        "draft_completeness": "codex_visual_draft_requires_owner_review",
+        "ai_draft_metadata": {
+          "provider": "codex_cli",
+          "model": "Codex CLI configured model",
+          "generated_at": "2026-10-25T16:03:20.291486+00:00",
+          "uncertain_items": []
+        },
+        "owner_reviewed_at": "2026-10-25T16:05:55.778Z",
+        "reviewed_draft_revision": 2
+      },
+      "updated_at": "2026-10-25T16:05:56.242130+00:00"
+    },
+    {
+      "page_key": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2:p14",
+      "draft_revision": 2,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+        "doc_title": "2.BCTC da kiem toan 2008 (V)",
+        "source_page_number": 14,
+        "source_pdf": "uploads/UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2.pdf",
+        "source_pdf_name": "2.BCTC da kiem toan 2008 (V).pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "pages/UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p0014.pdf",
+        "source_page_pdf_sha256": "cdf2fae5e6b98c66b6d59e728c5b0ec4ff8de96710f1161a2336d22efe20e209",
+        "source_image": "raw/upload-2-bctc-da-kiem-toan-2008-v-73147462f2-p0014.png",
+        "source_image_sha256": "9bc2e0bb55c67dc8784eadfa1db20bf0a960b6dda46c52c301555010e758bd69",
+        "image_width": 1190,
+        "image_height": 1684,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ Phần Long Hậu\nB09-DN\nTHUYẾT MINH BÁO CÁO TÀI CHÍNH RIÊNG (tiếp theo)\nvào ngày 31 tháng 12 năm 2008 và cho năm kết thúc cùng ngày\n\n3. TIỀN VÀ CÁC KHOẢN TƯƠNG ĐƯƠNG TIỀN\nNgàn VNĐ\nSố cuối năm | Số đầu năm\nTiền mặt | 23.518 | 23.027\nTiền gửi ngân hàng | 29.309.345 | 110.248.599\nTiền gửi có kỳ hạn | 39.872.666 | 28.844.687\nTổng cộng | 69.205.529 | 139.116.313\n\n4. CÁC KHOẢN PHẢI THU KHÁC\nNgàn VNĐ\nSố cuối năm | Số đầu năm\nTiền đền bù phải thu | 1.839.599 | -\nChi phí chi hộ Công ty cổ phần BourBon An Hòa (Thuyết minh số 18) | 1.027.257 | 1.753.939\nTiền đền bù phải thu từ Ủy ban Nhân dân Huyện Cần Giuộc, Tỉnh Long An | 666.060 | 666.060\nPhải thu khác | 2.997.847 | 134.069\nTổng cộng | 6.530.763 | 2.554.068\n\n5. HÀNG TỒN KHO\nChi phí phát triển khu công nghiệp bao gồm chi phí cho đất đai và xây dựng cơ sở hạ tầng dở dang phát sinh cho Khu Công nghiệp Long Hậu.\n\n6. TÀI SẢN NGẮN HẠN KHÁC\nNgàn VNĐ\nSố cuối năm | Số đầu năm\nTạm ứng cho nhân viên | 8.118.965 | 7.344.820\nKý quỹ khác | 209.000 | 182.000\nTổng cộng | 8.327.965 | 7.526.820\n\n12",
+        "ocr_draft_source": "Codex CLI vision draft from source page; Codex CLI configured model; verify against the original image.",
+        "layout_regions": [
+          {
+            "region_id": "R01",
+            "label": "title",
+            "bbox_norm": [
+              0.1235,
+              0.0437,
+              0.4168,
+              0.0611
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R02",
+            "label": "text",
+            "bbox_norm": [
+              0.8084,
+              0.047,
+              0.8697,
+              0.0611
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R03",
+            "label": "text",
+            "bbox_norm": [
+              0.1235,
+              0.0756,
+              0.60246148686417,
+              0.1024
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R04",
+            "label": "title_table",
+            "bbox_norm": [
+              0.1235,
+              0.1273,
+              0.5403,
+              0.1404
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R05",
+            "label": "table",
+            "bbox_norm": [
+              0.1824,
+              0.1508,
+              0.8723,
+              0.2666
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R06",
+            "label": "title_table",
+            "bbox_norm": [
+              0.1235,
+              0.2957,
+              0.4378,
+              0.3099
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R07",
+            "label": "table",
+            "bbox_norm": [
+              0.1824,
+              0.3224,
+              0.8723,
+              0.4786
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R08",
+            "label": "title_table",
+            "bbox_norm": [
+              0.1235,
+              0.5053,
+              0.3151,
+              0.5178
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R09",
+            "label": "text",
+            "bbox_norm": [
+              0.1824,
+              0.5338,
+              0.8723,
+              0.5594
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R10",
+            "label": "title_table",
+            "bbox_norm": [
+              0.1235,
+              0.5885,
+              0.4059,
+              0.6004
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R11",
+            "label": "table",
+            "bbox_norm": [
+              0.1824,
+              0.6176,
+              0.8723,
+              0.7173
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R12",
+            "label": "seal",
+            "bbox_norm": [
+              0.7933,
+              0.5469,
+              0.8151,
+              0.6021
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R13",
+            "label": "figure",
+            "bbox_norm": [
+              0,
+              0.019,
+              0.0336,
+              0.9863
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R14",
+            "label": "text",
+            "bbox_norm": [
+              0.4866,
+              0.9531,
+              0.5067,
+              0.9656
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          }
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "R05",
+          "R06",
+          "R07",
+          "R08",
+          "R09",
+          "R10",
+          "R11",
+          "R12",
+          "R13",
+          "R14"
+        ],
+        "table_presence_reviewed": false,
+        "table_reference_drafts": [
+          {
+            "region_id": "R05",
+            "table_name": "3. TIỀN VÀ CÁC KHOẢN TƯƠNG ĐƯƠNG TIỀN",
+            "source_candidate_id": "AI-CODEX-14-T1",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "",
+                "Ngàn VNĐ"
+              ],
+              [
+                "",
+                "Số cuối năm",
+                "Số đầu năm"
+              ],
+              [
+                "Tiền mặt",
+                "23.518",
+                "23.027"
+              ],
+              [
+                "Tiền gửi ngân hàng",
+                "29.309.345",
+                "110.248.599"
+              ],
+              [
+                "Tiền gửi có kỳ hạn",
+                "39.872.666",
+                "28.844.687"
+              ],
+              [
+                "Tổng cộng",
+                "69.205.529",
+                "139.116.313"
+              ]
+            ]
+          },
+          {
+            "region_id": "R07",
+            "table_name": "4. CÁC KHOẢN PHẢI THU KHÁC",
+            "source_candidate_id": "AI-CODEX-14-T2",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "",
+                "Ngàn VNĐ"
+              ],
+              [
+                "",
+                "Số cuối năm",
+                "Số đầu năm"
+              ],
+              [
+                "Tiền đền bù phải thu",
+                "1.839.599",
+                "-"
+              ],
+              [
+                "Chi phí chi hộ Công ty cổ phần BourBon An Hòa (Thuyết minh số 18)",
+                "1.027.257",
+                "1.753.939"
+              ],
+              [
+                "Tiền đền bù phải thu từ Ủy ban Nhân dân Huyện Cần Giuộc, Tỉnh Long An",
+                "666.060",
+                "666.060"
+              ],
+              [
+                "Phải thu khác",
+                "2.997.847",
+                "134.069"
+              ],
+              [
+                "Tổng cộng",
+                "6.530.763",
+                "2.554.068"
+              ]
+            ]
+          },
+          {
+            "region_id": "R11",
+            "table_name": " 6. TÀI SẢN NGẮN HẠN KHÁC",
+            "source_candidate_id": "AI-CODEX-14-T3",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "Ngàn VNĐ",
+                ""
+              ],
+              [
+                "",
+                "Số cuối năm",
+                "Số đầu năm"
+              ],
+              [
+                "Tạm ứng cho nhân viên",
+                "8.118.965",
+                "7.344.820"
+              ],
+              [
+                "Ký quỹ khác",
+                "209.000",
+                "182.000"
+              ],
+              [
+                "Tổng cộng",
+                "8.327.965",
+                "7.526.820"
+              ]
+            ]
+          }
+        ],
+        "draft_revision": 2,
+        "draft_completeness": "codex_visual_draft_requires_owner_review",
+        "ai_draft_metadata": {
+          "provider": "codex_cli",
+          "model": "Codex CLI configured model",
+          "generated_at": "2026-10-25T16:55:12.475219+00:00",
+          "uncertain_items": []
+        },
+        "owner_reviewed_at": "2026-10-25T16:57:39.307Z",
+        "reviewed_draft_revision": 2
+      },
+      "updated_at": "2026-10-25T16:57:39.797130+00:00"
+    },
+    {
+      "page_key": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2:p16",
+      "draft_revision": 2,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+        "doc_title": "2.BCTC da kiem toan 2008 (V)",
+        "source_page_number": 16,
+        "source_pdf": "uploads/UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2.pdf",
+        "source_pdf_name": "2.BCTC da kiem toan 2008 (V).pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "pages/UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p0016.pdf",
+        "source_page_pdf_sha256": "7f0fb69783daf30f5273afa95ba634efb0fada86b60de300b5763a8160363a11",
+        "source_image": "raw/upload-2-bctc-da-kiem-toan-2008-v-73147462f2-p0016.png",
+        "source_image_sha256": "0f3cbd3784439c0d67b863a6deacf5847038ae713006ac0b901938bafecb9675",
+        "image_width": 1190,
+        "image_height": 1684,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ Phần Long Hậu\tB09-DN\nTHUYẾT MINH BÁO CÁO TÀI CHÍNH RIÊNG (tiếp theo)\nvào ngày 31 tháng 12 năm 2008 và cho năm kết thúc cùng ngày\n\n9. ĐẦU TƯ DÀI HẠN (tiếp theo)\n9.2 Đầu tư dài hạn khác\nNgàn VNĐ\nSố cuối năm\tSố đầu năm\nCông ty Cổ phần Đầu tư Phát triển Gia Định\t19.630.000\t-\nCông ty Cổ phần Công nghiệp Vĩnh Tường\t12.501.000\t-\nCông ty Cổ phần 3D\t7.699.007\t-\nCông ty Cổ phần Sản Xuất Cáp Quang và Phụ Kiện Việt Đức\t7.500.000\t-\nCông ty Cổ phần Chứng khoán Thành Phố Hồ Chí Minh\t2.720.000\t-\nTốt Tổng cộng\t50.050.007\t-\nDự phòng giảm giá trị của các khoản đầu tư dài hạn\t(1.880.000)\t-\nGiá trị còn lại\t48.170.007\t-\n\n10. THUẾ PHẢI NỘP\nNgàn VNĐ\nSố cuối năm\tSố đầu năm\nThuế thu nhập cá nhân\t1.094.902\t1.707.233\nThuế giá trị gia tăng\t9.674.876\t-\nTổng cộng\t10.769.778\t1.707.233\n\n11. CHI PHÍ PHẢI TRẢ\nNgàn VNĐ\nSố cuối năm\tSố đầu năm\nChi phí ước tính phát sinh thêm để hoàn thành cơ sở hạ tầng phân bổ cho các khu đất đã được cho thuê\t67.943.423\t54.341.239\nChi phí môi giới\t1.352.851\t1.352.851\nChi phí phải trả khác\t515.046\t335.840\nTổng cộng\t69.811.320\t56.029.930\n\n12. CÁC KHOẢN PHẢI TRẢ KHÁC\nNgàn VNĐ\nSố cuối năm\tSố đầu năm\nĐặt cọc đã nhận của việc cho thuê đất đã phát triển cơ sở hạ tầng\t56.337.783\t82.234.308\nTiền đặt cọc mua lại nền tái định cư phải trả cho Công ty Cổ phần phát triển Nam Sài Gòn\t5.574.851\t6.020.000\nPhải trả Công ty Cổ phần phát triển Nam Sài Gòn cho khoản chi hộ chi phí đền bù và các chi phí triển khai dự án (Thuyết minh số 8)\t19.464.027\t1.873\nBảo hiểm xã hội, bảo hiểm y tế\t139.783\t-\nCác khoản phải trả khác\t164.344\t42.980\nTổng cộng\t81.680.788\t88.299.161\n14",
+        "ocr_draft_source": "Codex CLI vision draft from source page; Codex CLI configured model; verify against the original image.",
+        "layout_regions": [
+          {
+            "region_id": "R01",
+            "label": "title",
+            "bbox_norm": [
+              0.126,
+              0.042,
+              0.8964153158188933,
+              0.06429032382496438
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R02",
+            "label": "title",
+            "bbox_norm": [
+              0.126,
+              0.073,
+              0.619,
+              0.104
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R03",
+            "label": "title",
+            "bbox_norm": [
+              0.126,
+              0.126,
+              0.409,
+              0.146
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R04",
+            "label": "title_table",
+            "bbox_norm": [
+              0.126,
+              0.162,
+              0.353,
+              0.179
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R05",
+            "label": "table",
+            "bbox_norm": [
+              0.187,
+              0.187,
+              0.879,
+              0.378
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R06",
+            "label": "title_table",
+            "bbox_norm": [
+              0.126,
+              0.398,
+              0.333,
+              0.416
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R07",
+            "label": "table",
+            "bbox_norm": [
+              0.19,
+              0.423,
+              0.878,
+              0.524
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R08",
+            "label": "title_table",
+            "bbox_norm": [
+              0.126,
+              0.549,
+              0.353,
+              0.568
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R09",
+            "label": "table",
+            "bbox_norm": [
+              0.19,
+              0.571,
+              0.878,
+              0.701
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R10",
+            "label": "title_table",
+            "bbox_norm": [
+              0.126,
+              0.725,
+              0.4367177193963108,
+              0.744
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R11",
+            "label": "table",
+            "bbox_norm": [
+              0.19,
+              0.75,
+              0.878,
+              0.946
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R12",
+            "label": "text",
+            "bbox_norm": [
+              0.491,
+              0.951,
+              0.507,
+              0.964
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R13",
+            "label": "figure",
+            "bbox_norm": [
+              0,
+              0.02,
+              0.036,
+              0.999
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R14",
+            "label": "seal",
+            "bbox_norm": [
+              0.978,
+              0.547,
+              1,
+              0.66
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          }
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "R05",
+          "R06",
+          "R07",
+          "R08",
+          "R09",
+          "R10",
+          "R11",
+          "R12",
+          "R13",
+          "R14"
+        ],
+        "table_presence_reviewed": false,
+        "table_reference_drafts": [
+          {
+            "region_id": "R05",
+            "table_name": "9.2 Đầu tư dài hạn khác",
+            "source_candidate_id": "AI-CODEX-16-T1",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "",
+                "Ngàn VNĐ"
+              ],
+              [
+                "",
+                "Số cuối năm",
+                "Số đầu năm"
+              ],
+              [
+                "Công ty Cổ phần Đầu tư Phát triển Gia Định",
+                "19.630.000",
+                "-"
+              ],
+              [
+                "Công ty Cổ phần Công nghiệp Vĩnh Tường",
+                "12.501.000",
+                "-"
+              ],
+              [
+                "Công ty Cổ phần 3D",
+                "7.699.007",
+                "-"
+              ],
+              [
+                "Công ty Cổ phần Sản Xuất Cáp Quang và Phụ Kiện Việt Đức",
+                "7.500.000",
+                "-"
+              ],
+              [
+                "Công ty Cổ phần Chứng khoán Thành Phố Hồ Chí Minh",
+                "2.720.000",
+                "-"
+              ],
+              [
+                "Tốt Tổng cộng",
+                "50.050.007",
+                "-"
+              ],
+              [
+                "Dự phòng giảm giá trị của các khoản đầu tư dài hạn",
+                "(1.880.000)",
+                "-"
+              ],
+              [
+                "Giá trị còn lại",
+                "48.170.007",
+                "-"
+              ]
+            ]
+          },
+          {
+            "region_id": "R07",
+            "table_name": " 10. THUẾ PHẢI NỘP",
+            "source_candidate_id": "AI-CODEX-16-T2",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "",
+                "Ngàn VNĐ"
+              ],
+              [
+                "",
+                "Số cuối năm",
+                "Số đầu năm"
+              ],
+              [
+                "Thuế thu nhập cá nhân",
+                "1.094.902",
+                "1.707.233"
+              ],
+              [
+                "Thuế giá trị gia tăng",
+                "9.674.876",
+                "-"
+              ],
+              [
+                "Tổng cộng",
+                "10.769.778",
+                "1.707.233"
+              ]
+            ]
+          },
+          {
+            "region_id": "R09",
+            "table_name": "11. CHI PHÍ PHẢI TRẢ",
+            "source_candidate_id": "AI-CODEX-16-T3",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "",
+                "Ngàn VNĐ"
+              ],
+              [
+                "",
+                "Số cuối năm",
+                "Số đầu năm"
+              ],
+              [
+                "Chi phí ước tính phát sinh thêm để hoàn thành cơ sở hạ tầng phân bổ cho các khu đất đã được cho thuê",
+                "67.943.423",
+                "54.341.239"
+              ],
+              [
+                "Chi phí môi giới",
+                "1.352.851",
+                "1.352.851"
+              ],
+              [
+                "Chi phí phải trả khác",
+                "515.046",
+                "335.840"
+              ],
+              [
+                "Tổng cộng",
+                "69.811.320",
+                "56.029.930"
+              ]
+            ]
+          },
+          {
+            "region_id": "R11",
+            "table_name": "12. CÁC KHOẢN PHẢI TRẢ KHÁC",
+            "source_candidate_id": "AI-CODEX-16-T4",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "Ngàn VNĐ",
+                ""
+              ],
+              [
+                "",
+                "Số cuối năm",
+                "Số đầu năm"
+              ],
+              [
+                "Đặt cọc đã nhận của việc cho thuê đất đã phát triển cơ sở hạ tầng",
+                "56.337.783",
+                "82.234.308"
+              ],
+              [
+                "Tiền đặt cọc mua lại nền tái định cư phải trả cho Công ty Cổ phần phát triển Nam Sài Gòn",
+                "5.574.851",
+                "6.020.000"
+              ],
+              [
+                "Phải trả Công ty Cổ phần phát triển Nam Sài Gòn cho khoản chi hộ chi phí đền bù và các chi phí triển khai dự án (Thuyết minh số 8)",
+                "19.464.027",
+                "1.873"
+              ],
+              [
+                "Bảo hiểm xã hội, bảo hiểm y tế",
+                "139.783",
+                "-"
+              ],
+              [
+                "Các khoản phải trả khác",
+                "164.344",
+                "42.980"
+              ],
+              [
+                "Tổng cộng",
+                "81.680.788",
+                "88.299.161"
+              ]
+            ]
+          }
+        ],
+        "draft_revision": 2,
+        "draft_completeness": "codex_visual_draft_requires_owner_review",
+        "ai_draft_metadata": {
+          "provider": "codex_cli",
+          "model": "Codex CLI configured model",
+          "generated_at": "2026-10-25T16:58:48.617489+00:00",
+          "uncertain_items": [
+            "Dòng ngay trước \"Tổng cộng\" trong bảng mục 9.2 có vẻ in là \"Tốt Tổng cộng\"; từ đầu dòng hơi không rõ. Con dấu đỏ ở mép phải chỉ hiện một phần và chữ không đọc rõ."
+          ]
+        },
+        "owner_reviewed_at": "2026-10-25T17:03:35.992Z",
+        "reviewed_draft_revision": 2
+      },
+      "updated_at": "2026-10-25T17:03:36.511245+00:00"
+    },
+    {
+      "page_key": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2:p18",
+      "draft_revision": 2,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+        "doc_title": "2.BCTC da kiem toan 2008 (V)",
+        "source_page_number": 18,
+        "source_pdf": "uploads/UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2.pdf",
+        "source_pdf_name": "2.BCTC da kiem toan 2008 (V).pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "pages/UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p0018.pdf",
+        "source_page_pdf_sha256": "fbb1d058431aaeecdfaf85e3586990393f10347ce7538c3e3e7be027a13e5ae1",
+        "source_image": "raw/upload-2-bctc-da-kiem-toan-2008-v-73147462f2-p0018.png",
+        "source_image_sha256": "f6454ee71d37eec2d41709d177d8ad03a3ef8fcbff8cb019daba1ce32af72b0f",
+        "image_width": 1190,
+        "image_height": 1684,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ Phần Long Hậu                         B09-DN\nTHUYẾT MINH BÁO CÁO TÀI CHÍNH RIÊNG (tiếp theo)\nvào ngày 31 tháng 12 năm 2008 và cho năm kết thúc cùng ngày\n\n13. VỐN CHỦ SỞ HỮU (tiếp theo)\n13.2 Vốn cổ phần\n\nNgàn VNĐ                         %\nCông ty Cổ phần Phát Triển Công Nghiệp Tân Thuận     91.195.460     46\nJaccar Sas                                           34.189.900     17\nCông ty Cổ phần Việt Âu                              25.400.110     13\nCông ty Cổ phần Phát triển Nam Sài Gòn               20.000.000     10\nCác cổ đông khác                                     29.214.530     14\nTổng cộng vốn cổ phần đã góp                        200.000.000    100\nTheo giấy chứng nhận đăng ký kinh doanh\nVốn cổ phần còn phải góp                            200.000.000     .\n\n13.3 Số cổ phiếu đã phát hành\n\nNgàn VNĐ\n                         Số cổ phiếu    Mệnh giá\nVào ngày 31/12/2006       2.790.000     27.900.000\nCổ phiếu mới đã phát hành 13.554.516    135.545.160\nVào ngày 31/12/2007      16.344.516    163.445.160\nCổ phiếu mới đã phát hành 3.655.484     36.554.840\nVào ngày 31/12/2008      20.000.000    200.000.000\n\n14. DOANH THU\n14.1 Doanh thu\n\nNgàn VNĐ\n                         Năm nay       Năm trước\nDoanh thu cho thuê đất đã phát triển cơ sở hạ tầng  330.052.918  156.412.352\nDoanh thu cho thuê văn phòng                           598.308       18.482\nDoanh thu từ các hoạt động khác                        561.611            -\nTổng cộng                                           331.212.837  156.430.834\n\n14.2 Doanh thu hoạt động tài chính\n\nNgàn VNĐ\n                         Năm nay       Năm trước\nLãi tiền gửi                                         10.691.184    1.265.055\nCổ tức được chia                                     1.437.000            -\nLãi chênh lệch tỷ giá chưa thực hiện                  2.298.839            -\nLãi chênh lệch tỷ giá đã thực hiện                    4.531.072       47.955\nTổng cộng                                            18.958.095    1.313.010\n\n16",
+        "ocr_draft_source": "Codex CLI vision draft from source page; Codex CLI configured model; verify against the original image.",
+        "layout_regions": [
+          {
+            "region_id": "R01",
+            "label": "figure",
+            "bbox_norm": [
+              0,
+              0.019,
+              0.06,
+              0.997
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R02",
+            "label": "text",
+            "bbox_norm": [
+              0.124,
+              0.042,
+              0.876,
+              0.101
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R03",
+            "label": "title",
+            "bbox_norm": [
+              0.123,
+              0.128,
+              0.458,
+              0.145
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R04",
+            "label": "title_table",
+            "bbox_norm": [
+              0.123,
+              0.166,
+              0.304,
+              0.18
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R05",
+            "label": "table",
+            "bbox_norm": [
+              0.188,
+              0.2,
+              0.874,
+              0.362
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R06",
+            "label": "title_table",
+            "bbox_norm": [
+              0.123,
+              0.38,
+              0.383,
+              0.394
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R07",
+            "label": "table",
+            "bbox_norm": [
+              0.187,
+              0.402,
+              0.872,
+              0.538
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R08",
+            "label": "title",
+            "bbox_norm": [
+              0.123,
+              0.565,
+              0.289,
+              0.579
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R09",
+            "label": "title_table",
+            "bbox_norm": [
+              0.123,
+              0.601,
+              0.272,
+              0.614
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R10",
+            "label": "table",
+            "bbox_norm": [
+              0.187,
+              0.626,
+              0.872,
+              0.74
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R11",
+            "label": "title_table",
+            "bbox_norm": [
+              0.123,
+              0.7600997860050719,
+              0.4351093383923027,
+              0.775
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R12",
+            "label": "table",
+            "bbox_norm": [
+              0.187,
+              0.79,
+              0.872,
+              0.919
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R13",
+            "label": "seal",
+            "bbox_norm": [
+              0.975,
+              0.542,
+              0.999,
+              0.669
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R14",
+            "label": "text",
+            "bbox_norm": [
+              0.49,
+              0.951,
+              0.511,
+              0.963
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          }
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "R05",
+          "R06",
+          "R07",
+          "R08",
+          "R09",
+          "R10",
+          "R11",
+          "R12",
+          "R13",
+          "R14"
+        ],
+        "table_presence_reviewed": false,
+        "table_reference_drafts": [
+          {
+            "region_id": "R05",
+            "table_name": "13.2 Vốn cổ phần",
+            "source_candidate_id": "AI-CODEX-18-T1",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "Ngàn VNĐ",
+                "%"
+              ],
+              [
+                "Công ty Cổ phần Phát Triển Công Nghiệp Tân Thuận",
+                "91.195.460",
+                "46"
+              ],
+              [
+                "Jaccar Sas",
+                "34.189.900",
+                "17"
+              ],
+              [
+                "Công ty Cổ phần Việt Âu",
+                "25.400.110",
+                "13"
+              ],
+              [
+                "Công ty Cổ phần Phát triển Nam Sài Gòn",
+                "20.000.000",
+                "10"
+              ],
+              [
+                "Các cổ đông khác",
+                "29.214.530",
+                "14"
+              ],
+              [
+                "Tổng cộng vốn cổ phần đã góp",
+                "200.000.000",
+                "100"
+              ],
+              [
+                "Theo giấy chứng nhận đăng ký kinh doanh",
+                "",
+                ""
+              ],
+              [
+                "Vốn cổ phần còn phải góp",
+                "200.000.000",
+                "."
+              ]
+            ]
+          },
+          {
+            "region_id": "R07",
+            "table_name": "13.3 Số cổ phiếu đã phát hành",
+            "source_candidate_id": "AI-CODEX-18-T2",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "Số cổ phiếu",
+                "Mệnh giá (Ngàn VNĐ)"
+              ],
+              [
+                "Vào ngày 31/12/2006",
+                "2.790.000",
+                "27.900.000"
+              ],
+              [
+                "Cổ phiếu mới đã phát hành",
+                "13.554.516",
+                "135.545.160"
+              ],
+              [
+                "Vào ngày 31/12/2007",
+                "16.344.516",
+                "163.445.160"
+              ],
+              [
+                "Cổ phiếu mới đã phát hành",
+                "3.655.484",
+                "36.554.840"
+              ],
+              [
+                "Vào ngày 31/12/2008",
+                "20.000.000",
+                "200.000.000"
+              ]
+            ]
+          },
+          {
+            "region_id": "R10",
+            "table_name": "14.1 Doanh thu",
+            "source_candidate_id": "AI-CODEX-18-T3",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "Năm nay",
+                "Năm trước (Ngàn VNĐ)"
+              ],
+              [
+                "Doanh thu cho thuê đất đã phát triển cơ sở hạ tầng",
+                "330.052.918",
+                "156.412.352"
+              ],
+              [
+                "Doanh thu cho thuê văn phòng",
+                "598.308",
+                "18.482"
+              ],
+              [
+                "Doanh thu từ các hoạt động khác",
+                "561.611",
+                "-"
+              ],
+              [
+                "Tổng cộng",
+                "331.212.837",
+                "156.430.834"
+              ]
+            ]
+          },
+          {
+            "region_id": "R12",
+            "table_name": "14.2 Doanh thu hoạt động tài chính",
+            "source_candidate_id": "AI-CODEX-18-T4",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "Năm nay",
+                "Năm trước (Ngàn VNĐ)"
+              ],
+              [
+                "Lãi tiền gửi",
+                "10.691.184",
+                "1.265.055"
+              ],
+              [
+                "Cổ tức được chia",
+                "1.437.000",
+                "-"
+              ],
+              [
+                "Lãi chênh lệch tỷ giá chưa thực hiện",
+                "2.298.839",
+                "-"
+              ],
+              [
+                "Lãi chênh lệch tỷ giá đã thực hiện",
+                "4.531.072",
+                "47.955"
+              ],
+              [
+                "Tổng cộng",
+                "18.958.095",
+                "1.313.010"
+              ]
+            ]
+          }
+        ],
+        "draft_revision": 2,
+        "draft_completeness": "codex_visual_draft_requires_owner_review",
+        "ai_draft_metadata": {
+          "provider": "codex_cli",
+          "model": "Codex CLI configured model",
+          "generated_at": "2026-10-25T17:06:05.195087+00:00",
+          "uncertain_items": []
+        },
+        "owner_reviewed_at": "2026-10-25T17:07:09.058Z",
+        "reviewed_draft_revision": 2
+      },
+      "updated_at": "2026-10-25T17:07:09.521518+00:00"
+    },
+    {
+      "page_key": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2:p19",
+      "draft_revision": 2,
+      "annotation_status": "owner_reviewed",
+      "page_data": {
+        "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+        "doc_title": "2.BCTC da kiem toan 2008 (V)",
+        "source_page_number": 19,
+        "source_pdf": "uploads/UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2.pdf",
+        "source_pdf_name": "2.BCTC da kiem toan 2008 (V).pdf",
+        "source_pdf_sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+        "source_page_pdf": "pages/UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p0019.pdf",
+        "source_page_pdf_sha256": "f235cb9717a4eb194fccf967aff4a034ed5a08ce9e0bf681ca5ab6a788b922b5",
+        "source_image": "raw/upload-2-bctc-da-kiem-toan-2008-v-73147462f2-p0019.png",
+        "source_image_sha256": "1559864a012cfdc6a5e642c39d0a12f3747b3924de09c4c62a1466aa909499b9",
+        "image_width": 1190,
+        "image_height": 1684,
+        "annotation_status": "owner_reviewed",
+        "ocr_reference_draft": "Công ty Cổ Phần Long Hậu                                      B09-DN\nTHUYẾT MINH BÁO CÁO TÀI CHÍNH RIÊNG (tiếp theo)\nvào ngày 31 tháng 12 năm 2008 và cho năm kết thúc cùng ngày\n\n15. CHI PHÍ TÀI CHÍNH\nNgàn VNĐ\nNăm nay             Năm trước\nLỗ chênh lệch tỷ giá đã thực hiện       2.937.705       5.144\nDự phòng đầu tư dài hạn                 1.880.000       -\nTổng cộng                               4.817.705       5.144\n\n16. THU NHẬP KHÁC\nNgàn VNĐ\nNăm nay             Năm trước\nTiền phạt nhà thầu                      250.000         76.806\nLãi từ thanh lý tài sản cố định         52.381          -\nThu nhập khác                           354.508         124.343\nTổng cộng                               656.889         201.149\n\n17. THUẾ THU NHẬP DOANH NGHIỆP (THUẾ “TNDN”)\nĐối với lĩnh vực kinh doanh kết cấu hạ tầng Khu Công nghiệp :\nCông ty có nghĩa vụ nộp thuế thu nhập doanh nghiệp (thuế “TNDN”) với mức thuế suất bằng 10% lợi nhuận chịu thuế trong 15 năm đầu tiên và bằng 25% trong các năm tiếp theo. Công ty được miễn thuế TNDN trong 4 năm tính từ năm đầu tiên kinh doanh có lãi và được giảm 50% thuế TNDN trong 9 năm tiếp theo.\n\nĐối với các lĩnh vực kinh doanh khác:\nCông ty có nghĩa vụ nộp thuế thu nhập doanh nghiệp (thuế “TNDN”) với mức thuế suất bằng 20% lợi nhuận chịu thuế trong 10 năm đầu tiên và bằng 25% trong các năm tiếp theo. Công ty được miễn thuế TNDN trong 2 năm tính từ năm đầu tiên kinh doanh có lãi và được giảm 50% thuế TNDN trong 6 năm tiếp theo.\n\nCác báo cáo thuế của Công ty sẽ chịu sự kiểm tra của cơ quan thuế. Do việc áp dụng luật và các quy định về thuế đối với các loại nghiệp vụ khác nhau có thể được giải thích theo nhiều cách khác nhau, số thuế được trình bày trên các báo cáo tài chính có thể sẽ bị thay đổi theo quyết định cuối cùng của cơ quan thuế.\n\n17.1 Chi phí thuế TNDN\nNgàn VNĐ\nNăm nay             Năm trước\nThuế TNDN hiện hành                    -               -\nThuế TNDN hoãn lại                     29.709.946      16.294.376\nTổng cộng                               29.079.946      16.294.376\n\n17",
+        "ocr_draft_source": "Codex CLI vision draft from source page; Codex CLI configured model; verify against the original image.",
+        "layout_regions": [
+          {
+            "region_id": "R01",
+            "label": "figure",
+            "bbox_norm": [
+              0,
+              0.018,
+              0.05,
+              0.986
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R02",
+            "label": "text",
+            "bbox_norm": [
+              0.123,
+              0.043,
+              0.876,
+              0.102
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R03",
+            "label": "title_table",
+            "bbox_norm": [
+              0.123,
+              0.13,
+              0.341,
+              0.146
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R04",
+            "label": "table",
+            "bbox_norm": [
+              0.185,
+              0.157,
+              0.875,
+              0.262
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R05",
+            "label": "title_table",
+            "bbox_norm": [
+              0.123,
+              0.287,
+              0.347,
+              0.302
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R06",
+            "label": "table",
+            "bbox_norm": [
+              0.185,
+              0.314,
+              0.875,
+              0.429
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R07",
+            "label": "title",
+            "bbox_norm": [
+              0.123,
+              0.457,
+              0.578,
+              0.474
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R08",
+            "label": "text",
+            "bbox_norm": [
+              0.185,
+              0.485,
+              0.875,
+              0.708
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R09",
+            "label": "title_table",
+            "bbox_norm": [
+              0.123,
+              0.731,
+              0.341,
+              0.744
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R10",
+            "label": "table",
+            "bbox_norm": [
+              0.185,
+              0.748,
+              0.875,
+              0.864
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R11",
+            "label": "seal",
+            "bbox_norm": [
+              0.979,
+              0.548,
+              0.998,
+              0.67
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          },
+          {
+            "region_id": "R12",
+            "label": "text",
+            "bbox_norm": [
+              0.488,
+              0.952,
+              0.512,
+              0.964
+            ],
+            "coordinate_system": "normalized_top_left_0_1",
+            "bbox_status": "assistant_draft"
+          }
+        ],
+        "reading_order": [
+          "R01",
+          "R02",
+          "R03",
+          "R04",
+          "R05",
+          "R06",
+          "R07",
+          "R08",
+          "R09",
+          "R10",
+          "R11",
+          "R12"
+        ],
+        "table_presence_reviewed": false,
+        "table_reference_drafts": [
+          {
+            "region_id": "R04",
+            "table_name": "15. CHI PHÍ TÀI CHÍNH",
+            "source_candidate_id": "AI-CODEX-19-T1",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "Năm nay",
+                "Năm trước"
+              ],
+              [
+                "Lỗ chênh lệch tỷ giá đã thực hiện",
+                "2.937.705",
+                "5.144"
+              ],
+              [
+                "Dự phòng đầu tư dài hạn",
+                "1.880.000",
+                "-"
+              ],
+              [
+                "Tổng cộng",
+                "4.817.705",
+                "5.144"
+              ]
+            ]
+          },
+          {
+            "region_id": "R06",
+            "table_name": "16. THU NHẬP KHÁC",
+            "source_candidate_id": "AI-CODEX-19-T2",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "Năm nay",
+                "Năm trước"
+              ],
+              [
+                "Tiền phạt nhà thầu",
+                "250.000",
+                "76.806"
+              ],
+              [
+                "Lãi từ thanh lý tài sản cố định",
+                "52.381",
+                "-"
+              ],
+              [
+                "Thu nhập khác",
+                "354.508",
+                "124.343"
+              ],
+              [
+                "Tổng cộng",
+                "656.889",
+                "201.149"
+              ]
+            ]
+          },
+          {
+            "region_id": "R10",
+            "table_name": "17.1 Chi phí thuế TNDN",
+            "source_candidate_id": "AI-CODEX-19-T3",
+            "source_candidate_status": "assistant_visual_draft",
+            "draft_origin": "Codex CLI vision model; Codex CLI configured model; owner review required before scoring.",
+            "grid": [
+              [
+                "",
+                "Năm nay",
+                "Năm trước"
+              ],
+              [
+                "Thuế TNDN hiện hành",
+                "-",
+                "-"
+              ],
+              [
+                "Thuế TNDN hoãn lại",
+                "29.709.946",
+                "16.294.376"
+              ],
+              [
+                "Tổng cộng",
+                "29.079.946",
+                "16.294.376"
+              ]
+            ]
+          }
+        ],
+        "draft_revision": 2,
+        "draft_completeness": "codex_visual_draft_requires_owner_review",
+        "ai_draft_metadata": {
+          "provider": "codex_cli",
+          "model": "Codex CLI configured model",
+          "generated_at": "2026-10-25T17:07:49.739516+00:00",
+          "uncertain_items": []
+        },
+        "owner_reviewed_at": "2026-10-25T17:08:08.664Z",
+        "reviewed_draft_revision": 2
+      },
+      "updated_at": "2026-10-25T17:08:09.126590+00:00"
     }
   ]
 }

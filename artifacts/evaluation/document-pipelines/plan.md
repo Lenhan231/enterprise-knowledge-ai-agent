@@ -11,9 +11,7 @@ All active labels come from the shared local review UI in [`data/review.html`](d
 - Tables: reviewed cell grids and their corresponding layout boxes; multiple tables per page are supported.
 - End-to-end: pages with reviewed OCR, layout, and one or more reviewed tables. It scores all tables on each selected page.
 
-The 2026-10-23 checkpoint recorded 30 owner-reviewed pages: 30 OCR pages, 30 layout pages, 38 table grids, and 23 end-to-end pages. The current Kaggle snapshot contains 50 unique owner-reviewed page identities and runs Docling only.
-
-At that checkpoint, the latest addition was 13 pages from PHR's audited 2009 financial statements (source PDF pages 4, 5, and 7–17). All 13 contributed OCR and layout references; 12 reviewed table grids covered eight pages, so eight pages entered the E2E cohort. The other five pages had no reviewed table grid. The 30-page checkpoint comprised Bao Ho Lao Dong (9), Long Hau (8), and PHR (13).
+Current counts: 10 OCR pages, 10 layout pages, 12 tables, and nine end-to-end pages. The E2E reference omits the page that has no reviewed table grid.
 
 ## Running
 
@@ -25,4 +23,4 @@ Inference and scoring are separate:
 
 Metrics remain separate by layer: OCR reports CER, PyVi WER, and whitespace-token error; layout reports per-class and micro P/R/F1 at IoU 0.5; tables report detection, cell CER/WER, exact-cell, shape, and exact-grid metrics. E2E reports the same layer metrics over its complete-reference cohort. Reading order is not scored until reviewed order labels are present.
 
-Legacy datasets and large runtime artifacts remain in the local archive and do not participate in the active Docling benchmark.
+Older datasets and their associated runners, evaluators, and reports are preserved under [`archive/README.md`](archive/README.md). They do not participate in the active HTML-driven benchmark.

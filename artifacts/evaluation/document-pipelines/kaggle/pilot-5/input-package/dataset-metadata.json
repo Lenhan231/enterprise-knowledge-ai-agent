@@ -1,0 +1,11 @@
+{
+  "title": "Docling 5-Page Pipeline Pilot",
+  "id": "letrongnhan/docling-pipeline-pilot-5",
+  "licenses": [
+    {
+      "name": "other"
+    }
+  ],
+  "isPrivate": true,
+  "description": "Private 5-page smoke-test input for validating Docling pipeline changes before the full reviewed benchmark. Not for tuning or reporting benchmark scores."
+}

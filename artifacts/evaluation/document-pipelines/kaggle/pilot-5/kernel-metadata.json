@@ -1,0 +1,17 @@
+{
+  "id": "letrongnhan/docling-vietocr-5-page-pilot",
+  "title": "Docling VietOCR 5-Page Pipeline Pilot",
+  "code_file": "run.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_internet": "true",
+  "machine_shape": "NvidiaTeslaT4",
+  "dataset_sources": [
+    "letrongnhan/docling-pipeline-pilot-5"
+  ],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

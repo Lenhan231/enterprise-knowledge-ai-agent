@@ -476,9 +476,9 @@
   ],
   "runtime": {
     "device": "CPU",
-    "inference_wall_seconds": 116.363,
-    "source_run_inference_wall_seconds": 1186.153,
-    "peak_process_rss_mib": 766.5
+    "inference_wall_seconds": null,
+    "source_run_inference_wall_seconds": null,
+    "peak_process_rss_mib": null
   },
   "caveats": [
     "Owner-reviewed working references from the shared HTML review flow.",

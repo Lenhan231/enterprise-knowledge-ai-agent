@@ -1,7 +1,7 @@
 # docling-vietocr benchmark: shared-html-owner-reviewed
 
 **Run:** `pilot-five-page-vietocr-title-table-20261026` · **Predictions:** 5 pages · **Inference success:** 5
-**Runtime:** 116.363s summed selected-page inference on CPU (source full-run total: 1186.153s; excludes initialization) · peak process RSS 766.5 MiB
+**Runtime:** inference timing unavailable · peak inference RSS unavailable
 
 **Scored pilot pages:** `E2E-LONG-HAU-2008-p6`, `E2E-LONG-HAU-2008-p8`, `E2E-LONG-HAU-2008-p17`, `E2E-BAO-HO-LAO-DONG-2009-p13`, `E2E-BAO-HO-LAO-DONG-2009-p24`
 

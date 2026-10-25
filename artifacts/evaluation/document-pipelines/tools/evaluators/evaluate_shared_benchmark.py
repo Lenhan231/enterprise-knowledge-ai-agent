@@ -185,11 +185,15 @@ def main() -> None:
 def render_report(result: dict) -> str:
     def pct(value): return "n/a" if value is None else f"{value:.2%}"
     runtime = result["runtime"]
-    if result.get("selected_reference_ids"):
+    if runtime["inference_wall_seconds"] is None:
+        runtime_line = "**Runtime:** inference timing unavailable"
+    elif result.get("selected_reference_ids") and runtime["source_run_inference_wall_seconds"] is not None:
         runtime_line = (
             f"**Runtime:** {runtime['inference_wall_seconds']}s summed selected-page inference on {runtime['device']} "
             f"(source full-run total: {runtime['source_run_inference_wall_seconds']}s; excludes initialization)"
         )
+    elif result.get("selected_reference_ids"):
+        runtime_line = f"**Runtime:** {runtime['inference_wall_seconds']}s summed selected-page inference on {runtime['device']}"
     else:
         runtime_line = f"**Runtime:** {runtime['inference_wall_seconds']}s on {runtime['device']}"
     lines = [f"# {result['engine']} benchmark: {result['dataset']}", "",

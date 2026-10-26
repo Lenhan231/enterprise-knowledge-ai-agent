@@ -10,7 +10,7 @@ from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent
 TRACKS = ("ocr", "layout", "table", "end-to-end")
-LABELS = {"title", "title_table", "text", "table", "figure", "seal"}
+LABELS = {"title", "title_table", "text", "table", "figure", "seal", "page_header", "section_header", "page_footer"}
 
 
 def _source_exists(page: dict) -> bool:

@@ -1,0 +1,17 @@
+{
+  "id": "letrongnhan/vietocr-recognition-tuning-pilot",
+  "title": "VietOCR Recognition Tuning Pilot",
+  "code_file": "kernel.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_internet": "true",
+  "machine_shape": "NvidiaTeslaT4",
+  "dataset_sources": [
+    "letrongnhan/vietnamese-enterprise-e2e-hard-scans"
+  ],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

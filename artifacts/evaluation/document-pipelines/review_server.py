@@ -116,6 +116,19 @@ def list_reviews() -> list[dict]:
         return read_state()["reviews"]
 
 
+@app.get("/api/reviews/export")
+def export_reviewed_references() -> dict:
+    with STATE_LOCK:
+        records, summary = build_tracks(read_state()["reviews"])
+    return {
+        "format": "owner-reviewed-benchmark-references-v1",
+        "status": "owner_reviewed",
+        "generated_at": summary["generated_at"],
+        "track_record_counts": summary["track_record_counts"],
+        "references": records,
+    }
+
+
 @app.post("/api/reviews/{document_id}/pages/{page_number}/generate-draft")
 async def generate_page_draft(document_id: str, page_number: int) -> dict:
     page_key = f"{document_id}:p{page_number}"
@@ -599,17 +612,93 @@ def pipeline_reports() -> dict:
     results_dir = PIPELINE_DIR / "results/shared-html"
     runs = []
     if results_dir.is_dir():
-        for run_dir in sorted(results_dir.iterdir(), key=lambda path: path.name, reverse=True):
-            if not run_dir.is_dir() or run_dir.is_symlink():
-                continue
+        run_dirs = [path for path in results_dir.iterdir() if path.is_dir() and not path.is_symlink()]
+
+        def timestamp_from_run_id(run_id: str) -> datetime | None:
+            match = re.fullmatch(r"paddle-layout-(?:pilot-5|all-reviewed)-(\d{8})-(\d{6})", run_id)
+            if not match:
+                return None
+            try:
+                return datetime.strptime("".join(match.groups()), "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
+            except ValueError:
+                return None
+
+        def run_sort_key(run_dir: Path) -> tuple[float, str]:
+            try:
+                metadata = json.loads((run_dir / "run-metadata.json").read_text(encoding="utf-8"))
+                started_at = metadata.get("started_at_utc")
+                if started_at:
+                    parsed = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+                    if parsed.tzinfo is None:
+                        parsed = parsed.replace(tzinfo=timezone.utc)
+                    return parsed.timestamp(), run_dir.name
+            except (OSError, json.JSONDecodeError, TypeError, ValueError):
+                pass
+            encoded_start = timestamp_from_run_id(run_dir.name)
+            if encoded_start:
+                return encoded_start.timestamp(), run_dir.name
+            return run_dir.stat().st_mtime, run_dir.name
+
+        for run_dir in sorted(run_dirs, key=run_sort_key, reverse=True):
             report_path = run_dir / "report.md"
             evaluation_path = run_dir / "evaluation.json"
+            metadata_path = run_dir / "run-metadata.json"
             predictions_path = run_dir / "predictions.jsonl"
             report = report_path.read_text(encoding="utf-8") if report_path.is_file() else None
             try:
                 evaluation = json.loads(evaluation_path.read_text(encoding="utf-8")) if evaluation_path.is_file() else {}
             except (OSError, json.JSONDecodeError):
                 evaluation = {}
+            try:
+                run_metadata = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path.is_file() else {}
+            except (OSError, json.JSONDecodeError):
+                run_metadata = {}
+            # VietOCR tuning stores one aggregate score per recognizer configuration,
+            # rather than the usual single-run evaluation object. Expose each config
+            # as an OCR-only comparison row in the Report tab.
+            if isinstance(evaluation, list):
+                for result in evaluation:
+                    config = result.get("config", {})
+                    width = config.get("max_width", "unknown")
+                    decoding = "beam" if config.get("beamsearch") else "greedy"
+                    run_id = f"{run_dir.name}-width-{width}-{decoding}"
+                    ocr_scores = {
+                        key: result[key]
+                        for key in (
+                            "pages", "micro_cer", "micro_wer_pyvi", "micro_wer_whitespace",
+                            "character_edits", "reference_characters", "wer_pyvi_edits",
+                            "reference_pyvi_words",
+                        )
+                        if key in result
+                    }
+                    if "micro_wer_whitespace" in result:
+                        ocr_scores["micro_whitespace_error"] = result["micro_wer_whitespace"]
+                    ocr_evaluation = {
+                        "run_id": run_id,
+                        "selected_reference_ids": run_metadata.get("owner_reviewed_page_ids", []),
+                        "layer_scores": {"ocr": ocr_scores},
+                    }
+                    runs.append({
+                        "id": run_id,
+                        "report": (
+                            f"OCR-only VietOCR tuning · width {width} · {decoding} decoding. "
+                            f"Scored on {result.get('pages', 0)} owner-reviewed pages with "
+                            "RapidOCR line detection held fixed."
+                        ),
+                        "evaluation": ocr_evaluation,
+                        "started_at_utc": run_metadata.get("started_at_utc"),
+                        "finished_at_utc": run_metadata.get("finished_at_utc"),
+                        "wall_seconds": run_metadata.get("wall_seconds"),
+                        "inference_wall_seconds": run_metadata.get("inference_wall_seconds"),
+                        "pages": [],
+                        "predictions": [],
+                    })
+                continue
+            started_at_utc = run_metadata.get("started_at_utc")
+            if not started_at_utc:
+                encoded_start = timestamp_from_run_id(run_dir.name)
+                started_at_utc = encoded_start.isoformat() if encoded_start else None
+            selected_reference_ids = evaluation.get("selected_reference_ids") or []
             score_by_page = {}
             for score in evaluation.get("layer_scores", {}).get("ocr", {}).get("page_scores", []):
                 key = (score.get("document_id"), score.get("source_page_number_1based"))
@@ -618,6 +707,7 @@ def pipeline_reports() -> dict:
                 key = (score.get("document_id"), score.get("source_page_number_1based"))
                 score_by_page[key] = (score, "end-to-end")
             pages = []
+            dashboard_predictions = []
             if predictions_path.is_file():
                 for line in predictions_path.read_text(encoding="utf-8").splitlines():
                     if not line.strip():
@@ -642,11 +732,24 @@ def pipeline_reports() -> dict:
                         "ocr": page_score[0] if page_score else None,
                         "ocr_scope": page_score[1] if page_score else None,
                     })
+                    dashboard_predictions.append(prediction)
             runs.append({
                 "id": run_dir.name,
                 "report": report,
                 "evaluation": evaluation,
+                "started_at_utc": started_at_utc,
+                "finished_at_utc": run_metadata.get("finished_at_utc"),
+                "wall_seconds": run_metadata.get("wall_seconds"),
+                "inference_wall_seconds": run_metadata.get(
+                    "inference_wall_seconds",
+                    evaluation.get("runtime", {}).get("inference_wall_seconds"),
+                ),
                 "pages": pages,
+                # The static viewer already contains full runs. Return inline predictions
+                # only for small scored pilots whose evaluation points at that same run.
+                "predictions": dashboard_predictions
+                if evaluation.get("run_id") == run_dir.name and selected_reference_ids and len(selected_reference_ids) <= 10
+                else [],
             })
     return {"runs": runs}
 
@@ -671,6 +774,47 @@ def delete_pipeline_run(run_id: str) -> dict:
     return {"deleted": run_id}
 
 
+@app.get("/api/runs/{run_id}/predictions")
+def pipeline_run_predictions(run_id: str) -> dict:
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,199}", run_id):
+        raise HTTPException(400, "Invalid run id")
+    results_dir = (PIPELINE_DIR / "results/shared-html").resolve()
+    run_dir = results_dir / run_id
+    if run_dir.is_symlink() or run_dir.resolve().parent != results_dir:
+        raise HTTPException(400, "Invalid run directory")
+    predictions_path = run_dir / "predictions.jsonl"
+    if not predictions_path.is_file():
+        raise HTTPException(404, "Run predictions not found")
+
+    references = {}
+    reference_path = DATA_DIR / "layout/reference.jsonl"
+    if reference_path.is_file():
+        for line in reference_path.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                reference = json.loads(line)
+                references[(reference["document_id"], int(reference["source_page_number_1based"]))] = reference
+
+    predictions = []
+    for line in predictions_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        prediction = json.loads(line)
+        reference = references.get((prediction.get("document_id"), int(prediction.get("source_page_number_1based", 0))))
+        source_image = reference.get("source_image") if reference else None
+        if source_image:
+            image_path = (DATA_DIR / source_image).resolve()
+            raw_root = (DATA_DIR / "raw").resolve()
+            try:
+                relative_image = image_path.relative_to(raw_root)
+            except ValueError:
+                pass
+            else:
+                if image_path.is_file():
+                    prediction["image"] = f"/dashboard-images/raw/{relative_image.as_posix()}"
+        predictions.append(prediction)
+    return {"run_id": run_id, "predictions": predictions}
+
+
 @app.get("/dashboard")
 def results_dashboard() -> HTMLResponse:
     dashboard_path = PIPELINE_DIR / "results/shared-html/document-pipeline-results-viewer.html"
@@ -687,7 +831,7 @@ def results_dashboard() -> HTMLResponse:
 app.mount("/dashboard-images/raw", StaticFiles(directory=DATA_DIR / "raw"), name="dashboard-raw")
 app.mount(
     "/dashboard-images/kaggle",
-    StaticFiles(directory=PIPELINE_DIR / "kaggle/shared-html/input-package"),
+    StaticFiles(directory=PIPELINE_DIR / "kaggle/archive/shared-html-51-page-legacy/input-package"),
     name="dashboard-kaggle-images",
 )
 app.mount("/", StaticFiles(directory=DATA_DIR), name="review-assets")

@@ -1,7 +1,7 @@
 {
   "format_version": 1,
   "source": "local review store",
-  "exported_at": "2026-10-25T17:28:07.998514+00:00",
+  "exported_at": "2026-10-26T03:20:24.585919+00:00",
   "reviews": [
     {
       "page_key": "E2E-BAO-HO-LAO-DONG-2009:p13",
@@ -21,7 +21,7 @@
         "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; no Tesseract or Docling output used.",
         "layout_regions": [
           {
-            "label": "text",
+            "label": "page_header",
             "bbox_norm": [
               0.15,
               0.035,
@@ -57,7 +57,7 @@
             "coordinate_system": "normalized_top_left_0_1"
           },
           {
-            "label": "text",
+            "label": "page_footer",
             "bbox_norm": [
               0.15111794298490774,
               0.943,
@@ -343,10 +343,10 @@
           "source_candidate_status": "owner_reviewed_against_original_source",
           "table_name": "BẢNG CÂN ĐỐI KẾ TOÁN Tại ngày 31 tháng 12 năm 2009"
         },
-        "owner_reviewed_at": "2026-10-23T08:44:53.255Z",
+        "owner_reviewed_at": "2026-10-26T02:02:51.638Z",
         "reviewed_draft_revision": null
       },
-      "updated_at": "2026-10-25T17:28:06.812812+00:00"
+      "updated_at": "2026-10-26T03:19:34.420890+00:00"
     },
     {
       "page_key": "E2E-BAO-HO-LAO-DONG-2009:p14",
@@ -659,7 +659,7 @@
         "owner_reviewed_at": "2026-10-22T16:23:11.649Z",
         "reviewed_draft_revision": 2
       },
-      "updated_at": "2026-10-25T17:28:07.144596+00:00"
+      "updated_at": "2026-10-26T03:19:34.664433+00:00"
     },
     {
       "page_key": "E2E-BAO-HO-LAO-DONG-2009:p21",
@@ -993,7 +993,7 @@
         "owner_reviewed_at": "2026-10-23T08:43:00.387Z",
         "reviewed_draft_revision": 7
       },
-      "updated_at": "2026-10-25T17:28:07.284165+00:00"
+      "updated_at": "2026-10-26T03:19:34.743183+00:00"
     },
     {
       "page_key": "E2E-BAO-HO-LAO-DONG-2009:p24",
@@ -1013,7 +1013,7 @@
         "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; no Tesseract or Docling output used.",
         "layout_regions": [
           {
-            "label": "text",
+            "label": "page_header",
             "bbox_norm": [
               0.14,
               0.035,
@@ -1025,7 +1025,7 @@
             "coordinate_system": "normalized_top_left_0_1"
           },
           {
-            "label": "title",
+            "label": "section_header",
             "bbox_norm": [
               0.14,
               0.115,
@@ -1073,7 +1073,7 @@
             "coordinate_system": "normalized_top_left_0_1"
           },
           {
-            "label": "text",
+            "label": "page_footer",
             "bbox_norm": [
               0.38052822806036896,
               0.929496274844487,
@@ -1273,9 +1273,10 @@
           "source_candidate_id": "TBL-225",
           "source_candidate_status": "owner_reviewed_against_original_source"
         },
-        "owner_reviewed_at": "2026-10-21"
+        "owner_reviewed_at": "2026-10-26T02:03:29.957Z",
+        "reviewed_draft_revision": null
       },
-      "updated_at": "2026-10-25T17:28:06.825765+00:00"
+      "updated_at": "2026-10-26T03:19:34.424479+00:00"
     },
     {
       "page_key": "E2E-BAO-HO-LAO-DONG-2009:p4",
@@ -1515,7 +1516,7 @@
         "owner_reviewed_at": "2026-10-21T16:06:56.230Z",
         "reviewed_draft_revision": 4
       },
-      "updated_at": "2026-10-25T17:28:06.831983+00:00"
+      "updated_at": "2026-10-26T03:19:34.424654+00:00"
     },
     {
       "page_key": "E2E-BAO-HO-LAO-DONG-2009:p7",
@@ -1752,7 +1753,7 @@
         "owner_reviewed_at": "2026-10-22T16:28:34.523Z",
         "reviewed_draft_revision": 8
       },
-      "updated_at": "2026-10-25T17:28:06.961514+00:00"
+      "updated_at": "2026-10-26T03:19:34.472485+00:00"
     },
     {
       "page_key": "E2E-BAO-HO-LAO-DONG-2009:p9",
@@ -1967,7 +1968,7 @@
         "owner_reviewed_at": "2026-10-21T16:24:59.711Z",
         "reviewed_draft_revision": 2
       },
-      "updated_at": "2026-10-25T17:28:07.056223+00:00"
+      "updated_at": "2026-10-26T03:19:34.556994+00:00"
     },
     {
       "page_key": "E2E-LONG-HAU-2008:p15",
@@ -2348,7 +2349,7 @@
         "owner_reviewed_at": "2026-10-21T08:27:29.952Z",
         "reviewed_draft_revision": 1
       },
-      "updated_at": "2026-10-25T17:28:06.828302+00:00"
+      "updated_at": "2026-10-26T03:19:34.424584+00:00"
     },
     {
       "page_key": "E2E-LONG-HAU-2008:p17",
@@ -2368,7 +2369,7 @@
         "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; no Tesseract or Docling output used.",
         "layout_regions": [
           {
-            "label": "text",
+            "label": "page_header",
             "bbox_norm": [
               0.035,
               0.6073933435823874,
@@ -2380,7 +2381,7 @@
             "coordinate_system": "normalized_top_left_0_1"
           },
           {
-            "label": "title",
+            "label": "section_header",
             "bbox_norm": [
               0.17475899317889962,
               0.8073503549390233,
@@ -2404,7 +2405,7 @@
             "coordinate_system": "normalized_top_left_0_1"
           },
           {
-            "label": "text",
+            "label": "page_footer",
             "bbox_norm": [
               0.9261179429849079,
               0.5060973606708831,
@@ -2636,9 +2637,10 @@
           "source_candidate_status": "owner_reviewed_against_original_source",
           "table_name": "Công ty Cổ Phần Long Hậu B09-DN THUYẾT MINH BÁO CÁO TÀI CHÍNH RIÊNG (tiếp theo)"
         },
-        "owner_reviewed_at": "2026-10-21"
+        "owner_reviewed_at": "2026-10-26T02:02:16.759Z",
+        "reviewed_draft_revision": null
       },
-      "updated_at": "2026-10-25T17:28:06.811855+00:00"
+      "updated_at": "2026-10-26T03:19:34.388936+00:00"
     },
     {
       "page_key": "E2E-LONG-HAU-2008:p6",
@@ -2658,12 +2660,12 @@
         "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; no Tesseract or Docling output used.",
         "layout_regions": [
           {
-            "label": "text",
+            "label": "page_header",
             "bbox_norm": [
-              0.12511794298490775,
-              0.041161055731646745,
-              0.8791179429849078,
-              0.06230709673797145
+              0.12399999999999989,
+              0.04195131966455844,
+              0.8779999999999999,
+              0.06309736067088315
             ],
             "region_id": "R01",
             "bbox_status": "owner_reviewed_against_original_source",
@@ -2694,7 +2696,7 @@
             "coordinate_system": "normalized_top_left_0_1"
           },
           {
-            "label": "text",
+            "label": "page_footer",
             "bbox_norm": [
               0.49,
               0.956,
@@ -2966,7 +2968,7 @@
             ]
           ]
         },
-        "owner_reviewed_at": "2026-10-25T15:23:36.016Z",
+        "owner_reviewed_at": "2026-10-26T02:02:21.094Z",
         "table_reference_drafts": [
           {
             "grid": [
@@ -3204,7 +3206,7 @@
         "table_presence_reviewed": false,
         "reviewed_draft_revision": null
       },
-      "updated_at": "2026-10-25T17:20:24.099113+00:00"
+      "updated_at": "2026-10-26T03:20:24.580532+00:00"
     },
     {
       "page_key": "E2E-LONG-HAU-2008:p8",
@@ -3224,7 +3226,7 @@
         "ocr_draft_source": "Manual visual transcription from original source-page image using local view_image; no Tesseract or Docling output used.",
         "layout_regions": [
           {
-            "label": "text",
+            "label": "page_header",
             "bbox_norm": [
               0.12176411403018446,
               0.041161055731646745,
@@ -3283,7 +3285,7 @@
             "coordinate_system": "normalized_top_left_0_1"
           },
           {
-            "label": "text",
+            "label": "page_footer",
             "bbox_norm": [
               0.49,
               0.956,
@@ -3498,10 +3500,10 @@
           "source_candidate_status": "owner_reviewed_against_original_source",
           "table_name": "BÁO CÁO KẾT QUẢ HOẠT ĐỘNG KINH DOANH RIÊNG cho năm kết thúc ngày 31 tháng 12 năm 2008"
         },
-        "owner_reviewed_at": "2026-10-23T09:07:54.431Z",
+        "owner_reviewed_at": "2026-10-26T02:02:24.768Z",
         "reviewed_draft_revision": null
       },
-      "updated_at": "2026-10-25T17:28:06.735858+00:00"
+      "updated_at": "2026-10-26T03:19:34.387168+00:00"
     },
     {
       "page_key": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b:p26",
@@ -8540,7 +8542,7 @@
         "layout_regions": [
           {
             "region_id": "R01",
-            "label": "title",
+            "label": "page_header",
             "bbox_norm": [
               0.1226461710452767,
               0.03963001982601823,
@@ -8743,6 +8745,17 @@
             "bbox_status": "assistant_draft"
           },
           {
+            "region_id": "R18",
+            "label": "figure",
+            "bbox_norm": [
+              0,
+              0.01731402584470323,
+              0.040245947456679705,
+              0.9874259224489177
+            ],
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
             "region_id": "R19",
             "label": "text",
             "bbox_norm": [
@@ -8753,17 +8766,6 @@
             ],
             "coordinate_system": "normalized_top_left_0_1",
             "bbox_status": "assistant_draft"
-          },
-          {
-            "region_id": "R18",
-            "label": "figure",
-            "bbox_norm": [
-              0,
-              0.01731402584470323,
-              0.040245947456679705,
-              0.9874259224489177
-            ],
-            "coordinate_system": "normalized_top_left_0_1"
           }
         ],
         "layout_types_draft": [
@@ -8789,6 +8791,7 @@
           "R15",
           "R16",
           "R17",
+          "R18",
           "R19"
         ],
         "table_presence_reviewed": false,
@@ -8867,10 +8870,10 @@
           "generated_at": "2026-10-23T07:25:43.852358+00:00",
           "uncertain_items": []
         },
-        "owner_reviewed_at": "2026-10-23T07:26:19.458Z",
+        "owner_reviewed_at": "2026-10-26T02:11:19.154Z",
         "reviewed_draft_revision": 3
       },
-      "updated_at": "2026-10-23T07:26:19.918047+00:00"
+      "updated_at": "2026-10-26T02:11:19.620523+00:00"
     },
     {
       "page_key": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2:p4",
@@ -19126,18 +19129,29 @@
           },
           {
             "region_id": "R02",
-            "label": "text",
+            "label": "page_header",
             "bbox_norm": [
               0.123,
               0.043,
               0.876,
-              0.102
+              0.06599760042600496
             ],
             "coordinate_system": "normalized_top_left_0_1",
             "bbox_status": "assistant_draft"
           },
           {
             "region_id": "R03",
+            "label": "section_header",
+            "bbox_norm": [
+              0.12510613777361088,
+              0.07140475305116771,
+              0.6028870640534013,
+              0.10900726537681833
+            ],
+            "coordinate_system": "normalized_top_left_0_1"
+          },
+          {
+            "region_id": "R04",
             "label": "title_table",
             "bbox_norm": [
               0.123,
@@ -19149,7 +19163,7 @@
             "bbox_status": "assistant_draft"
           },
           {
-            "region_id": "R04",
+            "region_id": "R05",
             "label": "table",
             "bbox_norm": [
               0.185,
@@ -19161,7 +19175,7 @@
             "bbox_status": "assistant_draft"
           },
           {
-            "region_id": "R05",
+            "region_id": "R06",
             "label": "title_table",
             "bbox_norm": [
               0.123,
@@ -19173,7 +19187,7 @@
             "bbox_status": "assistant_draft"
           },
           {
-            "region_id": "R06",
+            "region_id": "R07",
             "label": "table",
             "bbox_norm": [
               0.185,
@@ -19185,7 +19199,7 @@
             "bbox_status": "assistant_draft"
           },
           {
-            "region_id": "R07",
+            "region_id": "R08",
             "label": "title",
             "bbox_norm": [
               0.123,
@@ -19197,7 +19211,7 @@
             "bbox_status": "assistant_draft"
           },
           {
-            "region_id": "R08",
+            "region_id": "R09",
             "label": "text",
             "bbox_norm": [
               0.185,
@@ -19209,7 +19223,7 @@
             "bbox_status": "assistant_draft"
           },
           {
-            "region_id": "R09",
+            "region_id": "R10",
             "label": "title_table",
             "bbox_norm": [
               0.123,
@@ -19221,7 +19235,7 @@
             "bbox_status": "assistant_draft"
           },
           {
-            "region_id": "R10",
+            "region_id": "R11",
             "label": "table",
             "bbox_norm": [
               0.185,
@@ -19233,7 +19247,7 @@
             "bbox_status": "assistant_draft"
           },
           {
-            "region_id": "R11",
+            "region_id": "R12",
             "label": "seal",
             "bbox_norm": [
               0.979,
@@ -19245,7 +19259,7 @@
             "bbox_status": "assistant_draft"
           },
           {
-            "region_id": "R12",
+            "region_id": "R13",
             "label": "text",
             "bbox_norm": [
               0.488,
@@ -19269,12 +19283,13 @@
           "R09",
           "R10",
           "R11",
-          "R12"
+          "R12",
+          "R13"
         ],
         "table_presence_reviewed": false,
         "table_reference_drafts": [
           {
-            "region_id": "R04",
+            "region_id": "R05",
             "table_name": "15. CHI PHÍ TÀI CHÍNH",
             "source_candidate_id": "AI-CODEX-19-T1",
             "source_candidate_status": "assistant_visual_draft",
@@ -19303,7 +19318,7 @@
             ]
           },
           {
-            "region_id": "R06",
+            "region_id": "R07",
             "table_name": "16. THU NHẬP KHÁC",
             "source_candidate_id": "AI-CODEX-19-T2",
             "source_candidate_status": "assistant_visual_draft",
@@ -19337,7 +19352,7 @@
             ]
           },
           {
-            "region_id": "R10",
+            "region_id": "R11",
             "table_name": "17.1 Chi phí thuế TNDN",
             "source_candidate_id": "AI-CODEX-19-T3",
             "source_candidate_status": "assistant_visual_draft",
@@ -19374,10 +19389,10 @@
           "generated_at": "2026-10-25T17:07:49.739516+00:00",
           "uncertain_items": []
         },
-        "owner_reviewed_at": "2026-10-25T17:08:08.664Z",
+        "owner_reviewed_at": "2026-10-26T02:23:33.684Z",
         "reviewed_draft_revision": 2
       },
-      "updated_at": "2026-10-25T17:08:09.126590+00:00"
+      "updated_at": "2026-10-26T02:23:34.186156+00:00"
     }
   ]
 }

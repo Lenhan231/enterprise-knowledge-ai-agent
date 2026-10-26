@@ -1,0 +1,31 @@
+{
+  "engine": "RapidOCR detection-only (cached once) + VietOCR vgg_seq2seq",
+  "device": "Tesla T4",
+  "pilot_page_ids": [
+    "E2E-BAO-HO-LAO-DONG-2009-p13",
+    "E2E-BAO-HO-LAO-DONG-2009-p24",
+    "E2E-LONG-HAU-2008-p17",
+    "E2E-LONG-HAU-2008-p6",
+    "E2E-LONG-HAU-2008-p8"
+  ],
+  "candidates": [
+    {
+      "max_width": 512,
+      "beamsearch": false
+    },
+    {
+      "max_width": 768,
+      "beamsearch": false
+    },
+    {
+      "max_width": 1024,
+      "beamsearch": false
+    },
+    {
+      "max_width": 512,
+      "beamsearch": true
+    }
+  ],
+  "fixed_line_detection_seconds": 14.347,
+  "prediction_count": 20
+}

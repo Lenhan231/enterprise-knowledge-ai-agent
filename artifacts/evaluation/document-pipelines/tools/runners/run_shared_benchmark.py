@@ -19,8 +19,10 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 DATA_ROOT = TRACK_ROOT / "data"
 
 LABEL_MAP = {
-    "doc_title": "title", "paragraph_title": "title", "section_header": "title",
+    "doc_title": "title", "paragraph_title": "title",
     "title": "title", "document_title": "title",
+    "page_header": "page_header",
+    "section_header": "section_header", "page_footer": "page_footer",
     "text": "text", "paragraph": "text", "list_item": "text", "abstract": "text",
     "content": "text", "references": "text", "footnote": "text", "sidebar_text": "text",
 }

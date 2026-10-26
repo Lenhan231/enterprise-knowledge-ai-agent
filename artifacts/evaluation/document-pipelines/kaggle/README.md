@@ -1,10 +1,17 @@
-# Kaggle workflow
+# Kaggle runs
 
-## Dataset reuse rule
+`end-to-end-runner/` contains the active Kaggle document-processing flow. Older kernel snapshots and input packages live under `archive/` for reference.
 
-- The shared HTML benchmark uses `letrongnhan/vietnamese-enterprise-e2e-hard-scans` as its single Kaggle input dataset.
-- Keep one stable Kaggle dataset ID for this benchmark and update that dataset when its inference inputs change.
-- Do not create separate `v1`, `v2`, timestamped, or per-run Kaggle datasets.
-- Before updating, verify the target owner/dataset ID and compare input file hashes to avoid updating the wrong dataset or re-uploading unchanged files.
-- Store inference inputs in the Kaggle dataset; keep owner-reviewed references and scoring labels local, then evaluate returned predictions locally.
-- `shared-html/manifest.jsonl` lists the current inference images without annotation labels.
+Smoke-test model or pipeline changes on the fixed five-page cohort:
+
+```bash
+../../../.venv/bin/python kaggle/end-to-end-runner/run.py --pilot-5
+```
+
+When ready, run the full currently reviewed cohort:
+
+```bash
+../../../.venv/bin/python kaggle/end-to-end-runner/run.py --all-reviewed
+```
+
+The command creates an inference-only image package, updates the stable private dataset `letrongnhan/vietnamese-enterprise-e2e-hard-scans` only when its content hash changes, pushes the T4 kernel, waits for completion, downloads OCR/layout/table outputs, scores CER/WER, reading order, layout, and tables locally, and saves a dashboard run. Newly approved pages are picked up on the next run. OCR/layout/table references stay local and are never uploaded.

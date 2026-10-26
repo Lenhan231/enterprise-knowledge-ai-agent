@@ -20,6 +20,7 @@ TRACK_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(TRACK_ROOT / "tools"))
 
 from metrics.text_metrics import character_error_count, token_error_count  # noqa: E402
+from runners.line_detection import create_line_detector, crop_line, detect_line_boxes  # noqa: E402
 
 
 def read_jsonl(path: Path) -> list[dict]:
@@ -28,15 +29,6 @@ def read_jsonl(path: Path) -> list[dict]:
 
 def normalize(text: str) -> str:
     return re.sub(r"\s+", " ", unicodedata.normalize("NFC", text).casefold()).strip()
-
-
-def crop_quad(image: np.ndarray, points: np.ndarray) -> np.ndarray:
-    quad = np.asarray(points, dtype=np.float32)
-    top_left, top_right, bottom_right, bottom_left = quad
-    width = max(int(np.linalg.norm(top_right - top_left)), int(np.linalg.norm(bottom_right - bottom_left)), 1)
-    height = max(int(np.linalg.norm(bottom_left - top_left)), int(np.linalg.norm(bottom_right - top_right)), 1)
-    target = np.array([[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]], dtype=np.float32)
-    return cv2.warpPerspective(image, cv2.getPerspectiveTransform(quad, target), (width, height))
 
 
 def score(references: list[dict], predictions: list[dict]) -> dict:
@@ -82,7 +74,6 @@ def score(references: list[dict], predictions: list[dict]) -> dict:
 def run(args: argparse.Namespace) -> None:
     try:
         import torch
-        from rapidocr import RapidOCR
         from vietocr.tool.config import Cfg
         from vietocr.tool.predictor import Predictor
     except ImportError as error:
@@ -108,7 +99,7 @@ def run(args: argparse.Namespace) -> None:
     model_started = time.perf_counter()
     recognizer = Predictor(config)
     model_init_seconds = round(time.perf_counter() - model_started, 3)
-    detector = RapidOCR()
+    detector = create_line_detector()
 
     started_at = datetime.now(timezone.utc)
     page_runs = []
@@ -130,11 +121,10 @@ def run(args: argparse.Namespace) -> None:
                 elif args.rotate == 270:
                     image = cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
                 detected_started = time.perf_counter()
-                detected = detector(image, use_det=True, use_cls=False, use_rec=False)
+                boxes = detect_line_boxes(detector, image)
                 detection_seconds += time.perf_counter() - detected_started
-                boxes = getattr(detected, "boxes", None)
                 for box in ([] if boxes is None else boxes):
-                    line = crop_quad(image, np.asarray(box))
+                    line = crop_line(image, np.asarray(box))
                     if line.shape[0] > line.shape[1] * 1.5:
                         line = cv2.rotate(line, cv2.ROTATE_90_CLOCKWISE)
                     rgb_line = cv2.cvtColor(line, cv2.COLOR_BGR2RGB)

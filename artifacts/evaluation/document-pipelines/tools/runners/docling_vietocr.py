@@ -27,6 +27,7 @@ from docling.models.stages.ocr.tesseract_utils import (
     tesseract_box_to_bounding_rectangle,
 )
 from docling.utils.profiling import TimeRecorder
+from line_detection import create_line_detector, crop_line, detect_line_boxes
 
 
 class VietOcrOptions(OcrOptions):
@@ -53,7 +54,6 @@ class VietOcrModel(BaseOcrModel):
         )
         self.scale = options.scale
         import torch
-        from rapidocr import RapidOCR
         from vietocr.tool.config import Cfg
         from vietocr.tool.predictor import Predictor
 
@@ -62,7 +62,7 @@ class VietOcrModel(BaseOcrModel):
         config["dataset"]["image_max_width"] = 512
         config["predictor"]["beamsearch"] = False
         self.recognizer = Predictor(config)
-        self.detector = RapidOCR()
+        self.detector = create_line_detector()
         self.orientation_diagnostics: list[dict] = []
         self._orientation_counts: dict[str | None, int] = {}
         self.current_reference_id: str | None = None
@@ -129,33 +129,13 @@ class VietOcrModel(BaseOcrModel):
                         crop = crop.rotate(-doc_orientation, expand=True)
                     image_size = crop.size
                     image = cv2.cvtColor(np.asarray(crop), cv2.COLOR_RGB2BGR)
-                    detected = self.detector(
-                        image, use_det=True, use_cls=False, use_rec=False
-                    )
-                    boxes = getattr(detected, "boxes", None)
+                    boxes = detect_line_boxes(self.detector, image)
                     if boxes is None:
                         continue
 
                     for index, quad in enumerate(boxes):
                         quad = np.asarray(quad, dtype=np.float32)
-                        tl, tr, br, bl = quad
-                        width = max(
-                            int(np.linalg.norm(tr - tl)),
-                            int(np.linalg.norm(br - bl)), 1,
-                        )
-                        height = max(
-                            int(np.linalg.norm(bl - tl)),
-                            int(np.linalg.norm(br - tr)), 1,
-                        )
-                        target = np.array(
-                            [[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]],
-                            dtype=np.float32,
-                        )
-                        line = cv2.warpPerspective(
-                            image,
-                            cv2.getPerspectiveTransform(quad, target),
-                            (width, height),
-                        )
+                        line = crop_line(image, quad)
                         text = str(
                             self.recognizer.predict(
                                 Image.fromarray(cv2.cvtColor(line, cv2.COLOR_BGR2RGB))

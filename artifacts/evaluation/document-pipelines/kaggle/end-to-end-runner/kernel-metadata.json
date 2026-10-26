@@ -1,0 +1,17 @@
+{
+  "id": "letrongnhan/owner-reviewed-end-to-end-runner",
+  "title": "Owner Reviewed End-to-End Runner",
+  "code_file": "kernel.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_internet": "true",
+  "machine_shape": "NvidiaTeslaT4",
+  "dataset_sources": [
+    "letrongnhan/vietnamese-enterprise-e2e-hard-scans"
+  ],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

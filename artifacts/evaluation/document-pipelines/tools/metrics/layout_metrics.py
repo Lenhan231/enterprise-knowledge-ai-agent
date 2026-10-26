@@ -5,7 +5,7 @@ from __future__ import annotations
 from metrics import page_key
 from metrics.iou_metrics import matched_pairs
 
-CLASSES = ("title", "title_table", "text", "table", "figure")
+CLASSES = ("title", "title_table", "text", "table", "figure", "page_header", "section_header", "page_footer")
 
 
 def score_layout(references: list[dict], predictions: dict, iou_threshold: float = 0.5) -> dict:

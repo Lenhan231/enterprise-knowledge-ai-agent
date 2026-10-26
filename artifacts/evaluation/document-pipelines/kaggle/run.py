@@ -15,8 +15,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[2]
-KERNEL_DIR = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
+KERNEL_DIR = ROOT / "kaggle/end-to-end-runner"
 DATASET_ID = "letrongnhan/vietnamese-enterprise-e2e-hard-scans"
 PILOT_PAGE_IDS = {
     "E2E-LONG-HAU-2008-p6",

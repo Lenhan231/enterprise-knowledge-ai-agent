@@ -39,7 +39,7 @@ To test orientation-aware layout inference, add `--layout-rotation auto`. OSD ru
 
 Start the review UI with `../../../.venv/bin/uvicorn review_server:app --host 127.0.0.1 --port 8767`, then open `http://127.0.0.1:8767`.
 
-For Kaggle end-to-end runs, use `../../../.venv/bin/python kaggle/end-to-end-runner/run.py --pilot-5` to smoke-test Docling + Tesseract OCR, layout, and table extraction on five fixed pages. Once it is ready, use `--all-reviewed` to run all currently approved pages; new reviews are picked up automatically. Both modes refresh Kaggle inputs when hashes change, run the T4 kernel, download outputs, score CER/WER, reading order, layout, and tables locally, and register a run for the Results dashboard.
+For Kaggle end-to-end runs, use `../../../.venv/bin/python kaggle/run.py --pilot-5` to smoke-test Docling + Tesseract OCR, layout, and table extraction on five fixed pages. Once it is ready, use `--all-reviewed` to run all currently approved pages; new reviews are picked up automatically. Both modes refresh Kaggle inputs when hashes change, run the T4 kernel, download outputs, score CER/WER, reading order, layout, and tables locally, and register a run for the Results dashboard.
 
 To add pages from another source, use **Thêm PDF** in the review UI and enter page numbers or ranges such as `1,3-5`. The local server stores the PDF, renders selected pages into `data/raw/`, and adds blank `needs_owner_review` drafts; only pages explicitly checked as reviewed enter the benchmark references. Uploads are limited to 50 MiB and 100 selected pages per request.
 

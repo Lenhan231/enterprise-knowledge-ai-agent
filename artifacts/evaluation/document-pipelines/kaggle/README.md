@@ -5,13 +5,13 @@
 Smoke-test model or pipeline changes on the fixed five-page cohort:
 
 ```bash
-../../../.venv/bin/python kaggle/end-to-end-runner/run.py --pilot-5
+../../../.venv/bin/python kaggle/run.py --pilot-5
 ```
 
 When ready, run the full currently reviewed cohort:
 
 ```bash
-../../../.venv/bin/python kaggle/end-to-end-runner/run.py --all-reviewed
+../../../.venv/bin/python kaggle/run.py --all-reviewed
 ```
 
 The command creates an inference-only image package, updates the stable private dataset `letrongnhan/vietnamese-enterprise-e2e-hard-scans` only when its content hash changes, pushes the T4 kernel, waits for completion, downloads OCR/layout/table outputs, scores CER/WER, reading order, layout, and tables locally, and saves a dashboard run. Newly approved pages are picked up on the next run. OCR/layout/table references stay local and are never uploaded.

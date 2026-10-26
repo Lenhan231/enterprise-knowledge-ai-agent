@@ -2,6 +2,9 @@
 
 Đây là mục lục trỏ tới bản gốc; không nhân đôi corpus, nhãn hoặc kết quả.
 
+- **English evidence guide / Q&A lookup:** [Review 2 README](../../docs/review2/README.md).
+- **Lời thuyết trình hiện tại (26/10, slide10–14):** [huy-speaking-notes-20261026.vi.md](../../docs/review2/huy-speaking-notes-20261026.vi.md).
+
 - **Phần báo cáo Huy:** [huy-retrieval-report.vi.md](../../docs/review2/huy-retrieval-report.vi.md).
 - **Gợi ý nói:** [huy-speaking-notes.vi.md](../../docs/review2/huy-speaking-notes.vi.md).
 

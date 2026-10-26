@@ -1,3 +1,25 @@
+## 2026-10-26 - Review 2 evidence guide, final speaking notes and branch boundaries
+
+User authorized committing/pushing the important session work to Huy. This checkpoint is documentation/evidence only. No production code, frozen benchmark inputs/results, translations or database content were changed.
+
+Start with docs/review2/README.md (English evidence lookup), huy-speaking-notes-20261026.vi.md (latest Vietnamese script for slides10–14, English slides), checklist-evidence-assessment.vi.md (all23 full Review2 questions + answers/status), chunking-and-slides-audit-20261025.vi.md (historical Huy code audit, header/footer/token/memory limits), and dataset-count-verification-20261024.json (read-only database counts and independent frozen token audit).
+
+Canva: https://canva.link/jp3t3fxx0rtidj0 . Latest content read was revision163,28pages including backup. User reduced the main retrieval evaluation to setup/results; detailed metrics/ablation/failures/latency remain backup. Shared chunking/embedding slides now describe integrated main behavior without private bilingual token totals or universal exact source_spans claims. No Canva editing transaction or PPTX/PDF export was created here.
+
+Notion private preparation page: https://app.notion.com/p/4033d666f9ee81bf9c9cd1251f4723f3?pvs=204 . Latest Vietnamese script is at the top; older English/preparation notes remain historical below. Current Vietnamese script was saved in the repository at huy-speaking-notes-20261026.vi.md; Notion links saying these docs were not yet pushed describe the earlier preparation state.
+
+Dataset wording matters: shared ready dataset is5VI documents/532retrieval chunks. Read-only Supabase check24Oct found7document records total:5ready,1failed(3parser chunks/0vectors),1parsed(11parser chunks/0vectors). Total parser rows546; ready parser/retrieval532. These are point-in-time counts, not an invariant. Frozen VI token recount with exact cached E5 tokenizer:224845prefixed+special tokens,longest476/512,zerooverlength. Bilingual experiment adds5correspondingEN versions/531chunks:1063total,20intents/40texts/80directional cases. Do not describe69/80(86.25%) as five-VI-only production or generated-answer accuracy.
+
+Main was fetched/read at1ffe05bbd5bcf477d2fe583d086db4f47b1f9497; QuocAn at930321c. No branches were merged or checked out. Main actual code defaults to translated_hybrid_rerank, RAGtop5/cap24000chars; Huy165727a keeps historical ordinaryhybrid default. Benchmark top30→top10 is controlled evaluation, not universal runtime. Main moved chunking tocore/chunking and lacks Huy's exact source_spans/child mapping. Some main technical docs still mention old MiniLM; actual settings/service were the source. Do not silently claim all branches or Docker runtimes are identical.
+
+Chunking audit: parser sentence target1100chars; row-group tables repeat available headers and preserve oversized rows at parser stage. Token splitting can cut rows, keeps recognized leadingSection/Table/Columns headers, errors when header leaves no body budget. No adaptive RAM/VRAM-OOM fallback found. Sentence long-sentence fallback may overlap120chars while metadata says0; this issue was documented, not fixed. SnapshotVI has532parser and532embedding chunks, every source_child_count1; no extra token children. Header/footer handling is parser-dependent, not universally preserved. No chunk-size/overlap optimality claim.
+
+Benchmark remains reviewed-r1 SQL result52/62/63/69complete cases; finalR@10=.882292,MRR=.9. During final evidence audit, saved-run hashes/rankings/evidence/metrics and4800logit entries were replayed successfully. The runner's save function was intercepted in memory so verification.json and all frozen files stayed unchanged. Standard verify-run is inference-free but normally rewrites verification.json. No new inference/API translation was run. Historical E5VI532 encoding14.15s exists in Oct18comparison; bilingual1063 encoding22.12s is a different run, neither represents new liveDocker ingestion timing.
+
+Teammates supplied Docker runtime screenshots and edited slide19: CPU reranking is a bottleneck and liveQA has since been exercised according to their reports. These new rawDocker logs/scripts were not present in the Huy audit, so do not certify their33.16s/51.25s or later median figures as independently verified here, or mix them with RTX2060 latency. Preserve the difference between runtime probes and end-to-end quality evaluation.
+
+Prior entries below are historical. Obtain this checkpoint commit ID from git log after commit; do not insert a self-referential SHA.
+
 ## 2026-10-23 - PC resume: slides and new document checkpoint
 
 User requested commit/push to Huy before switching to PC. Read the current

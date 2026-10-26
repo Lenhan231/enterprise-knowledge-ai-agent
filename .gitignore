@@ -3,6 +3,7 @@ __pycache__/
 .venv/
 env/
 .env
+**/node_modules/
 *.pyc
 dist/
 build/

@@ -66,6 +66,8 @@ class ChunkingProcessor:
             if element_type == "table":
                 flush()
                 continue
+            if element_type in {"page_header", "page_footer"}:
+                continue
             text = str(element.get("text") or "").strip()
             if not text:
                 continue

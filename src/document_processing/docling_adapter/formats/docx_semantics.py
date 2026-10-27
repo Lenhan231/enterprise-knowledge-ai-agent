@@ -55,25 +55,40 @@ def apply_docx_semantics(result: dict[str, Any], source_bytes: bytes | None) -> 
             or bool(re.match(r"^(?:[-*•‣]|\d+[.)])\s+", text) and not numbered_heading)
         )
         hints[docx_text_key(text)].append({
-            "word_style": style_name,
-            "word_style_id": style_id,
             "heading_level": heading_level,
             "centered_title": centered_title,
             "list_item": list_item,
         })
 
     section_path: list[str] = []
+    pending_table_title: str | None = None
     for element in result.get("elements", []):
+        metadata = element.setdefault("metadata", {})
+        if metadata.get("element_type") in {"page_header", "page_footer"}:
+            continue
+        if metadata.get("element_type") == "title_table":
+            pending_table_title = str(element.get("text") or "").strip() or None
+            continue
+        if element.get("element_type") == "table":
+            table_ref = element.get("table_ref")
+            if isinstance(table_ref, int) and 0 <= table_ref < len(result.get("tables", [])):
+                table = result["tables"][table_ref]
+                table_name = pending_table_title or (section_path[-1] if section_path else None)
+                if table_name:
+                    table["table_name"] = table_name
+                    table.setdefault("context", {})["table_title"] = table_name
+                    table.setdefault("metadata", {})["table_name"] = table_name
+            pending_table_title = None
+            continue
+        pending_table_title = None
         key = docx_text_key(str(element.get("text") or ""))
         candidates = hints.get(key)
-        metadata = element.setdefault("metadata", {})
         if not candidates:
             metadata["section_path"] = list(section_path)
             metadata["section_title"] = section_path[-1] if section_path else None
             continue
 
         hint = candidates.popleft()
-        metadata.update({"word_style": hint["word_style"], "word_style_id": hint["word_style_id"]})
         heading_level = hint["heading_level"]
         if heading_level is not None:
             heading_level = min(max(int(heading_level), 1), 9)

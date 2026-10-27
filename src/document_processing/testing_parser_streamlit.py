@@ -15,6 +15,7 @@ import streamlit as st
 from PIL import Image, ImageDraw
 
 from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
+from document_processing.element_taxonomy import normalize_element_label
 
 
 PACKAGE_DIR = Path(__file__).resolve().parent
@@ -34,8 +35,45 @@ def _load_runs() -> list[dict[str, Any]]:
     return sorted(runs, key=lambda run: run.get("processed_at", ""), reverse=True)
 
 
+def _normalize_saved_output(output: dict[str, Any]) -> dict[str, Any]:
+    """Present older saved parser results with the shared element labels."""
+    for element in output.get("elements", []):
+        metadata = element.setdefault("metadata", {})
+        metadata.pop("word_style", None)
+        metadata.pop("word_style_id", None)
+        label = normalize_element_label(
+            metadata.get("element_type") or metadata.get("layout_type") or element.get("element_type")
+        )
+        metadata["element_type"] = label
+        metadata["layout_type"] = label
+        if "element_type" in element:
+            element["element_type"] = label
+    for table in output.get("tables", []):
+        metadata = table.setdefault("metadata", {})
+        metadata.pop("word_style", None)
+        metadata.pop("word_style_id", None)
+        metadata.update({"element_type": "table", "layout_type": "table"})
+    return output
+
+
 def _page_count(run_dir: Path) -> int:
     return sum(1 for _ in run_dir.glob("page-*.png"))
+
+
+def _table_display_name(table: dict[str, Any], index: int) -> str:
+    metadata = table.get("metadata") or {}
+    context = table.get("context") or {}
+    title = (
+        table.get("table_name")
+        or context.get("table_title")
+        or context.get("table_name")
+        or metadata.get("table_name")
+        or metadata.get("table_title")
+    )
+    if title and str(title).strip():
+        return str(title).strip()
+    columns = [str(column).strip() for column in (table.get("columns") or []) if str(column).strip()]
+    return " · ".join(columns[:3]) or f"Table {index}"
 
 
 def _page_preview(run_dir: Path, page_number: int) -> bytes | None:
@@ -82,9 +120,22 @@ def _page_preview_with_boxes(
 
     for element in elements:
         metadata = element.get("metadata") or {}
-        kind = str(metadata.get("element_type") or metadata.get("docling_label") or "text")
-        color = "#ff9b69" if "title" in kind.lower() else "#58aeff"
-        draw_bbox(metadata, color, kind.replace("_", " "))
+        kind = normalize_element_label(metadata.get("element_type") or metadata.get("layout_type") or metadata.get("docling_label"))
+        color = {
+            "title": "#ff9b69",
+            "title_table": "#e879f9",
+            "section_header": "#38bdf8",
+            "text": "#58aeff",
+            "footnote": "#f472b6",
+            "document_index": "#fbbf24",
+            "formula": "#c084fc",
+            "figure": "#ffcf5c",
+            "seal": "#fb7185",
+            "page_header": "#a78bfa",
+            "page_footer": "#f472b6",
+            "table": "#65d99b",
+        }[kind]
+        draw_bbox(metadata, color, kind)
     for table in tables:
         draw_bbox(table.get("metadata") or {}, "#65d99b", "table")
 
@@ -267,7 +318,8 @@ else:
     try:
         selected_output_path = STORE_DIR / selected_id / "output.json"
         selected_output_text = selected_output_path.read_text(encoding="utf-8")
-        selected_output = json.loads(selected_output_text)
+        selected_output = _normalize_saved_output(json.loads(selected_output_text))
+        selected_output_text = json.dumps(selected_output, ensure_ascii=False, indent=2, default=str)
     except (OSError, json.JSONDecodeError, KeyError) as error:
         st.error(f"Could not open this saved result: {error}")
     else:
@@ -295,6 +347,46 @@ else:
             mime="application/json",
             use_container_width=True,
         )
+        if st.button(
+            "Upload parser output to Supabase (no chunking)",
+            key=f"upload-parser-output-{selected_id}",
+            help="Save parser output plus separate text-element and figure rows. Table regions remain in the raw parser output; no chunks or embeddings are created.",
+        ):
+            from dotenv import load_dotenv
+
+            load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+            repository = None
+            try:
+                from core.database.document_processing_output_repository import DocumentProcessingOutputRepository
+
+                repository = DocumentProcessingOutputRepository()
+                parser_metadata = selected_output.get("metadata") or {}
+                document_id = f"PARSER-{selected_id}"
+                element_count, table_count = repository.save_parser_output(
+                    document_id=document_id,
+                    title=Path(selected_manifest["filename"]).stem,
+                    file_format=Path(selected_manifest["filename"]).suffix.lstrip(".").upper(),
+                    source_sha256=selected_manifest["source_sha256"],
+                    pipeline_id=str(parser_metadata.get("pipeline_id") or parser_metadata.get("parser_engine") or "docling"),
+                    elements=elements,
+                    tables=selected_output.get("tables", []),
+                    document_metadata={
+                        **parser_metadata,
+                        "filename": selected_manifest["filename"],
+                        "source_sha256": selected_manifest["source_sha256"],
+                        "local_parser_run_id": selected_id,
+                        "chunking_applied": False,
+                        "embeddings_created": False,
+                    },
+                )
+                st.success(
+                    f"Saved {element_count:,} parser elements and {table_count:,} structured tables to Supabase · {document_id} · no chunks or embeddings created."
+                )
+            except Exception as error:
+                st.error(f"Supabase parser-output upload failed: {error}")
+            finally:
+                if repository is not None:
+                    repository.close()
 
         run_dir = STORE_DIR / selected_id
         source_path = run_dir / "source"
@@ -359,17 +451,26 @@ else:
                             st.info("No document elements were extracted from this page.")
                         for index, element in enumerate(page_elements, 1):
                             metadata = element.get("metadata", {})
-                            element_type = str(metadata.get("element_type", "text")).replace("_", " ").title()
+                            element_type = normalize_element_label(
+                                metadata.get("element_type") or metadata.get("layout_type") or metadata.get("docling_label")
+                            )
                             st.markdown(f"**Element {index} · {element_type}**")
                             st.text(element.get("text") or "[Table reference]")
                         for index, table in enumerate(page_tables, 1):
-                            st.markdown(f"**Table {index}**")
+                            st.markdown(f"**{_table_display_name(table, index)}**")
                             st.dataframe(table.get("rows", []), hide_index=True, use_container_width=True)
             else:
                 st.info("This file type has no page preview. Download the original file from Run details.")
                 if elements:
                     st.subheader("Extracted output")
-                    for element in elements:
+                    for index, element in enumerate(elements, 1):
+                        metadata = element.get("metadata", {})
+                        element_type = normalize_element_label(
+                            metadata.get("element_type")
+                            or metadata.get("layout_type")
+                            or metadata.get("docling_label")
+                        )
+                        st.markdown(f"**Element {index} · {element_type}**")
                         st.text(element.get("text") or "[Table reference]")
         with raw_tab:
             if raw_text:
@@ -382,12 +483,25 @@ else:
             if not tables:
                 st.info("No structured tables were extracted.")
             for index, table in enumerate(tables, 1):
-                st.markdown(f"**Table {index}**")
+                st.markdown(f"**{_table_display_name(table, index)}**")
                 st.dataframe(table.get("rows", []), hide_index=True, use_container_width=True)
         with handoff_tab:
             st.caption(
                 "Inspect the ordered elements that will be passed to chunking."
             )
+            furniture_elements = [
+                element
+                for element in elements
+                if (element.get("metadata") or {}).get("element_type")
+                in {"page_header", "page_footer"}
+            ]
+            if furniture_elements:
+                st.markdown("**Page headers and footers**")
+                for element in furniture_elements:
+                    element_type = element["metadata"]["element_type"]
+                    st.markdown(f"**{element_type}** · {element.get('text') or '[No text]'}")
+            else:
+                st.caption("No page_header or page_footer elements in this saved run.")
             page_numbers = sorted({
                 int(element["metadata"]["page_number"])
                 for element in elements

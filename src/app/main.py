@@ -37,6 +37,11 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def _lifespan(application: FastAPI):
     load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=False)
+    if os.getenv("EMBEDDING_PRELOAD") == "1":
+        from core.embeddings import EmbeddingService
+        logger.info("Loading embedding model before accepting requests")
+        EmbeddingService()
+        logger.info("Embedding model ready")
     if os.getenv("RERANKER_PRELOAD") == "1":
         from core.retrieval.reranker import _load_model
         _load_model()

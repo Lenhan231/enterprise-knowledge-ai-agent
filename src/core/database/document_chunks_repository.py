@@ -1,4 +1,5 @@
 import os
+from core.latency import measure
 from typing import Literal
 from psycopg.types.json import Jsonb
 
@@ -195,6 +196,7 @@ class DocumentChunkRepository:
             }
         return contexts
 
+    @measure("database_retrieval")
     def similarity_search(
         self, query_embedding: list[float] | None, limit: int, company: str | None = None,
         roles: list[str] | None = None, query: str | None = None,

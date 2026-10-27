@@ -820,6 +820,9 @@ async function loadWorkspace(user) {
   ["sql", "agentic"].forEach((mode) => {
     $("#agent-mode option[value='" + mode + "']").hidden = !canUseAnalytics;
   });
+  if (!canUseAnalytics && ["sql", "agentic"].includes($("#agent-mode").value)) {
+    $("#agent-mode").value = "knowledge";
+  }
   if (user.role !== "document_processing_owner") {
     try { renderCorpus(await api("/api/dashboard")); }
     catch (error) { $("#connection-status").textContent = `Knowledge base unavailable: ${error.message}`; }

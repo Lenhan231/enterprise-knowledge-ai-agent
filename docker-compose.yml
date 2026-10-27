@@ -5,6 +5,8 @@ services:
       context: .
       dockerfile: docker/Dockerfile
     env_file: .env
+    volumes:
+      - embedding_model_cache:/root/.cache/huggingface
     ports:
       - "127.0.0.1:8000:8000"
 

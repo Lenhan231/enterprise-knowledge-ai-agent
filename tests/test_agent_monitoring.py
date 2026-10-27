@@ -1,7 +1,8 @@
+import asyncio
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import ANY, AsyncMock, Mock, patch
 
 from fastapi.testclient import TestClient
 
@@ -13,6 +14,22 @@ from core.models.agents import AgentResult
 
 
 class AgentMonitoringTest(unittest.TestCase):
+    def test_chat_defaults_to_agentic_routing(self):
+        from app.agents import AgentChatRequest, agent_chat
+
+        runtime = Mock()
+        runtime.run_mode = AsyncMock(return_value=AgentResult(answer="Answer", agent="agentic"))
+        with patch("app.agents._get_runtime", new=AsyncMock(return_value=runtime)), \
+                patch("app.agents._record_agent_run"):
+            result = asyncio.run(agent_chat(
+                AgentChatRequest(question="Explain the returns policy"),
+                Mock(), user={"role": "admin", "sub": "admin-test"},
+            ))
+
+        runtime.run_mode.assert_awaited_once_with(ANY, "agentic")
+        runtime.run.assert_not_called()
+        self.assertEqual(result.agent, "agentic")
+
     def test_admin_can_read_monitoring_snapshot(self):
         environment = {
             "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",

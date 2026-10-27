@@ -55,7 +55,23 @@ Each command builds and runs only its check container, then removes that
 container. Embedding downloads/loads the configured model and keeps its cache in
 a named volume; retrieval checks the configured database connection and vector
 registration without querying or changing rows. Normal `docker compose up`
-still starts only the web app.
+still starts only the web app. The web container shares the model-cache volume
+and loads the configured embedding model before accepting requests
+(`EMBEDDING_PRELOAD=1` in the Docker image), downloading missing files on first
+startup. A model-loading failure prevents startup. Subsequent starts reuse the
+cached weights. Agentic routing is the default for chat requests and for users
+with analytics access in the UI; Auto select remains available as the local
+rule-based alternative. Users without analytics access default to Knowledge.
+
+Chat responses include request-local stage timings under `metadata.latency`;
+the backend also writes `agent_latency` JSON records to Docker logs. Values are
+milliseconds, and `null` means the stage was skipped. Retrieval totals include
+their child stages; parallel agent timings overlap and must not be summed to
+estimate request time. Existing database telemetry still stores total handler
+time only. After restarting the web container, run
+`python scripts/operations/measure_pipeline_latency.py` to save two sequential
+passes of ten questions and sampled container resources. The second pass also
+benefits from the existing translation cache; it is not a load or quality test.
 
 ## Dataset and knowledge sources
 

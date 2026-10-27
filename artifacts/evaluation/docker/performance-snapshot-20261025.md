@@ -30,3 +30,41 @@ Web image size reported by Docker: 10.5 GB; PostgreSQL image: 633 MB. Image size
 - Web has no mounted volumes. Models downloaded into its writable filesystem will not persist when the container is replaced. The compose embedding_model_cache volume is attached only to embedding-check, not web.
 - Full pipeline profiling still needs provisioned embedding/Docling assets, a representative document and query, and concurrent resource sampling. Existing stored agent telemetry provides total handler elapsed time; retrieval and reranker timings are not a complete persisted per-stage trace.
 - No load/concurrency benchmark or continuous background monitor was started. No p95 capacity claim is supported. The dashboard probe added its normal agent telemetry event; generation used 102 provider tokens.
+
+## Agent router addendum — October 25, 15:30 UTC (22:30 Asia/Saigon)
+
+Verified router.py and agents/main.py SHA-256 hashes match the running container. The /api/agents/chat runtime uses _FallbackClassifier (local deterministic rules) for auto mode. Explicit knowledge/sql/dashboard modes bypass classification. Agentic selection calls Groq; agentic hybrid synthesis may add another provider call after both agents finish.
+
+Measured the real AgentRouter and classifier in a separate process inside the existing web container. Leaf agents were immediate stubs to isolate router overhead; these are not live request latency measurements. Each route received one graph warm-up, 100 selection samples and 50 graph invocations. Assertions verified selected destinations and returned agent names for every measured invocation.
+
+| Auto destination | Mean selection (ms) | Mean graph + stub agents (ms) | Graph sample p95 (ms) |
+|---|---:|---:|---:|
+| Knowledge | 0.3751 | 5.8997 | 7.1152 |
+| Analytics | 0.2877 | 8.2963 | 10.9951 |
+| Dashboard | 0.2712 | 8.3383 | 10.5353 |
+| Hybrid | 0.3489 | 8.3251 | 10.8045 |
+| Report | 0.3211 | 8.4332 | 12.0981 |
+
+One real agentic selection for a returns-policy question chose knowledge successfully in 2058.48 ms using Groq openai/gpt-oss-120b (128 input / 51 output tokens). No downstream agents or synthesis were invoked in this provider probe. Auto routing needs no model weights; agentic routing uses the hosted model and has no local model-weight allocation.
+
+Local probe resource evidence: 500 selections + 250 graph invocations + 5 graph warm-ups took 2194.97 ms wall time and 2419.42 ms process CPU time. Whole-probe process high-water RSS rose from 141.06 to 164.61 MiB (~23.55 MiB); this includes graph execution, temporary stub results, runtime allocation and tracing machinery, and is not an exact router allocation. Baseline already includes imports. Remote provider resources were not measured. No continuous resource sampling or load benchmark was run.
+
+Routing correctness observations (unfixed): both "How many documents are there?" and "Count documents by domain." selected knowledge. The first wording is absent from the explicit document-count matching rules. The second is recognized by IntentClassifier.fallback as analytics, but _FallbackClassifier's subsequent document-keyword override changes it to knowledge. This can send document-count questions to the wrong agent. No application code was changed.
+
+Existing persisted agent telemetry records total handler latency and final agent, not isolated router selection, graph overhead, or provider selection timing. This addendum is a bounded measurement, not persistent instrumentation. The earlier 8.98-second explicit dashboard request bypassed automatic classification. The sample p95 values above describe only this isolated microbenchmark and do not establish production p95.
+
+## Startup preload and agentic default deployed — October 25, ~15:45–15:49 UTC
+
+This section supersedes the earlier cache-availability snapshot. E5 was already stored in the unattached embedding_model_cache Docker volume; it was absent from the old web container's filesystem. The web service now mounts that volume. Existing BGE files were copied into it before the container was replaced.
+
+- Rebuilt image and recreated only web with docker compose up -d --no-deps web. Database unchanged.
+- Docker image sets EMBEDDING_PRELOAD=1. App lifespan initializes EmbeddingService before yielding to accept requests. Missing weights use the existing loader's download behavior; loading failures abort startup. The shared cached backend is reused by retrieval. RERANKER_PRELOAD=1 remains enabled.
+- Startup logs show both E5 (199 weight tensors) and BGE (393 tensors) loaded before Application startup complete. Health probe: HTTP 200.
+- Default /api/agents/chat agent_mode is now agentic. Served UI has Agentic selected. Auto remains an explicit alternative. Existing role restrictions hide SQL/agentic and select Knowledge for users without analytics access.
+- E5 cache files: 1,134,534,380 bytes. BGE cache files: 2,293,242,108 bytes. These are repository cache totals, not exact parameter bytes.
+
+One authenticated live request omitted agent_mode and used the default retrieval method. It returned HTTP 200, agent=agentic, two cited evidence sources, and took 51,245.80 ms over container loopback. Evidence details confirmed intfloat/multilingual-e5-base and translated_hybrid_rerank with BGE applied to 30 candidates. Translation took 3150.51 ms; reranking took 33156.37 ms. No dense fallback or translation error was recorded. Isolated embedding, routing and generation durations were not exposed in this response. This is one first-request sample after restart, not a p95 estimate.
+
+After this request the web container used 1.503 GiB RAM at a sampled 0.60% CPU; PostgreSQL used 33.09 MiB. These are post-request snapshots, not execution peaks.
+
+Validation: new startup success/failure and default-dispatch tests pass. Full suite: 230 tests, 9 failures and 47 errors. A comparison run using HEAD versions of the changed API/startup modules and excluding the three new regression tests ran 227 tests with the same 9 failures and 47 errors; all 56 failing test IDs matched, no new failing IDs. Existing embedding service tests include two failures caused by 1-dimensional fake vectors against the configured 768-dimensional E5 validation. Compileall, JavaScript syntax, Compose validation, and diff whitespace checks passed. Browser automation was unavailable; the deployed HTML default was verified over HTTP. No fresh empty-cache model download was forced because the existing volume already contained E5.

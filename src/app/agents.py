@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from io import BytesIO
 from pathlib import Path
@@ -15,6 +16,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.security import ROLE_PERMISSIONS, require_permission
+from core.latency import latency_events, snapshot
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/agents", tags=["agents"])
@@ -25,7 +27,7 @@ class AgentChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     question: str = Field(min_length=1, max_length=2_000)
-    agent_mode: Literal["auto", "knowledge", "sql", "dashboard", "agentic"] = "auto"
+    agent_mode: Literal["auto", "knowledge", "sql", "dashboard", "agentic"] = "agentic"
     retrieval_method: Literal[
         "dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank",
     ] = "translated_hybrid_rerank"
@@ -109,6 +111,8 @@ async def agent_chat(
     from core.agents.sql_analytics_agent import AnalyticsPermissionDenied
 
     started = perf_counter()
+    timing_token = latency_events.set([])
+    result = None
     agent_name = payload.agent_mode
     retrieval_method = payload.retrieval_method
     if retrieval_method not in {"dense", "bm25", "hybrid", "parent"}:
@@ -139,6 +143,12 @@ async def agent_chat(
         logger.exception("Agent request failed")
         raise HTTPException(503, "The agent service is unavailable") from error
     finally:
+        timing = snapshot()
+        timing["request_total_ms"] = (perf_counter() - started) * 1000
+        latency_events.reset(timing_token)
+        if result is not None:
+            result.metadata["latency"] = timing
+        logger.warning("agent_latency %s", json.dumps({"agent": agent_name, "status": status, **timing}))
         await asyncio.to_thread(
             _record_agent_run,
             actor_role=user["role"], agent_name=agent_name,

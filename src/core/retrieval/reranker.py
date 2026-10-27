@@ -4,6 +4,7 @@ import os
 from functools import lru_cache
 from threading import Lock
 from time import perf_counter
+from core.latency import measure
 
 MODEL_ID = "BAAI/bge-reranker-v2-m3"
 REVISION = "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
@@ -26,6 +27,7 @@ class BGEReranker:
     def __init__(self, model=None):
         self.model = model
 
+    @measure("reranking")
     def rerank(self, query, chunks, top_k):
         details = {"reranker_model": MODEL_ID, "reranker_revision": REVISION,
                    "reranker_candidate_count": len(chunks), "reranker_max_pair_tokens": 1024,

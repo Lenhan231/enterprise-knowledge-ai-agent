@@ -9,6 +9,7 @@ from typing import Any
 from core.agents.base import BaseAgent
 from core.agents.sql_analytics_agent import SQLAnalyticsAgent, payload_to_agent_result
 from core.models.agents import AgentResult
+from core.latency import measure
 
 
 class AnalyticsAgent(BaseAgent):
@@ -35,7 +36,8 @@ class AnalyticsAgent(BaseAgent):
             f"Rows: {json.dumps(result['rows'], default=str, ensure_ascii=False)}"
         )
         try:
-            answer = await asyncio.to_thread(self.sql_agent._provider().generate, prompt)
+            with measure("answer_generation"):
+                answer = await asyncio.to_thread(self.sql_agent._provider().generate, prompt)
             if not isinstance(answer, str) or not answer.strip():
                 raise ValueError("empty analytics summary")
             answer = answer.strip()[:4_000]

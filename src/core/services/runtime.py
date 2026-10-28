@@ -1,6 +1,7 @@
 """Private, single-purpose model and parser runtimes selected by SERVICE_KIND."""
 import base64
 import binascii
+import logging
 import os
 import secrets
 from contextlib import asynccontextmanager
@@ -10,6 +11,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
 
 LOCK = Lock()
+logger = logging.getLogger(__name__)
 
 
 def authorize(request: Request):
@@ -23,6 +25,7 @@ async def lifespan(app):
     if not os.getenv("INTERNAL_SERVICE_TOKEN"):
         raise RuntimeError("INTERNAL_SERVICE_TOKEN is required")
     kind = os.environ["SERVICE_KIND"]
+    logger.info("Loading %s models before accepting requests", kind)
     if kind == "embeddings":
         from core.embeddings.embedding_service import _shared_backend
         from core.embeddings.settings import DEFAULT_EMBEDDING_MODEL
@@ -31,9 +34,11 @@ async def lifespan(app):
         from core.retrieval.reranker import _load_model
         app.state.encoder = _load_model()
     elif kind == "document-processing":
-        from docling.document_converter import DocumentConverter
+        from document_processing.docling_adapter.processor import DoclingProcessor
+        DoclingProcessor({}).preload()
     else:
         raise RuntimeError("Unsupported SERVICE_KIND")
+    logger.info("%s models ready", kind)
     yield
 
 

@@ -44,33 +44,29 @@ the parser result metadata.
 
 ## Module Docker image
 
-Build from the repository root:
+Build and start the private parser service from the repository root:
 
 ```sh
-docker build -f docker/Dockerfile.document-processing -t document-processing .
-docker run --rm document-processing
+docker compose build document-processing
+docker compose up -d --no-deps --wait document-processing
 ```
 
-The image contains `document_processing`, Docling, VietOCR, and
-Vietnamese/English Tesseract (used for orientation detection). It does not
-install the full application's dependencies or include the FastAPI app,
-database credentials, or Streamlit. OCR defaults to VietOCR in this image;
-set `DOCUMENT_PROCESSING_OCR_ENGINE=tesseract` to select Tesseract instead.
-The default command checks imports; success prints
-`PASS: Docling, VietOCR, and document_processing imports` and exits with code 0.
-This check does not run Docling inference on a real document.
+The image serves the authenticated `/parse` and `/health` endpoints on its
+internal Docker network. It contains Docling, VietOCR, RapidOCR, and
+Vietnamese/English Tesseract. Set `DOCUMENT_PROCESSING_OCR_ENGINE` in the
+service environment to `tesseract` to select Tesseract instead of VietOCR.
 
-Override the command to use the parser from your own Python script:
+Startup initializes the default scanned, native PDF, and embedded-image
+pipelines before reporting healthy. This loads the OCR, layout, and table
+models into memory; import-only checks do not count as preloading. A model
+loading failure prevents startup. The embedding and reranker services also
+load their models before accepting requests; the backend calls those services.
 
-```sh
-docker run --rm -v "$PWD:/work" -v document-processing-cache:/root/.cache \
-  document-processing python /work/your_script.py
-```
-
-Your script can call `DocumentProcessor().process(filename, content, metadata)`
-and save the parsed output as JSON for the separate chunking image.
-Model weights are downloaded when conversion first needs them; the cache
-volume retains them between runs. This image has no HTTP server or exposed port.
+Converters are reused across requests with equivalent settings. Up to four
+configurations are retained; custom settings can initialize another pipeline
+on first use and evict an older configuration. Startup takes longer and idle
+RAM usage increases. Hugging Face weights persist in the model-cache volume;
+VietOCR's temporary weights and Torch's default cache are container-local.
 
 For the independent chunking image, see
 [`core/chunking/README.md`](../core/chunking/README.md#module-docker-image).

@@ -11,6 +11,7 @@ from typing import Any
 
 from .digital_born.pdf import has_embedded_raster_images, has_native_text_on_every_page
 from .result_mapper import map_result
+from .converters import get_converter
 from .scanned.embedded_images import process_embedded_images
 
 _OFFICE_FORMATS = {
@@ -30,23 +31,10 @@ class DoclingProcessor:
         self, source: bytes | str | Path, file_path: str | None, document: dict[str, Any],
     ) -> dict[str, Any]:
         try:
-            from docling.datamodel.accelerator_options import AcceleratorDevice, AcceleratorOptions
-            from docling.datamodel.base_models import InputFormat
-            from docling.datamodel.pipeline_options import (
-                LayoutObjectDetectionOptions,
-                OcrAutoOptions,
-                PdfPipelineOptions,
-                TableFormerMode,
-                TableStructureOptions,
-                TesseractCliOcrOptions,
-            )
-            from docling.datamodel.stage_model_specs import ObjectDetectionModelSpec
-            from docling.document_converter import DocumentConverter, ImageFormatOption, PdfFormatOption
             from docling.datamodel.document import PictureItem, TableItem
         except ImportError as error:
             raise RuntimeError("Docling is unavailable; install it with `uv sync --extra docling`") from error
 
-        device = AcceleratorDevice.CUDA if self.config.get("docling_device") == "cuda" else AcceleratorDevice.CPU
         source_format = str(document.get("metadata", {}).get("format", "PDF")).lower()
         input_path = Path(file_path) if file_path else None
         if input_path is not None and input_path.is_file():
@@ -69,65 +57,18 @@ class DoclingProcessor:
             source_format in _OFFICE_FORMATS or scan_pdf_embedded_images
         )
         do_ocr = requested_ocr and not pdf_is_digital_born
-        ocr_engine = str(
-            self.config.get(
-                "docling_ocr_engine",
-                os.environ.get("DOCUMENT_PROCESSING_OCR_ENGINE", "tesseract"),
-            )
-        ).lower()
+        options = self._pipeline_options(
+            do_ocr, scan_embedded_images,
+            bool(self.config.get("docling_page_images", False)) or scan_pdf_embedded_images,
+        )
         processor_config = {
             **self.config,
             "docling_ocr": do_ocr,
-            "docling_ocr_engine": ocr_engine,
+            "docling_ocr_engine": str(self.config.get(
+                "docling_ocr_engine", os.environ.get("DOCUMENT_PROCESSING_OCR_ENGINE", "tesseract"),
+            )).lower(),
         }
-        if not do_ocr and not scan_embedded_images:
-            ocr_options = OcrAutoOptions()
-        elif ocr_engine == "vietocr":
-            try:
-                from .scanned.vietocr import VietOcrOptions, register_vietocr
-            except ImportError as error:
-                raise RuntimeError(
-                    "VietOCR is unavailable. Install its OCR plugin and dependencies, or select Tesseract."
-                ) from error
-            register_vietocr()
-            ocr_options = VietOcrOptions()
-        elif ocr_engine == "tesseract":
-            ocr_options = TesseractCliOcrOptions(
-                lang=str(self.config.get("docling_ocr_language", self.config.get("ocr_language", "vie"))).split("+"),
-                psm=6,
-            )
-        else:
-            raise ValueError(f"Unsupported Docling OCR engine: {ocr_engine}")
-        options = PdfPipelineOptions(
-            accelerator_options=AcceleratorOptions(
-                device=device,
-                num_threads=int(self.config.get("docling_num_threads", 2)),
-            ),
-            do_ocr=do_ocr,
-            do_table_structure=bool(self.config.get("docling_table_structure", True)),
-            generate_page_images=(
-                bool(self.config.get("docling_page_images", False))
-                or scan_pdf_embedded_images
-            ),
-            images_scale=1.0,
-            layout_options=LayoutObjectDetectionOptions(
-                model_spec=ObjectDetectionModelSpec(
-                    name="layout_heron",
-                    repo_id="docling-project/docling-layout-heron",
-                )
-            ),
-            table_structure_options=TableStructureOptions(
-                mode=TableFormerMode.ACCURATE,
-                do_cell_matching=True,
-            ),
-            ocr_options=ocr_options,
-        )
-        converter = DocumentConverter(
-            format_options={
-                InputFormat.PDF: PdfFormatOption(pipeline_options=options),
-                InputFormat.IMAGE: ImageFormatOption(pipeline_options=options),
-            }
-        )
+        converter = get_converter(options)
 
         source_suffix = f".{source_format}" if source_format else ".pdf"
         source_bytes: bytes | None = None
@@ -159,9 +100,6 @@ class DoclingProcessor:
             formats_to_scan=_OFFICE_FORMATS | ({"pdf"} if scan_pdf_embedded_images else set()),
             picture_item_type=PictureItem,
             pipeline_options=options,
-            input_format=InputFormat,
-            pdf_format_option=PdfFormatOption,
-            document_converter=DocumentConverter,
             processor_config=processor_config,
             table_item_type=TableItem,
             ocr_enabled=scan_embedded_images,
@@ -205,3 +143,68 @@ class DoclingProcessor:
             mapped["page_previews"] = page_previews
             mapped["page_sizes"] = page_sizes
         return mapped
+
+    def _pipeline_options(self, do_ocr, scan_embedded_images, generate_page_images):
+        from docling.datamodel.accelerator_options import AcceleratorDevice, AcceleratorOptions
+        from docling.datamodel.pipeline_options import (
+            LayoutObjectDetectionOptions, OcrAutoOptions, PdfPipelineOptions,
+            TableFormerMode, TableStructureOptions, TesseractCliOcrOptions,
+        )
+        from docling.datamodel.stage_model_specs import ObjectDetectionModelSpec
+
+        device = AcceleratorDevice.CUDA if self.config.get("docling_device") == "cuda" else AcceleratorDevice.CPU
+        ocr_engine = str(
+            self.config.get(
+                "docling_ocr_engine",
+                os.environ.get("DOCUMENT_PROCESSING_OCR_ENGINE", "tesseract"),
+            )
+        ).lower()
+        if not do_ocr and not scan_embedded_images:
+            ocr_options = OcrAutoOptions()
+        elif ocr_engine == "vietocr":
+            try:
+                from .scanned.vietocr import VietOcrOptions, register_vietocr
+            except ImportError as error:
+                raise RuntimeError(
+                    "VietOCR is unavailable. Install its OCR plugin and dependencies, or select Tesseract."
+                ) from error
+            register_vietocr()
+            ocr_options = VietOcrOptions()
+        elif ocr_engine == "tesseract":
+            ocr_options = TesseractCliOcrOptions(
+                lang=str(self.config.get("docling_ocr_language", self.config.get("ocr_language", "vie"))).split("+"),
+                psm=6,
+            )
+        else:
+            raise ValueError(f"Unsupported Docling OCR engine: {ocr_engine}")
+        return PdfPipelineOptions(
+            accelerator_options=AcceleratorOptions(
+                device=device,
+                num_threads=int(self.config.get("docling_num_threads", 2)),
+            ),
+            do_ocr=do_ocr,
+            do_table_structure=bool(self.config.get("docling_table_structure", True)),
+            generate_page_images=generate_page_images,
+            images_scale=1.0,
+            layout_options=LayoutObjectDetectionOptions(
+                model_spec=ObjectDetectionModelSpec(
+                    name="layout_heron",
+                    repo_id="docling-project/docling-layout-heron",
+                )
+            ),
+            table_structure_options=TableStructureOptions(
+                mode=TableFormerMode.ACCURATE,
+                do_cell_matching=True,
+            ),
+            ocr_options=ocr_options,
+        )
+
+    def preload(self):
+        """Initialize the default scanned, native, and embedded-image routes."""
+        from docling.datamodel.base_models import InputFormat
+
+        for do_ocr, embedded, page_images in (
+            (True, False, False), (False, False, False), (False, True, True),
+        ):
+            converter = get_converter(self._pipeline_options(do_ocr, embedded, page_images))
+            converter.initialize_pipeline(InputFormat.PDF)

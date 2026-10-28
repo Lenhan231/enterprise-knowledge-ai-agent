@@ -7,6 +7,8 @@ import logging
 import tempfile
 from typing import Any
 
+from ..converters import get_converter
+
 _log = logging.getLogger(__name__)
 
 
@@ -17,9 +19,6 @@ def process_embedded_images(
     formats_to_scan: set[str],
     picture_item_type: type,
     pipeline_options: Any,
-    input_format: Any,
-    pdf_format_option: Any,
-    document_converter: Any,
     processor_config: dict[str, Any],
     table_item_type: type,
     ocr_enabled: bool,
@@ -60,11 +59,7 @@ def process_embedded_images(
         "do_ocr": True,
         "generate_page_images": False,
     })
-    converter = document_converter(
-        format_options={
-            input_format.PDF: pdf_format_option(pipeline_options=image_options),
-        }
-    )
+    converter = get_converter(image_options)
     for batch_start in range(0, len(unique_items), 8):
         batch = unique_items[batch_start:batch_start + 8]
         try:

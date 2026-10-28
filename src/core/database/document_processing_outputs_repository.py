@@ -35,9 +35,7 @@ class DocumentProcessingOutputsRepository:
 
         text_elements: list[dict[str, Any]] = []
         figures: list[dict[str, Any]] = []
-        text_rows = []
-        figure_rows = []
-        for index, element in enumerate(elements):
+        for element in elements:
             normalized = dict(element)
             element_metadata = dict(element.get("metadata") or {})
             element_metadata.pop("word_style", None)
@@ -51,45 +49,13 @@ class DocumentProcessingOutputsRepository:
             normalized["metadata"] = element_metadata
             if "element_type" in normalized:
                 normalized["element_type"] = element_type
-            page_number = element_metadata.get("page_number")
-            page_number = int(page_number) if page_number is not None else None
-            bbox = Jsonb(element_metadata["bbox"]) if element_metadata.get("bbox") is not None else None
             if element_type in {"figure", "seal"}:
                 normalized.pop("text", None)
                 figures.append(normalized)
-                figure_rows.append((
-                    document_id, index, element_type, page_number, bbox, Jsonb(element_metadata),
-                ))
             elif element_type != "table":
                 text_elements.append(normalized)
-                text_rows.append((
-                    document_id, index, element_type, element.get("text"),
-                    page_number, bbox, Jsonb(element_metadata),
-                ))
 
         with self.connection.transaction(), self.connection.cursor() as cursor:
-            cursor.execute(
-                "DELETE FROM public.document_processing_text_elements WHERE document_id = %s",
-                (document_id,),
-            )
-            cursor.execute(
-                "DELETE FROM public.document_processing_figures WHERE document_id = %s",
-                (document_id,),
-            )
-            if text_rows:
-                cursor.executemany(
-                    """INSERT INTO public.document_processing_text_elements
-                       (document_id, element_index, element_type, text, page_number, bbox, metadata)
-                       VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-                    text_rows,
-                )
-            if figure_rows:
-                cursor.executemany(
-                    """INSERT INTO public.document_processing_figures
-                       (document_id, element_index, element_type, page_number, bbox, metadata)
-                       VALUES (%s, %s, %s, %s, %s, %s)""",
-                    figure_rows,
-                )
             cursor.execute(
                 """INSERT INTO public.document_processing_outputs
                    (document_id, pipeline_id, text_elements, figures, structured_tables, document_metadata)

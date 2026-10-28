@@ -39,10 +39,16 @@ Project layout
 - src/core/retrieval and src/core/rag: role-scoped hybrid search and grounded answers
 - src/core/agents: runtime router for grounded QA, analytics, hybrid reports and dashboard data
 - [CLI tools](tools/README.md): reproducible CLI entry points grouped by workstream; see the [repository map](docs/technical/repository-ownership.md) for ownership and shared contracts
-- docker-compose.yml: backend API, document processing, embeddings and reranker; optional Nginx ingress. Frontend hosting remains on Vercel and data remains in Supabase.
+- docker-compose.yml: backend API, document processing, chunking worker, embeddings and reranker; optional Nginx ingress. Frontend hosting remains on Vercel and data remains in Supabase.
 
 Backend Docker quick start (configure `.env` first, including a random
 `INTERNAL_SERVICE_TOKEN` shared only by the backend containers):
+
+Apply `supabase/migrations/20261028090548_add_chunking_document_statuses.sql`
+and `supabase/migrations/20261028091543_align_processing_outputs_with_parser.sql`
+through the normal database migration workflow before starting the chunking
+worker. It consumes `parsed` documents and leaves them `chunked`, without
+embedding or retrieval activation. See the [worker guide](src/core/chunking/README.md#chunking-worker-service).
 
 ```bash
 docker compose config --quiet
@@ -144,8 +150,10 @@ structured `tables`) is retained in `document_processing_outputs`; chunked
 parser output is retained separately in `document_parser_chunks` before
 embeddings. Embedded passages in `document_chunks` support retrieval.
 `/api/documents/parser-handoff`
-uses the same parser and writes the same public parser chunks and structured tables,
-then leaves the document in `parsed` state for downstream tokenization and indexing.
+stores normalized elements and tables, then returns with the document in `parsed`
+state. The separate chunking worker reads that output and writes
+`document_parser_chunks`; embedding and retrieval indexing are later stages that
+write `document_chunks`.
 The regular `/api/documents/upload` continues through embedding and retrieval indexing.
 Uploads do not create
 dashboard metrics: Commerce dashboard observations come from the private SQL

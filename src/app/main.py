@@ -445,8 +445,6 @@ async def upload_document(
         registered = True
         repository.update_processing_status(document_id, "processing")
         from document_processing.document_processor import DocumentProcessor
-        from core.database.parser_chunks_repository import ParserChunksRepository
-        from core.database.structured_store import StructuredDataStore
 
         metadata = {
             "document_id": document_id,
@@ -476,17 +474,40 @@ async def upload_document(
             "ocr_language": ocr_language,
         })
         try:
-            from core.chunking.processor import ChunkingProcessor
-            from core.database.document_processing_outputs_repository import (
-                DocumentProcessingOutputsRepository,
+            from core.database.document_processing_output_repository import (
+                DocumentProcessingOutputRepository,
             )
 
             parsed = processor.process(filename, content, metadata)
-            outputs_repository = DocumentProcessingOutputsRepository()
+            outputs_repository = DocumentProcessingOutputRepository()
             try:
                 outputs_repository.replace_document(document_id, parsed)
             finally:
                 outputs_repository.close()
+
+            if parser_handoff:
+                page_numbers = [
+                    item.get("metadata", {}).get("page_number")
+                    for item in [*parsed.get("elements", []), *parsed.get("tables", [])]
+                    if isinstance(item.get("metadata", {}).get("page_number"), int)
+                ]
+                page_count = max(page_numbers) if page_numbers else (
+                    1 if extension in {".png", ".jpg", ".jpeg", ".tif", ".tiff"} else None
+                )
+                repository.update_processing_status(document_id, "parsed")
+                return {
+                    "document_id": document_id,
+                    "storage_path": storage_path,
+                    "processing_status": "parsed",
+                    "searchable": False,
+                    "sha256": source_hash,
+                    "page_count": page_count,
+                    "element_count": len(parsed.get("elements", [])),
+                    "table_count": len(parsed.get("tables", [])),
+                    "indexed_chunk_count": 0,
+                }
+
+            from core.chunking.processor import ChunkingProcessor
             processed = ChunkingProcessor(processor.config).process(parsed)
         except ValueError as error:
             raise HTTPException(422, str(error)) from error
@@ -508,6 +529,9 @@ async def upload_document(
         for chunk in chunks:
             chunk["metadata"].pop("title", None)
             chunk["metadata"].pop("author", None)
+        from core.database.parser_chunks_repository import ParserChunksRepository
+        from core.database.structured_store import StructuredDataStore
+
         parsed_repository = ParserChunksRepository()
         try:
             parsed_repository.replace_document(document_id, chunks)
@@ -518,17 +542,6 @@ async def upload_document(
                 structured_store.close()
         finally:
             parsed_repository.close()
-
-        if parser_handoff:
-            repository.update_processing_status(document_id, "parsed")
-            return {
-                "document_id": document_id, "storage_path": storage_path,
-                "processing_status": "parsed", "searchable": False,
-                "sha256": source_hash, "page_count": page_count,
-                "parser_chunk_count": len(parser_chunks), "indexed_chunk_count": 0,
-                "ocr_chunk_count": ocr_chunk_count,
-                "table_count": len(processed.get("tables", [])),
-            }
 
         from core.embeddings.embedding_service import EmbeddingService
         from core.database.document_chunks_repository import DocumentChunkRepository

@@ -1265,7 +1265,7 @@ $("#upload-form").addEventListener("submit", async (event) => {
   };
   status.dataset.state = "processing";
   status.textContent = parserHandoff
-    ? "Uploading, extracting and saving parser output. Tokenization and indexing are downstream. Keep this tab open."
+    ? "Uploading, extracting and saving parser output. Chunking and indexing run downstream. Keep this tab open."
     : "Uploading, extracting text/OCR, chunking and indexing. Keep this tab open.";
   updateProcessingTime();
   const processingTimer = window.setInterval(updateProcessingTime, 1000);
@@ -1273,11 +1273,11 @@ $("#upload-form").addEventListener("submit", async (event) => {
   try {
     result = await api(parserHandoff ? "/api/documents/parser-handoff" : "/api/documents/upload", { method: "POST", body, headers: {} });
     const referenceStatus = parserHandoff
-      ? " Parser output is saved in public for downstream tokenization and indexing; this document is not searchable yet."
+      ? " Parser output is saved in public for the chunking worker; this document is not searchable yet."
       : " Indexed for document Q&A.";
     const pageSummary = result.page_count ? `${formatNumber(result.page_count)} pages` : "File processed";
     const extractionSummary = parserHandoff
-      ? `${formatNumber(result.parser_chunk_count)} parser chunks · ${formatNumber(result.ocr_chunk_count)} OCR chunks · ${formatNumber(result.table_count)} tables · 0 indexed`
+      ? `${formatNumber(result.element_count)} parser elements · ${formatNumber(result.table_count)} tables · queued for chunking`
       : `${formatNumber(result.parser_chunk_count)} parser passages · ${formatNumber(result.indexed_chunk_count)} indexed passages · ${formatNumber(result.ocr_chunk_count)} OCR passages · ${formatNumber(result.table_count)} tables`;
     const uploadedTitle = form.elements.title.value || file.name;
     status.dataset.state = "success";

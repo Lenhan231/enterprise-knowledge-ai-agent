@@ -59,50 +59,58 @@ class DocumentProcessingOutputRepository:
                     f"Local parser output only · SHA-256 {source_sha256} · not chunked or indexed",
                 ),
             )
-            normalized_elements = []
-            text_elements = []
-            figures = []
-            for element in elements:
-                normalized_element = dict(element)
-                metadata = dict(element.get("metadata") or {})
-                metadata.pop("word_style", None)
-                metadata.pop("word_style_id", None)
-                element_type = normalize_element_label(
-                    metadata.get("element_type") or metadata.get("layout_type") or element.get("element_type")
-                )
-                metadata.update({"element_type": element_type, "layout_type": element_type})
-                normalized_element["metadata"] = metadata
-                if "element_type" in normalized_element:
-                    normalized_element["element_type"] = element_type
-                normalized_elements.append(normalized_element)
-                if element_type in {"figure", "seal"}:
-                    figure_element = dict(normalized_element)
-                    figure_element.pop("text", None)
-                    figures.append(figure_element)
-                elif element_type != "table":
-                    text_elements.append(normalized_element)
-            cursor.execute(
-                """INSERT INTO public.document_processing_outputs
-                       (document_id, pipeline_id, text_elements, figures,
-                        structured_tables, document_metadata)
-                   VALUES (%s, %s, %s, %s, %s, %s)
-                   ON CONFLICT (document_id) DO UPDATE SET
-                       pipeline_id = EXCLUDED.pipeline_id,
-                       text_elements = EXCLUDED.text_elements,
-                       figures = EXCLUDED.figures,
-                       structured_tables = EXCLUDED.structured_tables,
-                       document_metadata = EXCLUDED.document_metadata,
-                       updated_at = now()""",
-                (
-                    document_id,
-                    pipeline_id,
-                    Jsonb(text_elements),
-                    Jsonb(figures),
-                    Jsonb(tables),
-                    Jsonb(document_metadata),
-                ),
+            normalized_elements = self._normalize_elements(elements)
+            self._write_output(
+                cursor, document_id, pipeline_id, normalized_elements,
+                tables, document_metadata,
             )
         return len(normalized_elements), len(tables)
+
+    def replace_document(self, document_id: str, parsed: dict[str, Any]) -> tuple[int, int]:
+        """Persist the parser's canonical ``elements`` and ``tables`` payload."""
+        metadata = dict(parsed.get("metadata") or {})
+        elements = self._normalize_elements(parsed.get("elements") or [])
+        tables = parsed.get("tables") or []
+        pipeline_id = str(metadata.get("pipeline_id") or metadata.get("parser_engine") or "docling")
+        with self.connection.transaction(), self.connection.cursor() as cursor:
+            self._write_output(cursor, document_id, pipeline_id, elements, tables, metadata)
+        return len(elements), len(tables)
+
+    @staticmethod
+    def _normalize_elements(elements: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        normalized = []
+        for element in elements:
+            item = dict(element)
+            metadata = dict(element.get("metadata") or {})
+            metadata.pop("word_style", None)
+            metadata.pop("word_style_id", None)
+            element_type = normalize_element_label(
+                metadata.get("element_type") or metadata.get("layout_type") or element.get("element_type")
+            )
+            metadata.update({"element_type": element_type, "layout_type": element_type})
+            item["metadata"] = metadata
+            if "element_type" in item:
+                item["element_type"] = element_type
+            normalized.append(item)
+        return normalized
+
+    @staticmethod
+    def _write_output(cursor, document_id, pipeline_id, elements, tables, document_metadata) -> None:
+        cursor.execute(
+            """INSERT INTO public.document_processing_outputs
+                   (document_id, pipeline_id, elements, tables, document_metadata)
+               VALUES (%s, %s, %s, %s, %s)
+               ON CONFLICT (document_id) DO UPDATE SET
+                   pipeline_id = EXCLUDED.pipeline_id,
+                   elements = EXCLUDED.elements,
+                   tables = EXCLUDED.tables,
+                   document_metadata = EXCLUDED.document_metadata,
+                   updated_at = now()""",
+            (
+                document_id, pipeline_id, Jsonb(elements), Jsonb(tables),
+                Jsonb(document_metadata),
+            ),
+        )
 
     def close(self) -> None:
         if self._owns_connection:

@@ -9,7 +9,10 @@ from collections.abc import Mapping
 from typing import Any
 
 from core.agents.base import BaseAgent
+from core.analytics.metric_ontology import resolve_metric_names
+from core.analytics.metric_validation import MetricDefinitionError, validate_metric_definitions
 from core.analytics.text_to_sql import (
+    APPROVED_COLUMNS,
     SQLValidationError,
     build_sql_prompt,
     decode_query_plan,
@@ -65,6 +68,8 @@ class SQLAnalyticsAgent(BaseAgent):
     async def run_payload(self, request: Any) -> dict[str, Any]:
         self._authorize(request)
         question = self._query_text(request)
+        metric_names = resolve_metric_names(question)
+        definitions = {}
         raw = None
         prompt = build_sql_prompt(question)
         for attempt in range(2):
@@ -74,8 +79,10 @@ class SQLAnalyticsAgent(BaseAgent):
                     if inspect.isawaitable(raw):
                         raw = await raw
                 plan = decode_query_plan(raw)
+                if plan.sql:
+                    definitions = validate_metric_definitions(plan.sql, metric_names, plan.parameters, APPROVED_COLUMNS)
                 break
-            except SQLValidationError as error:
+            except (SQLValidationError, MetricDefinitionError) as error:
                 if attempt == 0:
                     prompt = build_sql_prompt(
                         question, validation_error=str(error), previous_response=str(raw),
@@ -104,20 +111,29 @@ class SQLAnalyticsAgent(BaseAgent):
                 rows = await self.repository.execute_approved_query(plan.sql or "", *plan.parameters)
         except Exception as error:
             return self._database_error(error, plan.sql, plan.parameters)
+        limitations = list(dict.fromkeys(
+            note for definition in definitions.values() for note in definition.get("limitations", ())
+        ))
+        if any(definition["unit"].startswith("currency") for definition in definitions.values()):
+            limitations.append("Dataset currency is not confirmed; do not assume USD, VND or another currency.")
+        if any(definition["aggregation"] == "ratio" and definition["unit"] == "percent"
+               for definition in definitions.values()):
+            limitations.append("Ratio results are fractions: 0.25 means 25%; raw result rows are not rescaled.")
+        metadata = {"source": list(validated.sources), "explanation": plan.explanation, "metrics": definitions}
         if not rows:
             return {
                 "ok": False, "operation": "text_to_sql", "rows": [],
                 "answer": "No matching rows were found in the approved data sources.",
                 "sql": plan.sql, "parameters": list(plan.parameters), "query_status": "executed",
-                "limitations": [], "metadata": {"source": list(validated.sources), "explanation": plan.explanation},
+                "limitations": limitations, "metadata": metadata,
             }
         return {
             "ok": True, "operation": "text_to_sql", "rows": rows,
             "answer": "Query completed.",
             "sql": plan.sql, "parameters": list(plan.parameters), "query_status": "executed",
             "evidence": [{"source": source} for source in validated.sources],
-            "limitations": [],
-            "metadata": {"source": list(validated.sources), "explanation": plan.explanation},
+            "limitations": limitations,
+            "metadata": metadata,
         }
 
     async def close(self) -> None:

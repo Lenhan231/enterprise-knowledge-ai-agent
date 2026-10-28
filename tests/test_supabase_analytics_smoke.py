@@ -72,7 +72,7 @@ class FakeRepository:
 class FakeLLM:
     def __init__(self):
         self.plans = [
-            ("commerce.sales", "SUM(s.revenue) AS revenue"),
+            ("commerce.sales", "SUM(s.revenue) AS revenue, SUM(s.cogs) AS cogs"),
             ("commerce.orders", "COUNT(*) AS orders"),
             ("commerce.products", "COUNT(*) AS products"),
         ]

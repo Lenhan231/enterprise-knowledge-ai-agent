@@ -72,6 +72,20 @@ benefits from the existing translation cache; it is not a load or quality test.
 
 ## Dataset and knowledge sources
 
+Commerce SQL planning uses the existing metric ontology for recognized metric
+names and aliases. Before execution, the agent checks canonical formulas,
+source-column lineage, supported output dimensions, required filters and
+explicit single-snapshot rules. A mismatch gets one repair attempt and then
+fails without executing. Generic read-only queries keep their existing path.
+Verified definitions are returned under `metadata.metrics` and supplied to the
+answer summarizer with currency and ratio-scale limitations.
+
+These checks are conservative: equivalent formulas outside the supported
+expression shapes can be rejected. They do not yet prove join population or
+prevent every one-to-many aggregation error. SQL benchmark references that
+use a different definition (for example, payment-based AOV rather than the
+ontology's order-item-based AOV) are not interchangeable without review.
+
 The current business demo is centered on the Kaggle Datathon 2026 Round 1
 Commerce schema. Its transactional and operational data is synthetic and is
 kept in the private PostgreSQL `commerce` schema; it must not be described as

@@ -51,6 +51,20 @@ services:
       DOCLING_CACHE_DIR: /models/docling
     volumes: ["document_model_cache:/models"]
 
+  chunking:
+    image: enterprise-knowledge-chunking:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.chunking
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 30s
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+      DATABASE_MAX_CONNECTIONS_PER_PROCESS: "1"
+      DOCUMENT_CHUNKING_STRATEGY: ${DOCUMENT_CHUNKING_STRATEGY:-sentence}
+      CHUNKING_POLL_INTERVAL_SECONDS: ${CHUNKING_POLL_INTERVAL_SECONDS:-5}
+
   embeddings:
     <<: *private
     image: enterprise-knowledge-embeddings:local

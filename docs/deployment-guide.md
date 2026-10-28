@@ -59,15 +59,19 @@ changes to repeat both checks. It never applies SQL or writes test rows.
 
 ## Docker
 
-The deployment contains four backend services, each built from its own Dockerfile:
-`backend-api`, `document-processing`, `embeddings`, and `reranker`.
+The deployment contains five backend services, each built from its own Dockerfile:
+`backend-api`, `document-processing`, `chunking`, `embeddings`, and `reranker`.
 Supabase remains external; no local database or frontend is started.
 
 1. Configure `.env` as above and generate `INTERNAL_SERVICE_TOKEN` with
    `python -c "import secrets; print(secrets.token_hex(32))"`. Set the generated
    value in `.env`; never commit it or send it to the frontend. Existing `.env`
    files need this new variable added. Internal services receive only this
-   token and their model configuration, not Supabase or LLM secrets.
+   token and their model configuration, not Supabase or LLM secrets. The
+   non-HTTP chunking worker receives `DATABASE_URL` and chunking settings only.
+   Apply `supabase/migrations/20261028090548_add_chunking_document_statuses.sql`
+   and `supabase/migrations/20261028091543_align_processing_outputs_with_parser.sql`
+   through the normal migration workflow before starting this worker.
 2. Run `docker compose config --quiet`, then `docker compose build` and
    `docker compose up -d --wait --wait-timeout 1800`.
 3. Check `docker compose ps`, `docker compose logs --tail=50`, and
@@ -78,8 +82,14 @@ Supabase remains external; no local database or frontend is started.
    upload to size the host. Splitting containers does not guarantee a smaller
    total RAM requirement. Use one inference process per container initially.
 
-The API listens on loopback port 8000. Internal services publish no host ports
-and require the shared service token. Dependency health checks wait for model
+The API listens on loopback port 8000. Internal HTTP services publish no host ports
+and require the shared service token. The chunking worker has no HTTP endpoint;
+it polls parsed documents and atomically persists parser chunks with status
+`chunked`. It does not create embeddings, activate documents, or change access
+roles. Check its logs for startup migration failures and per-document errors;
+a running container alone does not establish that the queue is progressing.
+See the [worker guide](../src/core/chunking/README.md#chunking-worker-service)
+for claim, retry, and failure semantics. Dependency health checks wait for model
 loading before starting the API. The API retains tokenizer support but does
 not install PyTorch or Docling, and its image excludes static frontend files.
 Public API paths, authentication, roles and storage ownership remain with the

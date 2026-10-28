@@ -1,0 +1,7 @@
+FROM python:3.11-slim
+WORKDIR /app
+RUN python -m pip install --no-cache-dir "psycopg[binary]==3.3.5" "python-dotenv==1.1.1"
+COPY src/core/chunking ./src/core/chunking
+COPY src/core/database/connection_limit.py src/core/database/parser_chunks_repository.py ./src/core/database/
+ENV PYTHONPATH="/app/src" PYTHONUNBUFFERED="1"
+CMD ["python", "-m", "core.chunking.worker"]

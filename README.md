@@ -39,10 +39,16 @@ Project layout
 - src/core/retrieval and src/core/rag: role-scoped hybrid search and grounded answers
 - src/core/agents: runtime router for grounded QA, analytics, hybrid reports and dashboard data
 - [CLI tools](tools/README.md): reproducible CLI entry points grouped by workstream; see the [repository map](docs/technical/repository-ownership.md) for ownership and shared contracts
-- docker-compose.yml: backend API, document processing, embeddings and reranker; optional Nginx ingress. Frontend hosting remains on Vercel and data remains in Supabase.
+- docker-compose.yml: backend API, document processing, chunking worker, embeddings and reranker; optional Nginx ingress. Frontend hosting remains on Vercel and data remains in Supabase.
 
 Backend Docker quick start (configure `.env` first, including a random
 `INTERNAL_SERVICE_TOKEN` shared only by the backend containers):
+
+Apply `supabase/migrations/20261028090548_add_chunking_document_statuses.sql`
+and `supabase/migrations/20261028091543_align_processing_outputs_with_parser.sql`
+through the normal database migration workflow before starting the chunking
+worker. It consumes `parsed` documents and leaves them `chunked`, without
+embedding or retrieval activation. See the [worker guide](src/core/chunking/README.md#chunking-worker-service).
 
 ```bash
 docker compose config --quiet

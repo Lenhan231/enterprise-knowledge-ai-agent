@@ -31,4 +31,5 @@ ponytail.md
 /.rovodev
 /.vibe
 /.pytest_cache
+/artifacts/local/chunking-preview/
 

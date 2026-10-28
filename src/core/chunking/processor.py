@@ -78,6 +78,10 @@ class ChunkingProcessor:
             )
             if pending_text and key == pending_key:
                 pending_text += "\n\n" + text
+                if metadata.get("source_elements"):
+                    pending_metadata["source_elements"] = [
+                        *pending_metadata.get("source_elements", []), *metadata["source_elements"],
+                    ]
             else:
                 flush()
                 pending_text = text
@@ -115,6 +119,12 @@ class ChunkingProcessor:
         """Merge heading-only fragments into nearby prose before downstream indexing."""
         merged: list[dict[str, Any]] = []
 
+        def retain_sources(target: dict, source: dict) -> None:
+            if source.get("source_elements"):
+                values = list(target.get("source_elements", []))
+                values.extend(item for item in source["source_elements"] if item not in values)
+                target["source_elements"] = values
+
         def location(metadata: dict[str, Any]) -> tuple[Any, ...]:
             path = metadata.get("section_path")
             section = tuple(path) if isinstance(path, list) else (str(metadata.get("section_title") or ""),)
@@ -141,6 +151,7 @@ class ChunkingProcessor:
                 title = str(metadata.get("section_title") or "").strip()
                 heading = text.splitlines()[0].strip().strip("#* ") if text else ""
                 if title and location(metadata) == location(next_metadata) and heading == title and str(next_metadata.get("section_title") or "").strip() == title:
+                    retain_sources(next_metadata, metadata)
                     continue
             if element in {"text", "title", "paragraph"} and 0 < len(text) < 80 and index + 1 < len(chunks):
                 following = chunks[index + 1]
@@ -153,6 +164,7 @@ class ChunkingProcessor:
                     and len(text) + len(following_text) + 2 <= self.chunking.size
                 ):
                     following["text"] = join_text(text, following_text, following_metadata)
+                    retain_sources(following_metadata, metadata)
                     continue
             if element in {"text", "title", "paragraph"} and 0 < len(text) < 80 and merged:
                 previous = merged[-1]
@@ -165,6 +177,7 @@ class ChunkingProcessor:
                     and len(previous_text) + len(text) + 2 <= self.chunking.size
                 ):
                     previous["text"] = join_text(previous_text, text, previous_metadata)
+                    retain_sources(previous_metadata, metadata)
                     continue
             merged.append(chunk)
         return merged

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from document_processing.docling_adapter.processor import DoclingProcessor
+from document_processing.element_taxonomy import normalize_element_label
 
 SUPPORTED_FORMATS = frozenset({
     ".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md",
@@ -63,6 +64,7 @@ class DocumentProcessor:
             table_metadata = table.setdefault("metadata", {})
             table_metadata.update({key: value for key, value in common.items() if key not in table_metadata and key not in {"title", "uploaded_by"}})
             table_metadata.update({"pipeline_id": engine, "parser_engine": engine})
+            table_metadata.update({"element_type": "table", "layout_type": "table"})
             parser = table_metadata.get("parser") or table_metadata.get("table_extraction_method")
             parser = parser or "docling"
             table_metadata["parser"] = parser
@@ -73,6 +75,8 @@ class DocumentProcessor:
 
         for element in elements:
             element_metadata = dict(element.get("metadata") or {})
+            element_metadata.pop("word_style", None)
+            element_metadata.pop("word_style_id", None)
             element_metadata.update({
                 key: value for key, value in common.items()
                 if key not in element_metadata and key not in {"title", "uploaded_by"}
@@ -83,9 +87,11 @@ class DocumentProcessor:
             parser = parser or "docling"
             element_metadata["parser"] = parser
             element_metadata.setdefault("text_extraction_method", parser)
-            element_type = str(element_metadata.get("element_type") or element_metadata.get("layout_type") or "text").lower()
+            source_label = element_metadata.get("layout_type") or element_metadata.get("element_type") or element.get("element_type") or "text"
+            element_type = normalize_element_label(source_label)
             element_metadata["element_type"] = element_type
-            element_metadata.setdefault("layout_type", element_type)
+            element_metadata["layout_type"] = element_type
+            element["element_type"] = element_type
             element["metadata"] = element_metadata
 
             if element_type == "table":

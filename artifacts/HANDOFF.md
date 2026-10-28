@@ -1,3 +1,45 @@
+## 2026-10-29 - Chunking worker on main; Contabo 12 GB VPS; next ingestion handoff
+
+Read **docs/handoff/chunking-worker-20261029.vi.md** first. This checkpoint is
+Vietnamese handoff documentation plus a compact historical audit, on **Huy**.
+Implementation was pushed to **main** at **43cde905598c5553dbaab592f9ef4933adbf00bd**.
+Latest fetched origin/main is **b495167**; it includes later team changes which
+have not been runtime-verified here. Do not merge the historical Huy codebase
+into main just to obtain this handoff. Fetch/read current main before editing.
+
+Completed: parsed-document worker with transaction row locks/SKIP LOCKED,
+canonical elements/tables mapping, atomic parser-chunk persistence + chunked
+status, rollback/failure handling, Compose/Docker configuration, dry-run CLI,
+and provenance retention. **28 tests passed** at the worker checkpoint,
+including real isolated local PostgreSQL concurrency/rollback tests. No
+Supabase write or actual Docker build/deployment was performed by this agent.
+No embedding worker was added. Supabase status/schema migrations already on
+main are 20261028090548 and 20261028091543; the duplicate local migration was removed.
+
+Important new-main correction: **c7cd012** separates `/parser-handoff` so it now
+parses, saves raw output, marks parsed and returns before chunking. Normal
+`/api/documents/upload` still runs inline chunking/embedding. Do not repeat the
+older claim that parser-handoff still chunks inline without checking current code.
+Main also changed the default LLM to `qwen/qwen3.8-27b`; server env may override.
+
+User has rented **Contabo 12 GB RAM** for shared 24/7 backend access. Actual VPS
+access, deployment, HTTPS/frontend URL, migrations and resource usage have not
+been inspected; no credentials were supplied. CI/CD auto-deployment has not
+been set up by this agent. First resume work: verify current main + server state,
+exercise one parsed -> chunked handoff, then implement/coordinate embedding
+handoff and Knowledge AI scope/citation behavior. 12 GB is a budget trial, not
+an established memory requirement; measure concurrent OCR/chat before upgrading.
+
+Historical audited document: PARSER-04180dffbff040b4978182be2208b9e3, Long Hau
+2008 PDF. Old split-array snapshot: 564 text/24 tables/16 figures, 298 parser
+chunks -> 302 token passages, max 510/512 tokens. Compact evidence is tracked at
+artifacts/evaluation/chunking/long-hau-2008-parser-output-audit-20261028.json.
+OCR numerical errors, rotated/merged tables, noise/context and token row cuts
+remain known limitations. Full previews/rendered pages are local-only under
+artifacts/local/chunking-preview/ and must not be assumed available on another PC.
+
+Prior entries below remain historical; Review2 evidence/results were unchanged.
+
 ## 2026-10-26 - Review 2 evidence guide, final speaking notes and branch boundaries
 
 User authorized committing/pushing the important session work to Huy. This checkpoint is documentation/evidence only. No production code, frozen benchmark inputs/results, translations or database content were changed.

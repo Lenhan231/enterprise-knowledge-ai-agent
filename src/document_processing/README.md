@@ -11,8 +11,11 @@ Shared provenance fields are listed in [`docs/metadata.md`](docs/metadata.md).
 
 ```text
 DocumentProcessor.process(file)
-    └── DoclingProcessor → {elements, tables}
-            └── common cleanup + provenance
+    └── DoclingProcessor (format router)
+          ├── native document conversion → {elements, tables}
+          └── scanned/embedded_images → OCR selected PDF/Office pictures only
+                └── result_mapper → {elements, tables}
+    └── common cleanup + provenance
 
 application → core.chunking → persist chunks/tables
 ```
@@ -26,9 +29,18 @@ handle chunking, tokenization, embeddings, or retrieval indexing.
 | Path | Responsibility |
 | --- | --- |
 | `document_processor.py` | Route supported files to Docling; normalize output and provenance. |
-| `docling_adapter/` | Docling parser implementation and result mapper. |
+| `docling_adapter/processor.py` | Route native document conversion and scanned embedded images. |
+| `docling_adapter/digital_born/` | Native PDF detection and DOCX structure enrichment. |
+| `docling_adapter/scanned/` | Layout/OCR flow for selected raster images embedded in PDFs and Office documents. |
+| `docling_adapter/result_mapper.py` | Normalize native and scanned results into shared elements and tables. |
 `pipeline_id` records the configured parser engine; `parser` identifies the
 component that produced an element or table. See [`docs/metadata.md`](docs/metadata.md).
+
+PDFs with at least 100 non-whitespace native text characters on every page use
+Docling's native text path with OCR disabled. If any page falls below that
+threshold, the PDF is routed as scanned and uses OCR when enabled in the parser
+configuration. The selected route and effective OCR setting are returned in
+the parser result metadata.
 
 ## Module Docker image
 
@@ -68,11 +80,13 @@ For the independent chunking image, see
 Install the optional Streamlit UI and run it on loopback:
 
 ```sh
-PYTHONPATH=artifacts/evaluation/document-pipelines/tools/runners:src \
+PYTHONPATH=src \
   .venv/bin/streamlit run src/document_processing/testing_parser_streamlit.py \
   --server.address 127.0.0.1 --server.port 8502
 ```
 
 By default, source files and Docling JSON output are saved under
 `src/document_processing/.owner_store/`. Set `DOCUMENT_PROCESSING_STORE` to
-use another local folder.
+use another local folder. PDF uploads can select arbitrary pages, such as
+`2, 5, 9`, before Docling runs, which is useful for reviewing a few pages of a
+large document. Leaving the field blank processes the full PDF.

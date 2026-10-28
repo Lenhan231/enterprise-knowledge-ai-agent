@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
-import logging
 import os
 import tempfile
 from io import BytesIO
@@ -11,9 +9,10 @@ from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any
 
+from .digital_born.pdf import has_embedded_raster_images, has_native_text_on_every_page
 from .result_mapper import map_result
+from .scanned.embedded_images import process_embedded_images
 
-_log = logging.getLogger(__name__)
 _OFFICE_FORMATS = {
     "docx", "docm", "dotx", "dotm",
     "xlsx", "xlsm", "xltx", "xltm",
@@ -22,7 +21,7 @@ _OFFICE_FORMATS = {
 
 
 class DoclingProcessor:
-    """Convert a source document, then delegate output normalization."""
+    """Route native document conversion and scanned embedded images."""
 
     def __init__(self, config: dict[str, Any]):
         self.config = config
@@ -35,6 +34,7 @@ class DoclingProcessor:
             from docling.datamodel.base_models import InputFormat
             from docling.datamodel.pipeline_options import (
                 LayoutObjectDetectionOptions,
+                OcrAutoOptions,
                 PdfPipelineOptions,
                 TableFormerMode,
                 TableStructureOptions,
@@ -47,19 +47,44 @@ class DoclingProcessor:
             raise RuntimeError("Docling is unavailable; install it with `uv sync --extra docling`") from error
 
         device = AcceleratorDevice.CUDA if self.config.get("docling_device") == "cuda" else AcceleratorDevice.CPU
-        do_ocr = bool(self.config.get("docling_ocr", True))
+        source_format = str(document.get("metadata", {}).get("format", "PDF")).lower()
+        input_path = Path(file_path) if file_path else None
+        if input_path is not None and input_path.is_file():
+            payload = None
+            pdf_source: bytes | Path = input_path
+        else:
+            payload = source if isinstance(source, bytes) else Path(source).read_bytes()
+            pdf_source = payload
+
+        requested_ocr = bool(self.config.get("docling_ocr", True))
+        pdf_is_digital_born = (
+            source_format == "pdf" and has_native_text_on_every_page(pdf_source)
+        )
+        scan_pdf_embedded_images = (
+            requested_ocr
+            and pdf_is_digital_born
+            and has_embedded_raster_images(pdf_source)
+        )
+        scan_embedded_images = requested_ocr and (
+            source_format in _OFFICE_FORMATS or scan_pdf_embedded_images
+        )
+        do_ocr = requested_ocr and not pdf_is_digital_born
         ocr_engine = str(
             self.config.get(
                 "docling_ocr_engine",
                 os.environ.get("DOCUMENT_PROCESSING_OCR_ENGINE", "tesseract"),
             )
         ).lower()
-        processor_config = {**self.config, "docling_ocr_engine": ocr_engine}
-        if not do_ocr:
-            ocr_options = None
+        processor_config = {
+            **self.config,
+            "docling_ocr": do_ocr,
+            "docling_ocr_engine": ocr_engine,
+        }
+        if not do_ocr and not scan_embedded_images:
+            ocr_options = OcrAutoOptions()
         elif ocr_engine == "vietocr":
             try:
-                from docling_vietocr import VietOcrOptions, register_vietocr
+                from .scanned.vietocr import VietOcrOptions, register_vietocr
             except ImportError as error:
                 raise RuntimeError(
                     "VietOCR is unavailable. Install its OCR plugin and dependencies, or select Tesseract."
@@ -80,7 +105,10 @@ class DoclingProcessor:
             ),
             do_ocr=do_ocr,
             do_table_structure=bool(self.config.get("docling_table_structure", True)),
-            generate_page_images=bool(self.config.get("docling_page_images", False)),
+            generate_page_images=(
+                bool(self.config.get("docling_page_images", False))
+                or scan_pdf_embedded_images
+            ),
             images_scale=1.0,
             layout_options=LayoutObjectDetectionOptions(
                 model_spec=ObjectDetectionModelSpec(
@@ -101,9 +129,7 @@ class DoclingProcessor:
             }
         )
 
-        source_format = str(document.get("metadata", {}).get("format", "PDF")).lower()
         source_suffix = f".{source_format}" if source_format else ".pdf"
-        input_path = Path(file_path) if file_path else None
         source_bytes: bytes | None = None
         try:
             if input_path is not None and input_path.is_file():
@@ -111,7 +137,6 @@ class DoclingProcessor:
                 if source_format == "docx":
                     source_bytes = input_path.read_bytes()
             else:
-                payload = source if isinstance(source, bytes) else Path(source).read_bytes()
                 if source_format == "docx":
                     source_bytes = payload
                 with tempfile.NamedTemporaryFile(suffix=source_suffix) as temporary:
@@ -128,90 +153,20 @@ class DoclingProcessor:
         except PackageNotFoundError:
             docling_version = None
 
-        embedded_image_results: dict[int, dict[str, Any]] = {}
-        if do_ocr and source_format in _OFFICE_FORMATS:
-            picture_items = []
-            unique_images: dict[bytes, Any] = {}
-            image_index = 0
-            for item, _level in result.document.iterate_items():
-                if not isinstance(item, PictureItem):
-                    continue
-                image = item.get_image(result.document)
-                if image is None:
-                    continue
-                normalized_image = image.convert("RGB")
-                image_key = hashlib.sha256(
-                    f"{normalized_image.size}".encode() + normalized_image.tobytes()
-                ).digest()
-                if image_key in unique_images:
-                    normalized_image.close()
-                else:
-                    unique_images[image_key] = normalized_image
-                picture_items.append((item, image_index, image_key))
-                image_index += 1
-            unique_items = list(unique_images.items())
-            image_outputs: dict[bytes, dict[str, Any]] = {}
-            embedded_options = options.model_copy(update={"generate_page_images": False})
-            embedded_converter = DocumentConverter(
-                format_options={
-                    InputFormat.PDF: PdfFormatOption(pipeline_options=embedded_options),
-                }
-            )
-            for batch_start in range(0, len(unique_items), 8):
-                batch = unique_items[batch_start:batch_start + 8]
-                try:
-                    images = [entry[1] for entry in batch]
-                    with tempfile.NamedTemporaryFile(suffix=".pdf") as temporary:
-                        images[0].save(
-                            temporary,
-                            format="PDF",
-                            save_all=True,
-                            append_images=images[1:],
-                            resolution=72,
-                        )
-                        temporary.flush()
-                        image_result = embedded_converter.convert(temporary.name)
-                    if "FAILURE" in str(image_result.status).upper():
-                        raise RuntimeError(str(image_result.status))
-                    image_output = map_result(
-                        image_result,
-                        processor_config,
-                        TableItem,
-                        do_ocr,
-                        docling_version,
-                        "pdf",
-                        preserve_chart_items=True,
-                    )
-                    for page_index, (image_key, _image) in enumerate(batch, 1):
-                        image_outputs[image_key] = {
-                            "output": {
-                                "elements": [
-                                    element for element in image_output["elements"]
-                                    if (element.get("metadata") or {}).get("page_number") == page_index
-                                ],
-                                "tables": [
-                                    table for table in image_output["tables"]
-                                    if table.get("page_number", (table.get("metadata") or {}).get("page_number")) == page_index
-                                ],
-                            },
-                        }
-                except Exception as error:
-                    _log.warning(
-                        "Could not OCR embedded images %s-%s in %s: %s",
-                        batch_start,
-                        batch_start + len(batch) - 1,
-                        source_format,
-                        error,
-                    )
-                finally:
-                    for _image_key, image in batch:
-                        image.close()
-            for item, current_index, image_key in picture_items:
-                if image_key in image_outputs:
-                    embedded_image_results[id(item)] = {
-                        "image_index": current_index,
-                        **image_outputs[image_key],
-                    }
+        embedded_image_results = process_embedded_images(
+            result=result,
+            source_format=source_format,
+            formats_to_scan=_OFFICE_FORMATS | ({"pdf"} if scan_pdf_embedded_images else set()),
+            picture_item_type=PictureItem,
+            pipeline_options=options,
+            input_format=InputFormat,
+            pdf_format_option=PdfFormatOption,
+            document_converter=DocumentConverter,
+            processor_config=processor_config,
+            table_item_type=TableItem,
+            ocr_enabled=scan_embedded_images,
+            docling_version=docling_version,
+        )
 
         mapped = map_result(
             result,
@@ -223,6 +178,14 @@ class DoclingProcessor:
             source_bytes,
             embedded_image_results,
         )
+        if source_format == "pdf":
+            mapped["metadata"].update({
+                "pdf_processing_route": "digital_born" if pdf_is_digital_born else "scanned",
+                "ocr_enabled": do_ocr,
+                "embedded_image_ocr_enabled": scan_pdf_embedded_images,
+            })
+        elif source_format in _OFFICE_FORMATS:
+            mapped["metadata"]["embedded_image_ocr_enabled"] = scan_embedded_images
         if self.config.get("docling_page_images", False):
             page_previews = {}
             page_sizes = {}

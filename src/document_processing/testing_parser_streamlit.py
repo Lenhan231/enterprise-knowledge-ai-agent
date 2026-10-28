@@ -544,9 +544,33 @@ else:
                 st.caption("This format has no page numbers, so all ordered elements are shown.")
                 st.json(elements, expanded=True)
         with details_tab:
+            run_config = selected_manifest.get("config") or {}
+            source_suffix = Path(selected_manifest["filename"]).suffix.lower()
+            uses_pdf_pipeline = source_suffix in {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}
+            if uses_pdf_pipeline:
+                layout_model = "Docling Heron (`docling-project/docling-layout-heron`)"
+                table_recognition_model = (
+                    "Docling TableFormer (Accurate, cell matching)"
+                    if run_config.get("docling_table_structure", True)
+                    else "Disabled"
+                )
+                if not run_config.get("docling_ocr", True):
+                    text_recognition_model = "OCR disabled (Docling native text)"
+                elif run_config.get("docling_ocr_engine", "tesseract") == "vietocr":
+                    text_recognition_model = "VietOCR vgg_seq2seq (greedy, 512 px)"
+                else:
+                    language = run_config.get("docling_ocr_language", "vie")
+                    text_recognition_model = f"Tesseract (language: {language}, PSM 6)"
+            else:
+                text_recognition_model = "Docling native text extraction (no OCR model)"
+                layout_model = "Docling native document structure (no page layout model)"
+                table_recognition_model = "Docling native table extraction"
             st.write(f'**File:** {selected_manifest["filename"]}')
             st.write(f'**Processed:** {selected_manifest["processed_at"][:19].replace("T", " ")} UTC')
             st.write(f'**Parser:** {selected_manifest.get("config", {}).get("parser_engine", "docling")}')
+            st.write(f"**Text recognition model:** {text_recognition_model}")
+            st.write(f"**Layout model:** {layout_model}")
+            st.write(f"**Table recognition model:** {table_recognition_model}")
             st.write(f'**SHA-256:** `{selected_manifest["source_sha256"]}`')
             if source_path.is_file():
                 st.download_button(

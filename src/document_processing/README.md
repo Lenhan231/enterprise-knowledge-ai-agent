@@ -68,9 +68,9 @@ For the independent chunking image, see
 Install the optional Streamlit UI and run it on loopback:
 
 ```sh
-PYTHONPATH=/tmp/vietocr-benchmark-packages:artifacts/evaluation/document-pipelines/tools/runners:src \
+PYTHONPATH=artifacts/evaluation/document-pipelines/tools/runners:src \
   .venv/bin/streamlit run src/document_processing/testing_parser_streamlit.py \
-  --server.address 127.0.0.1 --server.port 8501
+  --server.address 127.0.0.1 --server.port 8502
 ```
 
 By default, source files and Docling JSON output are saved under

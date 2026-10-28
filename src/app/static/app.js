@@ -769,7 +769,7 @@ async function api(path, options = {}) {
   if (!(options.body instanceof FormData)) headers["Content-Type"] = "application/json";
   headers["ngrok-skip-browser-warning"] = "1";
   const response = await fetch(path, { credentials: "same-origin", ...options, headers });
-  if (response.status === 401) {
+  if (response.status === 401 && path !== "/api/auth/login") {
     $("#login-view").hidden = false;
     $("#workspace").hidden = true;
     $("#login-brand-sidebar").hidden = false;

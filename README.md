@@ -39,36 +39,33 @@ Project layout
 - src/core/retrieval and src/core/rag: role-scoped hybrid search and grounded answers
 - src/core/agents: runtime router for grounded QA, analytics, hybrid reports and dashboard data
 - [CLI tools](tools/README.md): reproducible CLI entry points grouped by workstream; see the [repository map](docs/technical/repository-ownership.md) for ownership and shared contracts
-- docker-compose.yml: FastAPI service, separate document-processing and chunking check services, and an optional pgvector-only database profile (not the full Supabase stack)
+- docker-compose.yml: backend API, document processing, embeddings and reranker; optional Nginx ingress. Frontend hosting remains on Vercel and data remains in Supabase.
 
-Run a module check independently from the repository root:
+Backend Docker quick start (configure `.env` first, including a random
+`INTERNAL_SERVICE_TOKEN` shared only by the backend containers):
 
 ```bash
-docker compose --profile checks run --build --rm document-processing-check
-docker compose --profile checks run --build --rm chunking-check
-docker compose --profile checks run --build --rm embedding-check
-docker compose --profile checks run --build --rm retrieval-check
-docker compose --profile checks run --build --rm agents-check
+docker compose config --quiet
+docker compose build
+docker compose up -d --wait
+curl http://127.0.0.1:8000/health
 ```
 
-Each command builds and runs only its check container, then removes that
-container. Embedding downloads/loads the configured model and keeps its cache in
-a named volume; retrieval checks the configured database connection and vector
-registration without querying or changing rows. Normal `docker compose up`
-still starts only the web app. The web container shares the model-cache volume
-and loads the configured embedding model before accepting requests
-(`EMBEDDING_PRELOAD=1` in the Docker image), downloading missing files on first
-startup. A model-loading failure prevents startup. Subsequent starts reuse the
-cached weights. Agentic routing is the default for chat requests and for users
-with analytics access in the UI; Auto select remains available as the local
-rule-based alternative. Users without analytics access default to Knowledge.
+Each backend service has its own `docker/Dockerfile.<service>` and runtime.
+Only the API publishes a host port. Model services use persistent caches and
+load one model copy each; first startup downloads the configured weights.
+The API calls those services instead of loading inference/OCR models itself.
+Document processing remains synchronous; an unavailable service fails the
+request rather than silently changing retrieval or parser behavior.
+See [deployment instructions](docs/deployment-guide.md#docker) for Vercel,
+HTTPS ingress, checks and safe retirement of old containers.
 
 Chat responses include request-local stage timings under `metadata.latency`;
 the backend also writes `agent_latency` JSON records to Docker logs. Values are
 milliseconds, and `null` means the stage was skipped. Retrieval totals include
 their child stages; parallel agent timings overlap and must not be summed to
 estimate request time. Existing database telemetry still stores total handler
-time only. After restarting the web container, run
+time only. After restarting the backend containers, run
 `python scripts/operations/measure_pipeline_latency.py` to save two sequential
 passes of ten questions and sampled container resources. The second pass also
 benefits from the existing translation cache; it is not a load or quality test.

@@ -51,7 +51,10 @@ def sample_resources(stop, samples, started):
         try:
             result = subprocess.run(
                 ["docker", "stats", "--no-stream", "--format", "{{json .}}",
-                 "enterprise-knowledge-ai-agent-web-1", "enterprise-knowledge-ai-agent-db-1"],
+                 "enterprise-knowledge-ai-agent-backend-api-1",
+                 "enterprise-knowledge-ai-agent-embeddings-1",
+                 "enterprise-knowledge-ai-agent-reranker-1",
+                 "enterprise-knowledge-ai-agent-document-processing-1"],
                 capture_output=True, text=True, check=True, timeout=10,
             )
             samples.append({"elapsed_ms": round((time.perf_counter() - started) * 1000, 2),

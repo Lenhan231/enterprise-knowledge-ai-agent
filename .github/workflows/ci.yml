@@ -7,6 +7,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      INTERNAL_SERVICE_TOKEN: ci-internal-service-token-not-a-production-secret
     permissions:
       contents: read
     steps:
@@ -27,16 +29,16 @@ jobs:
           cp .env.example .env
           docker compose --profile proxy config --quiet
       - name: Build application container
-        run: docker compose build web
+        run: docker compose build backend-api embeddings reranker document-processing
       - name: Validate Nginx configuration
-        run: docker run --rm --add-host web:127.0.0.1 -v "$PWD/docker/nginx.conf:/etc/nginx/nginx.conf:ro" nginx:1.27-alpine nginx -t
-      - name: Smoke test HTTP and authenticated WebSocket through Nginx
+        run: docker run --rm --add-host backend-api:127.0.0.1 -v "$PWD/docker/nginx.conf:/etc/nginx/nginx.conf:ro" nginx:1.27-alpine nginx -t
+      - name: Smoke test authenticated backend HTTP through Nginx
         run: |
           cp .env.example .env
           sed -i \
             -e 's|^AUTH_SECRET_KEY=.*|AUTH_SECRET_KEY=ci-test-secret-key-with-at-least-32-characters|' \
             -e 's|^DEMO_VIEWER_PASSWORD=.*|DEMO_VIEWER_PASSWORD=ci-test-viewer-password|' .env
-          docker compose --profile proxy up -d --build web proxy
+          docker compose --profile proxy up -d --no-deps backend-api proxy
           trap 'docker compose --profile proxy down' EXIT
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:8080/health; then
@@ -49,7 +51,7 @@ jobs:
           import http.cookiejar
           import json
           from urllib.request import HTTPCookieProcessor, Request, build_opener
-          from websockets.sync.client import connect
+          from urllib.error import HTTPError
 
           base = "http://127.0.0.1:8080"
           cookies = http.cookiejar.CookieJar()
@@ -61,13 +63,13 @@ jobs:
           )
           with client.open(request) as response:
               assert json.load(response)["role"] == "employee"
-          session = next(cookie.value for cookie in cookies if cookie.name == "enterprise_session")
-          with connect(
-              "ws://127.0.0.1:8080/ws/ask",
-              additional_headers={"Cookie": f"enterprise_session={session}", "Origin": base},
-          ) as socket:
-              socket.send("{}")
-              message = json.loads(socket.recv(timeout=5))
-              assert message["type"] == "error" and isinstance(message["detail"], list), message
-          print("Nginx HTTP health and authenticated WebSocket upgrade passed")
+          with client.open(f"{base}/api/auth/me") as response:
+              assert json.load(response)["role"] == "employee"
+          request = Request(f"{base}/api/agents/chat", data=b"{}", headers={"Content-Type": "application/json"})
+          try:
+              client.open(request)
+              raise AssertionError("Invalid chat payload was accepted")
+          except HTTPError as error:
+              assert error.code == 422
+          print("Nginx HTTP health, authentication and chat input validation passed")
           PY

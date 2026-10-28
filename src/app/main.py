@@ -59,7 +59,8 @@ APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"
 # The demo no longer depends on a seed-company manifest.
 CORPUS_COMPANY = os.getenv("COMMERCE_DEMO_COMPANY", "Commerce Demo")
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+if os.getenv("BACKEND_ONLY") != "1":
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 OCR_LANGUAGES = {"eng", "vie+eng"}
 
 
@@ -172,6 +173,8 @@ class DocumentAccessRequest(BaseModel):
 
 @app.get("/", include_in_schema=False)
 def home():
+    if os.getenv("BACKEND_ONLY") == "1":
+        return {"service": "backend-api", "docs": "/docs"}
     return FileResponse(STATIC_DIR / "index.html")
 
 

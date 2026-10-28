@@ -59,45 +59,62 @@ changes to repeat both checks. It never applies SQL or writes test rows.
 
 ## Docker
 
-With Docker Compose installed and a configured `.env`, run the backend directly
-on loopback:
+The deployment contains four backend services, each built from its own Dockerfile:
+`backend-api`, `document-processing`, `embeddings`, and `reranker`.
+Supabase remains external; no local database or frontend is started.
 
-```bash
-docker compose up --build web
-```
+1. Configure `.env` as above and generate `INTERNAL_SERVICE_TOKEN` with
+   `python -c "import secrets; print(secrets.token_hex(32))"`. Set the generated
+   value in `.env`; never commit it or send it to the frontend. Existing `.env`
+   files need this new variable added. Internal services receive only this
+   token and their model configuration, not Supabase or LLM secrets.
+2. Run `docker compose config --quiet`, then `docker compose build` and
+   `docker compose up -d --wait --wait-timeout 1800`.
+3. Check `docker compose ps`, `docker compose logs --tail=50`, and
+   `curl http://127.0.0.1:8000/health`. Model downloads can make first startup
+   slow; subsequent starts reuse named cache volumes. No inference weights
+   are baked into images. Parser models may download on the first upload.
+4. Run `docker stats --no-stream` at idle, during a chat and during an OCR
+   upload to size the host. Splitting containers does not guarantee a smaller
+   total RAM requirement. Use one inference process per container initially.
 
-To include the Nginx reverse proxy profile, use:
+The API listens on loopback port 8000. Internal services publish no host ports
+and require the shared service token. Dependency health checks wait for model
+loading before starting the API. The API retains tokenizer support but does
+not install PyTorch or Docling, and its image excludes static frontend files.
+Public API paths, authentication, roles and storage ownership remain with the
+API. Internal HTTP calls have finite timeouts; parsing can take up to 600 seconds.
 
-```bash
-docker compose --profile proxy up --build
-```
+For optional local Nginx ingress run
+`docker compose --profile proxy up -d --wait --wait-timeout 1800` and use
+`http://127.0.0.1:8080`. It forwards backend requests to `backend-api`,
+allows 51 MiB request bodies and uses 660-second upstream timeouts for uploads.
+Configure HTTPS termination at the deployment edge before public use and set
+`AUTH_COOKIE_SECURE=true`. Loopback ports require a host proxy/tunnel; do not
+point a public Vercel deployment directly at localhost.
 
-The proxy is available at `http://127.0.0.1:8080`; direct backend development
-access remains on `http://127.0.0.1:8000`. `docker/nginx.conf` allows requests
-up to the upload limit, forwards standard client/protocol headers, and sets
-basic browser security headers. Configure TLS termination at the deployment
-edge and set `AUTH_COOKIE_SECURE=true` before exposing the app beyond localhost.
-The proxy forwards WebSocket upgrades for `/ws/ask`; the authenticated local
-Uvicorn path has been exercised through a cited knowledge answer. CI also
-builds the container, validates Nginx, and runs authenticated HTTP/WebSocket
-smoke checks through the Docker proxy.
+## Vercel connection
 
-The web service uses the configured external database and Supabase services.
-The optional `local-db` profile starts plain PostgreSQL with pgvector:
-`docker compose --profile local-db up --build`. It is not a clean local
-deployment of this app: the migration history also creates a private bucket in
-Supabase's `storage.buckets`, and uploads require the Supabase Storage API. This
-profile cannot apply the full schema or verify uploads end to end. Use the
-linked Supabase project for app integration; treat local PostgreSQL as a
-lower-level vector experiment only. The development host has no Docker CLI, so
-local Compose/image/Nginx runtime validation is unavailable here. The proxy
-container path is runtime-verified in CI; this is not a hosted deployment.
+The existing Vercel configuration in `src/app/static/vercel.ts` uses
+`NGROK_URL` to rewrite `/api/*` and `/ws/*` to the backend. Set that existing
+Vercel environment variable to the backend's reachable HTTPS URL and redeploy
+the frontend. Keep the configured `TRUSTED_FRONTEND_ORIGINS` limited to the
+actual frontend domains. Verify login, role restrictions, chat, reports,
+dashboard, upload, parser handoff, Upload Test and previews through that
+frontend before cutting over. Current chat uses `/api/agents/chat`; this main branch does not register
+a `/ws/ask` endpoint. Keep Supabase secrets
+server-only. No frontend files need to be rebuilt as backend containers.
 
-## Hosting scope
+## Safe replacement and rollback
 
-Hosted deployment is outside this prototype's proposal scope. Provider-specific
-Render/Vercel deployment configs have been removed; validate the application
-locally and through the Docker/Nginx CI path above.
+The former monolithic Dockerfile and module-check Dockerfiles are replaced by
+runtime images. Old module-check and local-db Compose profiles no longer exist.
+After the replacement passes integration checks, remove only the inspected
+obsolete project containers (`web`, `app`, `db`); retain the previous app image
+until cutover is verified. Do not globally prune Docker, delete source files,
+or use `down -v`: old database volumes and uploaded documents must survive.
+`docker compose down` stops the replacement without deleting caches. Restore
+the prior Compose/Dockerfile revision and app image for rollback if needed.
 
 ## Operations boundary
 

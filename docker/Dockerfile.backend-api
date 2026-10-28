@@ -1,0 +1,13 @@
+FROM python:3.11-slim
+WORKDIR /app
+RUN python -m pip install --no-cache-dir uv==0.12.15
+COPY pyproject.toml uv.lock ./
+RUN uv export --locked --no-dev --no-hashes --no-emit-project --extra docling --output-file /constraints.txt > /dev/null
+RUN uv venv && uv export --locked --no-dev --no-hashes --no-emit-project --prune sentence-transformers --prune langchain-huggingface --output-file /api.txt > /dev/null \
+    && uv pip install --no-cache -r /api.txt -c /constraints.txt transformers
+COPY src ./src
+ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH="/app/src" PYTHONUNBUFFERED="1" HF_HOME="/models"
+EXPOSE 8000
+RUN rm -rf /app/src/app/static
+ENV BACKEND_ONLY="1" EMBEDDING_BACKEND="remote" EMBEDDING_PRELOAD="0" RERANKER_PRELOAD="0" USE_TORCH="0" USE_TF="0"
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

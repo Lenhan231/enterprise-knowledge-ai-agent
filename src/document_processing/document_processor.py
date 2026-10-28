@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+import base64
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +26,19 @@ class DocumentProcessor:
         suffix = Path(filename).suffix.lower()
         if suffix not in self.SUPPORTED:
             raise ValueError(f"Unsupported document format: {suffix or 'unknown'}")
+        if os.getenv("DOCUMENT_PROCESSING_URL"):
+            from core.services.client import post
+            result = post(os.environ["DOCUMENT_PROCESSING_URL"], "/parse", {
+                "filename": Path(filename).name,
+                "content": base64.b64encode(content).decode("ascii"),
+                "metadata": metadata, "config": self.config,
+            }, timeout=600)
+            if not all(key in result for key in ("elements", "tables", "metadata")):
+                raise RuntimeError("Parser service returned an invalid result")
+            if "page_previews" in result:
+                result["page_previews"] = {key: base64.b64decode(value, validate=True)
+                                           for key, value in result["page_previews"].items()}
+            return result
         common = {**metadata, "filename": Path(filename).name, "format": suffix[1:].upper()}
         engine = self.config.get("parser_engine", "docling")
         if engine != "docling":

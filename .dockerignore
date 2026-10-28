@@ -18,3 +18,12 @@ data/vietnam_enterprises/*
 tests
 docs
 scripts
+
+.agents
+.codex
+.aws
+tasks
+.github
+tools
+evaluation
+src/app/static

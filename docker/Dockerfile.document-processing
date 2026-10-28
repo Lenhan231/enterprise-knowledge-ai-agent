@@ -1,17 +1,13 @@
 FROM python:3.11-slim
 WORKDIR /app
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        libgomp1 tesseract-ocr tesseract-ocr-eng tesseract-ocr-vie \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN python -m pip install --no-cache-dir \
-    "docling==2.129.0" "opencv-python-headless"
-
-COPY src/document_processing ./src/document_processing
-
-ENV PYTHONPATH="/app/src" \
-    PYTHONUNBUFFERED="1"
-
-CMD ["python", "-c", "from docling.document_converter import DocumentConverter; from document_processing.document_processor import DocumentProcessor; print('PASS: Docling and document_processing imports')"]
+RUN python -m pip install --no-cache-dir uv==0.12.15
+COPY pyproject.toml uv.lock ./
+RUN uv export --locked --no-dev --no-hashes --no-emit-project --extra docling --output-file /constraints.txt > /dev/null
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 libgl1 libglib2.0-0 tesseract-ocr tesseract-ocr-eng tesseract-ocr-vie && rm -rf /var/lib/apt/lists/*
+RUN uv venv && uv pip install --no-cache --torch-backend cpu -c /constraints.txt fastapi uvicorn docling opencv-python-headless
+RUN .venv/bin/python -c "import cv2; from docling.document_converter import DocumentConverter"
+COPY src ./src
+ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH="/app/src" PYTHONUNBUFFERED="1" HF_HOME="/models"
+EXPOSE 8000
+ENV SERVICE_KIND="document-processing" EMBEDDING_BACKEND="local" RERANKER_ALLOW_DOWNLOAD="1"
+CMD ["uvicorn", "core.services.runtime:app", "--host", "0.0.0.0", "--port", "8000"]

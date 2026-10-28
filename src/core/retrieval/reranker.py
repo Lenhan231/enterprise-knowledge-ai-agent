@@ -34,22 +34,27 @@ class BGEReranker:
                    "reranker_score_type": "raw_logit", "reranker_applied": False}
         if not chunks:
             return [], details
-        import torch
         started = perf_counter()
-        # ponytail: one shared cached model; use inference workers if throughput requires it.
-        with _INFERENCE_LOCK:
-            if self.model is None:
-                try:
-                    self.model = _load_model()
-                except OSError as exc:
-                    raise RuntimeError(
-                        "BGE reranker is not cached. Provision the pinned model first or explicitly "
-                        "set RERANKER_ALLOW_DOWNLOAD=1 on the compute host.") from exc
-            scores = self.model.predict(
-                [(query, chunk.content) for chunk in chunks], batch_size=4,
-                show_progress_bar=False, convert_to_numpy=True,
-                activation_fn=torch.nn.Identity(),
-            )
+        if self.model is None and os.getenv("RERANKER_URL"):
+            from core.services.client import post
+            scores = post(os.environ["RERANKER_URL"], "/rerank", {
+                "query": query, "texts": [chunk.content for chunk in chunks],
+            })["scores"]
+        else:
+            import torch
+            with _INFERENCE_LOCK:
+                if self.model is None:
+                    try:
+                        self.model = _load_model()
+                    except OSError as exc:
+                        raise RuntimeError(
+                            "BGE reranker is not cached. Provision the pinned model first or explicitly "
+                            "set RERANKER_ALLOW_DOWNLOAD=1 on the compute host.") from exc
+                scores = self.model.predict(
+                    [(query, chunk.content) for chunk in chunks], batch_size=4,
+                    show_progress_bar=False, convert_to_numpy=True,
+                    activation_fn=torch.nn.Identity(),
+                )
         details["reranker_latency_ms"] = (perf_counter() - started) * 1000
         scores = [float(score) for score in scores]
         if len(scores) != len(chunks) or not all(math.isfinite(score) for score in scores):

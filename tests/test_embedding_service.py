@@ -26,7 +26,7 @@ class EmbeddingServiceTest(unittest.TestCase):
     def setUp(self):
         _load_backend.cache_clear()
         self.addCleanup(_load_backend.cache_clear)
-        self.service = EmbeddingService(backend=FakeEmbeddings())
+        self.service = EmbeddingService(model_name="fake-model", backend=FakeEmbeddings())
 
     def test_embed_documents_delegates_as_a_batch(self):
         self.assertEqual(self.service.embed_documents(["a", "abcd"]), [[1.0], [4.0]])

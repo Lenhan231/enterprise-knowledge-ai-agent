@@ -40,8 +40,29 @@ class HuggingFaceInferenceEmbeddings(Embeddings):
         return [float(value) for value in vector]
 
 
+class RemoteEmbeddings(Embeddings):
+    def __init__(self, model_name):
+        self.model_name = model_name
+
+    def embed_documents(self, texts):
+        from core.services.client import post
+        vectors = []
+        for start in range(0, len(texts), 32):
+            batch = texts[start:start + 32]
+            result = post(os.environ["EMBEDDINGS_URL"], "/embed", {"texts": batch, "model_name": self.model_name})["vectors"]
+            if len(result) != len(batch):
+                raise ValueError("Embedding service returned the wrong vector count")
+            vectors.extend(result)
+        return vectors
+
+    def embed_query(self, text):
+        return self.embed_documents([text])[0]
+
+
 @lru_cache(maxsize=2)
 def _load_backend(model_name: str, backend_name: str = EMBEDDING_BACKEND) -> Embeddings:
+    if backend_name == "remote":
+        return RemoteEmbeddings(model_name)
     if backend_name == "local":
         from langchain_huggingface import HuggingFaceEmbeddings
 

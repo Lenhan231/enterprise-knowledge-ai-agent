@@ -25,6 +25,10 @@ PYTHONPATH=src uvicorn app.main:app --reload --env-file .env --port 8000
 
 Open `http://localhost:8000` for the Commerce decision-support dashboard.
 The UI reads the indexed corpus and live, role-scoped aggregates from Supabase.
+The default text LLM is `qwen/qwen3.8-27b` through Groq. Set
+`GROQ_MODEL=openai/gpt-oss-120b` to switch back. Both untuned models remain
+available as benchmark baselines (`qwen3` and `gpt_oss_120b`); changing the
+runtime default does not fine-tune either model or overwrite benchmark results.
 Commerce competition data is synthetic; public operating references are external
 examples, not policy for the synthetic business.
 
@@ -86,9 +90,15 @@ fails without executing. Generic read-only queries keep their existing path.
 Verified definitions are returned under `metadata.metrics` and supplied to the
 answer summarizer with currency and ratio-scale limitations.
 
-These checks are conservative: equivalent formulas outside the supported
-expression shapes can be rejected. They do not yet prove join population or
-prevent every one-to-many aggregation error. SQL benchmark references that
+The shared SQL validator also checks join multiplicity against declared Commerce
+primary keys. SUM, AVG and plain COUNT are rejected when joins can duplicate
+their source rows, including through CTE aliases. Many-to-one dimension joins,
+detail measures, COUNT(DISTINCT key), MIN and MAX remain available. The planner
+gets one repair attempt; SUM(DISTINCT value) is not accepted as a duplication fix.
+
+These checks are conservative: equivalent formulas and safe regroupings outside
+the supported expression shapes can be rejected. They do not prove join
+population correctness or completeness. SQL benchmark references that
 use a different definition (for example, payment-based AOV rather than the
 ontology's order-item-based AOV) are not interchangeable without review.
 

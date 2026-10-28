@@ -11,6 +11,7 @@ from sqlglot import exp, parse
 from sqlglot.errors import ParseError
 
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
+from core.analytics.join_validation import validate_join_aggregations
 
 
 MAX_RESULT_ROWS = 200
@@ -199,6 +200,8 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
             raise SQLValidationError("CROSS JOIN and JOIN without ON are not allowed.")
         join_equalities(join.args["on"])
 
+    validate_join_aggregations(tree, SQLValidationError)
+
     def owning_select(node):
         while node is not None and not isinstance(node, exp.Select):
             node = node.parent
@@ -326,6 +329,9 @@ def build_sql_prompt(
         "CAST is permitted only to DATE or NUMERIC. "
         "Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. "
         "When no metric is recognized, ordinary read-only queries are still permitted.\n"
+        "Joins must preserve each aggregate's source grain: many-to-one dimension joins are safe; "
+        "do not sum or average parent measures after joining multiple detail rows. Remove unnecessary "
+        "detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\n"
         f"Requested metrics: {json.dumps({'metrics': metrics})}\n"
         f"Canonical metric definitions: {json.dumps(definitions, ensure_ascii=False)}\n"
         f"Approved schema:\n{schema}\nApproved joins:\n{joins}\nQuestion:\n{question}"

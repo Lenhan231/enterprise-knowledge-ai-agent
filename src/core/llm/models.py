@@ -1,4 +1,9 @@
 BENCHMARK_MODELS = {
+    "gpt_oss_120b": {
+        "model": "openai/gpt-oss-120b",
+        "base_url": "https://api.groq.com/openai/v1",
+        "api_key_env": ("GROQ_API_KEY",),
+    },
     "gpt_oss_20b": {
         "model": "openai/gpt-oss-20b",
         "base_url": "https://api.groq.com/openai/v1",

@@ -11,6 +11,18 @@ from core.llm.groq_provider import GroqProvider
 
 class GroqProviderTest(unittest.TestCase):
     @patch("core.llm.groq_provider.OpenAI")
+    def test_default_is_qwen_and_oss120b_remains_explicitly_selectable(self, openai):
+        with patch.dict(os.environ, {"GROQ_API_KEY": "test-secret"}):
+            os.environ.pop("GROQ_MODEL", None)
+            self.assertEqual(GroqProvider().model_name, "qwen/qwen3.8-27b")
+            self.assertEqual(GroqProvider(model="openai/gpt-oss-120b").model_name, "openai/gpt-oss-120b")
+
+    def test_both_untuned_baselines_are_preserved(self):
+        from core.llm.models import BENCHMARK_MODELS
+        self.assertEqual(BENCHMARK_MODELS["qwen3"]["model"], "qwen/qwen3.8-27b")
+        self.assertEqual(BENCHMARK_MODELS["gpt_oss_120b"]["model"], "openai/gpt-oss-120b")
+
+    @patch("core.llm.groq_provider.OpenAI")
     def test_close_releases_http_client(self, openai):
         with patch.dict(os.environ, {"GROQ_API_KEY": "test-secret"}):
             provider = GroqProvider()

@@ -87,15 +87,17 @@ No tokenization, model download, embedding, structured analytics-store write,
 or retrieval activation is performed. Company, allowed roles, and
 `knowledge_base_active` are not changed. `chunked` is an intermediate handoff,
 not `ready`; a separate embedding stage is still needed. Documents without
-parser output are skipped. Existing inline upload chunking is unchanged, so
-parser-handoff uploads can be re-chunked by this worker after becoming `parsed`.
+parser output are skipped. The parser-handoff endpoint returns after saving
+parser output, so this worker is its only chunking stage. Regular uploads retain
+their inline chunking and indexing flow.
 
 Figures are retained in parser output but excluded from chunking. Missing
 context and approximate page/bbox ordering are logged rather than silently
 repaired. Known OCR and table-boundary quality issues remain.
 
 The Docker image contains chunking plus the two database helpers it needs,
-with psycopg/python-dotenv and no model dependencies or exposed HTTP port.
+with psycopg, psycopg-pool, pgvector, python-dotenv, and no model dependencies
+or exposed HTTP port.
 
 Worker integration tests create and drop a unique database on **local**
 PostgreSQL; the supplied role must have CREATEDB permission:

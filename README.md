@@ -136,8 +136,10 @@ structured `tables`) is retained in `document_processing_outputs`; chunked
 parser output is retained separately in `document_parser_chunks` before
 embeddings. Embedded passages in `document_chunks` support retrieval.
 `/api/documents/parser-handoff`
-uses the same parser and writes the same public parser chunks and structured tables,
-then leaves the document in `parsed` state for downstream tokenization and indexing.
+stores normalized elements and tables, then returns with the document in `parsed`
+state. The separate chunking worker reads that output and writes
+`document_parser_chunks`; embedding and retrieval indexing are later stages that
+write `document_chunks`.
 The regular `/api/documents/upload` continues through embedding and retrieval indexing.
 Uploads do not create
 dashboard metrics: Commerce dashboard observations come from the private SQL

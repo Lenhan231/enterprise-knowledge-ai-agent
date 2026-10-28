@@ -1,17 +1,41 @@
 FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/src:/app/ocr_plugins \
+    DOCUMENT_PROCESSING_OCR_ENGINE=vietocr \
+    HF_HOME=/root/.cache/huggingface
+
 WORKDIR /app
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        libgomp1 tesseract-ocr tesseract-ocr-eng tesseract-ocr-vie \
-    && rm -rf /var/lib/apt/lists/*
+        libgomp1 \
+        tesseract-ocr \
+        tesseract-ocr-eng \
+        tesseract-ocr-osd \
+        tesseract-ocr-vie \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip install --no-cache-dir --upgrade pip \
+    && python -m pip install --no-cache-dir \
+        "docling==2.129.0" \
+        "rapidocr==3.9.2" \
+        "onnxruntime>=1.18,<2" \
+        "Pillow==12.3.0" \
+        "torch" \
+        "torchvision" \
+        "vietocr==0.3.13" \
+        "opencv-python-headless" \
+        "albumentations==1.4.2" \
+        "einops==0.2.0" \
+        "gdown==4.4.0" \
+        "prefetch-generator==1.0.1" \
+        "imgaug==0.4.0" \
+        "lmdb>=1.0.0" \
+        "scikit-image>=0.21.0"
 
-RUN python -m pip install --no-cache-dir \
-    "docling==2.129.0" "opencv-python-headless"
+COPY src/document_processing /app/src/document_processing
+COPY artifacts/evaluation/document-pipelines/tools/runners/docling_vietocr.py /app/ocr_plugins/docling_vietocr.py
+COPY artifacts/evaluation/document-pipelines/tools/runners/line_detection.py /app/ocr_plugins/line_detection.py
 
-COPY src/document_processing ./src/document_processing
-
-ENV PYTHONPATH="/app/src" \
-    PYTHONUNBUFFERED="1"
-
-CMD ["python", "-c", "from docling.document_converter import DocumentConverter; from document_processing.document_processor import DocumentProcessor; print('PASS: Docling and document_processing imports')"]
+CMD ["python", "-c", "from docling.document_converter import DocumentConverter; from vietocr.tool.predictor import Predictor; from document_processing.document_processor import DocumentProcessor; print('PASS: Docling, VietOCR, and document_processing imports')"]

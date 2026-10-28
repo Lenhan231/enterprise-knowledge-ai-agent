@@ -39,11 +39,13 @@ docker build -f docker/Dockerfile.document-processing -t document-processing .
 docker run --rm document-processing
 ```
 
-The image contains `document_processing`, Docling, and
-Vietnamese/English Tesseract. It does not install the full application's
-dependencies or include the FastAPI app, database credentials, or Streamlit.
+The image contains `document_processing`, Docling, VietOCR, and
+Vietnamese/English Tesseract (used for orientation detection). It does not
+install the full application's dependencies or include the FastAPI app,
+database credentials, or Streamlit. OCR defaults to VietOCR in this image;
+set `DOCUMENT_PROCESSING_OCR_ENGINE=tesseract` to select Tesseract instead.
 The default command checks imports; success prints
-`PASS: Docling and document_processing imports` and exits with code 0.
+`PASS: Docling, VietOCR, and document_processing imports` and exits with code 0.
 This check does not run Docling inference on a real document.
 
 Override the command to use the parser from your own Python script:
@@ -66,8 +68,9 @@ For the independent chunking image, see
 Install the optional Streamlit UI and run it on loopback:
 
 ```sh
-uv sync --extra docling --extra document-processing-ui
-PYTHONPATH=src .venv/bin/streamlit run src/document_processing/streamlit_app.py --server.address 127.0.0.1 --server.port 8501
+PYTHONPATH=/tmp/vietocr-benchmark-packages:artifacts/evaluation/document-pipelines/tools/runners:src \
+  .venv/bin/streamlit run src/document_processing/testing_parser_streamlit.py \
+  --server.address 127.0.0.1 --server.port 8501
 ```
 
 By default, source files and Docling JSON output are saved under

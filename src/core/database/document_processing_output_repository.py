@@ -1,0 +1,156 @@
+"""Persist raw parser output before the chunking stage."""
+
+from __future__ import annotations
+
+import os
+from typing import Any
+
+import psycopg
+from dotenv import load_dotenv
+from psycopg.types.json import Jsonb
+
+from core.database.connection_limit import close_database_connection, connect_database
+from document_processing.element_taxonomy import normalize_element_label
+
+load_dotenv()
+
+
+class DocumentProcessingOutputRepository:
+    """Store normalized elements and structured tables without chunking."""
+
+    def __init__(self, connection: psycopg.Connection | None = None):
+        self.connection = connection or connect_database(os.environ["DATABASE_URL"])
+        self._owns_connection = connection is None
+
+    def save_parser_output(
+        self,
+        *,
+        document_id: str,
+        title: str,
+        file_format: str,
+        source_sha256: str,
+        pipeline_id: str,
+        elements: list[dict[str, Any]],
+        tables: list[dict[str, Any]],
+        document_metadata: dict[str, Any],
+    ) -> tuple[int, int]:
+        with self.connection.transaction(), self.connection.cursor() as cursor:
+            cursor.execute(
+                """INSERT INTO public.documents
+                       (document_id, domain, title, format, verification,
+                        document_type, source_type, allowed_roles,
+                        processing_status, knowledge_base_active)
+                   VALUES (%s, 'general_knowledge', %s, %s, %s,
+                           'parser_output_preview', 'parser_preview', '{}',
+                           'parsed', false)
+                   ON CONFLICT (document_id) DO UPDATE SET
+                       title = EXCLUDED.title,
+                       format = EXCLUDED.format,
+                       verification = EXCLUDED.verification,
+                       document_type = EXCLUDED.document_type,
+                       source_type = EXCLUDED.source_type,
+                       allowed_roles = EXCLUDED.allowed_roles,
+                       processing_status = EXCLUDED.processing_status,
+                       knowledge_base_active = false""",
+                (
+                    document_id,
+                    title,
+                    file_format,
+                    f"Local parser output only · SHA-256 {source_sha256} · not chunked or indexed",
+                ),
+            )
+            for table_name in (
+                "document_processing_text_elements",
+                "document_processing_figures",
+            ):
+                cursor.execute(
+                    f"DELETE FROM public.{table_name} WHERE document_id = %s",
+                    (document_id,),
+                )
+            text_element_rows = []
+            figure_rows = []
+            normalized_elements = []
+            text_elements = []
+            figures = []
+            for index, element in enumerate(elements):
+                normalized_element = dict(element)
+                metadata = dict(element.get("metadata") or {})
+                metadata.pop("word_style", None)
+                metadata.pop("word_style_id", None)
+                element_type = normalize_element_label(
+                    metadata.get("element_type") or metadata.get("layout_type") or element.get("element_type")
+                )
+                metadata.update({"element_type": element_type, "layout_type": element_type})
+                normalized_element["metadata"] = metadata
+                if "element_type" in normalized_element:
+                    normalized_element["element_type"] = element_type
+                normalized_elements.append(normalized_element)
+                if element_type in {"figure", "seal"}:
+                    figure_element = dict(normalized_element)
+                    figure_element.pop("text", None)
+                    figures.append(figure_element)
+                elif element_type != "table":
+                    text_elements.append(normalized_element)
+                page_number = metadata.get("page_number")
+                row = (
+                    document_id,
+                    index,
+                    element_type,
+                    element.get("text"),
+                    int(page_number) if page_number is not None else None,
+                    Jsonb(metadata["bbox"]) if metadata.get("bbox") is not None else None,
+                    Jsonb(metadata),
+                )
+                if element_type in {"figure", "seal"}:
+                    figure_rows.append((
+                        document_id,
+                        index,
+                        element_type,
+                        int(page_number) if page_number is not None else None,
+                        Jsonb(metadata["bbox"]) if metadata.get("bbox") is not None else None,
+                        Jsonb(metadata),
+                    ))
+                elif element_type != "table":
+                    text_element_rows.append(row)
+            if text_element_rows:
+                cursor.executemany(
+                    """INSERT INTO public.document_processing_text_elements
+                           (document_id, element_index, element_type, text,
+                            page_number, bbox, metadata)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                    text_element_rows,
+                )
+            if figure_rows:
+                cursor.executemany(
+                    """INSERT INTO public.document_processing_figures
+                           (document_id, element_index, element_type,
+                            page_number, bbox, metadata)
+                       VALUES (%s, %s, %s, %s, %s, %s)""",
+                    figure_rows,
+                )
+            cursor.execute(
+                """INSERT INTO public.document_processing_outputs
+                       (document_id, pipeline_id, text_elements, figures,
+                        structured_tables, document_metadata)
+                   VALUES (%s, %s, %s, %s, %s, %s)
+                   ON CONFLICT (document_id) DO UPDATE SET
+                       pipeline_id = EXCLUDED.pipeline_id,
+                       text_elements = EXCLUDED.text_elements,
+                       figures = EXCLUDED.figures,
+                       structured_tables = EXCLUDED.structured_tables,
+                       document_metadata = EXCLUDED.document_metadata,
+                       updated_at = now()""",
+                (
+                    document_id,
+                    pipeline_id,
+                    Jsonb(text_elements),
+                    Jsonb(figures),
+                    Jsonb(tables),
+                    Jsonb(document_metadata),
+                ),
+            )
+        return len(normalized_elements), len(tables)
+
+    def close(self) -> None:
+        if self._owns_connection:
+            close_database_connection(self.connection)

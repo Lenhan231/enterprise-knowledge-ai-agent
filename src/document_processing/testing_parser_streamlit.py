@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from io import BytesIO
 import json
 import os
 import uuid
@@ -11,8 +12,10 @@ from pathlib import Path
 from typing import Any
 
 import streamlit as st
+from PIL import Image, ImageDraw
 
 from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
+from document_processing.element_taxonomy import normalize_element_label
 
 
 PACKAGE_DIR = Path(__file__).resolve().parent
@@ -32,8 +35,45 @@ def _load_runs() -> list[dict[str, Any]]:
     return sorted(runs, key=lambda run: run.get("processed_at", ""), reverse=True)
 
 
+def _normalize_saved_output(output: dict[str, Any]) -> dict[str, Any]:
+    """Present older saved parser results with the shared element labels."""
+    for element in output.get("elements", []):
+        metadata = element.setdefault("metadata", {})
+        metadata.pop("word_style", None)
+        metadata.pop("word_style_id", None)
+        label = normalize_element_label(
+            metadata.get("element_type") or metadata.get("layout_type") or element.get("element_type")
+        )
+        metadata["element_type"] = label
+        metadata["layout_type"] = label
+        if "element_type" in element:
+            element["element_type"] = label
+    for table in output.get("tables", []):
+        metadata = table.setdefault("metadata", {})
+        metadata.pop("word_style", None)
+        metadata.pop("word_style_id", None)
+        metadata.update({"element_type": "table", "layout_type": "table"})
+    return output
+
+
 def _page_count(run_dir: Path) -> int:
     return sum(1 for _ in run_dir.glob("page-*.png"))
+
+
+def _table_display_name(table: dict[str, Any], index: int) -> str:
+    metadata = table.get("metadata") or {}
+    context = table.get("context") or {}
+    title = (
+        table.get("table_name")
+        or context.get("table_title")
+        or context.get("table_name")
+        or metadata.get("table_name")
+        or metadata.get("table_title")
+    )
+    if title and str(title).strip():
+        return str(title).strip()
+    columns = [str(column).strip() for column in (table.get("columns") or []) if str(column).strip()]
+    return " · ".join(columns[:3]) or f"Table {index}"
 
 
 def _page_preview(run_dir: Path, page_number: int) -> bytes | None:
@@ -41,10 +81,74 @@ def _page_preview(run_dir: Path, page_number: int) -> bytes | None:
     return preview_path.read_bytes() if preview_path.is_file() else None
 
 
+def _page_preview_with_boxes(
+    preview: bytes,
+    elements: list[dict[str, Any]],
+    tables: list[dict[str, Any]],
+    page_size: dict[str, float] | None,
+    *,
+    default_origin: str,
+) -> bytes:
+    image = Image.open(BytesIO(preview)).convert("RGB")
+    draw = ImageDraw.Draw(image)
+    page_width = float((page_size or {}).get("width") or image.width)
+    page_height = float((page_size or {}).get("height") or image.height)
+    scale_x, scale_y = image.width / page_width, image.height / page_height
+
+    def draw_bbox(metadata: dict[str, Any], color: str, label: str) -> None:
+        bbox = metadata.get("bbox")
+        if not isinstance(bbox, list) or len(bbox) != 4:
+            return
+        try:
+            left, top_or_bottom, right, bottom_or_top = map(float, bbox)
+        except (TypeError, ValueError):
+            return
+        origin = str(metadata.get("bbox_coordinate_origin") or default_origin).upper()
+        if origin == "BOTTOMLEFT":
+            top, bottom = page_height - bottom_or_top, page_height - top_or_bottom
+        else:
+            top, bottom = top_or_bottom, bottom_or_top
+        xyxy = (
+            round(left * scale_x),
+            round(top * scale_y),
+            round(right * scale_x),
+            round(bottom * scale_y),
+        )
+        draw.rectangle(xyxy, outline=color, width=max(2, image.width // 900))
+        if label:
+            draw.text((xyxy[0] + 2, max(0, xyxy[1] - 14)), label, fill=color)
+
+    for element in elements:
+        metadata = element.get("metadata") or {}
+        kind = normalize_element_label(metadata.get("element_type") or metadata.get("layout_type") or metadata.get("docling_label"))
+        color = {
+            "title": "#ff9b69",
+            "title_table": "#e879f9",
+            "section_header": "#38bdf8",
+            "text": "#58aeff",
+            "footnote": "#f472b6",
+            "document_index": "#fbbf24",
+            "formula": "#c084fc",
+            "figure": "#ffcf5c",
+            "seal": "#fb7185",
+            "page_header": "#a78bfa",
+            "page_footer": "#f472b6",
+            "table": "#65d99b",
+        }[kind]
+        draw_bbox(metadata, color, kind)
+    for table in tables:
+        draw_bbox(table.get("metadata") or {}, "#65d99b", "table")
+
+    output = BytesIO()
+    image.save(output, format="PNG")
+    return output.getvalue()
+
+
 def _process_upload(
     filename: str,
     content: bytes,
     *,
+    ocr_engine: str,
     language: str,
     device: str,
     ocr_enabled: bool,
@@ -64,6 +168,7 @@ def _process_upload(
             "parser_engine": "docling",
             "docling_device": device,
             "docling_ocr": ocr_enabled,
+            "docling_ocr_engine": ocr_engine,
             "docling_ocr_language": language,
             "docling_table_structure": table_structure,
             "docling_num_threads": num_threads,
@@ -138,15 +243,26 @@ upload_column, settings_column = st.columns([1.7, 1], gap="large")
 with settings_column:
     with st.container(border=True):
         st.subheader("Processing settings")
-        language = st.selectbox(
-            "OCR languages",
-            ["vie+eng", "vie", "eng"],
+        ocr_engine = st.selectbox(
+            "OCR engine",
+            ["vietocr", "tesseract"],
             format_func={
-                "vie+eng": "Vietnamese + English",
-                "vie": "Vietnamese only",
-                "eng": "English only",
+                "vietocr": "VietOCR · benchmark best",
+                "tesseract": "Tesseract",
             }.__getitem__,
+            index=0,
         )
+        language = "vie+eng"
+        if ocr_engine == "tesseract":
+            language = st.selectbox(
+                "OCR languages",
+                ["vie+eng", "vie", "eng"],
+                format_func={
+                    "vie+eng": "Vietnamese + English",
+                    "vie": "Vietnamese only",
+                    "eng": "English only",
+                }.__getitem__,
+            )
         device = st.selectbox("Device", ["cpu", "cuda"], format_func={
             "cpu": "CPU",
             "cuda": "NVIDIA CUDA",
@@ -161,7 +277,12 @@ with settings_column:
         }.__getitem__)
         num_threads = st.number_input("CPU threads", min_value=1, max_value=16, value=4)
         st.caption("Tables: Accurate mode")
-        st.caption("Tesseract settings apply to PDFs. Images use Docling’s image defaults.")
+        st.caption(
+            "VietOCR uses RapidOCR line detection + vgg_seq2seq greedy recognition (512 px), "
+            "matching the 58-page OCR benchmark."
+            if ocr_engine == "vietocr"
+            else "Tesseract PSM 6 with the selected languages."
+        )
 
 with upload_column:
     with st.container(border=True):
@@ -179,11 +300,12 @@ with upload_column:
                 if len(content) > MAX_UPLOAD_BYTES:
                     st.error("The document exceeds the 50 MiB limit.")
                 else:
-                    with st.spinner("Processing document with Docling…"):
+                    with st.spinner(f"Processing document with {ocr_engine} OCR…"):
                         try:
                             st.session_state["latest_run"] = _process_upload(
                                 Path(uploaded.name).name,
                                 content,
+                                ocr_engine=ocr_engine,
                                 language=language,
                                 device=device,
                                 ocr_enabled=ocr_enabled,
@@ -215,7 +337,8 @@ else:
     try:
         selected_output_path = STORE_DIR / selected_id / "output.json"
         selected_output_text = selected_output_path.read_text(encoding="utf-8")
-        selected_output = json.loads(selected_output_text)
+        selected_output = _normalize_saved_output(json.loads(selected_output_text))
+        selected_output_text = json.dumps(selected_output, ensure_ascii=False, indent=2, default=str)
     except (OSError, json.JSONDecodeError, KeyError) as error:
         st.error(f"Could not open this saved result: {error}")
     else:
@@ -243,11 +366,51 @@ else:
             mime="application/json",
             use_container_width=True,
         )
+        if st.button(
+            "Upload parser output to Supabase (no chunking)",
+            key=f"upload-parser-output-{selected_id}",
+            help="Save parser output plus separate text-element and figure rows. Table regions remain in the raw parser output; no chunks or embeddings are created.",
+        ):
+            from dotenv import load_dotenv
+
+            load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+            repository = None
+            try:
+                from core.database.document_processing_output_repository import DocumentProcessingOutputRepository
+
+                repository = DocumentProcessingOutputRepository()
+                parser_metadata = selected_output.get("metadata") or {}
+                document_id = f"PARSER-{selected_id}"
+                element_count, table_count = repository.save_parser_output(
+                    document_id=document_id,
+                    title=Path(selected_manifest["filename"]).stem,
+                    file_format=Path(selected_manifest["filename"]).suffix.lstrip(".").upper(),
+                    source_sha256=selected_manifest["source_sha256"],
+                    pipeline_id=str(parser_metadata.get("pipeline_id") or parser_metadata.get("parser_engine") or "docling"),
+                    elements=elements,
+                    tables=selected_output.get("tables", []),
+                    document_metadata={
+                        **parser_metadata,
+                        "filename": selected_manifest["filename"],
+                        "source_sha256": selected_manifest["source_sha256"],
+                        "local_parser_run_id": selected_id,
+                        "chunking_applied": False,
+                        "embeddings_created": False,
+                    },
+                )
+                st.success(
+                    f"Saved {element_count:,} parser elements and {table_count:,} structured tables to Supabase · {document_id} · no chunks or embeddings created."
+                )
+            except Exception as error:
+                st.error(f"Supabase parser-output upload failed: {error}")
+            finally:
+                if repository is not None:
+                    repository.close()
 
         run_dir = STORE_DIR / selected_id
         source_path = run_dir / "source"
         page_tab, raw_tab, tables_tab, handoff_tab, details_tab = st.tabs(
-            ["Page review", "Raw text", "Tables", "Chunking input", "Run details"]
+            ["Page review", "Raw text", "Tables", "Text elements", "Run details"]
         )
         with page_tab:
             page_count = _page_count(run_dir) if source_path.is_file() else 0
@@ -279,9 +442,23 @@ else:
                 raw_column, extracted_column = st.columns(2, gap="large")
                 with raw_column:
                     with st.container(border=True):
-                        st.subheader(f"Raw page · {page_number}")
+                        st.subheader(f"Page preview · {page_number}")
                         preview = _page_preview(run_dir, page_number)
                         if preview is not None:
+                            show_boxes = st.checkbox("Show bounding boxes", value=True)
+                            if show_boxes:
+                                page_sizes = selected_output.get("page_sizes") or {}
+                                preview = _page_preview_with_boxes(
+                                    preview,
+                                    page_elements,
+                                    page_tables,
+                                    page_sizes.get(str(page_number)),
+                                    default_origin=(
+                                        "BOTTOMLEFT"
+                                        if Path(selected_manifest["filename"]).suffix.lower() == ".pdf"
+                                        else "TOPLEFT"
+                                    ),
+                                )
                             st.image(preview, use_container_width=True)
                         else:
                             st.info("Source page preview is not available for this file.")
@@ -293,17 +470,26 @@ else:
                             st.info("No document elements were extracted from this page.")
                         for index, element in enumerate(page_elements, 1):
                             metadata = element.get("metadata", {})
-                            element_type = str(metadata.get("element_type", "text")).replace("_", " ").title()
+                            element_type = normalize_element_label(
+                                metadata.get("element_type") or metadata.get("layout_type") or metadata.get("docling_label")
+                            )
                             st.markdown(f"**Element {index} · {element_type}**")
                             st.text(element.get("text") or "[Table reference]")
                         for index, table in enumerate(page_tables, 1):
-                            st.markdown(f"**Table {index}**")
+                            st.markdown(f"**{_table_display_name(table, index)}**")
                             st.dataframe(table.get("rows", []), hide_index=True, use_container_width=True)
             else:
                 st.info("This file type has no page preview. Download the original file from Run details.")
                 if elements:
                     st.subheader("Extracted output")
-                    for element in elements:
+                    for index, element in enumerate(elements, 1):
+                        metadata = element.get("metadata", {})
+                        element_type = normalize_element_label(
+                            metadata.get("element_type")
+                            or metadata.get("layout_type")
+                            or metadata.get("docling_label")
+                        )
+                        st.markdown(f"**Element {index} · {element_type}**")
                         st.text(element.get("text") or "[Table reference]")
         with raw_tab:
             if raw_text:
@@ -316,21 +502,29 @@ else:
             if not tables:
                 st.info("No structured tables were extracted.")
             for index, table in enumerate(tables, 1):
-                st.markdown(f"**Table {index}**")
+                st.markdown(f"**{_table_display_name(table, index)}**")
                 st.dataframe(table.get("rows", []), hide_index=True, use_container_width=True)
         with handoff_tab:
             st.caption(
-                "Inspect the parser data by page. Production passes the full document payload to "
-                "ChunkingProcessor; this local owner-store run stops before chunking."
+                "Inspect the ordered elements that will be passed to chunking."
             )
+            furniture_elements = [
+                element
+                for element in elements
+                if (element.get("metadata") or {}).get("element_type")
+                in {"page_header", "page_footer"}
+            ]
+            if furniture_elements:
+                st.markdown("**Page headers and footers**")
+                for element in furniture_elements:
+                    element_type = element["metadata"]["element_type"]
+                    st.markdown(f"**{element_type}** · {element.get('text') or '[No text]'}")
+            else:
+                st.caption("No page_header or page_footer elements in this saved run.")
             page_numbers = sorted({
                 int(element["metadata"]["page_number"])
                 for element in elements
                 if (element.get("metadata") or {}).get("page_number") is not None
-            } | {
-                int(table.get("page_number", (table.get("metadata") or {}).get("page_number")))
-                for table in selected_output.get("tables", [])
-                if table.get("page_number", (table.get("metadata") or {}).get("page_number")) is not None
             })
             if page_numbers:
                 handoff_page = st.selectbox(
@@ -344,22 +538,11 @@ else:
                     element for element in elements
                     if (element.get("metadata") or {}).get("page_number") == handoff_page
                 ]
-                page_tables = [
-                    table for table in selected_output.get("tables", [])
-                    if table.get("page_number", (table.get("metadata") or {}).get("page_number")) == handoff_page
-                ]
-                st.caption(
-                    f"{len(page_elements)} ordered elements · {len(page_tables)} structured tables. "
-                    "Expand each item to inspect its text, provenance, and table rows."
-                )
-                st.json({
-                    "elements": page_elements,
-                    "tables": page_tables,
-                    "metadata": selected_output.get("metadata", {}),
-                }, expanded=True)
+                st.caption(f"{len(page_elements)} ordered elements on this page.")
+                st.json(page_elements, expanded=True)
             else:
-                st.caption("This format has no page numbers, so the complete parser payload is shown.")
-                st.json(selected_output, expanded=True)
+                st.caption("This format has no page numbers, so all ordered elements are shown.")
+                st.json(elements, expanded=True)
         with details_tab:
             st.write(f'**File:** {selected_manifest["filename"]}')
             st.write(f'**Processed:** {selected_manifest["processed_at"][:19].replace("T", " ")} UTC')

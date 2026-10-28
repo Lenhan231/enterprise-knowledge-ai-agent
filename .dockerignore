@@ -11,6 +11,16 @@ __pycache__
 .mypy_cache
 .ruff_cache
 artifacts
+!artifacts/evaluation/
+artifacts/evaluation/*
+!artifacts/evaluation/document-pipelines/
+artifacts/evaluation/document-pipelines/*
+!artifacts/evaluation/document-pipelines/tools/
+artifacts/evaluation/document-pipelines/tools/*
+!artifacts/evaluation/document-pipelines/tools/runners/
+artifacts/evaluation/document-pipelines/tools/runners/*
+!artifacts/evaluation/document-pipelines/tools/runners/docling_vietocr.py
+!artifacts/evaluation/document-pipelines/tools/runners/line_detection.py
 data/*
 !data/vietnam_enterprises/
 data/vietnam_enterprises/*

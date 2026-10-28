@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 from typing import Any
 
+from document_processing.element_taxonomy import normalize_element_label
 from .formats.docx_semantics import apply_docx_semantics, docx_text_key
 
 def map_result(
@@ -15,6 +16,8 @@ def map_result(
     docling_version: str | None,
     source_format: str,
     source_bytes: bytes | None = None,
+    embedded_image_results: dict[int, dict[str, Any]] | None = None,
+    preserve_chart_items: bool = False,
 ) -> dict[str, Any]:
     """Normalize Docling items, provenance, structured tables, and parser metadata."""
     elements: list[dict[str, Any]] = []
@@ -22,9 +25,28 @@ def map_result(
     section_path: list[str] = []
     table_number_by_page: dict[int | None, int] = {}
     layout_table_cell_texts: set[str] = set()
+    ocr_engine = str(config.get("docling_ocr_engine", "tesseract")).lower()
+    included_content_layers = None
+    if source_format in {"docx", "pdf", "png", "jpg", "jpeg", "tif", "tiff"}:
+        from docling_core.types.doc import ContentLayer
 
-    for item, _level in result.document.iterate_items():
+        # Docling stores detected page headers and footers as furniture;
+        # its default iteration includes BODY only, so request both layers.
+        included_content_layers = {ContentLayer.BODY, ContentLayer.FURNITURE}
+
+    for item, _level in result.document.iterate_items(
+        included_content_layers=included_content_layers
+    ):
         label = getattr(item.label, "value", str(item.label)).lower()
+        element_label = normalize_element_label(label)
+        if (
+            source_format == "docx"
+            and element_label == "text"
+            and getattr(item.content_layer, "value", item.content_layer) == "furniture"
+        ):
+            furniture_label = _docx_furniture_label(item, result.document)
+            if furniture_label:
+                element_label = furniture_label
         text = str(getattr(item, "text", "") or "").strip()
         provenance = next(iter(getattr(item, "prov", []) or []), None)
         page_number = int(provenance.page_no) if provenance is not None else None
@@ -34,15 +56,70 @@ def map_result(
             **({
                 "bbox": bbox,
                 "bbox_coordinate_system": "docling_page_coordinate",
+                "bbox_coordinate_origin": str(
+                    getattr(provenance.bbox.coord_origin, "value", provenance.bbox.coord_origin)
+                ).upper(),
             } if bbox is not None else {}),
             "parser": "docling",
             "docling_label": label,
             "docling_version": docling_version,
             "text_extraction_method": (
-                "docling.tesseract" if do_ocr and source_format in {"pdf", "png", "jpg", "jpeg", "tif", "tiff"}
+                f"docling.{ocr_engine}" if do_ocr and source_format in {"pdf", "png", "jpg", "jpeg", "tif", "tiff"}
                 else "docling.native"
             ),
         }
+
+        image_result = (embedded_image_results or {}).get(id(item))
+        if image_result is not None:
+            image_metadata = {
+                "source_type": "office_embedded_image",
+                "office_source_format": source_format,
+                "office_image_index": image_result["image_index"],
+                "office_picture_label": label,
+                "text_extraction_method": f"docling.{ocr_engine}",
+            }
+            if page_number is not None:
+                image_metadata["page_number"] = page_number
+            if bbox is not None:
+                image_metadata["office_bbox"] = bbox
+
+            image_output = image_result["output"]
+            table_offset = len(tables)
+            for image_table in image_output.get("tables", []):
+                table = {**image_table, "metadata": dict(image_table.get("metadata") or {})}
+                metadata = table["metadata"]
+                image_bbox = metadata.pop("bbox", None)
+                metadata.pop("bbox_coordinate_system", None)
+                metadata.pop("page_number", None)
+                metadata.update(image_metadata)
+                if image_bbox is not None:
+                    metadata["embedded_image_bbox"] = image_bbox
+                table_index = table_number_by_page.get(page_number, 0)
+                table_number_by_page[page_number] = table_index + 1
+                table["table_index"] = table_index
+                table.pop("page_number", None)
+                if page_number is not None:
+                    table["page_number"] = page_number
+                tables.append(table)
+
+            for image_element in image_output.get("elements", []):
+                element = {**image_element}
+                metadata = dict(element.get("metadata") or {})
+                image_bbox = metadata.pop("bbox", None)
+                metadata.pop("bbox_coordinate_system", None)
+                metadata.pop("page_number", None)
+                metadata.update(image_metadata)
+                if image_bbox is not None:
+                    metadata["embedded_image_bbox"] = image_bbox
+                if element.get("element_type") == "table":
+                    table_ref = element.get("table_ref")
+                    if isinstance(table_ref, int):
+                        element["table_ref"] = table_offset + table_ref
+                        element["metadata"] = metadata
+                        metadata["table_index"] = tables[element["table_ref"]]["table_index"]
+                element["metadata"] = metadata
+                elements.append(element)
+            continue
 
         if isinstance(item, table_item_type) and config.get("docling_table_structure", True):
             data = item.data
@@ -75,8 +152,8 @@ def map_result(
                             "text": " | ".join(cell_texts),
                             "metadata": {
                                 **base_metadata,
-                                "element_type": "paragraph",
-                                "layout_type": "layout_table",
+                                "element_type": "text",
+                                "layout_type": "text",
                             },
                         })
                 continue
@@ -99,31 +176,37 @@ def map_result(
             tables.append(table)
             elements.append({
                 "element_type": "table", "table_ref": len(tables) - 1,
-                "metadata": {**base_metadata, "table_index": table_index},
+                "metadata": {
+                    **base_metadata,
+                    "element_type": "table",
+                    "layout_type": "table",
+                    "table_index": table_index,
+                },
             })
             continue
 
-        if label in {"page_header", "page_footer", "picture", "chart"} or not text:
+        if label == "chart" and preserve_chart_items:
+            elements.append({
+                "text": text,
+                "metadata": {
+                    **base_metadata,
+                    "element_type": "figure",
+                    "layout_type": "figure",
+                },
+            })
+            continue
+        if not text and element_label not in {"figure", "seal"}:
             continue
         if source_format == "docx" and docx_text_key(text) in layout_table_cell_texts:
             continue
-        if label in {"title", "section_header"}:
-            section_path = [text] if label == "title" else (section_path[:1] + [text])
-        element_type = {
-            "title": "title",
-            "section_header": "title",
-            "list_item": "list_item",
-            "formula": "formula",
-            "caption": "figure_caption",
-            "footnote": "footnote",
-            "handwritten_text": "handwritten_text",
-        }.get(label, "paragraph")
+        if element_label in {"title", "section_header"}:
+            section_path = [text] if element_label == "title" else (section_path[:1] + [text])
         elements.append({
             "text": text,
             "metadata": {
                 **base_metadata,
-                "element_type": element_type,
-                "layout_type": label,
+                "element_type": element_label,
+                "layout_type": element_label,
                 "section_path": list(section_path),
                 "section_title": section_path[-1] if section_path else None,
                 "heading_level": min(len(section_path), 2) or None,
@@ -147,6 +230,20 @@ def _bbox(box: Any) -> list[float] | None:
     if str(getattr(box, "coord_origin", "")).upper().endswith("BOTTOMLEFT"):
         return [left, bottom, right, top]
     return [left, top, right, bottom]
+
+
+def _docx_furniture_label(item: Any, document: Any) -> str | None:
+    """Classify DOCX furniture text using its enclosing header/footer group."""
+    parent = getattr(item, "parent", None)
+    while parent is not None:
+        parent = parent.resolve(doc=document)
+        name = str(getattr(parent, "name", "") or "").strip().lower()
+        if name == "page header":
+            return "page_header"
+        if name == "page footer":
+            return "page_footer"
+        parent = getattr(parent, "parent", None)
+    return None
 
 
 def _cell(value: Any) -> str:

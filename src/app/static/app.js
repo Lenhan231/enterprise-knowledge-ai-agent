@@ -804,6 +804,27 @@ async function loadWorkspace(user) {
   $("#admin-section").hidden = true;
   $("#monitoring-section").hidden = true;
   syncWorkspaceTabs();
+  if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
+    const roles = Object.keys(UPLOAD_ROLE_LABELS);
+    $("#upload-role-options").innerHTML = roles.map((role) => {
+      const [label, description] = UPLOAD_ROLE_LABELS[role];
+      return `<label class="upload-role-option"><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}"><span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span></label>`;
+    }).join("");
+    $("#upload-role-options").querySelectorAll('input[name="allowed_roles"]').forEach((input) => {
+      input.addEventListener("change", updateUploadRoleSelection);
+    });
+    updateUploadRoleSelection();
+    $("#upload-section").hidden = false;
+    $("#upload-button").disabled = false;
+    const canSaveParserOutput = user.role === "document_processing_owner";
+    $("#parser-handoff-button").hidden = !canSaveParserOutput;
+    $("#parser-handoff-button").disabled = !canSaveParserOutput;
+  }
+  if (user.role === "admin") {
+    void refreshKnowledgeDocuments().catch((error) => {
+      $("#knowledge-documents-status").textContent = `Could not load knowledge-base files: ${error.message}`;
+    });
+  }
   $("#access-matrix").replaceChildren();
   $("#connection-status").textContent = "Knowledge base connected";
   $("#user-badge").textContent = `${user.username} · ${user.role}`;
@@ -817,7 +838,7 @@ async function loadWorkspace(user) {
   ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
     $(selector).hidden = !canUseAnalytics;
   });
-  ["sql", "agentic"].forEach((mode) => {
+  ["sql"].forEach((mode) => {
     $("#agent-mode option[value='" + mode + "']").hidden = !canUseAnalytics;
   });
   if (!canUseAnalytics && ["sql", "agentic"].includes($("#agent-mode").value)) {
@@ -829,37 +850,6 @@ async function loadWorkspace(user) {
   }
   if (canUseAnalytics) void loadInventorySnapshot();
   else $("#inventory-snapshot").innerHTML = '<p class="analysis-empty">Inventory snapshot requires analytics access.</p>';
-  if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
-    try {
-      const capability = await api("/api/documents/upload-capability");
-      if (capability.can_upload) {
-        const { roles } = await api("/api/documents/roles");
-        $("#upload-role-options").innerHTML = roles.map((role) => {
-          const [label, description] = UPLOAD_ROLE_LABELS[role] || [role.replaceAll("_", " "), "Document Q&A access"];
-          return `<label class="upload-role-option"><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}"><span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span></label>`;
-        }).join("");
-        $("#upload-role-options").querySelectorAll('input[name="allowed_roles"]').forEach((input) => {
-          input.addEventListener("change", () => {
-            updateUploadRoleSelection();
-          });
-        });
-        updateUploadRoleSelection();
-        $("#upload-button").disabled = false;
-        const canSaveParserOutput = user.role === "document_processing_owner";
-        $("#parser-handoff-button").hidden = !canSaveParserOutput;
-        $("#parser-handoff-button").disabled = !canSaveParserOutput;
-        $("#upload-section").hidden = false;
-        $("#upload-status").textContent = "";
-        delete $("#upload-status").dataset.state;
-      }
-    } catch (error) {
-      $("#upload-section").hidden = false;
-      $("#upload-button").disabled = true;
-      $("#parser-handoff-button").disabled = true;
-      $("#upload-status").dataset.state = "error";
-      $("#upload-status").textContent = `Upload permissions could not be loaded: ${error.message}`;
-    }
-  }
   try {
     if (user.role === "admin") {
       const access = await api("/api/admin/access-matrix");
@@ -867,7 +857,6 @@ async function loadWorkspace(user) {
       $("#admin-section").hidden = false;
       $("#monitoring-section").hidden = false;
       await refreshAgentMonitoring();
-      await refreshKnowledgeDocuments();
     }
     if (user.role === "document_processing_owner") {
       await refreshKnowledgeDocuments();

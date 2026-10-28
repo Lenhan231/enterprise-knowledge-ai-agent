@@ -20,7 +20,7 @@ DATA_ROOT = TRACK_ROOT / "data"
 
 LABEL_MAP = {
     "doc_title": "title", "paragraph_title": "title", "section_header": "title",
-    "title": "title", "document_title": "title",
+    "title": "title", "document_title": "title", "title_table": "title_table", "seal": "seal",
     "text": "text", "paragraph": "text", "list_item": "text", "abstract": "text",
     "content": "text", "references": "text", "footnote": "text", "sidebar_text": "text",
 }

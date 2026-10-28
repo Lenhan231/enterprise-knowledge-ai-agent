@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import threading
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
@@ -19,7 +20,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
-from auto_review_tracks import write_tracks
+from auto_review_tracks import LABELS, build_tracks, write_tracks
 from agents.bbox import run_bbox_agent
 from agents.page_draft import run_page_draft_agent
 from agents.table import run_table_agent
@@ -159,7 +160,6 @@ async def generate_page_draft(document_id: str, page_number: int) -> dict:
             }
             for region in draft.regions
         ],
-        "layout_types_draft": sorted({region.label for region in draft.regions}),
         "reading_order": draft.reading_order,
         "table_presence_reviewed": False,
         "table_reference_drafts": [
@@ -290,7 +290,7 @@ async def generate_content_draft(
         row = next((item for item in state["reviews"] if item.get("page_key") == page_key), None)
         if row is None:
             raise HTTPException(404, "Save this page in the local review store before generating a draft")
-        if row.get("annotation_status") != "needs_owner_review":
+        if task != "table" and row.get("annotation_status") != "needs_owner_review":
             raise HTTPException(409, "Codex drafts are available only for pages that still need owner review")
         page_data = json.loads(json.dumps(row.get("page_data") or {}))
         expected_updated_at = row.get("updated_at")
@@ -414,6 +414,15 @@ def save_review(review: PageReview) -> dict:
     with STATE_LOCK:
         state = read_state()
         reviews = state["reviews"]
+        source_hash = review.page_data.get("source_pdf_sha256")
+        source_number = review.page_data.get("source_page_number", review.source_page_number)
+        image_hash = review.page_data.get("source_image_sha256")
+        for saved in reviews:
+            saved_page = saved.get("page_data") or {}
+            same_source = source_hash and saved_page.get("source_pdf_sha256") == source_hash and saved_page.get("source_page_number") == source_number
+            same_image = image_hash and saved_page.get("source_image_sha256") == image_hash
+            if saved.get("page_key") != page_key and (same_source or same_image):
+                raise HTTPException(409, f"Duplicate source page already saved as {saved['page_key']}; refresh the review page")
         for index, saved in enumerate(reviews):
             if saved.get("page_key") == page_key:
                 reviews[index] = row
@@ -424,7 +433,14 @@ def save_review(review: PageReview) -> dict:
         state["exported_at"] = datetime.now(timezone.utc).isoformat()
         write_state(state)
         track_counts = write_tracks(reviews)
-    return {"page_key": page_key, "status": "saved_and_exported_local", "track_counts": track_counts}
+        records, _ = build_tracks(reviews)
+        layout_labels = Counter(region["label"] for page in records["layout"] for region in page["regions"])
+    return {
+        "page_key": page_key,
+        "status": "saved_and_exported_local",
+        "track_counts": track_counts,
+        "layout_label_counts": {label: layout_labels[label] for label in sorted(LABELS)},
+    }
 
 
 @app.post("/api/upload-pdf")
@@ -460,20 +476,34 @@ async def upload_pdf(
     page_dir.mkdir(exist_ok=True)
     image_dir.mkdir(exist_ok=True)
     stored_pdf = upload_dir / f"{document_id}.pdf"
-    if not stored_pdf.exists():
-        temporary_pdf = stored_pdf.with_suffix(".pdf.tmp")
-        temporary_pdf.write_bytes(content)
-        os.replace(temporary_pdf, stored_pdf)
-
     new_pages: list[dict] = []
+    duplicate_pages: list[dict] = []
+    added_pages = 0
     with STATE_LOCK:
         state = read_state()
         reviews = state["reviews"]
-        existing = {row.get("page_key"): row for row in reviews}
+        existing_sources: dict[tuple[str, int], dict] = {}
+        existing_images: dict[str, dict] = {}
+        for saved in sorted(reviews, key=lambda row: row.get("annotation_status") != "owner_reviewed"):
+            page_data = saved.get("page_data") or {}
+            source_hash = page_data.get("source_pdf_sha256")
+            source_number = page_data.get("source_page_number")
+            image_hash = page_data.get("source_image_sha256")
+            if source_hash and source_number:
+                existing_sources.setdefault((source_hash, source_number), saved)
+            if image_hash:
+                existing_images.setdefault(image_hash, saved)
+            if source_hash == digest:
+                candidate = (DATA_DIR / str(page_data.get("source_pdf") or "")).resolve()
+                if candidate.is_relative_to(upload_dir.resolve()) and candidate.is_file():
+                    stored_pdf = candidate
+
         for page_number in page_numbers:
             page_key = f"{document_id}:p{page_number}"
-            if page_key in existing:
-                new_pages.append(existing[page_key]["page_data"])
+            saved = existing_sources.get((digest, page_number))
+            if saved is not None:
+                new_pages.append(saved["page_data"])
+                duplicate_pages.append({"requested_page": page_number, "existing_page_key": saved["page_key"]})
                 continue
 
             source_page = source_pdf[page_number - 1]
@@ -481,6 +511,16 @@ async def upload_pdf(
             scale = min(2.0, (MAX_RENDER_PIXELS / max(width_pt * height_pt * 4, 1)) ** 0.5)
             pixmap = source_page.get_pixmap(matrix=fitz.Matrix(scale, scale), alpha=False)
             image_bytes = pixmap.tobytes("png")
+            image_hash = hashlib.sha256(image_bytes).hexdigest()
+            saved = existing_images.get(image_hash)
+            if saved is not None:
+                new_pages.append(saved["page_data"])
+                duplicate_pages.append({"requested_page": page_number, "existing_page_key": saved["page_key"]})
+                continue
+            if not stored_pdf.exists():
+                temporary_pdf = stored_pdf.with_suffix(".pdf.tmp")
+                temporary_pdf.write_bytes(content)
+                os.replace(temporary_pdf, stored_pdf)
             suffix = f"p{page_number:04d}"
             image_path = image_dir / f"{document_id.lower()}-{suffix}.png"
             page_pdf_path = page_dir / f"{document_id}-{suffix}.pdf"
@@ -501,14 +541,13 @@ async def upload_pdf(
                 "source_page_pdf": f"pages/{page_pdf_path.name}",
                 "source_page_pdf_sha256": hashlib.sha256(page_pdf_bytes).hexdigest(),
                 "source_image": f"raw/{image_path.name}",
-                "source_image_sha256": hashlib.sha256(image_bytes).hexdigest(),
+                "source_image_sha256": image_hash,
                 "image_width": pixmap.width,
                 "image_height": pixmap.height,
                 "annotation_status": "needs_owner_review",
                 "ocr_reference_draft": "",
                 "ocr_draft_source": "Blank review draft from uploaded source PDF; transcribe and verify against the original page.",
                 "layout_regions": [],
-                "layout_types_draft": [],
                 "reading_order": [],
                 "table_presence_reviewed": False,
                 "table_reference_drafts": [],
@@ -524,13 +563,26 @@ async def upload_pdf(
             }
             reviews.append(row)
             new_pages.append(page_data)
+            existing_sources[(digest, page_number)] = row
+            existing_images[image_hash] = row
+            added_pages += 1
 
-        state["source"] = "local review store"
-        state["exported_at"] = datetime.now(timezone.utc).isoformat()
-        write_state(state)
-        track_counts = write_tracks(reviews)
+        if added_pages:
+            state["source"] = "local review store"
+            state["exported_at"] = datetime.now(timezone.utc).isoformat()
+            write_state(state)
+            track_counts = write_tracks(reviews)
+        else:
+            _, summary = build_tracks(reviews)
+            track_counts = summary["track_record_counts"]
     source_pdf.close()
-    return {"document_id": document_id, "pages": new_pages, "track_counts": track_counts}
+    return {
+        "document_id": document_id,
+        "pages": new_pages,
+        "added_pages": added_pages,
+        "duplicate_pages": duplicate_pages,
+        "track_counts": track_counts,
+    }
 
 
 @app.get("/")

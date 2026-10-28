@@ -1,17 +1,16 @@
-const ngrokUrl = process.env.NGROK_URL;
-if (!ngrokUrl) throw new Error("NGROK_URL is required to configure the API proxy");
-const backendUrl = ngrokUrl.replace(/\/+$/, "");
+import { deploymentEnv, routes, type VercelConfig } from "@vercel/config/v1";
 
-export const config = {
-  // Rebuild trigger: keep Vercel's proxy config in the deployment source root.
+const backendUrl = deploymentEnv("NGROK_URL");
+
+export const config: VercelConfig = {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   framework: null,
   buildCommand: "",
-  installCommand: "",
   outputDirectory: ".",
+  trailingSlash: false,
   rewrites: [
-    { source: "/api/:path*", destination: `${backendUrl}/api/:path*` },
-    { source: "/ws/:path*", destination: `${backendUrl}/ws/:path*` },
-    { source: "/static/:path*", destination: "/:path*" },
+    routes.rewrite("/api/:path*", `${backendUrl}/api/:path*`),
+    routes.rewrite("/ws/:path*", `${backendUrl}/ws/:path*`),
+    routes.rewrite("/static/:path*", "/:path*"),
   ],
 };

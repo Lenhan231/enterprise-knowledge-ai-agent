@@ -35,6 +35,65 @@ def _load_runs() -> list[dict[str, Any]]:
     return sorted(runs, key=lambda run: run.get("processed_at", ""), reverse=True)
 
 
+def _pdf_page_count(content: bytes) -> int:
+    import fitz
+
+    with fitz.open(stream=content, filetype="pdf") as pdf:
+        return pdf.page_count
+
+
+def _parse_selected_pages(value: str, page_count: int) -> list[int] | None:
+    if not value.strip():
+        return None
+    try:
+        pages = sorted({int(part.strip()) for part in value.split(",")})
+    except ValueError as error:
+        raise ValueError("Enter page numbers separated by commas, for example 2, 5, 9.") from error
+    if not pages or pages[0] < 1 or pages[-1] > page_count:
+        raise ValueError(f"Page numbers must be between 1 and {page_count}.")
+    return pages
+
+
+def _subset_pdf(content: bytes, selected_pages: list[int]) -> bytes:
+    import fitz
+
+    with fitz.open(stream=content, filetype="pdf") as source_pdf:
+        subset = fitz.open()
+        try:
+            for page_number in selected_pages:
+                subset.insert_pdf(source_pdf, from_page=page_number - 1, to_page=page_number - 1)
+            return subset.tobytes(garbage=4, deflate=True)
+        finally:
+            subset.close()
+
+
+def _remap_selected_page_numbers(output: dict[str, Any], selected_pages: list[int]) -> None:
+    def original_page_number(page_number: Any) -> int | None:
+        try:
+            subset_page = int(page_number)
+            return selected_pages[subset_page - 1] if 1 <= subset_page <= len(selected_pages) else None
+        except (TypeError, ValueError):
+            return None
+
+    for element in output.get("elements", []):
+        metadata = element.get("metadata") or {}
+        if metadata.get("page_number") is not None:
+            metadata["page_number"] = original_page_number(metadata["page_number"])
+    for table in output.get("tables", []):
+        if table.get("page_number") is not None:
+            table["page_number"] = original_page_number(table["page_number"])
+        metadata = table.get("metadata") or {}
+        if metadata.get("page_number") is not None:
+            metadata["page_number"] = original_page_number(metadata["page_number"])
+    for key in ("page_previews", "page_sizes"):
+        if key in output:
+            output[key] = {
+                str(selected_pages[int(page_number) - 1]): value
+                for page_number, value in output[key].items()
+                if 1 <= int(page_number) <= len(selected_pages)
+            }
+
+
 def _normalize_saved_output(output: dict[str, Any]) -> dict[str, Any]:
     """Present older saved parser results with the shared element labels."""
     for element in output.get("elements", []):
@@ -56,8 +115,58 @@ def _normalize_saved_output(output: dict[str, Any]) -> dict[str, Any]:
     return output
 
 
-def _page_count(run_dir: Path) -> int:
-    return sum(1 for _ in run_dir.glob("page-*.png"))
+def _parser_output_row_preview(
+    selected_id: str,
+    filename: str,
+    source_sha256: str,
+    output: dict[str, Any],
+) -> dict[str, Any]:
+    """Build locally the JSONB payload written by the Supabase upload button."""
+    text_elements = []
+    figures = []
+    for element in output.get("elements", []):
+        normalized_element = dict(element)
+        metadata = dict(element.get("metadata") or {})
+        metadata.pop("word_style", None)
+        metadata.pop("word_style_id", None)
+        element_type = normalize_element_label(
+            metadata.get("element_type") or metadata.get("layout_type") or element.get("element_type")
+        )
+        metadata.update({"element_type": element_type, "layout_type": element_type})
+        normalized_element["metadata"] = metadata
+        if "element_type" in normalized_element:
+            normalized_element["element_type"] = element_type
+        if element_type in {"figure", "seal"}:
+            figure = dict(normalized_element)
+            figure.pop("text", None)
+            figures.append(figure)
+        elif element_type != "table":
+            text_elements.append(normalized_element)
+
+    parser_metadata = output.get("metadata") or {}
+    return {
+        "document_id": f"PARSER-{selected_id}",
+        "pipeline_id": str(parser_metadata.get("pipeline_id") or parser_metadata.get("parser_engine") or "docling"),
+        "text_elements": text_elements,
+        "figures": figures,
+        "structured_tables": output.get("tables", []),
+        "document_metadata": {
+            **parser_metadata,
+            "filename": filename,
+            "source_sha256": source_sha256,
+            "local_parser_run_id": selected_id,
+            "chunking_applied": False,
+            "embeddings_created": False,
+        },
+    }
+
+
+def _page_numbers(run_dir: Path) -> list[int]:
+    return sorted(
+        int(path.stem.removeprefix("page-"))
+        for path in run_dir.glob("page-*.png")
+        if path.stem.removeprefix("page-").isdigit()
+    )
 
 
 def _table_display_name(table: dict[str, Any], index: int) -> str:
@@ -104,6 +213,8 @@ def _page_preview_with_boxes(
         except (TypeError, ValueError):
             return
         origin = str(metadata.get("bbox_coordinate_origin") or default_origin).upper()
+        if metadata.get("bbox_coordinate_system") == "docling_page_coordinate":
+            origin = "TOPLEFT"
         if origin == "BOTTOMLEFT":
             top, bottom = page_height - bottom_or_top, page_height - top_or_bottom
         else:
@@ -154,6 +265,7 @@ def _process_upload(
     ocr_enabled: bool,
     table_structure: bool,
     num_threads: int,
+    selected_pages: list[int] | None = None,
 ) -> dict[str, Any]:
     run_id = uuid.uuid4().hex
     run_dir = STORE_DIR / run_id
@@ -173,12 +285,17 @@ def _process_upload(
             "docling_table_structure": table_structure,
             "docling_num_threads": num_threads,
             "docling_page_images": True,
+            "selected_source_pages": selected_pages,
         }
         metadata = {
             "source_type": "local_owner_store",
             "source_sha256": hashlib.sha256(content).hexdigest(),
         }
-        output = DocumentProcessor(config).process(filename, content, metadata)
+        processing_content = _subset_pdf(content, selected_pages) if selected_pages else content
+        output = DocumentProcessor(config).process(filename, processing_content, metadata)
+        if selected_pages:
+            _remap_selected_page_numbers(output, selected_pages)
+            output.setdefault("metadata", {})["selected_source_pages"] = selected_pages
         page_previews = output.pop("page_previews", {})
         for page_number, image_bytes in page_previews.items():
             preview_path = run_dir / f"page-{int(page_number)}.png"
@@ -294,13 +411,34 @@ with upload_column:
             label_visibility="collapsed",
         )
         if uploaded is not None:
-            st.caption(f"Selected: **{Path(uploaded.name).name}** · {len(uploaded.getvalue()) / 1024:,.1f} KB")
+            content = uploaded.getvalue()
+            st.caption(f"Selected: **{Path(uploaded.name).name}** · {len(content) / 1024:,.1f} KB")
+            selected_pages = None
+            page_selection_error = None
+            if Path(uploaded.name).suffix.lower() == ".pdf":
+                try:
+                    pdf_pages = _pdf_page_count(content)
+                    if pdf_pages < 1:
+                        raise ValueError("The PDF has no pages.")
+                    page_selection = st.text_input(
+                        "Pages to process",
+                        placeholder="2, 5, 9 (leave blank to process all pages)",
+                        key=f"upload_pdf_pages_{hashlib.sha256(content).hexdigest()[:12]}",
+                    )
+                    selected_pages = _parse_selected_pages(page_selection, pdf_pages)
+                    st.caption(
+                        f"PDF has {pdf_pages} pages. Choose any pages with commas; blank means all pages."
+                    )
+                except Exception as error:
+                    page_selection_error = str(error)
+                    st.warning(f"Could not use this page selection: {error}")
             if st.button("Process and save", type="primary", use_container_width=True):
-                content = uploaded.getvalue()
                 if len(content) > MAX_UPLOAD_BYTES:
                     st.error("The document exceeds the 50 MiB limit.")
+                elif page_selection_error is not None:
+                    st.error(page_selection_error)
                 else:
-                    with st.spinner(f"Processing document with {ocr_engine} OCR…"):
+                    with st.spinner("Processing document with Docling…"):
                         try:
                             st.session_state["latest_run"] = _process_upload(
                                 Path(uploaded.name).name,
@@ -311,6 +449,7 @@ with upload_column:
                                 ocr_enabled=ocr_enabled,
                                 table_structure=table_structure,
                                 num_threads=int(num_threads),
+                                selected_pages=selected_pages,
                             )
                         except Exception as error:
                             st.error(f"Could not process {Path(uploaded.name).name}.")
@@ -409,20 +548,21 @@ else:
 
         run_dir = STORE_DIR / selected_id
         source_path = run_dir / "source"
-        page_tab, raw_tab, tables_tab, handoff_tab, details_tab = st.tabs(
-            ["Page review", "Raw text", "Tables", "Text elements", "Run details"]
+        page_tab, raw_tab, tables_tab, handoff_tab, details_tab, supabase_tab = st.tabs(
+            ["Page review", "Raw text", "Tables", "Text elements", "Run details", "Supabase row preview"]
         )
         with page_tab:
-            page_count = _page_count(run_dir) if source_path.is_file() else 0
-            if page_count:
-                page_number = 1
-                if page_count > 1:
-                    page_number = st.selectbox(
-                        "Page",
-                        range(1, page_count + 1),
-                        format_func=lambda number: f"Page {number}",
-                    )
-                if page_count == 1:
+            page_numbers = _page_numbers(run_dir) if source_path.is_file() else []
+            if page_numbers:
+                page_number = st.selectbox(
+                    "Page",
+                    page_numbers,
+                    format_func=lambda number: f"Page {number}",
+                )
+                if (
+                    len(page_numbers) == 1
+                    and Path(selected_manifest["filename"]).suffix.lower() in {".png", ".jpg", ".jpeg", ".tif", ".tiff"}
+                ):
                     page_elements = elements
                     page_tables = selected_output.get("tables", [])
                 else:
@@ -543,10 +683,47 @@ else:
             else:
                 st.caption("This format has no page numbers, so all ordered elements are shown.")
                 st.json(elements, expanded=True)
+        with supabase_tab:
+            output_row = _parser_output_row_preview(
+                selected_id,
+                selected_manifest["filename"],
+                selected_manifest["source_sha256"],
+                selected_output,
+            )
+            st.caption(
+                "Local preview only. Nothing is read from or written to Supabase in this tab. "
+                "Use the upload button above when you are ready."
+            )
+            st.json({key: value for key, value in output_row.items() if key not in {
+                "text_elements", "figures", "structured_tables", "document_metadata",
+            }})
+            for column_name in ("text_elements", "figures", "structured_tables", "document_metadata"):
+                value = output_row[column_name]
+                item_count = len(value) if isinstance(value, list) else None
+                suffix = f" · {item_count} items" if item_count is not None else ""
+                with st.expander(f"{column_name}{suffix}"):
+                    st.json(value)
+            st.download_button(
+                "Download local row preview as JSON",
+                json.dumps(output_row, ensure_ascii=False, indent=2, default=str),
+                file_name=f"{output_row['document_id']}-document_processing_outputs-preview.json",
+                mime="application/json",
+                key=f"download-local-row-preview-{selected_id}",
+            )
+
         with details_tab:
             run_config = selected_manifest.get("config") or {}
+            output_metadata = selected_output.get("metadata") or {}
             source_suffix = Path(selected_manifest["filename"]).suffix.lower()
             uses_pdf_pipeline = source_suffix in {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}
+            effective_ocr = output_metadata.get("ocr_enabled", run_config.get("docling_ocr", True))
+            embedded_image_ocr = output_metadata.get("embedded_image_ocr_enabled", False)
+            ocr_engine = run_config.get("docling_ocr_engine", "tesseract")
+            ocr_model_name = (
+                "VietOCR vgg_seq2seq (greedy, 512 px)"
+                if ocr_engine == "vietocr"
+                else f"Tesseract (language: {run_config.get('docling_ocr_language', 'vie')}, PSM 6)"
+            )
             if uses_pdf_pipeline:
                 layout_model = "Docling Heron (`docling-project/docling-layout-heron`)"
                 table_recognition_model = (
@@ -554,20 +731,30 @@ else:
                     if run_config.get("docling_table_structure", True)
                     else "Disabled"
                 )
-                if not run_config.get("docling_ocr", True):
+                if embedded_image_ocr and not effective_ocr:
+                    text_recognition_model = f"{ocr_model_name} (embedded images only)"
+                elif not effective_ocr:
                     text_recognition_model = "OCR disabled (Docling native text)"
-                elif run_config.get("docling_ocr_engine", "tesseract") == "vietocr":
-                    text_recognition_model = "VietOCR vgg_seq2seq (greedy, 512 px)"
                 else:
-                    language = run_config.get("docling_ocr_language", "vie")
-                    text_recognition_model = f"Tesseract (language: {language}, PSM 6)"
+                    text_recognition_model = ocr_model_name
             else:
                 text_recognition_model = "Docling native text extraction (no OCR model)"
                 layout_model = "Docling native document structure (no page layout model)"
                 table_recognition_model = "Docling native table extraction"
+                if embedded_image_ocr:
+                    text_recognition_model = f"{ocr_model_name} (embedded images only)"
             st.write(f'**File:** {selected_manifest["filename"]}')
             st.write(f'**Processed:** {selected_manifest["processed_at"][:19].replace("T", " ")} UTC')
+            if source_suffix == ".pdf":
+                selected_source_pages = run_config.get("selected_source_pages")
+                page_selection_label = (
+                    f"**PDF pages processed:** {', '.join(map(str, selected_source_pages))}"
+                    if selected_source_pages else "**PDF pages processed:** all pages"
+                )
+                st.write(page_selection_label)
             st.write(f'**Parser:** {selected_manifest.get("config", {}).get("parser_engine", "docling")}')
+            if output_metadata.get("pdf_processing_route"):
+                st.write(f'**PDF route:** {output_metadata["pdf_processing_route"]}')
             st.write(f"**Text recognition model:** {text_recognition_model}")
             st.write(f"**Layout model:** {layout_model}")
             st.write(f"**Table recognition model:** {table_recognition_model}")

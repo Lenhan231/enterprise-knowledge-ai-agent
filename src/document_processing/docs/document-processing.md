@@ -44,6 +44,14 @@ callers such as Upload Test may override the device, OCR language, table stage,
 and thread count. Page-orientation diagnostics are benchmark-only; production
 does not automatically rotate source pages.
 
+PDFs with at least 100 non-whitespace native text characters on every page are
+classified as digital-born and bypass OCR. Other PDFs use the configured OCR
+setting; the selected route and effective OCR state are included in parser
+result metadata. For digital-born PDFs, detected raster pictures are cropped
+and sent through OCR separately; their recognized boxes are mapped back onto
+the source page. Office files similarly keep native text and send embedded
+pictures through the scanned-image path.
+
 The authoritative supported extension list is `SUPPORTED_FORMATS` in
 `document_processor.py`.
 

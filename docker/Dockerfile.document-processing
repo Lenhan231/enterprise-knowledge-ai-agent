@@ -11,8 +11,7 @@ RUN uv pip install --no-cache --no-deps "vietocr==0.3.13"
 RUN uv pip install --no-cache --no-deps "setuptools<81"
 RUN .venv/bin/python -c "import cv2; from docling.document_converter import DocumentConverter; from vietocr.tool.predictor import Predictor"
 COPY src ./src
-COPY artifacts/evaluation/document-pipelines/tools/runners/docling_vietocr.py /app/ocr_plugins/docling_vietocr.py
-ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH="/app/src:/app/ocr_plugins" PYTHONUNBUFFERED="1" HF_HOME="/models"
+ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH="/app/src" PYTHONUNBUFFERED="1" HF_HOME="/models"
 EXPOSE 8000
 ENV DOCUMENT_PROCESSING_OCR_ENGINE="vietocr"
 ENV SERVICE_KIND="document-processing" EMBEDDING_BACKEND="local" RERANKER_ALLOW_DOWNLOAD="1"

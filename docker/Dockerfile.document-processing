@@ -9,6 +9,7 @@ RUN uv venv && uv pip install --no-cache --torch-backend cpu -c /constraints.txt
 RUN uv pip install --no-cache --no-deps "vietocr==0.3.13"
 # gdown 4.4 imports pkg_resources, removed from setuptools 82.
 RUN uv pip install --no-cache --no-deps "setuptools<81"
+RUN uv pip install --no-cache -c /constraints.txt pymupdf
 RUN .venv/bin/python -c "import cv2; from docling.document_converter import DocumentConverter; from vietocr.tool.predictor import Predictor"
 COPY src ./src
 ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH="/app/src" PYTHONUNBUFFERED="1" HF_HOME="/models"

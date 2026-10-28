@@ -26,9 +26,11 @@ def map_result(
     table_number_by_page: dict[int | None, int] = {}
     layout_table_cell_texts: set[str] = set()
     included_content_layers = None
-    if source_format == "docx":
+    if source_format in {"docx", "pdf", "png", "jpg", "jpeg", "tif", "tiff"}:
         from docling_core.types.doc import ContentLayer
 
+        # Docling stores detected page headers and footers as furniture;
+        # its default iteration includes BODY only, so request both layers.
         included_content_layers = {ContentLayer.BODY, ContentLayer.FURNITURE}
 
     for item, _level in result.document.iterate_items(

@@ -6,10 +6,9 @@ import json
 import math
 from pathlib import Path
 from string import Template
-from typing import Literal
-
 from pydantic import BaseModel, Field
 
+from document_processing.element_taxonomy import ELEMENT_LABELS
 from agents.codex_cli import run_codex_json
 
 PAGE_DRAFT_SCHEMA = {
@@ -26,7 +25,7 @@ PAGE_DRAFT_SCHEMA = {
                 "required": ["region_id", "label", "bbox_norm"],
                 "properties": {
                     "region_id": {"type": "string"},
-                    "label": {"type": "string", "enum": ["title", "title_table", "text", "table", "figure", "seal"]},
+                    "label": {"type": "string", "enum": list(ELEMENT_LABELS)},
                     "bbox_norm": {
                         "type": "array", "minItems": 4, "maxItems": 4,
                         "items": {"type": "number", "minimum": 0, "maximum": 1},
@@ -55,7 +54,7 @@ PAGE_DRAFT_SCHEMA = {
 
 class DraftRegion(BaseModel):
     region_id: str = Field(min_length=1)
-    label: Literal["title", "title_table", "text", "table", "figure", "seal"]
+    label: str = Field(min_length=1)
     bbox_norm: list[float] = Field(min_length=4, max_length=4)
 
 
@@ -78,6 +77,8 @@ def validate_page_draft(draft: GeneratedPageDraft) -> None:
     if len(regions) != len(draft.regions):
         raise ValueError("Codex returned duplicate layout region IDs")
     for region in draft.regions:
+        if region.label not in ELEMENT_LABELS:
+            raise ValueError(f"Codex returned unsupported layout label: {region.label}")
         x1, y1, x2, y2 = region.bbox_norm
         if not all(map(math.isfinite, region.bbox_norm)):
             raise ValueError("Codex returned a non-finite region coordinate")

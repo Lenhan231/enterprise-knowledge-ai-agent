@@ -122,8 +122,7 @@ def _parser_output_row_preview(
     output: dict[str, Any],
 ) -> dict[str, Any]:
     """Build locally the JSONB payload written by the Supabase upload button."""
-    text_elements = []
-    figures = []
+    normalized_elements = []
     for element in output.get("elements", []):
         normalized_element = dict(element)
         metadata = dict(element.get("metadata") or {})
@@ -136,20 +135,14 @@ def _parser_output_row_preview(
         normalized_element["metadata"] = metadata
         if "element_type" in normalized_element:
             normalized_element["element_type"] = element_type
-        if element_type in {"figure", "seal"}:
-            figure = dict(normalized_element)
-            figure.pop("text", None)
-            figures.append(figure)
-        elif element_type != "table":
-            text_elements.append(normalized_element)
+        normalized_elements.append(normalized_element)
 
     parser_metadata = output.get("metadata") or {}
     return {
         "document_id": f"PARSER-{selected_id}",
         "pipeline_id": str(parser_metadata.get("pipeline_id") or parser_metadata.get("parser_engine") or "docling"),
-        "text_elements": text_elements,
-        "figures": figures,
-        "structured_tables": output.get("tables", []),
+        "elements": normalized_elements,
+        "tables": output.get("tables", []),
         "document_metadata": {
             **parser_metadata,
             "filename": filename,
@@ -508,7 +501,7 @@ else:
         if st.button(
             "Upload parser output to Supabase (no chunking)",
             key=f"upload-parser-output-{selected_id}",
-            help="Save parser output plus separate text-element and figure rows. Table regions remain in the raw parser output; no chunks or embeddings are created.",
+            help="Save the parser's ordered elements and structured tables. No chunks or embeddings are created.",
         ):
             from dotenv import load_dotenv
 
@@ -695,9 +688,9 @@ else:
                 "Use the upload button above when you are ready."
             )
             st.json({key: value for key, value in output_row.items() if key not in {
-                "text_elements", "figures", "structured_tables", "document_metadata",
+                "elements", "tables", "document_metadata",
             }})
-            for column_name in ("text_elements", "figures", "structured_tables", "document_metadata"):
+            for column_name in ("elements", "tables", "document_metadata"):
                 value = output_row[column_name]
                 item_count = len(value) if isinstance(value, list) else None
                 suffix = f" · {item_count} items" if item_count is not None else ""

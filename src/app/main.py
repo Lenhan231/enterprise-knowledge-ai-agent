@@ -477,12 +477,12 @@ async def upload_document(
         })
         try:
             from core.chunking.processor import ChunkingProcessor
-            from core.database.document_processing_outputs_repository import (
-                DocumentProcessingOutputsRepository,
+            from core.database.document_processing_output_repository import (
+                DocumentProcessingOutputRepository,
             )
 
             parsed = processor.process(filename, content, metadata)
-            outputs_repository = DocumentProcessingOutputsRepository()
+            outputs_repository = DocumentProcessingOutputRepository()
             try:
                 outputs_repository.replace_document(document_id, parsed)
             finally:

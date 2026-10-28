@@ -3,50 +3,402 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Enterprise Intelligence</title>
+  <meta name="theme-color" content="#f3f6fa">
+  <title>Commerce Intelligence · Operations</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css?v=agent-runtime-dashboard-20261024">
+  <script>
+    (function() {
+      const saved = localStorage.getItem("app_theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (saved === "dark" || (!saved && prefersDark)) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
 </head>
 <body>
-  <aside class="sidebar">
-    <div class="brand"><span class="brand-mark" data-icon="badge"></span><div><strong>FA26AI69</strong><small>Enterprise Knowledge AI</small></div></div>
-    <nav id="nav-main"></nav>
-    <div class="nav-divider"></div>
-    <nav id="nav-secondary"></nav>
-    <div class="case-card"><span class="case-icon" data-icon="database"></span><div><strong>Apple Case Study</strong><small>Public Corporate Documents</small></div><p>Turn documents into intelligence.<br>Support better decisions.</p></div>
+  <aside id="login-brand-sidebar" class="login-brand-sidebar" aria-label="Application identity">
+    <a class="brand" href="/" aria-label="Enterprise Knowledge home">
+      <span class="brand-mark">EK</span>
+      <span><strong>Enterprise Knowledge AI</strong><small>Commerce operations workspace</small></span>
+    </a>
   </aside>
 
-  <main>
-    <header>
-      <button class="mobile-menu" aria-label="Open navigation" data-icon="menu"></button>
-      <div class="title"><h1>Enterprise Intelligence — Data Analytics &amp; Decision Support</h1><p>Powered by Apple Public Corporate Documents | From Information to Insight</p></div>
-      <div class="filters">
-        <label>Fiscal Year<select id="year"><option>FY2025</option><option>FY2024</option><option>FY2023</option></select></label>
-        <label>Document Source<select id="source"><option value="apple-public-corporate-corpus">Apple Public Corporate Corpus</option></select></label>
-        <button class="ask"><span data-icon="message"></span>Ask AI</button>
-      </div>
-      <div class="profile"><span>FA</span><div><strong>FA26AI69</strong><small>Capstone Project</small></div></div>
-    </header>
-
-    <div class="content">
-      <section id="kpis" class="kpi-grid" aria-label="Key performance indicators"></section>
-      <section class="charts-grid">
-        <article class="panel"><div class="panel-head"><h2>Net Sales Trend</h2><p>Total net sales (Billion USD)</p></div><div id="trend-chart" class="chart"></div></article>
-        <article class="panel"><div class="panel-head"><h2>Net Sales by Product Category (FY2025)</h2><p>Billion USD (Share of total)</p></div><div id="product-chart" class="chart"></div></article>
-        <article class="panel"><div class="panel-head"><h2>Net Sales by Region (FY2025)</h2><p>Billion USD (Share of total)</p></div><div id="region-chart" class="chart"></div></article>
-      </section>
-      <section class="bottom-grid">
-        <article class="panel insights-panel"><div class="section-title"><span class="sparkles" data-icon="sparkles"></span><div><h2>AI-Generated Insights</h2><p>Based on analysis of Apple public documents (e.g., FY2025 10-K). Always verify important information.</p></div><span class="ai-tag"><i data-icon="sparkles"></i>AI Generated</span></div><div id="insights"></div></article>
-        <div class="right-stack">
-          <article class="panel coverage-panel"><div class="section-title"><span class="db-title" data-icon="database"></span><div><h2>Knowledge Base Coverage</h2><p>Apple public corporate documents in the AI knowledge base.</p></div></div><div id="coverage"></div></article>
-          <article class="panel sources-panel"><div class="sources-head section-title"><span data-icon="folder"></span><div><h2>Recent Sources</h2><p>Latest documents in the knowledge base.</p></div><a href="#">View All <b>→</b></a></div><div id="sources"></div></article>
-        </div>
-      </section>
-    </div>
+  <main id="login-view" class="login-view">
+    <form id="login-form" class="login-card">
+      <p class="eyebrow">SECURE ENTERPRISE ACCESS</p>
+      <h1>Sign in to your knowledge workspace</h1>
+      <label for="username">Username</label>
+      <input id="username" name="username" autocomplete="username" placeholder="e.g. admin, analyst, document-processing-owner" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+      <p id="login-error" class="error-message" hidden></p>
+      <button type="submit" class="primary-button">Sign in to workspace</button>
+      <small>Demo role accounts are configured securely in your environment variables.</small>
+    </form>
   </main>
-  <div id="toast" role="status"></div>
-  <script src="/static/app.js"></script>
+
+  <div id="workspace" class="app-shell" hidden>
+    <aside class="workspace-sidebar" aria-label="Workspace sidebar">
+      <a class="brand sidebar-brand" href="/" aria-label="Enterprise Knowledge home">
+        <span class="brand-mark">EK</span>
+        <span><strong>Enterprise Knowledge AI</strong><small>Commerce operations workspace</small></span>
+      </a>
+      <nav id="workspace-tabs" class="workspace-tabs" role="tablist" aria-label="Workspace navigation">
+        <button id="tab-button-knowledge" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="tab-knowledge" data-tab-target="knowledge">Knowledge Q&amp;A</button>
+        <button id="tab-button-upload" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-upload" data-tab-target="upload" hidden>Upload Documents</button>
+        <button id="tab-button-processing" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-processing" data-tab-target="processing" hidden>Document Processing</button>
+        <button id="tab-button-ocr-lab" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-ocr-lab" data-tab-target="ocr-lab" hidden>Upload Test</button>
+        <button id="tab-button-knowledge-management" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-knowledge-management" data-tab-target="knowledge-management" hidden>Knowledge Management</button>
+        <button id="tab-button-access" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-access" data-tab-target="access" hidden>Access Control</button>
+        <button id="tab-button-monitoring" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" data-tab-target="monitoring" hidden>Agent Monitoring</button>
+      </nav>
+      <div class="topbar-status sidebar-account">
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light and dark mode" title="Toggle theme">
+          <span class="theme-icon light-icon" aria-hidden="true">Light</span>
+          <span class="theme-icon dark-icon" aria-hidden="true">Dark</span>
+        </button>
+        <span class="status-dot"></span>
+        <span id="connection-status">Sign in required</span>
+        <span id="user-badge" hidden></span>
+        <button id="logout-button" class="logout-btn" hidden>Sign out</button>
+      </div>
+    </aside>
+    <main id="workspace-main" class="page">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">FOUR SPECIALIST AGENTS · ONE WORKSPACE</p>
+        <h1>Commerce intelligence,<br><span>from evidence to action.</span></h1>
+        <p class="intro-copy">Ask the knowledge agent for sourced guidance, the analytics agent for business metrics, the inventory agent for stock exceptions, or the report agent for a decision-ready summary.</p>
+      </div>
+      <div class="corpus-scope">
+        <span>ENTERPRISE SCOPE</span>
+        <strong>Commerce demo · synthetic data</strong>
+      </div>
+    </section>
+
+    <section class="agent-overview" aria-labelledby="agent-overview-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">YOUR AGENT TEAM</p>
+          <h2 id="agent-overview-title">Choose the right specialist</h2>
+        </div>
+        <span class="agent-team-badge"><span aria-hidden="true"></span> 4 agents available</span>
+      </div>
+      <div class="agent-grid">
+        <article id="knowledge-agent-card" class="agent-card">
+          <span class="agent-index">01 · KNOWLEDGE</span>
+          <h3>Find grounded guidance</h3>
+          <p>Search operating references and get answers linked to source passages.</p>
+          <span class="agent-capability">Hybrid retrieval · citations</span>
+          <button class="agent-card-launch" type="button" data-agent-mode="knowledge" data-agent-prompt="What evidence should be checked before transferring inventory when stockout and overstock flags overlap?">Ask knowledge agent</button>
+        </article>
+        <article id="analytics-agent-card" class="agent-card">
+          <span class="agent-index">02 · ANALYTICS</span>
+          <h3>Understand business metrics</h3>
+          <p>Explore Commerce performance with permission-aware, read-only analysis.</p>
+          <span class="agent-capability">Sales · campaigns · logistics</span>
+          <button class="agent-card-launch" type="button" data-agent-mode="sql" data-agent-prompt="Summarize recent Commerce sales and identify the main trend.">Ask analytics agent</button>
+        </article>
+        <article id="inventory-agent-card" class="agent-card">
+          <span class="agent-index">03 · INVENTORY</span>
+          <h3>Spot stock exceptions</h3>
+          <p>Review the latest inventory snapshot, stockouts, and overstock signals.</p>
+          <span class="agent-capability">Snapshot · category exceptions</span>
+          <button class="agent-card-launch" type="button" data-agent-mode="dashboard" data-agent-prompt="Show the latest inventory dashboard and flag stock exceptions.">Open inventory view</button>
+        </article>
+        <article id="report-agent-card" class="agent-card">
+          <span class="agent-index">04 · REPORTS</span>
+          <h3>Prepare a decision brief</h3>
+          <p>Bring source evidence and analysis together in a structured report.</p>
+          <span class="agent-capability">Evidence · analysis · summary</span>
+          <button class="agent-card-launch" type="button" data-open-report>Generate a report</button>
+        </article>
+      </div>
+    </section>
+
+    <div id="inventory-snapshot" hidden aria-live="polite"></div>
+
+    <section class="stats" aria-label="Knowledge base coverage" hidden>
+      <article class="stat-card">
+        <div>
+          <span class="stat-label">Enterprises</span>
+          <strong id="company-name">—</strong>
+          <span class="stat-note">Visible in your role scope</span>
+        </div>
+      </article>
+      <article class="stat-card">
+        <div>
+          <span class="stat-label">Indexed Documents</span>
+          <strong id="document-count">—</strong>
+          <span class="stat-note">Role-visible searchable sources</span>
+        </div>
+      </article>
+      <article class="stat-card">
+        <div>
+          <span class="stat-label">Passages</span>
+          <strong id="chunk-count">—</strong>
+          <span class="stat-note">Available for document retrieval</span>
+        </div>
+      </article>
+      <article class="stat-card source-stat">
+        <div>
+          <span class="stat-label">Processing</span>
+          <strong id="processing-count">—</strong>
+          <span class="stat-note">Uploaded / OCR / chunking</span>
+        </div>
+      </article>
+    </section>
+
+    <div class="workspace-content">
+    <!-- TAB 1: KNOWLEDGE / Q&A -->
+    <section id="tab-knowledge" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-knowledge">
+      <section class="ask-panel" aria-labelledby="ask-title">
+        <div class="ask-heading">
+          <div>
+            <p class="eyebrow">SOURCE-GROUNDED RETRIEVAL (HYBRID RAG)</p>
+            <h2 id="ask-title">What would you like to know?</h2>
+          </div>
+          <span class="grounded-badge">Cited source grounding</span>
+        </div>
+        <form id="ask-form">
+          <label class="visually-hidden" for="question">Search or ask a question about company documents</label>
+          <div class="textarea-wrapper">
+          <textarea id="question" minlength="3" maxlength="1000" required placeholder="Example: What evidence should be checked before transferring inventory?"></textarea>
+          </div>
+          <div class="quick-prompts" id="quick-prompts">
+            <span class="quick-prompt-label">Quick prompts:</span>
+            <button type="button" class="quick-chip" data-prompt="What evidence should be checked before transferring inventory when stockout and overstock flags overlap?">Inventory guidance</button>
+            <button type="button" class="quick-chip" data-prompt="How can an experiment distinguish incremental promotion sales from attributed sales?">Campaign measurement</button>
+            <button type="button" class="quick-chip" data-prompt="Which factors should a retailer compare before choosing an ecommerce delivery service?">Delivery planning</button>
+          </div>
+          <div class="ask-controls">
+            <span id="question-hint">Use precise questions for exact passage retrieval and primary source citations.</span>
+            <div class="ask-actions">
+              <label class="agent-mode-control" for="agent-mode">Route to
+                <select id="agent-mode" name="agent_mode">
+                  <option value="agentic" selected>Agentic</option>
+                  <option value="auto">Auto select</option>
+                  <option value="knowledge">Knowledge</option>
+                  <option value="sql">Analytics</option>
+                </select>
+              </label>
+              <button id="ask-button" type="submit" class="submit-query-btn">
+                <span>Ask agent</span>
+              </button>
+            </div>
+          </div>
+        </form>
+        <div id="answer-panel" class="answer-panel" hidden aria-live="polite"></div>
+      </section>
+
+      <section id="report-agent-form-section" class="report-agent-panel" aria-labelledby="report-agent-form-title" hidden>
+        <div class="section-heading"><div><p class="eyebrow">REPORT AGENT</p><h2 id="report-agent-form-title">Generate an evidence-backed report</h2></div></div>
+        <form id="report-agent-form" class="review-form">
+          <label for="report-agent-question">Decision question</label>
+          <textarea id="report-agent-question" name="question" minlength="3" maxlength="2000" required placeholder="What decision should this report support?"></textarea>
+          <label for="report-agent-template">DOCX or Markdown template</label>
+          <input id="report-agent-template" name="template" type="file" accept=".docx,.md" required>
+          <button id="report-agent-submit" type="submit" class="primary-button">Generate report</button>
+          <p id="report-agent-status" class="corpus-note" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+    </section>
+
+    <!-- TAB: UPLOAD / KNOWLEDGE SOURCES -->
+    <section id="tab-upload" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-upload" hidden>
+      <section id="upload-section" class="upload-section" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">KNOWLEDGE SOURCES</p>
+            <h2>Upload a knowledge source</h2>
+            <p class="corpus-note">Add a document for Q&amp;A, assign its readers, and optionally route it as guidance for a Commerce decision domain.</p>
+          </div>
+        </div>
+        <form id="upload-form" class="upload-form">
+          <section class="upload-step upload-document-step">
+            <h3><span>1</span> Document</h3>
+            <div class="upload-step-fields">
+              <div class="upload-field upload-field-wide">
+                <label for="upload-file">Document file</label>
+                <div id="upload-dropzone" class="upload-dropzone">
+                  <p><strong>Drop one file here</strong> or choose it from your device.</p>
+                  <input id="upload-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff" aria-describedby="upload-file-info" required>
+                  <small>PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF · up to 50 MiB.</small>
+                  <p id="upload-file-info" class="corpus-note" aria-live="polite">The original is stored privately. Scans use OCR and may need source-page review in Document Processing.</p>
+                </div>
+              </div>
+              <div class="upload-field upload-field-wide">
+                <label for="upload-title">Document title</label>
+                <input id="upload-title" name="title" required maxlength="200" placeholder="Filled from the filename; you can edit it">
+                <small class="upload-field-hint">This title is shown in search results and the knowledge list.</small>
+              </div>
+            </div>
+          </section>
+
+          <fieldset class="upload-access-step">
+            <legend><span>2</span> Access</legend>
+            <small>Select who can retrieve this source in document Q&amp;A.</small>
+            <div id="upload-role-options" class="upload-role-options"></div>
+            <p id="upload-role-selection" class="upload-role-selection" aria-live="polite">No roles selected yet.</p>
+          </fieldset>
+
+          <div class="upload-actions" style="display:flex;gap:10px;flex-wrap:wrap">
+            <button id="upload-button" type="submit" class="primary-button" data-upload-mode="production">UPLOAD</button>
+            <button id="parser-handoff-button" type="submit" class="secondary-button" data-upload-mode="parser-handoff" hidden>Save parser output to public</button>
+          </div>
+          <div id="upload-status-wrap" class="upload-status-wrap" hidden>
+            <div id="upload-progress" class="upload-progress" role="progressbar" aria-label="Document processing" aria-valuetext="Processing">
+              <span></span>
+            </div>
+            <p id="upload-status" class="corpus-note" aria-live="polite"></p>
+            <small id="upload-elapsed" class="upload-elapsed" aria-live="off" hidden></small>
+          </div>
+        </form>
+      </section>
+    </section>
+
+    <!-- TAB: PROCESSING / PARSING & OCR -->
+    <section id="tab-processing" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-processing" hidden>
+      <p id="processing-upload-status" class="upload-result" role="status" aria-live="polite" hidden></p>
+      <section id="parsed-chunk-inspector" class="candidate-review" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">PARSER &amp; OCR OUTPUT</p>
+            <h2>Inspect parsed document passages</h2>
+          </div>
+        </div>
+        <p>Inspect saved parser output before embeddings, or the indexed retrieval chunks for corpus documents.</p>
+        <form id="parsed-chunk-form" class="review-form">
+          <label for="parsed-document">Corpus document</label>
+          <select id="parsed-document" required></select>
+          <label for="parsed-offset">Start at passage</label>
+          <input id="parsed-offset" type="number" min="0" value="0">
+          <button type="submit" class="secondary-button">Load parsed passages</button>
+        </form>
+        <div id="parsed-chunk-list"></div>
+        <h3 class="subheading-margin">Extracted structured tables</h3>
+        <div id="parsed-table-list"></div>
+      </section>
+
+    </section>
+
+    <section id="tab-knowledge-management" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-knowledge-management" hidden>
+      <section class="candidate-review knowledge-management-section">
+        <div class="section-heading">
+          <div><p class="eyebrow">ADMINISTRATION</p><h2>Knowledge-base files</h2></div>
+          <button id="knowledge-documents-refresh" class="secondary-button" type="button">Refresh</button>
+        </div>
+        <p>Manage which roles can retrieve each file. Remove or restore a source from AI retrieval without deleting its original file or parser output.</p>
+        <label class="knowledge-search-label" for="knowledge-documents-search">Find by title, publisher, domain, or ID</label>
+        <input id="knowledge-documents-search" class="knowledge-search" type="search" autocomplete="off">
+        <div class="knowledge-filters">
+          <label for="knowledge-domain-filter">Decision domain
+            <select id="knowledge-domain-filter">
+              <option value="all">All domains</option>
+              <option value="inventory_allocation">Inventory allocation</option>
+              <option value="promotion_planning">Promotion planning</option>
+              <option value="nationwide_logistics">Nationwide logistics</option>
+              <option value="general">General / unclassified</option>
+            </select>
+          </label>
+          <label for="knowledge-state-filter">Source state
+            <select id="knowledge-state-filter">
+              <option value="all">All states</option>
+              <option value="available">Available to AI</option>
+              <option value="removed">Removed from AI retrieval</option>
+              <option value="attention">Needs attention</option>
+            </select>
+          </label>
+        </div>
+        <p id="knowledge-documents-status" class="corpus-note" aria-live="polite"></p>
+        <div id="knowledge-documents-list" class="knowledge-documents-list"></div>
+      </section>
+    </section>
+
+    <section id="tab-ocr-lab" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-ocr-lab" hidden>
+      <section class="candidate-review">
+        <div class="section-heading">
+          <div><p class="eyebrow">ISOLATED UPLOAD TEST</p><h2>Run the Docling parser</h2></div>
+        </div>
+        <p>Upload Test runs Docling and saves ordered document-processing elements and structured tables for inspection.</p>
+        <form id="ocr-test-form" class="upload-form">
+          <div class="ocr-test-field"><label for="ocr-test-file">Document to upload-test (up to 20 MiB; PDFs up to 50 pages)</label>
+          <input id="ocr-test-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff" required></div>
+          <div class="ocr-test-field"><label for="ocr-test-parser">Document parser</label>
+          <select id="ocr-test-parser" name="parser_engine"><option value="docling" selected>Docling</option></select></div>
+          <fieldset data-parser-settings="docling" hidden><legend>Docling tuning</legend>
+            <div class="ocr-test-field"><label for="ocr-test-docling-device">Device</label><select id="ocr-test-docling-device" name="docling_device"><option value="cpu" selected>CPU</option><option value="cuda">NVIDIA CUDA</option></select></div>
+            <div class="ocr-test-field"><label for="ocr-test-docling-ocr">OCR</label><select id="ocr-test-docling-ocr" name="docling_ocr"><option value="true" selected>On · scanned pages</option><option value="false">Off · digital text only</option></select></div>
+            <div class="ocr-test-field"><label for="ocr-test-docling-language">Tesseract language</label><select id="ocr-test-docling-language" name="docling_ocr_language"><option value="vie+eng" selected>Vietnamese + English</option><option value="eng">English only</option></select></div>
+            <div class="ocr-test-field"><label for="ocr-test-docling-tables">Table structure recognition</label><select id="ocr-test-docling-tables" name="docling_table_structure"><option value="true" selected>On</option><option value="false">Off</option></select></div>
+            <div class="ocr-test-field"><label for="ocr-test-docling-threads">CPU threads</label><input id="ocr-test-docling-threads" name="docling_num_threads" type="number" min="1" max="16" value="4"></div>
+          </fieldset>
+          <button id="ocr-test-button" type="submit" class="primary-button">Run Upload Test</button>
+          <p id="ocr-test-status" class="corpus-note" aria-live="polite"></p>
+        </form>
+        <h3 class="subheading-margin">Recent upload tests</h3>
+        <div id="ocr-test-runs"></div>
+        <div id="ocr-test-results"></div>
+      </section>
+    </section>
+
+    <!-- TAB 4: ACCESS / RBAC -->
+    <section id="tab-access" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-access" hidden>
+      <section id="admin-section" class="admin-section" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">ROLE-BASED ACCESS CONTROL (RBAC)</p>
+            <h2>Role permissions matrix</h2>
+            <p class="corpus-note">This matrix shows workspace capabilities by role. To choose who can read an individual document, manage its reader roles in Knowledge Management.</p>
+          </div>
+          <button class="secondary-button" type="button" data-open-tab="knowledge-management">Manage file access</button>
+        </div>
+        <div id="access-matrix" class="access-matrix"></div>
+      </section>
+    </section>
+
+    <!-- TAB 5: MONITORING / AGENT RUNS -->
+    <section id="tab-monitoring" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-monitoring" hidden>
+      <section id="monitoring-section" class="monitoring-section" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">REAL-TIME SYSTEM OPERATIONS</p>
+            <h2>Agent Performance &amp; Latency Monitoring</h2>
+            <p class="monitoring-note">Telemetry from the last 24 hours. Privacy preserved: user questions and generated text are not recorded.</p>
+          </div>
+          <button id="monitoring-refresh" class="secondary-button" type="button">
+            <span>Refresh</span>
+          </button>
+        </div>
+        <div id="monitoring-summary" class="monitoring-summary" aria-live="polite"></div>
+        <section class="analysis-section">
+          <div class="analysis-section-heading">
+            <div>
+              <p class="eyebrow">ROUTED WORKLOAD</p>
+              <h3>Executions by Agent</h3>
+            </div>
+          </div>
+          <div id="monitoring-agents" class="monitoring-agents"></div>
+        </section>
+        <section class="analysis-section">
+          <div class="analysis-section-heading">
+            <div>
+              <p class="eyebrow">RECENT EXECUTIONS</p>
+              <h3>Last 100 Runs</h3>
+            </div>
+          </div>
+          <div id="monitoring-runs" class="monitoring-runs" aria-live="polite"></div>
+        </section>
+      </section>
+    </section>
+    </div>
+    </main>
+  </div>
+  <script src="/static/app.js?v=workspace-dashboard-20261024-2" defer></script>
 </body>
 </html>

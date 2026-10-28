@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from app.main import create_app
+from core.agents.main import create_app
 from core.models.agents import AgentResult, VerifiedIdentity
 
 

@@ -1,0 +1,241 @@
+{
+  "dataset": "vinamilk-official-charter-scan-page8-en-v1",
+  "dataset_sha256": "404de082b2d4c4138c6dcdeec399575ee93a316fad83a8bfd39c20e9a5941273",
+  "source_ocr_dataset_sha256": null,
+  "reference_rescored": false,
+  "render_dpi": 180,
+  "paired_pages": [
+    {
+      "document_id": "VNM-CHARTER-2026-EN",
+      "page": 8,
+      "language": "en",
+      "source_pdf_sha256": "2c49760156a72204756004be0b8fd1c8dc10e2ecd88abea78ea3fefbf0bf040f",
+      "rendered_image_sha256": "a027cd6d0cd7e54beab3773f6b7ad835b811baaf6e1174f04efd73f48b29acea"
+    }
+  ],
+  "engines": [
+    {
+      "engine": "tesseract_psm3",
+      "base_engine": "tesseract",
+      "configuration": {
+        "render_dpi": 180,
+        "tesseract_language": "vie+eng",
+        "tesseract_page_segmentation_mode": 3
+      },
+      "engine_version": "tesseract 4.1.1",
+      "runtime_device": "CPU; CUDA unavailable",
+      "valid_pages": 1,
+      "ocr_pages": 1,
+      "failed_pages": 0,
+      "micro_cer": 0.011122,
+      "micro_wer": 0.030888,
+      "mean_latency_seconds": 4.521,
+      "pages_per_minute": 13.271,
+      "initialization_seconds": null,
+      "process_peak_rss_mb": 269.691,
+      "child_peak_rss_mb": 269.691,
+      "cuda_memory": {
+        "torch_cuda_peak_allocated_mb": null,
+        "torch_cuda_peak_reserved_mb": null,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "by_language": {
+        "en": {
+          "valid_pages": 1,
+          "ocr_pages": 1,
+          "failed_pages": 0,
+          "micro_cer": 0.011122,
+          "micro_wer": 0.030888,
+          "table_rows_expected": 0,
+          "table_rows_exact": 0,
+          "table_row_recall": null,
+          "table_cells_expected": 0,
+          "table_cells_text_matched": 0,
+          "table_cell_text_recall": null
+        }
+      },
+      "table_rows_expected": null,
+      "table_rows_exact": null,
+      "table_row_recall": null,
+      "table_cells_expected": 0,
+      "table_cells_text_matched": 0,
+      "table_cell_text_recall": null,
+      "table_cell_metric_scope": "cell text presence only; ignores row and column association",
+      "table_rows_expected_from_dataset": 0,
+      "table_rows_exact_from_dataset": 0,
+      "table_row_recall_from_dataset": null
+    },
+    {
+      "engine": "paddleocr",
+      "base_engine": "paddleocr",
+      "configuration": {
+        "render_dpi": 180,
+        "tesseract_language": "vie+eng",
+        "tesseract_page_segmentation_mode": 3
+      },
+      "engine_version": "3.7.0",
+      "runtime_device": "cpu",
+      "valid_pages": 1,
+      "ocr_pages": 1,
+      "failed_pages": 0,
+      "micro_cer": 0.002944,
+      "micro_wer": 0.007722,
+      "mean_latency_seconds": 79.802,
+      "pages_per_minute": 0.752,
+      "initialization_seconds": 38.483,
+      "process_peak_rss_mb": 3523.07,
+      "child_peak_rss_mb": 3523.07,
+      "cuda_memory": {
+        "torch_cuda_peak_allocated_mb": null,
+        "torch_cuda_peak_reserved_mb": null,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "by_language": {
+        "en": {
+          "valid_pages": 1,
+          "ocr_pages": 1,
+          "failed_pages": 0,
+          "micro_cer": 0.002944,
+          "micro_wer": 0.007722,
+          "table_rows_expected": 0,
+          "table_rows_exact": 0,
+          "table_row_recall": null,
+          "table_cells_expected": 0,
+          "table_cells_text_matched": 0,
+          "table_cell_text_recall": null
+        }
+      },
+      "table_rows_expected": null,
+      "table_rows_exact": null,
+      "table_row_recall": null,
+      "table_cells_expected": 0,
+      "table_cells_text_matched": 0,
+      "table_cell_text_recall": null,
+      "table_cell_metric_scope": "cell text presence only; ignores row and column association",
+      "table_rows_expected_from_dataset": 0,
+      "table_rows_exact_from_dataset": 0,
+      "table_row_recall_from_dataset": null
+    },
+    {
+      "engine": "easyocr",
+      "base_engine": "easyocr",
+      "configuration": {
+        "render_dpi": 180,
+        "tesseract_language": "vie+eng",
+        "tesseract_page_segmentation_mode": 3
+      },
+      "engine_version": "1.7.2",
+      "runtime_device": "cuda:0",
+      "valid_pages": 1,
+      "ocr_pages": 1,
+      "failed_pages": 0,
+      "micro_cer": 0.004253,
+      "micro_wer": 0.019305,
+      "mean_latency_seconds": 5.602,
+      "pages_per_minute": 10.71,
+      "initialization_seconds": 9.74,
+      "process_peak_rss_mb": 1424.352,
+      "child_peak_rss_mb": 1424.352,
+      "cuda_memory": {
+        "torch_cuda_peak_allocated_mb": 1854.464,
+        "torch_cuda_peak_reserved_mb": 2300.0,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "by_language": {
+        "en": {
+          "valid_pages": 1,
+          "ocr_pages": 1,
+          "failed_pages": 0,
+          "micro_cer": 0.004253,
+          "micro_wer": 0.019305,
+          "table_rows_expected": 0,
+          "table_rows_exact": 0,
+          "table_row_recall": null,
+          "table_cells_expected": 0,
+          "table_cells_text_matched": 0,
+          "table_cell_text_recall": null
+        }
+      },
+      "table_rows_expected": null,
+      "table_rows_exact": null,
+      "table_row_recall": null,
+      "table_cells_expected": 0,
+      "table_cells_text_matched": 0,
+      "table_cell_text_recall": null,
+      "table_cell_metric_scope": "cell text presence only; ignores row and column association",
+      "table_rows_expected_from_dataset": 0,
+      "table_rows_exact_from_dataset": 0,
+      "table_row_recall_from_dataset": null
+    },
+    {
+      "engine": "surya",
+      "base_engine": "surya",
+      "configuration": {
+        "render_dpi": 180,
+        "tesseract_language": "vie+eng",
+        "tesseract_page_segmentation_mode": 3
+      },
+      "engine_version": "0.17.1",
+      "runtime_device": "cuda:0",
+      "valid_pages": 1,
+      "ocr_pages": 1,
+      "failed_pages": 0,
+      "micro_cer": 0.017991,
+      "micro_wer": 0.052124,
+      "mean_latency_seconds": 15.579,
+      "pages_per_minute": 3.851,
+      "initialization_seconds": 57.573,
+      "process_peak_rss_mb": 4402.73,
+      "child_peak_rss_mb": 1273.098,
+      "cuda_memory": {
+        "torch_cuda_peak_allocated_mb": 2330.54,
+        "torch_cuda_peak_reserved_mb": 2618.0,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "by_language": {
+        "en": {
+          "valid_pages": 1,
+          "ocr_pages": 1,
+          "failed_pages": 0,
+          "micro_cer": 0.017991,
+          "micro_wer": 0.052124,
+          "table_rows_expected": 0,
+          "table_rows_exact": 0,
+          "table_row_recall": null,
+          "table_cells_expected": 0,
+          "table_cells_text_matched": 0,
+          "table_cell_text_recall": null
+        }
+      },
+      "table_rows_expected": null,
+      "table_rows_exact": null,
+      "table_row_recall": null,
+      "table_cells_expected": 0,
+      "table_cells_text_matched": 0,
+      "table_cell_text_recall": null,
+      "table_cell_metric_scope": "cell text presence only; ignores row and column association",
+      "table_rows_expected_from_dataset": 0,
+      "table_rows_exact_from_dataset": 0,
+      "table_row_recall_from_dataset": null
+    }
+  ],
+  "execution_context": {
+    "provider": "Kaggle Notebooks",
+    "private_dataset_id": "ltrngnhn/vinamilk-charter-scan-page8-assets",
+    "private_dataset_version": 2,
+    "kernel_id": "ltrngnhn/vinamilk-charter-scan-page-8-ocr-diagnostic",
+    "kernel_versions": {
+      "tesseract": 2,
+      "paddleocr": 3,
+      "easyocr": 4,
+      "surya": 5
+    },
+    "accelerators": {
+      "tesseract": "CPU",
+      "paddleocr": "CPU",
+      "easyocr": "Tesla T4",
+      "surya": "Tesla T4"
+    },
+    "note": "Single-page comparison; all reports share dataset, source-PDF and rendered-image hashes. Hardware throughput is descriptive only."
+  }
+}

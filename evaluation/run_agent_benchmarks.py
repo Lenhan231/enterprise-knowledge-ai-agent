@@ -134,8 +134,6 @@ def _is_transient_error(error):
     if status in (408, 409, 429, 500, 502, 503, 504):
         return True
     return any(token in text for token in (
-        "generated answer contains no source citations",
-        "missing bearer or basic authentication", "error: reconnect",
         "http 408", "http 409", "http 429", "http 500", "http 502", "http 503", "http 504",
         "error code: 408", "error code: 409", "error code: 429", "error code: 500",
         "error code: 502", "error code: 503", "error code: 504",

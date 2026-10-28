@@ -1,48 +1,49 @@
 [project]
 name = "enterprise-knowledge-ai-agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "Source-grounded enterprise document QA and Commerce decision support"
 readme = "README.md"
 authors = [
     { name = "Lenhan231", email = "nhanle221199@gmail.com" }
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "azure-core==1.35.1",
-    "azure-search-documents==11.5.3",
     "fastapi==0.136.3",
+    "huggingface-hub>=1.0.0",
     "jinja2==3.1.6",
     "langchain-core==1.4.0",
     "langchain-experimental==0.4.2",
-    "langgraph>=1.2.4",
     "langchain-huggingface>=1.2.2",
-    "langchain-openai==1.2.2",
-    "langchain-text-splitters==1.1.2",
     "openai==2.41.0",
-    "psycopg[binary]>=3.3.5",
-    "psycopg2-binary==2.9.10",
+    "psycopg[binary,pool]>=3.3.5",
     "pydantic==2.11.7",
-    "pymupdf4llm==1.27.2.3",
+    "asyncpg>=0.32.0",
+    "python-docx>=1.2,<2",
+    "pymupdf==1.27.2.3",
     "python-dotenv==1.1.1",
     "python-multipart==0.0.32",
     "sentence-transformers>=6.0.1",
-    "sqlalchemy==2.0.50",
     "supabase>=2.31.0",
     "uvicorn==0.35.0",
     "pgvector>=0.5.0",
     "numpy>=2.4.6",
     "groq>=1.7.0",
-    "pypdf>=6.19.0",
-    "asyncpg>=0.32.0",
-    "sqlglot==30.21.0",
-    "streamlit>=1.50,<2.0",
-    "ragas>=0.4.3",
-    "langchain-google-vertexai>=3.2.4",
-    "python-docx>=1.2,<2",
+    "pyjwt==2.14.0",
+    "langgraph>=1.2.4",
+    "sqlglot>=30.19.0",
+    "pillow==12.3.0",
 ]
 
-[project.scripts]
-enterprise-knowledge-ai-agent = "enterprise_knowledge_ai_agent:main"
+[project.optional-dependencies]
+ocr-paddle = ["paddleocr>=3.0.3", "paddlepaddle>=3.3.1", "paddlex[ocr]==3.4.3"]
+layout-yolo = ["doclayout-yolo==0.0.4"]
+docling = ["docling==2.129.0", "opencv-python-headless"]
+document-processing-ui = ["streamlit>=1.40,<2"]
+evaluation = [
+    "grits-metric==0.6.1",
+    "pyvi==0.1.1",
+    "rapidfuzz>=3.14.0",
+]
 
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13.0"]
@@ -50,6 +51,3 @@ build-backend = "uv_build"
 
 [tool.uv]
 package = false
-
-[tool.uv.sources]
-ragas = { git = "https://github.com/GoldSharon/ragas.git", rev = "735726d" }

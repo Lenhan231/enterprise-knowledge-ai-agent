@@ -1,0 +1,332 @@
+{
+  "created_at_utc": "2026-09-28T18:06:34.135515+00:00",
+  "dataset_id": "vinamilk-2011-vietnamese-financial-scan-diagnostic-v1",
+  "dataset_sha256": "bae40bc9521a936ab4c8a87cd3e6853f15bdd731ecd665181c989818bf66e753",
+  "reference_quality": "human_transcribed_visual_review_cross_checked_against_official_report",
+  "reference_method": "Manual visual transcription of the scanned page; financial labels and figures checked against the official born-digital Vinamilk annual report.",
+  "protocol": "Copy each selected manually labeled region from the original PDF page, preserving its source content; run the existing DocumentProcessor PDF upload path (PyMuPDF/Tesseract fallback), then score chunk text against the manual reference.",
+  "limitations": "Production-parser OCR path only. Table scoring covers seven manually reviewed financial row anchors and 14 numeric cells on one third-party Vietnamese scan; it is diagnostic and does not establish general table accuracy or safe automatic financial publication. There are no reviewed cell coordinates and no paired OCR-engine comparison. Throughput includes parser/OCR invocation but excludes application embedding and database persistence.",
+  "render_dpi": 180.0,
+  "ocr_render_scale": 2.5,
+  "tesseract_page_segmentation_mode": 11,
+  "tesseract_table_segmentation_mode": 4,
+  "tesseract_language": "vie+eng",
+  "software": {
+    "python": "3.11.16",
+    "pymupdf": "1.27.2.3",
+    "tesseract": "tesseract 5.5.3"
+  },
+  "process_memory": {
+    "process_peak_rss_mb": 91.707,
+    "child_peak_rss_mb": 126.355
+  },
+  "aggregate": {
+    "ocr_pages": 1,
+    "micro_cer": 0.45066,
+    "micro_wer": 0.550162,
+    "mean_latency_seconds": 4.084,
+    "mean_pages_per_minute": 14.692
+  },
+  "results": [
+    {
+      "id": "income-statement-scan-2011-vi",
+      "document_id": "VNM-FS-2011-VI-SCAN-DIAGNOSTIC",
+      "source_page_number": 10,
+      "language": "vi",
+      "layout_type": "financial_table",
+      "physical_scan": true,
+      "source_pdf_sha256": "80f38fbb18f729fab611ed84f699d06cde76fb2ab18f89dd953d2e589f39f0bc",
+      "cropped_pdf_sha256": "a2db1a251d97971faee1e625fb2f61d837b4c7ec392286600f4b0ad6ffdff5fa",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 4,
+      "ocr_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 3,
+      "table_count": 1,
+      "extracted_tables": [
+        {
+          "page_number": 1,
+          "table_index": 0,
+          "columns": [
+            "label",
+            "31/12/2011",
+            "31/12/2010"
+          ],
+          "rows": [
+            {
+              "label": "Doanh thu ban hàng và cung cép dich vy",
+              "31/12/2011": "22.070.557.490.766",
+              "31/12/2010": "16.081.466.183.586"
+            },
+            {
+              "label": "Các khoản giảm trừ doanh thu",
+              "31/12/2011": "(443.128.597.657)",
+              "31/12/2010": "(328.600.184.161)"
+            },
+            {
+              "label": "Doanh thu thuần về bán hàng và cung cấp dịchvụ . 23(a)",
+              "31/12/2011": "21.627.428.893.109",
+              "31/12/2010": "15.752.865.999.425"
+            },
+            {
+              "label": "Giá vốn hàng bán",
+              "31/12/2011": "(15.039.305.378.364)",
+              "31/12/2010": "(10.579.208.129.197)"
+            },
+            {
+              "label": "Lợi nhuận gộp về bán hàng và cung cấp dịch vy",
+              "31/12/2011": "6.588.123.514.745",
+              "31/12/2010": "5.173.657.870.228"
+            },
+            {
+              "label": "Doanh thu hoạt động tai chính 23(b)",
+              "31/12/2011": "680.232.453.133",
+              "31/12/2010": "448.530.127.237"
+            },
+            {
+              "label": "Chi phi tai chinh",
+              "31/12/2011": "(246.429.909.362)",
+              "31/12/2010": "(153.198.613.988)"
+            },
+            {
+              "label": "Chi phí bán hàng",
+              "31/12/2011": "(1.811.914.247.629)",
+              "31/12/2010": "(1.438.185.805.872)"
+            },
+            {
+              "label": "Chi phi quản ly doanh nghiệp",
+              "31/12/2011": "(459.431.997.199)",
+              "31/12/2010": "(388.147.124.772)"
+            },
+            {
+              "label": "Lợi nhuận từ hoạt động kinh doanh",
+              "31/12/2011": "4.750.579.813.688",
+              "31/12/2010": "3.642.656.452.833"
+            },
+            {
+              "label": "Thu nhập khác số thuần",
+              "31/12/2011": "237.226.032.153",
+              "31/12/2010": "608.785.500.303"
+            },
+            {
+              "label": "Phần I3 trong liên doanh, liên kết",
+              "31/12/2011": "(8.813.950.770)",
+              "31/12/2010": "(234.529.528)"
+            },
+            {
+              "label": "Tổng lợi nhuận ké toán trước thuế",
+              "31/12/2011": "4.978.991.895.071",
+              "31/12/2010": "4.251.207.423.608"
+            },
+            {
+              "label": "Chi phí thuế thu nhập doanh nghiép hiện hành",
+              "31/12/2011": "(778.588.561.106)",
+              "31/12/2010": "(645.058.588.114)"
+            },
+            {
+              "label": "Chi phí thuế thu nhập doanh nghiệp hoãn lại",
+              "31/12/2011": "17.778.374.972",
+              "31/12/2010": "9.344.103.477"
+            },
+            {
+              "label": "Lỗ phân bd cho cổ đông thiểu số",
+              "31/12/2011": "-",
+              "31/12/2010": "693.010.209"
+            },
+            {
+              "label": "Lợi nhuận sau thuế thu nhập doanh nghiệp",
+              "31/12/2011": "4.218.181.708.937",
+              "31/12/2010": "3.616.185.949.180"
+            }
+          ],
+          "metadata": {
+            "element_type": "table",
+            "layout_type": "table",
+            "table_extraction_method": "tesseract.tsv_aligned_columns",
+            "table_detection_strategy": "ocr_word_boxes",
+            "ocr": {
+              "engine": "tesseract",
+              "language": "vie+eng",
+              "table_psm": 4,
+              "render_scale": 2.5
+            },
+            "column_alignment": "right",
+            "bbox": [
+              120.75940860215054,
+              152.36376604850216,
+              575.4065860215054,
+              563.8659058487875
+            ],
+            "bbox_coordinate_system": "pdf_points",
+            "document_id": "VNM-FS-2011-VI-SCAN-DIAGNOSTIC",
+            "filename": "vnm-financial-statements-2011-scan-preview.pdf",
+            "format": "PDF"
+          }
+        }
+      ],
+      "table_anchor_score": {
+        "expected_headers": [
+          "31/12/2011",
+          "31/12/2010"
+        ],
+        "extracted_headers": [
+          "31/12/2011",
+          "31/12/2010"
+        ],
+        "comparison": {
+          "labels": "accent-folded character similarity; matched at >= 0.6",
+          "headers": "digits-only period comparison",
+          "numeric_cells": "sign and digit sequence; punctuation ignored"
+        },
+        "exact_header_matches": 2,
+        "expected_anchor_rows": 7,
+        "matched_anchor_rows": 7,
+        "anchor_row_recall": 1.0,
+        "exact_numeric_cells": 14,
+        "total_numeric_cells": 14,
+        "exact_numeric_cell_accuracy": 1.0,
+        "row_matches": [
+          {
+            "expected_label": "Doanh thu bán hàng và cung cấp dịch vụ",
+            "extracted_label": "Doanh thu ban hàng và cung cép dich vy",
+            "label_similarity": 0.9474,
+            "matched": true,
+            "expected_values": [
+              "22.070.557.490.766",
+              "16.081.466.183.586"
+            ],
+            "extracted_values": [
+              "22.070.557.490.766",
+              "16.081.466.183.586"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ]
+          },
+          {
+            "expected_label": "Các khoản giảm trừ doanh thu",
+            "extracted_label": "Các khoản giảm trừ doanh thu",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "(443.128.597.657)",
+              "(328.600.184.161)"
+            ],
+            "extracted_values": [
+              "(443.128.597.657)",
+              "(328.600.184.161)"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ]
+          },
+          {
+            "expected_label": "Lợi nhuận gộp về bán hàng và cung cấp dịch vụ",
+            "extracted_label": "Lợi nhuận gộp về bán hàng và cung cấp dịch vy",
+            "label_similarity": 0.9778,
+            "matched": true,
+            "expected_values": [
+              "6.588.123.514.745",
+              "5.173.657.870.228"
+            ],
+            "extracted_values": [
+              "6.588.123.514.745",
+              "5.173.657.870.228"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ]
+          },
+          {
+            "expected_label": "Lợi nhuận từ hoạt động kinh doanh",
+            "extracted_label": "Lợi nhuận từ hoạt động kinh doanh",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "4.750.579.813.688",
+              "3.642.656.452.833"
+            ],
+            "extracted_values": [
+              "4.750.579.813.688",
+              "3.642.656.452.833"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ]
+          },
+          {
+            "expected_label": "Tổng lợi nhuận kế toán trước thuế",
+            "extracted_label": "Tổng lợi nhuận ké toán trước thuế",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "4.978.991.895.071",
+              "4.251.207.423.608"
+            ],
+            "extracted_values": [
+              "4.978.991.895.071",
+              "4.251.207.423.608"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ]
+          },
+          {
+            "expected_label": "Lỗ phân bổ cho cổ đông thiểu số",
+            "extracted_label": "Lỗ phân bd cho cổ đông thiểu số",
+            "label_similarity": 0.9667,
+            "matched": true,
+            "expected_values": [
+              "-",
+              "693.010.209"
+            ],
+            "extracted_values": [
+              "-",
+              "693.010.209"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ]
+          },
+          {
+            "expected_label": "Lợi nhuận sau thuế thu nhập doanh nghiệp",
+            "extracted_label": "Lợi nhuận sau thuế thu nhập doanh nghiệp",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "4.218.181.708.937",
+              "3.616.185.949.180"
+            ],
+            "extracted_values": [
+              "4.218.181.708.937",
+              "3.616.185.949.180"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ]
+          }
+        ]
+      },
+      "reference_characters": 1287,
+      "reference_words": 309,
+      "hypothesis_characters": 1831,
+      "character_edit_distance": 580,
+      "word_edit_distance": 170,
+      "cer": 0.45066,
+      "wer": 0.550162,
+      "latency_seconds": 4.084,
+      "pages_per_minute": 14.692,
+      "extracted_text": "CÔNG TY CỎ PHÀN SỮA VIỆT NAM Mẫu số B 02 - DN/HN BAO CÁO KET QUA HOẠT ĐỘNG KINH DOANH HỢP NHAT = J Năm tài chính kết thúc ngày *\\ | Mã 31.12.2011 Thuyét 31.12.2010 2 số minh VND VNĐ \\Ỉ 01 Doanh thu bán hàng và cung cấp dịch vụ 22.070.557.490.766 16.081.466.183.586 02 Các khoản giảm trừ doanh thu (443.128.597.657) (328.600.184.161) 10 Doanh thu thuần về bán hàng và cung cấp dich vy 23(a) 21.627.428.893.109 15.752.865.999.425 11 Giá vốn hàng bán 24 (15.039.305.378.364) (10.579.208.129.197) 20 Lợi nhuận gộp về bán hàng và cung cấp dịch vy 6.588.123.514.745 5.173.657.870.228 21 Doanh thu hoạt động tai chính 23(b) 680.232.453.133 448.530.127.237 22 Chi phí tài chính 25 (246.429.909.362) (153.198.513.988) 24 Chi phi bán hàng 26 (1.811.914.247.629) (1.438.185.805.872) 25 Chi phi quản ly doanh nghiệp 27 (459.431.997.199) (388.147.124.772) 30 Lợi nhuận từ hoat động kinh doanh 4.750.579.813.688 3.642.656.452.833 40 Thu nhập khác - số thuần 28 237.226.032.153 608.785.500.303 41 Phần lỗ trong lién doanh, liên két (8.813.950.770) (234.529.528) 50 Téng lợi nhuận kế toán trước thué\n608.785.500.303 41 Phần lỗ trong lién doanh, liên két (8.813.950.770) (234.529.528) 50 Téng lợi nhuận kế toán trước thué 4.978.991.895.071 4.251.207.423.608 51 Chi phí thué thu nhập doanh nghiép - hién hành 29 (778.588.561.106) (645.058.588.114) 52 Chi phí thuế thu nhập doanh nghiệp - hoãn lại 29,12 17.778.374.972 9.344.103.477 53 Lỗ phân bé cho cỏ đông thidu sé 693.010.209 60 Lợi nhuận sau thuế thu nhập doanh nghiệp 4.218.181.708.937 3.616.185.949.180 222 Ả CELLLT 70 30 ^ 834 Lãi cơ bản trên cỏ phiéu (đồng) CONG ( CÔP T *| SUAVIETN, 2\\ VINAMIL v 4 W TR HO cề | ey Lê Thành Liêm Ngô Thị Thu Trang Mai Kiều Liên Kế toán trưởng Giám đốc Điều hành Tài chính Tổng Giám đốc Ngày 28 tháng 2 năm 2012 Các thuyết minh từ trang 11 dén trang 48 là một phần cấu thành các báo cáo tài chính hợp nhét nay.\n8 Tai-Lieu.com"
+    }
+  ]
+}

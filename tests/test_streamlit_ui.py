@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from app.streamlit_ui import AGENT_MODES, display_result, submit_chat, submit_report
+from core.agents.streamlit_ui import AGENT_MODES, display_result, submit_chat, submit_report
 
 
 class _Response:

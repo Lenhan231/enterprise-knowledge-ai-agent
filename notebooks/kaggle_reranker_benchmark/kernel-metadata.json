@@ -1,0 +1,18 @@
+{
+  "id": "ltrngnhn/vinamilk-reranker-top-30-paired-benchmark",
+  "title": "Vinamilk Reranker Top-30 Paired Benchmark",
+  "code_file": "kaggle_reranker_benchmark.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "machine_shape": "",
+  "dataset_sources": [
+    "ltrngnhn/vinamilk-reranker-top30-benchmark-assets"
+  ],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

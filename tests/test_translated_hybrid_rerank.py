@@ -98,7 +98,7 @@ class RerankTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.evidence[0].metadata["retrieval_method"], "translated_hybrid_rerank")
         self.assertTrue(result.evidence[0].metadata["retrieval_details"]["reranker_applied"])
         self.assertFalse(result.evidence[0].metadata["retrieval_details"]["language_aware"])
-        from app.main import ChatRequest
+        from core.agents.main import ChatRequest
         self.assertEqual(ChatRequest(question="question", retrieval_method="translated_hybrid_rerank").retrieval_method,
                          "translated_hybrid_rerank")
         self.assertEqual(ChatRequest(question="question").retrieval_method, "translated_hybrid_rerank")

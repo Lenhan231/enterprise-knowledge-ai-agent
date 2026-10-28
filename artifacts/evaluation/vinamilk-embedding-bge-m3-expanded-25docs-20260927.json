@@ -1,0 +1,319 @@
+{
+  "created_at_utc": "2026-09-27T01:09:02.276672+00:00",
+  "evaluation_level": "document; maximum chunk cosine per document",
+  "model_key": "bge-m3",
+  "model_id": "BAAI/bge-m3",
+  "model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+  "case_count": 9,
+  "case_file": "vinamilk_retrieval_cases.json",
+  "case_file_sha256": "5bbd71991f06382b9c3eb7c89be267b4a4bca7551d218731e6843932de4f9c3d",
+  "sampled_corpus_sha256": "f24695ac0331516062b9ee7741476638ae141efbcae8b012fefd1a9c3fa224ac",
+  "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+  "corpus_chunks": 173,
+  "full_company_corpus_chunks": 4750,
+  "sampled_chunks_per_document": 8,
+  "max_sequence_length": 512,
+  "configuration": {
+    "device": "cpu",
+    "batch_size": 8,
+    "max_sequence_length": 512,
+    "sample_strategy": "evenly spaced passages per document",
+    "document_score": "maximum eligible chunk cosine per document"
+  },
+  "query_instruction": null,
+  "environment": {
+    "python": "3.11.16",
+    "platform": "Linux-7.2.6-arch2-1-x86_64-with-glibc2.44",
+    "device": "cpu",
+    "gpu_available": false,
+    "peak_rss_mb": 2667.7
+  },
+  "timing_seconds": {
+    "model_load": 9.44,
+    "corpus_embeddings": 213.99,
+    "mean_query": 0.1822
+  },
+  "aggregate": {
+    "precision@1": 0.4444,
+    "precision@3": 0.2963,
+    "precision@5": 0.2,
+    "recall@1": 0.4444,
+    "recall@3": 0.8889,
+    "recall@5": 1.0,
+    "mrr": 0.6704,
+    "ndcg@1": 0.4444,
+    "ndcg@3": 0.7103,
+    "ndcg@5": 0.7533
+  },
+  "results": [
+    {
+      "id": "finance-revenue-profit-2020-vi",
+      "role": "finance_analyst",
+      "eligible_chunks": 42,
+      "ranked_document_ids": [
+        "VNM-AR-2023-EN",
+        "VNM-AR-2022-VI",
+        "VNM-AR-2020-VI",
+        "VNM-AR-2024-VI",
+        "VNM-AR-2021-VI",
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "relevant_document_ids": [
+        "VNM-AR-2020-VI"
+      ],
+      "latency_ms": 188.78,
+      "metrics": {
+        "precision@1": 0.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 0.3333333333333333,
+        "ndcg@1": 0.0,
+        "ndcg@3": 0.5,
+        "ndcg@5": 0.5
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2021-vi",
+      "role": "finance_analyst",
+      "eligible_chunks": 42,
+      "ranked_document_ids": [
+        "VNM-AR-2023-EN",
+        "VNM-AR-2021-VI",
+        "VNM-AR-2022-VI",
+        "VNM-AR-2024-VI",
+        "VNM-AR-2020-VI",
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "relevant_document_ids": [
+        "VNM-AR-2021-VI"
+      ],
+      "latency_ms": 181.54,
+      "metrics": {
+        "precision@1": 0.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 0.5,
+        "ndcg@1": 0.0,
+        "ndcg@3": 0.6309297535714575,
+        "ndcg@5": 0.6309297535714575
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2022-vi",
+      "role": "finance_analyst",
+      "eligible_chunks": 42,
+      "ranked_document_ids": [
+        "VNM-AR-2023-EN",
+        "VNM-AR-2022-VI",
+        "VNM-AR-2021-VI",
+        "VNM-AR-2024-VI",
+        "VNM-AR-2020-VI",
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "relevant_document_ids": [
+        "VNM-AR-2022-VI"
+      ],
+      "latency_ms": 196.12,
+      "metrics": {
+        "precision@1": 0.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 0.5,
+        "ndcg@1": 0.0,
+        "ndcg@3": 0.6309297535714575,
+        "ndcg@5": 0.6309297535714575
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2023-en",
+      "role": "finance_analyst",
+      "eligible_chunks": 42,
+      "ranked_document_ids": [
+        "VNM-AR-2023-EN",
+        "VNM-AR-2020-VI",
+        "VNM-AR-2021-VI",
+        "VNM-AR-2024-VI",
+        "VNM-AR-2022-VI",
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "relevant_document_ids": [
+        "VNM-AR-2023-EN"
+      ],
+      "latency_ms": 173.8,
+      "metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2024-en",
+      "role": "finance_analyst",
+      "eligible_chunks": 42,
+      "ranked_document_ids": [
+        "VNM-AR-2023-EN",
+        "VNM-AR-2024-VI",
+        "VNM-AR-2020-VI",
+        "VNM-AR-2021-VI",
+        "VNM-AR-2022-VI",
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "relevant_document_ids": [
+        "VNM-AR-2024-VI"
+      ],
+      "latency_ms": 173.88,
+      "metrics": {
+        "precision@1": 0.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 0.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 0.5,
+        "ndcg@1": 0.0,
+        "ndcg@3": 0.6309297535714575,
+        "ndcg@5": 0.6309297535714575
+      }
+    },
+    {
+      "id": "sustainability-ghg-reporting-scopes-2020-en",
+      "role": "sustainability_analyst",
+      "eligible_chunks": 53,
+      "ranked_document_ids": [
+        "VNM-SR-2020-EN",
+        "VNM-SR-2025-EN",
+        "VNM-SR-2022-EN",
+        "VNM-SR-2023-EN",
+        "VNM-SR-2024-EN",
+        "VNM-SR-2021-EN",
+        "VNM-POL-AGRI-2025-EN",
+        "VNM-POL-ANIMAL-2025-EN",
+        "VNM-POL-MILK-2025-EN",
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "relevant_document_ids": [
+        "VNM-SR-2020-EN"
+      ],
+      "latency_ms": 178.37,
+      "metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      }
+    },
+    {
+      "id": "sustainability-ghg-inventory-2024-en",
+      "role": "sustainability_analyst",
+      "eligible_chunks": 53,
+      "ranked_document_ids": [
+        "VNM-SR-2022-EN",
+        "VNM-SR-2021-EN",
+        "VNM-SR-2020-EN",
+        "VNM-SR-2025-EN",
+        "VNM-SR-2024-EN",
+        "VNM-SR-2023-EN",
+        "VNM-POL-AGRI-2025-EN",
+        "VNM-POL-ANIMAL-2025-EN",
+        "VNM-POL-MILK-2025-EN",
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "relevant_document_ids": [
+        "VNM-SR-2024-EN"
+      ],
+      "latency_ms": 171.88,
+      "metrics": {
+        "precision@1": 0.0,
+        "precision@3": 0.0,
+        "precision@5": 0.2,
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 1.0,
+        "mrr": 0.2,
+        "ndcg@1": 0.0,
+        "ndcg@3": 0.0,
+        "ndcg@5": 0.38685280723454163
+      }
+    },
+    {
+      "id": "sustainability-ghg-inventory-2025-en",
+      "role": "sustainability_analyst",
+      "eligible_chunks": 53,
+      "ranked_document_ids": [
+        "VNM-SR-2025-EN",
+        "VNM-SR-2020-EN",
+        "VNM-SR-2022-EN",
+        "VNM-SR-2023-EN",
+        "VNM-POL-AGRI-2025-EN",
+        "VNM-SR-2024-EN",
+        "VNM-SR-2021-EN",
+        "VNM-POL-MILK-2025-EN",
+        "VNM-POL-ANIMAL-2025-EN",
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "relevant_document_ids": [
+        "VNM-SR-2025-EN"
+      ],
+      "latency_ms": 163.89,
+      "metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      }
+    },
+    {
+      "id": "product-nutrition-adm-low-sugar-vi",
+      "role": "employee",
+      "eligible_chunks": 2,
+      "ranked_document_ids": [
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "relevant_document_ids": [
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "latency_ms": 211.25,
+      "metrics": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      }
+    }
+  ],
+  "limitations": "Small document-level Vinamilk smoke set. The same evenly spaced sample of up to 8 passages per source is used for every model; this is not full-corpus retrieval. No database writes are made. Query-time includes query embedding and in-memory cosine scoring, but excludes model loading and corpus embedding. No human judgment or passage-level labels."
+}

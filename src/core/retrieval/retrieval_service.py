@@ -6,6 +6,7 @@ from time import perf_counter
 from typing import Literal
 
 from core.database.document_chunks_repository import DocumentChunkRepository
+from core.latency import measure
 from core.embeddings import EmbeddingService
 from core.retrieval.methods import parent, translated_hybrid
 from core.retrieval.retrieval import (
@@ -35,6 +36,7 @@ class RetrievalService:
             self.query_translator = QueryTranslator(self._translation_llm)
         return self.query_translator
 
+    @measure("retrieval_total")
     def retrieve(
         self, request: RetrievalRequest, company: str | None = None,
         roles: list[str] | None = None,
@@ -53,9 +55,10 @@ class RetrievalService:
         started = perf_counter()
         query_embedding = None
         if method != "bm25":
-            if self.embedding_service is None:
-                self.embedding_service = EmbeddingService()
-            query_embedding = self.embedding_service.embed_query(request.query)
+            with measure("embedding"):
+                if self.embedding_service is None:
+                    self.embedding_service = EmbeddingService()
+                query_embedding = self.embedding_service.embed_query(request.query)
 
         options = {"company": company, "roles": roles}
         if metadata_filter:

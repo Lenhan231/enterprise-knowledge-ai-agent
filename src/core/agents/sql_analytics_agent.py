@@ -18,6 +18,7 @@ from core.analytics.text_to_sql import (
 from core.database.commerce_repository import CommerceRepository
 from core.llm.llm_interface import LLMInterface
 from core.models.agents import AgentResult, Evidence, VerifiedIdentity
+from core.latency import measure
 
 
 class AnalyticsPermissionDenied(PermissionError):
@@ -68,9 +69,10 @@ class SQLAnalyticsAgent(BaseAgent):
         prompt = build_sql_prompt(question)
         for attempt in range(2):
             try:
-                raw = await asyncio.to_thread(self._provider().generate, prompt)
-                if inspect.isawaitable(raw):
-                    raw = await raw
+                with measure("sql_planning"):
+                    raw = await asyncio.to_thread(self._provider().generate, prompt)
+                    if inspect.isawaitable(raw):
+                        raw = await raw
                 plan = decode_query_plan(raw)
                 break
             except SQLValidationError as error:
@@ -98,7 +100,8 @@ class SQLAnalyticsAgent(BaseAgent):
         except Exception as error:
             return self._generation_error(error, plan.sql, plan.parameters)
         try:
-            rows = await self.repository.execute_approved_query(plan.sql or "", *plan.parameters)
+            with measure("sql_execution"):
+                rows = await self.repository.execute_approved_query(plan.sql or "", *plan.parameters)
         except Exception as error:
             return self._database_error(error, plan.sql, plan.parameters)
         if not rows:

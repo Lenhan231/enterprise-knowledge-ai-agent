@@ -10,6 +10,7 @@ from typing import Any, TypedDict
 from langgraph.graph import END, START, StateGraph
 
 from core.models.agents import AgentRequest, AgentResult
+from core.latency import measure
 
 
 class _State(TypedDict, total=False):
@@ -68,11 +69,17 @@ class AgentRouter:
         return await self._invoke(request, mode, config=config)
 
     async def _invoke(self, request: AgentRequest, mode: str, *, config=None) -> AgentResult:
-        state = await self.graph.ainvoke({"request": request, "mode": mode}, config=config)
+        with measure("agent_workflow"):
+            state = await self.graph.ainvoke({"request": request, "mode": mode}, config=config)
         self.last_destination = state["route"]
-        return AgentResult.model_validate(state["result"])
+        result = AgentResult.model_validate(state["result"])
+        return result.model_copy(update={"metadata": {**result.metadata, "selected_route": state["route"]}})
 
     async def _select(self, state: _State) -> dict[str, str]:
+        with measure("routing"):
+            return await self._select_route(state)
+
+    async def _select_route(self, state: _State) -> dict[str, str]:
         mode = state["mode"]
         if mode == "knowledge":
             return {"route": "knowledge"}
@@ -171,9 +178,10 @@ class AgentRouter:
                     f"Request: {state['request'].question}\nCitations: {', '.join(citations)}\n"
                     f"Results: {json.dumps(inputs, ensure_ascii=False, default=str)}"
                 )
-                answer = await asyncio.to_thread(self._provider().generate, prompt)
-                if inspect.isawaitable(answer):
-                    answer = await answer
+                with measure("answer_synthesis"):
+                    answer = await asyncio.to_thread(self._provider().generate, prompt)
+                    if inspect.isawaitable(answer):
+                        answer = await answer
                 if not isinstance(answer, str) or not answer.strip():
                     raise ValueError("empty synthesis")
                 answer = answer.strip()[:4_000]

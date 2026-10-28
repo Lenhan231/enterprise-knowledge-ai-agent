@@ -1,0 +1,163 @@
+{
+  "created_at_utc": "2026-09-28T05:46:33.986499+00:00",
+  "evaluation_level": "document and passage where labeled",
+  "passage_judgments": {
+    "enabled": true,
+    "case_count": 1,
+    "label_basis": "Pooled top-result chunks and source pages were manually reviewed to label selected passages that directly answer each question. IDs use document_id::chunk::chunk_index from the ready corpus snapshot on 2026-09-27; the pool is not exhaustive and labels must be reviewed after re-ingestion or re-chunking."
+  },
+  "retrieval_methods": [
+    "dense"
+  ],
+  "case_count": 1,
+  "case_file": "vinamilk_retrieval_cases.json",
+  "case_file_sha256": "a6b584945d15d4be4fd5a3b474ee4495c04272376e126a663fd142ffdc48c1a8",
+  "candidate_passages_per_query": 30,
+  "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "environment": {
+    "python": "3.11.16",
+    "platform": "Linux",
+    "architecture": "x86_64",
+    "gpu": {
+      "available": false,
+      "devices": []
+    }
+  },
+  "database_snapshot": {
+    "postgres_version": "17.6",
+    "all_documents": 45,
+    "all_chunks": 5055,
+    "evaluated_company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+    "company_ready_documents": 26,
+    "company_ready_chunks": 4753
+  },
+  "configuration": {
+    "authorization": "database allowed_roles filter before retrieval ranking",
+    "fiscal_year_boost": "exact document fiscal_year match when query names one year",
+    "bm25": {
+      "k1": 1.2,
+      "b": 0.75
+    },
+    "hybrid": [
+      {
+        "dense_weight": 1.0,
+        "bm25_weight": 2.0,
+        "rrf_k": 60
+      }
+    ],
+    "parent": {
+      "first_stage": "dense child-chunk ranking",
+      "child_candidates_per_query": 100,
+      "parent_context": "up to 2 neighboring chunks on either side with the same section title and page; same-page fallback when no section title exists",
+      "max_parent_results": 30
+    },
+    "latency_note": "Dense, hybrid, and parent latency include first-use embedding model initialization on their first query; BM25 does not load the embedding model."
+  },
+  "methods": {
+    "dense": {
+      "aggregate": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "passage_case_count": 1,
+      "passage_aggregate": {
+        "precision@1": 0.0,
+        "precision@3": 0.0,
+        "precision@5": 0.0,
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "mrr": 0.125,
+        "ndcg@1": 0.0,
+        "ndcg@3": 0.0,
+        "ndcg@5": 0.0
+      },
+      "parent_context_case_count": 0,
+      "parent_context_aggregate": {},
+      "mean_latency_ms": 15157.06,
+      "total_latency_ms": 15157.31,
+      "results": [
+        {
+          "id": "finance-revenue-profit-2024-en",
+          "role": "finance_analyst",
+          "latency_ms": 15157.06,
+          "ranked_document_ids": [
+            "VNM-AR-2024-VI"
+          ],
+          "relevant_document_ids": [
+            "VNM-AR-2024-VI"
+          ],
+          "metrics": {
+            "precision@1": 1.0,
+            "precision@3": 0.3333333333333333,
+            "precision@5": 0.2,
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@1": 1.0,
+            "ndcg@3": 1.0,
+            "ndcg@5": 1.0
+          },
+          "relevant_passage_ids": [
+            "VNM-AR-2024-VI::chunk::27",
+            "VNM-AR-2024-VI::chunk::9"
+          ],
+          "ranked_passage_ids": [
+            "VNM-AR-2024-VI::chunk::35",
+            "VNM-AR-2024-VI::chunk::154",
+            "VNM-AR-2024-VI::chunk::166",
+            "VNM-AR-2024-VI::chunk::387",
+            "VNM-AR-2024-VI::chunk::234",
+            "VNM-AR-2024-VI::chunk::101",
+            "VNM-AR-2024-VI::chunk::177",
+            "VNM-AR-2024-VI::chunk::27",
+            "VNM-AR-2024-VI::chunk::81",
+            "VNM-AR-2024-VI::chunk::197",
+            "VNM-AR-2024-VI::chunk::171",
+            "VNM-AR-2024-VI::chunk::385",
+            "VNM-AR-2024-VI::chunk::203",
+            "VNM-AR-2024-VI::chunk::225",
+            "VNM-AR-2024-VI::chunk::355",
+            "VNM-AR-2024-VI::chunk::257",
+            "VNM-AR-2024-VI::chunk::342",
+            "VNM-AR-2024-VI::chunk::164",
+            "VNM-AR-2024-VI::chunk::253",
+            "VNM-AR-2024-VI::chunk::1",
+            "VNM-AR-2024-VI::chunk::84",
+            "VNM-AR-2024-VI::chunk::347",
+            "VNM-AR-2024-VI::chunk::5",
+            "VNM-AR-2024-VI::chunk::9",
+            "VNM-AR-2024-VI::chunk::10",
+            "VNM-AR-2024-VI::chunk::17",
+            "VNM-AR-2024-VI::chunk::354",
+            "VNM-AR-2024-VI::chunk::274",
+            "VNM-AR-2024-VI::chunk::386",
+            "VNM-AR-2024-VI::chunk::382"
+          ],
+          "passage_metrics": {
+            "precision@1": 0.0,
+            "precision@3": 0.0,
+            "precision@5": 0.0,
+            "recall@1": 0.0,
+            "recall@3": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.125,
+            "ndcg@1": 0.0,
+            "ndcg@3": 0.0,
+            "ndcg@5": 0.0
+          }
+        }
+      ]
+    }
+  },
+  "limitations": "1-case demo set with manually assigned passage IDs tied to the current chunk-index snapshot; document and passage judgments are limited and need broader independent review. BM25 is a SQL implementation with k1=1.2 and b=0.75. Parent mode expands retrieved contexts, so its passage ranking is flattened from the returned child indices. No reranker or answer-generation comparison is included."
+}

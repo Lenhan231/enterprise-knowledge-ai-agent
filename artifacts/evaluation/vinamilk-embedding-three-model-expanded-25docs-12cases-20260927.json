@@ -1,0 +1,51 @@
+{
+  "created_at_utc": "2026-09-27",
+  "evaluation": "paired embedding comparison on expanded Vinamilk corpus; document-level retrieval with sampled chunks",
+  "database_snapshot": {
+    "company_ready_documents": 25,
+    "company_ready_chunks": 4750
+  },
+  "protocol": {
+    "cases": 12,
+    "case_file": "data/evaluation/vinamilk_retrieval_cases.json",
+    "case_file_sha256": "554f9837ed9ad6e3941e0edf38a88ac4d8614e2d138bb4d0c188374f21270b1a",
+    "sampled_chunks_per_document": 8,
+    "sample_strategy": "evenly spaced chunks per document; all available chunks retained when a document has fewer than eight",
+    "sampled_chunk_count": 173,
+    "sampled_corpus_sha256": "f24695ac0331516062b9ee7741476638ae141efbcae8b012fefd1a9c3fa224ac",
+    "device": "cpu",
+    "batch_size": 8,
+    "max_sequence_length": 512,
+    "database_writes": false
+  },
+  "results": {
+    "BAAI/bge-m3": {
+      "status": "completed",
+      "artifact": "vinamilk-embedding-bge-m3-expanded-25docs-12cases-20260927.json",
+      "precision_at_1": 0.4167,
+      "recall_at_3": 0.75,
+      "mrr": 0.6058,
+      "ndcg_at_3": 0.6161,
+      "corpus_embedding_seconds": 222.9,
+      "mean_query_seconds": 0.1869,
+      "peak_rss_mb": 2620.3
+    },
+    "Qwen/Qwen3-Embedding-0.6B": {
+      "status": "incomplete_resource_limited",
+      "artifact": null,
+      "observation": "A previous attempt on the same sample took 200.43 seconds for its first CPU batch and was stopped without scores."
+    },
+    "intfloat/e5-large-v2": {
+      "status": "completed",
+      "artifact": "vinamilk-embedding-e5-large-v2-expanded-25docs-12cases-20260927.json",
+      "precision_at_1": 0.5833,
+      "recall_at_3": 0.8333,
+      "mrr": 0.7056,
+      "ndcg_at_3": 0.7192,
+      "corpus_embedding_seconds": 281.07,
+      "mean_query_seconds": 0.2237,
+      "peak_rss_mb": 2374.3
+    }
+  },
+  "limitations": "Only BGE-M3 and e5-large-v2 completed on this host. The 12-query set has document labels only; 173 of 4,750 ready chunks were sampled, so results are diagnostic, not full-corpus model selection. Qwen3-Embedding requires a faster or GPU host for this protocol."
+}

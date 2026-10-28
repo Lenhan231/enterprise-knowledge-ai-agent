@@ -6,6 +6,7 @@ import unicodedata
 from pydantic import BaseModel, Field
 
 from core.llm.groq_provider import GroqProvider
+from core.latency import measure
 from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT
 from core.retrieval.retrieval import RetrievalRequest
 from core.retrieval.retrieval_service import RetrievalService
@@ -161,7 +162,8 @@ class RAGService:
             question=question,
         )
         prompt_sha256 = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
-        answer = _normalize_source_citations(self.llm.generate(prompt).strip())
+        with measure("answer_generation"):
+            answer = _normalize_source_citations(self.llm.generate(prompt).strip())
 
         if answer == INSUFFICIENT_ANSWER:
             return RAGResult(

@@ -1,4 +1,5 @@
 import os
+from core.latency import measure
 from typing import Literal
 from psycopg.types.json import Jsonb
 
@@ -105,7 +106,7 @@ class DocumentChunkRepository:
                    JOIN public.documents d ON d.document_id = c.metadata->>'document_id'
                    WHERE d.document_id = %s
                      AND coalesce(d.processing_status, 'ready') = 'ready'
-                     AND (%s::text IS NULL OR d.company = %s::text)
+                     AND (%s::text IS NULL OR c.metadata->>'company' = %s::text)
                    ORDER BY c.chunk_index LIMIT %s OFFSET %s""",
                 (document_id, company, company, limit, offset),
             )
@@ -148,7 +149,7 @@ class DocumentChunkRepository:
         filters = []
         parameters = [Jsonb(anchors), radius, radius]
         if company is not None:
-            filters.append("d.company = %s::text")
+            filters.append("c.metadata->>'company' = %s::text")
             parameters.append(company)
         if roles is not None:
             filters.append("(d.allowed_roles && %s::text[] OR 'admin' = ANY(%s::text[]))")
@@ -195,6 +196,7 @@ class DocumentChunkRepository:
             }
         return contexts
 
+    @measure("database_retrieval")
     def similarity_search(
         self, query_embedding: list[float] | None, limit: int, company: str | None = None,
         roles: list[str] | None = None, query: str | None = None,

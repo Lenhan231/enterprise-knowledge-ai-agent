@@ -1,0 +1,258 @@
+{
+  "review_packet_version": 1,
+  "rubric": {
+    "scale": "1-5; 1=poor, 3=partly meets, 5=fully meets",
+    "faithfulness": "Are factual claims supported by the cited source evidence?",
+    "answer_relevancy": "Does the answer directly and completely address the question?",
+    "context_precision": "Is the provided/cited evidence relevant to the question and answer?",
+    "hallucinated_claim_count": "Count factual claims unsupported or contradicted by evidence.",
+    "factual_claim_count": "Count all verifiable factual claims; exclude correct abstentions.",
+    "reviewer": "Enter an anonymous reviewer ID. Judge against evidence without guessing model identity."
+  },
+  "responses": [
+    {
+      "response_id": "wPn9KkB-tCys4lTG",
+      "case_id": "employee-product-nutrition",
+      "question": "Trong 100 ml sữa ADM Ít Đường có bao nhiêu năng lượng, protein và đường?",
+      "answer": "Trong 100 ml sữa ADM Ít Đường có:\n\n- Năng lượng: 68,2 kcal  \n- Chất đạm (protein): 3,0 g  \n- Đường tổng số: 7,3 g【S1】",
+      "insufficient_context": false,
+      "sources": [
+        {
+          "source_id": "S1",
+          "page_number": null,
+          "section_title": null,
+          "evidence": "Giá trị dinh dưỡng trung bình trong 100 ml*: Năng lượng: 68,2 kcal; Chất đạm: 3,0 g; Chất béo: 3,0 g; DHA (Docosahexaenoic acid): 3,0 mg; Carbohydrat: 7,3 g; Đường tổng số: 7,3 g; Lysin: 250 mg; Natri: 39 mg; Calci: 110 mg; Phospho: 90 mg *Hàm lượng vitamin và khoáng chất không thấp hơn 80% giá trị trên nhãn. Hướng dẫn sử dụng Có gì đặc sắc Đôi mắt sáng Vitamin A, Kẽm, Selen hỗ trợ tăng sức đề kháng, cho bé hệ miễn dịch khoẻ hơn mỗi ngày. Tăng đề kháng Vitamin A, Kẽm, Selen hỗ trợ tăng sức đề kh"
+        }
+      ],
+      "review": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null,
+        "hallucinated_claim_count": null,
+        "factual_claim_count": null,
+        "reviewer": null,
+        "notes": null
+      }
+    },
+    {
+      "response_id": "weJe_M-ynZJYraSb",
+      "case_id": "employee-financial-denial",
+      "question": "Doanh thu và lợi nhuận sau thuế của Vinamilk năm 2024 là bao nhiêu?",
+      "answer": "Insufficient information in the retrieved documents.",
+      "insufficient_context": true,
+      "sources": [],
+      "review": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null,
+        "hallucinated_claim_count": null,
+        "factual_claim_count": null,
+        "reviewer": null,
+        "notes": null
+      }
+    },
+    {
+      "response_id": "ck7dysGYoE_eL2DF",
+      "case_id": "employee-product-nutrition",
+      "question": "Trong 100 ml sữa ADM Ít Đường có bao nhiêu năng lượng, protein và đường?",
+      "answer": "Trong 100 ml sữa ADM Ít Đường, năng lượng là 68,2 kcal, chất đạm (protein) là 3,0 g và đường tổng số là 7,3 g [S1].",
+      "insufficient_context": false,
+      "sources": [
+        {
+          "source_id": "S1",
+          "page_number": null,
+          "section_title": null,
+          "evidence": "Giá trị dinh dưỡng trung bình trong 100 ml*: Năng lượng: 68,2 kcal; Chất đạm: 3,0 g; Chất béo: 3,0 g; DHA (Docosahexaenoic acid): 3,0 mg; Carbohydrat: 7,3 g; Đường tổng số: 7,3 g; Lysin: 250 mg; Natri: 39 mg; Calci: 110 mg; Phospho: 90 mg *Hàm lượng vitamin và khoáng chất không thấp hơn 80% giá trị trên nhãn. Hướng dẫn sử dụng Có gì đặc sắc Đôi mắt sáng Vitamin A, Kẽm, Selen hỗ trợ tăng sức đề kháng, cho bé hệ miễn dịch khoẻ hơn mỗi ngày. Tăng đề kháng Vitamin A, Kẽm, Selen hỗ trợ tăng sức đề kh"
+        }
+      ],
+      "review": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null,
+        "hallucinated_claim_count": null,
+        "factual_claim_count": null,
+        "reviewer": null,
+        "notes": null
+      }
+    },
+    {
+      "response_id": "-AyIZE0DGU4VEfdu",
+      "case_id": "finance-2024-revenue-profit",
+      "question": "Tóm tắt doanh thu hợp nhất và lợi nhuận sau thuế của Vinamilk năm 2024.",
+      "answer": "Doanh thu hợp nhất năm 2024 của Vinamilk đạt **61 824 tỷ đồng**, trong khi lợi nhuận sau thuế hợp nhất đạt **9 453 tỷ đồng**. [S3]",
+      "insufficient_context": false,
+      "sources": [
+        {
+          "source_id": "S3",
+          "page_number": 12,
+          "section_title": "Hạ nguồn",
+          "evidence": "Báo cáo thường niên Vinamilk 2024 22 23 Luôn cầu tiến Thông tin chung Sức khỏe tài chính Tổng doanh thu hợp nhất năm 2024 Lợi nhuận sau thuế hợp nhất năm 2024 tỷ đồng tỷ đồng 9.453 61.824 Tổng tài sản tại ngày 31.12.2024 Tổng vốn chủ sở hữu tại ngày 31.12.2024 tỷ đồng tỷ đồng 55.049 36.174 Kết quả mang lại trong năm 2024 Chuỗi giá trị Thượng nguồn Nghiên cứu phát triển Phân phối Vùng nguyên liệu Marketing và bán hàng Sản xuất Hạ nguồn Đội ngũ tiếp thị và nghiên cứu phát triển của chúng tôi có sự"
+        }
+      ],
+      "review": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null,
+        "hallucinated_claim_count": null,
+        "factual_claim_count": null,
+        "reviewer": null,
+        "notes": null
+      }
+    },
+    {
+      "response_id": "1j_QUrqjJ6h9Gexj",
+      "case_id": "finance-2020-revenue-profit",
+      "question": "Doanh thu thuần và lợi nhuận sau thuế hợp nhất của Vinamilk năm 2020 là bao nhiêu?",
+      "answer": "Doanh thu thuần hợp nhất của Vinamilk năm 2020 đạt 59.723 tỷ VND và lợi nhuận sau thuế hợp nhất đạt 11.236 tỷ VND [S10].",
+      "insufficient_context": false,
+      "sources": [
+        {
+          "source_id": "S10",
+          "page_number": 8,
+          "section_title": "SUSTAINABLE GOALS AS WELL AS SOCIAL",
+          "evidence": "ement and the entire staff, Vinamilk's business results recorded growth in both revenue and profit, with consolidated net revenue and net profit after tax in 2020 reaching VND 59,723 billion and VND 11,236 billion respectively, increasing by 6% and 6.5% compared to 2019. Particularly, the branch of Moc Chau Milk, after one year of M&A into Vinamilk, recorded a breakthrough with net revenue in 2020 reaching VND 2,823 billion, increasing by 10.3%, and net profit after tax reaching VND 281 billion,"
+        }
+      ],
+      "review": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null,
+        "hallucinated_claim_count": null,
+        "factual_claim_count": null,
+        "reviewer": null,
+        "notes": null
+      }
+    },
+    {
+      "response_id": "rUYJtZWRZeuWve3p",
+      "case_id": "finance-2024-revenue-profit",
+      "question": "Tóm tắt doanh thu hợp nhất và lợi nhuận sau thuế của Vinamilk năm 2024.",
+      "answer": "Trong năm 2024, Vinamilk ghi nhận tổng doanh thu hợp nhất đạt 61.824 tỷ đồng, tăng trưởng 2,2% so với cùng kỳ năm trước [S4][S6]. Lợi nhuận sau thuế hợp nhất của công ty đạt 9.453 tỷ đồng, tăng trưởng 4,8% so với năm 2023 [S4][S6].",
+      "insufficient_context": false,
+      "sources": [
+        {
+          "source_id": "S4",
+          "page_number": 2,
+          "section_title": "Southeast Asia 2024",
+          "evidence": "Báo cáo thường niên Vinamilk 2024 2 3 Luôn cầu tiến Mở đầu Kết quả nổi bật năm 2024 61.824 +2,2% 9.453 4.569 tỷ đồng tỷ đồng tỷ đồng Tổng doanh thu hợp nhất Lợi nhuận sau thuế hợp nhất Đóng góp vào Ngân sách Nhà nước so với cùng kỳ +4,8% so với cùng kỳ so với cùng kỳ +11,3% 48 1 125 Fortune 500 Southeast Asia 2024 03 63 42 630.000 Năm đồng hành và phục vụ người tiêu dùng Việt Nam Giữ vững vị trí số ngành sữa Việt Nam Sản phẩm tung mới và tái tung Thị trường xuất khẩu lũy kế (+3 quốc gia mới so v"
+        },
+        {
+          "source_id": "S6",
+          "page_number": 6,
+          "section_title": "KẾT QUẢ KINH DOANH NĂM 2024",
+          "evidence": "Báo cáo thường niên Vinamilk 2024 10 11 Luôn cầu tiến Mở đầu Thông điệp Tổng Giám Đốc Vinamilk đã trải qua một năm đầy thử thách nhưng cũng rất đáng tự hào. Bối cảnh kinh tế vĩ mô biến động, sức mua trong nước giảm sút, thiên tai gây ra những khó khăn không nhỏ cho hoạt động sản xuất kinh doanh. Thế nhưng, với tinh thần “Luôn cầu tiến” cùng những nỗ lực không ngừng nghỉ, tập thể Vinamilk đã vững vàng vượt qua sóng gió, đạt được những thành tựu đáng ghi nhận, khẳng định vị thế dẫn đầu ngành sữa V"
+        }
+      ],
+      "review": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null,
+        "hallucinated_claim_count": null,
+        "factual_claim_count": null,
+        "reviewer": null,
+        "notes": null
+      }
+    },
+    {
+      "response_id": "VCcNoKTZNoy9Ru8u",
+      "case_id": "sustainability-2024-ghg-inventory",
+      "question": "According to Vinamilk's 2024 Sustainability Report, which factories and farms implement a greenhouse gas emissions inventory?",
+      "answer": "According to Vinamilk’s 2024 Sustainability Report, **100 % of Vinamilk’s factories and farms implement a greenhouse gas emissions inventory**. [S6]",
+      "insufficient_context": false,
+      "sources": [
+        {
+          "source_id": "S6",
+          "page_number": 3,
+          "section_title": "to",
+          "evidence": "Vinamilk Sustainable Development Report 2024 CEO’s Message 2024 marks a watershed moment for Vinamilk in our journey towards building a sustainable future. Amid global challenges related to climate, economics, and geopolitics, we have clearly defined our role and responsibility as an industry leader, not only in business operations but also in creating shared value for people, communities, and the planet. Ms. Mai Kieu Lien Chief Executive Officer This transformation goes beyond innovation. It re"
+        }
+      ],
+      "review": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null,
+        "hallucinated_claim_count": null,
+        "factual_claim_count": null,
+        "reviewer": null,
+        "notes": null
+      }
+    },
+    {
+      "response_id": "72zXHovnupEUs5yW",
+      "case_id": "sustainability-2024-ghg-inventory",
+      "question": "According to Vinamilk's 2024 Sustainability Report, which factories and farms implement a greenhouse gas emissions inventory?",
+      "answer": "According to Vinamilk's 2024 Sustainability Report, 100% of Vinamilk's factories and farms implement a greenhouse gas emissions inventory [S6]. This inventory is conducted following ISO 14064 standards [S1] [S3].",
+      "insufficient_context": false,
+      "sources": [
+        {
+          "source_id": "S1",
+          "page_number": 7,
+          "section_title": "CHAPTER 1 - Honors in 2024",
+          "evidence": "7 Báo cáo phát triển bền vững Vinamilk 2024 of farms inventory for greenhouse gases following ISO 14064 standards 100% 100% 100% of farms meet Global S.L.P standards of Vinamilk farms utilize the Biogas system, converting cattle waste into valuable resources The only dairy company honored in the Green Leadership category. 4.2 tons Recycling in Asia of milk cartons from the program \"Pretty cartons are reborn\" 365,989 kWh Saved of electricity in 2024. 85,000 1,000 meters 450 local residents 17,000"
+        },
+        {
+          "source_id": "S3",
+          "page_number": 41,
+          "section_title": "EMISSIONS",
+          "evidence": "Measurement – Management – Continuous Improvement Emission reduction – green coverage – towards Net Zero • Apply clean and modern technology. • Promote green and renewable energy. • Implement circular economy practices. • Innovate packaging, develop low-carbon products. • Optimize production models, regenerative agriculture towards low carbon. • Effectively manage waste and emissions. • Establish an intelligent ESG data collection system. • Use sustainable raw materials. • Utilize green, clean, "
+        },
+        {
+          "source_id": "S6",
+          "page_number": 3,
+          "section_title": "to",
+          "evidence": "Vinamilk Sustainable Development Report 2024 CEO’s Message 2024 marks a watershed moment for Vinamilk in our journey towards building a sustainable future. Amid global challenges related to climate, economics, and geopolitics, we have clearly defined our role and responsibility as an industry leader, not only in business operations but also in creating shared value for people, communities, and the planet. Ms. Mai Kieu Lien Chief Executive Officer This transformation goes beyond innovation. It re"
+        }
+      ],
+      "review": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null,
+        "hallucinated_claim_count": null,
+        "factual_claim_count": null,
+        "reviewer": null,
+        "notes": null
+      }
+    },
+    {
+      "response_id": "TXufQO_Qrz3-A9PR",
+      "case_id": "finance-2020-revenue-profit",
+      "question": "Doanh thu thuần và lợi nhuận sau thuế hợp nhất của Vinamilk năm 2020 là bao nhiêu?",
+      "answer": "Doanh thu thuần hợp nhất của Vinamilk năm 2020 là **VND 59 723 tỷ** và lợi nhuận sau thuế hợp nhất là **VND 11 236 tỷ**. [S10]",
+      "insufficient_context": false,
+      "sources": [
+        {
+          "source_id": "S10",
+          "page_number": 8,
+          "section_title": "SUSTAINABLE GOALS AS WELL AS SOCIAL",
+          "evidence": "ement and the entire staff, Vinamilk's business results recorded growth in both revenue and profit, with consolidated net revenue and net profit after tax in 2020 reaching VND 59,723 billion and VND 11,236 billion respectively, increasing by 6% and 6.5% compared to 2019. Particularly, the branch of Moc Chau Milk, after one year of M&A into Vinamilk, recorded a breakthrough with net revenue in 2020 reaching VND 2,823 billion, increasing by 10.3%, and net profit after tax reaching VND 281 billion,"
+        }
+      ],
+      "review": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null,
+        "hallucinated_claim_count": null,
+        "factual_claim_count": null,
+        "reviewer": null,
+        "notes": null
+      }
+    },
+    {
+      "response_id": "lrLkDKgmARoR-F7O",
+      "case_id": "employee-financial-denial",
+      "question": "Doanh thu và lợi nhuận sau thuế của Vinamilk năm 2024 là bao nhiêu?",
+      "answer": "Insufficient information in the retrieved documents.",
+      "insufficient_context": true,
+      "sources": [],
+      "review": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null,
+        "hallucinated_claim_count": null,
+        "factual_claim_count": null,
+        "reviewer": null,
+        "notes": null
+      }
+    }
+  ]
+}

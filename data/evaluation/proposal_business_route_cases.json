@@ -1,18 +1,18 @@
 {
-  "dataset_id": "commerce-vi-route-v2",
-  "label_method": "Nhãn định tuyến được gán thủ công theo hợp đồng tác tử hiện tại; chỉ đánh giá định tuyến, không đánh giá chất lượng câu trả lời.",
+  "dataset_id": "proposal-business-cases-route-v1",
+  "label_method": "Expected route manually mapped from each proposal business-case task to the app's current agent contract. These labels assess routing only, not domain answer quality or corpus coverage.",
   "cases": [
-    {"id": "enterprise-knowledge-management", "category": "Quản trị tri thức doanh nghiệp", "question": "Tìm quy định lưu trữ tài liệu của công ty", "expected_route": "knowledge"},
-    {"id": "internal-document-search", "category": "Tìm kiếm tài liệu nội bộ", "question": "Tìm chính sách phân quyền truy cập của nhân viên", "expected_route": "knowledge"},
-    {"id": "hr-policy-consultation", "category": "Tư vấn chính sách nhân sự", "question": "Chính sách nghỉ phép quy định thế nào về phép năm?", "expected_route": "knowledge"},
-    {"id": "contract-analysis", "category": "Phân tích hợp đồng", "question": "Hợp đồng này nêu những nghĩa vụ nào khi chấm dứt?", "expected_route": "knowledge"},
-    {"id": "commerce-report-analysis", "category": "Phân tích báo cáo thương mại", "question": "Tóm tắt doanh thu và giá vốn năm 2025", "expected_route": "report"},
-    {"id": "invoice-information-retrieval", "category": "Tra cứu hóa đơn", "question": "Tìm điều khoản thanh toán ghi trên hóa đơn", "expected_route": "knowledge"},
-    {"id": "inventory-analytics", "category": "Phân tích tồn kho", "question": "So sánh tỷ lệ hết hàng theo danh mục sản phẩm", "expected_route": "analytics"},
-    {"id": "customer-service-knowledge", "category": "Tri thức chăm sóc khách hàng", "question": "Nhân viên hỗ trợ cần thực hiện những bước trả hàng nào?", "expected_route": "knowledge"},
-    {"id": "commerce-dashboard", "category": "Bảng điều khiển thương mại", "question": "Tạo bảng điều khiển doanh thu và đơn hàng theo tháng", "expected_route": "dashboard"},
-    {"id": "compliance-management", "category": "Quản trị tuân thủ", "question": "Chính sách tuân thủ quy định những biện pháp kiểm soát nào?", "expected_route": "knowledge"},
-    {"id": "executive-decision-support", "category": "Hỗ trợ quyết định điều hành", "question": "Lập báo cáo về các lựa chọn và rủi ro cho ban lãnh đạo", "expected_route": "report"},
-    {"id": "business-intelligence-analytics", "category": "Phân tích kinh doanh", "question": "So sánh doanh thu theo khu vực năm 2025", "expected_route": "analytics"}
+    {"id": "enterprise-knowledge-management", "category": "Enterprise Knowledge Management", "question": "Find the company document retention standard", "expected_route": "knowledge"},
+    {"id": "internal-document-search", "category": "Internal Document Search", "question": "Search for the employee access policy", "expected_route": "knowledge"},
+    {"id": "hr-policy-consultation", "category": "Human Resource Policy Consultation", "question": "What does the leave policy say about annual leave?", "expected_route": "knowledge"},
+    {"id": "contract-analysis", "category": "Contract Analysis", "question": "Which termination obligations are stated in this contract?", "expected_route": "knowledge"},
+    {"id": "financial-report-analysis", "category": "Financial Report Analysis", "question": "Summarize Vinamilk's 2024 headline total consolidated revenue and consolidated profit after tax.", "expected_route": "report"},
+    {"id": "invoice-information-retrieval", "category": "Invoice Information Retrieval", "question": "Find the payment terms stated on the invoice", "expected_route": "knowledge"},
+    {"id": "manufacturing-documentation", "category": "Manufacturing Documentation", "question": "What maintenance steps are in the production manual?", "expected_route": "knowledge"},
+    {"id": "customer-service-knowledge", "category": "Customer Service Knowledge Base", "question": "What return steps should customer support follow?", "expected_route": "knowledge"},
+    {"id": "technical-documentation-assistant", "category": "Technical Documentation Assistant", "question": "Find the server setup instructions", "expected_route": "knowledge"},
+    {"id": "compliance-management", "category": "Compliance Management", "question": "What controls are documented in the compliance policy?", "expected_route": "knowledge"},
+    {"id": "executive-decision-support", "category": "Executive Decision Support", "question": "Summarize the options and risks for leadership", "expected_route": "report"},
+    {"id": "business-intelligence-analytics", "category": "Business Intelligence Analytics", "question": "Compare document counts by business domain", "expected_route": "analytics"}
   ]
 }

@@ -1,0 +1,192 @@
+{
+  "dataset": "shared-html-owner-reviewed",
+  "engine": "docling",
+  "run_id": "docling-kaggle-shared-html-13p-20261022",
+  "started_at_utc": "2026-10-21T22:50:01.892108+00:00",
+  "finished_at_utc": "2026-10-21T22:50:01.922781+00:00",
+  "device": "Tesla T4 (Kaggle)",
+  "ocr": "Tesseract vie+eng PSM 6",
+  "layout_model": "Layout heron",
+  "table_structure": "Docling TableFormer accurate + table crop rotated 0 degrees clockwise; OCR cell matching",
+  "threads": 2,
+  "page_filter": null,
+  "page_count": 13,
+  "successful_pages": 13,
+  "failed_pages": 0,
+  "wall_seconds": 0.031,
+  "peak_process_rss_mib": 739.5,
+  "prediction_generation_seconds": 0.031,
+  "reused_raw_outputs": true,
+  "raw_output_directory": "results/shared-html/docling-kaggle-shared-html-13p-20261022/raw_pages",
+  "predictions": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/docling-kaggle-shared-html-13p-20261022/predictions.jsonl",
+  "pages": [
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13",
+      "status": "reused_raw_output",
+      "seconds": 0.003
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24",
+      "status": "reused_raw_output",
+      "seconds": 0.002
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p4",
+      "status": "reused_raw_output",
+      "seconds": 0.002
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p9",
+      "status": "reused_raw_output",
+      "seconds": 0.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "status": "reused_raw_output",
+      "seconds": 0.002
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "status": "reused_raw_output",
+      "seconds": 0.001
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "status": "reused_raw_output",
+      "seconds": 0.001
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p4",
+      "status": "reused_raw_output",
+      "seconds": 0.001
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p6",
+      "status": "reused_raw_output",
+      "seconds": 0.004
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p7",
+      "status": "reused_raw_output",
+      "seconds": 0.003
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "status": "reused_raw_output",
+      "seconds": 0.002
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p9",
+      "status": "reused_raw_output",
+      "seconds": 0.004
+    },
+    {
+      "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p26",
+      "status": "reused_raw_output",
+      "seconds": 0.002
+    }
+  ],
+  "inference_wall_seconds": 123.331,
+  "inference_peak_process_rss_mib": null,
+  "inference_page_seconds": {
+    "E2E-BAO-HO-LAO-DONG-2009-p13": 29.187,
+    "E2E-BAO-HO-LAO-DONG-2009-p24": 6.808,
+    "E2E-BAO-HO-LAO-DONG-2009-p4": 7.514,
+    "E2E-BAO-HO-LAO-DONG-2009-p9": 7.158,
+    "E2E-LONG-HAU-2008-p15": 8.165,
+    "E2E-LONG-HAU-2008-p17": 5.511,
+    "E2E-LONG-HAU-2008-p3": 10.681,
+    "E2E-LONG-HAU-2008-p4": 8.156,
+    "E2E-LONG-HAU-2008-p6": 8.511,
+    "E2E-LONG-HAU-2008-p7": 7.327,
+    "E2E-LONG-HAU-2008-p8": 7.501,
+    "E2E-LONG-HAU-2008-p9": 8.749,
+    "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p26": 8.051
+  },
+  "inference_successful_pages": 13,
+  "docling_version": "2.129.0",
+  "inference_device": "Tesla T4",
+  "dataset_id": "letrongnhan/vietnamese-enterprise-e2e-hard-scans",
+  "input_manifest_sha256": "1a8ddf4b1dacdfd93d2684d7989d6e8ea24aaa4a8e8b7b3d220f81732061754f",
+  "kaggle_cuda_available": true,
+  "page_orientation_detections": [
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13",
+      "rotation_clockwise": 0,
+      "osd_confidence": 8.52,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24",
+      "rotation_clockwise": 0,
+      "osd_confidence": 5.92,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p4",
+      "rotation_clockwise": 0,
+      "osd_confidence": 3.34,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p9",
+      "rotation_clockwise": 0,
+      "osd_confidence": 0.37,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "rotation_clockwise": 0,
+      "osd_confidence": 10.41,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "rotation_clockwise": 90,
+      "osd_confidence": 9.3,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "rotation_clockwise": 0,
+      "osd_confidence": 6.9,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p4",
+      "rotation_clockwise": 0,
+      "osd_confidence": 4.21,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p6",
+      "rotation_clockwise": 0,
+      "osd_confidence": 7.93,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p7",
+      "rotation_clockwise": 0,
+      "osd_confidence": 6.6,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "rotation_clockwise": 0,
+      "osd_confidence": 9.29,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p9",
+      "rotation_clockwise": 0,
+      "osd_confidence": 5.04,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p26",
+      "rotation_clockwise": 0,
+      "osd_confidence": 6.65,
+      "minimum_osd_confidence": 5.0
+    }
+  ]
+}

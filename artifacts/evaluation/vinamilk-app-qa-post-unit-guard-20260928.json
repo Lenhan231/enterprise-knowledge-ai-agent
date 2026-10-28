@@ -1,0 +1,57 @@
+{
+  "created_at_utc": "2026-09-27T19:46:14.703486+00:00",
+  "route": "POST /api/ask",
+  "dataset": "data/evaluation/vinamilk_qa_cases.json",
+  "dataset_sha256": "2398dc9ab6d51fedbd487781f11f99a31ffdf763922d7bdf18a108728105d361",
+  "model": "openai/gpt-oss-20b",
+  "case_count": 5,
+  "attempted_count": 2,
+  "unrun_case_ids": [
+    "sustainability-2024-ghg-inventory",
+    "employee-product-nutrition",
+    "employee-financial-denial"
+  ],
+  "stop_reason": "provider_rate_limit",
+  "passed": 1,
+  "failed": 1,
+  "mean_latency_seconds": 27.778,
+  "limitations": "Live authenticated app-route evaluation for the labeled public finance, sustainability, product and denial cases only. Automated exact-fact/source/route checks do not measure semantic faithfulness or human usefulness; private HR, contracts, invoices, manufacturing and customer-service documents are not in this corpus.",
+  "results": [
+    {
+      "id": "finance-2020-revenue-profit",
+      "role": "finance_analyst",
+      "question": "Doanh thu thuần và lợi nhuận sau thuế hợp nhất của Vinamilk năm 2020 là bao nhiêu?",
+      "passed": true,
+      "checks": {
+        "expected_agent": true,
+        "expected_abstention": true,
+        "expected_facts": true,
+        "expected_source_document": true,
+        "citation_integrity": true,
+        "denial_has_no_sources": true
+      },
+      "missing_facts": [],
+      "failed_fact_groups": [],
+      "cited_document_ids": [
+        "VNM-AR-2020-VI"
+      ],
+      "citation_pages": [
+        2,
+        8
+      ],
+      "agent": "hybrid",
+      "insufficient_context": false,
+      "answer": "Doanh thu thuần hợp nhất của Vinamilk năm 2020 là **VND 59 723 tỷ** và lợi nhuận sau thuế hợp nhất là **VND 11 236 tỷ**. [S10]\n\nAnalytics results (computed from role-visible verified data):\n- metric_name: profit_after_tax; fiscal_year: 2020; total: 11236 [M1]",
+      "latency_seconds": 29.957
+    },
+    {
+      "id": "finance-2024-revenue-profit",
+      "role": "finance_analyst",
+      "question": "Tóm tắt doanh thu hợp nhất và lợi nhuận sau thuế của Vinamilk năm 2024.",
+      "passed": false,
+      "http_status": 429,
+      "error": "The model provider is temporarily rate-limited. Please retry later.",
+      "latency_seconds": 25.599
+    }
+  ]
+}

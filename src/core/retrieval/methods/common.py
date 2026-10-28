@@ -58,7 +58,7 @@ def eligible_cte(
     parameters.extend((fiscal_year, fiscal_year))
     filters = ""
     if company is not None:
-        filters += " AND d.company = %s::text"
+        filters += " AND c.metadata->>'company' = %s::text"
         parameters.append(company)
     if roles is not None:
         filters += " AND (d.allowed_roles && %s::text[] OR 'admin' = ANY(%s::text[]))"
@@ -75,7 +75,7 @@ def eligible_cte(
             SELECT c.id, c.document_name, c.chunk_index, c.content,
                    c.metadata || jsonb_build_object('document_type', d.document_type) AS metadata,
                    {vector_fields}
-                   coalesce(%s::text IS NOT NULL AND d.year_or_version = %s, false) AS year_match
+                   coalesce(%s::text IS NOT NULL AND c.metadata->>'fiscal_year' = %s, false) AS year_match
                    {lexical_field}
             FROM document_chunks AS c
             JOIN documents AS d ON d.document_id = c.metadata->>'document_id'

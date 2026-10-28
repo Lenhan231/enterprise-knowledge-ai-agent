@@ -1,0 +1,18 @@
+{
+  "id": "ltrngnhn/vinamilk-2011-financial-scan-ocr-diagnostic",
+  "title": "Vinamilk 2011 Financial Scan OCR Diagnostic",
+  "code_file": "kaggle-vinamilk-2011-cafef-scan.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "machine_shape": "",
+  "dataset_sources": [
+    "ltrngnhn/vinamilk-2011-cafef-scan-assets"
+  ],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

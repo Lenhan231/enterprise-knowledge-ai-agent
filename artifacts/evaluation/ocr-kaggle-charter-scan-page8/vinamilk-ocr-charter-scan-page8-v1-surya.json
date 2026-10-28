@@ -1,0 +1,81 @@
+{
+  "created_at_utc": "2026-09-28T23:40:44.923966+00:00",
+  "dataset": "vinamilk-official-charter-scan-page8-en-v1",
+  "dataset_sha256": "404de082b2d4c4138c6dcdeec399575ee93a316fad83a8bfd39c20e9a5941273",
+  "reference_method": "Single-annotator manual transcription from the source PDF rendered at 180 DPI; no PDF text layer or OCR output used.",
+  "reference_quality": "single_annotator_visual_transcription_not_independently_reviewed",
+  "primary_metric_selection_eligible": false,
+  "limitations": "One English legal-document page from a fully image-based official 2026 charter. The reference has not been independently reviewed and is diagnostic only; it does not increase Vietnamese scanned-page coverage or support engine selection.",
+  "render_dpi": 180,
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Linux-6.12.90+-x86_64-with-glibc2.35",
+    "gpu": "Tesla T4",
+    "cuda_available": true,
+    "process_peak_rss_mb": 4402.73,
+    "child_peak_rss_mb": 1273.098,
+    "cpu_peak_scope": "whole evaluator process; run one engine per invocation for engine-specific comparison",
+    "child_peak_scope": "maximum high-water RSS among completed child processes, where supported"
+  },
+  "ocr_configuration": {
+    "render_dpi": 180,
+    "tesseract_language": "vie+eng",
+    "tesseract_page_segmentation_mode": 3
+  },
+  "engines": {
+    "surya": {
+      "available": true,
+      "engine_version": "0.17.1",
+      "pages": [
+        {
+          "document_id": "VNM-CHARTER-2026-EN",
+          "page": 8,
+          "language": "en",
+          "source_pdf_sha256": "2c49760156a72204756004be0b8fd1c8dc10e2ecd88abea78ea3fefbf0bf040f",
+          "rendered_image_sha256": "a027cd6d0cd7e54beab3773f6b7ad835b811baaf6e1174f04efd73f48b29acea",
+          "reference_source": "manual_transcription",
+          "hypothesis_text": "To notify to the Company in a timely, sufficient and accurate manner of any enterprises\n(c)\nof which they and their Related Persons are owners or in which they have shares or\ncontributed capital amounts as prescribed in this Law.\nThe legal representative of the Company must be personally liable, in accordance with law,\n4.\nfor the damage caused to the Company by breaches of the obligations specified in Clause 3\nof this Article.\nIII. BUSINESS PHILOSOPHY AND OBJECTIVE; SCOPE OF BUSINESS AND\n<b>OPERATION OF THE COMPANY</b>\nArticle 4. Lines of business, business philosophy and objective of the Company\nLines of business of the Company shall be specified in Appendix 1 of this Charter.\n1.\nBusiness Philosophy and objective of the Company shall be to continually develop\n2.\nproduction, trading and service operations in its fields of business activities in order to: (1)\nmaximize possible profits of the Company for the Shareholders and enhance the value of the\nCompany; and (2) constantly improve the living standards, working conditions and income\nof its employees; (3) ensure the benefits of other stakeholders, aiming toward sustainable and\nresponsible development.\nArticle 5. Scope of business and operations of the Company\nThe Company shall be permitted to plan and carry out all business activities in accordance\n1.\nwith the provisions of the Charter in compliance with the Law and shall be permitted to take\nappropriate measures to achieve the objectives of the Company.\nThe Company may carry out business operations in other sectors permitted by the Law and\n2.\n1.77.\napproved by the General Meeting of Shareholders.\nIV. CHARTER CAPITAL AND SHARES\nArticle 6. Charter Capital and Shares\nThe Company's Charter Capital shall be VND 20,899,554,450,000 (In words: Twenty\n1.\nthousand eight hundred ninety-nine billion five hundred fifty-four million four hundred fifty\nthousand Vietnamese dong).\nThe par value of each share shall be VND10,000 (ten thousand Vietnamese dong)/share. The\ntotal number of shares of the Company shall be calculated by dividing the Company's Charter\nCapital by the par value of each share.\nAll shares issued by the Company on the approving date of this Charter shall be ordinary\n2.\nshares. The rights and obligations of the Shareholders who own such ordinary shares shall be\nstipulated in Articles 9 and 10 of this Charter.\nThe Company may only increase or decrease its Charter Capital upon approval of the General\n3.\nMeeting of Shareholders in accordance with the Law.\nDuring its operation, the Company may issue preference shares after having the approval of\n4.\nthe General Meeting of Shareholders and in accordance with the provisions of the Law.\nIn case the Company issues new ordinary shares, such shares shall be first offered to existing\n5.\nShareholders in proportion to their holding of ordinary shares in the Company, unless\notherwise decided by the General Meeting of Shareholders. The Company must give a notice\nof offering which specifies the number of shares to be offered for sale and a reasonable time-\nlimit (not less than twenty one (21) days or other time-limit under the Law) so that\n8",
+          "reference_characters": 3057,
+          "reference_words": 518,
+          "hypothesis_characters": 3068,
+          "character_edit_distance": 55,
+          "word_edit_distance": 27,
+          "cer": 0.017991,
+          "wer": 0.052124,
+          "latency_seconds": 15.579,
+          "error": null
+        }
+      ],
+      "model_initialization_seconds": 57.573,
+      "model_initialization_error": null,
+      "runtime_device": "cuda:0",
+      "memory_telemetry": {
+        "torch_cuda_peak_allocated_mb": 2330.54,
+        "torch_cuda_peak_reserved_mb": 2618.0,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "aggregate": {
+        "valid_pages": 1,
+        "ocr_pages": 1,
+        "macro_mean_page_cer": 0.017991,
+        "micro_cer": 0.017991,
+        "macro_mean_page_wer": 0.052124,
+        "micro_wer": 0.052124,
+        "mean_latency_seconds": 15.579,
+        "pages_per_minute": 3.851
+      },
+      "by_language": {
+        "en": {
+          "valid_pages": 1,
+          "ocr_pages": 1,
+          "macro_mean_page_cer": 0.017991,
+          "micro_cer": 0.017991,
+          "macro_mean_page_wer": 0.052124,
+          "micro_wer": 0.052124,
+          "mean_latency_seconds": 15.579,
+          "pages_per_minute": 3.851
+        }
+      }
+    }
+  }
+}

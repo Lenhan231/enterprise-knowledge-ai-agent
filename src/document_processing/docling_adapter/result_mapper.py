@@ -6,7 +6,7 @@ import math
 from typing import Any
 
 from document_processing.element_taxonomy import normalize_element_label
-from .formats.docx_semantics import apply_docx_semantics, docx_text_key
+from .digital_born.docx_semantics import apply_docx_semantics, docx_text_key
 
 def map_result(
     result: Any,
@@ -25,6 +25,7 @@ def map_result(
     section_path: list[str] = []
     table_number_by_page: dict[int | None, int] = {}
     layout_table_cell_texts: set[str] = set()
+    ocr_engine = str(config.get("docling_ocr_engine", "tesseract")).lower()
     included_content_layers = None
     if source_format in {"docx", "pdf", "png", "jpg", "jpeg", "tif", "tiff"}:
         from docling_core.types.doc import ContentLayer
@@ -49,21 +50,24 @@ def map_result(
         text = str(getattr(item, "text", "") or "").strip()
         provenance = next(iter(getattr(item, "prov", []) or []), None)
         page_number = int(provenance.page_no) if provenance is not None else None
-        bbox = _bbox(provenance.bbox) if provenance is not None else None
+        page = result.document.pages.get(page_number) if page_number is not None else None
+        page_size = getattr(page, "size", None)
+        bbox = (
+            _bbox(provenance.bbox, float(page_size.height) if page_size is not None else None)
+            if provenance is not None else None
+        )
         base_metadata = {
             **({"page_number": page_number} if page_number is not None else {}),
             **({
                 "bbox": bbox,
                 "bbox_coordinate_system": "docling_page_coordinate",
-                "bbox_coordinate_origin": str(
-                    getattr(provenance.bbox.coord_origin, "value", provenance.bbox.coord_origin)
-                ).upper(),
+                "bbox_coordinate_origin": "TOPLEFT",
             } if bbox is not None else {}),
             "parser": "docling",
             "docling_label": label,
             "docling_version": docling_version,
             "text_extraction_method": (
-                "docling.tesseract" if do_ocr and source_format in {"pdf", "png", "jpg", "jpeg", "tif", "tiff"}
+                f"docling.{ocr_engine}" if do_ocr and source_format in {"pdf", "png", "jpg", "jpeg", "tif", "tiff"}
                 else "docling.native"
             ),
         }
@@ -71,18 +75,25 @@ def map_result(
         image_result = (embedded_image_results or {}).get(id(item))
         if image_result is not None:
             image_metadata = {
-                "source_type": "office_embedded_image",
-                "office_source_format": source_format,
-                "office_image_index": image_result["image_index"],
-                "office_picture_label": label,
-                "text_extraction_method": "docling.tesseract",
+                "source_type": "pdf_embedded_image" if source_format == "pdf" else "office_embedded_image",
+                "embedded_image_source_format": source_format,
+                "embedded_image_index": image_result["image_index"],
+                "embedded_picture_label": label,
+                "text_extraction_method": f"docling.{ocr_engine}",
             }
+            if source_format != "pdf":
+                image_metadata.update({
+                    "office_source_format": source_format,
+                    "office_image_index": image_result["image_index"],
+                    "office_picture_label": label,
+                })
             if page_number is not None:
                 image_metadata["page_number"] = page_number
             if bbox is not None:
-                image_metadata["office_bbox"] = bbox
+                image_metadata["office_bbox" if source_format != "pdf" else "source_bbox"] = bbox
 
             image_output = image_result["output"]
+            image_size = image_result.get("image_size")
             table_offset = len(tables)
             for image_table in image_output.get("tables", []):
                 table = {**image_table, "metadata": dict(image_table.get("metadata") or {})}
@@ -93,6 +104,8 @@ def map_result(
                 metadata.update(image_metadata)
                 if image_bbox is not None:
                     metadata["embedded_image_bbox"] = image_bbox
+                    if source_format == "pdf" and bbox is not None and image_size:
+                        metadata.update(_project_embedded_bbox(image_bbox, bbox, image_size))
                 table_index = table_number_by_page.get(page_number, 0)
                 table_number_by_page[page_number] = table_index + 1
                 table["table_index"] = table_index
@@ -110,6 +123,8 @@ def map_result(
                 metadata.update(image_metadata)
                 if image_bbox is not None:
                     metadata["embedded_image_bbox"] = image_bbox
+                    if source_format == "pdf" and bbox is not None and image_size:
+                        metadata.update(_project_embedded_bbox(image_bbox, bbox, image_size))
                 if element.get("element_type") == "table":
                     table_ref = element.get("table_ref")
                     if isinstance(table_ref, int):
@@ -222,11 +237,13 @@ def map_result(
     return mapped
 
 
-def _bbox(box: Any) -> list[float] | None:
+def _bbox(box: Any, page_height: float | None = None) -> list[float] | None:
     if box is None:
         return None
     left, top, right, bottom = (float(box.l), float(box.t), float(box.r), float(box.b))
     if str(getattr(box, "coord_origin", "")).upper().endswith("BOTTOMLEFT"):
+        if page_height is not None:
+            return [left, page_height - top, right, page_height - bottom]
         return [left, bottom, right, top]
     return [left, top, right, bottom]
 
@@ -254,3 +271,24 @@ def _cell(value: Any) -> str:
     except (TypeError, ValueError):
         pass
     return str(value).strip()
+
+
+def _project_embedded_bbox(
+    image_bbox: list[float], source_bbox: list[float], image_size: list[int],
+) -> dict[str, Any]:
+    """Map an OCR box from a cropped PDF image back onto its source page."""
+    image_width, image_height = image_size
+    left, top, right, bottom = source_bbox
+    scale_x = (right - left) / image_width
+    scale_y = (bottom - top) / image_height
+    x0, y0, x1, y1 = image_bbox
+    return {
+        "bbox": [
+            left + x0 * scale_x,
+            top + y0 * scale_y,
+            left + x1 * scale_x,
+            top + y1 * scale_y,
+        ],
+        "bbox_coordinate_system": "docling_page_coordinate",
+        "bbox_coordinate_origin": "TOPLEFT",
+    }

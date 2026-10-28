@@ -1,0 +1,31 @@
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/src \
+    DOCUMENT_PROCESSING_OCR_ENGINE=vietocr \
+    HF_HOME=/root/.cache/huggingface
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        tesseract-ocr \
+        tesseract-ocr-eng \
+        tesseract-ocr-osd \
+        tesseract-ocr-vie \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip install --no-cache-dir --upgrade pip \
+    && python -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu \
+        "torch==2.10.0" \
+        "torchvision==0.25.0" \
+    && python -m pip install --no-cache-dir \
+        "docling==2.129.0" \
+        "rapidocr==3.9.2" \
+        "onnxruntime>=1.18,<2" \
+        "vietocr==0.3.13" \
+        "opencv-python-headless"
+
+COPY src/document_processing /app/src/document_processing
+
+CMD ["python", "-c", "from docling.document_converter import DocumentConverter; from vietocr.tool.predictor import Predictor; from document_processing.document_processor import DocumentProcessor; print('PASS: Docling, VietOCR, and document_processing imports')"]

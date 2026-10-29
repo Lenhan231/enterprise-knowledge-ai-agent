@@ -200,14 +200,22 @@
         <form id="report-agent-form" class="review-form">
           <label for="report-agent-question">Decision question</label>
           <textarea id="report-agent-question" name="question" minlength="3" maxlength="2000" required placeholder="What decision should this report support?"></textarea>
-          <label for="report-agent-sources">Report sources</label>
-          <select id="report-agent-sources" name="source_mode">
+          <label for="report-agent-source-mode">Report sources</label>
+          <select id="report-agent-source-mode" name="source_mode">
+            <option value="documents">Documents</option>
+            <option value="analytics">Commerce analytics</option>
             <option value="orchestrated" selected>Auto (Knowledge + SQL)</option>
-            <option value="documents">Documents only</option>
-            <option value="analytics">Analytics only</option>
           </select>
-          <label for="report-agent-template">DOCX or Markdown template</label>
-          <input id="report-agent-template" name="template" type="file" accept=".docx,.md" required>
+          <label for="report-agent-template">Report template <span>(optional DOCX or Markdown)</span></label>
+          <input id="report-agent-template" name="template" type="file" accept=".docx,.md">
+          <p class="report-agent-help">Upload a template to keep its structure, or leave this empty to generate a report directly.</p>
+          <div id="report-agent-format-field" class="report-agent-format-field">
+            <label for="report-agent-output-format">Output format</label>
+            <select id="report-agent-output-format" name="output_format">
+              <option value="markdown">Markdown</option>
+              <option value="docx">DOCX</option>
+            </select>
+          </div>
           <button id="report-agent-submit" type="submit" class="primary-button">Generate report</button>
           <p id="report-agent-status" class="corpus-note" role="status" aria-live="polite"></p>
         </form>

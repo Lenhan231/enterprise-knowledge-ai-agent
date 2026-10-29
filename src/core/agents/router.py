@@ -64,7 +64,7 @@ class AgentRouter:
         return await self.run(request)
 
     async def run_mode(self, request: AgentRequest, mode: str, *, config=None) -> AgentResult:
-        if mode not in {"knowledge", "sql", "dashboard", "agentic"}:
+        if mode not in {"knowledge", "sql", "dashboard", "agentic", "report"}:
             raise ValueError("Unsupported agent mode")
         return await self._invoke(request, mode, config=config)
 
@@ -81,6 +81,8 @@ class AgentRouter:
 
     async def _select_route(self, state: _State) -> dict[str, str]:
         mode = state["mode"]
+        if mode == "report":
+            return {"route": "report"}
         if mode == "knowledge":
             return {"route": "knowledge"}
         if mode == "sql":

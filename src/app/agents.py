@@ -5,14 +5,12 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from io import BytesIO
 from pathlib import Path
 from time import perf_counter
 from typing import Literal
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.security import ROLE_PERMISSIONS, require_permission
@@ -27,7 +25,7 @@ class AgentChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     question: str = Field(min_length=1, max_length=2_000)
-    agent_mode: Literal["auto", "knowledge", "sql", "dashboard", "agentic"] = "agentic"
+    agent_mode: Literal["auto", "knowledge", "sql", "dashboard", "agentic", "report"] = "agentic"
     retrieval_method: Literal[
         "dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank",
     ] = "translated_hybrid_rerank"
@@ -63,16 +61,16 @@ async def _get_runtime(application):
         from core.agents.report_agent import ReportAgent
         from core.agents.router import AgentRouter
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent
-        from core.database.commerce_repository import create_repository_from_env
+        from core.database.commerce_repository import LazyCommerceRepository
 
         load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=False)
-        repository = await create_repository_from_env()
+        repository = LazyCommerceRepository()
         knowledge = _LazyKnowledgeAgent()
         analytics = AnalyticsAgent(SQLAnalyticsAgent(repository))
         runtime = AgentRouter(
             _FallbackClassifier(), knowledge, analytics,
             dashboard_agent=InventoryDashboardAgent(repository),
-            report_agent=ReportAgent(knowledge, analytics),
+            report_agent=ReportAgent(knowledge, analytics.sql_agent),
         )
         application.state.agent_router = runtime
         return runtime
@@ -82,7 +80,10 @@ def _agent_request(user: dict, question: str, **values):
     from core.models.agents import AgentRequest, VerifiedIdentity
 
     permissions = {"analytics:read"} if "view_analytics" in ROLE_PERMISSIONS[user["role"]] else set()
-    identity = VerifiedIdentity(subject=user["sub"], permissions=frozenset(permissions))
+    if "ask_documents" in ROLE_PERMISSIONS[user["role"]]:
+        permissions.add("documents:read")
+    identity = VerifiedIdentity(subject=user["sub"], permissions=frozenset(permissions),
+                                document_roles={user["role"]} if "documents:read" in permissions else set())
     return AgentRequest(question=question, user_id=user["sub"], identity=identity, **values)
 
 
@@ -108,8 +109,6 @@ async def agent_chat(
     payload: AgentChatRequest, http_request: Request,
     user: dict = Depends(require_permission("ask_documents")),
 ):
-    from core.agents.sql_analytics_agent import AnalyticsPermissionDenied
-
     started = perf_counter()
     timing_token = latency_events.set([])
     result = None
@@ -131,11 +130,13 @@ async def agent_chat(
         else:
             result = await runtime.run_mode(agent_request, payload.agent_mode)
         agent_name = result.agent
-        status = "completed"
-        error_type = None
+        report_status = result.metadata.get("status") if result.agent == "report" else None
+        status = "failed" if report_status in {"partial", "failed", "clarification_required"} else "completed"
+        error_type = {"partial": "ReportPartial", "failed": "ReportFailed",
+                      "clarification_required": "ReportClarificationRequired"}.get(report_status)
         citation_count = len(result.evidence)
         return result
-    except AnalyticsPermissionDenied as error:
+    except PermissionError as error:
         error_type = type(error).__name__
         raise HTTPException(403, "Your role cannot access Commerce analytics") from None
     except Exception as error:
@@ -160,34 +161,34 @@ async def agent_chat(
 
 @router.post("/report")
 async def generate_agent_report(
-    http_request: Request, question: str = Form(...), template: UploadFile = File(...),
-    user: dict = Depends(require_permission("view_analytics")),
+    http_request: Request, question: str = Form(...), template: UploadFile | None = File(None),
+    source_mode: Literal["documents", "analytics", "combined"] = Form("documents"),
+    output_format: Literal["markdown", "docx"] | None = Form(None),
+    user: dict = Depends(require_permission("ask_documents")),
 ):
-    from core.agents.sql_analytics_agent import AnalyticsPermissionDenied
-
     started = perf_counter()
     status = "failed"
     error_type = "RequestFailed"
     citation_count = 0
     try:
-        content = await template.read(10 * 1024 * 1024 + 1)
-        if len(content) > 10 * 1024 * 1024:
+        content = await template.read(10 * 1024 * 1024 + 1) if template else None
+        if content is not None and len(content) > 10 * 1024 * 1024:
             raise HTTPException(413, "Report template exceeds 10 MiB")
-        runtime = await _get_runtime(http_request.app)
         agent_request = _agent_request(user, AgentChatRequest(question=question).question)
-        filename = Path(template.filename or "").name
-        result, output, media_type = await runtime.report_agent.generate_from_template(agent_request, filename, content)
-        status = "completed"
+        from core.reports.sources import authorize_sources
+        from core.reports.http import report_response
+        authorize_sources(agent_request, source_mode)
+        runtime = await _get_runtime(http_request.app)
+        filename = Path(template.filename or "").name if template else None
+        result, output, media_type = await runtime.report_agent.generate_from_template(
+            agent_request, filename, content, source_mode=source_mode, output_format=output_format)
+        status = result.metadata.get("status", "complete" if result.metadata.get("ok", True) else "partial")
         error_type = None
         citation_count = len(result.evidence)
-        extension = Path(filename).suffix.casefold()
-        return StreamingResponse(BytesIO(output), media_type=media_type, headers={
-            "Content-Disposition": f'attachment; filename="report{extension}"',
-            "X-Report-Status": "generated",
-        })
-    except AnalyticsPermissionDenied as error:
+        return report_response(result, output, media_type)
+    except PermissionError as error:
         error_type = type(error).__name__
-        raise HTTPException(403, "Verified analytics permission is required") from None
+        raise HTTPException(403, "Verified permission for the selected report sources is required") from None
     except HTTPException as error:
         error_type = f"HTTP{error.status_code}"
         raise
@@ -202,6 +203,7 @@ async def generate_agent_report(
         await asyncio.to_thread(
             _record_agent_run,
             actor_role=user["role"], agent_name="report", retrieval_method="hybrid",
-            status=status, elapsed_ms=max(0, int((perf_counter() - started) * 1000)),
-            citation_count=citation_count, error_type=error_type,
+            status="completed" if status == "complete" else "failed",
+            elapsed_ms=max(0, int((perf_counter() - started) * 1000)),
+            citation_count=citation_count, error_type="ReportPartial" if status == "partial" else error_type,
         )

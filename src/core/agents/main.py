@@ -12,8 +12,6 @@ from typing import Any, Literal
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from fastapi.responses import StreamingResponse
-from io import BytesIO
 
 from core.agents.analytics_agent import AnalyticsAgent
 from core.agents.dashboard_agent import InventoryDashboardAgent
@@ -22,7 +20,7 @@ from core.agents.knowledge_agent import KnowledgeAgent
 from core.agents.report_agent import ReportAgent
 from core.agents.router import AgentRouter
 from core.agents.sql_analytics_agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
-from core.database.commerce_repository import create_repository_from_env
+from core.database.commerce_repository import LazyCommerceRepository
 from core.models.agents import AgentRequest, AgentResult, VerifiedIdentity
 
 
@@ -39,7 +37,7 @@ def _local_development_identity() -> VerifiedIdentity | None:
     subject = os.getenv("DEV_ANALYTICS_IDENTITY", "").strip()
     if not subject:
         return None
-    return VerifiedIdentity(subject=subject, permissions={"analytics:read"})
+    return VerifiedIdentity(subject=subject, permissions={"analytics:read", "documents:read"}, document_roles={"admin"})
 
 
 class _FallbackClassifier:
@@ -67,6 +65,11 @@ class _LazyKnowledgeAgent:
             self.agent = KnowledgeAgent()
         return await self.agent.run(request)
 
+    async def retrieve(self, request: AgentRequest):
+        if self.agent is None:
+            self.agent = KnowledgeAgent()
+        return await self.agent.retrieve(request)
+
     async def close(self) -> None:
         if self.agent is not None:
             await self.agent.close()
@@ -82,7 +85,7 @@ class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     question: str = Field(min_length=1, max_length=2_000)
-    agent_mode: Literal["auto", "knowledge", "sql", "dashboard", "agentic"] = "auto"
+    agent_mode: Literal["auto", "knowledge", "sql", "dashboard", "agentic", "report"] = "auto"
     retrieval_method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank"] = "translated_hybrid_rerank"
     conversation_id: str | None = Field(default=None, max_length=128)
     metadata: dict[str, Any] = Field(default_factory=dict)
@@ -114,10 +117,10 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
         owns_agent = runtime_agent is None
         if runtime_agent is None:
             load_dotenv(REPO_ROOT / ".env", override=False)
-            repository = commerce_repository or await create_repository_from_env()
+            repository = commerce_repository or LazyCommerceRepository()
             knowledge = knowledge_agent or _LazyKnowledgeAgent()
             analytics_agent = AnalyticsAgent(SQLAnalyticsAgent(repository, llm=llm))
-            runtime_report_agent = runtime_report_agent or ReportAgent(knowledge, analytics_agent, llm=llm)
+            runtime_report_agent = runtime_report_agent or ReportAgent(knowledge, analytics_agent.sql_agent, llm=llm)
             runtime_agent = AgentRouter(
                 classifier or _FallbackClassifier(), knowledge, analytics_agent,
                 dashboard_agent=InventoryDashboardAgent(repository),
@@ -174,7 +177,9 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
             ) from None
 
     @application.post("/api/report")
-    async def report(request: Request, question: str = Form(...), template: UploadFile = File(...)):
+    async def report(request: Request, question: str = Form(...), template: UploadFile | None = File(None),
+                     source_mode: Literal["documents", "analytics", "combined"] = Form("documents"),
+                     output_format: Literal["markdown", "docx"] | None = Form(None)):
         try:
             question = ChatRequest(question=question).question
             identity = None
@@ -186,29 +191,29 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
                 identity = getattr(request.state, "verified_identity", None)
                 if identity is None:
                     identity = _local_development_identity()
-            if not isinstance(identity, VerifiedIdentity) or "analytics:read" not in identity.permissions:
-                raise AnalyticsPermissionDenied("A verified analytics identity is required")
-            filename = Path(template.filename or "").name
-            extension = Path(filename).suffix.casefold()
+            if not isinstance(identity, VerifiedIdentity):
+                raise AnalyticsPermissionDenied("A verified identity is required")
+            from core.reports.sources import authorize_sources
+            from core.reports.http import report_response
+            agent_request = AgentRequest(question=question.strip(), user_id=identity.subject, identity=identity)
+            authorize_sources(agent_request, source_mode)
+            filename = Path(template.filename or "").name if template else None
+            extension = Path(filename).suffix.casefold() if filename else None
             if extension == ".docx":
                 if template.content_type != "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
                     raise HTTPException(status_code=422, detail="DOCX content type is required")
             elif extension == ".md":
                 if template.content_type not in {"text/markdown", "text/plain", "application/octet-stream"}:
                     raise HTTPException(status_code=422, detail="Markdown content type is required")
-            else:
+            elif template is not None:
                 raise HTTPException(status_code=422, detail="Template must be a DOCX or Markdown file")
-            content = await template.read(10 * 1024 * 1024 + 1)
-            agent_request = AgentRequest(question=question.strip(), user_id=identity.subject, identity=identity)
+            content = await template.read(10 * 1024 * 1024 + 1) if template else None
             result, payload, media_type = await request.app.state.report_agent.generate_from_template(
-                agent_request, filename, content,
+                agent_request, filename, content, source_mode=source_mode, output_format=output_format,
             )
-            return StreamingResponse(BytesIO(payload), media_type=media_type, headers={
-                "Content-Disposition": f'attachment; filename="report{extension}"',
-                "X-Report-Status": "generated",
-            })
-        except AnalyticsPermissionDenied:
-            raise HTTPException(status_code=403, detail="Verified analytics permission is required") from None
+            return report_response(result, payload, media_type)
+        except PermissionError:
+            raise HTTPException(status_code=403, detail="Verified permission for the selected report sources is required") from None
         except HTTPException:
             raise
         except ValueError as error:

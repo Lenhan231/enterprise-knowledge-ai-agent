@@ -27,7 +27,8 @@ from evaluation.ragas_judge import build_ragas_metrics
 
 DATA = ROOT / "evaluation/agent_benchmarks"
 OUTPUT_DIR = ROOT / "artifacts/evaluation/agent-benchmarks-rerun-2026-10-23"
-IDENTITY = VerifiedIdentity(subject="agent-benchmark", permissions={"analytics:read"})
+IDENTITY = VerifiedIdentity(subject="agent-benchmark", permissions={"analytics:read", "documents:read"},
+                           document_roles={"admin"})
 METRIC_NAMES = ("faithfulness", "answer_relevancy", "context_precision")
 
 
@@ -91,7 +92,7 @@ async def _generate_case(app, router, group, case, fixture, request, config):
     if group == "report":
         async def generate(_input):
             return await app.state.report_agent.generate_from_template(
-                request, "benchmark.md", _report_template(fixture),
+                request, "benchmark.md", _report_template(fixture), source_mode="combined",
             )
         runnable = RunnableLambda(generate)
         report_result, payload, media = await runnable.ainvoke({}, config=config)

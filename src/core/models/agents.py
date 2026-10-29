@@ -16,6 +16,7 @@ class VerifiedIdentity(BaseModel):
 
     subject: str
     permissions: frozenset[str] = Field(default_factory=frozenset)
+    document_roles: frozenset[str] = Field(default_factory=frozenset)
 
 
 class AgentRequest(BaseModel):

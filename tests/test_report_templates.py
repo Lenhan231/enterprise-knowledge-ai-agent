@@ -51,6 +51,34 @@ class ReportTemplateTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "10 MiB"):
             parse_report_template("report.md", b"x" * (10 * 1024 * 1024 + 1))
 
+    def test_replaces_placeholder_prose_and_escapes_table_cells(self):
+        template = parse_report_template("a.md", b"# Summary\nplaceholder prose\n| A | B |\n| --- | --- |\n| old | old |")
+        output = render_report_template(template, {"Summary": "New text"}, [[["a|b", "c\nd"]]])
+        self.assertNotIn("placeholder", output)
+        self.assertNotIn("old", output)
+        self.assertIn("a&#124;b", output)
+        self.assertIn("c<br>d", output)
+
+    def test_docx_multiline_order_and_placeholder_replacement(self):
+        source = Document()
+        source.add_heading("Summary", 1)
+        source.add_paragraph("placeholder")
+        source.add_table(rows=1, cols=1).cell(0, 0).text = "Value"
+        source.add_paragraph("another placeholder")
+        raw = BytesIO()
+        source.save(raw)
+        template = parse_report_template("a.docx", raw.getvalue())
+        output = render_report_template(template, {"Summary": "First\nSecond\n- Bullet"}, [[["100"]]])
+        paragraphs = Document(BytesIO(output)).paragraphs
+        self.assertEqual([p.text for p in paragraphs], ["Summary", "First", "Second", "Bullet"])
+        self.assertEqual(paragraphs[-1].style.name, "List Bullet")
+
+    def test_rejects_excessive_structure_and_tables_without_owner(self):
+        with self.assertRaises(ValueError):
+            parse_report_template("a.md", "\n".join(f"# Section {i}" for i in range(21)).encode())
+        with self.assertRaisesRegex(ValueError, "follow a heading"):
+            parse_report_template("a.md", b"| A | B |\n| --- | --- |\n# Summary")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,6 +1,8 @@
 import json
 import sys
 import unittest
+from urllib.error import HTTPError
+from io import BytesIO
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -32,6 +34,14 @@ class _BinaryResponse(_Response):
 
 
 class StreamlitClientTest(unittest.TestCase):
+    def test_report_clarification_displays_actual_question(self):
+        def opener(request, timeout):
+            body = json.dumps({"detail": {"code": "clarification_required",
+                "clarification": "Refunded amount or returned units?"}}).encode()
+            raise HTTPError(request.full_url, 422, "Unprocessable Entity", {}, BytesIO(body))
+        with self.assertRaisesRegex(RuntimeError, "Clarification needed: Refunded amount or returned units"):
+            submit_report("Returns report", source_mode="combined", opener=opener)
+
     def test_submit_report_uploads_template_and_returns_matching_file(self):
         captured = []
 
@@ -39,15 +49,26 @@ class StreamlitClientTest(unittest.TestCase):
             captured.append((request, timeout))
             return _BinaryResponse(b"# Report\n", "text/markdown; charset=utf-8")
 
-        payload, content_type = submit_report("Create report", "template.md", b"# Report\n",
+        payload, content_type, status = submit_report("Create report", "template.md", b"# Report\n",
                                               api_url="http://api.test", opener=opener)
         request, timeout = captured[0]
         self.assertEqual(request.full_url, "http://api.test/api/report")
         self.assertIn(b'name="question"', request.data)
         self.assertIn(b'name="template"; filename="template.md"', request.data)
         self.assertIn(b"# Report\n", request.data)
-        self.assertEqual(timeout, 180)
+        self.assertEqual(timeout, 600)
         self.assertEqual((payload, content_type), (b"# Report\n", "text/markdown; charset=utf-8"))
+        self.assertEqual(status, "complete")
+
+    def test_submit_report_without_template_retains_partial_status(self):
+        def opener(request, timeout):
+            self.assertNotIn(b'name="template"', request.data)
+            self.assertIn(b"combined", request.data)
+            response = _BinaryResponse(b"partial report", "text/markdown")
+            response.headers["X-Report-Status"] = "partial"
+            return response
+        self.assertEqual(submit_report("Report", source_mode="combined", opener=opener),
+                         (b"partial report", "text/markdown", "partial"))
 
     def test_submit_report_rejects_unsafe_filename(self):
         with self.assertRaises(ValueError):

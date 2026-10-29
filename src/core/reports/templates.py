@@ -25,6 +25,34 @@ class ReportTemplate:
     content: str | bytes
     headings: tuple[str, ...]
     table_headers: tuple[tuple[str, ...], ...]
+    table_sections: tuple[str, ...] = ()
+
+
+def default_report_template(output_format="markdown") -> ReportTemplate:
+    if output_format not in {"markdown", "docx"}:
+        raise ValueError("Output format must be markdown or docx")
+    if output_format == "markdown":
+        return parse_report_template("report.md", b"# Summary\n\n## Findings\n\n## Limitations\n")
+    document = Document()
+    for heading in ("Summary", "Findings", "Limitations"):
+        document.add_heading(heading, 1)
+    raw = BytesIO()
+    document.save(raw)
+    return parse_report_template("report.docx", raw.getvalue())
+
+
+def _bounded_template(format, content, headings, tables, owners):
+    if not headings or len(headings) > 20:
+        raise ValueError("Template must contain between 1 and 20 headings")
+    if len(headings) != len(set(headings)):
+        raise ValueError("Template headings must be unique")
+    if any(len(heading) > 200 for heading in headings) or any(len(cell) > 200 for columns in tables for cell in columns):
+        raise ValueError("Heading and table header text must be at most 200 characters")
+    if len(tables) > 20 or any(not columns or len(columns) > 20 for columns in tables):
+        raise ValueError("Template supports at most 20 tables with 1 to 20 columns")
+    if any(not owner for owner in owners):
+        raise ValueError("Every table must follow a heading")
+    return ReportTemplate(format, content, tuple(headings), tuple(tables), tuple(owners))
 
 
 def parse_report_template(filename: str, content: bytes) -> ReportTemplate:
@@ -39,11 +67,15 @@ def parse_report_template(filename: str, content: bytes) -> ReportTemplate:
         headings = tuple(match.group(2).strip() for line in text.splitlines()
                          if (match := _HEADING.match(line)))
         tables = _markdown_table_headers(text)
-        if not headings:
-            raise ValueError("Template must contain at least one heading")
-        if len(headings) != len(set(headings)):
-            raise ValueError("Template headings must be unique")
-        return ReportTemplate("markdown", text, headings, tables)
+        owner = ""
+        owners = []
+        lines = text.splitlines()
+        for index, line in enumerate(lines):
+            if match := _HEADING.match(line):
+                owner = match.group(2).strip()
+            if index + 1 < len(lines) and line.strip().startswith("|") and _TABLE_SEPARATOR.match(lines[index + 1].strip()):
+                owners.append(owner)
+        return _bounded_template("markdown", text, headings, tables, owners)
     if extension != "docx":
         raise ValueError("Template must be a DOCX or Markdown file")
     _validate_docx_package(content)
@@ -53,13 +85,16 @@ def parse_report_template(filename: str, content: bytes) -> ReportTemplate:
         raise ValueError("DOCX template could not be read") from error
     headings = tuple(paragraph.text.strip() for paragraph in document.paragraphs
                      if paragraph.style.name.startswith("Heading") and paragraph.text.strip())
-    if not headings:
-        raise ValueError("Template must contain at least one heading")
-    if len(headings) != len(set(headings)):
-        raise ValueError("Template headings must be unique")
     table_headers = tuple(tuple(cell.text.strip() for cell in table.rows[0].cells)
                           for table in document.tables if table.rows)
-    return ReportTemplate("docx", content, headings, table_headers)
+    owner = ""
+    owners = []
+    for block in document.iter_inner_content():
+        if isinstance(block, Paragraph) and block.style.name.startswith("Heading") and block.text.strip():
+            owner = block.text.strip()
+        elif not isinstance(block, Paragraph):
+            owners.append(owner)
+    return _bounded_template("docx", content, headings, table_headers, owners)
 
 
 def render_report_template(template: ReportTemplate, sections: dict[str, str],
@@ -98,8 +133,8 @@ def _render_markdown(template: ReportTemplate, sections: dict[str, str],
     while index < len(source_lines):
         line = source_lines[index]
         heading = _HEADING.match(line)
-        output.append(line)
         if heading:
+            output.append(line)
             body = sections[heading.group(2).strip()]
             output.extend(("", body.strip(), ""))
             index += 1
@@ -108,8 +143,10 @@ def _render_markdown(template: ReportTemplate, sections: dict[str, str],
                 and _TABLE_SEPARATOR.match(source_lines[index + 1].strip())):
             headers = template.table_headers[table_index]
             rows = tables[table_index]
+            output.append(line)
             output.append(source_lines[index + 1])
-            output.extend("| " + " | ".join(row) + " |" for row in rows)
+            output.extend("| " + " | ".join(cell.replace("|", "&#124;").replace("\r", "").replace("\n", "<br>")
+                                           for cell in row) + " |" for row in rows)
             table_index += 1
             index += 2
             while index < len(source_lines) and source_lines[index].strip().startswith("|"):
@@ -122,14 +159,22 @@ def _render_markdown(template: ReportTemplate, sections: dict[str, str],
 def _render_docx(template: ReportTemplate, sections: dict[str, str],
                  tables: list[list[list[str]]]) -> bytes:
     document = Document(BytesIO(template.content))
+    for paragraph in list(document.paragraphs):
+        if not paragraph.style.name.startswith("Heading"):
+            paragraph._p.getparent().remove(paragraph._p)
     headings = [paragraph for paragraph in document.paragraphs
                 if paragraph.style.name.startswith("Heading") and paragraph.text.strip()]
     for paragraph in reversed(headings):
         previous = paragraph._p
-        for text in reversed([part.strip() for part in sections[paragraph.text.strip()].splitlines() if part.strip()]):
+        for text in [part.strip() for part in sections[paragraph.text.strip()].splitlines() if part.strip()]:
             element = OxmlElement("w:p")
             previous.addnext(element)
-            Paragraph(element, paragraph._parent).add_run(text)
+            inserted = Paragraph(element, paragraph._parent)
+            if text.startswith(("- ", "* ")):
+                inserted.style = "List Bullet"
+                text = text[2:]
+            for index, part in enumerate(text.split("**")):
+                inserted.add_run(part).bold = bool(index % 2)
             previous = element
     for table, rows in zip(document.tables, tables):
         while len(table.rows) > 1:
@@ -148,8 +193,6 @@ def _validate_docx_package(content: bytes) -> None:
         raise ValueError("DOCX file content is invalid")
     try:
         with ZipFile(BytesIO(content)) as package:
-            if package.testzip() is not None:
-                raise ValueError("DOCX file content is invalid")
             expanded_size = 0
             for item in package.infolist():
                 path = PurePosixPath(item.filename)
@@ -158,5 +201,7 @@ def _validate_docx_package(content: bytes) -> None:
                 expanded_size += item.file_size
                 if expanded_size > MAX_DOCX_EXPANDED_BYTES:
                     raise ValueError("DOCX expands beyond the 20 MiB processing limit")
+            if package.testzip() is not None:
+                raise ValueError("DOCX file content is invalid")
     except BadZipFile as error:
         raise ValueError("DOCX file content is invalid") from error

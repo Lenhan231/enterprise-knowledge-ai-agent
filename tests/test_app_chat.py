@@ -14,7 +14,8 @@ from core.agents.main import create_app
 from core.models.agents import AgentResult, VerifiedIdentity
 
 
-ANALYST = VerifiedIdentity(subject="analyst-1", permissions={"analytics:read"})
+ANALYST = VerifiedIdentity(subject="analyst-1", permissions={"analytics:read", "documents:read"},
+                           document_roles={"finance_analyst"})
 SQL = "SELECT p.product_id FROM commerce.products AS p LIMIT 20"
 
 

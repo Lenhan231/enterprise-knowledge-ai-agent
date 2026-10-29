@@ -7,6 +7,7 @@ not accept arbitrary SQL from users or agents.
 from __future__ import annotations
 
 import os
+import asyncio
 from typing import Any
 
 from core.analytics.text_to_sql import APPROVED_COLUMNS, validate_commerce_sql
@@ -18,6 +19,24 @@ except ImportError:  # Keep imports usable before the optional DB dependency is 
 
 
 DEFAULT_TIMEOUT_MS = 5_000
+
+
+class LazyCommerceRepository:
+    """Document-only requests must not depend on an analytics connection."""
+
+    def __init__(self):
+        self.repository = None
+        self.lock = asyncio.Lock()
+
+    async def execute_approved_query(self, query, *args):
+        async with self.lock:
+            if self.repository is None:
+                self.repository = await create_repository_from_env()
+        return await self.repository.execute_approved_query(query, *args)
+
+    async def close(self):
+        if self.repository is not None:
+            await self.repository.close()
 
 
 ROLE_CHECK_SQL = """

@@ -28,13 +28,16 @@ class GroqProvider(LLMInterface):
             base_url="https://api.groq.com/openai/v1",
         )
 
-    def generate(self, prompt: str) -> str:
-        response = self.client.responses.create(
+    def generate(self, prompt: str, *, max_output_tokens: int = 1000) -> str:
+        if not 1 <= max_output_tokens <= 4096:
+            raise ValueError("Output token budget must be between 1 and 4096")
+        client = self.client.with_options(timeout=60, max_retries=0) if max_output_tokens > 1000 else self.client
+        response = client.responses.create(
             model=self.model_name,
             input=prompt,
             temperature=self.temperature,
             reasoning={"effort": self.reasoning_effort},
-            max_output_tokens=1000,
+            max_output_tokens=max_output_tokens,
         )
 
         answer = response.output_text.strip()

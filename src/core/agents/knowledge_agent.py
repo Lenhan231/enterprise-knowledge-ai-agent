@@ -7,6 +7,8 @@ from core.models.agents import (
     Evidence,
 )
 from core.rag.rag_service import RAGService
+from core.agents.execution import authorize
+from core.agents.runtime import run_sync
 
 
 class KnowledgeAgent(BaseAgent):
@@ -21,7 +23,7 @@ class KnowledgeAgent(BaseAgent):
         identity = request.identity
         if identity is None or "documents:read" not in identity.permissions or not identity.document_roles:
             raise PermissionError("Verified document scope is required")
-        contexts = await asyncio.to_thread(
+        contexts = await run_sync(
             self.rag.retrieve_contexts, request.question, limit=5,
             roles=sorted(identity.document_roles),
             retrieval_method=request.metadata.get("retrieval_method", "translated_hybrid_rerank"),
@@ -35,8 +37,8 @@ class KnowledgeAgent(BaseAgent):
         self,
         request: AgentRequest,
     ) -> AgentResult:
-
-        result = await asyncio.to_thread(
+        authorize(request, 'knowledge')
+        result = await run_sync(
             self.rag.generate_answer,
             request.question,
             roles=sorted(request.identity.document_roles) if request.identity and request.identity.document_roles else None,
@@ -68,6 +70,7 @@ class KnowledgeAgent(BaseAgent):
             answer=result.answer,
             agent="knowledge",
             evidence=evidence,
+            metadata={"ok": not result.insufficient_context, "insufficient_context": result.insufficient_context},
         )
 
     async def close(self) -> None:

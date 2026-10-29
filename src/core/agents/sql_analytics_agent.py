@@ -22,6 +22,7 @@ from core.database.commerce_repository import CommerceRepository
 from core.llm.llm_interface import LLMInterface
 from core.models.agents import AgentResult, Evidence, VerifiedIdentity
 from core.latency import measure
+from core.agents.runtime import generate
 
 
 class AnalyticsPermissionDenied(PermissionError):
@@ -50,7 +51,7 @@ def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analyti
     if payload.get("limitations"):
         metadata["limitations"] = list(payload["limitations"])
     data = {key: value for key, value in payload.items()
-            if key not in {"answer", "evidence", "metadata", "sql", "attempted_sql", "parameters"}}
+            if key not in {"answer", "evidence", "metadata"}}
     answer = payload.get("answer")
     if not isinstance(answer, str) or not answer.strip():
         answer = "Query completed." if payload.get("ok") else "The analytics request could not be completed."
@@ -75,9 +76,7 @@ class SQLAnalyticsAgent(BaseAgent):
         for attempt in range(2):
             try:
                 with measure("sql_planning"):
-                    raw = await asyncio.to_thread(self._provider().generate, prompt)
-                    if inspect.isawaitable(raw):
-                        raw = await raw
+                    raw = await generate(self._provider(), prompt, timeout=60)
                 plan = decode_query_plan(raw)
                 if plan.sql:
                     definitions = validate_metric_definitions(plan.sql, metric_names, plan.parameters, APPROVED_COLUMNS)

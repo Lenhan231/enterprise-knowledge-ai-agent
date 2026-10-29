@@ -1,7 +1,14 @@
 # Report Agent implementation
 
 Approved scope, specifications and implementation authorized 2026-10-29.
-Specifications: [capability map](../REPORT-AGENT-CAPABILITIES.md).
+Current specifications: [orchestration capability map](../CAPABILITY-MAP-agent-orchestration.md)
+and [Report source follow-up](../docs/technical/report-source-orchestration.md).
+
+Approved follow-up: replace Combined source broadcasting with bounded Knowledge/SQL
+orchestration, preserve the separate Report interface, update docs/contracts, and
+push the completed changes to main and local Docker. This supersedes the earlier
+leave-uncommitted instruction below. Temporary verification helpers and generated
+run output remain local.
 
 1. Source collection and identity: add explicit source options, verified document roles, raw section retrieval, stable evidence and bounded coverage. Verify denied modes do no work and forged metadata cannot expand access.
 2. Grounding: deterministic citation/numeric checks, one repair, partial section replacement and total-failure handling. Verify unsupported output never reaches downloads.

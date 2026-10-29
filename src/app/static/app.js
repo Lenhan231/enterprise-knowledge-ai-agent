@@ -524,7 +524,9 @@ function renderAnswerBody(answer) {
 function renderAnswer(data, panel = $("#answer-panel")) {
   panel.hidden = false;
   const citations = Array.isArray(data.citations) ? data.citations : [];
-  const usedEvidenceFallback = Boolean(data.answer_fallback_reason);
+  const usedEvidenceFallback = Boolean(data.answer_fallback_reason || data.fallback);
+  const responseTitle = ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Answer unavailable"})[data.status]
+    || (usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer");
   const domainLabels = {
     inventory_allocation: "Inventory allocation",
     promotion_planning: "Promotion planning",
@@ -581,7 +583,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
     <div class="answer-header-wrap">
       <div class="answer-heading">
         <span class="answer-mark">${usedEvidenceFallback ? "EV" : "AI"}</span>
-        <div><span class="eyebrow">${escapeHtml(({knowledge:"KNOWLEDGE AGENT",sql_analytics:"ANALYTICS AGENT",dashboard:"INVENTORY AGENT",report:"REPORT AGENT",agentic:"AGENTIC ROUTER",hybrid:"KNOWLEDGE + ANALYTICS"})[data.agent] || "AGENT RESPONSE")}</span><h3>${usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer"}</h3></div>
+        <div><span class="eyebrow">${escapeHtml(({knowledge:"KNOWLEDGE AGENT",analytics:"ANALYTICS AGENT",sql_analytics:"ANALYTICS AGENT",dashboard:"INVENTORY AGENT",report:"REPORT AGENT",agentic:"AUTOMATIC ROUTER",hybrid:"KNOWLEDGE + ANALYTICS"})[data.agent] || "AGENT RESPONSE")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
       </div>
       <div class="answer-actions-bar">
         <button type="button" class="action-btn" id="copy-answer-btn" title="Copy response text">Copy</button>
@@ -715,7 +717,7 @@ async function loadInventorySnapshot() {
 }
 
 function renderAgentRows(data) {
-  const groups = [["Results", data], ...["sql", "analytics", "knowledge"].map((key) => [key, data?.[key]])];
+  const groups = [["Results", data], ...Object.entries(data || {}).filter(([, value]) => value && !Array.isArray(value) && typeof value === "object")];
   return groups.map(([label, value]) => {
     const rows = value?.rows;
     if (!Array.isArray(rows) || !rows.length || !rows.every((row) => row && typeof row === "object" && !Array.isArray(row))) return "";
@@ -841,7 +843,7 @@ async function loadWorkspace(user) {
   ["sql"].forEach((mode) => {
     $("#agent-mode option[value='" + mode + "']").hidden = !canUseAnalytics;
   });
-  if (!canUseAnalytics && ["sql", "agentic"].includes($("#agent-mode").value)) {
+  if (!canUseAnalytics && $("#agent-mode").value === "sql") {
     $("#agent-mode").value = "knowledge";
   }
   if (user.role !== "document_processing_owner") {
@@ -1039,6 +1041,10 @@ $("#login-form").addEventListener("submit", async (event) => {
 });
 
 $("#logout-button").addEventListener("click", async () => {
+  agentConversationId = crypto.randomUUID();
+  reportConversationId = crypto.randomUUID();
+  $("#answer-panel").hidden = true;
+  $("#answer-panel").textContent = "";
   await api("/api/auth/logout", { method: "POST" });
   $("#workspace").hidden = true;
   $("#login-view").hidden = false;
@@ -1104,8 +1110,18 @@ $(".agent-grid").addEventListener("click", (event) => {
   }
 });
 
+let agentConversationId = crypto.randomUUID();
+let reportConversationId = crypto.randomUUID();
+$("#new-conversation").addEventListener("click", () => {
+  agentConversationId = crypto.randomUUID();
+  $("#answer-panel").hidden = true;
+  $("#answer-panel").textContent = "";
+  $("#question").value = "";
+});
+
 $("#ask-form").addEventListener("submit", async (event) => {
   event.preventDefault();
+  const requestConversationId = agentConversationId;
   const button = $("#ask-button");
   const question = $("#question").value.trim();
   if (!question) return;
@@ -1116,11 +1132,14 @@ $("#ask-form").addEventListener("submit", async (event) => {
   try {
     const data = await api("/api/agents/chat", { method: "POST", body: JSON.stringify({
       question, agent_mode: $("#agent-mode").value, retrieval_method: "translated_hybrid_rerank",
+      conversation_id: requestConversationId,
     }) });
+    if (agentConversationId !== requestConversationId) return;
     $("#connection-status").textContent = "Agent services connected";
     $(".status-dot").classList.add("connected");
     renderAgentResult(data);
   } catch (error) {
+    if (agentConversationId !== requestConversationId) return;
     panel.innerHTML = '<p class="error-message">' + escapeHtml(error.message) + '. Please check service configuration or connection.</p>';
   } finally {
     button.disabled = false;
@@ -1138,6 +1157,7 @@ updateReportFormatVisibility();
 
 $("#report-agent-form").addEventListener("submit", async (event) => {
   event.preventDefault();
+  const requestConversationId = reportConversationId;
   const button = $("#report-agent-submit");
   const status = $("#report-agent-status");
   const template = $("#report-agent-template").files[0];
@@ -1146,6 +1166,7 @@ $("#report-agent-form").addEventListener("submit", async (event) => {
   formData.append("source_mode", $("#report-agent-source-mode").value);
   if (template) formData.append("template", template);
   else formData.append("output_format", $("#report-agent-output-format").value);
+  formData.set('conversation_id', requestConversationId);
   button.disabled = true;
   delete status.dataset.state;
   status.textContent = "Generating report from authorized sources...";
@@ -1154,6 +1175,7 @@ $("#report-agent-form").addEventListener("submit", async (event) => {
       method: "POST", body: formData, credentials: "same-origin",
       headers: { "ngrok-skip-browser-warning": "1" },
     });
+    if (reportConversationId !== requestConversationId) return;
     if (!response.ok) {
       let detail = "Report request failed (HTTP " + response.status + ")";
       try {
@@ -1186,6 +1208,7 @@ $("#report-agent-form").addEventListener("submit", async (event) => {
       ? "Partial report downloaded. Review its limitations before using it."
       : "Report generated and downloaded.";
   } catch (error) {
+    if (reportConversationId !== requestConversationId) return;
     status.dataset.state = "error";
     status.textContent = error.message;
   } finally {

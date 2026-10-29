@@ -3,6 +3,15 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+
+def validate_chat_metadata(value: dict[str, Any]) -> dict[str, Any]:
+    """Keep client options separate from server-owned orchestration state."""
+    reserved = {'identity', 'user_id', 'permissions', 'roles', 'history', 'plan',
+                'task_results', 'deadline', 'budget', 'precollected', 'resolved_question'}
+    if len(value) > 20 or any(key.startswith('_') or key in reserved for key in value):
+        raise ValueError('Metadata contains reserved fields or exceeds 20 fields')
+    return value
+
 class Intent(str, Enum):
     KNOWLEDGE = 'knowledge'
     ANALYTICS = "analytics"

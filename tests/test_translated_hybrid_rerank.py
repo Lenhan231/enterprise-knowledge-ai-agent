@@ -85,7 +85,7 @@ class RerankTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_agent_dispatch_and_api_accept_new_method(self):
         from core.agents.knowledge_agent import KnowledgeAgent
-        from core.models.agents import AgentRequest
+        from core.models.agents import AgentRequest, VerifiedIdentity
         service, _ = existing.TranslatedHybridTest().service()
         model = MagicMock()
         model.predict.return_value = [0.0, 1.0]
@@ -93,6 +93,7 @@ class RerankTest(unittest.IsolatedAsyncioTestCase):
         answer_llm = MagicMock()
         answer_llm.generate.return_value = "Answer [S1]"
         result = await KnowledgeAgent(RAGService(service, answer_llm)).run(AgentRequest(
+            identity=VerifiedIdentity(subject="test", permissions={"documents:read"}, document_roles={"employee"}),
             question="question", metadata={"role": "employee", "company": "Company",
                                             "retrieval_method": "translated_hybrid_rerank"}))
         self.assertEqual(result.evidence[0].metadata["retrieval_method"], "translated_hybrid_rerank")

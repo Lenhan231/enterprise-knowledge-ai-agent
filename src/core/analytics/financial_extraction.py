@@ -11,6 +11,7 @@ from collections import defaultdict
 from difflib import SequenceMatcher
 
 from core.analytics.metric_ontology import METRIC_ONTOLOGY
+from core.prompts.financial_extraction import FINANCIAL_EXTRACTION_PROMPT
 
 logger = logging.getLogger(__name__)
 
@@ -170,21 +171,13 @@ def _prompt(company: str, document_year: int | None, page: dict) -> str:
     parsed_tables = json.dumps(
         page.get("structured_tables", []), ensure_ascii=False, separators=(",", ":")
     )
-    return f"""Extract explicitly reported financial metrics from one page of a public company report.
-Company: {company}
-Report year: {document_year or 'unknown'}
-PDF page: {page['page_number']}
-
-Return only a JSON object with exactly this shape:
-{{"metrics":[{{"metric_name":"total_consolidated_revenue|net_revenue|profit_before_tax|profit_after_tax|total_assets","metric_value":"verbatim numeric token","unit":"reported unit","fiscal_year":2024,"source_quote":"verbatim supporting text from this page"}}]}}
-
-Rules: extract at most one value for each of the five allowed metrics. When a report year is provided, extract only the value for that fiscal year; ignore comparison years even if the page shows them. Use an empty metrics array only when the requested year or metric is not explicitly supported on this page. Do not calculate, convert units, infer missing values, or use knowledge outside the page. For a parser table, copy the exact source_quote row from the serialized table rows below; do not rebuild or reorder cells. For narrative text, copy an exact contiguous substring from the page text. The fiscal_year must be explicitly shown on this page and must match the report year when provided. Do not return markdown or additional keys.
-
-Parser-detected table data (preserve exact cell strings):
-{parsed_tables}
-
-Page content:
-{page['text']}"""
+    return FINANCIAL_EXTRACTION_PROMPT.format(
+        company=company,
+        document_year=document_year or 'unknown',
+        page_number=page['page_number'],
+        tables=parsed_tables,
+        text=page['text'],
+    )
 
 
 def _validated_metrics(

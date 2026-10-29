@@ -26,7 +26,7 @@ os.environ["LANGSMITH_TRACING"] = "false"
 from core.agents.intent_classifier import IntentClassifier  # noqa: E402
 from core.agents.router import AgentRouter  # noqa: E402
 from core.llm.groq_provider import GroqProvider  # noqa: E402
-from core.models.agents import AgentRequest, AgentResult  # noqa: E402
+from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity  # noqa: E402
 from core.models.intent import IntentResult  # noqa: E402
 from core.prompts.intent import INTENT_CLASSIFIER_PROMPT  # noqa: E402
 
@@ -106,7 +106,7 @@ def scores(rows):
         tp = matrix[label][label]
         precision = tp / predicted_n if predicted_n else None
         recall = tp / support if support else None
-        f1 = (2 * precision * recall / (precision + recall)
+        f1 = (0.0 if support and tp == 0 else 2 * precision * recall / (precision + recall)
               if precision is not None and recall is not None and precision + recall else 0.0
               if precision is not None and recall is not None else None)
         per_class[label] = {"support": support, "precision": precision, "recall": recall, "f1": f1}
@@ -150,13 +150,113 @@ def draw_confusion(matrix, path):
     image.save(path)
 
 
+async def benchmark_unified(output: Path, cases: list, dataset_bytes: bytes, *, interval=0):
+    """Real planner/graph with explicitly synthetic specialist and synthesis stubs."""
+    if output.exists():
+        raise ValueError('Choose a fresh output directory; historical runs cannot be overwritten')
+    if not cases:
+        raise ValueError('No cases selected')
+    output.mkdir(parents=True)
+    provider = GroqProvider()
+    records = []
+
+    class PlanningProvider:
+        outputs = []
+        errors = []
+        def generate(self, prompt):
+            if prompt.startswith('Synthesize'):
+                inputs = json.loads(prompt.split('Results: ', 1)[1])
+                return json.dumps({'answer': ' '.join('Stub finding [' + e['citation_id'] + '].'
+                    for item in inputs for e in item['evidence']), 'used_tasks': [i['task_id'] for i in inputs]})
+            try:
+                raw = provider.generate(prompt)
+            except Exception as error:
+                self.errors.append(type(error).__name__)
+                raise
+            self.outputs.append(raw)
+            return raw
+
+    class SpecialistStub:
+        def __init__(self, agent):
+            self.agent = agent
+            self.questions = []
+        async def run(self, request):
+            self.questions.append(request.question)
+            return AgentResult(answer='Synthetic stub finding [S1].', agent=self.agent,
+                evidence=[Evidence(citation_id='S1', source_type='document' if self.agent == 'knowledge' else 'database',
+                                   source='BENCHMARK_STUB', content='Synthetic policy evidence, not a real source.')],
+                data={'rows': [{'category': 'Synthetic', 'count': 1}]} if self.agent == 'analytics' else {},
+                metadata={'ok': True})
+
+    wrapper = PlanningProvider()
+    knowledge, sql = SpecialistStub('knowledge'), SpecialistStub('analytics')
+    router = AgentRouter(None, knowledge, sql, llm=wrapper)
+    identity = VerifiedIdentity(subject='benchmark-stub', permissions={'documents:read', 'analytics:read'}, document_roles={'admin'})
+    try:
+        for case in cases:
+            wrapper.outputs = []
+            wrapper.errors = []
+            knowledge.questions.clear()
+            sql.questions.clear()
+            started = time.perf_counter()
+            result = await router.run(AgentRequest(question=case['question'], identity=identity))
+            row = {'case_id': case['id'], 'question': case['question'], 'expected_route': case['expected_route'],
+                   'predicted_route': result.metadata.get('selected_route'), 'status': result.metadata.get('status'),
+                   'correct': result.metadata.get('selected_route') == case['expected_route'],
+                   'latency_ms': (time.perf_counter()-started)*1000, 'planner_outputs': wrapper.outputs,
+                   'knowledge_questions': list(knowledge.questions), 'sql_questions': list(sql.questions),
+                   'task_trace': result.metadata.get('task_trace', []), 'planning_fallback': result.metadata.get('planning_fallback', False)}
+            row['provider_errors'] = list(wrapper.errors)
+            records.append(row)
+            (output/'records.json').write_text(json.dumps(records, ensure_ascii=False, indent=2), encoding='utf-8')
+            print(f"{case['id']}: {row['predicted_route']} ({'correct' if row['correct'] else 'incorrect'})", flush=True)
+            if interval:
+                await asyncio.sleep(interval)
+    finally:
+        provider.close()
+    files = ['src/core/agents/router.py', 'src/core/agents/planning.py', 'src/core/models/agent_plan.py',
+             'src/core/agents/execution.py', 'src/core/agents/response.py', 'src/app/agents.py',
+             'src/core/prompts/agents.py']
+    report = {'created_at_utc': datetime.now(timezone.utc).isoformat(), 'configuration': 'unified',
+              'model': provider.model_name, 'provider': 'Groq Responses API',
+              'dataset_sha256': hashlib.sha256(dataset_bytes).hexdigest(),
+              'implementation_sha256': {p: hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in files},
+              'metrics': scores(records), 'latency': latency_stats(records), 'records': records,
+              'provider_error_cases': sum(bool(row['provider_errors']) for row in records),
+              'limitations': ['Actual unified planner and LangGraph use synthetic specialist/synthesis stubs.',
+                  'Measures routing and dispatched questions, not retrieval, SQL execution, or answer faithfulness.',
+                  'Historical labels preserved; report/dashboard requests now require standalone modes.',
+                  'A small manually labeled English dataset does not establish generalization.']}
+    (output/'results.json').write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
+    print(json.dumps({'output': str(output), 'metrics': report['metrics'], 'latency': report['latency']}, indent=2))
+
+
 async def main():
+    global OUT
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--append", action="store_true",
                         help="run only cases absent from the saved results, then recompute combined metrics")
+    parser.add_argument('--configuration', choices=['unified', 'legacy-classifier'], default='unified')
+    parser.add_argument('--output', type=Path, help='Fresh directory for unified results')
+    parser.add_argument('--case-ids', nargs='+', help='Optional selected case IDs')
+    parser.add_argument('--interval', type=float, default=0, help='Seconds between cases to respect provider quotas')
     args = parser.parse_args()
     dataset_bytes = DATASET.read_bytes()
     cases = json.loads(dataset_bytes)["cases"]
+    if args.configuration == 'unified':
+        if args.append or args.output is None:
+            parser.error('Unified evaluation requires --output <fresh-directory> and does not support --append')
+        if args.case_ids:
+            if not set(args.case_ids) <= {case['id'] for case in cases}:
+                parser.error('Unknown case ID')
+            cases = [case for case in cases if case['id'] in args.case_ids]
+        if args.interval < 0 or args.interval > 60:
+            parser.error('--interval must be between 0 and 60 seconds')
+        await benchmark_unified(args.output, cases, dataset_bytes, interval=args.interval)
+        return
+    if args.output is None or args.output.exists():
+        parser.error('Legacy classifier evaluation also requires a fresh --output directory')
+    OUT = args.output
     previous = None
     previous_path = OUT / "results.json"
     if args.append and not previous_path.is_file():
@@ -219,7 +319,8 @@ async def main():
                 return classified
             classifier.classify = timed_classify
             route_started = time.perf_counter_ns()
-            await router.route(AgentRequest(question=q))
+            normalized = classifier.classify(q)
+            router.last_destination = route_intent(normalized)
             route_ms = (time.perf_counter_ns() - route_started) / 1e6
             classifier.classify = original_classify
             intent = captured["intent"]
@@ -274,6 +375,7 @@ async def main():
     run_history.append({"created_at_utc": now, "dataset_sha256": hashlib.sha256(dataset_bytes).hexdigest(),
                         "case_ids": [c["id"] for c in cases], "appended": bool(previous)})
     report = {
+        "configuration": "legacy-classifier",
         "created_at_utc": now, "dataset_id": json.loads(dataset_bytes)["dataset_id"],
         "dataset_sha256": hashlib.sha256(dataset_bytes).hexdigest(),
         "selected_case_ids": [c["id"] for c in json.loads(dataset_bytes)["cases"]],

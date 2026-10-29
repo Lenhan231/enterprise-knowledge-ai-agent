@@ -180,12 +180,12 @@
             <div class="ask-actions">
               <label class="agent-mode-control" for="agent-mode">Route to
                 <select id="agent-mode" name="agent_mode">
-                  <option value="agentic" selected>Agentic</option>
-                  <option value="auto">Auto select</option>
+                  <option value="auto" selected>Auto (Knowledge + SQL)</option>
                   <option value="knowledge">Knowledge</option>
                   <option value="sql">Analytics</option>
                 </select>
               </label>
+              <button id="new-conversation" type="button">New conversation</button>
               <button id="ask-button" type="submit" class="submit-query-btn">
                 <span>Ask agent</span>
               </button>
@@ -204,7 +204,7 @@
           <select id="report-agent-source-mode" name="source_mode">
             <option value="documents">Documents</option>
             <option value="analytics">Commerce analytics</option>
-            <option value="combined">Documents and analytics</option>
+            <option value="orchestrated" selected>Auto (Knowledge + SQL)</option>
           </select>
           <label for="report-agent-template">Report template <span>(optional DOCX or Markdown)</span></label>
           <input id="report-agent-template" name="template" type="file" accept=".docx,.md">

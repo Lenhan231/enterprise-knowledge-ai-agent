@@ -14,11 +14,11 @@ from core.models.agents import AgentResult
 
 
 class AgentMonitoringTest(unittest.TestCase):
-    def test_chat_defaults_to_agentic_routing(self):
+    def test_chat_defaults_to_unified_auto_routing(self):
         from app.agents import AgentChatRequest, agent_chat
 
         runtime = Mock()
-        runtime.run_mode = AsyncMock(return_value=AgentResult(answer="Answer", agent="agentic"))
+        runtime.run = AsyncMock(return_value=AgentResult(answer="Answer", agent="knowledge"))
         with patch("app.agents._get_runtime", new=AsyncMock(return_value=runtime)), \
                 patch("app.agents._record_agent_run"):
             result = asyncio.run(agent_chat(
@@ -26,9 +26,9 @@ class AgentMonitoringTest(unittest.TestCase):
                 Mock(), user={"role": "admin", "sub": "admin-test"},
             ))
 
-        runtime.run_mode.assert_awaited_once_with(ANY, "agentic")
-        runtime.run.assert_not_called()
-        self.assertEqual(result.agent, "agentic")
+        runtime.run.assert_awaited_once_with(ANY)
+        runtime.run_mode.assert_not_called()
+        self.assertEqual(result.agent, "knowledge")
 
     def test_admin_can_read_monitoring_snapshot(self):
         environment = {

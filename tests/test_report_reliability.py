@@ -23,14 +23,16 @@ class ReportReliabilityTest(unittest.IsolatedAsyncioTestCase):
     async def test_sql_clarification_stops_report_and_preserves_question(self):
         agent, knowledge, analytics, llm = self.agents()
         clarification = "For returns, do you mean refunded amount, returned units, or return rate?"
-        analytics.run.return_value = AgentResult(answer=clarification, agent="sql_analytics",
-            metadata={"ok": False, "clarification_required": True})
+        agent.source_router = MagicMock()
+        agent.source_router.collect_sources = AsyncMock(return_value=AgentResult(
+            answer=clarification, agent="hybrid", metadata={"ok": False, "clarification_required": True}))
         result, output, _ = await agent.generate_from_template(request(True), source_mode="combined")
         self.assertEqual(result.answer, clarification)
         self.assertTrue(result.metadata["clarification_required"])
         self.assertEqual(result.metadata["status"], "clarification_required")
         self.assertEqual(output, b"")
         knowledge.retrieve.assert_not_awaited()
+        analytics.run.assert_not_awaited()
         llm.generate.assert_not_called()
 
     def agents(self, text="Revenue is 100."):
@@ -116,6 +118,11 @@ class ReportReliabilityTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(payload, b"")
         llm.generate.assert_not_called()
         self.assertNotIn("private error", str(result.metadata))
+        agent.source_router = MagicMock()
+        agent.source_router.collect_sources = AsyncMock(return_value=AgentResult(
+            answer="Partial sources", agent="hybrid",
+            data={"tasks": {"s": {"agent": "sql", "status": "complete", "rows": [{"revenue": 100}]}}},
+            metadata={"ok": False, "status": "partial", "limitations": ["Document retrieval unavailable"]}))
         result, payload, _ = await agent.generate_from_template(
             request(True), "a.md", b"# Summary", source_mode="combined")
         self.assertEqual(result.metadata["status"], "partial")

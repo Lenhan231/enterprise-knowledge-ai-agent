@@ -30,7 +30,15 @@ class ReportAgentTest(unittest.IsolatedAsyncioTestCase):
             "sections": {"Monthly Report": "Revenue 100 [S1]"}, "tables": [],
         }), json.dumps({"sections": {"Summary": "Draft policy [S2]."},
                        "tables": [{"rows": [["Revenue", "100 [S1]"]]}]})]
-        agent = ReportAgent(knowledge, analytics, llm=llm)
+        router = MagicMock()
+        router.collect_sources = AsyncMock(return_value=AgentResult(
+            answer="Sources collected", agent="hybrid",
+            data={"tasks": {"s": {"agent": "sql", "status": "partial",
+                                   "rows": [{"revenue": 100}], "sources": ["commerce.sales"]}}},
+            evidence=[Evidence(source_type="document", source="policy.docx", content="The policy is a draft.",
+                               metadata={"task_agent": "knowledge"})],
+            metadata={"ok": False, "status": "partial", "limitations": ["Source data is unavailable."]}))
+        agent = ReportAgent(knowledge, analytics, llm=llm, source_router=router)
         document = Document()
         document.add_heading("Monthly Report", 1)
         document.add_heading("Summary", 2)

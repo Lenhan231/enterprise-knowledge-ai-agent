@@ -1,0 +1,347 @@
+{
+  "dataset_id": "knowledge-sql-orchestration-24-v1",
+  "cases": [
+    {
+      "id": "policy-en",
+      "language": "en",
+      "question": "What does the inventory policy say about approval before transferring stock?",
+      "expected_route": "knowledge",
+      "expected_agents": [
+        "knowledge"
+      ],
+      "scenario": "single",
+      "expected_constraints": [],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "policy-vi",
+      "language": "vi",
+      "question": "Chính sách tồn kho yêu cầu phê duyệt gì trước khi chuyển hàng?",
+      "expected_route": "knowledge",
+      "expected_agents": [
+        "knowledge"
+      ],
+      "scenario": "single",
+      "expected_constraints": [],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "document-en",
+      "language": "en",
+      "question": "Find document guidance for assessing delivery performance.",
+      "expected_route": "knowledge",
+      "expected_agents": [
+        "knowledge"
+      ],
+      "scenario": "single",
+      "expected_constraints": [],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "document-vi",
+      "language": "vi",
+      "question": "Tìm hướng dẫn trong tài liệu về đánh giá hiệu suất giao hàng.",
+      "expected_route": "knowledge",
+      "expected_agents": [
+        "knowledge"
+      ],
+      "scenario": "single",
+      "expected_constraints": [],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "count-en",
+      "language": "en",
+      "question": "How many orders were placed in 2022?",
+      "expected_route": "analytics",
+      "expected_agents": [
+        "sql"
+      ],
+      "scenario": "single",
+      "expected_constraints": [
+        "2022"
+      ],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "count-vi",
+      "language": "vi",
+      "question": "Có bao nhiêu đơn hàng trong năm 2022?",
+      "expected_route": "analytics",
+      "expected_agents": [
+        "sql"
+      ],
+      "scenario": "single",
+      "expected_constraints": [
+        "2022"
+      ],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "revenue-en",
+      "language": "en",
+      "question": "Compare revenue in 2021 and 2022.",
+      "expected_route": "analytics",
+      "expected_agents": [
+        "sql"
+      ],
+      "scenario": "single",
+      "expected_constraints": [
+        "2022"
+      ],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "revenue-vi",
+      "language": "vi",
+      "question": "So sánh doanh thu năm 2021 và 2022.",
+      "expected_route": "analytics",
+      "expected_agents": [
+        "sql"
+      ],
+      "scenario": "single",
+      "expected_constraints": [
+        "2022"
+      ],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "mixed-en",
+      "language": "en",
+      "question": "Count stockout flags in 2022 and summarize the inventory approval policy.",
+      "expected_route": "hybrid",
+      "expected_agents": [
+        "knowledge",
+        "sql"
+      ],
+      "scenario": "independent",
+      "expected_constraints": [
+        "2022"
+      ],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "mixed-vi",
+      "language": "vi",
+      "question": "Đếm cờ hết hàng năm 2022 và tóm tắt chính sách phê duyệt tồn kho.",
+      "expected_route": "hybrid",
+      "expected_agents": [
+        "knowledge",
+        "sql"
+      ],
+      "scenario": "independent",
+      "expected_constraints": [
+        "2022"
+      ],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "rank-policy-en",
+      "language": "en",
+      "question": "Find the top three categories by stockout count in 2022, then find guidance for those categories.",
+      "expected_route": "hybrid",
+      "expected_agents": [
+        "knowledge",
+        "sql"
+      ],
+      "scenario": "sql-knowledge",
+      "expected_constraints": [
+        "2022"
+      ],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "rank-policy-vi",
+      "language": "vi",
+      "question": "Tìm ba nhóm hàng hết hàng nhiều nhất năm 2022 rồi tra hướng dẫn cho các nhóm đó.",
+      "expected_route": "hybrid",
+      "expected_agents": [
+        "knowledge",
+        "sql"
+      ],
+      "scenario": "sql-knowledge",
+      "expected_constraints": [
+        "2022"
+      ],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "threshold-en",
+      "language": "en",
+      "question": "Read the inventory policy threshold, then count rows exceeding that cited threshold.",
+      "expected_route": "hybrid",
+      "expected_agents": [
+        "knowledge",
+        "sql"
+      ],
+      "scenario": "knowledge-sql",
+      "expected_constraints": [],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "threshold-vi",
+      "language": "vi",
+      "question": "Đọc ngưỡng trong chính sách tồn kho rồi đếm các dòng vượt ngưỡng được trích dẫn.",
+      "expected_route": "hybrid",
+      "expected_agents": [
+        "knowledge",
+        "sql"
+      ],
+      "scenario": "knowledge-sql",
+      "expected_constraints": [],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "followup-en",
+      "language": "en",
+      "question": "Compare that metric with 2021.",
+      "expected_route": "analytics",
+      "expected_agents": [
+        "sql"
+      ],
+      "scenario": "followup",
+      "expected_constraints": [],
+      "history": [
+        {
+          "question": "Revenue in 2022",
+          "scope": "Revenue 2022"
+        }
+      ],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "followup-vi",
+      "language": "vi",
+      "question": "So sánh chỉ số đó với năm 2021.",
+      "expected_route": "analytics",
+      "expected_agents": [
+        "sql"
+      ],
+      "scenario": "followup",
+      "expected_constraints": [],
+      "history": [
+        {
+          "question": "Revenue in 2022",
+          "scope": "Revenue 2022"
+        }
+      ],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "ambiguous-en",
+      "language": "en",
+      "question": "Compare that with the other one.",
+      "expected_route": "clarification",
+      "expected_agents": [],
+      "scenario": "clarification",
+      "expected_constraints": [],
+      "history": [],
+      "success_contract": "No tools called; clarify missing referent or standalone-mode requirement"
+    },
+    {
+      "id": "ambiguous-vi",
+      "language": "vi",
+      "question": "So sánh cái đó với cái còn lại.",
+      "expected_route": "clarification",
+      "expected_agents": [],
+      "scenario": "clarification",
+      "expected_constraints": [],
+      "history": [],
+      "success_contract": "No tools called; clarify missing referent or standalone-mode requirement"
+    },
+    {
+      "id": "denied-en",
+      "language": "en",
+      "question": "Count orders in 2022.",
+      "expected_route": "analytics",
+      "expected_agents": [
+        "sql"
+      ],
+      "scenario": "denial",
+      "expected_constraints": [
+        "2022"
+      ],
+      "history": [],
+      "success_contract": "Deny SQL before dispatch for document-only identity"
+    },
+    {
+      "id": "denied-vi",
+      "language": "vi",
+      "question": "Đếm đơn hàng năm 2022.",
+      "expected_route": "analytics",
+      "expected_agents": [
+        "sql"
+      ],
+      "scenario": "denial",
+      "expected_constraints": [
+        "2022"
+      ],
+      "history": [],
+      "success_contract": "Deny SQL before dispatch for document-only identity"
+    },
+    {
+      "id": "outage-en",
+      "language": "en",
+      "question": "Compare revenue with the documented revenue policy.",
+      "expected_route": "hybrid",
+      "expected_agents": [
+        "knowledge",
+        "sql"
+      ],
+      "scenario": "provider-failure",
+      "expected_constraints": [],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "outage-vi",
+      "language": "vi",
+      "question": "Đối chiếu doanh thu với chính sách doanh thu trong tài liệu.",
+      "expected_route": "hybrid",
+      "expected_agents": [
+        "knowledge",
+        "sql"
+      ],
+      "scenario": "provider-failure",
+      "expected_constraints": [],
+      "history": [],
+      "success_contract": "Focused scoped tasks; preserve required source coverage, dependency order, and citations"
+    },
+    {
+      "id": "standalone-en",
+      "language": "en",
+      "question": "Generate an inventory dashboard.",
+      "expected_route": "clarification",
+      "expected_agents": [],
+      "scenario": "standalone",
+      "expected_constraints": [],
+      "history": [],
+      "success_contract": "No tools called; clarify missing referent or standalone-mode requirement"
+    },
+    {
+      "id": "standalone-vi",
+      "language": "vi",
+      "question": "Tạo bảng điều khiển tồn kho.",
+      "expected_route": "clarification",
+      "expected_agents": [],
+      "scenario": "standalone",
+      "expected_constraints": [],
+      "history": [],
+      "success_contract": "No tools called; clarify missing referent or standalone-mode requirement"
+    }
+  ]
+}

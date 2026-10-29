@@ -3,6 +3,9 @@
 Runnable tools are grouped by workstream so the top level stays navigable.
 Run commands from the repository root with `uv run python`:
 
+LLM instruction templates live in [`src/core/prompts`](../src/core/prompts/README.md).
+Scripts and runtime modules import those templates instead of embedding their text.
+
 | Folder | Purpose |
 | --- | --- |
 | `ingestion/` | Download and ingest the public seed corpus; `source_downloaders/` holds source adapters. |

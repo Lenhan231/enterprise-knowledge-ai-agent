@@ -66,12 +66,12 @@ class TranslatedHybridTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_knowledge_agent_forwards_the_strategy_and_retains_translation_provenance(self):
         from core.agents.knowledge_agent import KnowledgeAgent
-        from core.models.agents import AgentRequest
+        from core.models.agents import AgentRequest, VerifiedIdentity
         service, _ = self.service()
         answer_llm = MagicMock()
         answer_llm.generate.return_value = "Answer [S1]"
         agent = KnowledgeAgent(RAGService(service, answer_llm))
-        result = await agent.run(AgentRequest(question="Doanh thu?", metadata={
+        result = await agent.run(AgentRequest(question="Doanh thu?", identity=VerifiedIdentity(subject="test", permissions={"documents:read"}, document_roles={"employee"}), metadata={
             "role": "employee", "company": "Company", "retrieval_method": "translated_hybrid"}))
         self.assertEqual(result.evidence[0].metadata["retrieval_method"], "translated_hybrid")
         self.assertEqual(result.evidence[0].metadata["retrieval_details"]["translation_model"], "fake-translator")

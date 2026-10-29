@@ -12,10 +12,17 @@ Both report endpoints use the same generator and status contract:
 | --- | --- | --- |
 | question | Nonblank report question, at most 2,000 characters | Required |
 | template | DOCX or UTF-8 Markdown; at most 10 MiB | Built-in Summary, Findings, Limitations |
-| source_mode | documents, analytics, combined | documents |
+| source_mode | orchestrated, documents, analytics; combined is an orchestrated alias | documents (API); orchestrated (bundled UI) |
 | output_format | markdown, docx | Markdown without upload; uploaded format otherwise |
+| conversation_id | Optional opaque report conversation ID, at most 128 characters | Stateless |
 
 A conflicting explicit format and uploaded template is rejected. Documents require verified document permission and roles; analytics requires verified analytics permission. Employees can generate document-only reports. Request metadata cannot grant roles or permissions. Analytics connections are created only when queried.
+
+Auto (`orchestrated`) uses the new bounded Knowledge/SQL router to collect focused,
+potentially dependent source tasks once per report. `combined` now follows this
+same path. Report keeps its own interface, section generation and downloads.
+Use a separate report conversation ID for follow-ups. Auto requires both source
+permissions. See [source orchestration and frontend migration](report-source-orchestration.md).
 
 ## Results and frontend handling
 
@@ -42,7 +49,7 @@ The response exposes the status and filename headers without changing trusted or
 
 No artifact is returned on total failure. Errors use 403 for source permissions, 422 for invalid inputs or unrepaired generated output, and 503 for unavailable sources/providers. A generation failure includes a safe structured `detail` with `status`, `code` and `limitations`; ordinary input/auth errors retain FastAPI's existing detail format. Oversized authenticated uploads retain their existing HTTP 413 behavior.
 
-If SQL planning needs clarification, collection stops before document retrieval or report drafting. The API returns HTTP 422 with `detail.code` and `detail.status` set to `clarification_required`, and `detail.clarification` containing the planner's actual question. The demo displays that question; the user can clarify the report request and resubmit. Report chat returns the same question in its answer with `metadata.clarification_required=true`.
+If collection needs clarification and no usable source has been collected, report drafting stops. The API returns HTTP 422 with `detail.code` and `detail.status` set to `clarification_required`, and `detail.clarification` containing the planner's actual question. The demo displays that question; the user can clarify the report request and resubmit. Report chat returns the same question in its answer with `metadata.clarification_required=true`. Usable partial sources may instead produce a partial report with disclosed gaps.
 
 Report chat mode returns Markdown in `AgentResult.answer`; source options can be supplied through metadata but remain permission-checked. Result metadata includes status, section checks, coverage, limitations and verification scope. `metadata.ok` is true only for complete reports.
 

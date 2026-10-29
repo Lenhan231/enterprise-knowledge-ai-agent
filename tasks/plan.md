@@ -1,3 +1,12 @@
+# Active initiative: Unified Agent Orchestration
+
+The capability map and five module specs were approved on 2026-10-29.
+The technical plan was approved on 2026-10-29:
+[agent-orchestration-plan.md](agent-orchestration-plan.md).
+The [task list](todo.md) records implementation, local demo verification, and remaining live acceptance gaps.
+
+The prior Docker plan and verification record are preserved below.
+
 # Backend Docker rebuild plan
 
 Status: backend extraction implemented locally; final runtime verification is recorded below.

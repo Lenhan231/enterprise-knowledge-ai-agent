@@ -143,7 +143,8 @@ class ChatAPITest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["data"]["rows"], [{"product_id": 42}])
         repository.execute_approved_query.assert_awaited_once_with(SQL)
-        self.assertNotIn("SELECT", response.text)
+        self.assertEqual(response.json()["data"]["sql"], SQL)
+        self.assertNotIn("SELECT", response.json()["answer"])
 
     def test_sql_mode_requires_server_verified_permission(self):
         repository = AsyncMock()

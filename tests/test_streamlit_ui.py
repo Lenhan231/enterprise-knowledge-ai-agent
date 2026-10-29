@@ -74,6 +74,14 @@ class StreamlitClientTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             submit_report("question", 'bad".md', b"# Report")
 
+    def test_report_auto_sources_send_separate_conversation_id(self):
+        def opener(request, timeout):
+            self.assertIn(b'orchestrated', request.data)
+            self.assertIn(b'name="conversation_id"', request.data)
+            self.assertIn(b'report-session', request.data)
+            return _BinaryResponse(b'# Report', 'text/markdown')
+        submit_report('Report', source_mode='orchestrated', conversation_id='report-session', opener=opener)
+
     def test_dashboard_mode_is_selectable_and_renders_inventory_charts(self):
         class FakeStreamlit:
             def __init__(self):
@@ -121,12 +129,21 @@ class StreamlitClientTest(unittest.TestCase):
         self.assertEqual(json.loads(request.data), {
             "question": "What does the policy say?", "agent_mode": "knowledge", "metadata": {},
         })
-        self.assertEqual(timeout, 90)
+        self.assertEqual(timeout, 135)
         self.assertEqual(result["answer"], "Policy result")
 
     def test_submit_chat_rejects_unknown_modes(self):
         with self.assertRaises(ValueError):
-            submit_chat("question", "auto")
+            submit_chat("question", "unknown")
+
+    def test_auto_is_single_default_and_conversation_is_transmitted(self):
+        self.assertEqual(next(iter(AGENT_MODES.values())), 'auto')
+        self.assertNotIn('agentic', AGENT_MODES.values())
+        def opener(request, timeout):
+            self.assertEqual(json.loads(request.data)['conversation_id'], 'session-1')
+            self.assertEqual(json.loads(request.data)['agent_mode'], 'auto')
+            return _Response({'answer': 'done'})
+        submit_chat('Follow up', 'auto', conversation_id='session-1', opener=opener)
 
     def test_display_result_renders_nested_sql_rows_and_sources(self):
         class Expander:

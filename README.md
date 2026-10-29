@@ -1,5 +1,12 @@
 Enterprise Knowledge AI Agent
 
+> 2026-10-29 Report follow-up: the standalone Report interface now uses the new
+> Knowledge/SQL workflow for Auto source collection (`orchestrated`; legacy
+> `combined` is an alias). Dashboard remains independent. See the
+> [Report integration document](docs/technical/report-source-orchestration.md). The user also authorized pushing
+> the completed changes to main and rebuilding local Docker. Earlier completion
+> notes describe the preceding stage.
+
 Prototype for source-grounded enterprise document Q&A and business analytics,
 using a role-filtered PostgreSQL/pgvector corpus and a FastAPI dashboard.
 
@@ -33,6 +40,16 @@ Commerce competition data is synthetic; public operating references are external
 examples, not policy for the synthetic business.
 
 Project layout
+
+Agent orchestration update (2026-10-29): Auto combines bounded Knowledge/SQL
+selection, focused subtasks, dependent handoffs, and cited response assembly.
+`agentic` remains an API alias; Report and Dashboard stay standalone. See the
+[implementation and validation document](docs/technical/agent-orchestration-implementation.md)
+and [Vercel frontend API contract](docs/technical/agent-api-frontend-contract.md).
+
+The local agent demo can be run with
+`python -m streamlit run src/core/agents/streamlit_ui.py --server.address 127.0.0.1 --server.port 8501`.
+It uses the authenticated backend at `http://127.0.0.1:8000` by default.
 
 - src/app: FastAPI routes and dashboard UI; isolated Upload Test API lives in `upload_test.py`
 - src/document_processing: Docling parser with Tesseract OCR and shared normalization

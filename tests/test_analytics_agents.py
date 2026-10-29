@@ -2,6 +2,8 @@ import sys
 import unittest
 from pathlib import Path
 from unittest.mock import AsyncMock
+import json
+from test_bounded_execution import IDENTITY, source_result, FakeProvider, task
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
@@ -35,9 +37,7 @@ class AnalyticsAgentContractTest(unittest.IsolatedAsyncioTestCase):
         sql_agent.close.assert_awaited_once()
 
     async def test_router_auto_and_explicit_modes(self):
-        request = AgentRequest(question="List products", identity=VerifiedIdentity(
-            subject="analyst", permissions={"analytics:read"},
-        ))
+        request = AgentRequest(question="List products", identity=IDENTITY)
 
         class Classifier:
             def classify(self, _question):
@@ -46,9 +46,9 @@ class AnalyticsAgentContractTest(unittest.IsolatedAsyncioTestCase):
 
         knowledge, sql = AsyncMock(), AsyncMock()
         for name, agent in (("knowledge", knowledge), ("analytics", sql)):
-            agent.run.return_value = AgentResult(answer=name, agent=name)
+            agent.run.return_value = source_result(name, rows=[{"count": 1}] if name == "analytics" else None)
         llm = AsyncMock()
-        llm.generate.return_value = '{"knowledge":false,"sql":true}'
+        llm.generate.return_value = json.dumps({'objective': 'List products', 'tasks': [{'id': 's', 'agent': 'sql', 'question': 'List products'}]})
         router = AgentRouter(Classifier(), knowledge, sql, llm=llm)
 
         auto = await router.run(request)
@@ -59,9 +59,7 @@ class AnalyticsAgentContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(sql.run.await_count, 2)
 
     async def test_langgraph_router_runs_both_agents_for_hybrid_auto_intent(self):
-        request = AgentRequest(question="Compare policy and stock", identity=VerifiedIdentity(
-            subject="analyst", permissions={"analytics:read"},
-        ))
+        request = AgentRequest(question="Compare policy and stock", identity=IDENTITY)
 
         class Classifier:
             def classify(self, _question):
@@ -69,17 +67,17 @@ class AnalyticsAgentContractTest(unittest.IsolatedAsyncioTestCase):
                                             "needs_knowledge": True, "needs_sql": True})()
 
         knowledge, sql = AsyncMock(), AsyncMock()
-        knowledge.run.return_value = AgentResult(answer="Policy evidence", agent="knowledge")
-        sql.run.return_value = AgentResult(answer="Commerce rows", agent="analytics")
-        router = AgentRouter(Classifier(), knowledge, sql)
+        knowledge.run.return_value = source_result("knowledge")
+        sql.run.return_value = source_result("analytics", rows=[{"count": 3}])
+        router = AgentRouter(Classifier(), knowledge, sql, llm=FakeProvider([task('k', 'knowledge', 'Stock policy'), task('s', 'sql', 'Stock count')]))
 
         result = await router.run(request)
 
-        knowledge.run.assert_awaited_once_with(request)
-        sql.run.assert_awaited_once_with(request)
+        self.assertEqual(knowledge.run.await_args.args[0].question, "Stock policy")
+        self.assertEqual(sql.run.await_args.args[0].question, "Stock count")
         self.assertEqual(router.last_destination, "hybrid")
         self.assertEqual(result.agent, "hybrid")
-        self.assertIn("Commerce rows", result.answer)
+        self.assertTrue(result.evidence)
 
 
 if __name__ == "__main__":

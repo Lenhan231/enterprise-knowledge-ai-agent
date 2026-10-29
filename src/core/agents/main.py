@@ -21,7 +21,7 @@ from core.agents.report_agent import ReportAgent
 from core.agents.router import AgentRouter
 from core.agents.sql_analytics_agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
 from core.database.commerce_repository import LazyCommerceRepository
-from core.models.agents import AgentRequest, AgentResult, VerifiedIdentity
+from core.models.agents import AgentRequest, AgentResult, VerifiedIdentity, validate_chat_metadata
 
 
 LOGGER = logging.getLogger(__name__)
@@ -101,9 +101,7 @@ class ChatRequest(BaseModel):
     @field_validator("metadata")
     @classmethod
     def bound_metadata(cls, value: dict[str, Any]) -> dict[str, Any]:
-        if len(value) > 20:
-            raise ValueError("metadata không được vượt quá 20 trường")
-        return value
+        return validate_chat_metadata(value)
 
 
 def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None = None,
@@ -126,6 +124,8 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
                 dashboard_agent=InventoryDashboardAgent(repository),
                 report_agent=runtime_report_agent,
             )
+            if isinstance(runtime_report_agent, ReportAgent):
+                runtime_report_agent.source_router = runtime_agent
         application.state.chat_agent = runtime_agent
         application.state.report_agent = runtime_report_agent
         try:
@@ -170,7 +170,7 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
             else:
                 result = await chat_agent.run_mode(agent_request, payload.agent_mode)
             return AgentResult.model_validate(result)
-        except AnalyticsPermissionDenied:
+        except PermissionError:
             raise HTTPException(
                 status_code=403,
                 detail="Bạn không có quyền truy cập dữ liệu phân tích.",
@@ -178,8 +178,9 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
 
     @application.post("/api/report")
     async def report(request: Request, question: str = Form(...), template: UploadFile | None = File(None),
-                     source_mode: Literal["documents", "analytics", "combined"] = Form("documents"),
-                     output_format: Literal["markdown", "docx"] | None = Form(None)):
+                     source_mode: Literal["documents", "analytics", "orchestrated", "combined"] = Form("documents"),
+                     output_format: Literal["markdown", "docx"] | None = Form(None),
+                     conversation_id: str | None = Form(None, max_length=128)):
         try:
             question = ChatRequest(question=question).question
             identity = None
@@ -195,7 +196,8 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
                 raise AnalyticsPermissionDenied("A verified identity is required")
             from core.reports.sources import authorize_sources
             from core.reports.http import report_response
-            agent_request = AgentRequest(question=question.strip(), user_id=identity.subject, identity=identity)
+            agent_request = AgentRequest(question=question.strip(), user_id=identity.subject, identity=identity,
+                                         conversation_id=conversation_id)
             authorize_sources(agent_request, source_mode)
             filename = Path(template.filename or "").name if template else None
             extension = Path(filename).suffix.casefold() if filename else None

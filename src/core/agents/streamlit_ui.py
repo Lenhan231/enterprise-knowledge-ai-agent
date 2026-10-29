@@ -14,24 +14,27 @@ from typing import Any
 
 
 AGENT_MODES = {
-    "Knowledge": "knowledge", "SQL": "sql", "Inventory Dashboard": "dashboard",
-    "Report": "report", "Agentic": "agentic",
+    "Auto (Knowledge + SQL)": "auto", "Knowledge": "knowledge", "SQL": "sql",
+    "Inventory Dashboard": "dashboard", "Report": "report",
 }
 
 
 def submit_chat(question: str, agent_mode: str, *, metadata: dict | None = None,
-                api_url: str | None = None, opener=None, agent_prefix="/api") -> dict[str, Any]:
-    if agent_mode not in AGENT_MODES.values():
+                api_url: str | None = None, opener=None, agent_prefix="/api",
+                conversation_id: str | None = None) -> dict[str, Any]:
+    if agent_mode not in {*AGENT_MODES.values(), "agentic"}:
         raise ValueError("Choose a supported agent mode.")
+    payload = {"question": question, "agent_mode": agent_mode, "metadata": metadata or {}}
+    if conversation_id:
+        payload["conversation_id"] = conversation_id
     request = Request(
         f"{(api_url or os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')).rstrip('/')}{agent_prefix}/chat",
-        data=json.dumps({"question": question, "agent_mode": agent_mode,
-                         "metadata": metadata or {}}).encode(),
+        data=json.dumps(payload).encode(),
         headers={"Content-Type": "application/json"},
         method="POST",
     )
     try:
-        with (opener or urlopen)(request, timeout=90) as response:
+        with (opener or urlopen)(request, timeout=135) as response:
             return json.loads(response.read())
     except HTTPError as error:
         raise RuntimeError(f"Backend returned HTTP {error.code}.") from None
@@ -41,7 +44,7 @@ def submit_chat(question: str, agent_mode: str, *, metadata: dict | None = None,
 
 def submit_report(question: str, filename: str | None = None, content: bytes | None = None, *,
                   api_url: str | None = None, opener=None, source_mode="documents", output_format=None,
-                  agent_prefix="/api") -> tuple[bytes, str, str]:
+                  agent_prefix="/api", conversation_id: str | None = None) -> tuple[bytes, str, str]:
     safe_name = os.path.basename(filename) if filename is not None else None
     if filename is not None and (not safe_name or any(char in safe_name for char in ('"', "\r", "\n"))):
         raise ValueError("Choose a valid DOCX or Markdown template filename.")
@@ -54,6 +57,8 @@ def submit_report(question: str, filename: str | None = None, content: bytes | N
         raise ValueError("Choose a DOCX or Markdown template.")
     boundary = "----agent" + uuid.uuid4().hex
     fields = {"question": question, "source_mode": source_mode}
+    if conversation_id:
+        fields['conversation_id'] = conversation_id
     if output_format:
         fields["output_format"] = output_format
     parts = [f'--{boundary}\r\nContent-Disposition: form-data; name="{key}"\r\n\r\n{value}\r\n'.encode()
@@ -86,6 +91,10 @@ def submit_report(question: str, filename: str | None = None, content: bytes | N
 
 
 def display_result(st: Any, result: Mapping[str, Any]) -> None:
+    metadata = result.get("metadata") or {}
+    if metadata.get("status"):
+        st.caption("Status: " + metadata["status"].replace("_", " ") +
+                   (" · evidence fallback" if metadata.get("fallback") else ""))
     st.markdown(result.get("answer", "No answer returned."))
     dashboard = (result.get("data") or {}).get("dashboard")
     if isinstance(dashboard, Mapping) and dashboard.get("outline_id") == "inventory_control":
@@ -102,6 +111,9 @@ def display_result(st: Any, result: Mapping[str, Any]) -> None:
     limitations = result.get("metadata", {}).get("limitations") or []
     for limitation in limitations:
         st.caption(f"Limitation: {limitation}")
+    if metadata.get("task_trace"):
+        with st.expander("Execution details"):
+            st.dataframe(metadata["task_trace"], use_container_width=True, hide_index=True)
 
 
 def _display_inventory_dashboard(st: Any, dashboard: Mapping[str, Any]) -> None:
@@ -186,14 +198,26 @@ def main() -> None:
         st.stop()
     opener = st.session_state["api_opener"].open if "api_opener" in st.session_state else None
     if opener and st.button("Sign out"):
-        for key in ("api_opener", "report_download", "last_result"):
+        for key in ("api_opener", "report_download", "last_result", "conversation_id", "report_conversation_id"):
             st.session_state.pop(key, None)
+        st.rerun()
+    if "conversation_id" not in st.session_state:
+        st.session_state["conversation_id"] = uuid.uuid4().hex
+    if "report_conversation_id" not in st.session_state:
+        st.session_state["report_conversation_id"] = uuid.uuid4().hex
+    if st.button("New conversation"):
+        st.session_state["conversation_id"] = uuid.uuid4().hex
+        st.session_state["report_conversation_id"] = uuid.uuid4().hex
+        st.session_state.pop("last_result", None)
+        st.session_state.pop("report_download", None)
         st.rerun()
     mode_label = st.selectbox("Agent", list(AGENT_MODES))
     question = st.text_area("Question", height=100, placeholder="Ask about a VietStyle policy or commerce data…")
     is_report = AGENT_MODES[mode_label] == "report"
     report_template = st.file_uploader("Report template (optional DOCX or Markdown)", type=["docx", "md"]) if is_report else None
-    source_mode = st.selectbox("Report sources", ["documents", "analytics", "combined"]) if is_report else "documents"
+    source_mode = st.selectbox("Report sources", ["orchestrated", "documents", "analytics"],
+        format_func=lambda mode: {'orchestrated': 'Auto (Knowledge + SQL)',
+                                  'documents': 'Documents only', 'analytics': 'Analytics only'}[mode]) if is_report else "documents"
     output_format = st.selectbox("Output format", ["markdown", "docx"]) if is_report and report_template is None else None
     category = st.text_input("Inventory category (optional)") if AGENT_MODES[mode_label] == "dashboard" else ""
     if is_report and st.button("Generate report", type="primary",
@@ -204,7 +228,8 @@ def main() -> None:
                 payload, content_type, status = submit_report(
                     question.strip(), report_template.name if report_template else None,
                     report_template.getvalue() if report_template else None,
-                    source_mode=source_mode, output_format=output_format, opener=opener, agent_prefix=prefix)
+                    source_mode=source_mode, output_format=output_format, opener=opener, agent_prefix=prefix,
+                    conversation_id=st.session_state['report_conversation_id'])
             st.session_state["report_download"] = (payload, content_type, status)
         except (RuntimeError, ValueError) as error:
             st.error(str(error))
@@ -224,7 +249,8 @@ def main() -> None:
             with st.spinner("Working…"):
                 metadata = {"category": category.strip()} if category.strip() else None
                 result = submit_chat(question.strip(), AGENT_MODES[mode_label], metadata=metadata,
-                                     opener=opener, agent_prefix=prefix)
+                                     opener=opener, agent_prefix=prefix,
+                                     conversation_id=st.session_state["conversation_id"])
             st.session_state["last_result"] = result
         except (RuntimeError, ValueError) as error:
             st.error(str(error))

@@ -155,6 +155,7 @@ def main():
                   'corpus_sha256': corpus_hash, 'case_hashes': {lang: hashlib.sha256(path.read_bytes()).hexdigest() for lang, path in files.items()},
                   'runner_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                   'translator_sha256': hashlib.sha256((ROOT / 'src/core/retrieval/query_translator.py').read_bytes()).hexdigest(),
+                  'translation_prompt_sha256': hashlib.sha256((ROOT / 'src/core/prompts/translation.py').read_bytes()).hexdigest(),
                   'translation_model': translation_llm.model_name,
                   'translation_summary': {
                       'attempted_cases': len(results) // 2,

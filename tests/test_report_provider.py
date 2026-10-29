@@ -16,10 +16,11 @@ class ReportProviderTest(unittest.TestCase):
         client.responses.create.return_value = MagicMock(output_text="answer")
         client.with_options.return_value.responses.create.return_value = MagicMock(output_text="report")
         provider = GroqProvider(api_key="fake-test-key")
-        self.assertEqual(provider.generate("chat"), "answer")
-        self.assertEqual(client.responses.create.call_args.kwargs["max_output_tokens"], 1000)
+        self.assertEqual(provider.generate("chat"), "report")
+        self.assertEqual(client.with_options.return_value.responses.create.call_args.kwargs["max_output_tokens"], 1000)
         self.assertEqual(provider.generate("report", max_output_tokens=4096), "report")
-        client.with_options.assert_called_once_with(timeout=60, max_retries=0)
+        self.assertEqual(client.with_options.call_count, 2)
+        client.with_options.assert_called_with(timeout=60, max_retries=0)
         self.assertEqual(client.with_options.return_value.responses.create.call_args.kwargs["max_output_tokens"], 4096)
 
 

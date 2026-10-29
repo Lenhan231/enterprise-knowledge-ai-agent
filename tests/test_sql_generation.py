@@ -179,7 +179,7 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
 
         repository.execute_approved_query.assert_awaited_once_with(sql)
         self.assertEqual(result.data["rows"], [{"category": "Outdoor", "products": 12}])
-        self.assertNotIn("sql", result.data)
+        self.assertEqual(result.data["sql"], sql)
         self.assertEqual(result.data["query_status"], "executed")
 
     async def test_analytics_summary_is_grounded_and_keeps_rows_and_sources(self):
@@ -259,7 +259,7 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
             AgentRequest(question="List products", identity=ANALYST))
         self.assertFalse(failed.metadata["ok"])
         self.assertNotIn("private database details", failed.answer)
-        self.assertNotIn("attempted_sql", failed.data)
+        self.assertTrue(failed.data["attempted_sql"].startswith("SELECT"))
         self.assertEqual(failed.data["query_status"], "error")
 
     async def test_unsafe_generated_query_never_reaches_repository(self):
@@ -271,7 +271,7 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
         result = await SQLAnalyticsAgent(repository, llm=LLM()).run(
             AgentRequest(question="Remove products", identity=ANALYST))
         self.assertFalse(result.metadata["ok"])
-        self.assertNotIn("attempted_sql", result.data)
+        self.assertEqual(result.data["attempted_sql"], "DELETE FROM commerce.products")
         self.assertEqual(result.data["query_status"], "rejected")
         repository.execute_approved_query.assert_not_awaited()
 

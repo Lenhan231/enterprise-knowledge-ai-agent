@@ -2,17 +2,19 @@ import sys
 import unittest
 from pathlib import Path
 from unittest.mock import AsyncMock
+import json
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.agents.router import AgentRouter
 from core.models.agents import AgentRequest, AgentResult, Evidence
+from test_bounded_execution import IDENTITY
 
 
 class LangGraphRouterTest(unittest.IsolatedAsyncioTestCase):
     async def test_agentic_mode_calls_both_agents_once_and_merges_evidence(self):
         llm = AsyncMock()
-        llm.generate.side_effect = ['{"knowledge":true,"sql":true}', "Combined answer from both sources."]
+        llm.generate.side_effect = [json.dumps({'objective': 'Policy and revenue', 'tasks': [{'id': 'k', 'agent': 'knowledge', 'question': 'Policy about revenue'}, {'id': 's', 'agent': 'sql', 'question': 'Revenue total'}]}), json.dumps({'answer': 'Policy [S1] and revenue [S2].', 'used_tasks': ['k', 's']})]
         knowledge = AsyncMock()
         knowledge.run.return_value = AgentResult(
             answer="Policy answer.", agent="knowledge",
@@ -26,30 +28,30 @@ class LangGraphRouterTest(unittest.IsolatedAsyncioTestCase):
         )
         agent = AgentRouter(None, knowledge, analytics, llm=llm)
 
-        result = await agent.run_mode(AgentRequest(question="What does policy say about revenue?"), "agentic")
+        result = await agent.run_mode(AgentRequest(question="What does policy say about revenue?", identity=IDENTITY), "agentic")
 
         knowledge.run.assert_awaited_once()
         analytics.run.assert_awaited_once()
-        self.assertEqual(result.agent, "agentic")
-        self.assertTrue(result.answer.startswith("Combined answer from both sources."))
-        self.assertIn("[S1] policy.pdf", result.answer)
-        self.assertIn("[S2] commerce.sales", result.answer)
-        self.assertIn("[S2] commerce.sales", llm.generate.await_args_list[1].args[0])
+        self.assertEqual(result.agent, "hybrid")
+        self.assertTrue(result.answer.startswith("Policy [S1] and revenue [S2]."))
+        self.assertEqual(result.evidence[0].source, "policy.pdf")
+        self.assertEqual(result.evidence[1].source, "commerce.sales")
+        self.assertIn("commerce.sales", llm.generate.await_args_list[1].args[0])
         self.assertEqual([e.source for e in result.evidence], ["policy.pdf", "commerce.sales"])
         self.assertEqual([e.citation_id for e in result.evidence], ["S1", "S2"])
 
     async def test_agentic_mode_calls_only_selected_agent(self):
         llm = AsyncMock()
-        llm.generate.return_value = '{"knowledge":false,"sql":true}'
+        llm.generate.return_value = json.dumps({'objective': 'Count orders', 'tasks': [{'id': 's', 'agent': 'sql', 'question': 'Count orders'}]})
         knowledge, analytics = AsyncMock(), AsyncMock()
-        analytics.run.return_value = AgentResult(answer="Rows", agent="analytics")
+        analytics.run.return_value = AgentResult(answer="Rows [S1]", agent="analytics", evidence=[Evidence(citation_id="S1", source_type="database", source="commerce.orders")], data={"rows": [{"count": 1}]})
         agent = AgentRouter(None, knowledge, analytics, llm=llm)
 
-        result = await agent.run_mode(AgentRequest(question="How many orders?"), "agentic")
+        result = await agent.run_mode(AgentRequest(question="How many orders?", identity=IDENTITY), "agentic")
 
         knowledge.run.assert_not_awaited()
         analytics.run.assert_awaited_once()
-        self.assertEqual(result.answer, "Rows")
+        self.assertEqual(result.answer, "Rows [S1]")
         llm.generate.assert_awaited_once()
 
     async def test_invalid_agentic_plan_returns_clear_failure_without_calling_tools(self):

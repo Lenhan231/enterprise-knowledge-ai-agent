@@ -23,7 +23,9 @@ def main():
     names=['scripts/retrieval/fresh_translated_candidates.py','scripts/retrieval/evaluate_translated_fresh_reranker.py',
            'src/core/retrieval/retrieval.py','src/core/retrieval/methods/translated_hybrid.py',
            'src/core/retrieval/methods/common.py','src/core/retrieval/methods/bm25.py',
-           'src/core/retrieval/query_translator.py','src/core/llm/llm_interface.py','src/core/llm/groq_provider.py']
+           'src/core/retrieval/query_translator.py','src/core/prompts/translation.py',
+           'src/core/llm/llm_interface.py','src/core/llm/groq_provider.py','src/core/prompts/examples.py',
+           'src/core/agents/runtime.py']
     names += [(OUT/p).relative_to(ROOT).as_posix() for p in ('translations.json','lexical-inputs.json','candidate-inputs.json')]
     config=json.loads((BASELINE/'config.json').read_text())
     names += [(BASELINE/p).relative_to(ROOT).as_posix() for p in ['config.json','results.json',*config['output_hashes']]]

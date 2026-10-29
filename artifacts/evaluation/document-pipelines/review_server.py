@@ -179,12 +179,40 @@ async def assistant_chat(document_id: str, page_number: int, request: ReviewChat
         )
         if intent.intent == "clarify":
             return {"intent": intent.intent, "reply": intent.reply, "model": model}
-        if intent.intent == "bbox":
-            result = await generate_bbox_draft(document_id, page_number, instruction=intent.instruction)
-        else:
-            task = "transcript" if intent.intent == "transcript" else "table"
-            result = await generate_content_draft(document_id, page_number, task, instruction=intent.instruction)
-        result.update({"intent": intent.intent, "reply": intent.reply, "intent_model": model})
+        if not intent.actions:
+            raise HTTPException(502, "Codex CLI selected no review action")
+
+        result = None
+        completed = []
+        failed = []
+        for action in intent.actions:
+            try:
+                if action.area == "bbox":
+                    result = await generate_bbox_draft(
+                        document_id, page_number, instruction=action.instruction
+                    )
+                else:
+                    result = await generate_content_draft(
+                        document_id,
+                        page_number,
+                        action.area,
+                        instruction=action.instruction,
+                    )
+                completed.append(action.area)
+            except Exception as error:
+                failed.append({"area": action.area, "error": str(error)})
+                if result is None:
+                    raise
+                break
+
+        result.update({
+            "intent": " + ".join(completed),
+            "reply": intent.reply,
+            "intent_model": model,
+        })
+        if failed:
+            result["partial"] = True
+            result["failed_actions"] = failed
         return result
     except HTTPException:
         raise

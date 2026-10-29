@@ -106,6 +106,15 @@ class VietOcrModel(BaseOcrModel):
 
             with TimeRecorder(conv_res, "ocr"):
                 ocr_rects = self.get_ocr_rects(page)
+                print(
+                    "OCR regions before line detection:",
+                    self.current_reference_id,
+                    [
+                        [round(rect.l, 1), round(rect.t, 1), round(rect.r, 1), round(rect.b, 1)]
+                        for rect in ocr_rects
+                    ],
+                    flush=True,
+                )
                 cells: list[TextCell] = []
                 for ocr_rect in ocr_rects:
                     if ocr_rect.area() == 0:

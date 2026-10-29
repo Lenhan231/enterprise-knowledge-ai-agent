@@ -17,6 +17,8 @@ from typing import Literal
 
 PIPELINE_DIR = Path(__file__).resolve().parent
 DATA_DIR = PIPELINE_DIR / "data"
+REPO_SRC = PIPELINE_DIR.parents[2] / "src"
+sys.path.insert(0, str(REPO_SRC))
 sys.path.insert(0, str(DATA_DIR))
 
 import fitz
@@ -27,6 +29,7 @@ from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 from auto_review_tracks import LABELS, build_tracks, write_tracks
 from agents.bbox import run_bbox_agent
+from agents.intent import run_review_intent_agent
 from agents.page_draft import run_page_draft_agent
 from agents.table import run_table_agent
 from agents.transcript import run_transcript_agent
@@ -46,6 +49,16 @@ class PageReview(BaseModel):
     draft_revision: int | None = None
     annotation_status: Literal["needs_owner_review", "owner_reviewed"]
     page_data: dict
+
+
+class ReviewChatTurn(BaseModel):
+    role: Literal["user", "assistant"]
+    text: str = Field(max_length=2000)
+
+
+class ReviewChatRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=4000)
+    history: list[ReviewChatTurn] = Field(default_factory=list, max_length=8)
 
 
 def read_state() -> dict:
@@ -127,6 +140,57 @@ def export_reviewed_references() -> dict:
         "track_record_counts": summary["track_record_counts"],
         "references": records,
     }
+
+
+@app.post("/api/reviews/{document_id}/pages/{page_number}/assistant-chat")
+async def assistant_chat(document_id: str, page_number: int, request: ReviewChatRequest) -> dict:
+    page_key = f"{document_id}:p{page_number}"
+    with STATE_LOCK:
+        row = next((item for item in read_state()["reviews"] if item.get("page_key") == page_key), None)
+        if row is None:
+            raise HTTPException(404, "Save this page in the local review store before using review chat")
+        if row.get("annotation_status") != "needs_owner_review":
+            raise HTTPException(409, "Uncheck owner_reviewed before asking Codex to edit this page")
+        page = row.get("page_data") or {}
+        tables = page.get("table_reference_drafts") or []
+        context = {
+            "transcript_available": bool(page.get("ocr_reference_draft")),
+            "regions": [
+                {"region_id": region.get("region_id"), "label": region.get("label")}
+                for region in page.get("layout_regions", [])
+            ],
+            "tables": [
+                {
+                    "region_id": table.get("region_id"),
+                    "rows": len(table.get("grid") or []),
+                    "columns": len((table.get("grid") or [[]])[0]),
+                    "headers": (table.get("grid") or [[]])[0],
+                    "table_name": table.get("table_name", ""),
+                }
+                for table in tables
+            ],
+        }
+    try:
+        intent, model = await run_in_threadpool(
+            run_review_intent_agent,
+            request.message,
+            context,
+            [turn.model_dump() for turn in request.history],
+        )
+        if intent.intent == "clarify":
+            return {"intent": intent.intent, "reply": intent.reply, "model": model}
+        if intent.intent == "bbox":
+            result = await generate_bbox_draft(document_id, page_number, instruction=intent.instruction)
+        else:
+            task = "transcript" if intent.intent == "transcript" else "table"
+            result = await generate_content_draft(document_id, page_number, task, instruction=intent.instruction)
+        result.update({"intent": intent.intent, "reply": intent.reply, "intent_model": model})
+        return result
+    except HTTPException:
+        raise
+    except Exception as error:
+        logger.exception("Codex CLI review chat failed for %s", page_key)
+        raise HTTPException(502, f"Codex CLI review chat failed: {error}") from error
 
 
 @app.post("/api/reviews/{document_id}/pages/{page_number}/generate-draft")
@@ -226,7 +290,7 @@ async def generate_page_draft(document_id: str, page_number: int) -> dict:
 
 
 @app.post("/api/reviews/{document_id}/pages/{page_number}/generate-bbox-draft")
-async def generate_bbox_draft(document_id: str, page_number: int) -> dict:
+async def generate_bbox_draft(document_id: str, page_number: int, instruction: str = "") -> dict:
     page_key = f"{document_id}:p{page_number}"
     with STATE_LOCK:
         state = read_state()
@@ -253,7 +317,7 @@ async def generate_bbox_draft(document_id: str, page_number: int) -> dict:
         raise HTTPException(409, "The source image no longer matches its recorded SHA-256")
 
     try:
-        draft, model = await run_in_threadpool(run_bbox_agent, image_bytes, regions)
+        draft, model = await run_in_threadpool(run_bbox_agent, image_bytes, regions, instruction)
     except ValueError as error:
         raise HTTPException(502, str(error)) from error
     except Exception as error:
@@ -299,7 +363,10 @@ async def generate_bbox_draft(document_id: str, page_number: int) -> dict:
 
 
 async def generate_content_draft(
-    document_id: str, page_number: int, task: Literal["transcript", "table"]
+    document_id: str,
+    page_number: int,
+    task: Literal["transcript", "table"],
+    instruction: str = "",
 ) -> dict:
     page_key = f"{document_id}:p{page_number}"
     with STATE_LOCK:
@@ -329,7 +396,7 @@ async def generate_content_draft(
     generated_at = datetime.now(timezone.utc).isoformat()
     try:
         if task == "transcript":
-            draft, model = await run_in_threadpool(run_transcript_agent, image_bytes)
+            draft, model = await run_in_threadpool(run_transcript_agent, image_bytes, instruction)
             page_data["ocr_reference_draft"] = draft.ocr_text
             page_data["ocr_draft_source"] = (
                 f"Codex CLI transcript draft from source page; {model}; verify against the original image."
@@ -340,7 +407,11 @@ async def generate_content_draft(
             if not table_regions:
                 raise HTTPException(409, "Draw and label the table region before asking Codex to fill its grid")
             draft, model = await run_in_threadpool(
-                run_table_agent, image_bytes, table_regions
+                run_table_agent,
+                image_bytes,
+                table_regions,
+                instruction,
+                page_data.get("table_reference_drafts") if instruction else None,
             )
             old_drafts = page_data.get("table_reference_drafts") or []
             legacy_draft = page_data.get("table_reference_draft")

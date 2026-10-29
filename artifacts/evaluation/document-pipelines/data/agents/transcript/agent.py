@@ -25,8 +25,10 @@ class GeneratedTranscriptDraft(BaseModel):
     uncertain_items: list[str]
 
 
-def run_transcript_agent(image_bytes: bytes) -> tuple[GeneratedTranscriptDraft, str]:
-    prompt = Template(Path(__file__).with_name("system_prompt.md").read_text(encoding="utf-8")).substitute()
+def run_transcript_agent(image_bytes: bytes, instruction: str = "") -> tuple[GeneratedTranscriptDraft, str]:
+    prompt = Template(Path(__file__).with_name("system_prompt.md").read_text(encoding="utf-8")).substitute(
+        user_instruction=instruction or "Transcribe the full page in reading order.",
+    )
     draft, model = run_codex_json(
         [("source-page.jpg", image_bytes)], prompt, TRANSCRIPT_SCHEMA,
         "codex-transcript-draft-", "transcript.json", GeneratedTranscriptDraft,

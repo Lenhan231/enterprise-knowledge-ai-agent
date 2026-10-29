@@ -158,6 +158,7 @@ def run(args: argparse.Namespace) -> None:
     else:
         from docling.datamodel.accelerator_options import AcceleratorDevice, AcceleratorOptions
         from docling.datamodel.base_models import InputFormat
+        from docling.datamodel.object_detection_engine_options import TransformersObjectDetectionEngineOptions
         from docling.datamodel.pipeline_options import (
             LayoutObjectDetectionOptions, PdfPipelineOptions, TableFormerMode,
             TableStructureOptions, TesseractCliOcrOptions,
@@ -184,6 +185,7 @@ def run(args: argparse.Namespace) -> None:
             do_ocr=True,
             do_table_structure=True,
             layout_options=LayoutObjectDetectionOptions(
+                engine_options=TransformersObjectDetectionEngineOptions(score_threshold=0.4),
                 model_spec=ObjectDetectionModelSpec(name=layout_name, repo_id=layout_repo)
             ),
             table_structure_options=TableStructureOptions(

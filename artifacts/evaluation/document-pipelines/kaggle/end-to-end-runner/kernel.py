@@ -23,6 +23,10 @@ input_root = manifests[0].parent
 pages = [json.loads(line) for line in manifests[0].read_text(encoding="utf-8").splitlines() if line.strip()]
 if not pages:
     raise RuntimeError("The reviewed-pages manifest is empty")
+pipeline_config = json.loads((input_root / "pipeline-config.json").read_text(encoding="utf-8"))
+ocr_engine = pipeline_config.get("ocr_engine", "tesseract")
+if ocr_engine not in {"tesseract", "vietocr"}:
+    raise ValueError(f"Unsupported OCR engine: {ocr_engine}")
 if not torch.cuda.is_available():
     raise RuntimeError("Kaggle did not allocate a GPU")
 
@@ -34,6 +38,15 @@ subprocess.run([
     sys.executable, "-m", "pip", "--default-timeout=300", "--retries=5",
     "install", "docling[onnxruntime]==2.129.0", "PyMuPDF==1.27.2.3",
 ], check=True)
+if ocr_engine == "vietocr":
+    subprocess.run([
+        sys.executable, "-m", "pip", "--default-timeout=300", "--retries=5",
+        "install", "--no-deps", "vietocr==0.3.13", "rapidocr==3.9.2",
+    ], check=True)
+    subprocess.run([
+        sys.executable, "-m", "pip", "--default-timeout=300", "--retries=5",
+        "install", "einops==0.2.0", "gdown==4.4.0",
+    ], check=True)
 
 import onnxruntime as ort
 
@@ -42,6 +55,7 @@ if "CUDAExecutionProvider" not in ort.get_available_providers():
 
 from docling.datamodel.accelerator_options import AcceleratorDevice, AcceleratorOptions
 from docling.datamodel.base_models import InputFormat
+from docling.datamodel.object_detection_engine_options import TransformersObjectDetectionEngineOptions
 from docling.datamodel.pipeline_options import (
     LayoutObjectDetectionOptions,
     PdfPipelineOptions,
@@ -52,11 +66,25 @@ from docling.datamodel.pipeline_options import (
 from docling.datamodel.stage_model_specs import ObjectDetectionModelSpec
 from docling.document_converter import DocumentConverter, ImageFormatOption
 
+if ocr_engine == "vietocr":
+    sys.path.insert(0, str(input_root))
+    from docling_vietocr import VietOcrOptions, register_vietocr
+
+    register_vietocr()
+    ocr_options = VietOcrOptions()
+    engine_name = "docling-vietocr-heron-tableformer"
+    ocr_name = "VietOCR vgg_seq2seq width 512 greedy; RapidOCR line detection"
+else:
+    ocr_options = TesseractCliOcrOptions(lang=["vie", "eng"], psm=6)
+    engine_name = "docling-tesseract-heron-tableformer"
+    ocr_name = "Tesseract vie+eng PSM 6"
+
 options = PdfPipelineOptions(
     accelerator_options=AcceleratorOptions(device=AcceleratorDevice.CUDA, num_threads=2),
     do_ocr=True,
     do_table_structure=True,
     layout_options=LayoutObjectDetectionOptions(
+        engine_options=TransformersObjectDetectionEngineOptions(score_threshold=0.4),
         model_spec=ObjectDetectionModelSpec(
             name="layout_heron", repo_id="docling-project/docling-layout-heron",
         ),
@@ -65,11 +93,16 @@ options = PdfPipelineOptions(
         mode=TableFormerMode.ACCURATE,
         do_cell_matching=True,
     ),
-    ocr_options=TesseractCliOcrOptions(lang=["vie", "eng"], psm=6),
+    ocr_options=ocr_options,
 )
 converter = DocumentConverter(
     format_options={InputFormat.IMAGE: ImageFormatOption(pipeline_options=options)},
 )
+vietocr_model = None
+if ocr_engine == "vietocr":
+    converter.initialize_pipeline(InputFormat.IMAGE)
+    pipeline = next(iter(converter.initialized_pipelines.values()))
+    vietocr_model = pipeline.ocr_model
 raw_root = OUTPUT_ROOT / "docling-raw-pages"
 raw_root.mkdir(parents=True, exist_ok=True)
 started_at = datetime.now(timezone.utc)
@@ -79,6 +112,8 @@ page_status = []
 
 for row in pages:
     page_id = row["reference_id"]
+    if vietocr_model is not None:
+        vietocr_model.current_reference_id = page_id
     image_path = input_root / row["image_file"]
     page_started = time.perf_counter()
     try:
@@ -106,9 +141,9 @@ for row in pages:
     page_seconds[page_id] = round(time.perf_counter() - page_started, 3)
 
 metadata = {
-    "engine": "docling-tesseract-heron-tableformer",
+    "engine": engine_name,
     "model": "Docling Layout Heron + TableFormer accurate",
-    "ocr": "Tesseract vie+eng PSM 6",
+    "ocr": ocr_name,
     "device": torch.cuda.get_device_name(0),
     "started_at_utc": started_at.isoformat(),
     "finished_at_utc": datetime.now(timezone.utc).isoformat(),

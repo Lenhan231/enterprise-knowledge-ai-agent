@@ -61,7 +61,7 @@ def load_reviewed_pages(*, pilot_only: bool) -> list[dict]:
     return [{"reference_id": page_id, "source_page_number_1based": int(page["source_page_number"]), **page} for page_id, page in rows]
 
 
-def prepare_input_package(destination: Path, pages: list[dict]) -> tuple[str, Path]:
+def prepare_input_package(destination: Path, pages: list[dict], ocr_engine: str) -> tuple[str, Path]:
     manifest = []
     for page in pages:
         image = (ROOT / "data" / page["source_image"]).resolve()
@@ -91,6 +91,12 @@ def prepare_input_package(destination: Path, pages: list[dict]) -> tuple[str, Pa
         "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in manifest),
         encoding="utf-8",
     )
+    (destination / "pipeline-config.json").write_text(
+        json.dumps({"ocr_engine": ocr_engine}, indent=2) + "\n", encoding="utf-8",
+    )
+    if ocr_engine == "vietocr":
+        for name in ("docling_vietocr.py", "line_detection.py"):
+            shutil.copyfile(ROOT / "tools/runners" / name, destination / name)
     (destination / "dataset-metadata.json").write_text(json.dumps({
         "title": "Vietnamese Enterprise End-to-End Hard Scans",
         "id": DATASET_ID,
@@ -103,8 +109,10 @@ def prepare_input_package(destination: Path, pages: list[dict]) -> tuple[str, Pa
         encoding="utf-8",
     )
     digest = hashlib.sha256()
-    for path in sorted(destination.iterdir(), key=lambda item: item.name):
-        digest.update(path.name.encode("utf-8"))
+    for path in sorted(destination.rglob("*")):
+        if not path.is_file():
+            continue
+        digest.update(path.relative_to(destination).as_posix().encode("utf-8"))
         digest.update(path.read_bytes())
     return digest.hexdigest(), destination / "shared-html-reviewed-pages.jsonl"
 
@@ -236,17 +244,20 @@ def main() -> None:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--pilot-5", action="store_true", help="Smoke-test pipeline changes on the fixed five-page cohort")
     mode.add_argument("--all-reviewed", action="store_true", help="Run every page currently marked owner_reviewed")
+    parser.add_argument("--ocr-engine", choices=("tesseract", "vietocr"), default="tesseract")
     parser.add_argument("--poll-seconds", type=int, default=20)
     args = parser.parse_args()
     pilot_only = args.pilot_5
     pages = load_reviewed_pages(pilot_only=pilot_only)
     run_kind = "pilot-5" if pilot_only else "all-reviewed"
+    if args.ocr_engine == "vietocr":
+        run_kind += "-vietocr"
     run_id = run_kind + "-" + datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     kernel_metadata = json.loads((KERNEL_DIR / "kernel-metadata.json").read_text())
     kernel_id = kernel_metadata["id"]
     with tempfile.TemporaryDirectory(prefix="end-to-end-input-") as temporary:
         package = Path(temporary)
-        input_digest, _ = prepare_input_package(package, pages)
+        input_digest, _ = prepare_input_package(package, pages, args.ocr_engine)
         update_dataset_if_needed(package, input_digest, len(pages))
     print(f"Pushing {kernel_id} with {len(pages)} reviewed pages", flush=True)
     run(["kaggle", "kernels", "push", "-p", str(KERNEL_DIR)])

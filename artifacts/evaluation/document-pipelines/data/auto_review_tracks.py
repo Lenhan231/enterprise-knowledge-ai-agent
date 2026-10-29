@@ -8,9 +8,11 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
+from document_processing.element_taxonomy import ELEMENT_LABELS
+
 DATA_DIR = Path(__file__).resolve().parent
 TRACKS = ("ocr", "layout", "table", "end-to-end")
-LABELS = {"title", "title_table", "text", "table", "figure", "seal", "page_header", "section_header", "page_footer"}
+LABELS = frozenset(ELEMENT_LABELS)
 
 
 def _source_exists(page: dict) -> bool:

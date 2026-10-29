@@ -8,6 +8,8 @@ import uuid
 from collections.abc import Mapping
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+from urllib.request import build_opener, HTTPCookieProcessor
+from http.cookiejar import CookieJar
 from typing import Any
 
 
@@ -18,11 +20,11 @@ AGENT_MODES = {
 
 
 def submit_chat(question: str, agent_mode: str, *, metadata: dict | None = None,
-                api_url: str | None = None, opener=None) -> dict[str, Any]:
+                api_url: str | None = None, opener=None, agent_prefix="/api") -> dict[str, Any]:
     if agent_mode not in AGENT_MODES.values():
         raise ValueError("Choose a supported agent mode.")
     request = Request(
-        f"{(api_url or os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')).rstrip('/')}/api/chat",
+        f"{(api_url or os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')).rstrip('/')}{agent_prefix}/chat",
         data=json.dumps({"question": question, "agent_mode": agent_mode,
                          "metadata": metadata or {}}).encode(),
         headers={"Content-Type": "application/json"},
@@ -37,35 +39,48 @@ def submit_chat(question: str, agent_mode: str, *, metadata: dict | None = None,
         raise RuntimeError("Could not connect to the FastAPI backend.") from None
 
 
-def submit_report(question: str, filename: str, content: bytes, *, api_url: str | None = None,
-                  opener=None) -> tuple[bytes, str]:
-    safe_name = os.path.basename(filename)
-    if not safe_name or any(char in safe_name for char in ('"', "\r", "\n")):
+def submit_report(question: str, filename: str | None = None, content: bytes | None = None, *,
+                  api_url: str | None = None, opener=None, source_mode="documents", output_format=None,
+                  agent_prefix="/api") -> tuple[bytes, str, str]:
+    safe_name = os.path.basename(filename) if filename is not None else None
+    if filename is not None and (not safe_name or any(char in safe_name for char in ('"', "\r", "\n"))):
         raise ValueError("Choose a valid DOCX or Markdown template filename.")
-    extension = os.path.splitext(safe_name)[1].casefold()
+    extension = os.path.splitext(safe_name)[1].casefold() if safe_name else None
     content_type = {
         ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         ".md": "text/markdown",
     }.get(extension)
-    if content_type is None:
+    if filename is not None and content_type is None:
         raise ValueError("Choose a DOCX or Markdown template.")
     boundary = "----agent" + uuid.uuid4().hex
-    body = b"".join((
-        f"--{boundary}\r\nContent-Disposition: form-data; name=\"question\"\r\n\r\n{question}\r\n".encode(),
-        f"--{boundary}\r\nContent-Disposition: form-data; name=\"template\"; filename=\"{safe_name}\"\r\n"
-        f"Content-Type: {content_type}\r\n\r\n".encode(),
-        content,
-        f"\r\n--{boundary}--\r\n".encode(),
-    ))
+    fields = {"question": question, "source_mode": source_mode}
+    if output_format:
+        fields["output_format"] = output_format
+    parts = [f'--{boundary}\r\nContent-Disposition: form-data; name="{key}"\r\n\r\n{value}\r\n'.encode()
+             for key, value in fields.items()]
+    if safe_name:
+        parts.extend((f'--{boundary}\r\nContent-Disposition: form-data; name="template"; filename="{safe_name}"\r\n'
+                      f'Content-Type: {content_type}\r\n\r\n'.encode(), content or b"", b"\r\n"))
+    parts.append(f"--{boundary}--\r\n".encode())
+    body = b"".join(parts)
     request = Request(
-        f"{(api_url or os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')).rstrip('/')}/api/report",
+        f"{(api_url or os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')).rstrip('/')}{agent_prefix}/report",
         data=body, headers={"Content-Type": f"multipart/form-data; boundary={boundary}"}, method="POST",
     )
     try:
-        with (opener or urlopen)(request, timeout=180) as response:
-            return response.read(), response.headers.get("Content-Type", content_type)
+        with (opener or urlopen)(request, timeout=600) as response:
+            return (response.read(), response.headers.get("Content-Type", content_type or "text/markdown"),
+                    response.headers.get("X-Report-Status", "complete"))
     except HTTPError as error:
-        raise RuntimeError(f"Backend returned HTTP {error.code}.") from None
+        try:
+            detail = json.loads(error.read()).get("detail", {})
+            message = "; ".join(detail.get("limitations", [])) if isinstance(detail, dict) else str(detail)
+            if isinstance(detail, dict) and detail.get("code") == "clarification_required":
+                message = "Clarification needed: " + detail["clarification"]
+                raise RuntimeError(message) from None
+        except (ValueError, AttributeError):
+            message = "Report request failed."
+        raise RuntimeError(f"HTTP {error.code}: {message}") from None
     except URLError:
         raise RuntimeError("Could not connect to the FastAPI backend.") from None
 
@@ -149,26 +164,67 @@ def main() -> None:
     st.set_page_config(page_title="Enterprise Knowledge Agent", page_icon="📊", layout="wide")
     st.title("Enterprise Knowledge Agent")
     st.caption(f"FastAPI backend: {os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')}")
+    prefix = os.getenv("API_AGENT_PREFIX", "/api/agents")
+    if prefix == "/api/agents" and "api_opener" not in st.session_state:
+        with st.form("sign_in"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            signed_in = st.form_submit_button("Sign in")
+        if signed_in:
+            opener = build_opener(HTTPCookieProcessor(CookieJar()))
+            login_request = Request(
+                os.getenv("API_BASE_URL", "http://127.0.0.1:8000").rstrip("/") + "/api/auth/login",
+                data=json.dumps({"username": username, "password": password}).encode(),
+                headers={"Content-Type": "application/json"}, method="POST")
+            try:
+                with opener.open(login_request, timeout=30) as response:
+                    response.read()
+                st.session_state["api_opener"] = opener
+                st.rerun()
+            except (HTTPError, URLError):
+                st.error("Sign-in failed. Check your account and backend connection.")
+        st.stop()
+    opener = st.session_state["api_opener"].open if "api_opener" in st.session_state else None
+    if opener and st.button("Sign out"):
+        for key in ("api_opener", "report_download", "last_result"):
+            st.session_state.pop(key, None)
+        st.rerun()
     mode_label = st.selectbox("Agent", list(AGENT_MODES))
     question = st.text_area("Question", height=100, placeholder="Ask about a VietStyle policy or commerce data…")
     is_report = AGENT_MODES[mode_label] == "report"
-    report_template = st.file_uploader("Report template (DOCX or Markdown)", type=["docx", "md"]) if is_report else None
+    report_template = st.file_uploader("Report template (optional DOCX or Markdown)", type=["docx", "md"]) if is_report else None
+    source_mode = st.selectbox("Report sources", ["documents", "analytics", "combined"]) if is_report else "documents"
+    output_format = st.selectbox("Output format", ["markdown", "docx"]) if is_report and report_template is None else None
     category = st.text_input("Inventory category (optional)") if AGENT_MODES[mode_label] == "dashboard" else ""
     if is_report and st.button("Generate report", type="primary",
-                               disabled=not question.strip() or report_template is None):
+                               disabled=not question.strip()):
+        st.session_state.pop("report_download", None)
         try:
             with st.spinner("Generating report…"):
-                payload, content_type = submit_report(question.strip(), report_template.name,
-                                                      report_template.getvalue())
-            st.download_button("Download report", payload, file_name=f"report{os.path.splitext(report_template.name)[1]}",
-                               mime=content_type)
+                payload, content_type, status = submit_report(
+                    question.strip(), report_template.name if report_template else None,
+                    report_template.getvalue() if report_template else None,
+                    source_mode=source_mode, output_format=output_format, opener=opener, agent_prefix=prefix)
+            st.session_state["report_download"] = (payload, content_type, status)
         except (RuntimeError, ValueError) as error:
             st.error(str(error))
+    if is_report and "report_download" in st.session_state:
+        payload, content_type, status = st.session_state["report_download"]
+        if status == "partial":
+            st.warning("Partial report: some sections or sources are unavailable. Review the limitations in the report.")
+        else:
+            st.success("Report generated. Review the verification scope and sources before use.")
+        extension = ".docx" if "wordprocessingml" in content_type else ".md"
+        st.download_button("Download report", payload, file_name=f"report{extension}", mime=content_type)
+        if extension == ".md":
+            with st.expander("Report preview and limitations", expanded=True):
+                st.markdown(payload.decode("utf-8"))
     if not is_report and st.button("Ask", type="primary", disabled=not question.strip()):
         try:
             with st.spinner("Working…"):
                 metadata = {"category": category.strip()} if category.strip() else None
-                result = submit_chat(question.strip(), AGENT_MODES[mode_label], metadata=metadata)
+                result = submit_chat(question.strip(), AGENT_MODES[mode_label], metadata=metadata,
+                                     opener=opener, agent_prefix=prefix)
             st.session_state["last_result"] = result
         except (RuntimeError, ValueError) as error:
             st.error(str(error))

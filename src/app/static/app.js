@@ -1100,7 +1100,7 @@ $(".agent-grid").addEventListener("click", (event) => {
     $("#ask-form").requestSubmit();
   } else if (event.target.closest("[data-open-report]")) {
     $("#report-agent-form-section").hidden = false;
-    $("#report-agent-template").focus();
+    $("#report-agent-question").focus();
   }
 });
 
@@ -1128,31 +1128,65 @@ $("#ask-form").addEventListener("submit", async (event) => {
   }
 });
 
+function updateReportFormatVisibility() {
+  const hasTemplate = Boolean($("#report-agent-template").files[0]);
+  $("#report-agent-format-field").hidden = hasTemplate;
+}
+
+$("#report-agent-template").addEventListener("change", updateReportFormatVisibility);
+updateReportFormatVisibility();
+
 $("#report-agent-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const button = $("#report-agent-submit");
   const status = $("#report-agent-status");
+  const template = $("#report-agent-template").files[0];
+  const formData = new FormData();
+  formData.append("question", $("#report-agent-question").value.trim());
+  formData.append("source_mode", $("#report-agent-source-mode").value);
+  if (template) formData.append("template", template);
+  else formData.append("output_format", $("#report-agent-output-format").value);
   button.disabled = true;
+  delete status.dataset.state;
   status.textContent = "Generating report from authorized sources...";
   try {
     const response = await fetch("/api/agents/report", {
-      method: "POST", body: new FormData(event.currentTarget), credentials: "same-origin",
+      method: "POST", body: formData, credentials: "same-origin",
       headers: { "ngrok-skip-browser-warning": "1" },
     });
     if (!response.ok) {
       let detail = "Report request failed (HTTP " + response.status + ")";
-      try { detail = (await response.json()).detail || detail; } catch {}
+      try {
+        const payload = await response.json();
+        const reportError = typeof payload.detail === "object" ? payload.detail : null;
+        if (reportError?.status === "clarification_required") {
+          status.dataset.state = "warning";
+          status.textContent = `Clarification needed: ${reportError.clarification || reportError.detail || "Please refine the decision question."}`;
+          return;
+        }
+        const message = reportError?.detail || reportError?.message || payload.detail;
+        if (message) detail = typeof message === "string" ? message : JSON.stringify(message);
+        if (reportError?.limitations?.length) detail += ` Limitations: ${reportError.limitations.join("; ")}`;
+      } catch {}
       throw new Error(detail);
     }
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "report" + ($("#report-agent-template").files[0]?.name.match(/\.[^.]+$/)?.[0] || ".docx");
+    const disposition = response.headers.get("Content-Disposition") || "";
+    const filename = disposition.match(/filename="?([^";]+)"?/i)?.[1];
+    const extension = $("#report-agent-output-format").value === "docx" ? ".docx" : ".md";
+    link.download = filename || `report${extension}`;
     link.click();
-    URL.revokeObjectURL(url);
-    status.textContent = "Report generated and downloaded.";
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const reportStatus = response.headers.get("X-Report-Status");
+    status.dataset.state = reportStatus === "partial" ? "warning" : "success";
+    status.textContent = reportStatus === "partial"
+      ? "Partial report downloaded. Review its limitations before using it."
+      : "Report generated and downloaded.";
   } catch (error) {
+    status.dataset.state = "error";
     status.textContent = error.message;
   } finally {
     button.disabled = false;

@@ -7,7 +7,6 @@ import base64
 from pathlib import Path
 from typing import Any
 
-from document_processing.docling_adapter.processor import DoclingProcessor
 from document_processing.element_taxonomy import normalize_element_label
 
 SUPPORTED_FORMATS = frozenset({
@@ -45,6 +44,8 @@ class DocumentProcessor:
         if engine != "docling":
             raise ValueError(f"Unsupported parser pipeline: {engine}")
         processor_config = {**self.config, "parser_engine": engine}
+        from document_processing.docling_adapter.processor import DoclingProcessor
+
         result = DoclingProcessor(processor_config).process(content, None, {"content": content, "metadata": common})
         elements = result.get("elements", [])
         tables = result.get("tables", [])

@@ -40,6 +40,8 @@ def score(references: list[dict], predictions: dict, threshold: float) -> dict:
     totals = {label: [0, 0, 0] for label in labels}
     false_positives = []
     unmapped = []
+    location_counts = [0, 0, 0]
+    label_confusions: Counter[str] = Counter()
     for reference in references:
         key = page_key(reference)
         pred_row = predictions[key]
@@ -66,6 +68,20 @@ def score(references: list[dict], predictions: dict, threshold: float) -> dict:
         for item in pred_items:
             if item["label"] == "other":
                 unmapped.append({"page": reference["reference_id"], "label": item["label"], "bbox_norm": item["bbox_norm"]})
+        priority_pred = [item for item in pred if item["label"] in PRIORITY]
+        priority_gold = [item for item in gold if item["label"] in PRIORITY]
+        location_matches = matched_pairs(
+            priority_pred, priority_gold,
+            lambda x: x["bbox_norm"], lambda x: x["bbox_norm"], threshold,
+        )
+        location_counts[0] += len(location_matches)
+        location_counts[1] += len(priority_pred)
+        location_counts[2] += len(priority_gold)
+        for pred_i, gold_i, _ in location_matches:
+            predicted_label = priority_pred[pred_i]["label"]
+            gold_label = priority_gold[gold_i]["label"]
+            if predicted_label != gold_label:
+                label_confusions[f"{predicted_label}->{gold_label}"] += 1
 
     per_class = {}
     for label, (tp, predicted, reference_count) in totals.items():
@@ -82,6 +98,9 @@ def score(references: list[dict], predictions: dict, threshold: float) -> dict:
     reference_count = sum(totals[label][2] for label in PRIORITY)
     precision = tp / predicted if predicted else 0.0
     recall = tp / reference_count if reference_count else 0.0
+    location_tp, location_predicted, location_reference = location_counts
+    location_precision = location_tp / location_predicted if location_predicted else 0.0
+    location_recall = location_tp / location_reference if location_reference else 0.0
     return {
         "pages": len(references), "iou_threshold": threshold,
         "priority_labels": list(PRIORITY), "secondary_labels": list(SECONDARY),
@@ -91,6 +110,13 @@ def score(references: list[dict], predictions: dict, threshold: float) -> dict:
             "f1": 2 * precision * recall / (precision + recall) if precision + recall else 0.0,
         },
         "priority_macro_f1": sum(per_class[label]["f1"] for label in PRIORITY) / len(PRIORITY),
+        "priority_localization_only": {
+            "tp": location_tp, "predicted": location_predicted, "reference": location_reference,
+            "precision": location_precision, "recall": location_recall,
+            "f1": 2 * location_precision * location_recall / (location_precision + location_recall)
+            if location_precision + location_recall else 0.0,
+            "cross_label_matches": dict(label_confusions),
+        },
         "per_class": per_class,
         "false_positives": false_positives,
         "false_positive_counts": dict(Counter(item["label"] for item in false_positives)),
@@ -129,17 +155,24 @@ def main() -> None:
         metadata_path = Path(path_value).parent / "run-metadata.json"
         candidate_metadata[name] = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path.exists() else {}
 
+    best_macro = max(result["priority_macro_f1"] for result in candidates.values())
     args.output_dir.mkdir(parents=True, exist_ok=True)
     payload = {
-        "benchmark": "layout-5pilot-reference-v2",
+        "benchmark": args.output_dir.name.rsplit("-", 1)[0],
         "reference_file": str(args.references),
         "iou_threshold": args.iou,
         "candidate_order": sorted(candidates, key=lambda name: candidates[name]["priority_macro_f1"], reverse=True),
         "candidate_metadata": candidate_metadata,
+        "expansion_gate": {
+            "criterion": "best five-pilot macro-F1 over table/text/title > 85%",
+            "best_macro_f1": best_macro,
+            "passed": best_macro > 0.85,
+            "decision": "run_next_5_page_batch" if best_macro > 0.85 else "continue_diagnosis_without_expanding",
+        },
         "candidates": candidates,
     }
     (args.output_dir / "evaluation.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    lines = ["# Layout detector comparison — reviewed 5-pilot reference v2", "",
+    lines = [f"# Layout detector comparison — {payload['benchmark']}", "",
              "Same five source pages, saved detector outputs, and IoU 0.50. No post-processing or heuristic was applied.", "",
              "Primary score is macro-F1 over table, text, and title; micro precision/recall/F1 are shown alongside per-class scores. Figure and page-furniture scores and unmatched predictions are reported separately.", "",
              "| Candidate | Priority macro-F1 | Priority micro P/R/F1 | Table F1 | Text F1 | Title F1 | Priority FP | Figure/page-furniture FP | Other |",
@@ -153,6 +186,18 @@ def main() -> None:
         primary_fp = sum(fp.get(label, 0) for label in PRIORITY)
         secondary_fp = sum(fp.get(label, 0) for label in SECONDARY)
         lines.append(f"| {name} | {result['priority_macro_f1']:.1%} | {micro['precision']:.1%}/{micro['recall']:.1%}/{micro['f1']:.1%} | {cls['table']['f1']:.1%} | {cls['text']['f1']:.1%} | {cls['title']['f1']:.1%} | {primary_fp} | {secondary_fp} | {result['unclassified_other_count']} |")
+    lines += ["", "## Localization vs label diagnosis", "", "Diagnostic only: one-to-one box matching across table/text/title regardless of class, at the same IoU. Cross-label pairs indicate localization that succeeded but classification disagreed; these do not count as true positives in the benchmark score.", "", "| Candidate | Localization matches / references | Localization precision / recall | Cross-label pairs |", "|---|---:|---:|---:|"]
+    for name in payload["candidate_order"]:
+        diag = candidates[name]["priority_localization_only"]
+        confusions = ", ".join(f"{k}: {v}" for k, v in sorted(diag["cross_label_matches"].items())) or "none"
+        lines.append(f"| {name} | {diag['tp']} / {diag['reference']} | {diag['precision']:.1%} / {diag['recall']:.1%} | {confusions} |")
+    best_name = payload["candidate_order"][0]
+    best = candidates[best_name]
+    best_diag = best["priority_localization_only"]
+    lines += ["", "## Findings and 5-page expansion gate", "",
+              f"Best priority macro-F1 is **{best['priority_macro_f1']:.1%}** (`{best_name}`), below the **85%** gate; the next five-page batch is therefore not opened.",
+              f"For `{best_name}`, label-agnostic matching localizes {best_diag['tp']}/{best_diag['reference']} priority regions, while label-aware scoring accepts fewer. Cross-label pairs: {', '.join(f'{k} {v}' for k, v in sorted(best_diag['cross_label_matches'].items())) or 'none'}. Its table F1 is {best['per_class']['table']['f1']:.1%}, but it emits {best['false_positive_counts'].get('text', 0)} unmatched text boxes.",
+              "The audited boxes show the main remaining errors are title regions classified as text and surplus text regions on table contents/marginal clutter. The p24 reference was tightened to visible text extents; labels and IoU threshold remained fixed."]
     lines += ["", "## Per-class counts", "", "TP / predictions / references; unmatched detector boxes are false positives.", ""]
     for name in payload["candidate_order"]:
         source_meta = candidate_metadata[name]

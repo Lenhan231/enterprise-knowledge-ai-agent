@@ -1,3 +1,14 @@
+## 2026-10-30 - Desktop checkpoint
+
+Read **docs/handoff/desktop-20261030.vi.md** first. User authorized pushing this
+documentation checkpoint to Huy for pulling on Desktop. It includes the Review 2
+comparison, codebase/Docker diagrams, row-group illustration and two Review 2
+XLSX files. Huy fast-forwarded to a512feb without conflicts before this commit.
+Main remote-tracking is now 6fbfdf6; diagrams/report describe the previously
+audited 169ea59, not the unreviewed newer code. User confirms VPS deployed/hosted;
+live revision and end-to-end behavior have not been verified here. No new tests,
+benchmarks, model downloads or production changes in this documentation checkpoint.
+
 ## 2026-10-29 - Chunking worker on main; Contabo 12 GB VPS; next ingestion handoff
 
 Read **docs/handoff/chunking-worker-20261029.vi.md** first. This checkpoint is

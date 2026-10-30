@@ -35,10 +35,10 @@ metrics:
     name: "Stock on hand"
     description: "Closing stock across observed products within one snapshot."
     aliases:
-      en: ["stock on hand","inventory level","inventory levels","inventory stock"]
+      en: ["stock on hand","inventory level","inventory levels","inventory stock","historical inventory","inventory history","product inventory history"]
       vi: ["tồn kho","lượng tồn kho","số lượng tồn"]
     source_columns:
-      commerce.inventory: ["snapshot_date","product_id","stock_on_hand"]
+      commerce.inventory: ["snapshot_date","product_id","year","month","stock_on_hand"]
       commerce.products: [product_id, product_name, category, segment, size, color]
     formula: "SUM(stock_on_hand)"
     scalar_formula: stock_on_hand
@@ -52,10 +52,10 @@ metrics:
     name: "Mean stored fill rate"
     description: "Team-defined unweighted mean of non-null stored product fill-rate values within one snapshot; original fulfillment formula and weights are unknown."
     aliases:
-      en: ["fill rate","fill rates","average fill rate","average fill rates","mean fill rate"]
+      en: ["fill rate","fill rates","average fill rate","average fill rates","mean fill rate","average stored fill rate","average stored fill rates","mean stored fill rate"]
       vi: ["tỷ lệ đáp ứng","tỷ lệ đáp ứng trung bình"]
     source_columns:
-      commerce.inventory: ["snapshot_date","product_id","fill_rate"]
+      commerce.inventory: ["snapshot_date","product_id","year","month","fill_rate"]
       commerce.products: [product_id, product_name, category, segment, size, color]
     formula: "AVG(fill_rate)"
     aggregation: mean
@@ -71,7 +71,7 @@ metrics:
       en: ["stored fill rate","stored fill rates","product fill rate","product fill rates"]
       vi: ["tỷ lệ đáp ứng từng sản phẩm","tỷ lệ đáp ứng được lưu"]
     source_columns:
-      commerce.inventory: ["snapshot_date","product_id","fill_rate"]
+      commerce.inventory: ["snapshot_date","product_id","year","month","fill_rate"]
       commerce.products: [product_id, product_name, category, segment, size, color]
     formula: "fill_rate"
     aggregation: value
@@ -87,9 +87,9 @@ metrics:
       en: ["stockout rate","stockout rates","stockout share"]
       vi: ["tỷ lệ hết hàng","tỷ lệ thiếu hàng"]
     source_columns:
-      commerce.inventory: ["snapshot_date","product_id","stockout_flag"]
+      commerce.inventory: ["snapshot_date","product_id","year","month","stockout_flag"]
       commerce.products: [product_id, product_name, category, segment, size, color]
-    formula: "COUNT(*) FILTER (WHERE stockout_flag IS TRUE)::numeric / NULLIF(COUNT(*), 0)"
+    formula: "COUNT(product_id) FILTER (WHERE stockout_flag IS TRUE)::numeric / NULLIF(COUNT(product_id), 0)"
     aggregation: ratio
     unit: percent
     examples:
@@ -103,7 +103,7 @@ metrics:
       en: ["stockout days","days out of stock"]
       vi: ["số ngày hết hàng","ngày thiếu hàng"]
     source_columns:
-      commerce.inventory: ["snapshot_date","product_id","stockout_days"]
+      commerce.inventory: ["snapshot_date","product_id","year","month","stockout_days"]
       commerce.products: [product_id, product_name, category, segment, size, color]
     formula: "SUM(stockout_days)"
     scalar_formula: stockout_days
@@ -120,7 +120,7 @@ metrics:
       en: ["days of supply","inventory coverage days"]
       vi: ["số ngày đủ hàng","số ngày cung ứng"]
     source_columns:
-      commerce.inventory: ["snapshot_date","product_id","days_of_supply"]
+      commerce.inventory: ["snapshot_date","product_id","year","month","days_of_supply"]
       commerce.products: [product_id, product_name, category, segment, size, color]
     formula: "AVG(days_of_supply)"
     scalar_formula: days_of_supply
@@ -137,7 +137,7 @@ metrics:
       en: ["sell-through rate","sell-through rates","sell through rate","sell through rates"]
       vi: ["tỷ lệ bán hết","tỷ lệ tiêu thụ tồn kho"]
     source_columns:
-      commerce.inventory: ["snapshot_date","product_id","sell_through_rate"]
+      commerce.inventory: ["snapshot_date","product_id","year","month","sell_through_rate"]
       commerce.products: [product_id, product_name, category, segment, size, color]
     formula: "AVG(sell_through_rate)"
     scalar_formula: sell_through_rate
@@ -151,10 +151,10 @@ metrics:
     name: "Inventory receipt movement units"
     description: "Recorded receipt movement across observed products for the selected monthly snapshot; not PO or receiving-event counts."
     aliases:
-      en: ["units received","inventory receipts","received units"]
+      en: ["units received","units were received","inventory receipts","received units"]
       vi: ["số lượng hàng nhập kho","lượng hàng nhận","số lượng nhập kho"]
     source_columns:
-      commerce.inventory: ["snapshot_date","product_id","units_received"]
+      commerce.inventory: ["snapshot_date","product_id","year","month","units_received"]
       commerce.products: [product_id, product_name, category, segment, size, color]
     formula: "SUM(units_received)"
     scalar_formula: units_received
@@ -171,7 +171,7 @@ metrics:
       en: ["inventory units sold","inventory sales movement","inventory units"]
       vi: ["số lượng bán theo tồn kho","lượng xuất bán tồn kho"]
     source_columns:
-      commerce.inventory: ["snapshot_date","product_id","units_sold"]
+      commerce.inventory: ["snapshot_date","product_id","year","month","units_sold"]
       commerce.products: [product_id, product_name, category, segment, size, color]
     formula: "SUM(units_sold)"
     scalar_formula: units_sold
@@ -188,9 +188,9 @@ metrics:
       en: ["overstock rate","overstock share","overstock indicators"]
       vi: ["tỷ lệ dư thừa tồn kho","tỷ lệ tồn kho dư"]
     source_columns:
-      commerce.inventory: ["snapshot_date","product_id","overstock_flag"]
+      commerce.inventory: ["snapshot_date","product_id","year","month","overstock_flag"]
       commerce.products: [product_id, product_name, category, segment, size, color]
-    formula: "COUNT(*) FILTER (WHERE overstock_flag IS TRUE)::numeric / NULLIF(COUNT(*), 0)"
+    formula: "COUNT(product_id) FILTER (WHERE overstock_flag IS TRUE)::numeric / NULLIF(COUNT(product_id), 0)"
     aggregation: ratio
     unit: percent
     examples:
@@ -204,9 +204,9 @@ metrics:
       en: ["reorder rate","reorder share","reorder indicators"]
       vi: ["tỷ lệ cờ đặt hàng lại","tỷ lệ cảnh báo bổ sung"]
     source_columns:
-      commerce.inventory: ["snapshot_date","product_id","reorder_flag"]
+      commerce.inventory: ["snapshot_date","product_id","year","month","reorder_flag"]
       commerce.products: [product_id, product_name, category, segment, size, color]
-    formula: "COUNT(*) FILTER (WHERE reorder_flag IS TRUE)::numeric / NULLIF(COUNT(*), 0)"
+    formula: "COUNT(product_id) FILTER (WHERE reorder_flag IS TRUE)::numeric / NULLIF(COUNT(product_id), 0)"
     aggregation: ratio
     unit: percent
     examples:
@@ -220,7 +220,7 @@ metrics:
       en: ["stockout flag","stockout flags","stockout indicator"]
       vi: ["cờ hết hàng","cờ thiếu hàng"]
     source_columns:
-      commerce.inventory: ["snapshot_date","product_id","stockout_flag"]
+      commerce.inventory: ["snapshot_date","product_id","year","month","stockout_flag"]
       commerce.products: [product_id, product_name, category, segment, size, color]
     formula: "stockout_flag"
     aggregation: value
@@ -236,7 +236,7 @@ metrics:
       en: ["overstock flag","overstock flags","overstock indicator"]
       vi: ["cờ tồn kho dư","cờ dư thừa"]
     source_columns:
-      commerce.inventory: ["snapshot_date","product_id","overstock_flag"]
+      commerce.inventory: ["snapshot_date","product_id","year","month","overstock_flag"]
       commerce.products: [product_id, product_name, category, segment, size, color]
     formula: "overstock_flag"
     aggregation: value
@@ -252,7 +252,7 @@ metrics:
       en: ["reorder flag","reorder flags","reorder indicator"]
       vi: ["cờ đặt hàng lại","cờ bổ sung hàng"]
     source_columns:
-      commerce.inventory: ["snapshot_date","product_id","reorder_flag"]
+      commerce.inventory: ["snapshot_date","product_id","year","month","reorder_flag"]
       commerce.products: [product_id, product_name, category, segment, size, color]
     formula: "reorder_flag"
     aggregation: value
@@ -300,7 +300,7 @@ metrics:
     name: "Operational reorder quantity"
     description: "Operational reorder quantities need approved demand, lead time, safety stock, open POs, backorders and ordering constraints. Stored historical flags do not define a safe quantity."
     aliases:
-      en: ["reorder quantity","reorder quantities","how much to reorder","reorder priorities"]
+      en: ["reorder quantity","reorder quantities","how much to reorder","reorder priorities","quantity should we reorder","how much should we reorder"]
       vi: ["số lượng cần đặt hàng","ưu tiên đặt hàng lại"]
     source_columns:
       commerce.inventory: [snapshot_date, product_id]

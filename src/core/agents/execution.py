@@ -193,7 +193,9 @@ class Execution:
             usable = result is not None and status in {'complete', 'partial'}
             tasks[task.id] = {'agent': task.agent, 'status': status,
                 'rows': result.data.get('rows', []) if usable and task.agent == 'sql' else [],
-                'sources': [item.source for item in result.evidence] if usable else []}
+                'sources': [item.source for item in result.evidence] if usable else [],
+                'metrics': result.metadata.get('metrics', {}) if usable else {},
+                'limitations': result.metadata.get('limitations', []) if usable else []}
             if result:
                 limitations.extend(result.metadata.get('limitations', []))
                 if status == 'clarification_required':

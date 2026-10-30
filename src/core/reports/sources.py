@@ -56,7 +56,8 @@ async def collect_sources(request, headings, source_mode, knowledge, analytics, 
                 if selected:
                     sql_evidence.append(Evidence(source_type='database', source='Validated analytics rows',
                         content=json.dumps(selected, ensure_ascii=False, default=str),
-                        metadata={'sources': group.get('sources', []), 'task_id': task_id}))
+                        metadata={'sources': group.get('sources', []), 'task_id': task_id,
+                                  'metrics': group.get('metrics', {}), 'limitations': group.get('limitations', [])}))
             if row_count > included_rows:
                 limitations.append('Analytics rows were limited to the first 100 returned rows.')
         except (PermissionError, ReportClarificationRequired):
@@ -78,7 +79,9 @@ async def collect_sources(request, headings, source_mode, knowledge, analytics, 
             if rows:
                 sql_evidence = [Evidence(source_type="database", source="Validated analytics rows",
                     content=json.dumps(rows[:100], ensure_ascii=False, default=str),
-                    metadata={"sources": [item.source for item in result.evidence]})]
+                    metadata={"sources": [item.source for item in result.evidence],
+                              "metrics": result.metadata.get('metrics', {}),
+                              "limitations": result.metadata.get('limitations', [])})]
             if row_count > included_rows:
                 limitations.append("Analytics rows were limited to the first 100 returned rows.")
         except (PermissionError, ReportClarificationRequired):
@@ -140,5 +143,12 @@ async def collect_sources(request, headings, source_mode, knowledge, analytics, 
 
 
 def serialize_context(evidence):
-    return json.dumps([{"id": item.citation_id, "source": item.source, "content": item.content}
-                       for item in evidence], ensure_ascii=False, default=str)
+    records = []
+    for item in evidence:
+        record = {"id": item.citation_id, "source": item.source, "content": item.content}
+        metrics = {name: definition for name, definition in item.metadata.get('metrics', {}).items()
+                   if definition.get('domain') == 'inventory_management'}
+        if metrics:
+            record.update(metric_definitions=metrics, limitations=item.metadata.get('limitations', []))
+        records.append(record)
+    return json.dumps(records, ensure_ascii=False, default=str)

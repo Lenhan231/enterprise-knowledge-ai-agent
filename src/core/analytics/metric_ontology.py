@@ -27,7 +27,7 @@ class InventoryMetric(BaseModel):
     version: Literal["1.0.0"]
     domain: Literal["inventory_management"]
     aliases: dict[str, list[str]]
-    source: str
+    source: Literal['commerce.inventory + commerce.products']
     source_columns: dict[str, list[str]]
     formula: str | None
     scalar_formula: str | None = None
@@ -59,6 +59,10 @@ class InventoryMetric(BaseModel):
             raise ValueError("English and Vietnamese aliases/examples are required")
         if not self.evidence or not self.source_columns or not self.dimensions:
             raise ValueError("Evidence, source columns and dimensions are required")
+        if not set(self.source_columns) <= {'commerce.inventory', 'commerce.products'}:
+            raise ValueError('Inventory definitions cannot introduce unrelated source tables')
+        if any(not alias.strip() for values in self.aliases.values() for alias in values):
+            raise ValueError('Aliases cannot be empty')
         if self.definition_status == "executable" and (not self.formula or self.provenance == "unresolved"):
             raise ValueError("Executable definitions require a resolved formula")
         if self.definition_status == "unresolved" and (self.formula is not None or not self.clarification):
@@ -68,8 +72,10 @@ class InventoryMetric(BaseModel):
 
 def load_inventory_catalog(path=CATALOG_PATH):
     catalog = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    if catalog.get("catalog_version") != "1.0.0" or catalog.get("domain") != "inventory_management":
+    if not isinstance(catalog, dict) or catalog.get("catalog_version") != "1.0.0" or catalog.get("domain") != "inventory_management":
         raise ValueError("Unsupported inventory catalog version or domain")
+    if set(catalog) != {'catalog_version', 'domain', 'defaults', 'metrics'} or not isinstance(catalog['metrics'], list):
+        raise ValueError('Invalid inventory catalog structure')
     metrics = {}
     for entry in catalog["metrics"]:
         definition = InventoryMetric.model_validate(entry).model_dump(exclude_none=True)
@@ -239,9 +245,9 @@ def resolve_metric_names(text: str) -> set[str]:
             continue
         selected.append((start, end, metric_name))
     names = {metric_name for _, _, metric_name in selected}
-    if "stock_on_hand" in names and len(names) > 1 and not re.search(r"stock on hand|inventory levels?|l??ng t?n kho", normalized):
+    if "stock_on_hand" in names and len(names) > 1 and not re.search(r"stock on hand|inventory levels?|l\u01b0\u1ee3ng t\u1ed3n kho", normalized):
         names.remove("stock_on_hand")
-    if "fill_rate" in names and re.search(r"lowest|highest|worst|best|th?p nh?t|cao nh?t|t?ng s?n ph?m", normalized) and not re.search(r"average|mean|trung b?nh", normalized):
+    if "fill_rate" in names and re.search(r"lowest|highest|worst|best|th\u1ea5p nh\u1ea5t|cao nh\u1ea5t|t\u1eebng s\u1ea3n ph\u1ea9m", normalized) and not re.search(r"average|mean|trung b\u00ecnh", normalized):
         names.remove("fill_rate")
         names.add("stored_fill_rate")
     return names

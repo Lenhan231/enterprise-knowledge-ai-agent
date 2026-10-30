@@ -42,7 +42,7 @@ def eligible_cte(
     document_ids: list[str] | None = None,
     metadata_filter: dict[str, Any] | None = None,
 ) -> tuple[str, list[Any]]:
-    """Build the common ready-document and ACL filter before any ranking limit."""
+    """Filter active, ready documents with a nonempty ACL before ranking limits."""
     parameters: list[Any] = []
     vector_fields = ""
     if include_vector:
@@ -79,7 +79,9 @@ def eligible_cte(
                    {lexical_field}
             FROM document_chunks AS c
             JOIN documents AS d ON d.document_id = c.metadata->>'document_id'
-            WHERE coalesce(d.processing_status, 'ready') = 'ready' {filters}
+            WHERE d.processing_status = 'ready'
+              AND d.knowledge_base_active IS TRUE
+              AND cardinality(d.allowed_roles) > 0 {filters}
         )
     """
     return cte, parameters

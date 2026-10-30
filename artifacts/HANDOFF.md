@@ -1,3 +1,30 @@
+## 2026-10-30 - Main merged into Huy; retrieval eligibility fix
+
+User explicitly requested working on Huy rather than a new task branch. Local
+report/audit was checkpointed at 68960dd. Main beac2f3 was merged into Huy at
+f17b195 after resolving 65 conflict paths in a detached temporary worktree.
+Current runtime/dependencies/tests were taken from main; Huy's frozen datasets,
+Review 2 evidence and report notes were retained. Historical source/tests remain
+in git at 68960dd. See docs/handoff/huy-main-merge-20261030.vi.md.
+
+Then implemented the first scoped RBAC fix on Huy: candidate SQL and parent
+expansion require active=true, status=ready and a nonempty document ACL. NULL
+eligibility fields fail closed. Existing admin access to nonempty ACLs is kept;
+admin cannot bypass empty ACL, disabled or unready states. Parent retrieval no
+longer restores old anchor content when expansion rejects it. Internal roles=None
+semantics and protected admin chunk inspection are unchanged, so this is not
+complete RBAC. API empty-ACL revocation, tenant scope, conversation revocation,
+cross-agent acceptance and final response behavior remain separate tasks.
+
+41 selected unit checks and 5 isolated real PostgreSQL checks passed. The same
+PostgreSQL suite fails on original main as expected. Evidence and source hashes:
+artifacts/evaluation/rbac-access-20261030/validation.json. No model downloads or
+inference, Supabase writes, VPS access, Docker build or full-suite run. Test-only
+PostgreSQL binaries were extracted under /tmp; no system package installation,
+TCP listener or production database was used. Temporary server was stopped.
+Technical policy: docs/technical/document-retrieval-access.md. No remote push
+performed in this task; read git log for the resulting local commit IDs.
+
 ## 2026-10-30 - New main audit, Huy RBAC ownership, group report draft
 
 Read **docs/handoff/main-rbac-report-20261030.vi.md**. Fetched main at beac2f3;

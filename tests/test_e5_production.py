@@ -50,10 +50,12 @@ class E5ProductionTest(unittest.TestCase):
         sql, params = eligible_cte([0.1] * 768, "question 2022", "Company", ["employee"],
             include_vector=True, include_lexical=True, document_ids=["DOC"], metadata_filter={"domain": "test"})
         self.assertIn("FROM document_chunks AS c", sql)
-        self.assertIn("d.year_or_version = %s", sql)
+        self.assertIn("c.metadata->>'fiscal_year' = %s", sql)
         self.assertNotIn("d.fiscal_year", sql)
         self.assertEqual(params[2:4], ["2022", "2022"])
-        for clause in ["d.company = %s::text", "d.allowed_roles && %s::text[]",
+        for clause in ["c.metadata->>'company' = %s::text", "d.allowed_roles && %s::text[]",
+                       "d.processing_status = 'ready'", "d.knowledge_base_active IS TRUE",
+                       "cardinality(d.allowed_roles) > 0",
                        "d.document_id = ANY(%s::text[])", "c.metadata @> %s::jsonb"]:
             self.assertIn(clause, sql)
 

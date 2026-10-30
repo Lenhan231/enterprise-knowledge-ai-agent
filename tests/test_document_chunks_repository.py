@@ -83,10 +83,10 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
         self.assertIn("SELECT e.document_name, e.chunk_index, e.content, e.metadata,", normalized)
         self.assertIn("JOIN documents AS d ON d.document_id = c.metadata->>'document_id'", normalized)
         self.assertIn("jsonb_build_object('document_type', d.document_type)", normalized)
-        self.assertIn("coalesce(d.processing_status, 'ready') = 'ready'", normalized)
-        self.assertIn("d.fiscal_year = %s", normalized)
-        self.assertIn("coalesce(%s::text IS NOT NULL AND d.fiscal_year = %s, false)", normalized)
-        self.assertNotIn("c.metadata->>'fiscal_year'", normalized)
+        self.assertIn("d.processing_status = 'ready'", normalized)
+        self.assertIn("d.knowledge_base_active IS TRUE", normalized)
+        self.assertIn("cardinality(d.allowed_roles) > 0", normalized)
+        self.assertIn("coalesce(%s::text IS NOT NULL AND c.metadata->>'fiscal_year' = %s, false)", normalized)
         self.assertIn("vector_candidates AS", normalized)
         self.assertIn("bm25_candidates AS", normalized)
         self.assertIn("unnest(to_tsvector('simple', %s))", normalized)
@@ -208,9 +208,19 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
         self.assertIn("c.metadata->>'section_title' IS NOT DISTINCT FROM a.section_title", normalized)
         self.assertIn("c.metadata->>'page_number' IS NOT DISTINCT FROM a.page_number", normalized)
         self.assertIn("d.allowed_roles && %s::text[]", normalized)
-        self.assertIn("coalesce(d.processing_status, 'ready') = 'ready'", normalized)
+        self.assertIn("d.processing_status = 'ready'", normalized)
+        self.assertIn("d.knowledge_base_active IS TRUE", normalized)
+        self.assertIn("cardinality(d.allowed_roles) > 0", normalized)
         self.assertEqual(parameters[1:3], [2, 2])
         self.assertEqual(parameters[3:], ["Vinamilk", ["finance_analyst"], ["finance_analyst"]])
+
+    def test_parent_expansion_does_not_restore_an_anchor_rejected_by_the_database(self):
+        self.cursor.fetchall.return_value = []
+        anchor = RetrievedChunk(
+            document_name="policy.pdf", chunk_index=0, content="Previously visible evidence",
+            metadata={"document_id": "DOC-1"}, retrieval_score=0.9,
+        )
+        self.assertEqual(self.repository.expand_parent_contexts([anchor], roles=["employee"]), {})
 
     def test_invalid_row_is_not_silently_skipped(self):
         self.cursor.fetchall.return_value = [

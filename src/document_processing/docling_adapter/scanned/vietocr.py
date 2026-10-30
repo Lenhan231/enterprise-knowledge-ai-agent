@@ -6,6 +6,7 @@ from collections.abc import Iterable
 import re
 import subprocess
 import tempfile
+import unicodedata
 from pathlib import Path
 from typing import ClassVar, Type
 
@@ -88,6 +89,46 @@ class VietOcrModel(BaseOcrModel):
         confidence_value = float(confidence.group(1)) if confidence else None
         return correction, orientation_degrees, confidence_value
 
+    @staticmethod
+    def _cell_bbox(cell: TextCell) -> tuple[float, float, float, float]:
+        rect = cell.rect
+        xs = (rect.r_x0, rect.r_x1, rect.r_x2, rect.r_x3)
+        ys = (rect.r_y0, rect.r_y1, rect.r_y2, rect.r_y3)
+        return min(xs), min(ys), max(xs), max(ys)
+
+    @classmethod
+    def _deduplicate_overlapping_cells(
+        cls,
+        cells: list[TextCell],
+        region_indices: list[int],
+        iou_threshold: float = 0.6,
+    ) -> list[TextCell]:
+        """Drop exact repeated OCR lines from overlapping Docling text regions."""
+        kept: list[TextCell] = []
+        kept_regions: list[int] = []
+        for cell, region_index in zip(cells, region_indices):
+            text = re.sub(r"\s+", " ", unicodedata.normalize("NFC", cell.text).casefold()).strip()
+            box = cls._cell_bbox(cell)
+            duplicate = False
+            for previous, previous_region in zip(kept, kept_regions):
+                if region_index == previous_region or text != re.sub(
+                    r"\s+", " ", unicodedata.normalize("NFC", previous.text).casefold()
+                ).strip():
+                    continue
+                previous_box = cls._cell_bbox(previous)
+                left, top = max(box[0], previous_box[0]), max(box[1], previous_box[1])
+                right, bottom = min(box[2], previous_box[2]), min(box[3], previous_box[3])
+                intersection = max(0.0, right - left) * max(0.0, bottom - top)
+                area = lambda value: max(0.0, value[2] - value[0]) * max(0.0, value[3] - value[1])
+                union = area(box) + area(previous_box) - intersection
+                if union and intersection / union >= iou_threshold:
+                    duplicate = True
+                    break
+            if not duplicate:
+                kept.append(cell)
+                kept_regions.append(region_index)
+        return kept
+
     @classmethod
     def get_options_type(cls) -> Type[OcrOptions]:
         return VietOcrOptions
@@ -116,6 +157,7 @@ class VietOcrModel(BaseOcrModel):
                     flush=True,
                 )
                 cells: list[TextCell] = []
+                cell_region_indices: list[int] = []
                 for ocr_rect in ocr_rects:
                     if ocr_rect.area() == 0:
                         continue
@@ -175,6 +217,8 @@ class VietOcrModel(BaseOcrModel):
                                 ),
                             )
                         )
+                        cell_region_indices.append(region_index)
+                cells = self._deduplicate_overlapping_cells(cells, cell_region_indices)
                 self.post_process_cells(cells, page, conv_res)
             yield page
 

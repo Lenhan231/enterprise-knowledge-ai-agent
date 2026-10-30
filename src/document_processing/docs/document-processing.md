@@ -37,12 +37,25 @@ identifies the component that produced the element or table.
 
 Docling handles supported PDF, Office, CSV, TXT, Markdown, and image inputs.
 
-Production PDF/image parsing uses the shared benchmark profile: CPU, 1.0 image
-scale, Heron layout detection, Tesseract OCR (`vie+eng`, PSM 6 by default), and
-TableFormer Accurate with cell matching. Production defaults to two CPU threads;
-callers such as Upload Test may override the device, OCR language, table stage,
-and thread count. Page-orientation diagnostics are benchmark-only; production
-does not automatically rotate source pages.
+The production container uses CPU, 1.0 image scale, Heron layout detection at
+score threshold 0.40, RapidOCR text-line detection, VietOCR `vgg_seq2seq`
+recognition (greedy, maximum width 512), and TableFormer Accurate with cell
+matching. Tesseract OSD checks each OCR crop's orientation; Tesseract OCR can be
+selected with `DOCUMENT_PROCESSING_OCR_ENGINE=tesseract`. Production defaults to
+two CPU threads; callers such as Upload Test may override the device, OCR
+engine, table stage, and thread count. Page-level auto-rotation from the
+benchmark harness is not yet applied in production; source-page geometry would
+need a rotation mapping.
+
+OCR post-processing drops exact normalized duplicate lines from overlapping
+OCR regions at bbox IoU 0.60. It removes only clear non-table artifacts such as
+long separator strings, isolated symbols, low-quality OCR on repeated edge
+marks, or non-text OCR in likely seals/signatures. Suspicious text is reread
+with the alternate OCR engine and replaced only when the alternate is clearly
+better; uncertain text is retained and reported in parser metadata. For scanned
+tables, a source-image check can restore a dash in an otherwise empty 1×1 cell.
+These heuristics are conservative and based on the reviewed pilot pages; they
+are not a general handwriting or decoration classifier.
 
 PDFs with at least 100 non-whitespace native text characters on every page are
 classified as digital-born and bypass OCR. Other PDFs use the configured OCR

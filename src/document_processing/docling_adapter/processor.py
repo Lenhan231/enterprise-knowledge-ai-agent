@@ -40,6 +40,7 @@ class DoclingProcessor:
                 TableStructureOptions,
                 TesseractCliOcrOptions,
             )
+            from docling.datamodel.object_detection_engine_options import TransformersObjectDetectionEngineOptions
             from docling.datamodel.stage_model_specs import ObjectDetectionModelSpec
             from docling.document_converter import DocumentConverter, ImageFormatOption, PdfFormatOption
             from docling.datamodel.document import PictureItem, TableItem
@@ -111,6 +112,7 @@ class DoclingProcessor:
             ),
             images_scale=1.0,
             layout_options=LayoutObjectDetectionOptions(
+                engine_options=TransformersObjectDetectionEngineOptions(score_threshold=0.4),
                 model_spec=ObjectDetectionModelSpec(
                     name="layout_heron",
                     repo_id="docling-project/docling-layout-heron",
@@ -205,3 +207,4 @@ class DoclingProcessor:
             mapped["page_previews"] = page_previews
             mapped["page_sizes"] = page_sizes
         return mapped
+

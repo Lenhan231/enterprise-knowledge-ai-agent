@@ -8,6 +8,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from document_processing.docling_adapter.result_mapper import _get_page_image
 from document_processing.docling_adapter.scanned.postprocessing import (
     clean_ocr_elements,
     recover_empty_cell_dashes,
@@ -57,6 +58,23 @@ class VietOcrPostprocessingTest(unittest.TestCase):
         self.assertEqual(recovered, [[1, 1]])
         self.assertEqual(grid[1][1], "-")
 
+
+
+    def test_page_image_loader_uses_preview_when_get_image_is_unavailable(self):
+        from PIL import Image
+
+        pil_image = Image.new("RGB", (4, 3), color=(255, 0, 0))
+        page = SimpleNamespace(
+            image=SimpleNamespace(pil_image=pil_image),
+            get_image=lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("no rendered image")),
+        )
+        cache = {}
+
+        image = _get_page_image(page, cache, 1)
+
+        self.assertEqual(image.shape, (3, 4, 3))
+        self.assertEqual(image[0, 0].tolist(), [0, 0, 255])
+        self.assertIs(cache[1], image)
 
     def test_repeated_word_ocr_is_removed_only_inside_detected_edge_strip(self):
         image = np.full((100, 100, 3), 255, dtype=np.uint8)

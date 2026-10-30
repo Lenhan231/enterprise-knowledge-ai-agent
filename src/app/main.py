@@ -748,7 +748,7 @@ def inspect_extracted_tables(
     store = StructuredDataStore()
     try:
         tables = store.get_document_tables(
-            document_id, table_offset=table_offset,
+            document_id, company=CORPUS_COMPANY, table_offset=table_offset,
             table_limit=table_limit, row_offset=row_offset, row_limit=row_limit,
         )
         if not tables:

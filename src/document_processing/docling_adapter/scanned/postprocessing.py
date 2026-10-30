@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+from collections import Counter
 import tempfile
 
 import cv2
@@ -22,6 +23,14 @@ def _quality(text: str) -> float:
     alphanumeric = sum(char.isalnum() for char in visible) / max(1, len(visible))
     words = sum(len(token) >= 2 for token in tokens) / max(1, len(tokens))
     return 0.6 * alphanumeric + 0.4 * words
+
+
+def _repetitive_text(text: str) -> bool:
+    tokens = [token.casefold() for token in re.findall(r"[^\W_]+", text, flags=re.UNICODE)]
+    if len(tokens) < 6:
+        return False
+    most_common_count = Counter(tokens).most_common(1)[0][1]
+    return most_common_count / len(tokens) >= 0.4
 
 
 def _protected_token(text: str) -> bool:
@@ -169,7 +178,11 @@ def clean_ocr_elements(
             not in_table and "".join(visible) in {".", ":", "'", "`", "~", "¬", "|", "\\"}
             and width * (norm[3] - norm[1]) <= 0.0002
         )
-        edge_noise = not in_table and in_edge_strip and quality < 0.78 and not _protected_token(text)
+        edge_noise = (
+            not in_table and in_edge_strip
+            and (quality < 0.78 or _repetitive_text(text))
+            and not _protected_token(text)
+        )
         figure_noise = in_signature and not _protected_token(text) and not (
             any(len(token) >= 2 for token in tokens) and quality >= 0.68 and punctuation_ratio < 0.4
         )

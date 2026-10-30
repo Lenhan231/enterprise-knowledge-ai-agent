@@ -9,6 +9,81 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from pathlib import Path
+from typing import Literal
+
+import yaml
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+
+CATALOG_PATH = Path(__file__).resolve().parents[3] / "data/semantic/vietstyle_metrics_v1.yaml"
+
+
+class InventoryMetric(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    name: str
+    description: str
+    version: Literal["1.0.0"]
+    domain: Literal["inventory_management"]
+    aliases: dict[str, list[str]]
+    source: str
+    source_columns: dict[str, list[str]]
+    formula: str | None
+    scalar_formula: str | None = None
+    grain: Literal["product_snapshot"]
+    dimensions: list[str]
+    date_field: Literal["commerce.inventory.snapshot_date"]
+    temporal_semantics: str
+    aggregation: str
+    unit: str
+    eligibility_filters: list[str]
+    null_handling: str
+    zero_denominator: str
+    join_requirements: list[str]
+    provenance: Literal["source_defined", "team_defined", "unresolved"]
+    definition_status: Literal["executable", "unresolved", "draft"]
+    approval_status: Literal["team_accepted", "business_approved", "unreviewed"]
+    business_approval_status: str
+    validation_status: str
+    currency: str
+    snapshot_required: bool
+    evidence: list[str]
+    limitations: list[str]
+    examples: dict[str, str]
+    clarification: str | None = None
+
+    @model_validator(mode="after")
+    def validate_definition(self):
+        if not all(self.aliases.get(language) and self.examples.get(language) for language in ("en", "vi")):
+            raise ValueError("English and Vietnamese aliases/examples are required")
+        if not self.evidence or not self.source_columns or not self.dimensions:
+            raise ValueError("Evidence, source columns and dimensions are required")
+        if self.definition_status == "executable" and (not self.formula or self.provenance == "unresolved"):
+            raise ValueError("Executable definitions require a resolved formula")
+        if self.definition_status == "unresolved" and (self.formula is not None or not self.clarification):
+            raise ValueError("Unresolved definitions cannot supply executable SQL")
+        return self
+
+
+def load_inventory_catalog(path=CATALOG_PATH):
+    catalog = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    if catalog.get("catalog_version") != "1.0.0" or catalog.get("domain") != "inventory_management":
+        raise ValueError("Unsupported inventory catalog version or domain")
+    metrics = {}
+    for entry in catalog["metrics"]:
+        definition = InventoryMetric.model_validate(entry).model_dump(exclude_none=True)
+        name = definition.pop("id")
+        if name in metrics:
+            raise ValueError(f"Duplicate metric ID: {name}")
+        definition["aliases_by_language"] = definition["aliases"]
+        definition["aliases"] = tuple(alias for values in definition["aliases"].values() for alias in values)
+        if definition["snapshot_required"] and definition.get("formula"):
+            definition["formula"] += " within one snapshot"
+        metrics[name] = definition
+    if not metrics:
+        raise ValueError("Inventory catalog cannot be empty")
+    return metrics
 
 
 METRIC_ONTOLOGY = {
@@ -122,53 +197,6 @@ METRIC_ONTOLOGY = {
         "unit": "days",
         "dimensions": ("ship_date", "region"),
     },
-    "stock_on_hand": {
-        "aliases": ("stock on hand", "inventory", "inventory level", "tồn kho", "lượng tồn kho"),
-        "source": "commerce.inventory",
-        "formula": "SUM(stock_on_hand) within one snapshot",
-        "grain": "product_snapshot",
-        "aggregation": "sum",
-        "unit": "units",
-        "dimensions": ("snapshot_date", "category", "segment", "product_id"),
-        "limitations": ("Không cộng stock_on_hand giữa các snapshot khác nhau.",),
-    },
-    "stockout_rate": {
-        "aliases": ("stockout rate", "stockout", "tỷ lệ hết hàng", "hết hàng"),
-        "source": "commerce.inventory",
-        "formula": "COUNT(*) FILTER (WHERE stockout_flag IS TRUE)::numeric / NULLIF(COUNT(*), 0)",
-        "grain": "product_snapshot",
-        "aggregation": "ratio",
-        "unit": "percent",
-        "dimensions": ("snapshot_date", "category", "segment"),
-        "limitations": ("Đo tỷ lệ SKU bị gắn cờ, không phải tỷ lệ product-days hết hàng.",),
-    },
-    "days_of_supply": {
-        "aliases": ("days of supply", "số ngày đủ hàng"),
-        "source": "commerce.inventory",
-        "formula": "AVG(days_of_supply) within one snapshot",
-        "grain": "product_snapshot",
-        "aggregation": "mean",
-        "unit": "days",
-        "dimensions": ("snapshot_date", "category", "segment"),
-    },
-    "fill_rate": {
-        "aliases": ("fill rate", "tỷ lệ đáp ứng"),
-        "source": "commerce.inventory",
-        "formula": "AVG(fill_rate) within one snapshot",
-        "grain": "product_snapshot",
-        "aggregation": "mean",
-        "unit": "percent",
-        "dimensions": ("snapshot_date", "category", "segment"),
-    },
-    "sell_through_rate": {
-        "aliases": ("sell-through rate", "sell through rate", "tỷ lệ bán hết"),
-        "source": "commerce.inventory",
-        "formula": "AVG(sell_through_rate) within one snapshot",
-        "grain": "product_snapshot",
-        "aggregation": "mean",
-        "unit": "percent",
-        "dimensions": ("snapshot_date", "category", "segment"),
-    },
     "promotion_discount": {
         "aliases": ("promotion discount", "discount", "khuyến mãi", "mức giảm giá"),
         "source": "commerce.order_items + commerce.promotions",
@@ -180,6 +208,8 @@ METRIC_ONTOLOGY = {
     },
 }
 
+
+METRIC_ONTOLOGY.update(load_inventory_catalog())
 
 def get_metric_definition(metric_name: str) -> dict:
     """Trả về định nghĩa chuẩn; báo lỗi rõ ràng với metric không được hỗ trợ."""
@@ -208,4 +238,10 @@ def resolve_metric_names(text: str) -> set[str]:
         if any(start < chosen_end and chosen_start < end for chosen_start, chosen_end, _ in selected):
             continue
         selected.append((start, end, metric_name))
-    return {metric_name for _, _, metric_name in selected}
+    names = {metric_name for _, _, metric_name in selected}
+    if "stock_on_hand" in names and len(names) > 1 and not re.search(r"stock on hand|inventory levels?|l??ng t?n kho", normalized):
+        names.remove("stock_on_hand")
+    if "fill_rate" in names and re.search(r"lowest|highest|worst|best|th?p nh?t|cao nh?t|t?ng s?n ph?m", normalized) and not re.search(r"average|mean|trung b?nh", normalized):
+        names.remove("fill_rate")
+        names.add("stored_fill_rate")
+    return names

@@ -93,7 +93,8 @@ def validate_metric_definitions(sql, metric_names, parameters, table_columns):
     if not metric_names:
         return {}
     definitions = {name: get_metric_definition(name) for name in sorted(metric_names)}
-    formulas = {name: _formula(definition, table_columns) for name, definition in METRIC_ONTOLOGY.items()}
+    formulas = {name: _formula(definition, table_columns) for name, definition in METRIC_ONTOLOGY.items()
+                if definition.get("formula")}
     scopes = list(traverse_scope(parse_one(sql, read="postgres")))
     root = scopes[-1]
     matched = set()

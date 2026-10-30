@@ -1,0 +1,392 @@
+# Inventory Management only. Team acceptance is not official business approval.
+catalog_version: 1.0.0
+domain: inventory_management
+defaults: &inventory
+  version: 1.0.0
+  domain: inventory_management
+  source: commerce.inventory + commerce.products
+  grain: product_snapshot
+  dimensions: [snapshot_date, product_id, product_name, category, segment, size, color, year, month]
+  date_field: commerce.inventory.snapshot_date
+  temporal_semantics: One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.
+  eligibility_filters: []
+  null_handling: Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.
+  zero_denominator: Return NULL using NULLIF; never substitute zero for an undefined ratio.
+  join_requirements: [inventory.product_id = products.product_id; many-to-one only]
+  provenance: team_defined
+  definition_status: executable
+  approval_status: team_accepted
+  business_approval_status: not_recorded
+  validation_status: data_profiled
+  currency: dataset_currency_unknown
+  snapshot_required: true
+  evidence:
+    - artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json
+    - 'VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections'
+    - User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded.
+  limitations:
+    - Historical monthly observations; every answer must state the selected snapshot date.
+    - Missing product snapshots are not zero inventory; denominators cover observed products only.
+    - No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.
+    - Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.
+metrics:
+  - <<: *inventory
+    id: stock_on_hand
+    name: "Stock on hand"
+    description: "Closing stock across observed products within one snapshot."
+    aliases:
+      en: ["stock on hand","inventory level","inventory levels","inventory stock"]
+      vi: ["tồn kho","lượng tồn kho","số lượng tồn"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id","stock_on_hand"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "SUM(stock_on_hand)"
+    scalar_formula: stock_on_hand
+    aggregation: sum
+    unit: units
+    examples:
+      en: "Show stock on hand at the latest available inventory snapshot."
+      vi: "Cho biết tồn kho tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: fill_rate
+    name: "Mean stored fill rate"
+    description: "Team-defined unweighted mean of non-null stored product fill-rate values within one snapshot; original fulfillment formula and weights are unknown."
+    aliases:
+      en: ["fill rate","fill rates","average fill rate","average fill rates","mean fill rate"]
+      vi: ["tỷ lệ đáp ứng","tỷ lệ đáp ứng trung bình"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id","fill_rate"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "AVG(fill_rate)"
+    aggregation: mean
+    unit: percent
+    examples:
+      en: "Show mean stored fill rate at the latest available inventory snapshot."
+      vi: "Cho biết tỷ lệ đáp ứng tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: stored_fill_rate
+    name: "Stored product fill rate"
+    description: "Recorded product-level value; do not infer its original formula or treat it as an aggregate fulfillment rate."
+    aliases:
+      en: ["stored fill rate","stored fill rates","product fill rate","product fill rates"]
+      vi: ["tỷ lệ đáp ứng từng sản phẩm","tỷ lệ đáp ứng được lưu"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id","fill_rate"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "fill_rate"
+    aggregation: value
+    unit: percent
+    examples:
+      en: "Show stored product fill rate at the latest available inventory snapshot."
+      vi: "Cho biết tỷ lệ đáp ứng từng sản phẩm tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: stockout_rate
+    name: "Observed stockout-flag share"
+    description: "Flagged observed product rows divided by all observed rows in one snapshot; missing products are excluded."
+    aliases:
+      en: ["stockout rate","stockout rates","stockout share"]
+      vi: ["tỷ lệ hết hàng","tỷ lệ thiếu hàng"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id","stockout_flag"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "COUNT(*) FILTER (WHERE stockout_flag IS TRUE)::numeric / NULLIF(COUNT(*), 0)"
+    aggregation: ratio
+    unit: percent
+    examples:
+      en: "Show observed stockout-flag share at the latest available inventory snapshot."
+      vi: "Cho biết tỷ lệ hết hàng tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: stockout_days
+    name: "Recorded stockout days"
+    description: "Sum of recorded product stockout days within one snapshot; total is product-days, not distinct calendar days."
+    aliases:
+      en: ["stockout days","days out of stock"]
+      vi: ["số ngày hết hàng","ngày thiếu hàng"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id","stockout_days"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "SUM(stockout_days)"
+    scalar_formula: stockout_days
+    aggregation: sum
+    unit: product_days
+    examples:
+      en: "Show recorded stockout days at the latest available inventory snapshot."
+      vi: "Cho biết số ngày hết hàng tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: days_of_supply
+    name: "Mean stored days of supply"
+    description: "Unweighted mean of stored days-of-supply values; not a demand forecast."
+    aliases:
+      en: ["days of supply","inventory coverage days"]
+      vi: ["số ngày đủ hàng","số ngày cung ứng"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id","days_of_supply"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "AVG(days_of_supply)"
+    scalar_formula: days_of_supply
+    aggregation: mean
+    unit: days
+    examples:
+      en: "Show mean stored days of supply at the latest available inventory snapshot."
+      vi: "Cho biết số ngày đủ hàng tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: sell_through_rate
+    name: "Mean stored sell-through rate"
+    description: "Unweighted mean of recorded product sell-through rates; original denominator and weighting are not established."
+    aliases:
+      en: ["sell-through rate","sell-through rates","sell through rate","sell through rates"]
+      vi: ["tỷ lệ bán hết","tỷ lệ tiêu thụ tồn kho"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id","sell_through_rate"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "AVG(sell_through_rate)"
+    scalar_formula: sell_through_rate
+    aggregation: mean
+    unit: percent
+    examples:
+      en: "Show mean stored sell-through rate at the latest available inventory snapshot."
+      vi: "Cho biết tỷ lệ bán hết tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: units_received
+    name: "Inventory receipt movement units"
+    description: "Recorded receipt movement across observed products for the selected monthly snapshot; not PO or receiving-event counts."
+    aliases:
+      en: ["units received","inventory receipts","received units"]
+      vi: ["số lượng hàng nhập kho","lượng hàng nhận","số lượng nhập kho"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id","units_received"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "SUM(units_received)"
+    scalar_formula: units_received
+    aggregation: sum
+    unit: units
+    examples:
+      en: "Show inventory receipt movement units at the latest available inventory snapshot."
+      vi: "Cho biết số lượng hàng nhập kho tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: inventory_units_sold
+    name: "Inventory sales movement units"
+    description: "Recorded inventory-period movement; not interchangeable with order-item quantities."
+    aliases:
+      en: ["inventory units sold","inventory sales movement","inventory units"]
+      vi: ["số lượng bán theo tồn kho","lượng xuất bán tồn kho"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id","units_sold"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "SUM(units_sold)"
+    scalar_formula: units_sold
+    aggregation: sum
+    unit: units
+    examples:
+      en: "Show inventory sales movement units at the latest available inventory snapshot."
+      vi: "Cho biết số lượng bán theo tồn kho tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: overstock_rate
+    name: "Observed overstock-flag share"
+    description: "Recorded overstock flags divided by observed product rows at one snapshot; no invented source threshold."
+    aliases:
+      en: ["overstock rate","overstock share","overstock indicators"]
+      vi: ["tỷ lệ dư thừa tồn kho","tỷ lệ tồn kho dư"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id","overstock_flag"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "COUNT(*) FILTER (WHERE overstock_flag IS TRUE)::numeric / NULLIF(COUNT(*), 0)"
+    aggregation: ratio
+    unit: percent
+    examples:
+      en: "Show observed overstock-flag share at the latest available inventory snapshot."
+      vi: "Cho biết tỷ lệ dư thừa tồn kho tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: reorder_rate
+    name: "Observed reorder-flag share"
+    description: "Recorded reorder flags divided by observed product rows; source flags are all false in the inspected data, not an instruction to avoid replenishment."
+    aliases:
+      en: ["reorder rate","reorder share","reorder indicators"]
+      vi: ["tỷ lệ cờ đặt hàng lại","tỷ lệ cảnh báo bổ sung"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id","reorder_flag"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "COUNT(*) FILTER (WHERE reorder_flag IS TRUE)::numeric / NULLIF(COUNT(*), 0)"
+    aggregation: ratio
+    unit: percent
+    examples:
+      en: "Show observed reorder-flag share at the latest available inventory snapshot."
+      vi: "Cho biết tỷ lệ cờ đặt hàng lại tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: stockout_indicator
+    name: "Recorded stockout indicator"
+    description: "Stored product flag at a dated snapshot; not proof of zero closing stock."
+    aliases:
+      en: ["stockout flag","stockout flags","stockout indicator"]
+      vi: ["cờ hết hàng","cờ thiếu hàng"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id","stockout_flag"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "stockout_flag"
+    aggregation: value
+    unit: boolean
+    examples:
+      en: "Show recorded stockout indicator at the latest available inventory snapshot."
+      vi: "Cho biết cờ hết hàng tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: overstock_indicator
+    name: "Recorded overstock indicator"
+    description: "Stored product flag; policy review thresholds remain separate from the source indicator."
+    aliases:
+      en: ["overstock flag","overstock flags","overstock indicator"]
+      vi: ["cờ tồn kho dư","cờ dư thừa"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id","overstock_flag"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "overstock_flag"
+    aggregation: value
+    unit: boolean
+    examples:
+      en: "Show recorded overstock indicator at the latest available inventory snapshot."
+      vi: "Cho biết cờ tồn kho dư tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: reorder_indicator
+    name: "Recorded reorder indicator"
+    description: "Stored product flag, not a computed replenishment decision."
+    aliases:
+      en: ["reorder flag","reorder flags","reorder indicator"]
+      vi: ["cờ đặt hàng lại","cờ bổ sung hàng"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id","reorder_flag"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "reorder_flag"
+    aggregation: value
+    unit: boolean
+    examples:
+      en: "Show recorded reorder indicator at the latest available inventory snapshot."
+      vi: "Cho biết cờ đặt hàng lại tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: observed_product_count
+    name: "Observed inventory product count"
+    description: "Distinct product IDs observed at the selected snapshot; not total catalog size."
+    aliases:
+      en: ["observed inventory products","inventory product count","observed product count"]
+      vi: ["số sản phẩm có dữ liệu tồn kho","số SKU quan sát"]
+    source_columns:
+      commerce.inventory: ["snapshot_date","product_id"]
+      commerce.products: [product_id, product_name, category, segment, size, color]
+    formula: "COUNT(DISTINCT product_id)"
+    aggregation: count_distinct
+    unit: products
+    examples:
+      en: "Show observed inventory product count at the latest available inventory snapshot."
+      vi: "Cho biết số sản phẩm có dữ liệu tồn kho tại kỳ tồn kho mới nhất."
+  - <<: *inventory
+    id: demand_weighted_fill_rate
+    name: "Demand-weighted fulfillment rate"
+    description: "The dataset does not contain a reviewed demand/fulfilled-units denominator or source weighting rule. Use a stored product fill rate or the team-defined unweighted mean instead."
+    aliases:
+      en: ["demand-weighted fill rate","weighted fill rate","unit fill rate"]
+      vi: ["tỷ lệ đáp ứng theo nhu cầu","tỷ lệ đáp ứng có trọng số"]
+    source_columns:
+      commerce.inventory: [snapshot_date, product_id]
+    formula: null
+    aggregation: unresolved
+    unit: unresolved
+    provenance: unresolved
+    definition_status: unresolved
+    approval_status: unreviewed
+    clarification: "The dataset does not contain a reviewed demand/fulfilled-units denominator or source weighting rule. Use a stored product fill rate or the team-defined unweighted mean instead."
+    examples:
+      en: "What is the demand-weighted fulfillment rate?"
+      vi: "tỷ lệ đáp ứng theo nhu cầu là bao nhiêu?"
+  - <<: *inventory
+    id: reorder_quantity
+    name: "Operational reorder quantity"
+    description: "Operational reorder quantities need approved demand, lead time, safety stock, open POs, backorders and ordering constraints. Stored historical flags do not define a safe quantity."
+    aliases:
+      en: ["reorder quantity","reorder quantities","how much to reorder","reorder priorities"]
+      vi: ["số lượng cần đặt hàng","ưu tiên đặt hàng lại"]
+    source_columns:
+      commerce.inventory: [snapshot_date, product_id]
+    formula: null
+    aggregation: unresolved
+    unit: unresolved
+    provenance: unresolved
+    definition_status: unresolved
+    approval_status: unreviewed
+    clarification: "Operational reorder quantities need approved demand, lead time, safety stock, open POs, backorders and ordering constraints. Stored historical flags do not define a safe quantity."
+    examples:
+      en: "What is the operational reorder quantity?"
+      vi: "số lượng cần đặt hàng là bao nhiêu?"
+  - <<: *inventory
+    id: reorder_point
+    name: "Operational reorder point"
+    description: "No approved lead-time demand and safety-stock definition is available. The dataset does not contain an approved reorder-point definition."
+    aliases:
+      en: ["reorder point","reorder points"]
+      vi: ["điểm đặt hàng lại"]
+    source_columns:
+      commerce.inventory: [snapshot_date, product_id]
+    formula: null
+    aggregation: unresolved
+    unit: unresolved
+    provenance: unresolved
+    definition_status: unresolved
+    approval_status: unreviewed
+    clarification: "No approved lead-time demand and safety-stock definition is available. The dataset does not contain an approved reorder-point definition."
+    examples:
+      en: "What is the operational reorder point?"
+      vi: "điểm đặt hàng lại là bao nhiêu?"
+  - <<: *inventory
+    id: safety_stock
+    name: "Safety stock"
+    description: "Safety stock requires a reviewed demand/lead-time model and service target; these are missing."
+    aliases:
+      en: ["safety stock","safety-stock"]
+      vi: ["tồn kho an toàn"]
+    source_columns:
+      commerce.inventory: [snapshot_date, product_id]
+    formula: null
+    aggregation: unresolved
+    unit: unresolved
+    provenance: unresolved
+    definition_status: unresolved
+    approval_status: unreviewed
+    clarification: "Safety stock requires a reviewed demand/lead-time model and service target; these are missing."
+    examples:
+      en: "What is the safety stock?"
+      vi: "tồn kho an toàn là bao nhiêu?"
+  - <<: *inventory
+    id: inventory_accuracy
+    name: "Inventory accuracy"
+    description: "No physical count and book-stock reconciliation ledger is available for a reviewed accuracy definition."
+    aliases:
+      en: ["inventory accuracy","stock accuracy"]
+      vi: ["độ chính xác tồn kho"]
+    source_columns:
+      commerce.inventory: [snapshot_date, product_id]
+    formula: null
+    aggregation: unresolved
+    unit: unresolved
+    provenance: unresolved
+    definition_status: unresolved
+    approval_status: unreviewed
+    clarification: "No physical count and book-stock reconciliation ledger is available for a reviewed accuracy definition."
+    examples:
+      en: "What is the inventory accuracy?"
+      vi: "độ chính xác tồn kho là bao nhiêu?"
+  - <<: *inventory
+    id: inventory_turnover
+    name: "Inventory turnover"
+    description: "Turnover needs a reviewed compatible COGS/cost-valuation basis and time-weighted inventory convention; these are not approved in the inventory catalog."
+    aliases:
+      en: ["inventory turnover","stock turnover"]
+      vi: ["vòng quay tồn kho"]
+    source_columns:
+      commerce.inventory: [snapshot_date, product_id]
+    formula: null
+    aggregation: unresolved
+    unit: unresolved
+    provenance: unresolved
+    definition_status: unresolved
+    approval_status: unreviewed
+    clarification: "Turnover needs a reviewed compatible COGS/cost-valuation basis and time-weighted inventory convention; these are not approved in the inventory catalog."
+    examples:
+      en: "What is the inventory turnover?"
+      vi: "vòng quay tồn kho là bao nhiêu?"

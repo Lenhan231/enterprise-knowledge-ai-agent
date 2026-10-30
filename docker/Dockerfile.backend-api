@@ -6,6 +6,7 @@ RUN uv export --locked --no-dev --no-hashes --no-emit-project --extra docling --
 RUN uv venv && uv export --locked --no-dev --no-hashes --no-emit-project --prune sentence-transformers --prune langchain-huggingface --output-file /api.txt > /dev/null \
     && uv pip install --no-cache -r /api.txt -c /constraints.txt transformers
 COPY src ./src
+COPY data/semantic ./data/semantic
 ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH="/app/src" PYTHONUNBUFFERED="1" HF_HOME="/models"
 EXPOSE 8000
 RUN rm -rf /app/src/app/static

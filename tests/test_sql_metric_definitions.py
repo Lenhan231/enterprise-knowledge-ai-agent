@@ -139,7 +139,10 @@ class MetricEnforcementTest(unittest.TestCase):
             "sell_through_rate": ("SELECT AVG(i.sell_through_rate)" + inventory, ["2022-12-31"]),
             "promotion_discount": ("SELECT SUM(oi.discount_amount) FROM commerce.order_items AS oi LIMIT 1", []),
         }
-        self.assertEqual(set(examples), set(METRIC_ONTOLOGY))
+        self.assertTrue(set(examples) <= set(METRIC_ONTOLOGY))
+        self.assertEqual({name for name, definition in METRIC_ONTOLOGY.items()
+                          if definition.get("domain") != "inventory_management"},
+                         {name for name in examples if METRIC_ONTOLOGY[name].get("domain") != "inventory_management"})
         for name, (sql, parameters) in examples.items():
             with self.subTest(metric=name):
                 plan = decode_query_plan(json.dumps({"sql": sql, "parameters": parameters}))
@@ -205,10 +208,11 @@ class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_ratio_rows_preserve_the_canonical_fraction(self):
         query = json.dumps({"sql": "SELECT COUNT(*) FILTER (WHERE i.stockout_flag IS TRUE)::numeric / "
-                           "NULLIF(COUNT(*), 0) AS rate FROM commerce.inventory AS i LIMIT 1"})
+                           "NULLIF(COUNT(*), 0) AS rate FROM commerce.inventory AS i "
+                           "WHERE i.snapshot_date = '2022-12-31' LIMIT 1"})
         repository = AsyncMock()
         repository.execute_approved_query.return_value = [{"rate": 0.25}]
-        result = await SQLAnalyticsAgent(repository, llm=self.provider(query)).run(self.request("Stockout rate"))
+        result = await SQLAnalyticsAgent(repository, llm=self.provider(query)).run(self.request("Stockout rate on 2022-12-31"))
         self.assertEqual(result.data["rows"], [{"rate": 0.25}])
         self.assertEqual(result.metadata["metrics"]["stockout_rate"]["unit"], "percent")
         self.assertTrue(any("fractions" in note for note in result.metadata["limitations"]))

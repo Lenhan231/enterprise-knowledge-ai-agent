@@ -1,31 +1,23 @@
-# Capability map: VietStyle business metric dictionary
+# Capability map: Inventory Management metric dictionary
 
-Status: proposed; awaiting human review under the invoked spec-driven-development skill. No module specification or application implementation has been started.
+Status: user approved the module map and inventory conventions, with all new domain work restricted to Inventory Management.
 
 | Module id | Responsibility | Depends on |
 | --- | --- | --- |
-| metric-catalog | One versioned YAML catalog, explicit provenance and governance fields, schema validation, supported definitions and unresolved candidates | — |
-| metric-enforcement | Load that catalog through the existing ontology; resolve English/Vietnamese aliases; enforce formulas, dimensions, grain and temporal scope; return safe clarifications | metric-catalog |
-| metric-evaluation | Deterministic calculation/safety regressions, unchanged-model SQL benchmark comparison, validation report and documented assumptions | metric-enforcement |
+| metric-catalog | Versioned inventory YAML catalog, provenance/governance validation and unresolved inventory candidates | ? |
+| metric-enforcement | Existing ontology integration; bilingual aliases, formulas, dimensions, grain, snapshot scope and targeted clarification | metric-catalog |
+| metric-evaluation | Deterministic inventory regressions, unchanged-model benchmarks, minimal Report metadata compatibility and documentation | metric-enforcement |
 
-Build order: metric-catalog → metric-enforcement → metric-evaluation.
+Build order: metric-catalog ? metric-enforcement ? metric-evaluation. These are review boundaries, not new runtime services.
 
-These are review boundaries, not new runtime services. Keep the current SQL Agent, AST safety checks, join checks, verified authorization, CommerceRepository and Report generation path. The catalog is the only metric-definition source; METRIC_ONTOLOGY may remain a derived compatibility mapping.
+Specifications: [catalog](SPEC-metric-catalog.md), [enforcement](SPEC-metric-enforcement.md), [evaluation](SPEC-metric-evaluation.md). Execution plan: [inventory tasks](tasks/inventory-metric-dictionary-plan.md). The existing tasks/plan.md is preserved.
 
-The detailed user task supplies the initiative requirements. Each module specification will trace to this map after its boundaries are reviewed; the existing task and report documentation will not be overwritten.
+## Approved scope
 
-## Initial assumptions to review
-
-- Team-defined executable metrics require an explicit capstone acceptance status; this is distinct from business-owner approval and never implied by a passing calculation.
-- Daily, monthly and yearly rollups share one net-order-value definition and its declared date field; they are not separate formulas.
-- Separate source daily revenue, net order-item value and recorded payment value. Observed equality is evidence of reconciliation, not semantic equivalence.
-- Explicitly named net order-item value uses quantity × historical unit_price − line discount, across all placed-order statuses unless a separately named status-filtered definition is requested. It is not collected cash or statutory net revenue.
-- Bare revenue/sales, unspecified return rate and underspecified inventory dates receive targeted clarification where context does not choose a definition safely.
-- A stored SKU fill-rate value and a team-defined unweighted mean of stored values are separate metrics. Do not reconstruct the original fulfillment formula or weighting method.
-- Return-rate candidates declare order/unit denominator, order-date cohort, eligible statuses, observed-return cutoff and duplicate treatment. Category order denominators are non-additive. No implicit order/unit choice.
-- Unknown currency remains unknown. Snapshot answers are historical and dated; absent rows are not zero.
-- Unsupported attribution, conversion, true period-unique visitors and source-unexplained measures stay unresolved. Source_defined requires explicit source documentation, not a field name or successful query.
-
-## Existing evidence
-
-See [the inspection and proposal](docs/business_metric_dictionary.md) and [preflight artifacts](artifacts/evaluation/vietstyle-metrics-v1/preflight/). Existing application code and model configuration remain unchanged.
+- Historical stock; stored and mean stored fill rate; stockout share/days; days of supply; sell-through; inventory receipts and sales movement; recorded reorder/overstock indicators; observed SKU count and product inventory history.
+- Product identity/category/segment/size/color support inventory grouping.
+- Original fulfillment formula/weighting, operational reorder point/quantity, safety stock, accuracy and turnover remain unresolved when evidence is missing.
+- Explicit dates or database-latest selection; historical limitations; missing rows are never zero; no combined balances across dates.
+- Provenance, technical validation, team acceptance and official business-owner approval remain independent.
+- No new sales/finance, customer, return, delivery or marketing definitions. Existing unrelated runtime behavior and immutable broad preflight evidence stay outside this scoped change.
+- Preserve verified permissions, approved SQL restrictions, read-only execution, parameterization, result limits and Report generation.

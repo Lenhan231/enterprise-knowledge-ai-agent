@@ -1,0 +1,97 @@
+{
+  "dataset": "shared-html-owner-reviewed",
+  "engine": "docling-vietocr",
+  "run_id": "docling-vietocr-html-20261021",
+  "started_at_utc": "2026-10-21T13:09:22.461188+00:00",
+  "finished_at_utc": "2026-10-21T13:09:30.037111+00:00",
+  "device": "CPU",
+  "ocr": "Docling layout + RapidOCR detection + VietOCR vgg_seq2seq greedy",
+  "table_structure": "Docling TableFormer accurate",
+  "threads": 2,
+  "page_count": 10,
+  "successful_pages": 0,
+  "failed_pages": 10,
+  "wall_seconds": 7.576,
+  "peak_process_rss_mib": 894.8,
+  "prediction_generation_seconds": 7.576,
+  "reused_raw_outputs": false,
+  "raw_output_directory": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/docling-vietocr-html-20261021/raw_pages",
+  "predictions": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/docling-vietocr-html-20261021/predictions.jsonl",
+  "pages": [
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13",
+      "status": "failed",
+      "error": "ConnectionError(MaxRetryError('HTTPSConnectionPool(host=\\'vocr.vn\\', port=443): Max retries exceeded with url: /data/vietocr/config/base.yml (Caused by NameResolutionError(\"HTTPSConnection(host=\\'vocr.vn\\', port=443): Failed to resolve \\'vocr.vn\\' ([Errno -2] Name or service not known)\"))'))",
+      "seconds": 2.228
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24",
+      "status": "failed",
+      "error": "ConnectionError(MaxRetryError('HTTPSConnectionPool(host=\\'vocr.vn\\', port=443): Max retries exceeded with url: /data/vietocr/config/base.yml (Caused by NameResolutionError(\"HTTPSConnection(host=\\'vocr.vn\\', port=443): Failed to resolve \\'vocr.vn\\' ([Errno -2] Name or service not known)\"))'))",
+      "seconds": 0.093
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "status": "failed",
+      "error": "ConnectionError(MaxRetryError('HTTPSConnectionPool(host=\\'vocr.vn\\', port=443): Max retries exceeded with url: /data/vietocr/config/base.yml (Caused by NameResolutionError(\"HTTPSConnection(host=\\'vocr.vn\\', port=443): Failed to resolve \\'vocr.vn\\' ([Errno -2] Name or service not known)\"))'))",
+      "seconds": 0.019
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "status": "failed",
+      "error": "ConnectionError(MaxRetryError('HTTPSConnectionPool(host=\\'vocr.vn\\', port=443): Max retries exceeded with url: /data/vietocr/config/base.yml (Caused by NameResolutionError(\"HTTPSConnection(host=\\'vocr.vn\\', port=443): Failed to resolve \\'vocr.vn\\' ([Errno -2] Name or service not known)\"))'))",
+      "seconds": 0.071
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "status": "failed",
+      "error": "ConnectionError(MaxRetryError('HTTPSConnectionPool(host=\\'vocr.vn\\', port=443): Max retries exceeded with url: /data/vietocr/config/base.yml (Caused by NameResolutionError(\"HTTPSConnection(host=\\'vocr.vn\\', port=443): Failed to resolve \\'vocr.vn\\' ([Errno -2] Name or service not known)\"))'))",
+      "seconds": 0.02
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p4",
+      "status": "failed",
+      "error": "ConnectionError(MaxRetryError('HTTPSConnectionPool(host=\\'vocr.vn\\', port=443): Max retries exceeded with url: /data/vietocr/config/base.yml (Caused by NameResolutionError(\"HTTPSConnection(host=\\'vocr.vn\\', port=443): Failed to resolve \\'vocr.vn\\' ([Errno -2] Name or service not known)\"))'))",
+      "seconds": 0.019
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p6",
+      "status": "failed",
+      "error": "ConnectionError(MaxRetryError('HTTPSConnectionPool(host=\\'vocr.vn\\', port=443): Max retries exceeded with url: /data/vietocr/config/base.yml (Caused by NameResolutionError(\"HTTPSConnection(host=\\'vocr.vn\\', port=443): Failed to resolve \\'vocr.vn\\' ([Errno -2] Name or service not known)\"))'))",
+      "seconds": 0.076
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p7",
+      "status": "failed",
+      "error": "ConnectionError(MaxRetryError('HTTPSConnectionPool(host=\\'vocr.vn\\', port=443): Max retries exceeded with url: /data/vietocr/config/base.yml (Caused by NameResolutionError(\"HTTPSConnection(host=\\'vocr.vn\\', port=443): Failed to resolve \\'vocr.vn\\' ([Errno -2] Name or service not known)\"))'))",
+      "seconds": 0.02
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "status": "failed",
+      "error": "ConnectionError(MaxRetryError('HTTPSConnectionPool(host=\\'vocr.vn\\', port=443): Max retries exceeded with url: /data/vietocr/config/base.yml (Caused by NameResolutionError(\"HTTPSConnection(host=\\'vocr.vn\\', port=443): Failed to resolve \\'vocr.vn\\' ([Errno -2] Name or service not known)\"))'))",
+      "seconds": 0.072
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p9",
+      "status": "failed",
+      "error": "ConnectionError(MaxRetryError('HTTPSConnectionPool(host=\\'vocr.vn\\', port=443): Max retries exceeded with url: /data/vietocr/config/base.yml (Caused by NameResolutionError(\"HTTPSConnection(host=\\'vocr.vn\\', port=443): Failed to resolve \\'vocr.vn\\' ([Errno -2] Name or service not known)\"))'))",
+      "seconds": 0.02
+    }
+  ],
+  "inference_wall_seconds": 7.576,
+  "inference_page_seconds": {
+    "E2E-BAO-HO-LAO-DONG-2009-p13": 2.228,
+    "E2E-BAO-HO-LAO-DONG-2009-p24": 0.093,
+    "E2E-LONG-HAU-2008-p15": 0.019,
+    "E2E-LONG-HAU-2008-p17": 0.071,
+    "E2E-LONG-HAU-2008-p3": 0.02,
+    "E2E-LONG-HAU-2008-p4": 0.019,
+    "E2E-LONG-HAU-2008-p6": 0.076,
+    "E2E-LONG-HAU-2008-p7": 0.02,
+    "E2E-LONG-HAU-2008-p8": 0.072,
+    "E2E-LONG-HAU-2008-p9": 0.02
+  },
+  "inference_successful_pages": 0,
+  "docling_version": "2.129.0"
+}

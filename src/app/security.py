@@ -22,11 +22,15 @@ ROLE_PERMISSIONS = {
     "executive": {"view_corpus", "ask_documents", "view_analytics"},
     "admin": {
         "view_corpus", "ask_documents", "view_analytics", "upload_documents",
-        "classify_documents", "review_metrics", "manage_access", "manage_knowledge",
-        "view_agent_monitoring", "run_upload_tests", "review_upload_tests",
+        "classify_documents", "manage_access", "manage_knowledge",
+        "view_agent_monitoring", "list_processing_documents",
     },
     "document_uploader": {"view_corpus", "upload_documents", "classify_documents"},
-    "tester": {"run_upload_tests", "review_upload_tests"},
+    "document_processing_owner": {
+        "view_corpus", "upload_documents", "classify_documents",
+        "process_documents", "list_processing_documents",
+        "run_upload_tests", "review_upload_tests",
+    },
 }
 
 auth_scheme = HTTPBearer(auto_error=False)
@@ -55,7 +59,7 @@ def _current_user(request: Request | WebSocket, credentials: HTTPAuthorizationCr
         payload = jwt.decode(token, secret, algorithms=["HS256"])
     except InvalidTokenError:
         raise HTTPException(401, "Invalid or expired session") from None
-    if payload.get("role") not in DOCUMENT_ROLES | {"document_uploader", "tester"}:
+    if payload.get("role") not in ROLE_PERMISSIONS:
         raise HTTPException(401, "Invalid or expired session")
     return payload
 
@@ -69,7 +73,20 @@ def require_roles(*roles: str):
     return dependency
 
 
+def _trusted_frontend_origins() -> set[str]:
+    return {
+        value.strip().rstrip("/")
+        for value in os.getenv("TRUSTED_FRONTEND_ORIGINS", "").split(",")
+        if value.strip()
+    }
+
+
+def _is_trusted_frontend_origin(origin: str | None) -> bool:
+    return bool(origin and origin.rstrip("/") in _trusted_frontend_origins())
+
+
 def _require_same_origin(request: Request) -> None:
     origin = request.headers.get("origin")
-    if origin and origin.rstrip("/") != str(request.base_url).rstrip("/"):
+    if origin and origin.rstrip("/") != str(request.base_url).rstrip("/") \
+            and not _is_trusted_frontend_origin(origin):
         raise HTTPException(403, "Cross-origin uploads are not allowed")

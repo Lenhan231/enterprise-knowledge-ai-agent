@@ -1,0 +1,64 @@
+{
+  "dataset": "commerce-agent-benchmarks-v1",
+  "model_key": "cloudflare_llama_3_1_8b",
+  "model": "@cf/meta/llama-3.1-8b-instruct-fp8",
+  "judge_model": "openai/gpt-oss-20b",
+  "summary": {
+    "case_count": 2,
+    "by_agent": {
+      "knowledge": {
+        "case_count": 2,
+        "status_counts": {
+          "run_error": 2
+        },
+        "mean_agent_latency_seconds": 45.159,
+        "ragas": {
+          "faithfulness": {
+            "mean": null,
+            "scored_cases": 0
+          },
+          "answer_relevancy": {
+            "mean": null,
+            "scored_cases": 0
+          },
+          "context_precision": {
+            "mean": null,
+            "scored_cases": 0
+          }
+        }
+      }
+    },
+    "sql": {
+      "safety_pass_rate": null,
+      "safety_cases": 0,
+      "semantic_correctness_rate": null,
+      "semantic_cases": 0,
+      "abstention_accuracy": null,
+      "abstention_cases": 0
+    },
+    "hallucination_rate": null,
+    "hallucination_note": "Requires manual claim-level review; not inferred from faithfulness."
+  },
+  "results": [
+    {
+      "case_id": "K01",
+      "agent": "knowledge",
+      "question": "Mã tài liệu, phiên bản, ngày ban hành và trạng thái phê duyệt của Bộ chính sách quản lý tồn kho là gì?",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fp8",
+      "latency_seconds": 59.384,
+      "error": "RuntimeError: Cloudflare Workers AI request failed (HTTP 401): {\"result\":null,\"success\":false,\"errors\":[{\"code\":10000,\"message\":\"Authentication error\"}],\"messages\":[]}",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "K02",
+      "agent": "knowledge",
+      "question": "Snapshot tồn kho mới nhất trong bộ dữ liệu là ngày nào và có bao nhiêu SKU có bản ghi tại ngày đó?",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fp8",
+      "latency_seconds": 30.933,
+      "error": "RuntimeError: Cloudflare Workers AI request failed (HTTP 401): {\"result\":null,\"success\":false,\"errors\":[{\"code\":10000,\"message\":\"Authentication error\"}],\"messages\":[]}",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    }
+  ]
+}

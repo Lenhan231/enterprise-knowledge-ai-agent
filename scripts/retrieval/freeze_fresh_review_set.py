@@ -42,10 +42,10 @@ def require(ok, msg):
     if not ok: raise ValueError(msg)
 def save(path, obj): path.write_bytes((json.dumps(obj,ensure_ascii=False,indent=2)+'\n').encode())
 def source_context():
-    rows=[json.loads(l) for l in CORPUS.read_text().splitlines()]
+    rows=[json.loads(l) for l in CORPUS.read_text(encoding='utf-8').splitlines()]
     byid={f"{r['document_id']}::chunk::{r['chunk_index']}":r for r in rows}
     info=read(OLD)['sources']
-    sources={lang:{(r['document_id'],r.get('parser_chunk_index',r.get('chunk_index'))):r['content'] for r in [json.loads(l) for l in (ROOT/meta['path']).read_text().splitlines()]} for lang,meta in info.items()}
+    sources={lang:{(r['document_id'],r.get('parser_chunk_index',r.get('chunk_index'))):r['content'] for r in [json.loads(l) for l in (ROOT/meta['path']).read_text(encoding='utf-8').splitlines()]} for lang,meta in info.items()}
     return rows,byid,info,sources
 
 def mapped_spans(row,a,b,source):

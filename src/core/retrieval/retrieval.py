@@ -87,7 +87,7 @@ class RankedChunk(ContractModel):
     source: str
     location: SourceLocation
     metadata: dict[str, Any]
-    retrieval_method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank"] = "hybrid"
+    retrieval_method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank"] = "translated_hybrid_rerank"
 
     _validate_document_id = field_validator("document_id")(_nonblank)
 
@@ -108,7 +108,7 @@ class RankedChunk(ContractModel):
 
 class RetrievalResponse(ContractModel):
     query: str
-    method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank"] = "hybrid"
+    method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank"] = "translated_hybrid_rerank"
     latency_ms: float = Field(ge=0, allow_inf_nan=False)
     results: list[RankedChunk]
     retrieval_details: dict[str, Any] = Field(default_factory=dict)

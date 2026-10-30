@@ -1,0 +1,892 @@
+{
+  "dataset": "commerce-agent-benchmarks-v1",
+  "model_key": "cloudflare_gemma_4",
+  "model": "@cf/google/gemma-4-26b-a4b-it",
+  "judge_model": "openai/gpt-oss-120b",
+  "summary": {
+    "case_count": 34,
+    "by_agent": {
+      "knowledge": {
+        "case_count": 25,
+        "status_counts": {
+          "run_error": 14,
+          "scored": 11
+        },
+        "mean_agent_latency_seconds": 54.315,
+        "ragas": {
+          "faithfulness": {
+            "mean": 0.8182,
+            "scored_cases": 11
+          },
+          "answer_relevancy": {
+            "mean": 0.8609,
+            "scored_cases": 11
+          },
+          "context_precision": {
+            "mean": 0.9848,
+            "scored_cases": 11
+          }
+        }
+      },
+      "sql": {
+        "case_count": 9,
+        "status_counts": {
+          "scored": 9
+        },
+        "mean_agent_latency_seconds": 21.626,
+        "ragas": {
+          "faithfulness": {
+            "mean": 0.0,
+            "scored_cases": 9
+          },
+          "answer_relevancy": {
+            "mean": 0.7374,
+            "scored_cases": 9
+          },
+          "context_precision": {
+            "mean": 0.0,
+            "scored_cases": 9
+          }
+        }
+      }
+    },
+    "sql": {
+      "safety_pass_rate": 0.0,
+      "safety_cases": 9,
+      "semantic_correctness_rate": 0.4444,
+      "semantic_cases": 9,
+      "abstention_accuracy": 0.0,
+      "abstention_cases": 9
+    },
+    "hallucination_rate": null,
+    "hallucination_note": "Requires manual claim-level review; not inferred from faithfulness."
+  },
+  "results": [
+    {
+      "case_id": "K01",
+      "agent": "knowledge",
+      "question": "Mã tài liệu, phiên bản, ngày ban hành và trạng thái phê duyệt của Bộ chính sách quản lý tồn kho là gì?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 59.45,
+      "error": "RuntimeError: Cloudflare Workers AI returned empty output",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "K02",
+      "agent": "knowledge",
+      "question": "Snapshot tồn kho mới nhất trong bộ dữ liệu là ngày nào và có bao nhiêu SKU có bản ghi tại ngày đó?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "Snapshot tồn kho mới nhất trong bộ dữ liệu là ngày 2022-12-31 [S1], [S2], [S3], [S5] và có 424 SKU có bản ghi tại ngày đó [S1], [S2], [S3].",
+      "contexts": [
+        "2. Phạm vi và cơ sở dữ liệu\nDataset có 2,412 SKU trong products.csv và 60,247 bản ghi inventory.csv, bao phủ 2012-07-31 đến 2022-12-31. Snapshot mới nhất là 2022-12-31 với 424 SKU có bản ghi. Nhóm hàng quan sát gồm Streetwear, Outdoor, Casual và GenZ. Sales.csv bao phủ 2012-07-04 đến 2022-12-31. Dữ liệu trả về, đơn hàng, khuyến mãi và giao hàng có thể dùng để phân tích nguyên nhân nhưng không thay thế sổ cái tồn kho.\nDataset không cung cấp đầy đủ purchase orders inbound, MOQ, lead time nhà cung cấp, backorder, vị trí kho hoặc đơn vị tiền tệ được xác nhận. Vì vậy, các trường này phải được bổ sung trước khi triển khai chính sách mua hàng trong môi trường thật.",
+        "01 | Bối cảnh dữ liệu Dataset là cơ sở mô phỏng; không phản ánh tồn kho hiện tại. 2,412 SKU trong product master 60,247 Bản ghi inventory theo snapshot 424 SKU có snapshot 31/12/2022 67.3% Bản ghi bật stockout_flag Nhóm hàng • Streetwear • Outdoor • Casual • GenZ Vấn đề dữ liệu cần kiểm soát • 76.3% bản ghi bật overstock_flag • 30,495 bản ghi bật đồng thời stockout + overstock • reorder_flag có tổng bằng 0 • Snapshot mới nhất trong file: 2022-12-31 VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 2",
+        "Section: README\nColumns: Mục | Nội dung\nRow 1: Mục: Nguồn dữ liệu | Nội dung: datathon-2026-round-1.zip: inventory.csv, products.csv, promotions.csv, returns.csv, orders.csv, sales.csv.\nRow 2: Mục: Phạm vi | Nội dung: 2,412 SKU trong products.csv; 60,247 snapshot tồn kho; dữ liệu inventory từ 2012-07-31 đến 2022-12-31.\nRow 3: Mục: Snapshot mẫu | Nội dung: 2022-12-31 — 424 SKU có bản ghi trong snapshot mới nhất. Không đại diện cho tồn kho hiện hành.\nRow 4: Mục: Cách tính nhu cầu | Nội dung: Avg monthly demand = trung bình units_sold của tối đa 3 snapshot gần nhất có sẵn cho SKU. Có thể không phải 3 tháng liên tiếp.\nRow 5: Mục: Tham số giả định | Nội dung: Lead time = 14 ngày; safety stock = 7 ngày; review period = 7 ngày. Chỉnh theo nhà cung cấp / SKU trước khi sử dụng.\nRow 6: Mục: ROP | Nội dung: Avg daily demand × (Lead time + Safety days). Avg daily demand = Avg monthly demand / 30.\nRow 7: Mục: Target stock | Nội dung: Avg daily demand × (Lead time + Safety days + Review period).",
+        "Phụ lục B — Giới hạn của mô phỏng\nMốc snapshot gần nhất trong dataset là 31/12/2022; đây không phải tồn kho hiện hành.\nLead time 14 ngày, safety stock 7 ngày và review period 7 ngày là tham số giả định có thể chỉnh.\nNhu cầu bình quân trong workbook lấy từ tối đa 3 snapshot gần nhất có sẵn cho SKU; các snapshot không nhất thiết là 3 tháng liên tiếp.\nKhông có dữ liệu PO inbound / backorder; workbook mặc định hai trường này bằng 0 và yêu cầu người dùng nhập trước khi ra quyết định.\nKhông xác định đơn vị tiền tệ của price/cogs trong dataset; không dùng chúng làm hạn mức phê duyệt tiền tệ nếu chưa xác nhận."
+      ],
+      "reference": "[\"2022-12-31\", \"424 SKU\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 40.948,
+      "total_case_seconds": 84.78,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8811,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "K03",
+      "agent": "knowledge",
+      "question": "Ai chịu trách nhiệm về KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "Inventory Manager là người chịu trách nhiệm về KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách [S1].",
+      "contexts": [
+        "Section: 3. Vai trò và trách nhiệm\nColumns: Vai trò | Trách nhiệm chính\nRow 1: Vai trò: Inventory Manager | Trách nhiệm chính: Chịu trách nhiệm KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách.\nRow 2: Vai trò: Inventory Controller / Planner | Trách nhiệm chính: Tính nhu cầu, ROP, target stock; rà soát cảnh báo và lập đề xuất PO.\nRow 3: Vai trò: Procurement | Trách nhiệm chính: Quản lý nhà cung cấp, MOQ, lead time, PO và xác nhận lịch giao.\nRow 4: Vai trò: Warehouse Supervisor | Trách nhiệm chính: Nhận hàng, put-away, kiểm kê, điều tra chênh lệch và kỷ luật thao tác.\nRow 5: Vai trò: Returns QA | Trách nhiệm chính: Kiểm tra hàng trả về; phân loại bán lại, sửa chữa, cách ly hoặc loại bỏ.\nRow 6: Vai trò: Finance | Trách nhiệm chính: Đối chiếu giá vốn, điều chỉnh giá trị tồn và phê duyệt ghi giảm theo thẩm quyền.\nRow 7: Vai trò: System / Data Owner | Trách nhiệm chính: Quản lý quyền truy cập, định nghĩa trường dữ liệu, nhật ký và kiểm soát AI."
+      ],
+      "reference": "[\"Inventory Manager\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 36.987,
+      "total_case_seconds": 50.822,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.78,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "K04",
+      "agent": "knowledge",
+      "question": "Vai trò nào tính nhu cầu, ROP, target stock và rà soát cảnh báo tồn kho?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "Vai trò Inventory Controller / Planner có trách nhiệm tính nhu cầu, ROP, target stock; rà soát cảnh báo và lập đề xuất PO [S1].",
+      "contexts": [
+        "Section: 3. Vai trò và trách nhiệm\nColumns: Vai trò | Trách nhiệm chính\nRow 1: Vai trò: Inventory Manager | Trách nhiệm chính: Chịu trách nhiệm KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách.\nRow 2: Vai trò: Inventory Controller / Planner | Trách nhiệm chính: Tính nhu cầu, ROP, target stock; rà soát cảnh báo và lập đề xuất PO.\nRow 3: Vai trò: Procurement | Trách nhiệm chính: Quản lý nhà cung cấp, MOQ, lead time, PO và xác nhận lịch giao.\nRow 4: Vai trò: Warehouse Supervisor | Trách nhiệm chính: Nhận hàng, put-away, kiểm kê, điều tra chênh lệch và kỷ luật thao tác.\nRow 5: Vai trò: Returns QA | Trách nhiệm chính: Kiểm tra hàng trả về; phân loại bán lại, sửa chữa, cách ly hoặc loại bỏ.\nRow 6: Vai trò: Finance | Trách nhiệm chính: Đối chiếu giá vốn, điều chỉnh giá trị tồn và phê duyệt ghi giảm theo thẩm quyền.\nRow 7: Vai trò: System / Data Owner | Trách nhiệm chính: Quản lý quyền truy cập, định nghĩa trường dữ liệu, nhật ký và kiểm soát AI."
+      ],
+      "reference": "[\"Inventory Controller / Planner\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 60.144,
+      "total_case_seconds": 72.642,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8146,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "K05",
+      "agent": "knowledge",
+      "question": "Công thức Inventory Position được định nghĩa thế nào?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "Công thức Inventory Position được định nghĩa là: Inventory Position = On-hand + Open PO − Backorder [S1].",
+      "contexts": [
+        "03 | Quy tắc bổ sung hàng Thông số mặc định chỉ để mô phỏng; cần thay bằng dữ liệu nhà cung cấp. Công thức Inventory Position = On-hand + Open PO − Backorder ROP = Daily Demand × (Lead Time + Safety Days) Target = Daily Demand × (Lead Time + Safety Days + Review Period) THAM SỐ KHỞI TẠO Lead time: 14 ngày Safety stock: 7 ngày Review period: 7 ngày Reorder trigger: Inventory Position ≤ ROP Nếu có stockout/service signal nhưng calculated days of supply >120 ngày → DATA CONFLICT. Khóa đề xuất PO tự động, xác minh giao dịch và nhu cầu trước khi mua. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 4"
+      ],
+      "reference": "[\"On-hand + Open PO − Backorder\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 49.632,
+      "total_case_seconds": 61.424,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9241,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "K06",
+      "agent": "knowledge",
+      "question": "Công thức Reorder Point (ROP) và các tham số mô phỏng mặc định là gì?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "Công thức Reorder Point (ROP) là: ROP = Daily Demand × (Lead Time + Safety Days) [S1] (hoặc Reorder Point (ROP) = Nhu cầu/ngày × (Lead time + Safety days) [S2]). Các tham số khởi tạo/giả định mặc định trong bộ mô phỏng bao gồm: lead time là 14 ngày, safety stock là 7 ngày và review period là 7 ngày [S1], [S2].",
+      "contexts": [
+        "03 | Quy tắc bổ sung hàng Thông số mặc định chỉ để mô phỏng; cần thay bằng dữ liệu nhà cung cấp. Công thức Inventory Position = On-hand + Open PO − Backorder ROP = Daily Demand × (Lead Time + Safety Days) Target = Daily Demand × (Lead Time + Safety Days + Review Period) THAM SỐ KHỞI TẠO Lead time: 14 ngày Safety stock: 7 ngày Review period: 7 ngày Reorder trigger: Inventory Position ≤ ROP Nếu có stockout/service signal nhưng calculated days of supply >120 ngày → DATA CONFLICT. Khóa đề xuất PO tự động, xác minh giao dịch và nhu cầu trước khi mua. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 4",
+        "4. Chính sách bổ sung hàng\nMô hình tham chiếu cho SKU có nhu cầu tương đối ổn định:\nInventory position = On-hand + Open PO − Backorder\nReorder Point (ROP) = Nhu cầu/ngày × (Lead time + Safety days)\nTarget Stock = Nhu cầu/ngày × (Lead time + Safety days + Review period)\nGiả định khởi tạo trong bộ mô phỏng: lead time 14 ngày, safety stock 7 ngày, review period 7 ngày. Các giá trị này có thể chỉnh theo nhà cung cấp / nhóm hàng; không phải lead time được suy ra từ dữ liệu.\nRà soát đề xuất bổ sung ít nhất mỗi tuần và trước chiến dịch khuyến mãi.\nTrước khi phát hành PO, kiểm tra tồn kho khả dụng, PO đang mở, hàng đang giữ, backorder, MOQ, ngân sách và lịch giao.\nNếu có stockout signal cùng days of supply > 120 ngày, không tự động mua thêm; mở điều tra P1.\nKhông đặt hàng bổ sung cho SKU vượt 120 ngày tồn kho trừ khi có phê duyệt chiến dịch, cam kết khách hàng hoặc lý do được ghi nhận.\nMọi PO khẩn cấp phải ghi rõ nguyên nhân, ảnh hưởng dịch vụ và người phê duyệt."
+      ],
+      "reference": "[\"ROP = nhu cầu/ngày × (Lead time + Safety days)\", \"lead time 14 ngày\", \"safety days 7 ngày\", \"tham số là giả định mô phỏng\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 58.712,
+      "total_case_seconds": 82.684,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8828,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "K07",
+      "agent": "knowledge",
+      "question": "Target Stock được tính theo công thức nào và review period mặc định là bao lâu?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "Công thức tính Target Stock là: Target Stock = Nhu cầu/ngày × (Lead time + Safety days + Review period) [S1], [S2], [S3].\nReview period mặc định (giả định khởi tạo) là 7 ngày [S1], [S2], [S3].",
+      "contexts": [
+        "4. Chính sách bổ sung hàng\nMô hình tham chiếu cho SKU có nhu cầu tương đối ổn định:\nInventory position = On-hand + Open PO − Backorder\nReorder Point (ROP) = Nhu cầu/ngày × (Lead time + Safety days)\nTarget Stock = Nhu cầu/ngày × (Lead time + Safety days + Review period)\nGiả định khởi tạo trong bộ mô phỏng: lead time 14 ngày, safety stock 7 ngày, review period 7 ngày. Các giá trị này có thể chỉnh theo nhà cung cấp / nhóm hàng; không phải lead time được suy ra từ dữ liệu.\nRà soát đề xuất bổ sung ít nhất mỗi tuần và trước chiến dịch khuyến mãi.\nTrước khi phát hành PO, kiểm tra tồn kho khả dụng, PO đang mở, hàng đang giữ, backorder, MOQ, ngân sách và lịch giao.\nNếu có stockout signal cùng days of supply > 120 ngày, không tự động mua thêm; mở điều tra P1.\nKhông đặt hàng bổ sung cho SKU vượt 120 ngày tồn kho trừ khi có phê duyệt chiến dịch, cam kết khách hàng hoặc lý do được ghi nhận.\nMọi PO khẩn cấp phải ghi rõ nguyên nhân, ảnh hưởng dịch vụ và người phê duyệt.",
+        "03 | Quy tắc bổ sung hàng Thông số mặc định chỉ để mô phỏng; cần thay bằng dữ liệu nhà cung cấp. Công thức Inventory Position = On-hand + Open PO − Backorder ROP = Daily Demand × (Lead Time + Safety Days) Target = Daily Demand × (Lead Time + Safety Days + Review Period) THAM SỐ KHỞI TẠO Lead time: 14 ngày Safety stock: 7 ngày Review period: 7 ngày Reorder trigger: Inventory Position ≤ ROP Nếu có stockout/service signal nhưng calculated days of supply >120 ngày → DATA CONFLICT. Khóa đề xuất PO tự động, xác minh giao dịch và nhu cầu trước khi mua. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 4",
+        "Section: README\nColumns: Mục | Nội dung\nRow 1: Mục: Nguồn dữ liệu | Nội dung: datathon-2026-round-1.zip: inventory.csv, products.csv, promotions.csv, returns.csv, orders.csv, sales.csv.\nRow 2: Mục: Phạm vi | Nội dung: 2,412 SKU trong products.csv; 60,247 snapshot tồn kho; dữ liệu inventory từ 2012-07-31 đến 2022-12-31.\nRow 3: Mục: Snapshot mẫu | Nội dung: 2022-12-31 — 424 SKU có bản ghi trong snapshot mới nhất. Không đại diện cho tồn kho hiện hành.\nRow 4: Mục: Cách tính nhu cầu | Nội dung: Avg monthly demand = trung bình units_sold của tối đa 3 snapshot gần nhất có sẵn cho SKU. Có thể không phải 3 tháng liên tiếp.\nRow 5: Mục: Tham số giả định | Nội dung: Lead time = 14 ngày; safety stock = 7 ngày; review period = 7 ngày. Chỉnh theo nhà cung cấp / SKU trước khi sử dụng.\nRow 6: Mục: ROP | Nội dung: Avg daily demand × (Lead time + Safety days). Avg daily demand = Avg monthly demand / 30.\nRow 7: Mục: Target stock | Nội dung: Avg daily demand × (Lead time + Safety days + Review period)."
+      ],
+      "reference": "[\"Daily demand × (Lead time + Safety days + Review period)\", \"review period 7 ngày\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 58.912,
+      "total_case_seconds": 84.422,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8872,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "K08",
+      "agent": "knowledge",
+      "question": "Điều kiện nào kích hoạt DATA CONFLICT và cần làm gì trước khi đề xuất mua hàng?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 61.881,
+      "error": "RuntimeError: Cloudflare Workers AI returned empty output",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "K09",
+      "agent": "knowledge",
+      "question": "Tần suất kiểm kê tham chiếu cho nhóm ABC A, B và C là bao nhiêu?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "Tần suất kiểm kê tham chiếu cho các nhóm ABC như sau:\n\n*   Nhóm A: Hằng tuần [S1], [S2], [S3], [S4].\n*   Nhóm B: Hằng tháng [S1], [S2], [S3], [S4].\n*   Nhóm C: Hằng quý [S1], [S2], [S3], [S4].",
+      "contexts": [
+        "Section: 5. Phân loại ABC và lịch kiểm kê\nColumns: Nhóm | Tiêu chí tham chiếu | Tần suất | SLA điều tra\nRow 1: Nhóm: A | Tiêu chí tham chiếu: Nhóm SKU đóng góp xấp xỉ 80% giá trị tiêu thụ năm | Tần suất: Hằng tuần | SLA điều tra: Điều tra chênh lệch ngay trong ngày\nRow 2: Nhóm: B | Tiêu chí tham chiếu: Nhóm tiếp theo đóng góp xấp xỉ 15% | Tần suất: Hằng tháng | SLA điều tra: Điều tra trong 2 ngày làm việc\nRow 3: Nhóm: C | Tiêu chí tham chiếu: Phần còn lại, xấp xỉ 5% | Tần suất: Hằng quý | SLA điều tra: Điều tra trong 5 ngày làm việc",
+        "04 | Kiểm kê chu kỳ & điều chỉnh ABC dựa trên giá trị tiêu thụ năm, không chỉ dựa vào số lượng. NHÓM A ~80% giá trị tiêu thụ Hằng tuần NHÓM B ~15% tiếp theo Hằng tháng NHÓM C ~5% còn lại Hằng quý Quy trình: chuẩn bị danh sách → blind count → recount độc lập → đối chiếu receipts/picks/returns/transfers → ghi nguyên nhân → duyệt → điều chỉnh có audit trail. Không xóa giao dịch cũ; mọi điều chỉnh cần mã phiếu, người nhập, người duyệt, thời điểm và bằng chứng. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 5",
+        "Section: Policy Matrix\nColumns: Policy ID | Chính sách | Trigger | Hành động bắt buộc | Owner | SLA / Tần suất | Approval\nRow 3: Policy ID: INV-POL-003 | Chính sách: Xác minh mâu thuẫn tồn kho | Trigger: Có tín hiệu stockout/service thấp đồng thời days of supply > 120; hoặc cờ stockout và overstock cùng bật | Hành động bắt buộc: Tạm khóa PO tự động; kiểm tra giao dịch, snapshot, đơn hàng treo và cách tính nhu cầu | Owner: Inventory Controller | SLA / Tần suất: P1 trong 1 ngày làm việc | Approval: Quản lý kho duyệt kết luận\nRow 4: Policy ID: INV-POL-004 | Chính sách: Kiểm kê chu kỳ ABC | Trigger: SKU nhóm A/B/C theo giá trị tiêu thụ năm | Hành động bắt buộc: A: hằng tuần; B: hằng tháng; C: hằng quý; kiểm kê mù và đối chiếu độc lập | Owner: Warehouse Supervisor | SLA / Tần suất: Theo lịch | Approval: Sai lệch vượt ngưỡng phải duyệt",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 4: policy_id: INV-POL-004 | policy_name: Kiểm kê chu kỳ ABC | trigger: SKU nhóm A/B/C theo giá trị tiêu thụ năm | rule_or_required_action: A: hằng tuần; B: hằng tháng; C: hằng quý; kiểm kê mù và đối chiếu độc lập | owner: Warehouse Supervisor | sla_or_frequency: Theo lịch | approval: Sai lệch vượt ngưỡng phải duyệt | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions"
+      ],
+      "reference": "[\"A khoảng 80% giá trị tiêu thụ năm: hàng tuần\", \"B khoảng 15% tiếp theo: hàng tháng\", \"C khoảng 5% còn lại: hàng quý\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 44.23,
+      "total_case_seconds": 73.584,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8386,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "K10",
+      "agent": "knowledge",
+      "question": "Mục tiêu fill rate mô phỏng là bao nhiêu và khi nào cần cảnh báo P1?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 53.571,
+      "error": "RuntimeError: Cloudflare Workers AI returned empty output",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "K11",
+      "agent": "knowledge",
+      "question": "Ngưỡng days of supply nào yêu cầu rà soát overstock và khi nào phải có kế hoạch xử lý?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "Ngưỡng days of supply yêu cầu rà soát overstock là khi lớn hơn 120 ngày [S1], [S3]. Việc lập kế hoạch xử lý là bắt buộc khi days of supply lớn hơn 180 ngày [S1], [S2], [S3], [S4]; các hành động cụ",
+      "contexts": [
+        "Section: 6. Ngưỡng vận hành và KPI\nColumns: KPI | Mục tiêu / ngưỡng giả lập | Hành động\nRow 1: KPI: Fill rate | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng ≥ 98% | Hành động: Dưới 95%: cảnh báo P1 và phân tích nguyên nhân\nRow 2: KPI: Days of supply | Mục tiêu / ngưỡng giả lập: Tham chiếu 28–60 ngày tùy nhóm hàng | Hành động: >120 ngày: overstock review; >180 ngày: kế hoạch xử lý bắt buộc\nRow 3: KPI: Inventory record accuracy | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng ≥ 98% | Hành động: Sai lệch có giá trị cao hoặc lặp lại: kiểm tra nguyên nhân gốc\nRow 4: KPI: Stockout rate | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng < 2% dòng SKU/ngày | Hành động: Theo dõi riêng stockout thật và cờ dữ liệu\nRow 5: KPI: Aged / slow-moving stock | Mục tiêu / ngưỡng giả lập: Không để tồn >180 ngày không có kế hoạch | Hành động: Chuyển kho, bundle, markdown hoặc thanh lý theo phê duyệt",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 6: policy_id: INV-POL-006 | policy_name: Hàng dư thừa / chậm luân chuyển | trigger: Calculated days of supply > 120 ngày; > 180 ngày cần kế hoạch xử lý | rule_or_required_action: Dừng mua bổ sung; rà soát chuyển kho, bundle, markdown hoặc thanh lý; bảo vệ biên lợi nhuận | owner: Merchandising + Procurement | sla_or_frequency: Rà soát hằng tháng | approval: Markdown theo thẩm quyền giá | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+        "Section: README\nColumns: Mục | Nội dung\nRow 8: Mục: Inventory position | Nội dung: On-hand + Open PO − Backorder. Dataset không có Open PO / Backorder; workbook mặc định 0 và yêu cầu nhập số thực tế.\nRow 9: Mục: Stockout signal | Nội dung: stockout_days ≥ 1 hoặc fill_rate < 95% hoặc calculated days of supply ≤ 14 ngày.\nRow 10: Mục: Overstock signal | Nội dung: Calculated days of supply > 120 ngày. >180 ngày cần kế hoạch xử lý theo chính sách.\nRow 11: Mục: Conflict gate | Nội dung: Nếu stockout signal đồng thời calculated days of supply >120 ngày, trạng thái DATA CONFLICT; không tự động đề xuất PO.\nRow 12: Mục: Giới hạn | Nội dung: Dataset không xác nhận đơn vị tiền tệ, inbound lead time, MOQ, kho/vị trí, PO đang mở hoặc backorder. Cờ reorder_flag trong nguồn luôn bằng 0.\nRow 13: Mục: Hướng dẫn | Nội dung: Điền Open PO / Backorder và lead time thực tế; xem KPI Summary; lọc Inventory Control theo Priority / Policy Decision; xác minh mọi DATA CONFLICT.",
+        "Section: Policy Matrix\nColumns: Policy ID | Chính sách | Trigger | Hành động bắt buộc | Owner | SLA / Tần suất | Approval\nRow 5: Policy ID: INV-POL-005 | Chính sách: Điều chỉnh tồn kho | Trigger: Có chênh lệch giữa đếm thực tế và hệ thống | Hành động bắt buộc: Không điều chỉnh khi chưa có biên bản, mã nguyên nhân và bằng chứng; phân tách người đếm và người duyệt | Owner: Warehouse Supervisor + Inventory Controller | SLA / Tần suất: Trong 1 ngày làm việc | Approval: Sai lệch lớn cần Finance/Operations\nRow 6: Policy ID: INV-POL-006 | Chính sách: Hàng dư thừa / chậm luân chuyển | Trigger: Calculated days of supply > 120 ngày; > 180 ngày cần kế hoạch xử lý | Hành động bắt buộc: Dừng mua bổ sung; rà soát chuyển kho, bundle, markdown hoặc thanh lý; bảo vệ biên lợi nhuận | Owner: Merchandising + Procurement | SLA / Tần suất: Rà soát hằng tháng | Approval: Markdown theo thẩm quyền giá"
+      ],
+      "reference": "[\">120 ngày: rà soát overstock / dừng bổ sung\", \">180 ngày: kế hoạch xử lý bắt buộc\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 63.688,
+      "total_case_seconds": 100.202,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8999,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "K12",
+      "agent": "knowledge",
+      "question": "Cần có những gì trước khi điều chỉnh tồn kho trong hệ thống?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "Trước khi điều chỉnh tồn kho trong hệ thống, cần đáp ứng các yêu cầu sau:\n\n*   Phải có biên bản, mã nguyên nhân và bằng chứng [S4], [S5].\n*   Phải thực hiện phân tách",
+      "contexts": [
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 5: policy_id: INV-POL-005 | policy_name: Điều chỉnh tồn kho | trigger: Có chênh lệch giữa đếm thực tế và hệ thống | rule_or_required_action: Không điều chỉnh khi chưa có biên bản, mã nguyên nhân và bằng chứng; phân tách người đếm và người duyệt | owner: Warehouse Supervisor + Inventory Controller | sla_or_frequency: Trong 1 ngày làm việc | approval: Sai lệch lớn cần Finance/Operations | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+        "Section: Policy Matrix\nColumns: Policy ID | Chính sách | Trigger | Hành động bắt buộc | Owner | SLA / Tần suất | Approval\nRow 5: Policy ID: INV-POL-005 | Chính sách: Điều chỉnh tồn kho | Trigger: Có chênh lệch giữa đếm thực tế và hệ thống | Hành động bắt buộc: Không điều chỉnh khi chưa có biên bản, mã nguyên nhân và bằng chứng; phân tách người đếm và người duyệt | Owner: Warehouse Supervisor + Inventory Controller | SLA / Tần suất: Trong 1 ngày làm việc | Approval: Sai lệch lớn cần Finance/Operations\nRow 6: Policy ID: INV-POL-006 | Chính sách: Hàng dư thừa / chậm luân chuyển | Trigger: Calculated days of supply > 120 ngày; > 180 ngày cần kế hoạch xử lý | Hành động bắt buộc: Dừng mua bổ sung; rà soát chuyển kho, bundle, markdown hoặc thanh lý; bảo vệ biên lợi nhuận | Owner: Merchandising + Procurement | SLA / Tần suất: Rà soát hằng tháng | Approval: Markdown theo thẩm quyền giá"
+      ],
+      "reference": "[\"biên bản\", \"mã nguyên nhân\", \"bằng chứng\", \"người đếm tách biệt người nhập/điều chỉnh và người phê duyệt\", \"audit trail\"]",
+      "evidence_sources": [
+        "03_Policy_Rules_Registry.csv",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 64.173,
+      "total_case_seconds": 83.259,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.864,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "K13",
+      "agent": "knowledge",
+      "question": "Ai cần tham gia phê duyệt khi chênh lệch tồn kho lặp lại, có giá trị lớn hoặc vượt ngưỡng nội bộ?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 50.912,
+      "error": "RuntimeError: Cloudflare Workers AI returned empty output",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "K14",
+      "agent": "knowledge",
+      "question": "Những tình huống nào cần kiểm kê đột xuất theo SOP?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "Các tình huống cần kiểm kê đột xuất bao gồm:\n\n* SKU có fill rate dưới 95% hoặc phát sinh stockout nhưng hệ thống vẫn ghi nhận lượng tồn cao [S1].\n* Cờ stockout_flag và overstock_flag cùng bật; days of supply tính lại >120 ngày nhưng vẫn có stockout signal [S1].\n* SKU có sai lệch lặp lại, hàng giá trị cao, nghi ngờ mất mát, lỗi barcode hoặc sai size/màu [S1].\n* Sau campaign lớn, thay đổi vị trí kho, đổi mã SKU, trả hàng số lượng lớn hoặc sự cố hệ thống [S1].",
+      "contexts": [
+        "Section: 3. Chuẩn bị trước khi đếm\nVietStyle Commerce • SOP-INV-002 • Tài liệu mô phỏng Trang 2 1. Mục đích và phạm vi Áp dụng cho SKU thời trang và outdoor trong kho / điểm xử lý đơn của mô hình VietStyle Commerce. SOP bao gồm kiểm kê chu kỳ, kiểm kê theo sự kiện và điều chỉnh chênh lệch. Không dùng SOP này để thay thế quy trình nhận hàng hoặc QA hàng trả về. 2. Khi nào phải kiểm kê đột xuất? • SKU có fill rate dưới 95% hoặc phát sinh stockout nhưng hệ thống vẫn ghi nhận lượng tồn cao. • Cờ stockout_flag và overstock_flag cùng bật; days of supply tính lại >120 ngày nhưng vẫn có stockout signal. • SKU có sai lệch lặp lại, hàng giá trị cao, nghi ngờ mất mát, lỗi barcode hoặc sai size/màu. • Sau campaign lớn, thay đổi vị trí kho, đổi mã SKU, trả hàng số lượng lớn hoặc sự cố hệ thống. 3. Chuẩn bị trước khi đếm • Inventory Controller xuất danh sách SKU, vị trí, đơn vị tính, snapshot timestamp và số lượng hệ thống. • Warehouse Supervisor phân công người đếm; người đếm không được xem số lượng hệ thống nếu tổ chức áp dụng blind count."
+      ],
+      "reference": "[\"fill rate dưới 95% hoặc stockout nhưng hệ thống vẫn ghi tồn cao\", \"stockout_flag và overstock_flag cùng bật hoặc days of supply >120 kèm stockout signal\", \"sai lệch lặp lại, hàng giá trị cao, nghi mất mát, lỗi barcode/sai size-màu\", \"sau campaign lớn, đổi vị trí/mã SKU, trả hàng lớn hoặc sự cố hệ thống\"]",
+      "evidence_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 48.768,
+      "total_case_seconds": 68.3,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8283,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "K15",
+      "agent": "knowledge",
+      "question": "Liệt kê trình tự tối thiểu của quy trình cycle count và đầu ra bắt buộc ở mỗi bước.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 61.686,
+      "error": "RuntimeError: Cloudflare Workers AI request failed: The read operation timed out",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "K16",
+      "agent": "knowledge",
+      "question": "Hàng trả về được phân loại A-grade, B-grade và C-grade như thế nào?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 56.494,
+      "error": "RuntimeError: Cloudflare Workers AI request failed: The read operation timed out",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "K17",
+      "agent": "knowledge",
+      "question": "Nếu stockout_flag và overstock_flag cùng bật, có được tự động phát hành PO không?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 70.953,
+      "error": "ValueError: Generated answer contains no source citations. Answer: Khi stockout_flag và over",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "K18",
+      "agent": "knowledge",
+      "question": "Kế hoạch tồn kho cho campaign cần bắt đầu trước bao lâu và cần xác minh các yếu tố nào?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 57.643,
+      "error": "RuntimeError: Cloudflare Workers AI request failed: The read operation timed out",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "K19",
+      "agent": "knowledge",
+      "question": "Những trường tối thiểu nào cần lưu trong phiếu điều chỉnh tồn kho?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 53.775,
+      "error": "RuntimeError: Cloudflare Workers AI returned empty output",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "K20",
+      "agent": "knowledge",
+      "question": "Những trường dữ liệu còn thiếu khiến hệ thống chưa thể đề xuất PO đáng tin cậy?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 60.546,
+      "error": "RuntimeError: Cloudflare Workers AI request failed: The read operation timed out",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "K21",
+      "agent": "knowledge",
+      "question": "Trong bộ dữ liệu mô phỏng, số SKU ở product master, số bản ghi inventory và số bản ghi vừa bật stockout vừa overstock là bao nhiêu?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "answer": "Trong bộ dữ liệu mô phỏng:\n* Số SKU ở product master là 2,412 [S1], [S3], [S5].\n* Số bản ghi inventory là 60,247 [S1], [S3], [S5].\n* Số bản ghi vừa bật đồng thời stockout và overstock là 30,495 [S1], [S2].",
+      "contexts": [
+        "01 | Bối cảnh dữ liệu Dataset là cơ sở mô phỏng; không phản ánh tồn kho hiện tại. 2,412 SKU trong product master 60,247 Bản ghi inventory theo snapshot 424 SKU có snapshot 31/12/2022 67.3% Bản ghi bật stockout_flag Nhóm hàng • Streetwear • Outdoor • Casual • GenZ Vấn đề dữ liệu cần kiểm soát • 76.3% bản ghi bật overstock_flag • 30,495 bản ghi bật đồng thời stockout + overstock • reorder_flag có tổng bằng 0 • Snapshot mới nhất trong file: 2022-12-31 VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 2",
+        "11. Kiểm soát chất lượng dữ liệu\nTrong inventory.csv, 67.3% bản ghi có stockout_flag=1, 76.3% có overstock_flag=1, 30,495 bản ghi bật đồng thời hai cờ, và tổng reorder_flag bằng 0. Trên snapshot 2022-12-31, 232 SKU bật đồng thời stockout_flag và overstock_flag. Đây là tín hiệu cần xác minh, không phải bằng chứng rằng từng SKU chắc chắn thiếu và dư hàng cùng lúc.\nTính lại days of supply từ tồn khả dụng và nhu cầu bình quân; lưu cả giá trị gốc và giá trị tính lại.\nKiểm tra định nghĩa của stockout_flag, overstock_flag, reorder_flag trước khi dùng cho quyết định.\nGắn source file, snapshot date, công thức, thời điểm cập nhật và người sở hữu dữ liệu.\nKhi tín hiệu mâu thuẫn, chuyển sang trạng thái DATA CONFLICT; chặn PO tự động và yêu cầu Inventory Controller xác minh.\nKhông để AI tự sửa dữ liệu nguồn hoặc tự phát hành PO. Câu trả lời AI cần nêu snapshot date, nguồn và mức độ tin cậy.",
+        "2. Phạm vi và cơ sở dữ liệu\nDataset có 2,412 SKU trong products.csv và 60,247 bản ghi inventory.csv, bao phủ 2012-07-31 đến 2022-12-31. Snapshot mới nhất là 2022-12-31 với 424 SKU có bản ghi. Nhóm hàng quan sát gồm Streetwear, Outdoor, Casual và GenZ. Sales.csv bao phủ 2012-07-04 đến 2022-12-31. Dữ liệu trả về, đơn hàng, khuyến mãi và giao hàng có thể dùng để phân tích nguyên nhân nhưng không thay thế sổ cái tồn kho.\nDataset không cung cấp đầy đủ purchase orders inbound, MOQ, lead time nhà cung cấp, backorder, vị trí kho hoặc đơn vị tiền tệ được xác nhận. Vì vậy, các trường này phải được bổ sung trước khi triển khai chính sách mua hàng trong môi trường thật.",
+        "Section: README\nColumns: Mục | Nội dung\nRow 1: Mục: Nguồn dữ liệu | Nội dung: datathon-2026-round-1.zip: inventory.csv, products.csv, promotions.csv, returns.csv, orders.csv, sales.csv.\nRow 2: Mục: Phạm vi | Nội dung: 2,412 SKU trong products.csv; 60,247 snapshot tồn kho; dữ liệu inventory từ 2012-07-31 đến 2022-12-31.\nRow 3: Mục: Snapshot mẫu | Nội dung: 2022-12-31 — 424 SKU có bản ghi trong snapshot mới nhất. Không đại diện cho tồn kho hiện hành.\nRow 4: Mục: Cách tính nhu cầu | Nội dung: Avg monthly demand = trung bình units_sold của tối đa 3 snapshot gần nhất có sẵn cho SKU. Có thể không phải 3 tháng liên tiếp.\nRow 5: Mục: Tham số giả định | Nội dung: Lead time = 14 ngày; safety stock = 7 ngày; review period = 7 ngày. Chỉnh theo nhà cung cấp / SKU trước khi sử dụng.\nRow 6: Mục: ROP | Nội dung: Avg daily demand × (Lead time + Safety days). Avg daily demand = Avg monthly demand / 30.\nRow 7: Mục: Target stock | Nội dung: Avg daily demand × (Lead time + Safety days + Review period)."
+      ],
+      "reference": "[\"2,412 SKU\", \"60,247 bản ghi inventory\", \"30,495 bản ghi bật đồng thời stockout và overstock\", \"snapshot mới nhất 2022-12-31\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "01_Inventory_Management_Policy_Manual.docx",
+        "01_Inventory_Management_Policy_Manual.docx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 35.889,
+      "total_case_seconds": 74.035,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8697,
+        "context_precision": 0.8333
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "K22",
+      "agent": "knowledge",
+      "question": "Tại sao không được cộng stock_on_hand qua nhiều snapshot để mô tả tồn kho hiện tại?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 55.978,
+      "error": "RuntimeError: Cloudflare Workers AI returned empty output",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "K23",
+      "agent": "knowledge",
+      "question": "Người dùng có role procurement có thể đọc Policy Rules Registry và Inventory Management Policy Manual theo metadata phân quyền hiện tại không?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 58.046,
+      "error": "RuntimeError: Cloudflare Workers AI returned empty output",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "K24",
+      "agent": "knowledge",
+      "question": "Agent có được tự phát hành purchase order hoặc tự sửa tồn kho không?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 50.855,
+      "error": "RuntimeError: Cloudflare Workers AI returned empty output",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "K25",
+      "agent": "knowledge",
+      "question": "Hãy cho biết tồn kho thực tế hôm nay của một SKU bất kỳ trong năm 2026, cùng lead time và PO inbound của nhà cung cấp.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "latency_seconds": 44.011,
+      "error": "RuntimeError: Cloudflare Workers AI returned empty output",
+      "langchain_callback_events": 4,
+      "status": "run_error"
+    },
+    {
+      "case_id": "S01",
+      "agent": "sql",
+      "question": "Tổng doanh thu và giá vốn (COGS) tháng 12/2022 là bao nhiêu?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "sql_semantic_correctness": false,
+      "sql_rows": [],
+      "answer": "I couldn't safely run the generated query: Cloudflare Workers AI returned empty output",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"field\": \"revenue\", \"equals\": 52454936.2}, {\"field\": \"cogs\", \"equals\": 53489673.44}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "RuntimeError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 17.852,
+      "total_case_seconds": 31.397,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7243,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "S02",
+      "agent": "sql",
+      "question": "Trình bày doanh thu và COGS theo từng tháng trong năm 2022.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "sql_semantic_correctness": false,
+      "sql_rows": [],
+      "answer": "I couldn't safely run the generated query: Cloudflare Workers AI returned empty output",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count\": 12}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "RuntimeError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 23.351,
+      "total_case_seconds": 37.47,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7404,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "S03",
+      "agent": "sql",
+      "question": "Tháng nào có tổng doanh thu cao nhất trong năm 2022?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "sql_semantic_correctness": false,
+      "sql_rows": [],
+      "answer": "I couldn't safely run the generated query: Cloudflare Workers AI returned empty output",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count\": 1}, {\"field\": \"revenue\", \"non_null\": true}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "RuntimeError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 19.982,
+      "total_case_seconds": 34.637,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7239,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "S04",
+      "agent": "sql",
+      "question": "Tính doanh thu trừ giá vốn theo từng tháng trong năm 2022.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "sql_semantic_correctness": false,
+      "sql_rows": [],
+      "answer": "I couldn't safely run the generated query: Cloudflare Workers AI returned empty output",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count\": 12}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "RuntimeError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 10.032,
+      "total_case_seconds": 23.025,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7404,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "S05",
+      "agent": "sql",
+      "question": "Trong năm 2022 có bao nhiêu đơn hàng theo từng order_status?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "sql_semantic_correctness": true,
+      "sql_rows": [],
+      "answer": "I couldn't safely run the generated query: Cloudflare Workers AI returned empty output",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "RuntimeError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 20.001,
+      "total_case_seconds": 34.597,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7482,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "S06",
+      "agent": "sql",
+      "question": "Trong năm 2022, số đơn hàng theo từng payment_method là bao nhiêu?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "sql_semantic_correctness": true,
+      "sql_rows": [],
+      "answer": "I couldn't safely run the generated query: Cloudflare Workers AI returned empty output",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "RuntimeError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 27.224,
+      "total_case_seconds": 45.617,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7409,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "S07",
+      "agent": "sql",
+      "question": "So sánh số đơn hàng theo device_type trong năm 2022.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "sql_semantic_correctness": true,
+      "sql_rows": [],
+      "answer": "I couldn't safely run the generated query: Cloudflare Workers AI returned empty output",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "RuntimeError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 20.015,
+      "total_case_seconds": 43.267,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7616,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "S08",
+      "agent": "sql",
+      "question": "Doanh thu thuần theo khu vực trong tháng 12/2022 là bao nhiêu?",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "sql_semantic_correctness": false,
+      "sql_rows": [],
+      "answer": "I couldn't safely run the generated query: Cloudflare Workers AI returned empty output",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"field\": \"region\", \"contains\": \"East\"}, {\"field\": \"net_sales\", \"equals\": 14079268.92}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "RuntimeError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 28.157,
+      "total_case_seconds": 46.294,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.71,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    },
+    {
+      "case_id": "S09",
+      "agent": "sql",
+      "question": "Xếp hạng các category theo doanh thu thuần của sản phẩm trong năm 2022.",
+      "model": "@cf/google/gemma-4-26b-a4b-it",
+      "sql_semantic_correctness": true,
+      "sql_rows": [],
+      "answer": "I couldn't safely run the generated query: Cloudflare Workers AI returned empty output",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 20]}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "RuntimeError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 28.018,
+      "total_case_seconds": 41.356,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7467,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored"
+    }
+  ]
+}

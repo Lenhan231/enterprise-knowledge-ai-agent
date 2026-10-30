@@ -1,12 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 let activeTab = "knowledge";
 let currentUser = null;
-let decisionSuggestionsPending = false;
-let commerceSnapshot = null;
-const commerceLoadedDomains = new Set();
-const commerceLoadingDomains = new Set();
-let commerceCampaignsLoaded = false;
-let commerceCampaignsLoading = false;
 let knowledgeDocuments = [];
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -48,7 +42,12 @@ function selectWorkspaceTab(name) {
   const button = $(`[data-tab-target="${name}"]`);
   if (!button || button.hidden) return;
   activeTab = name;
-  $(".intro").hidden = name === "analytics";
+  const isKnowledgeTab = name === "knowledge";
+  $(".intro").hidden = !isKnowledgeTab;
+  $(".agent-overview").hidden = !isKnowledgeTab
+    || ["document_processing_owner", "document_uploader"].includes(currentUser?.role);
+  $(".stats").hidden = !isKnowledgeTab || currentUser?.role === "document_processing_owner";
+  $("#inventory-snapshot").hidden = !isKnowledgeTab;
   document.querySelectorAll(".workspace-tab").forEach((tab) => {
     const selected = tab === button;
     tab.setAttribute("aria-selected", String(selected));
@@ -58,21 +57,18 @@ function selectWorkspaceTab(name) {
   document.querySelectorAll(".tab-panel").forEach((panel) => {
     panel.hidden = panel.id !== button.getAttribute("aria-controls");
   });
-  if (name === "analytics") loadCommerceDashboardForActiveView();
 }
 
 function syncWorkspaceTabs(user = currentUser) {
-  const isTester = user?.role === "tester";
+  const isProcessingOwner = user?.role === "document_processing_owner";
   const isAdmin = user?.role === "admin";
-  const canAskDocuments = !isTester && user?.role !== "document_uploader";
-  const canViewAnalytics = ["operations", "finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user?.role);
-  const canUpload = ["document_uploader", "admin"].includes(user?.role);
+  const canAskDocuments = !isProcessingOwner && user?.role !== "document_uploader";
+  const canUpload = ["document_uploader", "admin", "document_processing_owner"].includes(user?.role);
   const available = {
     knowledge: canAskDocuments,
-    analytics: canViewAnalytics,
     upload: canUpload,
-    processing: isAdmin,
-    "ocr-lab": isTester || isAdmin,
+    processing: isProcessingOwner,
+    "ocr-lab": isProcessingOwner,
     "knowledge-management": isAdmin,
     access: isAdmin,
     monitoring: isAdmin,
@@ -81,7 +77,7 @@ function syncWorkspaceTabs(user = currentUser) {
     button.hidden = !available[button.dataset.tabTarget];
   });
   if (!available[activeTab]) {
-    activeTab = isTester ? "ocr-lab" : available.knowledge ? "knowledge" : available.upload ? "upload" : "analytics";
+    activeTab = isProcessingOwner ? "processing" : available.knowledge ? "knowledge" : available.upload ? "upload" : "knowledge";
   }
   selectWorkspaceTab(activeTab);
 }
@@ -102,48 +98,14 @@ document.querySelectorAll("[data-open-tab]").forEach((button) => {
 });
 
 function renderCorpus(data) {
-  const commerceLabels = {
-    inventory_allocation: "Inventory allocation",
-    promotion_planning: "Promotion planning",
-    nationwide_logistics: "Nationwide logistics",
-  };
-  const referenceLabels = {
-    management_cookbook_reference: "Management method",
-    company_practice_reference: "Company practice",
-    company_policy_reference: "External policy · stated scope only",
-    platform_operating_rule: "Platform operating rule",
-  };
-  const companies = new Set(data.documents.map((doc) => doc.company).filter(Boolean));
+  const companies = new Set(data.documents.map((doc) => doc.domain || "General").filter(Boolean));
   $("#company-name").textContent = companies.size || 0;
   $("#document-count").textContent = formatNumber(data.document_count);
   $("#chunk-count").textContent = formatNumber(data.chunk_count);
   const inFlight = data.documents.filter((doc) => !["ready", "parsed"].includes(doc.processing_status)).length;
   $("#processing-count").textContent = formatNumber(inFlight);
-  $("#source-count").textContent = `${formatNumber(data.document_count)} registered source${data.document_count === 1 ? "" : "s"}`;
-  $("#connection-status").textContent = "Knowledge base connected";
+  $("#connection-status").textContent = "Agent workspace";
   document.querySelector(".status-dot").classList.add("connected");
-
-  const groups = Object.groupBy
-    ? Object.groupBy(data.documents, (doc) => doc.company)
-    : data.documents.reduce((result, doc) => {
-      (result[doc.company] ??= []).push(doc);
-      return result;
-    }, {});
-  $("#company-grid").innerHTML = Object.entries(groups).map(([company, docs]) => `
-    <article class="company-card">
-      <div class="company-card-head"><div><span class="company-kicker">${escapeHtml([...new Set(docs.flatMap((doc) => doc.knowledge_domains || []))].map((domain) => commerceLabels[domain] || domain).join(" · ") || docs[0].domain.replaceAll("_", " "))}</span><h3>${escapeHtml(company)}</h3></div><span class="doc-total">${formatNumber(docs.length)} doc${docs.length === 1 ? "" : "s"}</span></div>
-      <div class="document-list">${docs.map((doc) => {
-        const href = validSourceUrl(doc.source_url);
-        const link = href
-          ? `<a class="document-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Open official source</a>`
-          : "";
-        const status = doc.processing_status || (doc.chunks ? "ready" : "uploaded");
-        const domains = (doc.knowledge_domains || []).map((domain) => commerceLabels[domain] || domain).join(", ");
-        const reference = referenceLabels[doc.external_reference_type] || "";
-        const attribution = [doc.source_publisher, reference, domains].filter(Boolean).join(" · ");
-        return `<article class="document-row"><div class="file-mark">${escapeHtml(doc.format)}</div><div class="document-info"><strong>${escapeHtml(doc.title)}</strong><span>${escapeHtml(doc.fiscal_year ? `FY ${doc.fiscal_year}` : attribution || "General")} · ${formatNumber(doc.chunks)} passages · ${escapeHtml(status)} · access: ${escapeHtml((doc.allowed_roles || []).join(", "))}</span>${attribution ? `<small>${escapeHtml(attribution)}</small>` : ""}${link}</div></article>`;
-      }).join("")}</div>
-    </article>`).join("") || '<div class="loading-card">No company documents are indexed yet.</div>';
 }
 
 function renderParsedChunkInspector(documents) {
@@ -206,7 +168,7 @@ function renderKnowledgeDocuments() {
     return `<article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
       <div class="knowledge-document-copy"><strong>${escapeHtml(doc.title)}</strong>
         <span class="knowledge-source-kind ${doc.synthetic_company_policy ? "is-synthetic" : ""}">${escapeHtml(sourceKind)}</span>
-        <span>${escapeHtml(doc.source_publisher || doc.company || "Unknown publisher")} · ${escapeHtml(doc.format || "File")} · ${formatNumber(doc.chunk_count)} passages</span>
+        <span>${escapeHtml(doc.source_publisher || "Unknown publisher")} · ${escapeHtml(doc.format || "File")} · ${formatNumber(doc.chunk_count)} passages</span>
         <small>${escapeHtml(domains)} · ${escapeHtml(doc.processing_status || "unknown")} · ${knowledgeDocumentIsRetrievable(doc) ? "Available to AI" : doc.knowledge_base_active ? "Not retrievable" : "Removed from AI retrieval"}</small>
         <code>${escapeHtml(doc.document_id)}</code>${sourceLink}
         <details class="knowledge-access-editor"><summary>Access roles: ${escapeHtml((doc.allowed_roles || []).join(", ") || "none")}</summary>
@@ -229,8 +191,8 @@ async function refreshKnowledgeDocuments() {
   $("#knowledge-documents-status").textContent = "Loading indexed sources…";
   const result = await api("/api/admin/knowledge-documents");
   knowledgeDocuments = result.documents;
-  renderKnowledgeDocuments();
-  renderParsedChunkInspector(knowledgeDocuments);
+  if (currentUser?.role === "admin") renderKnowledgeDocuments();
+  if (currentUser?.role === "document_processing_owner") renderParsedChunkInspector(knowledgeDocuments);
 }
 
 function renderOcrDiagnostics(diagnostics) {
@@ -296,54 +258,25 @@ async function loadOcrTestRuns() {
     const config = run.processor_config || {};
     const engine = config.parser_engine;
     const selected = config.parser_settings?.[engine] || config;
-    const tesseractConfig = selected.tesseract_config || {};
-    const parserSettings = engine === "mineru"
-      ? `MinerU · force OCR ${selected.mineru_force_ocr ? "on" : "off"} · pages ${selected.mineru_page_range || "all"}`
-      : engine === "docling"
-      ? `Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`
-      : engine === "pp-structurev3"
-      ? `PP-StructureV3 · ${selected.paddle_device || "cpu"} · ${Math.round((selected.paddle_render_scale ?? 1.5) * 72)} DPI · formulas ${selected.paddle_formula_recognition ? "on" : "off"} · charts ${selected.paddle_chart_recognition ? "on" : "off"}`
-      : engine === "built_in"
-        ? `Built-in · PSM ${selected.tesseract_psm} · ${Math.round((selected.ocr_render_scale ?? 1.5) * 72)} DPI · threshold ${tesseractConfig.thresholding_method ?? 0} · table recognition ${tesseractConfig.textord_tablefind_recognize_tables ? "on" : "off"} · ${selected.tessdata_variant || "system"} data`
-        : "Parser settings unavailable";
-    const settings = config.layout_detector === "doclayout-yolo"
-      ? `${parserSettings} · YOLO overlay ${config.layout_image_size}px · confidence ${config.layout_confidence_threshold}`
-      : parserSettings;
-    const embeddingSummary = run.embedding_status === "not_run"
-      ? "embedding skipped"
-      : `historical embedding ${run.embedding_status}`;
+    const parserSettings = `Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`;
+    const settings = parserSettings;
     const previewSummary = run.page_count ? `${formatNumber(run.page_count)} page previews` : "no page previews";
     const processingSummary = `processing ${formatDuration(run.runtime_info?.processing_time_ms)}`;
-    return `<button type="button" class="ocr-run-button" data-ocr-run-id="${escapeHtml(run.run_id)}"><strong>${escapeHtml(run.source_filename)}</strong><span>${escapeHtml(new Date(run.created_at).toLocaleString())} · ${processingSummary} · ${previewSummary} · ${formatNumber(run.chunk_count)} parser chunks · ${embeddingSummary} · ${formatNumber(run.table_count)} tables · ${escapeHtml(settings)}</span></button>`;
+    return `<button type="button" class="ocr-run-button" data-ocr-run-id="${escapeHtml(run.run_id)}"><strong>${escapeHtml(run.source_filename)}</strong><span>${escapeHtml(new Date(run.created_at).toLocaleString())} · ${processingSummary} · ${previewSummary} · ${formatNumber(run.element_count)} parser elements · ${formatNumber(run.table_count)} tables · ${escapeHtml(settings)}</span></button>`;
   }).join("") || '<p class="loading-card">No upload tests yet. Upload a supported document above to create one.</p>';
 }
 
 function renderOcrTestDetails(run) {
-  const layoutPages = run.runtime_info?.layout_detections || [];
   const allPages = [...new Set([
     ...run.pages,
-    ...layoutPages.map((page) => page.page_number == null ? NaN : Number(page.page_number)).filter(Number.isFinite),
-    ...run.chunks.map((chunk) => chunk.metadata?.page_number == null ? NaN : Number(chunk.metadata.page_number)).filter(Number.isFinite),
+    ...run.elements.map((element) => element.metadata?.page_number == null ? NaN : Number(element.metadata.page_number)).filter(Number.isFinite),
     ...run.tables.map((table) => table.page_number == null ? NaN : Number(table.page_number)).filter(Number.isFinite),
   ])].sort((a, b) => a - b);
   const pageContent = allPages.map((pageNumber, pageIndex) => {
-    const layoutPage = layoutPages.find((page) => Number(page.page_number) === pageNumber);
-    const layoutRegions = layoutPage?.regions || [];
-    const layoutOverlay = layoutPage ? `<div class="ocr-layout-preview">
-      <img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">
-      <svg viewBox="0 0 ${Number(layoutPage.width)} ${Number(layoutPage.height)}" role="img" aria-label="${formatNumber(layoutRegions.length)} DocLayout-YOLO regions detected">
-        ${layoutRegions.map((region) => {
-          const [x1, y1, x2, y2] = region.bbox.map(Number);
-          const x = x1 * Number(layoutPage.width), y = y1 * Number(layoutPage.height);
-          const width = Math.max(0, (x2 - x1) * Number(layoutPage.width));
-          const height = Math.max(0, (y2 - y1) * Number(layoutPage.height));
-          const label = `${region.class} ${Number(region.score).toFixed(2)}`;
-          return `<g class="layout-region layout-region-${escapeHtml(region.class)}"><rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${width.toFixed(1)}" height="${height.toFixed(1)}"></rect><text x="${x.toFixed(1)}" y="${Math.max(12, y - 3).toFixed(1)}">${escapeHtml(label)}</text></g>`;
-        }).join("")}
-      </svg></div>` : `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
-    const chunks = run.chunks.filter((chunk) => Number(chunk.metadata?.page_number) === pageNumber);
+    const pagePreview = `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
+    const elements = run.elements.filter((element) => Number(element.metadata?.page_number) === pageNumber);
     const tables = run.tables.filter((table) => Number(table.page_number) === pageNumber);
-    const ocrDiagnostics = chunks.flatMap((chunk) => chunk.metadata?.ocr_diagnostics || []);
+    const ocrDiagnostics = elements.flatMap((element) => element.metadata?.ocr_diagnostics || []);
     const tablesHtml = tables.map((table) => {
       const data = table.structured_data || {};
       const context = table.context || {};
@@ -385,25 +318,25 @@ function renderOcrTestDetails(run) {
         <details class="candidate-source"><summary>Detailed parser metadata</summary><pre>${escapeHtml(JSON.stringify(metadata, null, 2))}</pre></details></article>`;
     }).join("");
     return `<details class="ocr-test-page" ${pageIndex === 0 ? "open" : ""}>
-      <summary>Page ${formatNumber(pageNumber)} · ${formatNumber(chunks.length)} parser chunks · ${formatNumber(tables.length)} tables</summary>
+      <summary>Page ${formatNumber(pageNumber)} · ${formatNumber(elements.length)} parser elements · ${formatNumber(tables.length)} tables</summary>
       <div class="ocr-test-page-content">
-      <section class="ocr-test-raw"><h4>Raw page</h4>${layoutOverlay}${layoutPage ? `<p class="corpus-note">DocLayout-YOLO · ${formatNumber(layoutRegions.length)} regions at ${formatNumber(run.processor_config?.layout_image_size)}px, threshold ${escapeHtml(run.processor_config?.layout_confidence_threshold)}</p>` : ""}</section>
+      <section class="ocr-test-raw"><h4>Raw page</h4>${pagePreview}</section>
       <section class="ocr-test-extracted"><h4>Extracted output</h4>
         ${renderOcrDiagnostics(ocrDiagnostics)}
-        <details class="ocr-test-chunks"><summary>Parser output · ${formatNumber(chunks.length)} chunks</summary>${chunks.map((chunk) => `<article class="ocr-test-chunk"><div class="candidate-heading"><strong>Chunk ${formatNumber(chunk.chunk_index + 1)}</strong><span>${formatNumber(chunk.metadata?.actual_char_count ?? chunk.content.length)} chars actual · ${formatNumber(chunk.metadata?.chunk_size_chars ?? 0)} char limit · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")} · ${escapeHtml(chunk.metadata?.layout_type || "text")}</span></div><pre>${escapeHtml(chunk.content)}</pre><details class="candidate-source"><summary>Chunk metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser chunks on this page.</p>'}</details>
+        <details class="ocr-test-elements"><summary>Document elements · ${formatNumber(elements.length)} elements</summary>${elements.map((element) => `<article class="ocr-test-element"><div class="candidate-heading"><strong>Element ${formatNumber(element.element_index + 1)}</strong><span>${formatNumber(element.content.length)} chars · ${escapeHtml(element.metadata?.element_type || "text")} · ${escapeHtml(element.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(element.content)}</pre><details class="candidate-source"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(element.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser elements on this page.</p>'}</details>
         <h4 class="ocr-test-table-heading">Extracted tables</h4>
         ${tablesHtml || '<p class="ocr-test-empty">No structured table detected on this page.</p>'}
       </section>
       </div>
     </details>`;
   }).join("");
-  const unpagedChunks = run.chunks.filter((chunk) => chunk.metadata?.page_number == null);
+  const unpagedElements = run.elements.filter((element) => element.metadata?.page_number == null);
   const unpagedTables = run.tables.filter((table) => table.page_number == null);
-  const unpagedOutput = unpagedChunks.length || unpagedTables.length
+  const unpagedOutput = unpagedElements.length || unpagedTables.length
     ? `<section class="ocr-test-page">
         <h3>Document content · no page previews</h3>
-        <section class="ocr-test-extracted"><h4>Extracted output · ${formatNumber(unpagedChunks.length)} shared chunks</h4>
-          ${unpagedChunks.map((chunk) => `<article class="ocr-test-chunk"><div class="candidate-heading"><strong>Chunk ${formatNumber(chunk.chunk_index + 1)}</strong><span>${formatNumber(chunk.metadata?.actual_char_count ?? chunk.content.length)} chars · ${escapeHtml(chunk.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(chunk.content)}</pre><details class="candidate-source"><summary>Chunk metadata</summary><pre>${escapeHtml(JSON.stringify(chunk.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser chunks.</p>'}
+        <section class="ocr-test-extracted"><h4>Extracted output · ${formatNumber(unpagedElements.length)} document elements</h4>
+          ${unpagedElements.map((element) => `<article class="ocr-test-element"><div class="candidate-heading"><strong>Element ${formatNumber(element.element_index + 1)}</strong><span>${formatNumber(element.content.length)} chars · ${escapeHtml(element.metadata?.element_type || "text")} · ${escapeHtml(element.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(element.content)}</pre><details class="candidate-source"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(element.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser elements.</p>'}
           <h4 class="ocr-test-table-heading">Extracted tables · ${formatNumber(unpagedTables.length)}</h4>
           ${unpagedTables.map((table) => {
             const data = table.structured_data || {};
@@ -420,10 +353,9 @@ function renderOcrTestDetails(run) {
     : "";
   const processingSummary = `Processing time: ${formatDuration(run.runtime_info?.processing_time_ms)}`;
   $("#ocr-test-results").innerHTML = `<article class="ocr-test-run">
-    <div class="candidate-heading"><strong>${escapeHtml(run.source_filename)}</strong><span>${processingSummary} · ${run.page_count ? `${formatNumber(run.page_count)} page previews` : "No page previews"} · ${formatNumber(run.chunks.length)} parser chunks · ${formatNumber(run.tables.length)} tables</span></div>
+    <div class="candidate-heading"><strong>${escapeHtml(run.source_filename)}</strong><span>${processingSummary} · ${run.page_count ? `${formatNumber(run.page_count)} page previews` : "No page previews"} · ${formatNumber(run.elements.length)} parser elements · ${formatNumber(run.tables.length)} tables</span></div>
     <p class="corpus-note">SHA-256: <code>${escapeHtml(run.source_sha256)}</code></p>
-    <p class="corpus-note">Tokenization and embedding are downstream stages and are not run by Upload Test.</p>
-    <details class="candidate-source"><summary>Parser configuration and versions</summary><pre>${escapeHtml(JSON.stringify({processor_config:run.processor_config,runtime_info:{...run.runtime_info,layout_detections:undefined}},null,2))}</pre></details>
+    <details class="candidate-source"><summary>Parser configuration and versions</summary><pre>${escapeHtml(JSON.stringify({processor_config:run.processor_config,runtime_info:run.runtime_info},null,2))}</pre></details>
     <div class="ocr-test-pages">${pageContent}${unpagedOutput}</div>
   </article>`;
 }
@@ -502,301 +434,6 @@ function renderCommerceEvidence(rows, group) {
     return `<td>${escapeHtml(text)}</td>`;
   }).join("")}</tr>`).join("");
   return `<details class="citation-observations"><summary>Inspect structured SQL observations · ${rows.length} rows</summary><div class="commerce-table-wrap"><table aria-label="${escapeHtml(group || "Commerce SQL observations")}"><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div></details>`;
-}
-
-function renderCommerceCards(cards, note) {
-  $("#commerce-domain-cards").innerHTML = cards.map(([label, value, detail]) =>
-    `<article class="commerce-kpi-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><small>${escapeHtml(detail || note)}</small></article>`
-  ).join("");
-}
-
-function renderCommerceChart(selector, rows, series, unit, kind = "line", periodLabel = "All available years") {
-  const root = $(selector);
-  if (!rows.length) {
-    root.innerHTML = '<p class="analysis-empty">No observations available to chart.</p>';
-    return;
-  }
-  const years = [...new Set(rows.map((row) => Number(row.year)).filter(Number.isFinite))].sort((a, b) => a - b);
-  const values = rows.flatMap((row) => series.map((item) => Number(item.value(row)))).filter(Number.isFinite);
-  const max = unit === "%" ? Math.max(100, ...values) : Math.max(1, ...values) * 1.08;
-  const width = 760, height = 250, left = 60, right = 746, top = 15, bottom = 199;
-  const x = (index) => years.length < 2 ? (left + right) / 2 : left + index * (right - left) / (years.length - 1);
-  const y = (value) => bottom - (value / max) * (bottom - top);
-  const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
-  const grid = Array.from({ length: 4 }, (_, index) => {
-    const value = max * index / 3, yy = y(value);
-    return `<g><line x1="${left}" y1="${yy}" x2="${right}" y2="${yy}" class="commerce-chart-gridline"/><text x="${left - 8}" y="${yy + 4}" text-anchor="end" class="commerce-chart-axis-label">${compact.format(value)}</text></g>`;
-  }).join("");
-  const labels = years.map((year, index) => `<text x="${x(index)}" y="${height - 12}" text-anchor="middle" class="commerce-chart-axis-label">${year}</text>`).join("");
-  let marks = "";
-  if (kind === "bar") {
-    const groupWidth = Math.min(28, (right - left) / Math.max(years.length, 1) * 0.72);
-    const barWidth = groupWidth / series.length;
-    marks = years.map((year, yearIndex) => series.map((item, seriesIndex) => {
-      const row = rows.find((candidate) => Number(candidate.year) === year && item.matches(candidate));
-      const value = row ? Number(item.value(row)) : NaN;
-      if (!Number.isFinite(value)) return "";
-      const barX = x(yearIndex) - groupWidth / 2 + seriesIndex * barWidth;
-      return `<g><title>${escapeHtml(item.label)} · ${year}: ${formatCommerceValue(value)} ${escapeHtml(unit)}</title><rect x="${barX}" y="${y(value)}" width="${Math.max(2, barWidth - 1)}" height="${bottom - y(value)}" rx="2" fill="${item.color}"/></g>`;
-    }).join("")).join("");
-  } else {
-    marks = series.map((item) => {
-      const points = years.map((year, index) => {
-        const row = rows.find((candidate) => Number(candidate.year) === year && item.matches(candidate));
-        const value = row ? Number(item.value(row)) : NaN;
-        return Number.isFinite(value) ? { year, index, value } : null;
-      }).filter(Boolean);
-      const path = points.map((point, index) => `${index ? "L" : "M"}${x(point.index)},${y(point.value)}`).join(" ");
-      return `<path d="${path}" fill="none" stroke="${item.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${points.map((point) => `<g><title>${escapeHtml(item.label)} · ${point.year}: ${formatCommerceValue(point.value)} ${escapeHtml(unit)}</title><circle cx="${x(point.index)}" cy="${y(point.value)}" r="3.5" fill="${item.color}"/></g>`).join("")}`;
-    }).join("");
-  }
-  const legend = series.map((item) => `<span><i style="--commerce-series:${item.color}"></i>${escapeHtml(item.label)}</span>`).join("");
-  root.innerHTML = `<figure><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(series.map((item) => item.label).join(" and "))} by year"><title>${escapeHtml(series.map((item) => item.label).join(" and "))} by year</title>${grid}<line x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}" class="commerce-chart-axis"/>${marks}${labels}</svg><figcaption>${legend}<span class="commerce-chart-unit">${escapeHtml(unit)}</span></figcaption></figure><p class="commerce-chart-note">Showing ${escapeHtml(periodLabel)}.</p>`;
-}
-
-function renderCommerceDashboard(data = commerceSnapshot) {
-  if (!data) return;
-  commerceSnapshot = data;
-  const activeView = document.querySelector('[data-commerce-view][aria-selected="true"]')?.dataset.commerceView || "inventory";
-  const yearSelect = $("#commerce-year-filter");
-  const selectedYear = yearSelect.value;
-  const domainYears = {
-    inventory: (data.inventory_by_year || []).map((row) => row.year),
-    promotions: [
-      ...(data.promotions_by_year || []).map((row) => row.year),
-      ...(data.promotions_by_campaign || []).map((row) => row.year),
-    ],
-    logistics: (data.logistics_by_year_region || []).map((row) => row.year),
-  };
-  const years = [...new Set((domainYears[activeView] || []).filter(Number.isFinite))].sort((a, b) => a - b);
-  yearSelect.innerHTML = '<option value="">All available years</option>' + years.map((year) =>
-    `<option value="${year}">${year}</option>`).join("");
-  yearSelect.value = years.includes(Number(selectedYear)) ? selectedYear : "";
-  const year = yearSelect.value ? Number(yearSelect.value) : null;
-  const byYear = (rows) => rows.filter((row) => year == null || Number(row.year) === year);
-  const yearLabel = year == null ? "All available years" : `Year ${year}`;
-  if (activeView === "inventory") {
-    const rows = byYear(data.inventory_by_year || []);
-    const latest = rows.at(-1) || {};
-    const inventoryPeriod = year == null ? `Latest annual data: ${latest.year ?? "—"}` : yearLabel;
-    const annualCategoryRows = data.inventory_year_end_by_category || [];
-    const categoryYear = year ?? annualCategoryRows.at(-1)?.year ?? null;
-    const categoryRows = categoryYear == null ? [] : annualCategoryRows.filter((row) => Number(row.year) === Number(categoryYear));
-    const stockoutProducts = categoryRows.reduce((sum, row) => sum + Number(row.stockout_products || 0), 0);
-    const overstockProducts = categoryRows.reduce((sum, row) => sum + Number(row.overstock_products || 0), 0);
-    const bothFlaggedProducts = categoryRows.reduce((sum, row) => sum + Number(row.both_flagged_products || 0), 0);
-    const stockoutDays = Number(latest.avg_stockout_days);
-    const fillRate = Number(latest.avg_fill_rate);
-    renderCommerceCards([
-      ["SKU snapshots", formatCommerceValue(latest.sku_snapshots), inventoryPeriod],
-      ["Average units on hand", formatCommerceValue(latest.avg_stock_on_hand), inventoryPeriod],
-      ["Average fill rate", Number.isFinite(fillRate) ? `${(fillRate * 100).toFixed(2)}%` : "—", "Mean of source fill_rate values"],
-      ["Stockout snapshots", formatCommerceValue(latest.stockout_snapshots), `${inventoryPeriod}; not unique products`],
-      ["Overstock snapshots", formatCommerceValue(latest.overstock_snapshots), `${inventoryPeriod}; days-of-supply excluded`],
-      ["Average stockout days", Number.isFinite(stockoutDays) ? stockoutDays.toFixed(2) : "—", inventoryPeriod],
-      ["Selected snapshot · stockout / overstock / both flags", `${formatCommerceValue(stockoutProducts)} / ${formatCommerceValue(overstockProducts)} / ${formatCommerceValue(bothFlaggedProducts)}`, `Latest snapshot in ${categoryYear}; both flags can apply to one product`],
-    ], "Synthetic dataset observation");
-  } else if (activeView === "promotions") {
-    const rows = byYear(data.promotions_by_year || []);
-    const tagged = rows.filter((row) => row.used_promotion);
-    const plain = rows.filter((row) => !row.used_promotion);
-    const sum = (items, key) => items.reduce((total, row) => total + Number(row[key] || 0), 0);
-    const taggedOrders = sum(tagged, "delivered_orders");
-    const plainOrders = sum(plain, "delivered_orders");
-    const paired = (key) => `${formatCommerceValue(sum(tagged, key))} / ${formatCommerceValue(sum(plain, key))}`;
-    const marginProxy = (items) => {
-      const sales = sum(items, "net_sales");
-      return sales ? `${(sum(items, "merchandise_gross_profit_proxy") / sales * 100).toFixed(1)}%` : "—";
-    };
-    renderCommerceCards([
-      ["Delivered order groups · tagged / untagged", `${formatCommerceValue(taggedOrders)} / ${formatCommerceValue(plainOrders)}`, yearLabel],
-      ["Net sales · tagged / untagged items", paired("net_sales"), "Dataset units; currency not declared"],
-      ["Units · tagged / untagged items", paired("units"), yearLabel],
-      ["Recorded discounts · tagged / untagged", paired("discounts"), "Dataset units; currency not declared"],
-      ["Gross-profit proxy · tagged / untagged", paired("merchandise_gross_profit_proxy"), "Net item sales less catalog COGS; estimate only"],
-      ["Gross-margin proxy · tagged / untagged", `${marginProxy(tagged)} / ${marginProxy(plain)}`, "Catalog COGS assumption; not contribution margin or ROI"],
-    ], "Mixed orders may count in both groups; comparison is not causal. Validate catalog COGS before using the gross-profit proxy.");
-  } else {
-    const rows = byYear(data.logistics_by_year_region || []);
-    const deliveries = rows.reduce((sum, row) => sum + Number(row.deliveries || 0), 0);
-    const weighted = (key) => deliveries ? rows.reduce((sum, row) => sum + Number(row[key] || 0) * Number(row.deliveries || 0), 0) / deliveries : NaN;
-    const regionalMedians = rows.map((row) => Number(row.median_transit_days)).filter(Number.isFinite);
-    const medianRange = regionalMedians.length ? `${Math.min(...regionalMedians).toFixed(1)}–${Math.max(...regionalMedians).toFixed(1)} days` : "—";
-    renderCommerceCards([
-      ["Delivered shipments", formatCommerceValue(deliveries), yearLabel],
-      ["Weighted average transit", Number.isFinite(weighted("avg_transit_days")) ? `${weighted("avg_transit_days").toFixed(2)} days` : "—", "Weighted by delivered shipments"],
-      ["Regional-year median range", medianRange, "Range across displayed region/year aggregates, not individual shipments"],
-      ["Weighted average shipping fee", formatCommerceValue(weighted("avg_shipping_fee")), "Dataset units; currency not declared"],
-    ], "Descriptive regional summary; no carrier or route-level data");
-  }
-  const inventoryRows = byYear(data.inventory_by_year || []);
-  renderCommerceChart("#commerce-inventory-chart", inventoryRows, [
-    { label: "Stockout snapshots", color: "#c54845", matches: () => true, value: (row) => row.stockout_snapshots },
-    { label: "Overstock snapshots", color: "#3972bd", matches: () => true, value: (row) => row.overstock_snapshots },
-  ], "snapshot count", "line", yearLabel);
-  renderCommerceChart("#commerce-inventory-fill-rate-chart", inventoryRows, [
-    { label: "Average fill rate", color: "#48a17c", matches: () => true, value: (row) => Number(row.avg_fill_rate) * 100 },
-  ], "%", "line", yearLabel);
-  const promotionRows = byYear(data.promotions_by_year || []);
-  renderCommerceChart("#commerce-promotion-chart", promotionRows, [
-    { label: "Items with promotion tag", color: "#3972bd", matches: (row) => row.used_promotion, value: (row) => row.net_sales },
-    { label: "Items without promotion tag", color: "#48a17c", matches: (row) => !row.used_promotion, value: (row) => row.net_sales },
-  ], "net sales · dataset units", "bar", yearLabel);
-  const logisticsRows = byYear(data.logistics_by_year_region || []);
-  const regionColors = ["#3972bd", "#48a17c", "#d58c35", "#8761bd"];
-  const regions = [...new Set(logisticsRows.map((row) => row.region))].sort();
-  renderCommerceChart("#commerce-logistics-chart", logisticsRows, regions.map((region, index) => ({
-    label: region, color: regionColors[index % regionColors.length],
-    matches: (row) => row.region === region, value: (row) => row.avg_transit_days,
-  })), "average transit days", "line", yearLabel);
-  $("#commerce-sales-table").innerHTML = commerceTable(byYear(data.sales_by_year || []), [
-    ["year", "Year"], ["revenue", "Revenue", formatCommerceValue], ["cogs", "COGS", formatCommerceValue], ["gross_profit", "Gross profit", formatCommerceValue],
-    ["gross_margin", "Gross margin", (value) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(1)}%` : "—"],
-  ]);
-  $("#commerce-inventory-table").innerHTML = commerceTable(byYear(data.inventory_by_year || []), [
-    ["year", "Year"], ["products", "Products"], ["sku_snapshots", "SKU snapshots"], ["avg_stock_on_hand", "Avg units on hand", formatCommerceValue],
-    ["avg_fill_rate", "Average fill rate", (value) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(2)}%` : "—"],
-    ["stockout_snapshots", "Stockout snapshots"], ["overstock_snapshots", "Overstock snapshots"],
-    ["avg_stockout_days", "Avg stockout days"],
-  ]);
-  const annualCategoryRows = data.inventory_year_end_by_category || [];
-  const categoryYear = year ?? annualCategoryRows.at(-1)?.year ?? null;
-  const categoryRows = categoryYear == null ? [] : annualCategoryRows.filter((row) => Number(row.year) === Number(categoryYear));
-  $("#commerce-inventory-category").innerHTML = commerceTable(categoryRows, [
-    ["category", "Category"], ["products", "Products"], ["stock_on_hand", "Units on hand", formatCommerceValue],
-    ["stockout_products", "Stockout products"], ["overstock_products", "Overstock products"],
-    ["both_flagged_products", "Both flags"],
-  ]);
-  $("#commerce-inventory-latest-date").textContent = categoryRows[0]?.snapshot_date
-    ? `· Year ${categoryYear}: ${categoryRows[0].snapshot_date}` : "";
-  $("#commerce-promotion-table").innerHTML = commerceTable(byYear(data.promotions_by_year || []), [
-    ["year", "Year"], ["used_promotion", "Promotion tagged", (value) => value ? "Yes" : "No"],
-    ["delivered_orders", "Delivered orders"], ["units", "Units"], ["net_sales", "Net sales", formatCommerceValue],
-    ["discounts", "Recorded discounts", formatCommerceValue], ["catalog_cogs", "Catalog COGS", formatCommerceValue],
-    ["merchandise_gross_profit_proxy", "Gross-profit proxy", formatCommerceValue],
-    ["merchandise_gross_margin_proxy", "Gross-margin proxy", (value) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(1)}%` : "—"],
-  ]);
-  $("#commerce-campaign-table").innerHTML = commerceTable(byYear(data.promotions_by_campaign || []), [
-    ["campaign", "Campaign"], ["channel", "Channel"], ["campaign_start", "Window starts"],
-    ["campaign_end", "Window ends"], ["delivered_orders", "Delivered orders"], ["units", "Tagged units"],
-    ["net_item_sales", "Tagged net item sales", formatCommerceValue], ["discounts", "Recorded discounts", formatCommerceValue],
-    ["catalog_cogs", "Catalog COGS", formatCommerceValue],
-    ["merchandise_gross_profit_proxy", "Gross-profit proxy", formatCommerceValue],
-    ["merchandise_gross_margin_proxy", "Gross-margin proxy", (value) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(1)}%` : "—"],
-  ]);
-  $("#commerce-logistics-table").innerHTML = commerceTable(byYear(data.logistics_by_year_region || []), [
-    ["year", "Year"], ["region", "Dataset region"], ["deliveries", "Deliveries"],
-    ["avg_transit_days", "Avg transit days"], ["median_transit_days", "Median transit days"],
-    ["avg_shipping_fee", "Avg shipping fee · dataset units"],
-  ]);
-  $("#commerce-data-notes-list").innerHTML = (data.data_notes || []).map((note) => `<li>${escapeHtml(note)}</li>`).join("");
-}
-
-function selectedCommerceDomain() {
-  const domainByView = {
-    inventory: "inventory_allocation",
-    promotions: "promotion_planning",
-    logistics: "nationwide_logistics",
-  };
-  const activeView = document.querySelector('[data-commerce-view][aria-selected="true"]')?.dataset.commerceView;
-  return domainByView[activeView] || "inventory_allocation";
-}
-
-document.querySelectorAll("[data-commerce-view]").forEach((button) => {
-  button.addEventListener("click", () => {
-    $("#commerce-dashboard-status").hidden = true;
-    document.querySelectorAll("[data-commerce-view]").forEach((tab) => {
-      const selected = tab === button;
-      tab.setAttribute("aria-selected", String(selected));
-      $("#commerce-view-" + tab.dataset.commerceView).hidden = !selected;
-    });
-    renderDecisionDomainQuestions(selectedCommerceDomain());
-    renderCommerceDashboard();
-    loadCommerceDashboardForActiveView();
-  });
-});
-$("#commerce-campaign-details").addEventListener("toggle", (event) => {
-  if (event.currentTarget.open) loadCommerceCampaigns();
-});
-const commerceTabList = $(".commerce-dashboard-tabs");
-const commerceTabsAreHorizontal = window.matchMedia("(max-width: 640px)");
-const syncCommerceTabOrientation = () => commerceTabList.setAttribute(
-  "aria-orientation", commerceTabsAreHorizontal.matches ? "horizontal" : "vertical",
-);
-syncCommerceTabOrientation();
-commerceTabsAreHorizontal.addEventListener("change", syncCommerceTabOrientation);
-commerceTabList.addEventListener("keydown", (event) => {
-  const tabs = [...document.querySelectorAll("[data-commerce-view]")];
-  const current = tabs.indexOf(event.target);
-  const forward = commerceTabsAreHorizontal.matches ? "ArrowRight" : "ArrowDown";
-  const backward = commerceTabsAreHorizontal.matches ? "ArrowLeft" : "ArrowUp";
-  const next = { [forward]: (current + 1) % tabs.length, [backward]: (current - 1 + tabs.length) % tabs.length,
-    Home: 0, End: tabs.length - 1 }[event.key];
-  if (current < 0 || next === undefined) return;
-  event.preventDefault();
-  tabs[next].focus();
-  tabs[next].click();
-});
-$("#commerce-year-filter").addEventListener("change", () => renderCommerceDashboard());
-function selectedQuestionSuggestionDomain() {
-  return $("#business-question-domain").value || selectedCommerceDomain();
-}
-
-$("#business-question-domain").addEventListener("change", () => {
-  renderDecisionDomainQuestions(selectedQuestionSuggestionDomain());
-});
-
-const DECISION_DOMAIN_QUESTIONS = {
-  inventory_allocation: [
-    {
-      title: "Where are stockouts and excess inventory concentrated?",
-      question: "Which product categories show the strongest combination of stockout and overstock signals in the latest snapshot, and how do the last three annual inventory summaries compare? Recommend a bounded investigation, not a stock transfer, because warehouse locations, lead times, demand forecasts, and transfer costs are unavailable.",
-    },
-    {
-      title: "What should be checked before reallocating stock?",
-      question: "Should inventory be reallocated toward products with repeated stockout signals? Use only the Commerce inventory aggregates and company references. State the warehouse-level stock, forecast demand, replenishment lead time, transfer cost, and target service level needed before moving stock.",
-    },
-    {
-      title: "Generate conditional inventory actions",
-      question: "Suggest up to three conditional next actions for inventory allocation from the available SQL observations and company practice references. Do not invent numeric thresholds or assume the synthetic dataset represents one company's live warehouse network.",
-    },
-  ],
-  promotion_planning: [
-    {
-      title: "How do promotion-tagged orders compare?",
-      question: "Compare delivered orders, units, net sales, discounts, and the catalog-COGS merchandise gross-profit/margin proxy for promotion-tagged and untagged items in the latest three years. Treat the comparison as descriptive, not causal uplift; explain why the proxy is not contribution margin or ROI and what COGS validation, campaign spend, and holdout data are needed before changing promotion spend.",
-    },
-    {
-      title: "Should we repeat a promotion?",
-      question: "Should the business repeat or expand a promotion based on the available order data? Separate the catalog-COGS gross-profit proxy from contribution margin, explain why causal lift and ROI cannot be established without a holdout and campaign spend, and use a cited company measurement method for the next step.",
-    },
-    {
-      title: "Generate conditional promotion actions",
-      question: "Suggest up to three conditional next actions for promotion planning. Do not call tagged-versus-untagged differences uplift, treat the catalog-COGS proxy as contribution margin, set an unsourced discount threshold, or recommend scaling without causal and campaign-cost evidence.",
-    },
-  ],
-  nationwide_logistics: [
-    {
-      title: "Which regions have longer transit times?",
-      question: "Compare average and median ship-to-delivery time and shipping fees by dataset region for the latest three years. Recommend where to investigate, but do not infer a carrier, route, warehouse cause, or SLA breach from these aggregates.",
-    },
-    {
-      title: "Would regional inventory placement help?",
-      question: "Should the business consider regional inventory placement to improve delivery speed or cost? Compare available regional transit evidence with cited company practices, then identify the warehouse origin, route, capacity, carrier, demand, and cost data needed before a pilot.",
-    },
-    {
-      title: "Generate conditional logistics actions",
-      question: "Suggest up to three conditional next actions for nationwide logistics from the SQL observations and company references. Do not recommend network redesign from regional averages alone.",
-    },
-  ],
-};
-
-function renderDecisionDomainQuestions(domain) {
-  const container = $("#decision-domain-questions");
-  if (!container) return;
-  container.innerHTML = (DECISION_DOMAIN_QUESTIONS[domain] || []).map(({ title, question }) =>
-    `<button type="button" data-decision-domain="${escapeHtml(domain)}" data-decision-question="${escapeHtml(question)}"><strong>${escapeHtml(title)}</strong><small>Select to load this question and its domain into the editor.</small></button>`
-  ).join("");
 }
 
 function renderDashboardVisualization(visualization) {
@@ -887,7 +524,9 @@ function renderAnswerBody(answer) {
 function renderAnswer(data, panel = $("#answer-panel")) {
   panel.hidden = false;
   const citations = Array.isArray(data.citations) ? data.citations : [];
-  const usedEvidenceFallback = Boolean(data.answer_fallback_reason);
+  const usedEvidenceFallback = Boolean(data.answer_fallback_reason || data.fallback);
+  const responseTitle = ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Answer unavailable"})[data.status]
+    || (usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer");
   const domainLabels = {
     inventory_allocation: "Inventory allocation",
     promotion_planning: "Promotion planning",
@@ -937,11 +576,14 @@ function renderAnswer(data, panel = $("#answer-panel")) {
   const tokenUsage = usageStages.length
     ? `<details class="token-usage"><summary>Generation tokens · ${Number(usage.total?.total_tokens || 0).toLocaleString()} total</summary><ul>${usageStages.map(([label, value]) => `<li>${escapeHtml(label)}: ${Number(value.input_tokens || 0).toLocaleString()} in · ${Number(value.output_tokens || 0).toLocaleString()} out · ${Number(value.total_tokens).toLocaleString()} total</li>`).join("")}</ul><small>SQL and answer model calls only; embeddings and routing are not included.</small></details>`
     : "";
+  const limitations = Array.isArray(data.limitations) && data.limitations.length
+    ? `<p class="analysis-caveat answer-provenance-note"><strong>Limits:</strong> ${data.limitations.map(escapeHtml).join(" · ")}</p>`
+    : "";
   panel.innerHTML = `
     <div class="answer-header-wrap">
       <div class="answer-heading">
         <span class="answer-mark">${usedEvidenceFallback ? "EV" : "AI"}</span>
-        <div><span class="eyebrow">GROUNDED RESPONSE</span><h3>${usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer"}</h3></div>
+        <div><span class="eyebrow">${escapeHtml(({knowledge:"KNOWLEDGE AGENT",analytics:"ANALYTICS AGENT",sql_analytics:"ANALYTICS AGENT",dashboard:"INVENTORY AGENT",report:"REPORT AGENT",agentic:"AUTOMATIC ROUTER",hybrid:"KNOWLEDGE + ANALYTICS"})[data.agent] || "AGENT RESPONSE")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
       </div>
       <div class="answer-actions-bar">
         <button type="button" class="action-btn" id="copy-answer-btn" title="Copy response text">Copy</button>
@@ -951,8 +593,11 @@ function renderAnswer(data, panel = $("#answer-panel")) {
     ${decisionModeNote}
     ${referenceRetrievalNote}
     ${questionSqlFallbackNote}
+    ${limitations}
     ${tokenUsage}
     <div class="answer-text">${renderAnswerBody(data.answer)}</div>
+    ${renderAgentInventoryDashboard(data.data?.dashboard)}
+    ${renderAgentRows(data.data)}
     ${renderDashboardVisualization(data.data?.visualization)}
     ${data.citation_validation_failed ? `<p class="error-message">The answer was withheld because it failed evidence validation.${data.decision_validation_failure ? ` <details><summary>Admin diagnostic</summary><code>${escapeHtml(data.decision_validation_failure)}</code>${data.decision_validation_numeric_tokens?.length ? `<p>Unsupported numeric claims: ${data.decision_validation_numeric_tokens.map(escapeHtml).join(", ")}</p>` : ""}</details>` : ""}</p>` : citations.length ? `
       <div class="citations">
@@ -1037,6 +682,59 @@ function renderAnswer(data, panel = $("#answer-panel")) {
   panel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function renderAgentInventoryDashboard(dashboard) {
+  if (dashboard?.outline_id !== "inventory_control") return "";
+  const kpis = dashboard.kpis || {};
+  const metrics = [["SKUs", kpis.sku_count], ["Stockout rate", kpis.stockout_rate == null ? null : `${Number(kpis.stockout_rate).toFixed(1)}%`],
+    ["Overstock rate", kpis.overstock_rate == null ? null : `${Number(kpis.overstock_rate).toFixed(1)}%`],
+    ["Mean fill rate", kpis.mean_fill_rate == null ? null : `${(Number(kpis.mean_fill_rate) * 100).toFixed(1)}%`]];
+  const exceptions = dashboard.exceptions || [];
+  const columns = ["product_name", "category", "stock_on_hand", "days_of_supply", "stockout_flag", "overstock_flag", "reorder_flag"];
+  const rows = exceptions.slice(0, 25).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("");
+  return `<section class="agent-inventory-result"><div class="section-heading"><div><p class="eyebrow">LATEST SNAPSHOT · ${escapeHtml(dashboard.snapshot_date || "date unavailable")}</p><h3>${escapeHtml(dashboard.title || "Inventory Control & Exceptions")}</h3></div></div>
+    <div class="agent-result-kpis">${metrics.map(([label,value]) => `<article><span>${escapeHtml(label)}</span><strong>${escapeHtml(value ?? "Unavailable")}</strong></article>`).join("")}</div>
+    <h4>Flagged products</h4>${rows ? `<div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="no-citations">No inventory exceptions were returned.</p>`}
+  </section>`;
+}
+
+async function loadInventorySnapshot() {
+  const panel = $("#inventory-snapshot");
+  panel.hidden = false;
+  panel.innerHTML = '<p class="analysis-empty">Loading latest inventory snapshot…</p>';
+  try {
+    const result = await api("/api/agents/chat", {
+      method: "POST",
+      body: JSON.stringify({
+        question: "Show the latest inventory snapshot and stock exceptions.",
+        agent_mode: "dashboard",
+      }),
+    });
+    const dashboard = renderAgentInventoryDashboard(result.data?.dashboard);
+    panel.innerHTML = dashboard || '<p class="analysis-empty">No inventory snapshot is available.</p>';
+  } catch (error) {
+    panel.innerHTML = `<p class="analysis-empty">Inventory snapshot unavailable: ${escapeHtml(error.message)}</p>`;
+  }
+}
+
+function renderAgentRows(data) {
+  const groups = [["Results", data], ...Object.entries(data || {}).filter(([, value]) => value && !Array.isArray(value) && typeof value === "object")];
+  return groups.map(([label, value]) => {
+    const rows = value?.rows;
+    if (!Array.isArray(rows) || !rows.length || !rows.every((row) => row && typeof row === "object" && !Array.isArray(row))) return "";
+    const columns = Object.keys(rows[0]).slice(0, 12);
+    return `<section class="agent-data-result"><h4>${escapeHtml(label)}</h4><div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${rows.slice(0, 50).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`;
+  }).join("");
+}
+
+function renderAgentResult(result) {
+  const citations = (result.evidence || []).map((item) => {
+    const metadata = item.metadata || {};
+    return { ...metadata, id: item.citation_id, title: item.source, source_type: item.source_type,
+      content: item.content, score: metadata.similarity_score };
+  });
+  renderAnswer({ ...result.metadata, ...result, citations });
+}
+
 function renderAgentMonitoring(data) {
   const summary = data.summary || {};
   const cards = [
@@ -1068,63 +766,22 @@ async function refreshAgentMonitoring() {
   }
 }
 
-function askOverWebSocket(payload, onStatus) {
-  return new Promise((resolve, reject) => {
-    if (!window.WebSocket) {
-      reject(Object.assign(new Error("WebSocket is unavailable"), { safeToFallback: true }));
-      return;
-    }
-    const scheme = location.protocol === "https:" ? "wss:" : "ws:";
-    const socket = new WebSocket(`${scheme}//${location.host}/ws/ask`);
-    let sent = false;
-    let settled = false;
-    const timeout = setTimeout(() => {
-      if (settled) return;
-      settled = true;
-      socket.close();
-      reject(new Error("The answer request timed out"));
-    }, 120000);
-    const finish = (callback, value) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timeout);
-      callback(value);
-    };
-    socket.onopen = () => {
-      sent = true;
-      socket.send(JSON.stringify(payload));
-    };
-    socket.onmessage = (event) => {
-      let message;
-      try { message = JSON.parse(event.data); }
-      catch { finish(reject, new Error("The server returned an invalid WebSocket response")); return; }
-      if (message.type === "status") onStatus(message.status);
-      else if (message.type === "answer") finish(resolve, message);
-      else if (message.type === "error") {
-        const detail = Array.isArray(message.detail)
-          ? message.detail.map((item) => item.msg).join("; ")
-          : message.detail;
-        finish(reject, new Error(detail || "Question answering failed"));
-      }
-    };
-    socket.onerror = () => finish(reject, Object.assign(new Error("WebSocket connection failed"), { safeToFallback: !sent }));
-    socket.onclose = () => {
-      if (!settled) finish(reject, Object.assign(new Error("WebSocket closed before answering"), { safeToFallback: !sent }));
-    };
-  });
-}
-
 async function api(path, options = {}) {
   const headers = { ...(options.headers || {}) };
   if (!(options.body instanceof FormData)) headers["Content-Type"] = "application/json";
+  headers["ngrok-skip-browser-warning"] = "1";
   const response = await fetch(path, { credentials: "same-origin", ...options, headers });
-  if (response.status === 401) {
+  if (response.status === 401 && path !== "/api/auth/login") {
     $("#login-view").hidden = false;
     $("#workspace").hidden = true;
     $("#login-brand-sidebar").hidden = false;
     throw new Error("Sign in to continue");
   }
-  const data = await response.json();
+  let data;
+  try { data = await response.json(); }
+  catch {
+    throw new Error(`Server returned a non-JSON response (HTTP ${response.status}); check the backend tunnel and Vercel rewrite.`);
+  }
   if (!response.ok) {
     const detail = Array.isArray(data.detail)
       ? data.detail.map((issue) => {
@@ -1137,68 +794,11 @@ async function api(path, options = {}) {
   return data;
 }
 
-async function loadCommerceDashboardForActiveView() {
-  const view = document.querySelector('[data-commerce-view][aria-selected="true"]')?.dataset.commerceView || "inventory";
-  const domainByView = {
-    inventory: "inventory_allocation",
-    promotions: "promotion_planning",
-    logistics: "nationwide_logistics",
-  };
-  const domain = domainByView[view];
-  if (!domain || commerceLoadedDomains.has(domain) || commerceLoadingDomains.has(domain)) return;
-  commerceLoadingDomains.add(domain);
-  const status = $("#commerce-dashboard-status");
-  status.textContent = `Loading ${view} data…`;
-  status.hidden = false;
-  const isCurrentView = () => activeTab === "analytics"
-    && domainByView[document.querySelector('[data-commerce-view][aria-selected="true"]')?.dataset.commerceView || "inventory"] === domain;
-  try {
-    const data = await api(`/api/commerce/dashboard?domain=${encodeURIComponent(domain)}`);
-    commerceSnapshot = { ...(commerceSnapshot || {}), ...data };
-    commerceLoadedDomains.add(domain);
-    renderCommerceDashboard(commerceSnapshot);
-    if (isCurrentView()) status.hidden = true;
-    if (domain === "promotion_planning" && $("#commerce-campaign-details").open) loadCommerceCampaigns();
-  } catch (error) {
-    if (isCurrentView()) {
-      status.textContent = `Could not load ${view} data: ${error.message}`;
-      status.hidden = false;
-    }
-  } finally {
-    commerceLoadingDomains.delete(domain);
-  }
-}
-
-async function loadCommerceCampaigns() {
-  if (!commerceLoadedDomains.has("promotion_planning") || commerceCampaignsLoaded || commerceCampaignsLoading) return;
-  commerceCampaignsLoading = true;
-  const status = $("#commerce-dashboard-status");
-  status.textContent = "Loading campaign results…";
-  status.hidden = false;
-  try {
-    const data = await api("/api/commerce/dashboard?domain=promotion_planning&detail=campaigns");
-    commerceSnapshot = { ...(commerceSnapshot || {}), ...data };
-    commerceCampaignsLoaded = true;
-    renderCommerceDashboard(commerceSnapshot);
-    if (activeTab === "analytics" && document.querySelector('[data-commerce-view="promotions"]')?.getAttribute("aria-selected") === "true") {
-      status.hidden = true;
-    }
-  } catch (error) {
-    if (activeTab === "analytics" && document.querySelector('[data-commerce-view="promotions"]')?.getAttribute("aria-selected") === "true") {
-      status.textContent = `Could not load campaign results: ${error.message}`;
-      status.hidden = false;
-    }
-  } finally {
-    commerceCampaignsLoading = false;
-  }
-}
-
 async function loadWorkspace(user) {
   currentUser = user;
   $("#login-view").hidden = true;
   $("#login-brand-sidebar").hidden = true;
   $("#workspace").hidden = false;
-  $("#analytics-section").hidden = true;
   $("#upload-section").hidden = true;
   $("#processing-upload-status").hidden = true;
   $("#processing-upload-status").textContent = "";
@@ -1206,78 +806,70 @@ async function loadWorkspace(user) {
   $("#admin-section").hidden = true;
   $("#monitoring-section").hidden = true;
   syncWorkspaceTabs();
+  if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
+    const roles = Object.keys(UPLOAD_ROLE_LABELS);
+    $("#upload-role-options").innerHTML = roles.map((role) => {
+      const [label, description] = UPLOAD_ROLE_LABELS[role];
+      return `<label class="upload-role-option"><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}"><span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span></label>`;
+    }).join("");
+    $("#upload-role-options").querySelectorAll('input[name="allowed_roles"]').forEach((input) => {
+      input.addEventListener("change", updateUploadRoleSelection);
+    });
+    updateUploadRoleSelection();
+    $("#upload-section").hidden = false;
+    $("#upload-button").disabled = false;
+    const canSaveParserOutput = user.role === "document_processing_owner";
+    $("#parser-handoff-button").hidden = !canSaveParserOutput;
+    $("#parser-handoff-button").disabled = !canSaveParserOutput;
+  }
+  if (user.role === "admin") {
+    void refreshKnowledgeDocuments().catch((error) => {
+      $("#knowledge-documents-status").textContent = `Could not load knowledge-base files: ${error.message}`;
+    });
+  }
   $("#access-matrix").replaceChildren();
   $("#connection-status").textContent = "Knowledge base connected";
   $("#user-badge").textContent = `${user.username} · ${user.role}`;
   $("#user-badge").hidden = false;
   $("#logout-button").hidden = false;
-  $(".intro").hidden = user.role === "tester";
-  $(".stats").hidden = user.role === "tester";
-  if (user.role === "tester") {
-    try {
-      await loadOcrTestRuns();
-      $("#login-error").hidden = true;
-    } catch (error) {
-      $("#ocr-test-runs").innerHTML = `<p class="loading-card">${escapeHtml(error.message)}</p>`;
-    }
-    return;
+  $(".intro").hidden = user.role === "document_processing_owner";
+  $(".agent-overview").hidden = ["document_processing_owner", "document_uploader"].includes(user.role);
+  $(".stats").hidden = user.role === "document_processing_owner";
+  const canUseAnalytics = ["admin", "finance_analyst", "sustainability_analyst", "operations", "executive"].includes(user.role);
+  $("#inventory-snapshot").hidden = false;
+  ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
+    $(selector).hidden = !canUseAnalytics;
+  });
+  ["sql"].forEach((mode) => {
+    $("#agent-mode option[value='" + mode + "']").hidden = !canUseAnalytics;
+  });
+  if (!canUseAnalytics && $("#agent-mode").value === "sql") {
+    $("#agent-mode").value = "knowledge";
   }
-  if (["admin", "document_uploader"].includes(user.role)) {
-    try {
-      const capability = await api("/api/documents/upload-capability");
-      if (capability.can_upload) {
-        const { roles } = await api("/api/documents/roles");
-        $("#upload-role-options").innerHTML = roles.map((role) => {
-          const [label, description] = UPLOAD_ROLE_LABELS[role] || [role.replaceAll("_", " "), "Document Q&A access"];
-          return `<label class="upload-role-option"><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}"><span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span></label>`;
-        }).join("");
-        $("#upload-role-options").querySelectorAll('input[name="allowed_roles"]').forEach((input) => {
-          input.addEventListener("change", () => {
-            updateUploadRoleSelection();
-            updateUploadPlanSummary();
-          });
-        });
-        updateUploadRoleSelection();
-        syncUploadReferenceFields();
-        $("#upload-button").disabled = false;
-        $("#parser-handoff-button").disabled = false;
-        $("#upload-section").hidden = false;
-        $("#upload-status").textContent = "";
-        delete $("#upload-status").dataset.state;
-      }
-    } catch (error) {
-      $("#upload-section").hidden = false;
-      $("#upload-button").disabled = true;
-      $("#parser-handoff-button").disabled = true;
-      $("#upload-status").dataset.state = "error";
-      $("#upload-status").textContent = `Upload permissions could not be loaded: ${error.message}`;
-    }
+  if (user.role !== "document_processing_owner") {
+    try { renderCorpus(await api("/api/dashboard")); }
+    catch (error) { $("#connection-status").textContent = `Knowledge base unavailable: ${error.message}`; }
   }
+  if (canUseAnalytics) void loadInventorySnapshot();
+  else $("#inventory-snapshot").innerHTML = '<p class="analysis-empty">Inventory snapshot requires analytics access.</p>';
   try {
-    const data = await api("/api/dashboard");
-    renderCorpus(data);
-    if (["operations", "finance_analyst", "sustainability_analyst", "executive", "admin"].includes(user.role)) {
-      $("#commerce-dashboard").hidden = false;
-      renderDecisionDomainQuestions(selectedQuestionSuggestionDomain());
-      $("#analytics-section").hidden = false;
-    }
     if (user.role === "admin") {
       const access = await api("/api/admin/access-matrix");
       $("#access-matrix").innerHTML = access.roles.map((role) => `<article><strong>${escapeHtml(role.role)}</strong><span>${role.permissions.map(escapeHtml).join(" · ")}</span></article>`).join("");
       $("#admin-section").hidden = false;
       $("#monitoring-section").hidden = false;
       await refreshAgentMonitoring();
-      await refreshKnowledgeDocuments();
     }
-    if (user.role === "admin") await loadOcrTestRuns();
+    if (user.role === "document_processing_owner") {
+      await refreshKnowledgeDocuments();
+      await loadOcrTestRuns();
+    }
     syncWorkspaceTabs(user);
     $("#login-error").hidden = true;
   } catch (error) {
     syncWorkspaceTabs(user);
     if (error.message !== "Sign in to continue") {
-      $("#login-error").textContent = `Signed in, but the workspace could not load: ${error.message}`;
-      $("#login-error").hidden = false;
-      $("#connection-status").textContent = "Signed in · data unavailable";
+      $("#connection-status").textContent = `Workspace loaded with an error: ${error.message}`;
     }
   }
 }
@@ -1415,15 +1007,11 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
   const button = $("#ocr-test-button");
   button.disabled = true;
   const parserEngine = form.elements.namedItem("parser_engine").value;
-  const useYoloOverlay = form.elements.namedItem("layout_detector").value === "doclayout-yolo";
-  const parserLabel = parserEngine === "pp-structurev3"
-    ? "PP-StructureV3"
-    : parserEngine === "mineru" ? "MinerU (local)"
-    : parserEngine === "docling" ? "Docling" : "Built-in";
-  $("#ocr-test-status").textContent = `Running ${parserLabel}, then shared cleanup and parser chunking. Tokenization and embedding are downstream${useYoloOverlay ? " (plus diagnostic YOLO overlay)" : ""}…`;
+  const parserLabel = "Docling";
+  $("#ocr-test-status").textContent = `Running ${parserLabel} with shared output cleanup…`;
   try {
     const result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
-    $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.chunk_count} parser chunks, ${result.table_count} tables. No production document was created.`;
+    $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.element_count} parser elements, ${result.table_count} tables. No production document was created.`;
     await loadOcrTestRuns();
     await openOcrTestRun(result.run_id);
     form.reset();
@@ -1453,6 +1041,10 @@ $("#login-form").addEventListener("submit", async (event) => {
 });
 
 $("#logout-button").addEventListener("click", async () => {
+  agentConversationId = crypto.randomUUID();
+  reportConversationId = crypto.randomUUID();
+  $("#answer-panel").hidden = true;
+  $("#answer-panel").textContent = "";
   await api("/api/auth/logout", { method: "POST" });
   $("#workspace").hidden = true;
   $("#login-view").hidden = false;
@@ -1460,11 +1052,6 @@ $("#logout-button").addEventListener("click", async () => {
   $("#user-badge").hidden = true;
   $("#logout-button").hidden = true;
   activeTab = "knowledge";
-  commerceSnapshot = null;
-  commerceLoadedDomains.clear();
-  commerceLoadingDomains.clear();
-  commerceCampaignsLoaded = false;
-  commerceCampaignsLoading = false;
   syncWorkspaceTabs();
 });
 
@@ -1511,110 +1098,124 @@ function setupQuickPrompts() {
   });
 }
 
+$(".agent-grid").addEventListener("click", (event) => {
+  const card = event.target.closest("[data-agent-mode]");
+  if (card) {
+    $("#agent-mode").value = card.dataset.agentMode;
+    $("#question").value = card.dataset.agentPrompt;
+    $("#ask-form").requestSubmit();
+  } else if (event.target.closest("[data-open-report]")) {
+    $("#report-agent-form-section").hidden = false;
+    $("#report-agent-question").focus();
+  }
+});
+
+let agentConversationId = crypto.randomUUID();
+let reportConversationId = crypto.randomUUID();
+$("#new-conversation").addEventListener("click", () => {
+  agentConversationId = crypto.randomUUID();
+  $("#answer-panel").hidden = true;
+  $("#answer-panel").textContent = "";
+  $("#question").value = "";
+});
+
 $("#ask-form").addEventListener("submit", async (event) => {
   event.preventDefault();
+  const requestConversationId = agentConversationId;
   const button = $("#ask-button");
   const question = $("#question").value.trim();
   if (!question) return;
   button.disabled = true;
-  button.innerHTML = '<span>Searching sources…</span>';
+  button.innerHTML = "<span>Working...</span>";
   const panel = $("#answer-panel");
-  renderSkeletonAnswer(panel, "Retrieving passages and preparing cited answer…");
+  renderSkeletonAnswer(panel, "Routing your request to the right agent...");
   try {
-    const payload = { question, retrieval_method: $("#retrieval-method").value };
-    let data;
-    try {
-      data = await askOverWebSocket(payload, (status) => {
-        button.innerHTML = `<span>${escapeHtml(status || "Synthesizing answer...")}</span>`;
-      });
-    } catch (error) {
-      if (!error.safeToFallback) throw error;
-      data = await api("/api/ask", { method: "POST", body: JSON.stringify(payload) });
-    }
-    renderAnswer(data);
-  } catch (error) {
-    panel.innerHTML = `<p class="error-message">${escapeHtml(error.message)}. Please check service configuration or connection.</p>`;
-  } finally {
-    button.disabled = false;
-    button.innerHTML = '<span>Run query</span>';
-  }
-});
-
-$("#business-question-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const button = $("#business-question-button");
-  const decisionSuggestions = decisionSuggestionsPending;
-  decisionSuggestionsPending = false;
-  const question = decisionSuggestions ? "" : $("#business-question").value.trim();
-  const businessDecisionDomain = decisionSuggestions
-    ? selectedCommerceDomain()
-    : $("#business-question-domain").value || null;
-  const panel = $("#business-answer-panel");
-  if ((!decisionSuggestions && question.length < 3) || (decisionSuggestions && !businessDecisionDomain)) return;
-  button.disabled = true;
-  button.innerHTML = '<span>Analyzing sources…</span>';
-  renderSkeletonAnswer(panel, decisionSuggestions
-    ? "Combining recent Commerce SQL observations and company references…"
-    : "Combining Commerce SQL observations and cited company references…");
-  try {
-    const result = await api("/api/ask", { method: "POST", body: JSON.stringify({
-      ...(question ? { question } : {}),
-      business_decision_domain: businessDecisionDomain,
-      commerce_decision_support: true,
-      decision_suggestions: decisionSuggestions,
+    const data = await api("/api/agents/chat", { method: "POST", body: JSON.stringify({
+      question, agent_mode: $("#agent-mode").value, retrieval_method: "translated_hybrid_rerank",
+      conversation_id: requestConversationId,
     }) });
-    renderAnswer(result, panel);
+    if (agentConversationId !== requestConversationId) return;
+    $("#connection-status").textContent = "Agent services connected";
+    $(".status-dot").classList.add("connected");
+    renderAgentResult(data);
   } catch (error) {
-    panel.innerHTML = `<p class="error-message">${escapeHtml(error.message)}</p>`;
+    if (agentConversationId !== requestConversationId) return;
+    panel.innerHTML = '<p class="error-message">' + escapeHtml(error.message) + '. Please check service configuration or connection.</p>';
   } finally {
     button.disabled = false;
-    button.innerHTML = '<span>Analyze decision evidence</span>';
+    button.innerHTML = "<span>Ask agent</span>";
   }
 });
 
-$(".decision-question-prompts").addEventListener("click", (event) => {
-  const questionPrompt = event.target.closest("[data-decision-question]");
-  if (questionPrompt) {
-    $("#business-question").value = questionPrompt.dataset.decisionQuestion;
-    $("#business-question-domain").value = questionPrompt.dataset.decisionDomain;
-    $("#business-question").focus();
-    return;
-  }
-  if (!event.target.closest("[data-decision-suggestions]")) return;
-  decisionSuggestionsPending = true;
-  $("#business-question-form").requestSubmit();
-});
-
-$("#analytics-section").addEventListener("click", (event) => {
-  const link = event.target.closest("[data-open-tab]");
-  if (link) selectWorkspaceTab(link.dataset.openTab);
-});
-
-$("#monitoring-refresh").addEventListener("click", refreshAgentMonitoring);
-
-function syncUploadReferenceFields() {
-  const form = $("#upload-form");
-  const isReference = form.elements.commerce_decision_support.checked;
-  if (!isReference) {
-    form.elements.reference_type.value = "";
-    form.querySelectorAll('input[name="knowledge_domains"]').forEach((input) => { input.checked = false; });
-    form.elements.synthetic_company_policy.checked = false;
-    form.elements.source_publisher.value = "";
-    form.elements.reference_applicability.value = "";
-  } else if (form.elements.synthetic_company_policy.checked && form.elements.reference_type.value !== "company_policy_reference") {
-    form.elements.synthetic_company_policy.checked = false;
-    form.elements.source_publisher.value = "";
-    form.elements.reference_applicability.value = "";
-  }
-  $("#upload-reference-fields").hidden = !isReference;
-  $("#upload-commerce-details").hidden = !isReference;
-  $("#upload-commerce-details").open = isReference;
-  $("#upload-synthetic-policy-option").hidden = !isReference || currentUser?.role !== "admin";
-  form.elements.reference_type.required = isReference;
-  form.elements.source_publisher.required = isReference;
-  form.elements.reference_applicability.required = isReference;
-  updateUploadPlanSummary();
+function updateReportFormatVisibility() {
+  const hasTemplate = Boolean($("#report-agent-template").files[0]);
+  $("#report-agent-format-field").hidden = hasTemplate;
 }
+
+$("#report-agent-template").addEventListener("change", updateReportFormatVisibility);
+updateReportFormatVisibility();
+
+$("#report-agent-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const requestConversationId = reportConversationId;
+  const button = $("#report-agent-submit");
+  const status = $("#report-agent-status");
+  const template = $("#report-agent-template").files[0];
+  const formData = new FormData();
+  formData.append("question", $("#report-agent-question").value.trim());
+  formData.append("source_mode", $("#report-agent-source-mode").value);
+  if (template) formData.append("template", template);
+  else formData.append("output_format", $("#report-agent-output-format").value);
+  formData.set('conversation_id', requestConversationId);
+  button.disabled = true;
+  delete status.dataset.state;
+  status.textContent = "Generating report from authorized sources...";
+  try {
+    const response = await fetch("/api/agents/report", {
+      method: "POST", body: formData, credentials: "same-origin",
+      headers: { "ngrok-skip-browser-warning": "1" },
+    });
+    if (reportConversationId !== requestConversationId) return;
+    if (!response.ok) {
+      let detail = "Report request failed (HTTP " + response.status + ")";
+      try {
+        const payload = await response.json();
+        const reportError = typeof payload.detail === "object" ? payload.detail : null;
+        if (reportError?.status === "clarification_required") {
+          status.dataset.state = "warning";
+          status.textContent = `Clarification needed: ${reportError.clarification || reportError.detail || "Please refine the decision question."}`;
+          return;
+        }
+        const message = reportError?.detail || reportError?.message || payload.detail;
+        if (message) detail = typeof message === "string" ? message : JSON.stringify(message);
+        if (reportError?.limitations?.length) detail += ` Limitations: ${reportError.limitations.join("; ")}`;
+      } catch {}
+      throw new Error(detail);
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const disposition = response.headers.get("Content-Disposition") || "";
+    const filename = disposition.match(/filename="?([^";]+)"?/i)?.[1];
+    const extension = $("#report-agent-output-format").value === "docx" ? ".docx" : ".md";
+    link.download = filename || `report${extension}`;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const reportStatus = response.headers.get("X-Report-Status");
+    status.dataset.state = reportStatus === "partial" ? "warning" : "success";
+    status.textContent = reportStatus === "partial"
+      ? "Partial report downloaded. Review its limitations before using it."
+      : "Report generated and downloaded.";
+  } catch (error) {
+    if (reportConversationId !== requestConversationId) return;
+    status.dataset.state = "error";
+    status.textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+$("#monitoring-refresh").addEventListener("click", refreshAgentMonitoring);
 
 function updateUploadRoleSelection() {
   const selectedRoles = [...$("#upload-role-options").querySelectorAll('input[name="allowed_roles"]:checked')];
@@ -1622,37 +1223,6 @@ function updateUploadRoleSelection() {
   summary.textContent = selectedRoles.length
     ? `${selectedRoles.length} role${selectedRoles.length === 1 ? "" : "s"} can retrieve this document.`
     : "No roles selected yet. Select at least one role to allow document Q&A access.";
-}
-
-function updateUploadPlanSummary() {
-  const form = $("#upload-form");
-  const referenceEnabled = form.elements.commerce_decision_support.checked;
-  const title = form.elements.title.value.trim() || $("#upload-file").files[0]?.name || "Selected file";
-  const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')]
-    .map((input) => input.closest("label")?.querySelector("strong")?.textContent.trim())
-    .filter(Boolean);
-  const lines = [
-    `Document Q&A: ${title} can be fully indexed, or saved as parser output for downstream processing.`,
-    `Access: ${roles.length ? roles.join(", ") : "select at least one role above"}.`,
-  ];
-  if (referenceEnabled) {
-    const sourceType = form.elements.reference_type.selectedOptions[0]?.textContent.trim();
-    const domains = [...form.querySelectorAll('input[name="knowledge_domains"]:checked')]
-      .map((input) => input.closest("label")?.querySelector("strong")?.textContent.trim())
-      .filter(Boolean);
-    const missing = [
-      !sourceType || form.elements.reference_type.value === "" ? "source type" : "",
-      !form.elements.source_publisher.value.trim() ? "publisher" : "",
-      !form.elements.reference_applicability.value.trim() ? "scope" : "",
-      domains.length ? "" : "decision domain",
-    ].filter(Boolean);
-    lines.push(`Decision support: ${sourceType && form.elements.reference_type.value ? sourceType : "Commerce reference"}${domains.length ? ` · ${domains.join(", ")}` : ""}.`);
-    if (missing.length) lines.push(`Complete: ${missing.join(", ")}.`);
-  } else {
-    lines.push("Decision support: off; this file is for document Q&A only.");
-  }
-  lines.push("Commerce dashboard data: unchanged.");
-  $("#upload-plan-summary").textContent = lines.join("\n");
 }
 
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
@@ -1675,7 +1245,6 @@ $("#upload-file").addEventListener("change", (event) => {
   const error = validateUploadFile(file);
   $("#upload-file-info").textContent = error || file.name + " · " + (file.size / 1024 / 1024).toFixed(1) + " MiB. The original stays private; review OCR output in Document Processing.";
   $("#upload-file-info").setAttribute("role", error ? "alert" : "status");
-  updateUploadPlanSummary();
 });
 
 const uploadDropzone = $("#upload-dropzone");
@@ -1708,28 +1277,6 @@ uploadDropzone.addEventListener("drop", (event) => {
 
 $("#upload-title").addEventListener("input", (event) => {
   event.currentTarget.dataset.userEdited = "true";
-  updateUploadPlanSummary();
-});
-
-$("#upload-commerce-reference").addEventListener("change", syncUploadReferenceFields);
-$("#upload-reference-type").addEventListener("change", syncUploadReferenceFields);
-$("#upload-reference-fields").addEventListener("input", updateUploadPlanSummary);
-$("#upload-reference-fields").addEventListener("change", updateUploadPlanSummary);
-syncUploadReferenceFields();
-
-$("#upload-synthetic-policy").addEventListener("change", (event) => {
-  const form = $("#upload-form");
-  if (event.currentTarget.checked) {
-    form.elements.commerce_decision_support.checked = true;
-    form.elements.reference_type.value = "company_policy_reference";
-    form.elements.source_publisher.value = "Commerce Demo (fictional organization)";
-    form.elements.reference_applicability.value = "Fictional Commerce Demo only; not a policy of a real company.";
-  } else {
-    form.elements.reference_type.value = "";
-    form.elements.source_publisher.value = "";
-    form.elements.reference_applicability.value = "";
-  }
-  syncUploadReferenceFields();
 });
 
 $("#upload-form").addEventListener("submit", async (event) => {
@@ -1738,12 +1285,6 @@ $("#upload-form").addEventListener("submit", async (event) => {
   const parserHandoff = event.submitter?.dataset.uploadMode === "parser-handoff";
   const file = $("#upload-file").files[0];
   const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
-  const knowledgeDomains = [...form.querySelectorAll('input[name="knowledge_domains"]:checked')].map((input) => input.value);
-  const knowledgeUse = form.elements.commerce_decision_support.checked ? "commerce" : "general";
-  const referenceType = form.elements.reference_type.value;
-  const publisher = form.elements.source_publisher.value.trim();
-  const applicability = form.elements.reference_applicability.value.trim();
-  const syntheticPolicy = form.elements.synthetic_company_policy.checked;
   const fileError = validateUploadFile(file);
   if (fileError || !roles.length) {
     const status = $("#upload-status");
@@ -1753,34 +1294,14 @@ $("#upload-form").addEventListener("submit", async (event) => {
     status.textContent = fileError || "Select at least one role authorized to retrieve this document.";
     return;
   }
-  if (knowledgeUse === "commerce" && (!referenceType || !knowledgeDomains.length || !publisher || !applicability)) {
-    const status = $("#upload-status");
-    $("#upload-status-wrap").hidden = false;
-    $("#upload-progress").hidden = true;
-    status.dataset.state = "error";
-    status.textContent = "Commerce references need a publisher, reference type, applicability scope, and at least one decision domain.";
-    return;
-  }
-  if (syntheticPolicy && referenceType !== "company_policy_reference") {
-    const status = $("#upload-status");
-    $("#upload-status-wrap").hidden = false;
-    $("#upload-progress").hidden = true;
-    status.dataset.state = "error";
-    status.textContent = "A synthetic Commerce Demo document must be classified as a company policy.";
-    return;
-  }
   const body = new FormData();
   body.append("file", file);
-  for (const name of ["title", "source_publisher", "reference_type", "reference_applicability", "fiscal_year", "source_url", "ocr_language"]) {
+  for (const name of ["title"]) {
     const value = form.elements[name].value.trim();
     if (value) body.append(name, value);
   }
-  body.append("document_type", knowledgeUse === "commerce" ? referenceType : "knowledge_document");
-  body.append("domain", knowledgeUse === "commerce"
-    ? knowledgeDomains.length === 1 ? knowledgeDomains[0] : "commerce_operations"
-    : "general_knowledge");
-  body.append("synthetic_company_policy", syntheticPolicy ? "true" : "false");
-  knowledgeDomains.forEach((domain) => body.append("knowledge_domains", domain));
+  body.append("document_type", "knowledge_document");
+  body.append("domain", "general_knowledge");
   roles.forEach((role) => body.append("allowed_roles", role));
   const controls = [...form.querySelectorAll("input, select, textarea, button")];
   const controlsWereDisabled = controls.map((control) => control.disabled);
@@ -1801,7 +1322,7 @@ $("#upload-form").addEventListener("submit", async (event) => {
   };
   status.dataset.state = "processing";
   status.textContent = parserHandoff
-    ? "Uploading, extracting and saving parser output. Tokenization and indexing are downstream. Keep this tab open."
+    ? "Uploading, extracting and saving parser output. Chunking and indexing run downstream. Keep this tab open."
     : "Uploading, extracting text/OCR, chunking and indexing. Keep this tab open.";
   updateProcessingTime();
   const processingTimer = window.setInterval(updateProcessingTime, 1000);
@@ -1809,15 +1330,11 @@ $("#upload-form").addEventListener("submit", async (event) => {
   try {
     result = await api(parserHandoff ? "/api/documents/parser-handoff" : "/api/documents/upload", { method: "POST", body, headers: {} });
     const referenceStatus = parserHandoff
-      ? " Parser output is saved in public for downstream tokenization and indexing; this document is not searchable yet."
-      : knowledgeUse === "commerce"
-      ? syntheticPolicy
-        ? ` Indexed as synthetic demo guidance for ${knowledgeDomains.join(", ")} (scope: ${applicability}); dashboard SQL is unchanged.`
-        : ` Indexed as ${referenceType} for ${knowledgeDomains.join(", ")} (scope: ${applicability}); dashboard SQL is unchanged.`
-      : " Indexed for document Q&A; Commerce dashboard SQL is unchanged.";
+      ? " Parser output is saved in public for the chunking worker; this document is not searchable yet."
+      : " Indexed for document Q&A.";
     const pageSummary = result.page_count ? `${formatNumber(result.page_count)} pages` : "File processed";
     const extractionSummary = parserHandoff
-      ? `${formatNumber(result.parser_chunk_count)} parser chunks · ${formatNumber(result.ocr_chunk_count)} OCR chunks · ${formatNumber(result.table_count)} tables · 0 indexed`
+      ? `${formatNumber(result.element_count)} parser elements · ${formatNumber(result.table_count)} tables · queued for chunking`
       : `${formatNumber(result.parser_chunk_count)} parser passages · ${formatNumber(result.indexed_chunk_count)} indexed passages · ${formatNumber(result.ocr_chunk_count)} OCR passages · ${formatNumber(result.table_count)} tables`;
     const uploadedTitle = form.elements.title.value || file.name;
     status.dataset.state = "success";
@@ -1827,19 +1344,16 @@ $("#upload-form").addEventListener("submit", async (event) => {
     form.reset();
     $("#upload-title").dataset.userEdited = "false";
     updateUploadRoleSelection();
-    syncUploadReferenceFields();
-    $("#upload-file-info").textContent = "Choose one file. Scanned PDFs and images use OCR; Admins can review extracted text and tables in Document Processing.";
+      $("#upload-file-info").textContent = "Choose one file. Scanned PDFs and images use OCR; Admins can review extracted text and tables in Document Processing.";
     $("#upload-file-info").setAttribute("role", "status");
     try {
-      const workspace = await api("/api/dashboard");
-      renderCorpus(workspace);
       if (currentUser?.role === "admin") await refreshKnowledgeDocuments();
     } catch (error) {
       status.dataset.state = "warning";
-      status.textContent = `The file was processed successfully as ${result.document_id}, but the corpus overview could not refresh: ${error.message}`;
+      status.textContent = `The file was processed successfully as ${result.document_id}, but the admin document list could not refresh: ${error.message}`;
     }
     const parsedDocument = $("#parsed-document");
-    if (currentUser?.role === "admin") {
+    if (currentUser?.role === "document_processing_owner") {
       const processingStatus = $("#processing-upload-status");
       processingStatus.dataset.state = status.dataset.state || "success";
       processingStatus.textContent = status.textContent;

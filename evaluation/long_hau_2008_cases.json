@@ -1,0 +1,379 @@
+[
+  {
+    "id": "Q01",
+    "question": "Sứ mệnh và tầm nhìn của Tổng Công ty Phân bón và Hóa chất Dầu khí (PVFCCo) được xác định như thế nào?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Semantic / multi-fact",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 4,
+        "page_number": 5
+      }
+    ]
+  },
+  {
+    "id": "Q02",
+    "question": "Mã cổ phiếu của PVFCCo là gì và có bao nhiêu cổ phiếu được niêm yết vào ngày 05/11/2007?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Direct factual",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 13,
+        "page_number": 11
+      }
+    ]
+  },
+  {
+    "id": "Q03",
+    "question": "PVFCCo hoạt động trong những lĩnh vực kinh doanh chính nào theo Báo cáo thường niên 2008?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Multi-fact",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 14,
+        "page_number": 12
+      }
+    ]
+  },
+  {
+    "id": "Q04",
+    "question": "Năm 2008, PVFCCo đã nhập khẩu và phân phối bao nhiêu tấn phân bón nhập khẩu vào thị trường nội địa?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Numeric",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 15,
+        "page_number": 13
+      }
+    ]
+  },
+  {
+    "id": "Q05",
+    "question": "Dự án thu hồi CO₂ tại Nhà máy Đạm Phú Mỹ dự kiến làm tăng công suất sản xuất urê thêm bao nhiêu tấn mỗi năm?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Numeric",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 15,
+        "page_number": 13
+      }
+    ]
+  },
+  {
+    "id": "Q06",
+    "question": "Tổng doanh thu, lợi nhuận trước thuế và số thuế nộp của PVFCCo năm 2008 là bao nhiêu?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Table / numeric",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 17,
+        "page_number": 14
+      }
+    ]
+  },
+  {
+    "id": "Q07",
+    "question": "So sánh tổng doanh thu của PVFCCo giữa năm 2007 và 2008.",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Comparative reasoning",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 17,
+        "page_number": 14
+      }
+    ]
+  },
+  {
+    "id": "Q08",
+    "question": "Kế hoạch sản lượng sản xuất urê và nhập khẩu phân bón của PVFCCo trong năm 2009 là bao nhiêu?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Multi-fact",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 6,
+        "page_number": 6
+      }
+    ]
+  },
+  {
+    "id": "Q09",
+    "question": "Các chỉ tiêu doanh thu, lợi nhuận trước thuế và thuế nộp ngân sách mà PVFCCo đặt ra cho năm 2009 là gì?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Table / numeric",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 19,
+        "page_number": 16
+      }
+    ]
+  },
+  {
+    "id": "Q10",
+    "question": "Nhà máy Đạm Phú Mỹ nằm ở đâu và công suất thiết kế sản xuất amoniac, urê mỗi ngày là bao nhiêu?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Multi-fact",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 23,
+        "page_number": 20
+      }
+    ]
+  },
+  {
+    "id": "Q11",
+    "question": "PVFCCo đã triển khai những giải pháp kỹ thuật nào nhằm cải thiện chất lượng urê và hiệu quả vận hành nhà máy?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Summarization",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 25,
+        "page_number": 21
+      },
+      {
+        "source": "annual_report",
+        "chunk_index": 26,
+        "page_number": 21
+      }
+    ]
+  },
+  {
+    "id": "Q12",
+    "question": "Tỷ số thanh toán hiện hành và tỷ số thanh toán nhanh của PVFCCo năm 2008 là bao nhiêu?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Table extraction",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 55,
+        "page_number": 39
+      }
+    ]
+  },
+  {
+    "id": "Q13",
+    "question": "Công ty Cổ phần Long Hậu được thành lập theo giấy chứng nhận đăng ký kinh doanh số bao nhiêu và được cấp ngày nào?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Direct factual",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 25,
+        "page_number": 10
+      }
+    ]
+  },
+  {
+    "id": "Q14",
+    "question": "Đơn vị kiểm toán nào thực hiện kiểm toán báo cáo tài chính riêng năm 2008 của Long Hậu?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Direct factual",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 7,
+        "page_number": 5
+      }
+    ]
+  },
+  {
+    "id": "Q15",
+    "question": "Báo cáo kiểm toán độc lập của Long Hậu năm 2008 được ký vào ngày nào?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Direct factual",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 9,
+        "page_number": 5
+      }
+    ]
+  },
+  {
+    "id": "Q16",
+    "question": "Tổng tài sản của Long Hậu tại ngày 31/12/2008 và đầu năm 2008 là bao nhiêu?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Table / numeric",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 14,
+        "page_number": 6
+      }
+    ]
+  },
+  {
+    "id": "Q17",
+    "question": "Giá trị hàng tồn kho của Long Hậu tại cuối năm và đầu năm 2008 thay đổi như thế nào?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Comparative reasoning",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 12,
+        "page_number": 6
+      }
+    ]
+  },
+  {
+    "id": "Q18",
+    "question": "Doanh thu thuần của Long Hậu trong năm 2008 là bao nhiêu và tăng bao nhiêu so với năm trước?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Calculation",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 20,
+        "page_number": 8
+      }
+    ]
+  },
+  {
+    "id": "Q19",
+    "question": "Tổng lợi nhuận kế toán trước thuế năm 2008 của Long Hậu là bao nhiêu so với năm 2007?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Table / numeric",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 21,
+        "page_number": 8
+      }
+    ]
+  },
+  {
+    "id": "Q20",
+    "question": "Theo thuyết minh báo cáo tài chính, Long Hậu xác định giá trị hàng tồn kho liên quan đến chi phí phát triển khu công nghiệp theo nguyên tắc nào?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Semantic retrieval",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 28,
+        "page_number": 11
+      }
+    ]
+  },
+  {
+    "id": "Q21",
+    "question": "Long Hậu áp dụng phương pháp khấu hao nào và thời gian khấu hao ước tính cho các loại tài sản cố định là bao lâu?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Multi-fact",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 29,
+        "page_number": 11
+      }
+    ]
+  },
+  {
+    "id": "Q22",
+    "question": "Lợi nhuận thuộc cổ đông phổ thông và lãi cơ bản trên mỗi cổ phiếu của Long Hậu năm 2008 là bao nhiêu?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Table / numeric",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 55,
+        "page_number": 22
+      }
+    ]
+  },
+  {
+    "id": "Q23",
+    "question": "Báo cáo thường niên 2008 của PVFCCo và báo cáo tài chính riêng năm 2008 của Long Hậu thuộc hai doanh nghiệp nào?",
+    "expected_sources": [
+      "annual_report",
+      "long_hau_fs"
+    ],
+    "type": "Entity disambiguation",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 0,
+        "page_number": 1
+      },
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 0,
+        "page_number": 1
+      }
+    ]
+  },
+  {
+    "id": "Q24",
+    "question": "So sánh lợi nhuận trước thuế năm 2008 của PVFCCo và Long Hậu, nêu rõ số liệu và đơn vị tiền tệ được sử dụng trong từng báo cáo.",
+    "expected_sources": [
+      "annual_report",
+      "long_hau_fs"
+    ],
+    "type": "Cross-document / reasoning",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 17,
+        "page_number": 14
+      },
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 21,
+        "page_number": 8
+      }
+    ]
+  }
+]

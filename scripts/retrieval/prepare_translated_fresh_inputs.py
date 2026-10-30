@@ -45,6 +45,7 @@ def main():
             base.save(OUT/'translations.json',{'status':'preparing' if len(records)<24 else 'completed','model':llm.model_name,
                 'source_language_mode':'auto','external_api_consent':'User explicitly approved sending these 24 simulated question texts to Groq in chat 2026-10-21.',
                 'translator_sha256':base.file_sha(ROOT/'src/core/retrieval/query_translator.py'),
+                'translation_prompt_sha256':base.file_sha(ROOT/'src/core/prompts/translation.py'),
                 'questions_sha256':base.file_sha(base.frozen.OUT/'cases.json'),'records':records})
             print(f'Translation {len(records)}/24: '+('ok' if error is None else error),flush=True)
             sleep(2)

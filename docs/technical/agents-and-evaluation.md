@@ -1,10 +1,32 @@
 # Agents, dashboard and evaluation
 
+> 2026-10-29 Report follow-up: the standalone Report interface now uses the new
+> Knowledge/SQL workflow for Auto source collection (`orchestrated`; legacy
+> `combined` is an alias). Dashboard remains independent. See the
+> [Report integration document](report-source-orchestration.md). The user also authorized pushing
+> the completed changes to main and rebuilding local Docker. Earlier completion
+> notes describe the preceding stage.
+
+## Unified Knowledge/SQL update — 2026-10-29
+
+Auto and the legacy `agentic` API value now share one bounded planning/execution
+workflow for Knowledge and SQL only. Mixed requests use focused subtasks;
+dependent work consumes structured predecessor evidence. Report and Inventory
+Dashboard remain explicit standalone modes. Conversation history is scoped and
+process-local. Combined responses disclose partial coverage and use response-wide
+citations. Same-model Groq key failover supports numbered backup keys.
+
+The [complete implementation/validation record](agent-orchestration-implementation.md)
+and [Vercel frontend contract](agent-api-frontend-contract.md) describe the current
+runtime. Evaluation discussions below include historical runs and must not be
+read as new end-to-end acceptance results.
+
 ## Agent routes
 
-`AgentRouter` is a compiled LangGraph graph with classify and conditional
-specialist nodes. Current destinations are knowledge QA, verified-metric
-analytics, hybrid document-plus-analytics, dashboard data, and report summary.
+`AgentRouter` is a compiled LangGraph graph with planning, execution, outcome
+inspection, bounded revision, and synthesis. Automatic destinations are Knowledge,
+SQL analytics, and their combination. Dashboard and Report remain standalone
+explicit modes.
 Routing and specialist implementations live in `src/core/agents/`.
 
 Analytics generates a SELECT for a narrow allowlisted schema using SQLGlot AST

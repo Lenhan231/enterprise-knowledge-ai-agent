@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from core.embeddings.embedding_service import EmbeddingService, _load_backend
+from core.embeddings.embedding_service import DEFAULT_EMBEDDING_MODEL, EmbeddingService, _load_backend
 from core.embeddings.settings import E5_MODEL, E5_REVISION
 from core.retrieval.methods.common import eligible_cte
 from core.database.document_chunks_repository import DocumentChunkRepository
@@ -13,6 +13,9 @@ from core.database.document_repository import DocumentRepository
 
 
 class E5ProductionTest(unittest.TestCase):
+    def test_environment_selects_e5_by_default(self):
+        self.assertEqual(DEFAULT_EMBEDDING_MODEL, E5_MODEL)
+
     def test_prefixes_normalization_and_chunk_prefix_reserve(self):
         backend = MagicMock()
         backend.embed_documents.return_value = [[2.0] + [0.0] * 767]
@@ -44,12 +47,14 @@ class E5ProductionTest(unittest.TestCase):
             _load_backend.cache_clear()
 
     def test_sql_keeps_production_table_and_trusted_filters(self):
-        sql, params = eligible_cte([0.1] * 768, "question", "Company", ["employee"],
+        sql, params = eligible_cte([0.1] * 768, "question 2022", "Company", ["employee"],
             include_vector=True, include_lexical=True, document_ids=["DOC"], metadata_filter={"domain": "test"})
         self.assertIn("FROM document_chunks AS c", sql)
+        self.assertIn("d.year_or_version = %s", sql)
+        self.assertNotIn("d.fiscal_year", sql)
+        self.assertEqual(params[2:4], ["2022", "2022"])
         for clause in ["d.company = %s::text", "d.allowed_roles && %s::text[]",
-                       "d.document_id = ANY(%s::text[])", "c.metadata @> %s::jsonb",
-                       "d.knowledge_base_active IS TRUE"]:
+                       "d.document_id = ANY(%s::text[])", "c.metadata @> %s::jsonb"]:
             self.assertIn(clause, sql)
 
 

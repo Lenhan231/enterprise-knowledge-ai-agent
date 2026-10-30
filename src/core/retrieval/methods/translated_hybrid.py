@@ -5,8 +5,10 @@ from time import perf_counter
 from openai import APIError
 
 from core.retrieval.retrieval import make_chunk_id
+from core.latency import measure
 
 
+@measure("retrieval_fusion")
 def fuse(rankings, weights, k=60):
     scores = {}
     for ranking, weight in zip(rankings, weights):
@@ -45,9 +47,10 @@ def search(repository, vector, request, get_translator, *, company=None, roles=N
                "translation_error": None, "effective_method": "translated_hybrid"}
     started = perf_counter()
     try:
-        translator = get_translator()
-        details["translation_model"] = getattr(translator.llm, "model_name", None)
-        queries = translator.translate(request.query, query_language)
+        with measure("query_translation"):
+            translator = get_translator()
+            details["translation_model"] = getattr(translator.llm, "model_name", None)
+            queries = translator.translate(request.query, query_language)
     except (APIError, ValueError, RuntimeError) as error:
         details.update(dense_fallback=True, translation_error=type(error).__name__,
                        effective_method="dense")

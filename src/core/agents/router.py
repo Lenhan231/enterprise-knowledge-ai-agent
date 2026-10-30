@@ -1,229 +1,204 @@
+"""Bounded LangGraph orchestration for Knowledge/SQL and standalone modes."""
+from __future__ import annotations
+
+import asyncio
+import inspect
+import time
 from typing import TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
-from core.agents.report_agent import (
-    _is_decision_suggestions_request,
-    _is_decision_support_request,
-)
-from core.analytics.commerce_decision_support import (
-    COMMERCE_DECISION_PROFILES,
-    resolve_commerce_decision_domain,
-)
+from core.agents.conversation_context import ConversationStore
+from core.agents.execution import Execution, authorize
+from core.agents.planning import plan_request
+from core.agents.response import assemble_response
+from core.agents.runtime import deadline, remaining
+from core.latency import measure
 from core.models.agents import AgentRequest, AgentResult
+from core.models.agent_plan import AgentPlan
 
 
-def _is_method_only_question(question: str) -> bool:
-    text = " ".join(question.casefold().split())
-    starts_with_method = text.startswith((
-        "how to ", "how do i ", "how do you ", "what are the steps", "steps to ",
-        "explain how to ", "explain the steps", "cách ", "các bước", "hướng dẫn", "quy trình", "làm thế nào",
-    ))
-    asks_for_source_method = (
-        text.startswith(("theo tài liệu", "theo hướng dẫn", "theo guide", "according to the document", "according to the guide"))
-        and any(term in text for term in (
-            "như thế nào", "các bước", "quy trình", "hướng dẫn", "cần làm gì", "cần những gì",
-            "yếu tố nào", "tiêu chí nào", "nên làm gì", "how to", "how should", "what steps",
-            "what factors", "which factors", "what criteria", "which criteria",
-        ))
-    )
-    # Generic advice language often contains "should" / "nên". The router
-    # checks separately whether this method is being applied to current data.
-    if asks_for_source_method:
-        return True
-    return starts_with_method and not _is_decision_support_request(text)
-
-
-def _applies_method_to_commerce_data(question: str) -> bool:
-    text = " ".join(question.casefold().split())
-    refers_to_observations = any(term in text for term in (
-        "flag", "snapshot", "current data", "latest data", "observations", "dataset",
-        "sql result", "the data", "these rows", "các cờ", "dữ liệu hiện tại", "snapshot mới nhất",
-    ))
-    applies_method = any(term in text for term in (
-        "review", "check", "inspect", "compare", "interpret", "apply", "before", "based on",
-        "rà soát", "kiểm tra", "đánh giá", "so sánh", "dựa trên", "trước khi",
-    ))
-    return refers_to_observations and applies_method
-
-
-class _AgentWorkflowState(TypedDict, total=False):
+class _State(TypedDict, total=False):
     request: AgentRequest
-    destination: str
+    history: list
+    plan: AgentPlan
+    execution: Execution
+    revisions: int
+    revise: bool
     result: AgentResult
+    report_headings: list[str] | None
 
 
 class AgentRouter:
-    def __init__(
-        self,
-        classifier,
-        knowledge_agent,
-        analytics_agent,
-        hybrid_agent,
-        dashboard_agent,
-        report_agent=None,
-    ):
+    def __init__(self, classifier, knowledge_agent, analytics_agent, dashboard_agent=None,
+                 report_agent=None, *, llm=None, request_timeout=120):
         self.classifier = classifier
-        self.knowledge_agent = knowledge_agent
-        self.analytics_agent = analytics_agent
-        self.hybrid_agent = hybrid_agent
-        self.dashboard_agent = dashboard_agent
-        self.report_agent = report_agent
-        self.last_destination = "unrouted"
-        self.workflow = self._build_workflow()
+        self.knowledge_agent, self.analytics_agent = knowledge_agent, analytics_agent
+        self.dashboard_agent, self.report_agent = dashboard_agent, report_agent
+        self.llm, self._owns_llm = llm, False
+        self.request_timeout = min(120, request_timeout)
+        self.conversations = ConversationStore()
+        self.report_conversations = ConversationStore()
+        self.last_destination = 'unrouted'  # Compatibility only; results carry request-local routing.
+        graph = StateGraph(_State)
+        for name in ('plan', 'execute', 'inspect', 'revise', 'combine'):
+            graph.add_node(name, getattr(self, '_' + name))
+        graph.add_edge(START, 'plan')
+        graph.add_conditional_edges('plan', lambda state: 'done' if state.get('result') else 'execute',
+                                    {'done': END, 'execute': 'execute'})
+        graph.add_edge('execute', 'inspect')
+        graph.add_conditional_edges('inspect', lambda state: 'revise' if state['revise'] else 'combine',
+                                    {'revise': 'revise', 'combine': 'combine'})
+        graph.add_edge('revise', 'execute')
+        graph.add_edge('combine', END)
+        self.graph = graph.compile()
 
-    def _build_workflow(self):
-        agents = {
-            "knowledge": self.knowledge_agent,
-            "analytics": self.analytics_agent,
-            "hybrid": self.hybrid_agent,
-            "dashboard": self.dashboard_agent,
-        }
-        if self.report_agent:
-            agents["report"] = self.report_agent
+    async def run(self, request, *, config=None):
+        return await self._run(request, config=config)
 
-        graph = StateGraph(_AgentWorkflowState)
-        graph.add_node("classify", self._classify)
-        for name, agent in agents.items():
-            graph.add_node(name, lambda state, selected=agent: {
-                "result": selected.run(state["request"]),
-            })
-            graph.add_edge(name, END)
-        graph.add_conditional_edges(
-            "classify",
-            lambda state: state["destination"],
-            {name: name for name in agents},
-        )
-        graph.add_edge(START, "classify")
-        return graph.compile()
+    async def collect_sources(self, request, headings, *, config=None):
+        if request.conversation_id:
+            request = request.model_copy(update={'conversation_id': 'report:' + request.conversation_id})
+        return await self._run(request, report_headings=list(headings), config=config)
 
-    def _classify(self, state: _AgentWorkflowState) -> dict[str, str]:
-        request = state["request"]
-        if self.report_agent and (request.metadata.get("decision_suggestions")
-                                  or _is_decision_suggestions_request(request.question)):
-            request.metadata["decision_suggestions"] = True
-            self.last_destination = "report"
-            return {"destination": "report"}
-        commerce_domain = request.metadata.get("business_decision_domain")
-        if commerce_domain not in COMMERCE_DECISION_PROFILES:
-            commerce_domain = resolve_commerce_decision_domain(request.question)
-        question_text = request.question.casefold()
-        dashboard_request = any(term in question_text for term in (
-            "dashboard", "chart", "visualize", "visualise", "plot", "graph", "biểu đồ", "đồ thị",
-        ))
-        if dashboard_request and commerce_domain:
-            request.metadata["business_decision_domain"] = commerce_domain
-            self.last_destination = "dashboard"
-            return {"destination": "dashboard"}
-        # The dedicated Commerce decision form explicitly asks for SQL + RAG.
-        # Honor that UI contract even when the question is phrased as a method question.
-        if self.report_agent and commerce_domain and request.metadata.get("commerce_decision_support"):
-            self.last_destination = "report"
-            return {"destination": "report"}
-        policy_question = any(term in question_text for term in (
-            "policy", "policies", "chính sách",
-        )) and not any(term in question_text for term in (
-            "should", "recommend", "decision", "can we", "nên", "khuyến nghị", "quyết định",
-            "compare", "trend", "how much", "how many", "sales", "revenue", "transit",
-            "so sánh", "xu hướng", "bao nhiêu", "doanh thu", "đơn hàng", "thời gian giao",
-        ))
-        if commerce_domain and policy_question:
-            request.metadata["business_decision_domain"] = commerce_domain
-            request.metadata["policy_reference_only"] = True
-            self.last_destination = "knowledge"
-            return {"destination": "knowledge"}
-        named_external_source = any(name in request.question.casefold() for name in (
-            "shopify", "amazon", "walmart", "shopee", "tiktok shop", "doordash", "sam's club",
-        ))
-        source_how_to_question = named_external_source and any(term in request.question.casefold() for term in (
-            "what does", "what do", "according to", "how does", "how do", "what guidance", "the guide",
-            "what policy", "nói gì", "hướng dẫn", "theo tài liệu",
-            "what exact", "what text", "which text", "what phrase", "which phrase",
-            "what label", "which label", "what wording", "what appears", "what is shown",
-            "screenshot", "on page",
-        ))
-        if (self.report_agent and commerce_domain and source_how_to_question
-                and not _applies_method_to_commerce_data(request.question)):
-            request.metadata["business_decision_domain"] = commerce_domain
-            self.last_destination = "knowledge"
-            return {"destination": "knowledge"}
-        if self.report_agent and commerce_domain in COMMERCE_DECISION_PROFILES:
-            if _is_method_only_question(request.question) and _applies_method_to_commerce_data(request.question):
-                request.metadata["decision_support"] = True
-                self.last_destination = "report"
-                return {"destination": "report"}
-            if _is_method_only_question(request.question):
-                request.metadata["business_decision_domain"] = commerce_domain
-                self.last_destination = "knowledge"
-                return {"destination": "knowledge"}
-            if (request.metadata.get("commerce_decision_support")
-                    or _is_decision_support_request(request.question)):
-                self.last_destination = "report"
-                return {"destination": "report"}
-            # Let the shared intent model identify new document-only questions;
-            # keep the established report route when classification falls back.
-            intent = self.classifier.classify(request.question)
-            knowledge_only = intent.intent == "knowledge" and intent.needs_knowledge and not intent.needs_sql
-            if knowledge_only or (_is_method_only_question(request.question)
-                                  and not _applies_method_to_commerce_data(request.question)):
-                request.metadata["business_decision_domain"] = commerce_domain
-                self.last_destination = "knowledge"
-                return {"destination": "knowledge"}
-            if intent.intent == "hybrid":
-                request.metadata["decision_support"] = True
-            self.last_destination = "report"
-            return {"destination": "report"}
-        if self.report_agent and commerce_domain:
-            self.last_destination = "report"
-            return {"destination": "report"}
-        intent = self.classifier.classify(request.question)
+    async def _run(self, request, *, report_headings=None, config=None):
+        execution = Execution(request, {'knowledge': self.knowledge_agent, 'sql': self.analytics_agent})
+        token = deadline.set(time.monotonic() + self.request_timeout)
+        try:
+            with measure('agent_workflow'):
+                async with asyncio.timeout(self.request_timeout):
+                    store = self.report_conversations if report_headings is not None else self.conversations
+                    async with store.session(request) as history:
+                        state = await self.graph.ainvoke({'request': request, 'history': list(history),
+                            'execution': execution, 'revisions': 0, 'report_headings': report_headings}, config=config)
+                        result = AgentResult.model_validate(state['result'])
+                        if result.metadata.get('status') in {'complete', 'partial', 'clarification_required'}:
+                            scope = state['plan'].objective if state.get('plan') else request.question
+                            history.append({'question': request.question[:2000], 'scope': scope[:2000],
+                                            'clarification': result.answer[:500] if result.metadata.get('status') == 'clarification_required' else ''})
+                        self.last_destination = result.metadata.get('selected_route', 'unrouted')
+                        return result
+        except PermissionError:
+            raise
+        except TimeoutError:
+            if getattr(execution, 'plan', None) and execution.outcomes:
+                result = (execution.collected_sources(execution.plan) if report_headings is not None
+                          else await assemble_response(request, execution.plan, execution, None))
+                result.metadata.update(ok=False, status='partial' if result.evidence else 'failed')
+                result.metadata['limitations'].append('Request deadline exhausted.')
+                result.answer += '\n\nRequest deadline exhausted; remaining tasks were stopped.'
+                return result
+            return self._failure('Request deadline exhausted before a supported answer could be completed.',
+                                 trace=execution.trace)
+        except (ValueError, RuntimeError) as error:
+            return self._failure('Automatic planning is unavailable or could not safely complete this request. '
+                                 'Please retry or select Knowledge or SQL.', trace=execution.trace,
+                                 error_type=type(error).__name__)
+        finally:
+            deadline.reset(token)
 
-        if intent.intent == "report" and self.report_agent:
-            destination = "report"
-        elif intent.output_mode == "dashboard":
-            destination = "dashboard"
-        elif (self.report_agent and intent.intent == "hybrid"
-              and _is_decision_support_request(request.question)):
-            destination = "report"
-        elif intent.needs_knowledge and intent.needs_sql:
-            destination = "hybrid"
-        elif intent.needs_sql:
-            destination = "analytics"
-        else:
-            destination = "knowledge"
-        self.last_destination = destination
-        return {"destination": destination}
+    async def route(self, request):
+        return await self.run(request)
 
-    def route(self, request: AgentRequest) -> AgentResult:
-        auto_detected_domain = False
-        if request.metadata.get("commerce_decision_support") and not request.metadata.get("business_decision_domain"):
-            classify_domain = getattr(self.classifier, "classify_commerce_domain", None)
-            domain = (
-                classify_domain(request.question)
-                if callable(classify_domain)
-                else resolve_commerce_decision_domain(request.question)
-            )
-            if domain not in COMMERCE_DECISION_PROFILES:
-                self.last_destination = "commerce_domain_router"
-                labels = ", ".join(profile["label"] for profile in COMMERCE_DECISION_PROFILES.values())
-                return AgentResult(
-                    answer=f"I couldn't determine one Commerce decision domain with enough confidence. Please clarify whether the question is about {labels}.",
-                    agent="commerce_domain_router",
-                    metadata={"needs_domain_clarification": True},
-                )
-            request.metadata["business_decision_domain"] = domain
-            auto_detected_domain = True
-        elif not request.metadata.get("business_decision_domain"):
-            domain = resolve_commerce_decision_domain(request.question)
-            if domain in COMMERCE_DECISION_PROFILES:
-                request.metadata["business_decision_domain"] = domain
-                auto_detected_domain = True
-        result = self.workflow.invoke({"request": request})["result"]
+    async def run_mode(self, request, mode, *, config=None):
+        if mode in {'auto', 'agentic'}:
+            return await self.run(request, config=config)
+        agents = {'knowledge': self.knowledge_agent, 'sql': self.analytics_agent,
+                  'dashboard': self.dashboard_agent, 'report': self.report_agent}
+        if mode not in agents:
+            raise ValueError('Unsupported agent mode')
+        if mode in {'knowledge', 'sql'}:
+            authorize(request, mode)
+        agent = agents[mode]
+        if agent is None:
+            return self._failure('This standalone request type is not supported.')
+        with measure('agent_workflow'):
+            result = agent.run(request)
+            if inspect.isawaitable(result):
+                result = await result
         result = AgentResult.model_validate(result)
-        domain = request.metadata.get("business_decision_domain")
-        if domain in COMMERCE_DECISION_PROFILES:
-            result.metadata.update({
-                "business_decision_domain": domain,
-                "business_domain_auto_detected": auto_detected_domain,
-            })
-        return result
+        route = 'analytics' if mode == 'sql' else mode
+        self.last_destination = route
+        return result.model_copy(update={'metadata': {**result.metadata, 'selected_route': route}})
+
+    async def _plan(self, state):
+        with measure('routing'):
+            plan = await plan_request(state['request'], self._provider(), history=state['history'],
+                                      report_headings=state.get('report_headings'))
+        state['execution'].plan = plan
+        if plan.clarification:
+            return {'plan': plan, 'result': AgentResult(answer=plan.clarification, agent='agentic', metadata={
+                'ok': False, 'status': 'clarification_required', 'clarification_required': True,
+                'selected_route': 'clarification', 'task_trace': []})}
+        return {'plan': plan}
+
+    async def _execute(self, state):
+        await state['execution'].run(state['plan'])
+        return {}
+
+    async def _inspect(self, state):
+        execution = state['execution']
+        failed = [execution.outcomes[t.id] for t in state['plan'].tasks if t.id in execution.outcomes
+                  and execution.outcomes[t.id].status in {'failed', 'empty', 'clarification_required'}]
+        return {'revise': bool(failed and state['revisions'] < 1 and execution.invocations < 6
+                               and remaining() > 5)}
+
+    async def _revise(self, state):
+        execution = state['execution']
+        try:
+            plan = await plan_request(state['request'], self._provider(), history=state['history'],
+                previous=execution.revision_context(state['plan']), report_headings=state.get('report_headings'))
+            if plan.clarification:
+                return {'revisions': 1}
+            completed = {key: o for key, o in execution.outcomes.items() if o.status == 'complete'}
+            by_id = {t.id: t for t in plan.tasks}
+            if any(key not in by_id or by_id[key] != o.task for key, o in completed.items()):
+                return {'revisions': 1}
+            if not {t.agent for t in state['plan'].tasks} <= {t.agent for t in plan.tasks}:
+                return {'revisions': 1}
+            for task in plan.tasks:
+                authorize(state['request'], task.agent)
+            execution.plan = plan
+            return {'plan': plan, 'revisions': 1}
+        except PermissionError:
+            raise
+        except Exception:
+            return {'revisions': 1}
+
+    async def _combine(self, state):
+        with measure('answer_synthesis'):
+            result = (state['execution'].collected_sources(state['plan']) if state.get('report_headings') is not None
+                      else await assemble_response(state['request'], state['plan'], state['execution'], self._provider()))
+        result.metadata['revisions'] = state['revisions']
+        return {'result': result}
+
+    @staticmethod
+    def _failure(answer, *, trace=None, error_type=None):
+        return AgentResult(answer=answer, agent='agentic', metadata={'ok': False, 'status': 'failed',
+            'selected_route': 'unrouted', 'task_trace': trace or [], 'error_type': error_type})
+
+    def _provider(self):
+        if self.llm is None:
+            sql_agent = getattr(self.analytics_agent, 'sql_agent', None)
+            if sql_agent is not None and hasattr(sql_agent, '_provider'):
+                return sql_agent._provider()
+            from core.llm.groq_provider import GroqProvider
+            self.llm = GroqProvider()
+            self._owns_llm = True
+        return self.llm
+
+    async def close(self):
+        seen = set()
+        for agent in (self.knowledge_agent, self.analytics_agent, self.dashboard_agent, self.report_agent):
+            if agent is None or id(agent) in seen:
+                continue
+            seen.add(id(agent))
+            close = getattr(agent, 'close', None)
+            if close:
+                result = close()
+                if inspect.isawaitable(result):
+                    await result
+        if self.classifier is not None and hasattr(self.classifier, 'close'):
+            self.classifier.close()
+        if self._owns_llm and self.llm is not None and hasattr(self.llm, 'close'):
+            self.llm.close()

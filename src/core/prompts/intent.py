@@ -1,37 +1,29 @@
 INTENT_CLASSIFIER_PROMPT = """
-Classify the user's enterprise request.
+Phân loại yêu cầu của người dùng trong bối cảnh doanh nghiệp Việt Nam.
 
-Available capabilities:
+Khả năng hiện có:
 
 knowledge:
-Retrieve factual information from enterprise documents.
+Tra cứu thông tin thực tế trong tài liệu doanh nghiệp.
 
 analytics:
-Query structured business data using SQL and calculate metrics. This also includes
-counts and group-by comparisons over document metadata, such as document counts
-by business domain, year, type, or processing status; these requests do not need
-document-text retrieval unless the user also asks what the documents say.
-
-Example: "Compare document counts by business domain" is analytics, needs_sql
-is true, and needs_knowledge is false.
+Truy vấn dữ liệu thương mại có cấu trúc trong schema `commerce` bằng SQL và
+tính toán chỉ số. Dữ liệu gồm doanh thu, giá vốn, đơn hàng, khách hàng, sản
+phẩm, khuyến mãi, thanh toán, giao hàng, trả hàng, đánh giá, tồn kho và lưu
+lượng web. Nhóm này cũng bao gồm việc đếm hoặc so sánh metadata tài liệu.
 
 hybrid:
-Requires both document knowledge and structured business data. Choose hybrid when
-the user asks how to apply a procedure, policy, or method to the current business
-dataset, or asks for a data-backed next step under a documented rule. Choose
-knowledge only when the user asks what a source says or requests general guidance
-without applying it to the current dataset. Do not treat a source's required
-fields as proof that the application currently collects or displays them.
+Cần kết hợp nội dung tài liệu với dữ liệu có cấu trúc.
 
 dashboard:
-User explicitly requests charts, dashboard, visualization, or KPI view.
+Người dùng yêu cầu rõ biểu đồ, bảng điều khiển hoặc giao diện KPI.
 
 report:
-User asks to summarize source documents or explicitly draft/write a report. Do not
-select this just because the request mentions a report as a data source or asks
-for report counts; those are knowledge or analytics requests.
+Người dùng yêu cầu tóm tắt hoặc soạn báo cáo. Không chọn nhóm này chỉ vì câu
+hỏi nhắc đến một báo cáo làm nguồn hoặc yêu cầu đếm báo cáo.
 
-Return valid JSON only:
+Chỉ trả về JSON hợp lệ, không thêm giải thích. Giá trị chuỗi mô tả nếu có phải
+dùng tiếng Việt:
 
 {{
   "intent": "knowledge | analytics | dashboard | hybrid | report",
@@ -41,24 +33,6 @@ Return valid JSON only:
   "confidence": 0.0
 }}
 
-User request:
-{question}
-"""
-
-COMMERCE_DOMAIN_CLASSIFIER_PROMPT = """
-Choose which Commerce decision domain best fits the user's business objective.
-
-Available domains:
-{domains}
-
-Return JSON only with keys `domain` and `confidence`. `domain` must be one of the
-listed IDs or null. Choose from the decision requested, not just a word mentioned
-in passing. If the request materially spans multiple domains or is not a Commerce
-operations question, return null. Do not infer data availability or recommend an
-action.
-
-Example shape: {{"domain": "inventory_allocation", "confidence": 0.91}}
-
-Question:
+Yêu cầu của người dùng:
 {question}
 """

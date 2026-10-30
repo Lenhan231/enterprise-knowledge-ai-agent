@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import json
 import re
+import json
 from typing import Any
 
 import numpy as np
@@ -15,7 +15,7 @@ _SEARCH_STOP_WORDS = {
     "how", "many", "much", "of", "for", "in", "on", "at", "to", "and",
     "or", "with", "by", "from", "about", "please", "show", "me", "give",
     "tell", "của", "là", "năm", "bao", "nhiêu", "gì", "cho", "với",
-    "được", "về", "thế", "nào", "summarize", "summary", "s",
+    "được", "về", "thế", "nào", "summarize", "summary", "vinamilk", "s",
 }
 
 
@@ -37,10 +37,10 @@ def eligible_cte(
     company: str | None,
     roles: list[str] | None,
     *,
-    metadata_filter: dict[str, Any] | None = None,
     include_vector: bool,
     include_lexical: bool,
     document_ids: list[str] | None = None,
+    metadata_filter: dict[str, Any] | None = None,
 ) -> tuple[str, list[Any]]:
     """Build the common ready-document and ACL filter before any ranking limit."""
     parameters: list[Any] = []
@@ -58,7 +58,7 @@ def eligible_cte(
     parameters.extend((fiscal_year, fiscal_year))
     filters = ""
     if company is not None:
-        filters += " AND d.company = %s::text"
+        filters += " AND c.metadata->>'company' = %s::text"
         parameters.append(company)
     if roles is not None:
         filters += " AND (d.allowed_roles && %s::text[] OR 'admin' = ANY(%s::text[]))"
@@ -73,18 +73,13 @@ def eligible_cte(
     cte = f"""
         eligible AS MATERIALIZED (
             SELECT c.id, c.document_name, c.chunk_index, c.content,
-                   c.metadata || jsonb_strip_nulls(jsonb_build_object(
-                       'document_type', d.document_type,
-                       'source_title', d.title,
-                       'source_url', d.source_url
-                   )) AS metadata,
+                   c.metadata || jsonb_build_object('document_type', d.document_type) AS metadata,
                    {vector_fields}
-                   coalesce(%s::text IS NOT NULL AND d.fiscal_year = %s, false) AS year_match
+                   coalesce(%s::text IS NOT NULL AND c.metadata->>'fiscal_year' = %s, false) AS year_match
                    {lexical_field}
             FROM document_chunks AS c
             JOIN documents AS d ON d.document_id = c.metadata->>'document_id'
-            WHERE coalesce(d.processing_status, 'ready') = 'ready'
-              AND d.knowledge_base_active IS TRUE {filters}
+            WHERE coalesce(d.processing_status, 'ready') = 'ready' {filters}
         )
     """
     return cte, parameters

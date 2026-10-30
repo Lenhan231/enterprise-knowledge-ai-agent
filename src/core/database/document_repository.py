@@ -28,11 +28,11 @@ class DocumentRepository:
                                     title, 
                                     year_or_version,
                                     format,
-                                    source_url,
+                                    NULL::text AS source_url,
                                     verification,
                                     document_type,
-                                    fiscal_year,
-                                    company,
+                                    NULL::text AS fiscal_year,
+                                    NULL::text AS company,
                                     source_type,
                                     allowed_roles
                                     FROM documents
@@ -42,8 +42,8 @@ class DocumentRepository:
     def list_knowledge_documents(self) -> list[dict]:
         """List indexed source documents and their retrieval status for Admin."""
         with self.conn.cursor() as cursor:
-            cursor.execute("""SELECT d.document_id, d.title, d.company, d.domain,
-                                    d.document_type, d.format, d.source_url,
+            cursor.execute("""SELECT d.document_id, d.title, NULL::text AS company, d.domain,
+                                    d.document_type, d.format, max(c.metadata->>'source_url') AS source_url,
                                     d.source_type, d.processing_status,
                                     d.knowledge_base_active,
                                     d.allowed_roles,
@@ -100,15 +100,15 @@ class DocumentRepository:
                 """
                 INSERT INTO documents (
                     document_id, domain, title, year_or_version, format,
-                    source_url, verification,
-                    document_type, fiscal_year, company, source_type,
+                    verification,
+                    document_type, source_type,
                     allowed_roles, storage_path, processing_status,
                     knowledge_base_active
                 ) VALUES (
                     %(document_id)s, %(domain)s, %(title)s, %(year_or_version)s,
-                    %(format)s, %(source_url)s,
+                    %(format)s,
                     %(verification)s, %(document_type)s,
-                    %(fiscal_year)s, %(company)s, %(source_type)s,
+                    %(source_type)s,
                     %(allowed_roles)s, %(storage_path)s, %(processing_status)s,
                     %(knowledge_base_active)s
                 )
@@ -117,11 +117,8 @@ class DocumentRepository:
                     title = EXCLUDED.title,
                     year_or_version = EXCLUDED.year_or_version,
                     format = EXCLUDED.format,
-                    source_url = EXCLUDED.source_url,
                     verification = EXCLUDED.verification,
                     document_type = EXCLUDED.document_type,
-                    fiscal_year = EXCLUDED.fiscal_year,
-                    company = EXCLUDED.company,
                     source_type = EXCLUDED.source_type,
                     storage_path = COALESCE(EXCLUDED.storage_path, documents.storage_path),
                     processing_status = EXCLUDED.processing_status
@@ -138,15 +135,15 @@ class DocumentRepository:
                 """
                 INSERT INTO documents (
                     document_id, domain, title, year_or_version, format,
-                    source_url, verification,
-                    document_type, fiscal_year, company, source_type,
+                    verification,
+                    document_type, source_type,
                     allowed_roles, storage_path, processing_status,
                     uploaded_by, uploaded_at
                 ) VALUES (
                     %(document_id)s, %(domain)s, %(title)s, %(year_or_version)s,
-                    %(format)s, %(source_url)s,
+                    %(format)s,
                     %(verification)s, %(document_type)s,
-                    %(fiscal_year)s, %(company)s, %(source_type)s,
+                    %(source_type)s,
                     %(allowed_roles)s, %(storage_path)s,
                     'uploaded', %(uploaded_by)s, now()
                 )
@@ -161,14 +158,14 @@ class DocumentRepository:
         """Aggregate visible documents and indexed chunks from persisted state."""
         role_filter = "(d.allowed_roles && %s::text[] OR %s = 'admin' OR (%s = 'document_uploader' AND d.uploaded_by = %s))"
         visible = ([role], role, role, username)
-        company_filter = " AND d.company = %s::text" if company is not None else ""
-        visible_filter = role_filter + company_filter
+        company_filter = " AND c.metadata->>'company' = %s::text" if company is not None else ""
         visible_params = visible + ((company,) if company is not None else ())
         with self.conn.cursor() as cursor:
             cursor.execute(
                 f"""
-                SELECT d.document_id, d.company, d.domain, d.title, d.document_type,
-                       d.format, d.fiscal_year, d.source_url, d.allowed_roles,
+                SELECT d.document_id, max(c.metadata->>'company') AS company, d.domain, d.title, d.document_type,
+                       d.format, d.year_or_version AS fiscal_year,
+                       max(c.metadata->>'source_url') AS source_url, d.allowed_roles,
                        d.processing_status, count(c.id)::int AS chunks,
                        ARRAY(
                            SELECT DISTINCT jsonb_array_elements_text(reference.metadata->'knowledge_domains')
@@ -184,15 +181,16 @@ class DocumentRepository:
                  AND coalesce(d.processing_status, 'ready') = 'ready'
                 WHERE d.source_type IN ('public_enterprise_document', 'user_upload', 'synthetic_demo_policy')
                   AND d.knowledge_base_active IS TRUE
-                  AND {visible_filter}
+                  AND {role_filter}
+                  {company_filter}
                 GROUP BY d.document_id
-                ORDER BY d.company, d.fiscal_year NULLS LAST, d.title
+                ORDER BY d.year_or_version NULLS LAST, d.title
                 """,
                 visible_params,
             )
             documents = cursor.fetchall()
             cursor.execute(
-                f"""SELECT d.company, d.domain, d.fiscal_year,
+                f"""SELECT max(c.metadata->>'company') AS company, d.domain, d.year_or_version AS fiscal_year,
                            count(DISTINCT d.document_id)::int AS documents,
                            count(c.id)::int AS chunks
                     FROM documents d LEFT JOIN document_chunks c
@@ -200,14 +198,15 @@ class DocumentRepository:
                      AND coalesce(d.processing_status, 'ready') = 'ready'
                     WHERE d.source_type IN ('public_enterprise_document', 'user_upload', 'synthetic_demo_policy')
                       AND d.knowledge_base_active IS TRUE
-                      AND {visible_filter}
-                    GROUP BY d.company, d.domain, d.fiscal_year
-                    ORDER BY d.company, d.domain, d.fiscal_year NULLS LAST""",
+                      AND {role_filter}
+                      {company_filter}
+                    GROUP BY d.domain, d.year_or_version
+                    ORDER BY d.domain, d.year_or_version NULLS LAST""",
                 visible_params,
             )
             domains = cursor.fetchall()
             cursor.execute(
-                f"""SELECT d.document_id, d.company, d.fiscal_year, d.title, d.processing_status,
+                f"""SELECT d.document_id, max(c.metadata->>'company') AS company, d.year_or_version AS fiscal_year, d.title, d.processing_status,
                            count(c.id)::int AS chunks,
                            round(avg(length(c.content)))::int AS avg_chunk_chars,
                            count(c.id) FILTER (WHERE coalesce(c.content, '') = '')::int AS empty_chunks
@@ -216,19 +215,22 @@ class DocumentRepository:
                      AND coalesce(d.processing_status, 'ready') = 'ready'
                     WHERE d.source_type IN ('public_enterprise_document', 'user_upload', 'synthetic_demo_policy')
                       AND d.knowledge_base_active IS TRUE
-                      AND {visible_filter}
+                      AND {role_filter}
+                      {company_filter}
                     GROUP BY d.document_id ORDER BY d.title""",
                 visible_params,
             )
             quality = cursor.fetchall()
             cursor.execute(
-                f"""SELECT d.company, d.fiscal_year, d.processing_status, count(*)::int AS documents
+                f"""SELECT d.year_or_version AS fiscal_year, d.processing_status, count(DISTINCT d.document_id)::int AS documents
                     FROM documents d
+                    LEFT JOIN document_chunks c ON c.metadata->>'document_id' = d.document_id
                     WHERE d.source_type IN ('public_enterprise_document', 'user_upload', 'synthetic_demo_policy')
                       AND d.knowledge_base_active IS TRUE
-                      AND {visible_filter}
-                    GROUP BY d.company, d.fiscal_year, d.processing_status
-                    ORDER BY d.company, d.fiscal_year NULLS LAST, d.processing_status""",
+                      AND {role_filter}
+                      {company_filter}
+                    GROUP BY d.year_or_version, d.processing_status
+                    ORDER BY d.year_or_version NULLS LAST, d.processing_status""",
                 visible_params,
             )
             processing = cursor.fetchall()
@@ -244,31 +246,18 @@ class DocumentRepository:
     def execute_authorized_analytics(
         self, query: str, role: str, username: str, company: str | None = None
     ) -> dict:
-        """Run validated SELECT SQL inside role-filtered CTEs and a read-only transaction."""
+        """Run validated document-metadata SQL inside a role-filtered read-only transaction."""
         query = validate_analytics_sql(query)
-        metric_cte = """authorized_financial_metrics AS (
-            SELECT id AS metric_id, company, fiscal_year, metric_name, metric_label, metric_value, unit,
-                   document_id, page_number, source_url, source_quote, source_reference,
-                   source_chunk_id, source_chunk_index, source_content_hash,
-                   source_note, entry_method
-            FROM public.extracted_financial_metrics
-            WHERE status = 'verified'
-              AND (allowed_roles @> %s::text[] OR %s = 'admin')
-              AND (%s::text IS NULL OR company = %s)
-        )"""
         document_cte = """authorized_documents AS (
-            SELECT d.document_id, d.company, d.domain, d.title, d.document_type, d.format,
-                   CASE WHEN d.fiscal_year ~ '^[0-9]{4}$' THEN d.fiscal_year::integer END AS fiscal_year,
-                   d.processing_status, d.source_url
+            SELECT d.document_id, NULL::text AS company, d.domain, d.title, d.document_type, d.format,
+                   CASE WHEN d.year_or_version ~ '^[0-9]{4}$' THEN d.year_or_version::integer END AS fiscal_year,
+                   d.processing_status, NULL::text AS source_url
             FROM public.documents d
             WHERE source_type IN ('public_enterprise_document', 'user_upload')
               AND (allowed_roles && %s::text[] OR %s = 'admin'
                    OR (%s = 'document_uploader' AND uploaded_by = %s))
-              AND (%s::text IS NULL OR company = %s)
         )"""
-        metric_ids: set[int] = set()
         document_ids: set[str] = set()
-        evidence = []
         documents = []
         self.conn.rollback()
         with self.conn.transaction():
@@ -276,54 +265,22 @@ class DocumentRepository:
                 cursor.execute("SET TRANSACTION READ ONLY")
                 cursor.execute("SET LOCAL statement_timeout = '3s'")
                 cursor.execute(
-                    f"WITH {metric_cte}, {document_cte} {query}",
-                    ([role], role, company, company, [role], role, role, username, company, company),
+                    f"WITH {document_cte} {query}",
+                    ([role], role, role, username),
                 )
                 columns = [item.name for item in cursor.description]
                 results = [dict(row) if isinstance(row, dict) else dict(zip(columns, row))
                            for row in cursor.fetchall()]
                 for row in results:
-                    ids = row.get("evidence_metric_ids")
-                    if isinstance(ids, (list, tuple)):
-                        metric_ids.update(value for value in ids if isinstance(value, int))
                     document_evidence_ids = row.get("evidence_document_ids")
                     if isinstance(document_evidence_ids, (list, tuple)):
                         document_ids.update(value for value in document_evidence_ids if isinstance(value, str))
-                if len(metric_ids) > 500 or len(document_ids) > 250:
+                if len(document_ids) > 250:
                     raise ValueError("Analytics matched too many source documents; narrow the request")
-                if metric_ids:
-                    ids = sorted(metric_ids)
-                    cursor.execute(
-                        """SELECT id AS metric_id, company, fiscal_year, metric_name, metric_label,
-                                  metric_value, unit, document_id, page_number, source_url, source_quote,
-                                  source_reference, source_note, entry_method, source_chunk_id,
-                                  source_chunk_index, source_content_hash
-                           FROM public.extracted_financial_metrics
-                           WHERE status='verified' AND id = ANY(%s)
-                             AND (allowed_roles @> %s::text[] OR %s = 'admin')
-                           ORDER BY company, fiscal_year, metric_name LIMIT 501""",
-                        (ids, [role], role),
-                    )
-                    evidence = cursor.fetchall()
-                    if len(evidence) > 500:
-                        raise ValueError("Analytics returned too many metric sources; narrow the request")
-                    source_document_ids = sorted({
-                        row["document_id"] for row in evidence if row["document_id"]
-                    })
-                    if source_document_ids:
-                        cursor.execute(
-                            """SELECT document_id, company, domain, title, source_url
-                               FROM public.documents WHERE document_id = ANY(%s)
-                                 AND (allowed_roles && %s::text[] OR %s = 'admin'
-                                      OR (%s = 'document_uploader' AND uploaded_by = %s))
-                               ORDER BY title""",
-                            (source_document_ids, [role], role, role, username),
-                        )
-                        documents = cursor.fetchall()
                 if document_ids:
                     ids = sorted(document_ids)
                     cursor.execute(
-                        """SELECT document_id, company, domain, title, source_url
+                        """SELECT document_id, NULL::text AS company, domain, title, NULL::text AS source_url
                            FROM public.documents
                            WHERE document_id = ANY(%s)
                              AND source_type IN ('public_enterprise_document', 'user_upload')
@@ -333,7 +290,7 @@ class DocumentRepository:
                         (ids, [role], role, role, username),
                     )
                     documents.extend(cursor.fetchall())
-        return {"results": results, "evidence": evidence, "documents": documents}
+        return {"results": results, "documents": documents}
 
     def commerce_dashboard(self, keys: tuple[str, ...] | None = None) -> dict:
         """Return descriptive dashboard aggregates from the private synthetic Commerce schema."""
@@ -507,13 +464,13 @@ class DocumentRepository:
             cursor.execute(
                 """SELECT title, format, storage_path
                    FROM public.documents
-                   WHERE document_id = %s AND company = %s
+                   WHERE document_id = %s
                      AND source_type = 'user_upload'
                      AND processing_status = 'ready'
                      AND storage_path IS NOT NULL
                      AND (allowed_roles && ARRAY[%s]::text[] OR %s = 'admin'
                           OR (%s = 'document_uploader' AND uploaded_by = %s))""",
-                (document_id, company, role, role, role, username),
+                (document_id, role, role, role, username),
             )
             return cursor.fetchone()
 
@@ -523,12 +480,12 @@ class DocumentRepository:
             cursor.execute(
                 """SELECT title, format
                    FROM public.documents
-                   WHERE document_id = %s AND company = %s
+                   WHERE document_id = %s
                      AND source_type = 'synthetic_demo_policy'
                      AND processing_status = 'ready'
                      AND knowledge_base_active IS TRUE
                      AND (allowed_roles && ARRAY[%s]::text[] OR %s = 'admin')""",
-                (document_id, company, role, role),
+                (document_id, role, role),
             )
             return cursor.fetchone()
 

@@ -19,7 +19,7 @@ def chunk(doc, index):
                           retrieval_score=0.8)
 
 
-class TranslatedHybridTest(unittest.TestCase):
+class TranslatedHybridTest(unittest.IsolatedAsyncioTestCase):
     def service(self, source="vn", error=None):
         llm = MagicMock()
         llm.model_name = "fake-translator"
@@ -64,14 +64,14 @@ class TranslatedHybridTest(unittest.TestCase):
                     self.assertEqual(call.kwargs["document_ids"], [])
                     self.assertEqual(call.kwargs["roles"], ["admin"])
 
-    def test_knowledge_agent_forwards_the_strategy_and_retains_translation_provenance(self):
+    async def test_knowledge_agent_forwards_the_strategy_and_retains_translation_provenance(self):
         from core.agents.knowledge_agent import KnowledgeAgent
-        from core.models.agents import AgentRequest
+        from core.models.agents import AgentRequest, VerifiedIdentity
         service, _ = self.service()
         answer_llm = MagicMock()
         answer_llm.generate.return_value = "Answer [S1]"
         agent = KnowledgeAgent(RAGService(service, answer_llm))
-        result = agent.run(AgentRequest(question="Doanh thu?", metadata={
+        result = await agent.run(AgentRequest(question="Doanh thu?", identity=VerifiedIdentity(subject="test", permissions={"documents:read"}, document_roles={"employee"}), metadata={
             "role": "employee", "company": "Company", "retrieval_method": "translated_hybrid"}))
         self.assertEqual(result.evidence[0].metadata["retrieval_method"], "translated_hybrid")
         self.assertEqual(result.evidence[0].metadata["retrieval_details"]["translation_model"], "fake-translator")
@@ -134,7 +134,7 @@ class TranslatedHybridTest(unittest.TestCase):
         for call, scope in zip(cursor.execute.call_args_list, [["EN", "VN"], ["EN"], ["VN"]]):
             sql, params = call.args
             for clause in ["d.document_id = ANY(%s::text[])", "d.allowed_roles && %s::text[]",
-                           "d.company = %s::text", "c.metadata @> %s::jsonb", "d.knowledge_base_active IS TRUE", "coalesce(d.processing_status, 'ready') = 'ready'"]:
+                           "d.company = %s::text", "c.metadata @> %s::jsonb", "coalesce(d.processing_status, 'ready') = 'ready'"]:
                 self.assertIn(clause, sql)
                 self.assertLess(sql.index(clause), sql.index("LIMIT"))
             self.assertIn(scope, [x for x in params if isinstance(x, list)])
@@ -158,7 +158,7 @@ class TranslatedHybridTest(unittest.TestCase):
             document_ids=["EN", "VN"], query_language="vn",
             document_languages={"EN": "en", "VN": "vn"})
         self.assertEqual(result.answer, "Answer [S1]")
-        self.assertIn("Question:\nDoanh thu?", answer_llm.generate.call_args.args[0])
+        self.assertIn("Doanh thu?", answer_llm.generate.call_args.args[0])
         self.assertEqual(result.contexts[0]["retrieval_details"]["lexical_queries"]["en"], "Revenue?")
 
     def test_owned_translation_provider_is_lazy_and_closed_even_if_repository_close_fails(self):

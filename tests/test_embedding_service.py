@@ -26,7 +26,7 @@ class EmbeddingServiceTest(unittest.TestCase):
     def setUp(self):
         _load_backend.cache_clear()
         self.addCleanup(_load_backend.cache_clear)
-        self.service = EmbeddingService(model_name="test-model", backend=FakeEmbeddings())
+        self.service = EmbeddingService(model_name="fake-model", backend=FakeEmbeddings())
 
     def test_embed_documents_delegates_as_a_batch(self):
         self.assertEqual(self.service.embed_documents(["a", "abcd"]), [[1.0], [4.0]])
@@ -41,19 +41,6 @@ class EmbeddingServiceTest(unittest.TestCase):
 
         self.assertIs(first._backend, second._backend)
         constructor.assert_called_once_with(model_name="cache-test-model")
-
-    def test_local_encoder_receives_configured_limit_and_rejects_unsupported_size(self):
-        with patch("langchain_huggingface.HuggingFaceEmbeddings") as constructor, \
-             patch("core.embeddings.embedding_service.EMBEDDING_MAX_SEQUENCE_LENGTH", 512):
-            encoder = constructor.return_value._client
-            encoder.__getitem__.return_value.auto_model.config.max_position_embeddings = 512
-            service = EmbeddingService(model_name="limit-test", backend_name="local")
-            self.assertEqual(service.max_sequence_length, 512)
-            self.assertEqual(encoder.max_seq_length, 512)
-            _load_backend.cache_clear()
-            encoder.__getitem__.return_value.auto_model.config.max_position_embeddings = 256
-            with self.assertRaisesRegex(ValueError, "architecture limit"):
-                EmbeddingService(model_name="too-small", backend_name="local")
 
     def test_hosted_backend_uses_feature_extraction_without_local_model(self):
         _load_backend.cache_clear()

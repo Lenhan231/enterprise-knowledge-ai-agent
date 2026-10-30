@@ -2,7 +2,6 @@
   "query": "What requirements apply to supplier personnel?",
   "method": "dense",
   "latency_ms": 12.5,
-  "retrieval_details": {},
   "results": [
     {
       "rank": 1,

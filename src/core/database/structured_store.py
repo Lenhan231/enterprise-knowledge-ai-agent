@@ -79,7 +79,7 @@ class StructuredDataStore:
                           ), '[]'::jsonb) AS rows
                    FROM public.extracted_tables t
                    JOIN public.documents d ON d.document_id = t.document_id
-                   WHERE t.document_id = %s AND d.company = %s
+                   WHERE t.document_id = %s AND t.metadata->>'company' = %s
                    ORDER BY t.page_number, t.table_index
                    LIMIT %s OFFSET %s""",
                 (row_limit, row_offset, document_id, company, table_limit, table_offset),

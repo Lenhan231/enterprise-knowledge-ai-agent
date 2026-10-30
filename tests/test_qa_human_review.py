@@ -1,5 +1,4 @@
 import json
-import os
 import stat
 import sys
 import tempfile
@@ -53,8 +52,7 @@ class BlindQAReviewTest(unittest.TestCase):
             write_run(run_b, "model-secret-b")
             packet_a, packet_b, key = root / "review-a.json", root / "review-b.json", root / "private-key.json"
             prepare_review([run_a, run_b], packet_a, key, seed=7)
-            if os.name != "nt":
-                self.assertEqual(stat.S_IMODE(key.stat().st_mode), 0o600)
+            self.assertEqual(stat.S_IMODE(key.stat().st_mode), 0o600)
             packet_text = packet_a.read_text(encoding="utf-8")
             self.assertNotIn("model-secret-a", packet_text)
             self.assertNotIn("model-secret-b", packet_text)

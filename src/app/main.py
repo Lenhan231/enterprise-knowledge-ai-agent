@@ -1,4 +1,5 @@
 from pathlib import Path
+from contextlib import asynccontextmanager
 import hashlib
 import json
 import logging
@@ -10,52 +11,57 @@ import uuid
 from typing import Annotated, Literal
 import jwt
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
-from starlette.concurrency import run_in_threadpool
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
-from pydantic import ValidationError
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from urllib.parse import quote, urlsplit
-from openai import RateLimitError
+from dotenv import load_dotenv
 
 from core.database.document_repository import DocumentRepository
-from core.database.agent_run_repository import AgentRunRepository
-from core.agents.dashboard_agent import DashboardAgent
-from core.agents.hybrid_agent import HybridAgent
-from core.agents.intent_classifier import IntentClassifier
-from core.agents.knowledge_agent import KnowledgeAgent
-from core.agents.report_agent import ReportAgent, _is_decision_suggestions_request
-from core.agents.router import AgentRouter
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent
-from core.models.agents import AgentRequest
-from core.rag.rag_service import extract_source_ids
 from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES
 from supabase import create_client
 from app.security import (
-    DOCUMENT_ROLES, ROLE_PERMISSIONS, _current_user, _require_same_origin,
+    DOCUMENT_ROLES, ROLE_PERMISSIONS, _current_user, _is_trusted_frontend_origin,
+    _require_same_origin,
     _roles_with_permission, auth_scheme, require_permission, require_roles,
 )
+from app.agents import router as agents_router
 from app.upload_test import (
     create_upload_test, get_upload_test_preview, inspect_upload_test,
     list_upload_tests, router as upload_test_router,
 )
 
 logger = logging.getLogger(__name__)
-app = FastAPI(title="Commerce Decision Support")
+@asynccontextmanager
+async def _lifespan(application: FastAPI):
+    load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=False)
+    if os.getenv("EMBEDDING_PRELOAD") == "1":
+        from core.embeddings import EmbeddingService
+        logger.info("Loading embedding model before accepting requests")
+        EmbeddingService()
+        logger.info("Embedding model ready")
+    if os.getenv("RERANKER_PRELOAD") == "1":
+        from core.retrieval.reranker import _load_model
+        _load_model()
+    yield
+    runtime = getattr(application.state, "agent_router", None)
+    if runtime is not None:
+        await runtime.close()
+
+
+app = FastAPI(title="Commerce Decision Support", lifespan=_lifespan)
 app.include_router(upload_test_router)
+app.include_router(agents_router)
 
 APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"
 # The demo no longer depends on a seed-company manifest.
 CORPUS_COMPANY = os.getenv("COMMERCE_DEMO_COMPANY", "Commerce Demo")
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+if os.getenv("BACKEND_ONLY") != "1":
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 OCR_LANGUAGES = {"eng", "vie+eng"}
-
-
-def _referenced_citation_ids(answer: str) -> set[str]:
-    return set(extract_source_ids(answer))
 
 
 def _storage_client():
@@ -70,7 +76,7 @@ def _storage_client():
 
 def _role_accounts() -> dict[str, tuple[str, str]]:
     accounts = {}
-    for role in ("admin", "analyst", "viewer", "sustainability_analyst", "tester"):
+    for role in ("admin", "analyst", "viewer", "sustainability_analyst", "document_processing_owner"):
         username = os.getenv(f"DEMO_{role.upper()}_USERNAME")
         password = os.getenv(f"DEMO_{role.upper()}_PASSWORD")
         if username and password:
@@ -140,28 +146,6 @@ def _commerce_reference_metadata(
     }
 
 
-class AskRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    question: str = Field(default="", min_length=3, max_length=1000)
-    retrieval_method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank"] = "hybrid"
-    business_decision_domain: str | None = None
-    commerce_decision_support: bool = False
-    decision_suggestions: bool = False
-
-    @field_validator("business_decision_domain")
-    @classmethod
-    def known_business_decision_domain(cls, value: str | None) -> str | None:
-        if value is not None and value not in COMMERCE_DECISION_PROFILES:
-            raise ValueError("Choose one of the available business decision domains")
-        return value
-
-    @model_validator(mode="after")
-    def require_question_or_decision_mode(self):
-        if not self.question.strip() and not self.decision_suggestions:
-            raise ValueError("Enter a question or request conditional decision suggestions")
-        if self.decision_suggestions and not self.business_decision_domain:
-            raise ValueError("Choose a decision domain before requesting suggestions")
-        return self
 
 
 class LoginRequest(BaseModel):
@@ -189,6 +173,8 @@ class DocumentAccessRequest(BaseModel):
 
 @app.get("/", include_in_schema=False)
 def home():
+    if os.getenv("BACKEND_ONLY") == "1":
+        return {"service": "backend-api", "docs": "/docs"}
     return FileResponse(STATIC_DIR / "index.html")
 
 
@@ -198,13 +184,15 @@ def health():
 
 
 @app.post("/api/auth/login")
-def login(request: LoginRequest):
+def login(request: Request, payload: LoginRequest):
     accounts = _role_accounts()
-    account = accounts.get(request.username)
-    if account is None or not secrets.compare_digest(account[0], request.password):
+    account = accounts.get(payload.username)
+    if account is None or not secrets.compare_digest(account[0], payload.password):
         raise HTTPException(401, "Invalid username or password")
-    response = JSONResponse({"username": request.username, "role": account[1], "expires_in": 3600})
-    response.set_cookie("enterprise_session", _issue_token(request.username, account[1]), httponly=True, secure=os.getenv("AUTH_COOKIE_SECURE", "false").lower() == "true", samesite="lax", max_age=3600, path="/")
+    response = JSONResponse({"username": payload.username, "role": account[1], "expires_in": 3600})
+    secure_cookie = os.getenv("AUTH_COOKIE_SECURE", "false").lower() == "true" \
+        or _is_trusted_frontend_origin(request.headers.get("origin"))
+    response.set_cookie("enterprise_session", _issue_token(payload.username, account[1]), httponly=True, secure=secure_cookie, samesite="lax", max_age=3600, path="/")
     return response
 
 
@@ -226,7 +214,7 @@ def dashboard_data(user: dict = Depends(require_permission("view_corpus"))):
     try:
         repository = DocumentRepository()
         return repository.corpus_dashboard(
-            user["role"], user["sub"], company=CORPUS_COMPANY,
+            user["role"], user["sub"],
         )
     except Exception as error:
         logger.exception("Could not load the enterprise document overview")
@@ -234,34 +222,6 @@ def dashboard_data(user: dict = Depends(require_permission("view_corpus"))):
             status_code=503,
             detail="The enterprise knowledge database is unavailable. Check DATABASE_URL and migrations.",
         ) from error
-    finally:
-        if repository is not None:
-            repository.close()
-
-
-_COMMERCE_DASHBOARD_KEYS_BY_DOMAIN = {
-    "inventory_allocation": ("sales_by_year", "inventory_by_year", "inventory_year_end_by_category"),
-    "promotion_planning": ("sales_by_year", "promotions_by_year"),
-    "nationwide_logistics": ("sales_by_year", "logistics_by_year_region"),
-}
-
-
-@app.get("/api/commerce/dashboard")
-def commerce_dashboard_data(
-    domain: Literal["inventory_allocation", "promotion_planning", "nationwide_logistics"] | None = None,
-    detail: Literal["campaigns"] | None = None,
-    user: dict = Depends(require_permission("view_analytics")),
-):
-    if detail and domain != "promotion_planning":
-        raise HTTPException(422, "Campaign details are only available for promotion planning.")
-    repository = None
-    try:
-        repository = DocumentRepository()
-        keys = ("promotions_by_campaign",) if detail == "campaigns" else _COMMERCE_DASHBOARD_KEYS_BY_DOMAIN.get(domain) if domain else None
-        return repository.commerce_dashboard(keys)
-    except Exception as error:
-        logger.exception("Could not load Commerce analytics")
-        raise HTTPException(503, "Commerce analytics are unavailable; check the Commerce schema migration.") from error
     finally:
         if repository is not None:
             repository.close()
@@ -278,7 +238,7 @@ def document_roles(user: dict = Depends(require_permission("classify_documents")
 
 
 @app.get("/api/admin/knowledge-documents")
-def admin_knowledge_documents(user: dict = Depends(require_permission("manage_knowledge"))):
+def admin_knowledge_documents(user: dict = Depends(require_permission("list_processing_documents"))):
     repository = None
     try:
         repository = DocumentRepository()
@@ -404,7 +364,7 @@ async def upload_document(
     parser_handoff = request.url.path == "/api/documents/parser-handoff"
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
-    from core.document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
+    from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
     if not filename or extension not in SUPPORTED_FORMATS:
         raise HTTPException(415, "Supported formats: PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG, TIF")
     if not title.strip() or not document_type.strip() or not domain.strip():
@@ -484,9 +444,7 @@ async def upload_document(
         })
         registered = True
         repository.update_processing_status(document_id, "processing")
-        from core.document_processing.document_processor import DocumentProcessor
-        from core.database.parser_chunks_repository import ParserChunksRepository
-        from core.database.structured_store import StructuredDataStore
+        from document_processing.document_processor import DocumentProcessor
 
         metadata = {
             "document_id": document_id,
@@ -503,6 +461,7 @@ async def upload_document(
         if synthetic_company_policy:
             metadata["source_type"] = "synthetic_demo_policy"
         processor = DocumentProcessor({
+            "parser_engine": "docling",
             "chunking_strategy": os.getenv("DOCUMENT_CHUNKING_STRATEGY", "sentence"),
             "paddle_layout": os.getenv("DOCUMENT_PADDLE_LAYOUT", "false").strip().lower() == "true",
             "paddle_chart_recognition": os.getenv(
@@ -515,9 +474,40 @@ async def upload_document(
             "ocr_language": ocr_language,
         })
         try:
-            from core.document_processing.chunking.processor import ChunkingProcessor
+            from core.database.document_processing_output_repository import (
+                DocumentProcessingOutputRepository,
+            )
 
             parsed = processor.process(filename, content, metadata)
+            outputs_repository = DocumentProcessingOutputRepository()
+            try:
+                outputs_repository.replace_document(document_id, parsed)
+            finally:
+                outputs_repository.close()
+
+            if parser_handoff:
+                page_numbers = [
+                    item.get("metadata", {}).get("page_number")
+                    for item in [*parsed.get("elements", []), *parsed.get("tables", [])]
+                    if isinstance(item.get("metadata", {}).get("page_number"), int)
+                ]
+                page_count = max(page_numbers) if page_numbers else (
+                    1 if extension in {".png", ".jpg", ".jpeg", ".tif", ".tiff"} else None
+                )
+                repository.update_processing_status(document_id, "parsed")
+                return {
+                    "document_id": document_id,
+                    "storage_path": storage_path,
+                    "processing_status": "parsed",
+                    "searchable": False,
+                    "sha256": source_hash,
+                    "page_count": page_count,
+                    "element_count": len(parsed.get("elements", [])),
+                    "table_count": len(parsed.get("tables", [])),
+                    "indexed_chunk_count": 0,
+                }
+
+            from core.chunking.processor import ChunkingProcessor
             processed = ChunkingProcessor(processor.config).process(parsed)
         except ValueError as error:
             raise HTTPException(422, str(error)) from error
@@ -539,6 +529,9 @@ async def upload_document(
         for chunk in chunks:
             chunk["metadata"].pop("title", None)
             chunk["metadata"].pop("author", None)
+        from core.database.parser_chunks_repository import ParserChunksRepository
+        from core.database.structured_store import StructuredDataStore
+
         parsed_repository = ParserChunksRepository()
         try:
             parsed_repository.replace_document(document_id, chunks)
@@ -549,17 +542,6 @@ async def upload_document(
                 structured_store.close()
         finally:
             parsed_repository.close()
-
-        if parser_handoff:
-            repository.update_processing_status(document_id, "parsed")
-            return {
-                "document_id": document_id, "storage_path": storage_path,
-                "processing_status": "parsed", "searchable": False,
-                "sha256": source_hash, "page_count": page_count,
-                "parser_chunk_count": len(parser_chunks), "indexed_chunk_count": 0,
-                "ocr_chunk_count": ocr_chunk_count,
-                "table_count": len(processed.get("tables", [])),
-            }
 
         from core.embeddings.embedding_service import EmbeddingService
         from core.database.document_chunks_repository import DocumentChunkRepository
@@ -714,7 +696,7 @@ def inspect_processed_chunks(
     document_id: str, offset: int = 0, limit: int = 25,
     stage: Literal["parser", "indexed"] = "parser",
     source_chunk_id: int | None = None,
-    user: dict = Depends(require_permission("review_metrics")),
+    user: dict = Depends(require_permission("process_documents")),
 ):
     from core.database.parser_chunks_repository import ParserChunksRepository
 
@@ -759,14 +741,14 @@ def inspect_processed_chunks(
 def inspect_extracted_tables(
     document_id: str, table_offset: int = 0, table_limit: int = 50,
     row_offset: int = 0, row_limit: int = 100,
-    user: dict = Depends(require_permission("review_metrics")),
+    user: dict = Depends(require_permission("process_documents")),
 ):
     from core.database.structured_store import StructuredDataStore
 
     store = StructuredDataStore()
     try:
         tables = store.get_document_tables(
-            document_id, company=CORPUS_COMPANY, table_offset=table_offset,
+            document_id, table_offset=table_offset,
             table_limit=table_limit, row_offset=row_offset, row_limit=row_limit,
         )
         if not tables:
@@ -789,11 +771,11 @@ def _uploaded_source_response(document_id: str, user: dict) -> Response:
     repository = DocumentRepository()
     try:
         source = repository.uploaded_source(
-            document_id, company=CORPUS_COMPANY,
+            document_id,
             role=user["role"], username=user["sub"],
         )
         policy = None if source else repository.accessible_synthetic_policy_source(
-            document_id, company=CORPUS_COMPANY, role=user["role"],
+            document_id, role=user["role"],
         )
     finally:
         repository.close()
@@ -848,9 +830,9 @@ def open_authorized_uploaded_source(
 @app.get("/api/admin/processing/{document_id}/source")
 def open_uploaded_source(
     document_id: str,
-    user: dict = Depends(require_permission("review_metrics")),
+    user: dict = Depends(require_permission("process_documents")),
 ):
-    """Admin review route retained for the processing inspector."""
+    """Processing-owner review route for the source inspector."""
     return _uploaded_source_response(document_id, user)
 
 
@@ -867,241 +849,15 @@ def access_matrix(user: dict = Depends(require_permission("manage_access"))):
 
 @app.get("/api/admin/agent-monitoring")
 def agent_monitoring(user: dict = Depends(require_permission("view_agent_monitoring"))):
+    from core.database.agent_run_repository import AgentRunRepository
+
     repository = None
     try:
         repository = AgentRunRepository()
         return repository.monitoring_snapshot()
     except Exception as error:
-        logger.exception("Could not load agent monitoring data")
-        raise HTTPException(503, "Agent monitoring data is unavailable. Check the database and migrations.") from error
+        logger.exception("Could not load agent monitoring")
+        raise HTTPException(503, "Agent monitoring data is unavailable") from error
     finally:
         if repository is not None:
             repository.close()
-
-
-@app.post("/api/ask")
-def ask_documents(request: AskRequest, user: dict = Depends(require_permission("ask_documents"))):
-    return _answer_documents(request, user)
-
-
-def _answer_documents(request: AskRequest, user: dict) -> dict:
-    started = time.perf_counter()
-    run_status = "failed"
-    error_type = "ServiceError"
-    agent_name = "unrouted"
-    citation_count = 0
-    router = None
-    knowledge = analytics = hybrid = report = dashboard = classifier = None
-    try:
-        agent_request = AgentRequest(
-            question=request.question.strip() or "Generate conditional management actions from available Commerce observations.",
-            user_id=user["sub"],
-            metadata={
-                "role": user["role"],
-                "company": CORPUS_COMPANY,
-                "retrieval_method": request.retrieval_method,
-                "business_decision_domain": request.business_decision_domain,
-                "commerce_decision_support": request.commerce_decision_support,
-                "decision_suggestions": request.decision_suggestions,
-            },
-        )
-        if request.business_decision_domain and (
-            request.commerce_decision_support or request.decision_suggestions
-        ):
-            # The UI has already selected the Commerce report route. Avoid
-            # opening unused agents and a classifier for this explicit route.
-            knowledge = KnowledgeAgent()
-            analytics = SQLAnalyticsAgent()
-            report = ReportAgent(knowledge=knowledge, analytics=analytics)
-            if _is_decision_suggestions_request(agent_request.question):
-                agent_request.metadata["decision_suggestions"] = True
-            agent_result = report.run(agent_request)
-            agent_result.metadata.setdefault(
-                "business_decision_domain", request.business_decision_domain,
-            )
-        else:
-            knowledge = KnowledgeAgent()
-            analytics = SQLAnalyticsAgent()
-            hybrid = HybridAgent(knowledge, analytics)
-            dashboard = DashboardAgent()
-            classifier = IntentClassifier()
-            report = ReportAgent(knowledge=knowledge, analytics=analytics)
-            router = AgentRouter(
-                classifier=classifier,
-                knowledge_agent=knowledge,
-                analytics_agent=analytics,
-                hybrid_agent=hybrid,
-                dashboard_agent=dashboard,
-                report_agent=report,
-            )
-            agent_result = router.route(agent_request)
-        cited_ids = _referenced_citation_ids(agent_result.answer)
-        citations = [
-            {
-                "id": evidence.citation_id,
-                "company": evidence.metadata.get("company", "Unknown company"),
-                "title": evidence.metadata.get("source_title") or evidence.metadata.get("title") or evidence.source,
-                "source_publisher": evidence.metadata.get("source_publisher"),
-                "evidence_class": evidence.metadata.get("evidence_class"),
-                "reference_applicability": evidence.metadata.get("reference_applicability"),
-                "document_id": evidence.metadata.get("document_id"),
-                "synthetic_company_policy": evidence.metadata.get("synthetic_company_policy") is True,
-                "chunk_index": evidence.metadata.get("chunk_index"),
-                "retrieval_chunk_id": evidence.metadata.get("retrieval_chunk_id"),
-                "source_chunk_id": evidence.metadata.get("source_chunk_id", evidence.metadata.get("chunk_id")),
-                "source_content_hash": (
-                    evidence.metadata.get("source_content_hash")
-                    or evidence.metadata.get("source_sha256")
-                ),
-                "page_number": evidence.metadata.get("page_number"),
-                "text_extraction_method": evidence.metadata.get("text_extraction_method"),
-                "ocr": evidence.metadata.get("ocr"),
-                "source_url": evidence.metadata.get("source_url"),
-                "excerpt": evidence.content[:700] if evidence.content else "",
-                "score": evidence.metadata.get("retrieval_score"),
-                "retrieval_method": evidence.metadata.get("retrieval_method"),
-                **({"retrieval_details": evidence.metadata["retrieval_details"]}
-                   if evidence.metadata.get("retrieval_details") else {}),
-                "source_type": evidence.source_type,
-                "metric_name": evidence.metadata.get("metric_name"),
-                "fiscal_year": evidence.metadata.get("fiscal_year"),
-                "commerce_domain": evidence.metadata.get("commerce_domain"),
-                "commerce_aggregate_key": evidence.metadata.get("commerce_aggregate_key"),
-                "commerce_observation_group": evidence.metadata.get("commerce_observation_group"),
-                "commerce_observations": evidence.metadata.get("commerce_observations"),
-                "source_tables": evidence.metadata.get("source_tables"),
-                "sql_query": evidence.metadata.get("sql_query"),
-                "sql_generation_provider": evidence.metadata.get("sql_generation_provider"),
-                "dataset_note": evidence.metadata.get("dataset_note"),
-            }
-            for evidence in agent_result.evidence
-            if evidence.citation_id in cited_ids
-        ]
-        agent_name = agent_result.agent
-        citation_count = len(citations)
-        run_status = "completed"
-        error_type = None
-        return {
-            "answer": agent_result.answer,
-            "insufficient_context": agent_result.metadata.get("insufficient_context", False),
-            "citation_validation_failed": agent_result.metadata.get("citation_validation_failed", False),
-            **({"decision_validation_failure": agent_result.metadata["decision_validation_failure"]}
-               if user.get("role") == "admin" and agent_result.metadata.get("decision_validation_failure") else {}),
-            **({"decision_validation_numeric_tokens": agent_result.metadata["decision_validation_numeric_tokens"]}
-               if user.get("role") == "admin" and agent_result.metadata.get("decision_validation_numeric_tokens") else {}),
-            "citations": citations,
-            "agent": agent_result.agent,
-            "data": jsonable_encoder(agent_result.data),
-            **({"business_decision_domain": agent_result.metadata["business_decision_domain"]}
-               if agent_result.metadata.get("business_decision_domain") else {}),
-            **({"business_domain_auto_detected": True}
-               if agent_result.metadata.get("business_domain_auto_detected") else {}),
-            **({"needs_domain_clarification": True}
-               if agent_result.metadata.get("needs_domain_clarification") else {}),
-            **({"decision_analysis": agent_result.metadata["decision_analysis"]}
-               if agent_result.metadata.get("decision_analysis") else {}),
-            **({"decision_reference_retrieval_limited": True}
-               if agent_result.metadata.get("decision_reference_retrieval_limited") else {}),
-            **({"answer_fallback_reason": agent_result.metadata["answer_fallback_reason"]}
-               if agent_result.metadata.get("answer_fallback_reason") else {}),
-            **({"decision_suggestions_fallback": True}
-               if (request.decision_suggestions or agent_result.metadata.get("decision_suggestions"))
-               and agent_result.metadata.get("answer_fallback_reason") else {}),
-            **({"question_sql_fallback": agent_result.metadata["question_sql_fallback"]}
-               if agent_result.metadata.get("question_sql_fallback") else {}),
-            **({"generation_provider": agent_result.metadata["generation_provider"]}
-               if agent_result.metadata.get("generation_provider") else {}),
-            **({"token_usage": agent_result.metadata["token_usage"]}
-               if user.get("role") == "admin" and agent_result.metadata.get("token_usage") else {}),
-        }
-    except RateLimitError as error:
-        agent_name = getattr(router, "last_destination", agent_name)
-        run_status = "rate_limited"
-        error_type = type(error).__name__
-        logger.warning("LLM provider rate limit reached while answering for %s", user["sub"])
-        raise HTTPException(429, "The model provider is temporarily rate-limited. Please retry later.") from error
-    except Exception as error:
-        agent_name = getattr(router, "last_destination", agent_name)
-        error_type = type(error).__name__
-        logger.exception("Could not answer enterprise question")
-        raise HTTPException(
-            status_code=503,
-            detail="Question answering is unavailable. Check the database, embedding model, and GROQ_API_KEY.",
-        ) from error
-    finally:
-        # ReportAgent shares KnowledgeAgent; close it through the hybrid stack once.
-        if report is not None:
-            report.close()
-        if hybrid is not None:
-            hybrid.close()
-        else:
-            if knowledge is not None:
-                knowledge.close()
-            if analytics is not None:
-                analytics.close()
-        if dashboard is not None:
-            dashboard.close()
-        if classifier is not None:
-            classifier.close()
-        monitor = None
-        try:
-            monitor = AgentRunRepository()
-            monitor.record_event(
-                actor_role=user["role"], agent_name=agent_name,
-                retrieval_method=request.retrieval_method, status=run_status,
-                elapsed_ms=max(0, round((time.perf_counter() - started) * 1000)),
-                citation_count=citation_count, error_type=error_type,
-            )
-        except Exception:
-            logger.warning("Could not persist agent monitoring event", exc_info=True)
-        finally:
-            if monitor is not None:
-                monitor.close()
-
-
-@app.websocket("/ws/ask")
-async def ask_documents_websocket(websocket: WebSocket):
-    origin = websocket.headers.get("origin")
-    if origin:
-        parsed_origin = urlsplit(origin)
-        if parsed_origin.scheme not in {"http", "https"} or parsed_origin.netloc.casefold() != websocket.headers.get("host", "").casefold():
-            await websocket.close(code=4403)
-            return
-
-    try:
-        user = _current_user(websocket, None)
-    except HTTPException:
-        await websocket.close(code=4401)
-        return
-    if "ask_documents" not in ROLE_PERMISSIONS.get(user["role"], set()):
-        await websocket.close(code=4403)
-        return
-
-    await websocket.accept()
-    try:
-        while True:
-            try:
-                payload = await websocket.receive_json()
-            except WebSocketDisconnect:
-                break
-            try:
-                request = AskRequest.model_validate(payload)
-            except ValidationError as error:
-                await websocket.send_json({"type": "error", "detail": error.errors(include_input=False)})
-                continue
-
-            await websocket.send_json({"type": "status", "status": "processing"})
-            try:
-                result = await run_in_threadpool(_answer_documents, request, user)
-                await websocket.send_json({"type": "answer", **result})
-            except HTTPException as error:
-                await websocket.send_json({"type": "error", "status_code": error.status_code, "detail": error.detail})
-            except Exception:
-                logger.exception("WebSocket question answering failed for %s", user["sub"])
-                await websocket.send_json({
-                    "type": "error",
-                    "status_code": 503,
-                    "detail": "Question answering is unavailable. Check the database, embedding model, and GROQ_API_KEY.",
-                })
-    except WebSocketDisconnect:
-        pass

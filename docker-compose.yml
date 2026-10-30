@@ -1,34 +1,100 @@
+x-private: &private
+  restart: unless-stopped
+  environment: &internal-env
+    INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?Set INTERNAL_SERVICE_TOKEN in .env}
+  healthcheck:
+    test: ["CMD", "python", "-c", "import os,urllib.request; urllib.request.urlopen(urllib.request.Request('http://localhost:8000/health', headers={'Authorization':'Bearer '+os.environ['INTERNAL_SERVICE_TOKEN']}),timeout=5)"]
+    interval: 15s
+    timeout: 10s
+    retries: 5
+    start_period: 15m
+
 services:
-  web:
+  backend-api:
+    image: enterprise-knowledge-backend-api:local
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/Dockerfile.backend-api
+    restart: unless-stopped
     env_file: .env
-    ports:
-      - "127.0.0.1:8000:8000"
+    environment:
+      <<: *internal-env
+      BACKEND_ONLY: "1"
+      EMBEDDING_BACKEND: remote
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-intfloat/multilingual-e5-base}
+      EMBEDDING_MAX_SEQUENCE_LENGTH: ${EMBEDDING_MAX_SEQUENCE_LENGTH:-512}
+      EMBEDDING_PRELOAD: "0"
+      RERANKER_PRELOAD: "0"
+      EMBEDDINGS_URL: http://embeddings:8000
+      RERANKER_URL: http://reranker:8000
+      DOCUMENT_PROCESSING_URL: http://document-processing:8000
+    ports: ["127.0.0.1:8000:8000"]
+    volumes: ["embedding_model_cache:/models"]
+    depends_on:
+      embeddings: {condition: service_healthy}
+      reranker: {condition: service_healthy}
+      document-processing: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health',timeout=5)"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  document-processing:
+    <<: *private
+    image: enterprise-knowledge-document-processing:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.document-processing
+    environment:
+      <<: *internal-env
+      DOCLING_CACHE_DIR: /models/docling
+    volumes: ["document_model_cache:/models"]
+
+  chunking:
+    image: enterprise-knowledge-chunking:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.chunking
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 30s
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+      DATABASE_MAX_CONNECTIONS_PER_PROCESS: "1"
+      DOCUMENT_CHUNKING_STRATEGY: ${DOCUMENT_CHUNKING_STRATEGY:-sentence}
+      CHUNKING_POLL_INTERVAL_SECONDS: ${CHUNKING_POLL_INTERVAL_SECONDS:-5}
+
+  embeddings:
+    <<: *private
+    image: enterprise-knowledge-embeddings:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.embeddings
+    environment:
+      <<: *internal-env
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-intfloat/multilingual-e5-base}
+      EMBEDDING_MAX_SEQUENCE_LENGTH: ${EMBEDDING_MAX_SEQUENCE_LENGTH:-512}
+      HUGGINGFACE_API_KEY: ${HUGGINGFACE_API_KEY:-}
+    volumes: ["embedding_model_cache:/models"]
+
+  reranker:
+    <<: *private
+    image: enterprise-knowledge-reranker:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.reranker
+    volumes: ["embedding_model_cache:/models"]
 
   proxy:
     image: nginx:1.27-alpine
     profiles: ["proxy"]
+    restart: unless-stopped
     depends_on:
-      web:
-        condition: service_started
-    ports:
-      - "127.0.0.1:8080:80"
-    volumes:
-      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
-
-  db:
-    profiles: ["local-db"]
-    image: pgvector/pgvector:pg15
-    environment:
-      POSTGRES_USER: ekai
-      POSTGRES_PASSWORD: ekai
-      POSTGRES_DB: ekai
-    ports:
-      - "5432:5432"
-    volumes:
-      - db_data:/var/lib/postgresql/data
+      backend-api: {condition: service_healthy}
+    ports: ["127.0.0.1:8080:80"]
+    volumes: ["./docker/nginx.conf:/etc/nginx/nginx.conf:ro"]
 
 volumes:
-  db_data:
+  embedding_model_cache:
+  document_model_cache:

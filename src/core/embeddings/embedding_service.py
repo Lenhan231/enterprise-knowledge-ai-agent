@@ -14,9 +14,9 @@ from huggingface_hub import InferenceClient
 load_dotenv()
 
 from core.embeddings.settings import DEFAULT_EMBEDDING_MODEL, E5_MODEL, E5_REVISION
+
 EMBEDDING_MAX_SEQUENCE_LENGTH = int(os.getenv("EMBEDDING_MAX_SEQUENCE_LENGTH", "512"))
 EMBEDDING_BACKEND = os.getenv("EMBEDDING_BACKEND", "local").strip().lower()
-HUGGINGFACE_EMBEDDING_BATCH_SIZE = 16
 _BACKEND_LOAD_LOCK = Lock()
 
 
@@ -32,20 +32,37 @@ class HuggingFaceInferenceEmbeddings(Embeddings):
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         if not texts:
             return []
-        vectors = []
-        for start in range(0, len(texts), HUGGINGFACE_EMBEDDING_BATCH_SIZE):
-            batch = texts[start:start + HUGGINGFACE_EMBEDDING_BATCH_SIZE]
-            batch_vectors = self.client.feature_extraction(batch)
-            vectors.extend([[float(value) for value in vector] for vector in batch_vectors])
-        return vectors
+        vectors = self.client.feature_extraction(texts)
+        return [[float(value) for value in vector] for vector in vectors]
 
     def embed_query(self, text: str) -> list[float]:
         vector = self.client.feature_extraction(text)
         return [float(value) for value in vector]
 
 
+class RemoteEmbeddings(Embeddings):
+    def __init__(self, model_name):
+        self.model_name = model_name
+
+    def embed_documents(self, texts):
+        from core.services.client import post
+        vectors = []
+        for start in range(0, len(texts), 32):
+            batch = texts[start:start + 32]
+            result = post(os.environ["EMBEDDINGS_URL"], "/embed", {"texts": batch, "model_name": self.model_name})["vectors"]
+            if len(result) != len(batch):
+                raise ValueError("Embedding service returned the wrong vector count")
+            vectors.extend(result)
+        return vectors
+
+    def embed_query(self, text):
+        return self.embed_documents([text])[0]
+
+
 @lru_cache(maxsize=2)
 def _load_backend(model_name: str, backend_name: str = EMBEDDING_BACKEND) -> Embeddings:
+    if backend_name == "remote":
+        return RemoteEmbeddings(model_name)
     if backend_name == "local":
         from langchain_huggingface import HuggingFaceEmbeddings
 
@@ -84,7 +101,6 @@ class EmbeddingService(Embeddings):
         backend_name: str = EMBEDDING_BACKEND,
     ) -> None:
         self.model_name = model_name
-        # Reserve prefix tokens when the existing chunk builder computes its budget.
         self.max_sequence_length = EMBEDDING_MAX_SEQUENCE_LENGTH - (4 if model_name == E5_MODEL else 0)
         self.backend_name = backend_name
         self._backend = backend if backend is not None else _shared_backend(model_name, backend_name)

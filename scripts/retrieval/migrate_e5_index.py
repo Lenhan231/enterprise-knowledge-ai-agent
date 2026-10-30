@@ -31,7 +31,7 @@ def main():
     from transformers import AutoTokenizer
     load_dotenv(ROOT / ".env")
     folder = SOURCE / "candidates/multilingual-e5-base"
-    config = json.loads((folder / "config.json").read_text())
+    config = json.loads((folder / "config.json").read_text(encoding="utf-8"))
     if (config["model_id"], config["revision"], config["query_prefix"], config["passage_prefix"],
         config["normalize_embeddings"], config["max_sequence_length"]) != (
             MODEL, REVISION, "query: ", "passage: ", True, 512):
@@ -40,7 +40,7 @@ def main():
     if hashlib.sha256(vectors_path.read_bytes()).hexdigest() != VECTOR_SHA:
         raise ValueError("Cached vector hash mismatch")
     vectors = np.load(vectors_path, allow_pickle=False)
-    rows = [json.loads(line) for line in (SOURCE / "indexed-corpus.jsonl").read_text().splitlines()]
+    rows = [json.loads(line) for line in (SOURCE / "indexed-corpus.jsonl").read_text(encoding="utf-8").splitlines()]
     expected = {(row["document_id"], row["chunk_index"]): (row, vector)
                 for row, vector in zip(rows, vectors, strict=True)}
     if (len(expected) != len(rows) or vectors.shape != (len(rows), 768)
@@ -80,10 +80,10 @@ def main():
         if args.apply:
             args.backup.parent.mkdir(parents=True, exist_ok=True)
             if args.backup.exists():
-                if digest(json.loads(args.backup.read_text())) != before:
+                if digest(json.loads(args.backup.read_text(encoding="utf-8"))) != before:
                     raise ValueError("Recovery backup differs from the current source index")
             else:
-                args.backup.write_text(json.dumps(original, ensure_ascii=False) + "\n")
+                args.backup.write_text(json.dumps(original, ensure_ascii=False) + "\n", encoding="utf-8")
             args.backup.chmod(0o600)
             # No partial state becomes visible: DDL and all vectors commit together.
             conn.execute("DROP INDEX IF EXISTS public.document_chunks_embedding_hnsw_idx")
@@ -113,7 +113,7 @@ def main():
             conn.rollback()
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(report, indent=2) + "\n")
+        args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))
 
 

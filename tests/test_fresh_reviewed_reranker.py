@@ -42,13 +42,13 @@ class FreshReplayTest(unittest.TestCase):
             runner.save(output/'config.json',config)
             runner.save(output/'results.json',{'configuration':config,'summary':summary,'results':records})
             with contextlib.redirect_stdout(io.StringIO()):runner.verify(data,output)
-            self.assertEqual(json.loads((output/'verification.json').read_text())['scores_verified'],4320)
+            self.assertEqual(json.loads((output/'verification.json').read_text(encoding='utf-8'))['scores_verified'],4320)
             matrices['plain'][0,0]+=10
             np.save(output/'plain-scores.npy',matrices['plain'])
             with self.assertRaisesRegex(ValueError,'Changed output'):runner.verify(data,output)
             matrices['plain'][0,0]-=10
             np.save(output/'plain-scores.npy',matrices['plain'])
-            report=json.loads((output/'results.json').read_text())
+            report=json.loads((output/'results.json').read_text(encoding='utf-8'))
             report['results'][0]['plain_ranking'][0]='wrong-anchor'
             runner.save(output/'results.json',report)
             with self.assertRaisesRegex(ValueError,'Saved ranking'):runner.verify(data,output)

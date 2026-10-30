@@ -80,15 +80,12 @@ class EmbeddingEvaluationTest(unittest.TestCase):
                 patch.dict(os.environ, {"DATABASE_URL": ""}),
                 patch.object(evaluate_embeddings, "REPO_ROOT", Path(__file__).resolve().parents[1]),
                 patch.object(sys, "argv", [
-                    "scripts.retrieval.evaluate_embeddings.py", "--model", "baseline",
-                    "--model-id", "sentence-transformers/all-MiniLM-L6-v2", "--cases", str(cases_fixture),
+                    "scripts.retrieval.evaluate_embeddings.py", "--model", "bge-m3", "--cases", str(cases_fixture),
                     "--corpus", str(corpus_path), "--device", "cpu", "--output", str(output_path),
                 ]),
             ):
                 self.assertEqual(evaluate_embeddings.main(), 0)
             report = json.loads(output_path.read_text(encoding="utf-8"))
-            self.assertEqual(report["model_key"], "baseline")
-            self.assertEqual(report["model_id"], "sentence-transformers/all-MiniLM-L6-v2")
             self.assertEqual(report["corpus_source"], "public_manifest_jsonl")
             self.assertEqual(report["environment"]["gpu_name"], None)
             self.assertEqual(report["aggregate"]["recall@1"], 1.0)

@@ -1,15 +1,17 @@
 import io
+import json
 import sys
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
+from scripts.retrieval import check_apple_retrieval
 from core.retrieval.retrieval import RetrievalRequest, RetrievalResponse
 from core.rag.rag_service import RAGService, _RESPONSE_CACHE, _RESPONSE_CACHE_LOCK
 
@@ -103,6 +105,25 @@ class RetrievalCallersTest(unittest.TestCase):
         self.assertIn("[S1]", context)
         self.assertNotIn("[S2]", context)
         self.assertEqual(len(self.response.results[0].text), 20_000)
+
+    def test_script_consumes_typed_results_and_closes_service(self):
+        output = io.StringIO()
+        result_by_id = {}
+        for document_id in check_apple_retrieval.CASES:
+            results = [item.model_copy(update={"document_id": document_id}) for item in self.response.results]
+            result_by_id[document_id] = self.response.model_copy(update={"results": results})
+        self.retrieval.retrieve.side_effect = list(result_by_id.values())
+        with patch.object(check_apple_retrieval, "RetrievalService", return_value=self.retrieval), \
+             patch.object(sys, "argv", ["scripts.retrieval.check_apple_retrieval.py", "--limit", "2"]), \
+             redirect_stdout(output):
+            self.assertEqual(check_apple_retrieval.main(), 0)
+        self.assertEqual(self.retrieval.retrieve.call_count, len(check_apple_retrieval.CASES))
+        for index, (call, question) in enumerate(zip(self.retrieval.retrieve.call_args_list, check_apple_retrieval.CASES.values())):
+            self.assertEqual(call.args, (RetrievalRequest(query=question, top_k=2),))
+        self.assertIn("[PASS] APL-CMP-003", output.getvalue())
+        self.assertIn("demo_supplier_policy.pdf", output.getvalue())
+        self.retrieval.close.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()

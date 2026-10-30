@@ -1,0 +1,146 @@
+{
+  "dataset": "commerce-agent-benchmarks-v1",
+  "model_key": "gpt_oss_120b",
+  "model": "openai/gpt-oss-120b",
+  "judge_model": "Luna 5.6 Medium (Codex CLI)",
+  "run_date": "2026-10-24",
+  "evaluation_config": {
+    "cases_per_agent": 25,
+    "agents": [
+      "knowledge",
+      "sql",
+      "report"
+    ],
+    "metrics": [
+      "faithfulness",
+      "answer_relevancy",
+      "context_precision"
+    ],
+    "retry_policy": "one retry for transient failures; two attempts maximum"
+  },
+  "summary": {
+    "case_count": 1,
+    "by_agent": {
+      "knowledge": {
+        "case_count": 1,
+        "answered_cases": 0,
+        "run_errors": 1,
+        "mean_agent_latency_seconds": 64.07,
+        "latency_cases": 1,
+        "ragas": {
+          "faithfulness": {
+            "mean": null,
+            "scored_cases": 0,
+            "eligible_cases": 0,
+            "coverage": null,
+            "score_errors": 0
+          },
+          "answer_relevancy": {
+            "mean": null,
+            "scored_cases": 0,
+            "eligible_cases": 0,
+            "coverage": null,
+            "score_errors": 0
+          },
+          "context_precision": {
+            "mean": null,
+            "scored_cases": 0,
+            "eligible_cases": 0,
+            "coverage": null,
+            "score_errors": 0
+          }
+        }
+      }
+    },
+    "ragas": {
+      "faithfulness": {
+        "mean": null,
+        "scored_cases": 0,
+        "eligible_cases": 0,
+        "coverage": null,
+        "score_errors": 0
+      },
+      "answer_relevancy": {
+        "mean": null,
+        "scored_cases": 0,
+        "eligible_cases": 0,
+        "coverage": null,
+        "score_errors": 0
+      },
+      "context_precision": {
+        "mean": null,
+        "scored_cases": 0,
+        "eligible_cases": 0,
+        "coverage": null,
+        "score_errors": 0
+      }
+    },
+    "sql": {
+      "safety_pass_rate": null,
+      "safety_cases": 0,
+      "semantic_correctness_rate": null,
+      "semantic_cases": 0,
+      "abstention_accuracy": null,
+      "abstention_cases": 0
+    },
+    "hallucination_rate": null,
+    "hallucination_note": "Requires manual claim-level review; not inferred from faithfulness."
+  },
+  "results": [
+    {
+      "case_id": "K06",
+      "agent": "knowledge",
+      "model": "openai/gpt-oss-120b",
+      "question": "Công thức Reorder Point (ROP) và các tham số mô phỏng mặc định là gì?",
+      "answer": null,
+      "contexts": [],
+      "reference": null,
+      "evidence_sources": [],
+      "agent_metadata": {},
+      "latency_seconds": 64.07,
+      "total_case_seconds": 64.07,
+      "langchain_callback_events": 4,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "metric_eligibility": {
+        "faithfulness": false,
+        "answer_relevancy": false,
+        "context_precision": false
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "run_error",
+      "scoring_status": "not_scored",
+      "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m4jcwnjke9nsdhr5x4b27ggz` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198562, Requested 2643. Please try again in 8m40.559999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": false,
+              "transient_failure": false,
+              "elapsed_seconds": 64.07,
+              "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01m4jcwnjke9nsdhr5x4b27ggz` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198562, Requested 2643. Please try again in 8m40.559999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}"
+            }
+          ],
+          "first_attempt_success": false,
+          "final_success": false
+        }
+      ]
+    }
+  ]
+}

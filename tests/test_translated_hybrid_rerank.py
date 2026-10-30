@@ -8,7 +8,7 @@ from core.retrieval.reranker import BGEReranker, MODEL_ID, REVISION
 from core.retrieval.retrieval import RetrievalRequest
 
 
-class RerankTest(unittest.TestCase):
+class RerankTest(unittest.IsolatedAsyncioTestCase):
     def test_reorders_original_chunks_stably_without_mutating_fusion_scores(self):
         chunks = [existing.chunk("EN", i) for i in range(3)]
         model = MagicMock()
@@ -58,12 +58,15 @@ class RerankTest(unittest.TestCase):
         self.assertTrue(result.retrieval_details["dense_fallback"])
         self.assertEqual(service.repository.similarity_search.call_count, 1)
 
-    def test_default_method_never_loads_reranker(self):
+    def test_default_method_applies_reranker(self):
         service, _ = existing.TranslatedHybridTest().service()
+        model = MagicMock()
+        model.predict.return_value = [0.0, 1.0]
+        service.reranker = BGEReranker(model)
         with patch("core.retrieval.reranker._load_model") as load:
-            service.retrieve(RetrievalRequest(query="question"))
+            result = service.retrieve(RetrievalRequest(query="question"))
             load.assert_not_called()
-        self.assertIsNone(service.reranker)
+        self.assertTrue(result.retrieval_details["reranker_applied"])
 
     def test_empty_results_skip_model_and_bad_scores_fail(self):
         model = MagicMock()
@@ -80,25 +83,26 @@ class RerankTest(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "RERANKER_ALLOW_DOWNLOAD"):
                 BGEReranker().rerank("q", [existing.chunk("EN", 0)], 1)
 
-    def test_agent_dispatch_and_api_accept_new_method(self):
+    async def test_agent_dispatch_and_api_accept_new_method(self):
         from core.agents.knowledge_agent import KnowledgeAgent
-        from core.models.agents import AgentRequest
+        from core.models.agents import AgentRequest, VerifiedIdentity
         service, _ = existing.TranslatedHybridTest().service()
         model = MagicMock()
         model.predict.return_value = [0.0, 1.0]
         service.reranker = BGEReranker(model)
         answer_llm = MagicMock()
         answer_llm.generate.return_value = "Answer [S1]"
-        result = KnowledgeAgent(RAGService(service, answer_llm)).run(AgentRequest(
+        result = await KnowledgeAgent(RAGService(service, answer_llm)).run(AgentRequest(
+            identity=VerifiedIdentity(subject="test", permissions={"documents:read"}, document_roles={"employee"}),
             question="question", metadata={"role": "employee", "company": "Company",
                                             "retrieval_method": "translated_hybrid_rerank"}))
         self.assertEqual(result.evidence[0].metadata["retrieval_method"], "translated_hybrid_rerank")
         self.assertTrue(result.evidence[0].metadata["retrieval_details"]["reranker_applied"])
         self.assertFalse(result.evidence[0].metadata["retrieval_details"]["language_aware"])
-        from app.main import AskRequest
-        self.assertEqual(AskRequest(question="question", retrieval_method="translated_hybrid_rerank").retrieval_method,
+        from core.agents.main import ChatRequest
+        self.assertEqual(ChatRequest(question="question", retrieval_method="translated_hybrid_rerank").retrieval_method,
                          "translated_hybrid_rerank")
-        self.assertEqual(AskRequest(question="question").retrieval_method, "hybrid")
+        self.assertEqual(ChatRequest(question="question").retrieval_method, "translated_hybrid_rerank")
 
 
 if __name__ == "__main__":

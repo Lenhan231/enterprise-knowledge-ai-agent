@@ -58,6 +58,9 @@ class AutomaticTranslationTest(unittest.TestCase):
                 translator_path = root / 'src/core/retrieval/query_translator.py'
                 translator_path.parent.mkdir(parents=True)
                 translator_path.write_bytes((ROOT / 'src/core/retrieval/query_translator.py').read_bytes())
+                prompt_path = root / 'src/core/prompts/translation.py'
+                prompt_path.parent.mkdir(parents=True)
+                prompt_path.write_bytes((ROOT / 'src/core/prompts/translation.py').read_bytes())
                 doc_ids = list(benchmark.SOURCES.values())
                 db_rows = [(0, 'text', {'document_id': doc_id, 'page_number': 1, 'embedding_model': 'mock-model'}, '[0.1]', doc_id, ['admin'], None, 'Company') for doc_id in doc_ids]
                 corpus_hash = hashlib.sha256(json.dumps(db_rows, ensure_ascii=False, default=str).encode()).hexdigest()

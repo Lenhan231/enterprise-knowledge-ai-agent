@@ -2,18 +2,16 @@
 
 from __future__ import annotations
 
-import logging
 from time import perf_counter
 from typing import Literal
 
 from core.database.document_chunks_repository import DocumentChunkRepository
+from core.latency import measure
 from core.embeddings import EmbeddingService
 from core.retrieval.methods import parent, translated_hybrid
 from core.retrieval.retrieval import (
     RankedChunk, RetrievalRequest, RetrievalResponse, SourceLocation, make_chunk_id,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class RetrievalService:
@@ -26,8 +24,8 @@ class RetrievalService:
     ) -> None:
         self.embedding_service = embedding_service
         self.repository = repository or DocumentChunkRepository()
-        self.reranker = reranker
         self.query_translator = query_translator
+        self.reranker = reranker
         self._translation_llm = None
 
     def _get_translator(self):
@@ -38,13 +36,14 @@ class RetrievalService:
             self.query_translator = QueryTranslator(self._translation_llm)
         return self.query_translator
 
+    @measure("retrieval_total")
     def retrieve(
         self, request: RetrievalRequest, company: str | None = None,
         roles: list[str] | None = None,
-        metadata_filter: dict | None = None,
-        method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank"] = "hybrid",
+        method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank"] = "translated_hybrid_rerank",
         dense_weight: float = 1.0, bm25_weight: float = 2.0, rrf_k: int = 60,
         document_ids: list[str] | None = None,
+        metadata_filter: dict | None = None,
         query_language: str = "auto",
         document_languages: dict[str, str] | None = None,
     ) -> RetrievalResponse:
@@ -55,20 +54,11 @@ class RetrievalService:
             raise ValueError("method must be dense, bm25, hybrid, parent, translated_hybrid, or translated_hybrid_rerank")
         started = perf_counter()
         query_embedding = None
-        effective_method = method
         if method != "bm25":
-            try:
+            with measure("embedding"):
                 if self.embedding_service is None:
                     self.embedding_service = EmbeddingService()
                 query_embedding = self.embedding_service.embed_query(request.query)
-            except Exception as exc:
-                if method != "hybrid":
-                    raise
-                effective_method = "bm25"
-                logger.warning(
-                    "Hybrid retrieval embedding failed; falling back to BM25 (%s)",
-                    type(exc).__name__,
-                )
 
         options = {"company": company, "roles": roles}
         if metadata_filter:
@@ -82,24 +72,26 @@ class RetrievalService:
         parent_contexts = {}
         retrieval_details = {}
         if method in {"translated_hybrid", "translated_hybrid_rerank"}:
-            candidate_request = (request.model_copy(update={"top_k": max(30, request.top_k)})
-                                 if method == "translated_hybrid_rerank" else request)
+            candidate_request = (
+                request.model_copy(update={"top_k": max(30, request.top_k)})
+                if method == "translated_hybrid_rerank" else request
+            )
             chunks, retrieval_details = translated_hybrid.search(
                 self.repository, query_embedding, candidate_request, self._get_translator,
                 query_language=query_language, document_languages=document_languages,
                 dense_weight=dense_weight, bm25_weight=bm25_weight, rrf_k=rrf_k, **options,
             )
-        elif effective_method == "parent":
+        elif method == "parent":
             chunks, parent_contexts = parent.search(
                 self.repository, query_embedding, request, **options,
             )
         else:
             fusion_options = (
                 {"dense_weight": dense_weight, "bm25_weight": bm25_weight, "rrf_k": rrf_k}
-                if effective_method == "hybrid" else {}
+                if method == "translated_hybrid_rerank" else {}
             )
             chunks = self.repository.similarity_search(
-                query_embedding, request.top_k, query=request.query, method=effective_method,
+                query_embedding, request.top_k, query=request.query, method=method,
                 **fusion_options, **options,
             )
 
@@ -111,14 +103,15 @@ class RetrievalService:
             chunks, rerank_details = self.reranker.rerank(request.query, chunks, request.top_k)
             retrieval_details.update(rerank_details)
             retrieval_details["effective_method"] = (
-                "dense_rerank" if retrieval_details.get("dense_fallback") else method)
+                "dense_rerank" if retrieval_details.get("dense_fallback") else method
+            )
             retrieval_details["embedding_model"] = getattr(self.embedding_service, "model_name", None)
 
         results = []
         for rank, chunk in enumerate(chunks, start=1):
             context = parent_contexts.get((chunk.document_id, chunk.chunk_index), {})
             metadata = dict(chunk.metadata)
-            if effective_method == "parent":
+            if method == "parent":
                 indices = context.get("chunk_indices", [chunk.chunk_index])
                 metadata.update({
                     "parent_id": f"{chunk.document_id}::parent::{indices[0]}-{indices[-1]}",
@@ -139,14 +132,14 @@ class RetrievalService:
                     section_title=chunk.metadata.get("section_title"),
                 ),
                 metadata=metadata,
-                retrieval_method=effective_method,
+                retrieval_method=method,
             ))
         return RetrievalResponse(
             query=request.query,
             latency_ms=(perf_counter() - started) * 1000,
             results=results,
+            method=method,
             retrieval_details=retrieval_details,
-            method=effective_method,
         )
 
     def close(self) -> None:

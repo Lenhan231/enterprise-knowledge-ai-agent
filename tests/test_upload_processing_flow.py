@@ -1,5 +1,6 @@
 import asyncio
 import io
+import shutil
 import sys
 import unittest
 import zipfile
@@ -8,16 +9,16 @@ from unittest.mock import MagicMock, patch
 
 import fitz
 
-from fastapi import UploadFile
+from fastapi import HTTPException, UploadFile
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from app import main as app_main  # noqa: E402
 from core.database.structured_store import StructuredDataStore  # noqa: E402
-from core.document_processing.processors.document_processor import DocumentProcessor  # noqa: E402
-from core.document_processing.processors.image.processor import ImageProcessor  # noqa: E402
-from core.document_processing.processors.pdf.processor import PDFProcessor  # noqa: E402
+from document_processing.document_processor import DocumentProcessor  # noqa: E402
+from document_processing.pipelines.built_in.processor import BuiltInProcessor  # noqa: E402
+from document_processing.readers.image.processor import ScannedImageProcessor  # noqa: E402
 
 
 def xlsx_with_formula() -> bytes:
@@ -90,17 +91,37 @@ def blank_table_image() -> bytes:
 
 
 class UploadProcessingFlowTest(unittest.TestCase):
-    def test_pdf_upload_retains_rule_candidates_when_financial_llm_generation_is_rate_limited(self):
-        source = borderless_financial_pdf()
+    def setUp(self):
+        output_repository = patch(
+            "core.database.document_processing_outputs_repository.DocumentProcessingOutputsRepository",
+        )
+        self.output_repository_class = output_repository.start()
+        self.addCleanup(output_repository.stop)
+
+    def test_upload_rejects_unsupported_ocr_language_before_storage(self):
+        with patch.object(app_main, "_require_same_origin"):
+            with self.assertRaises(HTTPException) as raised:
+                asyncio.run(app_main.upload_document(
+                    request=None,
+                    file=UploadFile(filename="scan.pdf", file=io.BytesIO(b"%PDF-")),
+                    title="Scanned source", document_type="knowledge_document",
+                    domain="general_knowledge", allowed_roles=["admin"],
+                    ocr_language="deu", user={"sub": "admin"},
+                ))
+
+        self.assertEqual(raised.exception.status_code, 422)
+        self.assertIn("OCR language", raised.exception.detail)
+
+    @unittest.skipUnless(shutil.which("tesseract"), "Tesseract is required for the scanned-PDF upload integration fixture")
+    def test_scanned_pdf_upload_reports_ocr_and_persists_structured_output(self):
+        source = (ROOT / "data/evaluation/ocr/commerce_synthetic_policy_scan_demo.pdf").read_bytes()
         document_repo = MagicMock()
-        structured_store = MagicMock()
         storage = MagicMock()
         storage.storage.from_.return_value.upload.return_value = None
-        embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
-        embedding.embed_documents.return_value = [[0.1, 0.2]]
-        rule_candidate = {"metric_name": "net_revenue", "status": "needs_review"}
-        llm = MagicMock(model_name="test-financial-model")
-        llm.generate.side_effect = RuntimeError("rate limited")
+        structured_store = MagicMock()
+        chunk_repository = MagicMock()
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=2048)
+        embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
 
         with (
             patch.object(app_main, "_require_same_origin"),
@@ -108,80 +129,112 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
             patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
-            patch("core.database.document_chunks_repository.DocumentChunkRepository"),
+            patch("core.database.document_chunks_repository.DocumentChunkRepository", return_value=chunk_repository),
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
-            patch("core.database.processed_chunks_repository.ProcessedChunksRepository"),
-            patch("core.analytics.metric_candidates.candidates", return_value=[rule_candidate]),
-            patch("core.llm.groq_provider.GroqProvider", return_value=llm),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository"),
+            patch.dict("os.environ", {
+                "DOCUMENT_PADDLE_LAYOUT": "false",
+                "DOCUMENT_VISION_CAPTIONS": "false",
+            }),
+        ):
+            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+            counter_cls.return_value.count.return_value = 20
+            response = asyncio.run(app_main.upload_document(
+                request=None,
+                file=UploadFile(filename="commerce_synthetic_policy_scan_demo.pdf", file=io.BytesIO(source)),
+                title="Synthetic Commerce OCR upload test",
+                document_type="ocr_demo", domain="commerce_ocr_quality",
+                ocr_language="eng",
+                fiscal_year=2026, source_url=None,
+                knowledge_domains=["inventory_allocation"],
+                source_publisher="Test fixture publisher",
+                reference_type="company_practice_reference",
+                reference_applicability="Test-only OCR fixture; not Commerce Demo policy",
+                allowed_roles=["admin"], user={"sub": "admin"},
+            ))
+
+        self.assertEqual(response["processing_status"], "ready")
+        self.assertEqual(response["page_count"], 2)
+        self.assertEqual(response["ocr_chunk_count"], 3)
+        self.assertEqual(response["table_count"], 1)
+        self.assertEqual(response["indexed_chunk_count"], response["parser_chunk_count"])
+        saved_tables = structured_store.save_document_tables.call_args.args[2]
+        self.assertEqual(saved_tables[0]["metadata"]["ocr"]["language"], "eng")
+        self.assertEqual(saved_tables[0]["columns"], [
+            "Region", "Delivered sample orders", "Median transit days", "Avg fee units",
+        ])
+        self.assertEqual(saved_tables[0]["rows"], [
+            {"Region": "East", "Delivered sample orders": "120", "Median transit days": "3.0", "Avg fee units": "42.50"},
+            {"Region": "Central", "Delivered sample orders": "95", "Median transit days": "4.0", "Avg fee units": "48.75"},
+            {"Region": "West", "Delivered sample orders": "80", "Median transit days": "5.0", "Avg fee units": "55.25"},
+        ])
+        indexed = chunk_repository.replace_document.call_args.args[1]
+        self.assertEqual(len(indexed), response["indexed_chunk_count"])
+        self.assertEqual(sum(bool(row[3].get("ocr")) for row in indexed), response["ocr_chunk_count"])
+
+    def test_commerce_reference_upload_indexes_context_without_changing_dashboard_data(self):
+        source = financial_summary_pdf()
+        document_repo = MagicMock()
+        storage = MagicMock()
+        storage.storage.from_.return_value.upload.return_value = None
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
+        embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
+        parsed_document = {
+            "chunks": [{"text": "Walmart supplier logistics reference", "metadata": {"page_number": 1}}],
+            "tables": [],
+        }
+        chunk_repository = MagicMock()
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository", return_value=chunk_repository),
+            patch("core.database.structured_store.StructuredDataStore"),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository"),
+            patch(
+                "document_processing.document_processor.DocumentProcessor.process",
+                side_effect=lambda filename, content, metadata: {
+                    **parsed_document,
+                    "chunks": [{"text": "Walmart supplier logistics reference", "metadata": {**metadata, "page_number": 1}}],
+                },
+            ) as parse_document,
         ):
             counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
             counter_cls.return_value.count.return_value = 4
             response = asyncio.run(app_main.upload_document(
                 request=None,
-                file=UploadFile(filename="balance.pdf", file=io.BytesIO(source)),
-                title="Balance sheet", document_type="annual_report", domain="finance",
-                fiscal_year=2024, allowed_roles=["finance_analyst"], user={"sub": "uploader-1"},
-            ))
-
-        self.assertEqual(response["processing_status"], "ready")
-        document_repo.save_metric_candidates.assert_called_once_with(
-            response["document_id"], [rule_candidate],
-        )
-        llm.generate.assert_called_once()
-        llm.close.assert_called_once()
-
-    def test_pdf_upload_saves_selected_page_llm_metric_as_pending_review_candidate(self):
-        source = financial_summary_pdf()
-        document_repo = MagicMock()
-        structured_store = MagicMock()
-        storage = MagicMock()
-        storage.storage.from_.return_value.upload.return_value = None
-        embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
-        embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
-        llm = MagicMock(model_name="test-financial-model")
-        llm.generate.return_value = (
-            '{"metrics":[{"metric_name":"net_revenue",'
-            '"metric_value":"100","unit":"billion VND",'
-            '"fiscal_year":2024,'
-            '"source_quote":"Net revenue 2024 was 100 billion VND."}]}'
-        )
-
-        with (
-            patch.object(app_main, "_require_same_origin"),
-            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
-            patch.object(app_main, "DocumentRepository", return_value=document_repo),
-            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
-            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
-            patch("core.database.document_chunks_repository.DocumentChunkRepository"),
-            patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
-            patch("core.database.processed_chunks_repository.ProcessedChunksRepository"),
-            patch("core.analytics.metric_candidates.candidates", return_value=[]),
-            patch("core.llm.groq_provider.GroqProvider", return_value=llm),
-        ):
-            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
-            counter_cls.return_value.count.return_value = 8
-            response = asyncio.run(app_main.upload_document(
-                request=None,
                 file=UploadFile(filename="annual-report.pdf", file=io.BytesIO(source)),
                 title="Annual report", document_type="annual_report", domain="finance",
-                fiscal_year=2024, allowed_roles=["finance_analyst"], user={"sub": "uploader-1"},
+                fiscal_year=None,
+                knowledge_domains=["inventory_allocation", "nationwide_logistics"],
+                source_publisher="Walmart Inc.", reference_type="company_policy_reference",
+                reference_applicability="Walmart suppliers only; not Commerce Demo policy",
+                allowed_roles=["finance_analyst"],
+                ocr_language="vie+eng",
+                user={"sub": "uploader-1"},
             ))
 
         self.assertEqual(response["processing_status"], "ready")
-        llm.generate.assert_called_once()
-        document_id, candidates = document_repo.save_metric_candidates.call_args.args
-        self.assertEqual(document_id, response["document_id"])
-        self.assertEqual(len(candidates), 1)
-        candidate = candidates[0]
-        self.assertEqual(candidate["metric_name"], "net_revenue")
-        self.assertEqual(candidate["candidate_values"], ["100"])
-        self.assertEqual(candidate["unit"], "billion VND")
-        self.assertEqual(candidate["extraction_method"], "llm_selected_financial_page")
-        self.assertEqual(candidate["extractor_model"], "test-financial-model")
-        self.assertEqual(candidate["fiscal_year"], 2024)
-        self.assertEqual(candidate["status"], "needs_review")
-        self.assertEqual(candidate["page_number"], 1)
-        llm.close.assert_called_once()
+        self.assertTrue(response["searchable"])
+        processor_metadata = parse_document.call_args.args[2]
+        self.assertEqual(processor_metadata["knowledge_domains"], ["inventory_allocation", "nationwide_logistics"])
+        self.assertEqual(processor_metadata["source_publisher"], "Walmart Inc.")
+        self.assertEqual(processor_metadata["reference_applicability"], "Walmart suppliers only; not Commerce Demo policy")
+        self.assertEqual(processor_metadata["evidence_class"], "company_policy_reference")
+        self.assertFalse(processor_metadata["external_policy_reference"])
+        saved_metadata = chunk_repository.replace_document.call_args.args[1][0][3]
+        self.assertEqual(saved_metadata["knowledge_domains"], ["inventory_allocation", "nationwide_logistics"])
+
+    def test_upload_no_longer_exposes_report_specific_metric_profile(self):
+        from inspect import signature
+
+        self.assertNotIn("metric_parser_profile", signature(app_main.upload_document).parameters)
+        self.assertNotIn("business_decision_domain", signature(app_main.upload_document).parameters)
+        self.assertNotIn("/api/business-metrics/parser-profiles", {
+            route.path for route in app_main.app.routes
+        })
 
     def test_structured_table_inspection_is_company_scoped_and_paginated(self):
         connection = MagicMock()
@@ -195,7 +248,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         store = StructuredDataStore(connection=connection)
 
         result = store.get_document_tables(
-            "DOC-1", company="Vinamilk", table_offset=2, table_limit=10,
+            "DOC-1", company="Example Retailer", table_offset=2, table_limit=10,
             row_offset=30, row_limit=50,
         )
 
@@ -203,12 +256,12 @@ class UploadProcessingFlowTest(unittest.TestCase):
         query, params = cursor.execute.call_args.args
         self.assertIn("d.company = %s", query)
         self.assertIn("LIMIT %s OFFSET %s", query)
-        self.assertEqual(params, (50, 30, "DOC-1", "Vinamilk", 10, 2))
+        self.assertEqual(params, (50, 30, "DOC-1", "Example Retailer", 10, 2))
 
     def test_structured_table_inspection_rejects_unbounded_page_sizes(self):
         store = StructuredDataStore(connection=MagicMock())
         with self.assertRaisesRegex(ValueError, "table_limit"):
-            store.get_document_tables("DOC-1", company="Vinamilk", row_limit=1000)
+            store.get_document_tables("DOC-1", company="Example Retailer", row_limit=1000)
 
     def test_docx_section_title_flows_through_upload_into_retrieval_chunks(self):
         document_repo = MagicMock()
@@ -226,7 +279,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
-            patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
+            patch("core.database.parser_chunks_repository.ParserChunksRepository") as parsed_cls,
         ):
             counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
             counter_cls.return_value.count.return_value = 4
@@ -238,6 +291,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 domain="finance",
                 fiscal_year=2024,
                 allowed_roles=["finance_analyst"],
+                ocr_language="vie+eng",
                 user={"sub": "uploader-1"},
             ))
 
@@ -249,12 +303,14 @@ class UploadProcessingFlowTest(unittest.TestCase):
         self.assertEqual(persisted[0][0], "finance.docx")
         self.assertEqual(persisted[0][3]["section_title"], "Financial performance")
         self.assertEqual(persisted[0][3]["embedding_model"], "test-embedding")
+        self.assertEqual(persisted[0][3]["actual_char_count"], len(persisted[0][2]))
         table_chunk = next((row for row in persisted if row[3].get("layout_type") == "table"), None)
         self.assertIsNotNone(table_chunk)
         self.assertIn("Metric: Revenue | Amount: 100 billion VND", table_chunk[2])
         self.assertEqual(table_chunk[3]["section_title"], "Financial performance")
         parsed = parsed_cls.return_value.replace_document.call_args.args[1]
         self.assertEqual(parsed[0]["metadata"]["section_title"], "Financial performance")
+        self.assertNotIn("embedding_model", parsed[0]["metadata"])
         parsed_table_chunk = next(chunk for chunk in parsed if chunk["metadata"].get("layout_type") == "table")
         self.assertIn("Metric: Revenue | Amount: 100 billion VND", parsed_table_chunk["text"])
         saved_table = structured_store.save_document_tables.call_args.args[2][0]
@@ -275,7 +331,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore") as structured_cls,
-            patch("core.database.processed_chunks_repository.ProcessedChunksRepository", return_value=parsed_repository),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository", return_value=parsed_repository),
         ):
             counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
             counter_cls.return_value.count.return_value = 4
@@ -288,6 +344,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
                     domain="finance",
                     fiscal_year=None,
                     allowed_roles=["finance_analyst"],
+                    ocr_language="vie+eng",
                     user={"sub": "uploader-1"},
                 ))
 
@@ -297,10 +354,47 @@ class UploadProcessingFlowTest(unittest.TestCase):
         document_repo.update_processing_status.assert_called_with(
             document_repo.register_upload.call_args.args[0]["document_id"], "failed",
         )
-        document_repo.save_metric_candidates.assert_not_called()
         chunks_cls.return_value.replace_document.assert_not_called()
         structured_cls.return_value.save_document_tables.assert_called_once()
         storage.storage.from_.return_value.remove.assert_not_called()
+
+    def test_parser_output_remains_model_independent_when_embedding_chunks_are_split(self):
+        document_repo = MagicMock()
+        storage = MagicMock()
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=8)
+        embedding.embed_documents.return_value = [[0.1], [0.2]]
+        parsed_repo = MagicMock()
+        extracted_text = "Revenue 100; cash 20; total assets 500"
+        processed = {"chunks": [{
+            "text": extracted_text,
+            "metadata": {"chunk_index": 0, "page_number": 1, "layout_type": "text"},
+        }], "tables": []}
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch.object(DocumentProcessor, "process", return_value=processed),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
+            patch("core.database.structured_store.StructuredDataStore"),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository", return_value=parsed_repo),
+        ):
+            counter_cls.return_value.split_text.return_value = [extracted_text[:18], extracted_text[18:]]
+            counter_cls.return_value.count.return_value = 4
+            result = asyncio.run(app_main.upload_document(
+                request=None, file=UploadFile(filename="report.pdf", file=io.BytesIO(b"%PDF-1.7 test")),
+                title="Report", document_type="annual_report", domain="finance",
+                fiscal_year=None, allowed_roles=["finance_analyst"],
+                ocr_language="vie+eng",
+                user={"sub": "uploader-1"},
+            ))
+
+        self.assertEqual(result["processing_status"], "ready")
+        parsed_repo.replace_document.assert_called_once()
+        self.assertEqual(parsed_repo.replace_document.call_args.args[1][0]["text"], extracted_text)
+        self.assertNotIn("embedding_model", parsed_repo.replace_document.call_args.args[1][0]["metadata"])
+        self.assertEqual(len(chunks_cls.return_value.replace_document.call_args.args[1]), 2)
 
     def test_image_ocr_caption_and_table_flow_through_upload_to_persistence(self):
         source = blank_table_image()
@@ -326,13 +420,13 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(app_main, "_require_same_origin"),
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
-            patch.object(ImageProcessor, "_ocr", return_value="Revenue 100 90\nCash 25 20\nAssets 500 450"),
-            patch.object(PDFProcessor, "_ocr_page_words", return_value=words),
+            patch.object(ScannedImageProcessor, "_ocr", return_value="Revenue 100 90\nCash 25 20\nAssets 500 450"),
+            patch.object(BuiltInProcessor, "_ocr_page_words", return_value=words),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
             patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
-            patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
+            patch("core.database.parser_chunks_repository.ParserChunksRepository") as parsed_cls,
             patch.dict("os.environ", {"DOCUMENT_VISION_CAPTIONS": "true"}),
             patch("core.llm.groq_provider.GroqProvider") as vision_provider,
         ):
@@ -348,14 +442,20 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 domain="finance",
                 fiscal_year=2024,
                 allowed_roles=["finance_analyst"],
+                ocr_language="vie+eng",
                 user={"sub": "uploader-1"},
             ))
 
         self.assertEqual(response["processing_status"], "ready")
+        self.assertEqual(response["page_count"], 1)
+        self.assertEqual(response["ocr_chunk_count"], 1)
+        self.assertGreater(response["parser_chunk_count"], 0)
+        self.assertEqual(response["table_count"], 1)
         parsed_chunks = parsed_cls.return_value.replace_document.call_args.args[1]
+        self.assertEqual(response["indexed_chunk_count"], len(parsed_chunks))
         self.assertTrue(parsed_chunks)
         self.assertIn("Revenue", parsed_chunks[0]["text"])
-        self.assertEqual(parsed_chunks[0]["metadata"]["embedding_model"], "test-embedding")
+        self.assertNotIn("embedding_model", parsed_chunks[0]["metadata"])
         caption_chunk = next(chunk for chunk in parsed_chunks if chunk["metadata"].get("layout_type") == "figure_caption")
         self.assertEqual(caption_chunk["text"], "AI-generated image caption (unverified): A financial table lists revenue, cash, and assets.")
         self.assertEqual(caption_chunk["metadata"]["caption_model"], "qwen/qwen3.8-27b")
@@ -392,9 +492,10 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
-            patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
+            patch("core.database.parser_chunks_repository.ParserChunksRepository") as parsed_cls,
             patch.dict("os.environ", {
                 "DOCUMENT_PADDLE_FORMULA_RECOGNITION": "true",
+                "DOCUMENT_PADDLE_CHART_RECOGNITION": "true",
                 "DOCUMENT_VISION_CAPTIONS": "true",
             }),
             patch.object(DocumentProcessor, "__init__", capture_processor_settings),
@@ -409,11 +510,13 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 domain="finance",
                 fiscal_year=2024,
                 allowed_roles=["finance_analyst"],
+                ocr_language="vie+eng",
                 user={"sub": "uploader-1"},
             ))
 
         self.assertEqual(response["processing_status"], "ready")
         self.assertTrue(processor_settings["paddle_formula_recognition"])
+        self.assertTrue(processor_settings["paddle_chart_recognition"])
         self.assertTrue(processor_settings["vision_captioning"])
         saved_tables = structured_store.save_document_tables.call_args.args[2]
         self.assertEqual(len(saved_tables), 1)
@@ -451,24 +554,33 @@ class UploadProcessingFlowTest(unittest.TestCase):
         storage = MagicMock()
         storage.storage.from_.return_value.upload.return_value = None
         embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
-        embedding.embed_documents.return_value = [[0.1, 0.2]]
+        embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
+        processor_settings = {}
+        original_processor_init = DocumentProcessor.__init__
+
+        def capture_processor_settings(processor, config=None):
+            processor_settings.update(config or {})
+            original_processor_init(processor, config)
+
         with (
             patch.object(app_main, "_require_same_origin"),
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
-            patch("core.document_processing.processors.pdf.processor.shutil.which", return_value="/usr/bin/tesseract"),
-            patch.object(PDFProcessor, "_ocr_page", return_value="Revenue 100000 90000\nCash balance 25000 20000\nTotal assets 500000 450000"),
-            patch.object(PDFProcessor, "_ocr_page_words", return_value=words),
+            patch("document_processing.pipelines.built_in.processor.shutil.which", return_value="/usr/bin/tesseract"),
+            patch.object(BuiltInProcessor, "_ocr_page", return_value="Revenue 100000 90000\nCash balance 25000 20000\nTotal assets 500000 450000"),
+            patch.object(BuiltInProcessor, "_ocr_page_words", return_value=words),
             patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
             patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
-            patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
+            patch("core.database.parser_chunks_repository.ParserChunksRepository") as parsed_cls,
             patch.dict("os.environ", {
                 "DOCUMENT_PADDLE_LAYOUT": "false",
                 "DOCUMENT_PADDLE_FORMULA_RECOGNITION": "false",
+                "DOCUMENT_PADDLE_CHART_RECOGNITION": "false",
                 "DOCUMENT_VISION_CAPTIONS": "false",
             }),
+            patch.object(DocumentProcessor, "__init__", capture_processor_settings),
         ):
             counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
             counter_cls.return_value.count.return_value = 4
@@ -480,10 +592,12 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 domain="finance",
                 fiscal_year=None,
                 allowed_roles=["finance_analyst"],
+                ocr_language="vie+eng",
                 user={"sub": "uploader-1"},
             ))
 
         self.assertEqual(response["processing_status"], "ready")
+        self.assertFalse(processor_settings["paddle_chart_recognition"])
         saved_tables = structured_store.save_document_tables.call_args.args[2]
         self.assertEqual(saved_tables[0]["columns"], ["label", "31/12/2024", "31/12/2023"])
         self.assertEqual(saved_tables[0]["rows"], [
@@ -491,6 +605,15 @@ class UploadProcessingFlowTest(unittest.TestCase):
             {"label": "Cash balance", "31/12/2024": "25000", "31/12/2023": "20000"},
             {"label": "Total assets", "31/12/2024": "500000", "31/12/2023": "450000"},
         ])
+        embedding_inputs = embedding.embed_documents.call_args.args[0]
+        self.assertTrue(any("label: Revenue" in text for text in embedding_inputs))
+        persisted_chunks = chunks_cls.return_value.replace_document.call_args.args[1]
+        table_chunk = next(row for row in persisted_chunks if row[3].get("layout_type") == "table")
+        self.assertIn("31/12/2024: 100000", table_chunk[2])
+        self.assertTrue(any("Revenue 100000 90000" in text for text in embedding_inputs))
+        self.assertEqual(table_chunk[3]["chunking_method"], "table_row_groups")
+        parsed_chunks = parsed_cls.return_value.replace_document.call_args.args[1]
+        self.assertTrue(any(chunk["metadata"].get("layout_type") == "table" for chunk in parsed_chunks))
         chunks_cls.return_value.replace_document.assert_called_once()
 
     def test_pptx_table_flows_from_upload_to_structured_store(self):
@@ -510,7 +633,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
-            patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
+            patch("core.database.parser_chunks_repository.ParserChunksRepository") as parsed_cls,
         ):
             counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
             counter_cls.return_value.count.return_value = 4
@@ -523,6 +646,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 domain="finance",
                 fiscal_year=None,
                 allowed_roles=["finance_analyst"],
+                ocr_language="vie+eng",
                 user={"sub": "uploader-1"},
             ))
 
@@ -552,7 +676,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
             patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
-            patch("core.database.processed_chunks_repository.ProcessedChunksRepository") as parsed_cls,
+            patch("core.database.parser_chunks_repository.ParserChunksRepository") as parsed_cls,
         ):
             counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
             counter_cls.return_value.count.return_value = 4
@@ -565,6 +689,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 domain="finance",
                 fiscal_year=None,
                 allowed_roles=["finance_analyst"],
+                ocr_language="vie+eng",
                 user={"sub": "uploader-1"},
             ))
 
@@ -587,14 +712,96 @@ class UploadProcessingFlowTest(unittest.TestCase):
             "page_number": 1, "table_index": 0, "columns": ["Value"],
             "rows": [{"Value": "100"}],
             "metadata": {"formulas": formulas, "row_cell_bboxes": row_cell_bboxes},
+            "context": {"table_title": "Revenue summary", "unit": "VND"},
         }])
 
         cursor = connection.cursor.return_value.__enter__.return_value
         insert_params = cursor.execute.call_args.args[1]
         self.assertEqual(insert_params[-1].obj["formulas"], formulas)
         self.assertEqual(insert_params[-1].obj["row_cell_bboxes"], row_cell_bboxes)
+        self.assertEqual(insert_params[-1].obj["table_context"]["table_title"], "Revenue summary")
         record_params = cursor.executemany.call_args.args[1]
         self.assertEqual(record_params[0][3].obj, {"Value": "100"})
+
+    def test_unpaginated_table_uses_internal_page_sentinel_without_source_page_metadata(self):
+        connection = MagicMock()
+        store = StructuredDataStore(connection=connection)
+        store.save_document_tables("DOC-1", "Finance", [{
+            "table_index": 0, "columns": ["Metric"], "rows": [{"Metric": "Revenue"}],
+            "metadata": {"format": "XLSX", "sheet_name": "Summary"},
+        }])
+
+        cursor = connection.cursor.return_value.__enter__.return_value
+        insert_params = cursor.execute.call_args.args[1]
+        self.assertEqual(insert_params[0], "DOC-1:unpaginated:table:0")
+        self.assertEqual(insert_params[3], 0)
+        self.assertEqual(insert_params[-1].obj["sheet_name"], "Summary")
+        self.assertNotIn("page_number", insert_params[-1].obj)
+
+    def test_failed_upload_can_retry_embedding_from_saved_parser_output(self):
+        document_id = "UPLOAD-FAILED-1"
+        document_repo = MagicMock()
+        document_repo.list_knowledge_documents.return_value = [{
+            "document_id": document_id,
+            "source_type": "user_upload",
+            "processing_status": "failed",
+            "allowed_roles": ["admin"],
+            "knowledge_base_active": False,
+        }]
+        parsed_repo = MagicMock()
+        parsed_repo.get_document.return_value = [{
+            "content": "Inventory policy passage",
+            "metadata": {"filename": "inventory-policy.pdf", "page_number": 2},
+        }]
+        embedding = MagicMock(model_name="local-test-embedding", max_sequence_length=128)
+        embedding.embed_documents.return_value = [[0.1, 0.2]]
+
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository", return_value=parsed_repo),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
+        ):
+            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+            counter_cls.return_value.count.return_value = 3
+            result = app_main.retry_document_embedding(
+                document_id, request=None, user={"role": "admin", "sub": "admin"},
+            )
+
+        self.assertEqual(result["processing_status"], "ready")
+        self.assertEqual(result["indexed_chunk_count"], 1)
+        document_repo.update_processing_status.assert_any_call(document_id, "processing")
+        document_repo.update_processing_status.assert_any_call(document_id, "ready")
+        parsed_repo.set_status.assert_any_call(document_id, "embedding")
+        parsed_repo.set_status.assert_any_call(document_id, "embedded")
+        indexed = chunks_cls.return_value.replace_document.call_args.args[1]
+        self.assertEqual(indexed[0][0:3], ("inventory-policy.pdf", 0, "Inventory policy passage"))
+        self.assertEqual(indexed[0][3]["allowed_roles"], ["admin"])
+        self.assertEqual(indexed[0][3]["page_number"], 2)
+        document_repo.set_knowledge_base_active.assert_not_called()
+        document_repo.set_document_allowed_roles.assert_not_called()
+        parsed_repo.close.assert_called_once()
+        document_repo.close.assert_called_once()
+
+    def test_retry_embedding_rejects_seed_documents_without_mutating_status(self):
+        document_repo = MagicMock()
+        document_repo.list_knowledge_documents.return_value = [{
+            "document_id": "SEED-1", "source_type": "manifest",
+            "processing_status": "failed", "allowed_roles": ["admin"],
+        }]
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+        ):
+            with self.assertRaises(app_main.HTTPException) as raised:
+                app_main.retry_document_embedding(
+                    "SEED-1", request=None, user={"role": "admin", "sub": "admin"},
+                )
+        self.assertEqual(raised.exception.status_code, 409)
+        document_repo.update_processing_status.assert_not_called()
+        document_repo.close.assert_called_once()
 
 
 if __name__ == "__main__":

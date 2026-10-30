@@ -1,0 +1,37 @@
+{
+  "level": "live_supabase_analytics_smoke",
+  "dataset": "commerce",
+  "cases": [
+    {
+      "id": "revenue-cogs-2022-12",
+      "question": "Doanh thu và giá vốn tháng 12/2022",
+      "expected_agent": "analytics",
+      "expected_document_id": "commerce.sales",
+      "relevant_document_ids": ["commerce.sales"],
+      "expected_key_facts": ["52 454 936.20", "53 489 673.44"],
+      "expect_insufficient": false
+    },
+    {
+      "id": "regional-revenue-2022-12",
+      "question": "Doanh thu theo khu vực tháng 12/2022",
+      "expected_agent": "analytics",
+      "expected_document_id": "commerce.orders",
+      "relevant_document_ids": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.geography"
+      ],
+      "expected_key_facts": ["East", "14 079 268.92"],
+      "expect_insufficient": false
+    },
+    {
+      "id": "inventory-category-2022-12-31",
+      "question": "Tồn kho theo danh mục tại ngày 2022-12-31",
+      "expected_agent": "analytics",
+      "expected_document_id": "commerce.inventory",
+      "relevant_document_ids": ["commerce.inventory"],
+      "expected_key_facts": ["Casual", "77.5%"],
+      "expect_insufficient": false
+    }
+  ]
+}

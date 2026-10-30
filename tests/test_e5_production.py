@@ -55,7 +55,7 @@ class E5ProductionTest(unittest.TestCase):
         self.assertEqual(params[2:4], ["2022", "2022"])
         for clause in ["c.metadata->>'company' = %s::text", "d.allowed_roles && %s::text[]",
                        "d.processing_status = 'ready'", "d.knowledge_base_active IS TRUE",
-                       "cardinality(d.allowed_roles) > 0",
+                       "'admin' = ANY(%s::text[])",
                        "d.document_id = ANY(%s::text[])", "c.metadata @> %s::jsonb"]:
             self.assertIn(clause, sql)
 

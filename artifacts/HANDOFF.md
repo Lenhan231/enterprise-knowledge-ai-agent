@@ -1,3 +1,17 @@
+## 2026-10-30 - Admin exception for empty document ACLs
+
+User explicitly changed the policy: verified admin may retrieve active, ready
+documents even when allowed_roles is empty/NULL. Other roles still require an
+ACL match. Active/ready, company, document-ID and metadata filters are not
+bypassed. Candidate and parent SQL use the same exception. Internal roles=None
+calls retain their nonempty-ACL guard; no caller implicitly becomes admin.
+This supersedes the deny-empty-for-admin rule in the historical entry below.
+47 tests passed (41 selected unit + 6 isolated PostgreSQL integration); evidence
+and tested source hashes: artifacts/evaluation/rbac-admin-exception-20261030/validation.json.
+Temporary local PostgreSQL was stopped. No production access or remote push.
+The shared report draft and earlier validation artifacts describe the previous
+snapshot; update their policy wording when preparing the next report revision.
+
 ## 2026-10-30 - Main merged into Huy; retrieval eligibility fix
 
 User explicitly requested working on Huy rather than a new task branch. Local

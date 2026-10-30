@@ -210,7 +210,7 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
         self.assertIn("d.allowed_roles && %s::text[]", normalized)
         self.assertIn("d.processing_status = 'ready'", normalized)
         self.assertIn("d.knowledge_base_active IS TRUE", normalized)
-        self.assertIn("cardinality(d.allowed_roles) > 0", normalized)
+        self.assertIn("'admin' = ANY(%s::text[])", normalized)
         self.assertEqual(parameters[1:3], [2, 2])
         self.assertEqual(parameters[3:], ["Vinamilk", ["finance_analyst"], ["finance_analyst"]])
 

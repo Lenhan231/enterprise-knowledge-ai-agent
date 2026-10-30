@@ -42,7 +42,7 @@ def eligible_cte(
     document_ids: list[str] | None = None,
     metadata_filter: dict[str, Any] | None = None,
 ) -> tuple[str, list[Any]]:
-    """Filter active, ready documents with a nonempty ACL before ranking limits."""
+    """Filter active, ready documents by role, allowing admin to bypass the ACL."""
     parameters: list[Any] = []
     vector_fields = ""
     if include_vector:
@@ -63,6 +63,8 @@ def eligible_cte(
     if roles is not None:
         filters += " AND (d.allowed_roles && %s::text[] OR 'admin' = ANY(%s::text[]))"
         parameters.extend((roles, roles))
+    else:
+        filters += " AND cardinality(d.allowed_roles) > 0"
     if document_ids is not None:
         filters += " AND d.document_id = ANY(%s::text[])"
         parameters.append(document_ids)
@@ -80,8 +82,7 @@ def eligible_cte(
             FROM document_chunks AS c
             JOIN documents AS d ON d.document_id = c.metadata->>'document_id'
             WHERE d.processing_status = 'ready'
-              AND d.knowledge_base_active IS TRUE
-              AND cardinality(d.allowed_roles) > 0 {filters}
+              AND d.knowledge_base_active IS TRUE {filters}
         )
     """
     return cte, parameters

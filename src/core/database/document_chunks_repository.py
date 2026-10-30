@@ -154,6 +154,8 @@ class DocumentChunkRepository:
         if roles is not None:
             filters.append("(d.allowed_roles && %s::text[] OR 'admin' = ANY(%s::text[]))")
             parameters.extend((roles, roles))
+        else:
+            filters.append("cardinality(d.allowed_roles) > 0")
         filter_sql = " AND " + " AND ".join(filters) if filters else ""
 
         query = f"""
@@ -174,8 +176,7 @@ class DocumentChunkRepository:
              AND c.metadata->>'section_title' IS NOT DISTINCT FROM a.section_title
              AND c.metadata->>'page_number' IS NOT DISTINCT FROM a.page_number
             WHERE d.processing_status = 'ready'
-              AND d.knowledge_base_active IS TRUE
-              AND cardinality(d.allowed_roles) > 0{filter_sql}
+              AND d.knowledge_base_active IS TRUE{filter_sql}
             ORDER BY a.document_id, a.chunk_index, c.chunk_index
         """
         with self.conn.cursor() as cursor:

@@ -4,9 +4,12 @@ Candidate retrieval and parent-context expansion require all of:
 
 - `documents.processing_status = 'ready'` (a NULL status is not ready).
 - `documents.knowledge_base_active IS TRUE` (false/NULL is excluded).
-- `cardinality(documents.allowed_roles) > 0` (empty/NULL ACL denies access).
-- When verified roles are provided, an overlapping allowed role or the existing
-  admin permission. Admin cannot bypass the three eligibility gates above.
+- When verified roles are provided, an overlapping allowed role or `admin`.
+  Admin may access documents with empty/NULL ACLs; other roles may not.
+- Admin cannot bypass active/ready requirements, company scope, document-ID
+  scope, or metadata filters.
+- Internal `roles=None` calls retain their existing nonempty-ACL requirement;
+  they do not implicitly gain admin privileges.
 
 The shared candidate CTE applies these gates before dense/BM25 ranking, limits,
 hybrid fusion, and translated-hybrid reranking. Parent expansion repeats the
@@ -38,8 +41,8 @@ selection and expansion. It does not require model weights or pgvector.
 This is an eligibility fix, not complete enterprise RBAC. Verified identity is
 already created server-side for Knowledge AI; internal repository calls still
 allow `roles=None` under the existing contract. Caller authorization must supply
-verified scope. This patch does not add tenant membership, change the admin
-exception for nonempty ACLs, enable the management API to set an empty ACL,
+verified scope. This patch does not add tenant membership, enable the
+management API to set an empty ACL,
 clear conversation history after document ACL changes, or guarantee revocation
 after the final database query. Cross-agent permission and citation acceptance
 remain separate work.

@@ -85,27 +85,40 @@ class RetrievalAccessTest(unittest.TestCase):
         self.assertEqual(set(contexts), {("allowed", 0)})
         self.assertEqual(contexts[("allowed", 0)]["chunk_indices"], [0, 1])
 
-    def test_admin_cannot_bypass_empty_acl_or_inactive_or_unready_documents(self):
+    def test_admin_can_bypass_acl_but_not_inactive_or_unready_documents(self):
         self.seed("allowed")
         self.seed("empty", roles=())
+        self.seed("null-acl", roles=None)
         self.seed("disabled", active=False)
         self.seed("chunked", status="chunked")
-        self.assertEqual(self.search_ids(["admin"]), {"allowed"})
+        self.assertEqual(self.search_ids(["admin"]), {"allowed", "empty", "null-acl"})
         contexts = self.repository.expand_parent_contexts(
-            [self.anchor(i) for i in ("allowed", "empty", "disabled", "chunked")], roles=["admin"],
+            [self.anchor(i) for i in ("allowed", "empty", "null-acl", "disabled", "chunked")], roles=["admin"],
         )
-        self.assertEqual(set(contexts), {("allowed", 0)})
+        self.assertEqual(set(contexts), {("allowed", 0), ("empty", 0), ("null-acl", 0)})
 
     def test_empty_user_roles_do_not_grant_document_access(self):
         self.seed("allowed")
         self.assertEqual(self.search_ids([]), set())
         self.assertEqual(self.repository.expand_parent_contexts([self.anchor("allowed")], roles=[]), {})
 
+    def test_internal_unscoped_calls_do_not_gain_the_admin_empty_acl_exception(self):
+        self.seed("allowed")
+        self.seed("empty", roles=())
+        self.seed("null-acl", roles=None)
+        self.assertEqual(self.search_ids(None), {"allowed"})
+        contexts = self.repository.expand_parent_contexts(
+            [self.anchor(i) for i in ("allowed", "empty", "null-acl")], roles=None,
+        )
+        self.assertEqual(set(contexts), {("allowed", 0)})
+
     def test_company_and_document_scope_remain_effective(self):
         self.seed("allowed")
         self.seed("other-document")
         self.seed("other-company", company="Other")
-        self.assertEqual(self.search_ids(["employee"], company="Demo", document_ids=["allowed", "other-company"]), {"allowed"})
+        for roles in (["employee"], ["admin"]):
+            with self.subTest(roles=roles):
+                self.assertEqual(self.search_ids(roles, company="Demo", document_ids=["allowed", "other-company"]), {"allowed"})
         self.assertEqual(self.search_ids(["employee"], document_ids=[]), set())
         contexts = self.repository.expand_parent_contexts(
             [self.anchor("allowed"), self.anchor("other-company")], company="Demo", roles=["employee"],

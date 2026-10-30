@@ -1,0 +1,1654 @@
+[
+  {
+    "case_id": "Q001",
+    "question": "What is the company's leave policy?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 3062.2578999991674,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Retrieve the company's leave policy from available documents.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What is the company's leave policy?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What is the company's leave policy?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q002",
+    "question": "Find the employee handbook.",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 637.1923000006063,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Find the employee handbook.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"Locate the employee handbook document or provide a summary of its contents and location.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "Locate the employee handbook document or provide a summary of its contents and location."
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q003",
+    "question": "What does the refund policy say?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 666.4152000012109,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Retrieve the content of the refund policy from available documents.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What does the refund policy say?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What does the refund policy say?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q004",
+    "question": "Explain the company's return procedure.",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 644.7965999996086,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Explain the company's return procedure.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the documented steps, policies, and requirements for the company's return procedure?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the documented steps, policies, and requirements for the company's return procedure?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q005",
+    "question": "What are the payment terms in the supplier contract?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 633.5741999992024,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Identify the payment terms specified in the supplier contract.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the payment terms defined in the supplier contract?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the payment terms defined in the supplier contract?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q006",
+    "question": "Summarize the company's inventory policy.",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 618.7247999987449,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Summarize the company's inventory policy.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the key components, rules, and guidelines of the company's inventory policy?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the key components, rules, and guidelines of the company's inventory policy?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q007",
+    "question": "Which document describes employee responsibilities?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 618.0714999991324,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Identify the document that describes employee responsibilities.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"Which document describes employee responsibilities?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "Which document describes employee responsibilities?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q008",
+    "question": "What does our shipping policy say about delayed deliveries?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 641.1788999994315,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Retrieve information from the shipping policy regarding delayed deliveries.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What does the shipping policy state about delayed deliveries?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What does the shipping policy state about delayed deliveries?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q009",
+    "question": "What was the total revenue in 2025?",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 691.8069000003015,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Calculate the total revenue for the year 2025 from the commerce sales data.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"What is the sum of the revenue column in the commerce.sales table where the date falls within the year 2025?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "What is the sum of the revenue column in the commerce.sales table where the date falls within the year 2025?"
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q010",
+    "question": "How many orders were placed in 2025?",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 660.1754000002984,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Count the number of orders placed in 2025.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"How many orders have an order_date in the year 2025?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "How many orders have an order_date in the year 2025?"
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q011",
+    "question": "Which products generated the most revenue?",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 714.6661999995558,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Identify the products that generated the highest revenue.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the total revenue for each product by joining commerce.order_items with commerce.products on product_id, summing the revenue (quantity * unit_price) from order_items, and ordering the results in descending order of total revenue.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Calculate the total revenue for each product by joining commerce.order_items with commerce.products on product_id, summing the revenue (quantity * unit_price) from order_items, and ordering the results in descending order of total revenue."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q012",
+    "question": "What was the total cost of goods sold in 2025?",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 675.9508000013739,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Calculate the total cost of goods sold for the year 2025.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"What is the sum of the 'cogs' column from the 'commerce.sales' table where the 'date' is in the year 2025?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "What is the sum of the 'cogs' column from the 'commerce.sales' table where the 'date' is in the year 2025?"
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q013",
+    "question": "Compare revenue between 2024 and 2025.",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 740.9318999998504,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Compare revenue between 2024 and 2025.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the total revenue for the year 2024 and the total revenue for the year 2025 from the commerce.sales table.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Calculate the total revenue for the year 2024 and the total revenue for the year 2025 from the commerce.sales table."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q014",
+    "question": "What is the average order value?",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 622.9287999994995,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Calculate the average order value from the commerce data.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the average order value using the revenue and order data.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Calculate the average order value using the revenue and order data."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q015",
+    "question": "How many products are currently out of stock?",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 656.9459999991523,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Determine the number of products currently out of stock based on the latest inventory snapshot.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Count the number of distinct products where stockout_flag is true in the most recent snapshot_date from the commerce.inventory table.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Count the number of distinct products where stockout_flag is true in the most recent snapshot_date from the commerce.inventory table."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q016",
+    "question": "Show revenue growth by month.",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 630.3575999991153,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Show revenue growth by month.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate total revenue by month from the commerce.sales table, ordered by date.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Calculate total revenue by month from the commerce.sales table, ordered by date."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q017",
+    "question": "Which product categories have the highest return rates?",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 1067.6543999998103,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Identify the product categories with the highest return rates based on structured commerce data.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the return rate for each product category by joining commerce.returns with commerce.order_items and commerce.products, and rank the categories by return rate in descending order.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Calculate the return rate for each product category by joining commerce.returns with commerce.order_items and commerce.products, and rank the categories by return rate in descending order."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q018",
+    "question": "How many documents are stored in each business domain?",
+    "expected_route": "analytics",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": false,
+    "latency_ms": 949.708100000862,
+    "planner_outputs": [
+      "{\n  \"objective\": \"How many documents are stored in each business domain?\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"How many documents are stored in each business domain?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "How many documents are stored in each business domain?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q019",
+    "question": "Compare total revenue against the company's sales policy.",
+    "expected_route": "hybrid",
+    "predicted_route": "hybrid",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 803.2836999991559,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Compare total revenue against the company's sales policy.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the specific revenue targets, thresholds, or performance metrics defined in the company's sales policy?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the total revenue from the commerce.sales table.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the specific revenue targets, thresholds, or performance metrics defined in the company's sales policy?"
+    ],
+    "sql_questions": [
+      "Calculate the total revenue from the commerce.sales table."
+    ],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q020",
+    "question": "What does our return policy say, and how many returns were recorded?",
+    "expected_route": "hybrid",
+    "predicted_route": "hybrid",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 806.4752000009321,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Retrieve the company's return policy details and count the total number of recorded returns.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the specific terms and conditions of the company's return policy?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"How many total returns are recorded in the commerce.returns table?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the specific terms and conditions of the company's return policy?"
+    ],
+    "sql_questions": [
+      "How many total returns are recorded in the commerce.returns table?"
+    ],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q021",
+    "question": "Compare inventory stockout statistics with our inventory management policy.",
+    "expected_route": "hybrid",
+    "predicted_route": "hybrid",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 824.1132000002835,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Compare inventory stockout statistics with our inventory management policy.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the specific thresholds, definitions, and compliance criteria for stockout statistics defined in the inventory management policy?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Retrieve the current inventory stockout statistics, including stockout_days, stockout_flag, and fill_rate, from the commerce.inventory table.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the specific thresholds, definitions, and compliance criteria for stockout statistics defined in the inventory management policy?"
+    ],
+    "sql_questions": [
+      "Retrieve the current inventory stockout statistics, including stockout_days, stockout_flag, and fill_rate, from the commerce.inventory table."
+    ],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q022",
+    "question": "What is our shipping policy, and what is the average delivery time?",
+    "expected_route": "hybrid",
+    "predicted_route": "hybrid",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 790.9894000003987,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Retrieve the company's shipping policy from documents and calculate the average delivery time from shipment data.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What is the company's shipping policy?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"What is the average delivery time in days, calculated as the difference between delivery_date and ship_date?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What is the company's shipping policy?"
+    ],
+    "sql_questions": [
+      "What is the average delivery time in days, calculated as the difference between delivery_date and ship_date?"
+    ],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q023",
+    "question": "Compare the company's refund procedures with actual refund statistics.",
+    "expected_route": "hybrid",
+    "predicted_route": "hybrid",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 790.6698000006145,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Compare the company's documented refund procedures with actual refund statistics derived from the database.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the company's documented refund procedures, including eligibility criteria, time limits, and processing steps?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Retrieve refund statistics including total refund amount, number of returns, average refund amount, and breakdown by return reason from the commerce.returns table.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the company's documented refund procedures, including eligibility criteria, time limits, and processing steps?"
+    ],
+    "sql_questions": [
+      "Retrieve refund statistics including total refund amount, number of returns, average refund amount, and breakdown by return reason from the commerce.returns table."
+    ],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q024",
+    "question": "How many orders were returned, and what does our return policy require?",
+    "expected_route": "hybrid",
+    "predicted_route": "hybrid",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 818.4628000017256,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Determine the number of returned orders from structured data and identify the requirements of the return policy from company documents.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"How many distinct orders have at least one record in the commerce.returns table?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the specific requirements and conditions outlined in the company's return policy?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the specific requirements and conditions outlined in the company's return policy?"
+    ],
+    "sql_questions": [
+      "How many distinct orders have at least one record in the commerce.returns table?"
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q025",
+    "question": "Compare revenue growth with the targets described in our sales documents.",
+    "expected_route": "hybrid",
+    "predicted_route": "hybrid",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 766.2569999993138,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Compare actual revenue growth from structured data with the revenue targets described in sales documents.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the specific revenue growth targets or goals mentioned in the sales documents?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the actual revenue growth rate from the commerce.sales table.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the specific revenue growth targets or goals mentioned in the sales documents?"
+    ],
+    "sql_questions": [
+      "Calculate the actual revenue growth rate from the commerce.sales table."
+    ],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q026",
+    "question": "Where can I find the company's data privacy policy?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 630.4651000009471,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Find the location or reference for the company's data privacy policy.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"Where is the company's data privacy policy located or referenced in the available documents?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "Where is the company's data privacy policy located or referenced in the available documents?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q027",
+    "question": "What steps must employees follow when requesting reimbursement?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 655.1484999999957,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Identify the specific steps employees must follow when requesting reimbursement.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the required steps for employees to request reimbursement?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the required steps for employees to request reimbursement?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q028",
+    "question": "Explain the warranty conditions stated in our product documentation.",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 666.0043000010774,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Explain the warranty conditions stated in our product documentation.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the specific warranty conditions, coverage periods, and exclusions stated in the product documentation?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the specific warranty conditions, coverage periods, and exclusions stated in the product documentation?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q029",
+    "question": "According to our internal guidelines, how should customer complaints be handled?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 674.8096999999689,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Determine how customer complaints should be handled according to internal guidelines.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the internal guidelines for handling customer complaints?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the internal guidelines for handling customer complaints?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q030",
+    "question": "What are the eligibility requirements for employee benefits?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 631.2029000000621,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Identify the eligibility requirements for employee benefits from available documentation.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the eligibility requirements for employee benefits?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the eligibility requirements for employee benefits?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q031",
+    "question": "Which internal documents describe the company's quality control standards?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 642.0564999989438,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Identify internal documents that describe the company's quality control standards.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"Which internal documents describe the company's quality control standards?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "Which internal documents describe the company's quality control standards?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q032",
+    "question": "What actions are required when a supplier violates contract terms?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 646.7185999990761,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Identify the required actions when a supplier violates contract terms.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the specific actions required by policy or contract when a supplier violates contract terms?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the specific actions required by policy or contract when a supplier violates contract terms?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q033",
+    "question": "Compare the responsibilities assigned to employees and managers in our HR guidelines.",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 808.2613000005949,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Compare the responsibilities assigned to employees and managers in our HR guidelines.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the specific responsibilities assigned to employees and managers as defined in the HR guidelines?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the specific responsibilities assigned to employees and managers as defined in the HR guidelines?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q034",
+    "question": "How many customers made purchases during 2025?",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 702.6950999988912,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Count the number of unique customers who made purchases in 2025.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Count the number of distinct customer_ids in commerce.orders where order_date is in the year 2025.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Count the number of distinct customer_ids in commerce.orders where order_date is in the year 2025."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q035",
+    "question": "Which month had the highest sales revenue in 2025?",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 657.7692000009847,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Identify the month with the highest sales revenue in 2025.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Which month in 2025 had the highest total sales revenue?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Which month in 2025 had the highest total sales revenue?"
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q036",
+    "question": "Calculate the average shipping cost per order.",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 637.0055999996111,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Calculate the average shipping cost per order.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the average shipping fee per order from the commerce.shipments table.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Calculate the average shipping fee per order from the commerce.shipments table."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q037",
+    "question": "Which products have the highest inventory levels?",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 727.7506999998877,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Identify the products with the highest inventory levels based on stock on hand.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Retrieve the top 10 products with the highest stock_on_hand from the commerce.inventory table, including product_id, product_name, and stock_on_hand.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Retrieve the top 10 products with the highest stock_on_hand from the commerce.inventory table, including product_id, product_name, and stock_on_hand."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q038",
+    "question": "What percentage of orders were returned in 2025?",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 817.7428000017244,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Calculate the percentage of orders that were returned in 2025.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the percentage of orders that were returned in 2025 by counting distinct order_ids in commerce.returns where return_date is in 2025 and dividing by the total count of distinct order_ids in commerce.orders where order_date is in 2025.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Calculate the percentage of orders that were returned in 2025 by counting distinct order_ids in commerce.returns where return_date is in 2025 and dividing by the total count of distinct order_ids in commerce.orders where order_date is in 2025."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q039",
+    "question": "Compare the total number of orders between 2024 and 2025.",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 677.2203000000445,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Compare the total number of orders between 2024 and 2025.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Count the total number of orders in 2024 and 2025 from the commerce.orders table, grouped by year.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Count the total number of orders in 2024 and 2025 from the commerce.orders table, grouped by year."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q040",
+    "question": "Which customer segment generated the highest average revenue per customer?",
+    "expected_route": "analytics",
+    "predicted_route": "hybrid",
+    "status": "partial",
+    "correct": false,
+    "latency_ms": 1778.9496000004874,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Identify the customer segment with the highest average revenue per customer.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What is the official definition of 'customer segment' in the company's data model or documentation? Does it refer to a specific column in the customers table (e.g., age_group, acquisition_channel) or a derived business group?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the average revenue per customer for each customer segment, and identify the segment with the highest value.\",\n      \"depends_on\": [\n        \"k1\"\n      ],\n      \"inputs\": [\n        {\n          \"task_id\": \"k1\",\n          \"kind\": \"evidence\",\n          \"field\": \"segment_definition\"\n        }\n      ]\n    }\n  ],\n  \"clarification\": null\n}",
+      "```json\n{\n  \"objective\": \"Identify the customer segment with the highest average revenue per customer.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What is the official definition of 'customer segment' in the company's data model or documentation? Does it refer to a specific column in the customers table (e.g., age_group, acquisition_channel) or a derived business group?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the average revenue per customer for each customer segment, and identify the segment with the highest value.\",\n      \"depends_on\": [\n        \"k1\"\n      ],\n      \"inputs\": [\n        {\n          \"task_id\": \"k1\",\n          \"kind\": \"evidence\",\n          \"field\": \"segment_definition\"\n        }\n      ]\n    }\n  ],\n  \"clarification\": null\n}\n```"
+    ],
+    "knowledge_questions": [
+      "What is the official definition of 'customer segment' in the company's data model or documentation? Does it refer to a specific column in the customers table (e.g., age_group, acquisition_channel) or a derived business group?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [
+          "k1"
+        ],
+        "status": "failed",
+        "attempts": 0,
+        "elapsed_ms": 0,
+        "error_type": "ValueError"
+      },
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [
+          "k1"
+        ],
+        "status": "failed",
+        "attempts": 0,
+        "elapsed_ms": 0,
+        "error_type": "NoProgress"
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q041",
+    "question": "Identify the three product categories with the greatest revenue growth.",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 656.4215999987937,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Identify the three product categories with the greatest revenue growth.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the revenue growth for each product category and return the top three categories with the highest growth.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Calculate the revenue growth for each product category and return the top three categories with the highest growth."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q042",
+    "question": "How many transactions used each payment method?",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 688.1348000006255,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Count the number of transactions for each payment method.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Count the number of transactions grouped by payment method from the commerce.payments table.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Count the number of transactions grouped by payment method from the commerce.payments table."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q043",
+    "question": "What is the average delivery time for orders in each region?",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 701.9956999993155,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Calculate the average delivery time for orders in each region.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the average delivery time (difference between delivery_date and ship_date) for orders in each region by joining commerce.orders, commerce.shipments, commerce.customers, and commerce.geography.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Calculate the average delivery time (difference between delivery_date and ship_date) for orders in each region by joining commerce.orders, commerce.shipments, commerce.customers, and commerce.geography."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q044",
+    "question": "Compare the company's delivery policy with actual delivery performance.",
+    "expected_route": "hybrid",
+    "predicted_route": "hybrid",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 1162.4639999990904,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Compare the company's delivery policy with actual delivery performance.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the specific delivery timeframes, service levels, and performance metrics defined in the company's delivery policy?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the average delivery duration (days between ship_date and delivery_date) and the percentage of orders delivered within 3 days from the commerce.shipments table.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the specific delivery timeframes, service levels, and performance metrics defined in the company's delivery policy?"
+    ],
+    "sql_questions": [
+      "Calculate the average delivery duration (days between ship_date and delivery_date) and the percentage of orders delivered within 3 days from the commerce.shipments table."
+    ],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q045",
+    "question": "What does our inventory policy recommend, and which products are currently overstocked?",
+    "expected_route": "hybrid",
+    "predicted_route": "hybrid",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 789.6301000000676,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Determine the inventory policy recommendations for overstocking and identify which products are currently flagged as overstocked in the inventory data.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What does the inventory policy recommend regarding overstocked products?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Which products are currently flagged as overstocked in the inventory table?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What does the inventory policy recommend regarding overstocked products?"
+    ],
+    "sql_questions": [
+      "Which products are currently flagged as overstocked in the inventory table?"
+    ],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q046",
+    "question": "Compare the refund eligibility rules with the number of refunds processed in 2025.",
+    "expected_route": "hybrid",
+    "predicted_route": "hybrid",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 784.3613000004552,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Compare the refund eligibility rules with the number of refunds processed in 2025.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the current refund eligibility rules and policies?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"How many refunds were processed in 2025?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the current refund eligibility rules and policies?"
+    ],
+    "sql_questions": [
+      "How many refunds were processed in 2025?"
+    ],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q047",
+    "question": "According to our sales strategy documents, are the highest-revenue products aligned with company priorities?",
+    "expected_route": "hybrid",
+    "predicted_route": "hybrid",
+    "status": "partial",
+    "correct": true,
+    "latency_ms": 2150.994900001024,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Determine if the highest-revenue products are aligned with company priorities by identifying top revenue products from sales data and checking sales strategy documents for priority definitions.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Identify the top 5 products by total revenue from the commerce.sales and commerce.products tables.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the company's strategic priorities for product focus or revenue alignment as defined in the sales strategy documents?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"k2\",\n      \"agent\": \"knowledge\",\n      \"question\": \"Based on the identified top revenue products and the company's strategic priorities, are the highest-revenue products aligned with those priorities?\",\n      \"depends_on\": [\n        \"s1\",\n        \"k1\"\n      ],\n      \"inputs\": [\n        {\n          \"task_id\": \"s1\",\n          \"kind\": \"rows\",\n          \"field\": \"product_name\"\n        },\n        {\n          \"task_id\": \"k1\",\n          \"kind\": \"evidence\"\n        }\n      ]\n    }\n  ],\n  \"clarification\": null\n}",
+      "```json\n{\n  \"objective\": \"Determine if the highest-revenue products are aligned with company priorities by identifying top revenue products from sales data and checking sales strategy documents for priority definitions.\",\n  \"tasks\": [\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Identify the top 5 products by total revenue from the commerce.sales and commerce.products tables.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the company's strategic priorities for product focus or revenue alignment as defined in the sales strategy documents?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"k2\",\n      \"agent\": \"knowledge\",\n      \"question\": \"Based on the identified top revenue products and the company's strategic priorities, are the highest-revenue products aligned with those priorities?\",\n      \"depends_on\": [\n        \"s1\",\n        \"k1\"\n      ],\n      \"inputs\": [\n        {\n          \"task_id\": \"s1\",\n          \"kind\": \"rows\",\n          \"field\": \"product_name\"\n        },\n        {\n          \"task_id\": \"k1\",\n          \"kind\": \"evidence\",\n          \"field\": null\n        }\n      ]\n    }\n  ],\n  \"clarification\": null\n}\n```"
+    ],
+    "knowledge_questions": [
+      "What are the company's strategic priorities for product focus or revenue alignment as defined in the sales strategy documents?"
+    ],
+    "sql_questions": [
+      "Identify the top 5 products by total revenue from the commerce.sales and commerce.products tables."
+    ],
+    "task_trace": [
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "k2",
+        "agent": "knowledge",
+        "depends_on": [
+          "s1",
+          "k1"
+        ],
+        "status": "failed",
+        "attempts": 0,
+        "elapsed_ms": 0,
+        "error_type": "ValueError"
+      },
+      {
+        "id": "k2",
+        "agent": "knowledge",
+        "depends_on": [
+          "s1",
+          "k1"
+        ],
+        "status": "failed",
+        "attempts": 0,
+        "elapsed_ms": 0,
+        "error_type": "NoProgress"
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q048",
+    "question": "What do our customer service guidelines require, and which products have the most complaints?",
+    "expected_route": "hybrid",
+    "predicted_route": "hybrid",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 764.3738999995549,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Retrieve customer service guidelines from documents and identify products with the highest number of complaints from structured data.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the specific requirements outlined in the customer service guidelines?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Which products have the most complaints, based on return reasons or low ratings in the reviews table?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the specific requirements outlined in the customer service guidelines?"
+    ],
+    "sql_questions": [
+      "Which products have the most complaints, based on return reasons or low ratings in the reviews table?"
+    ],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q049",
+    "question": "Compare the company's shipping standards against average delivery times across regions.",
+    "expected_route": "hybrid",
+    "predicted_route": "hybrid",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 831.1993000006623,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Compare the company's shipping standards against average delivery times across regions.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the company's defined shipping standards, including target delivery times or service level agreements (SLAs) for different regions or service tiers?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the average delivery time (in days) for each region by joining shipments, orders, and geography tables.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the company's defined shipping standards, including target delivery times or service level agreements (SLAs) for different regions or service tiers?"
+    ],
+    "sql_questions": [
+      "Calculate the average delivery time (in days) for each region by joining shipments, orders, and geography tables."
+    ],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  },
+  {
+    "case_id": "Q050",
+    "question": "Based on our inventory management guidelines and current stock levels, which product categories require attention?",
+    "expected_route": "hybrid",
+    "predicted_route": "hybrid",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 1502.9436000004353,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Identify product categories requiring attention by combining inventory management guidelines with current stock level metrics.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the specific thresholds or criteria in the inventory management guidelines that define when a product category requires attention (e.g., low stock, overstock, low fill rate)?\",\n      \"depends_on\": [],\n      \"inputs\": []\n    },\n    {\n      \"id\": \"s1\",\n      \"agent\": \"sql\",\n      \"question\": \"Retrieve the latest inventory snapshot data for all product categories, including stock_on_hand, days_of_supply, fill_rate, stockout_flag, overstock_flag, and reorder_flag.\",\n      \"depends_on\": [],\n      \"inputs\": []\n    }\n  ],\n  \"clarification\": null\n}"
+    ],
+    "knowledge_questions": [
+      "What are the specific thresholds or criteria in the inventory management guidelines that define when a product category requires attention (e.g., low stock, overstock, low fill rate)?"
+    ],
+    "sql_questions": [
+      "Retrieve the latest inventory snapshot data for all product categories, including stock_on_hand, days_of_supply, fill_rate, stockout_flag, overstock_flag, and reorder_flag."
+    ],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      },
+      {
+        "id": "s1",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false,
+    "provider_errors": []
+  }
+]

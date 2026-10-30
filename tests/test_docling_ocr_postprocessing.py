@@ -1,5 +1,6 @@
 import sys
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -55,6 +56,31 @@ class VietOcrPostprocessingTest(unittest.TestCase):
 
         self.assertEqual(recovered, [[1, 1]])
         self.assertEqual(grid[1][1], "-")
+
+
+    def test_repeated_word_ocr_is_removed_only_inside_detected_edge_strip(self):
+        image = np.full((100, 100, 3), 255, dtype=np.uint8)
+        repeated = "Nghi thi thi thi đị thị đị " + "được " * 16
+        elements = [
+            {"text": repeated, "metadata": {
+                "page_number": 1, "bbox": [0, 0, 8, 100],
+                "text_extraction_method": "docling.vietocr",
+            }},
+            {"text": repeated, "metadata": {
+                "page_number": 1, "bbox": [30, 20, 90, 30],
+                "text_extraction_method": "docling.vietocr",
+            }},
+        ]
+        with patch(
+            "document_processing.docling_adapter.scanned.postprocessing.detect_repeated_edge_strips",
+            return_value=[[0.0, 0.0, 0.1, 1.0]],
+        ):
+            cleaned, diagnostics = clean_ocr_elements(
+                elements, [], {1: image}, {1: (100, 100)}, "vietocr"
+            )
+
+        self.assertEqual(cleaned, [elements[1]])
+        self.assertEqual(diagnostics[0]["reason"], "repeated_edge_artifact")
 
     def test_cleanup_removes_long_separator_but_keeps_table_content(self):
         image = np.full((100, 100, 3), 255, dtype=np.uint8)

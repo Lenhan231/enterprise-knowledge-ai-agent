@@ -26,6 +26,7 @@ class InventoryCatalogTest(unittest.TestCase):
             self.assertEqual(resolve_metric_names(question), {'fill_rate'})
         self.assertEqual(resolve_metric_names('Which products have the lowest fill rates in the latest inventory snapshot?'), {'stored_fill_rate'})
         self.assertEqual(resolve_metric_names('số lượng hàng nhập kho'), {'units_received'})
+        self.assertEqual(resolve_metric_names('tỷ lệ đáp ứng thấp nhất tại kỳ tồn kho mới nhất'), {'stored_fill_rate'})
 
     def test_catalog_scope_and_schema(self):
         from core.analytics.metric_ontology import load_inventory_catalog
@@ -85,6 +86,17 @@ class InventoryEnforcementTest(unittest.TestCase):
                'ORDER BY 3, 2 LIMIT 10')
         definitions = self.check(sql, {'stored_fill_rate'}, 'Lowest product fill rates at the latest snapshot')
         self.assertEqual(definitions['stored_fill_rate']['aggregation'], 'value')
+
+    def test_invalid_ambiguous_and_localized_date_requests(self):
+        from core.analytics.metric_validation import validate_metric_request
+        for question, code in [('Stock on hand on 2022-02-30','invalid_date_scope'),
+                               ('Stock on hand at latest snapshot in 2022','ambiguous_snapshot'),
+                               ('Stock on hand in quarter 1 of 2022','snapshot_required')]:
+            with self.subTest(question=question), self.assertRaises(MetricDefinitionError) as error:
+                validate_metric_request(question,{'stock_on_hand'})
+            self.assertEqual(error.exception.code,code)
+        sql = "SELECT i.snapshot_date,SUM(i.stock_on_hand) FROM commerce.inventory AS i WHERE i.snapshot_date='2022-12-31' GROUP BY i.snapshot_date LIMIT 200"
+        self.check(sql,{'stock_on_hand'},'Stock on hand on 31/12/2022')
 
     def test_every_executable_catalog_formula_passes_both_validators(self):
         from sqlglot import parse_one, exp

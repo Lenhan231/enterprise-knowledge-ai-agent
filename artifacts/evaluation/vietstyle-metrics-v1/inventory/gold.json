@@ -1,0 +1,164 @@
+{
+  "source": "FA26AI69 read-only aggregate SELECT, 2026-10-30; frozen for paired benchmark, not runtime constants",
+  "query": "SELECT 'lowest_fill' AS case_id,jsonb_agg(to_jsonb(x)) AS rows FROM (SELECT i.snapshot_date,p.product_name,i.fill_rate FROM commerce.inventory i JOIN commerce.products p USING(product_id) WHERE i.snapshot_date=(SELECT MAX(snapshot_date) FROM commerce.inventory) ORDER BY i.fill_rate,i.product_id LIMIT 10)x\nUNION ALL SELECT 'stock',jsonb_agg(to_jsonb(x)) FROM(SELECT snapshot_date,SUM(stock_on_hand) AS value FROM commerce.inventory WHERE snapshot_date='2022-12-31' GROUP BY snapshot_date)x\nUNION ALL SELECT 'mean_fill',jsonb_agg(to_jsonb(x)) FROM(SELECT i.snapshot_date,p.category,AVG(i.fill_rate) AS value FROM commerce.inventory i JOIN commerce.products p USING(product_id) WHERE snapshot_date=(SELECT MAX(snapshot_date) FROM commerce.inventory) GROUP BY i.snapshot_date,p.category)x\nUNION ALL SELECT 'history',jsonb_agg(to_jsonb(x)) FROM(SELECT snapshot_date,SUM(stock_on_hand) AS value FROM commerce.inventory WHERE snapshot_date>='2022-01-01' AND snapshot_date<'2023-01-01' GROUP BY snapshot_date ORDER BY snapshot_date)x\nUNION ALL SELECT 'received',jsonb_agg(to_jsonb(x)) FROM(SELECT snapshot_date,SUM(units_received) AS value FROM commerce.inventory WHERE snapshot_date=(SELECT MAX(snapshot_date) FROM commerce.inventory) GROUP BY snapshot_date)x\nUNION ALL SELECT 'stockout',jsonb_agg(to_jsonb(x)) FROM(SELECT i.snapshot_date,p.category,COUNT(*) FILTER(WHERE i.stockout_flag IS TRUE)::numeric/NULLIF(COUNT(*),0) AS value FROM commerce.inventory i JOIN commerce.products p USING(product_id) WHERE snapshot_date=(SELECT MAX(snapshot_date) FROM commerce.inventory) GROUP BY i.snapshot_date,p.category)x",
+  "cases": {
+    "lowest_fill": [
+      {
+        "fill_rate": 0.1667,
+        "product_name": "HanoiStreet RP-08",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "fill_rate": 0.2,
+        "product_name": "HanoiStreet RP-07",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "fill_rate": 0.4333,
+        "product_name": "MekongFit UE-13",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "fill_rate": 0.6333,
+        "product_name": "SaigonFlex UC-33",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "fill_rate": 0.8333,
+        "product_name": "VietMode RS-05",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "fill_rate": 0.8667,
+        "product_name": "SaigonFlex UM-10",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "fill_rate": 0.9,
+        "product_name": "SaigonFlex UM-57",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "fill_rate": 0.9333,
+        "product_name": "DragonWear MA-03",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "fill_rate": 0.9333,
+        "product_name": "DragonWear MA-08",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "fill_rate": 0.9333,
+        "product_name": "DragonWear MA-18",
+        "snapshot_date": "2022-12-31"
+      }
+    ],
+    "stock": [
+      {
+        "value": 104235,
+        "snapshot_date": "2022-12-31"
+      }
+    ],
+    "mean_fill": [
+      {
+        "value": 0.9719704545454545,
+        "category": "GenZ",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "value": 0.9608325,
+        "category": "Casual",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "value": 0.9567152777777778,
+        "category": "Outdoor",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "value": 0.9622474489795918,
+        "category": "Streetwear",
+        "snapshot_date": "2022-12-31"
+      }
+    ],
+    "history": [
+      {
+        "value": 100332,
+        "snapshot_date": "2022-01-31"
+      },
+      {
+        "value": 106405,
+        "snapshot_date": "2022-02-28"
+      },
+      {
+        "value": 111674,
+        "snapshot_date": "2022-03-31"
+      },
+      {
+        "value": 116977,
+        "snapshot_date": "2022-04-30"
+      },
+      {
+        "value": 116939,
+        "snapshot_date": "2022-05-31"
+      },
+      {
+        "value": 109700,
+        "snapshot_date": "2022-06-30"
+      },
+      {
+        "value": 102083,
+        "snapshot_date": "2022-07-31"
+      },
+      {
+        "value": 104884,
+        "snapshot_date": "2022-08-31"
+      },
+      {
+        "value": 107309,
+        "snapshot_date": "2022-09-30"
+      },
+      {
+        "value": 104255,
+        "snapshot_date": "2022-10-31"
+      },
+      {
+        "value": 95003,
+        "snapshot_date": "2022-11-30"
+      },
+      {
+        "value": 104235,
+        "snapshot_date": "2022-12-31"
+      }
+    ],
+    "received": [
+      {
+        "value": 4081,
+        "snapshot_date": "2022-12-31"
+      }
+    ],
+    "stockout": [
+      {
+        "value": 0.5681818181818182,
+        "category": "GenZ",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "value": 0.775,
+        "category": "Casual",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "value": 0.6597222222222222,
+        "category": "Outdoor",
+        "snapshot_date": "2022-12-31"
+      },
+      {
+        "value": 0.6836734693877551,
+        "category": "Streetwear",
+        "snapshot_date": "2022-12-31"
+      }
+    ]
+  }
+}

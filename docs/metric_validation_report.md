@@ -1,79 +1,124 @@
-# Metric validation report
+# Inventory metric validation report
 
-Status: pre-implementation baseline, 2026-10-30. Application code, models, Report generation, database records, RLS and migrations are unchanged.
+Completed on branch `QuocAn`; baseline `78ddb20`, runtime implementation `fa74b34`. Scope is Inventory Management only. The catalog contains **21 entries: 15 executable team-defined conventions and six unresolved candidates**. Team acceptance permits these historical analyses; no official business-owner approval is claimed.
 
-## Existing tests
+## Inspection and implementation
 
-Executed through the repository's Python virtual environment and standard-library unittest runner, with LangSmith tracing disabled:
+Read-only Supabase metadata/aggregate queries verified inventory/product keys, relationships, grain, coverage, nulls and distributions. Original preflight evidence is immutable. Snapshot coverage is monthly through 2022-12-31, with 60,247 product-snapshot observations; missing rows are unknown. Recorded indicators overlap and movement units do not consistently reconcile to order units. See [assumptions and unresolved definitions](business_metric_dictionary.md).
 
-- test_sql_generation
-- test_sql_metric_definitions
-- test_sql_join_duplication
-- test_report_agent
-- test_report_reliability
-- test_report_orchestration
-- test_report_provider
-- test_orchestration_contracts
-- test_orchestration_clients
+The existing ontology loads versioned YAML. Relevant definitions and approved relationships reach SQL generation; inventory formula, source/dimension, grain and date checks run before execution. The agent asks targeted clarifications for missing historical scope or unresolved definitions. Result/evidence metadata retains dates and governance. Report source collection has minimal compatibility changes; section generation is unchanged. Verified permissions, approved schemas/columns, SQL AST/parameter checks, safe joins, read-only transactions and result limits remain in force. No validator-bypass fallback exists.
 
-Result: **84 tests run, 83 passed, one failure, zero errors or skips**. The failing test is `test_orchestration_clients.WebConversationTest.test_inflight_answer_cannot_cross_a_conversation_reset`. Its mock template input lacks `.files`, causing the existing UI setup call to raise before the conversation-reset assertion. This failure exists before any task implementation and was not altered. Details: [offline-baseline.json](../artifacts/evaluation/vietstyle-metrics-v1/preflight/offline-baseline.json); the adjacent ignored `.log` retains the full local output.
+Review corrected shared-allowlist mutation during prompt assembly, rejected OR-based false snapshot proof, enforced actual unfiltered database-latest dates, and prevented a generated subset of a year from masquerading as full-year history. Flag ratios explicitly count inventory product IDs through the safe product dimension join; existing conservative COUNT(*) fanout protection remains unchanged.
 
-An additional 30 tests all passed in `test_analytics_agents`, `test_bounded_execution`, `test_request_planning`, `test_report_grounding`, `test_report_delivery` and `test_report_templates`. Details: [contracts-baseline.json](../artifacts/evaluation/vietstyle-metrics-v1/preflight/contracts-baseline.json). Combined baseline: **114 tests, 113 passes and the one existing fixture failure**.
+## Tests and limits
 
-Full discovery and the new deterministic semantic regression suite have not run at this pre-implementation review gate. They must run after implementation; do not interpret this focused baseline as a clean full repository suite.
+- Main focused suite: **134 tests, 133 passes, one existing failure**, zero errors/skips. Includes all 20 new inventory/catalog/evidence/scoring tests, which pass. Covers English/Vietnamese aliases, catalog schema/governance, every executable formula, numeric fixtures, missing products/zero denominators, scalar vs aggregate grain, date/snapshot proof, safe joins, unsupported dimensions/aggregates, unresolved/unapproved rejection, RBAC ordering and both Report collection paths.
+- Additional compatibility suite: **24 tests, 16 passes, one failure and seven errors**. Inventory dashboard, route evaluation and agentic tests pass. The eight failures/errors are in the old financial `test_sql_analytics` module: obsolete positional SQLAgent constructor, retired authorized-financial CTE expectations and matching error-message expectations. Running unchanged source `78ddb20` against the same four unchanged modules reproduces all eight.
+- Combined selected verification: **158 tests, 149 passes, two failures and seven errors**. The original-source baseline for these existing modules is 138 tests, 129 passes and the same nine problems. No new regression is observed in the selected modules. [Test comparison](../artifacts/evaluation/vietstyle-metrics-v1/inventory/test-comparison.json).
+- The other existing failure is `test_orchestration_clients.WebConversationTest.test_inflight_answer_cannot_cross_a_conversation_reset`: its mock input has no `.files`, so UI setup raises before the reset assertion. It predates implementation.
+- Full discovery was attempted with offline model flags, tracing disabled and local PostgreSQL integration tests disabled. **Both the original-source diagnostic and changed-source runs timed out at 150 seconds**, during retrieval tests; this is not a full-suite pass. The original-source diagnostic uses the current test tree, including expected failures from new semantic tests. Partial comparison excludes those new tests. There are 46 common failing/error status lines and no changed-source-only problem line in the observed overlap; original-only lines include cases the changed run never reached and one updated canonical fixture, not demonstrated improvements. Partial log counts must not be treated as completed test totals.
+- Import diagnostics identify existing removed-symbol imports (`_financial_retrieval_query`, `_RESPONSE_CACHE`), missing repository modules (`tools.ingestion.generate_commerce_demo_policies`, `document_processing.pipelines`) and legacy financial `source_labels` assumptions. No unrelated repair was attempted. Local ignored `.log` files retain detailed output; committed JSON preserves test names, limits and diagnostics.
+- Python compilation and `git diff --check` pass. YAML schema/source-column checks pass. The dependency lock was refreshed offline without a version upgrade. Docker packaging was inspected for the semantic data copy; no Docker image was built.
 
-## Live SQL baseline, unchanged model
+## Paired live benchmark
 
-[llm-before.json](../artifacts/evaluation/vietstyle-metrics-v1/preflight/llm-before.json) freezes the questions, original plans/repair prompts, raw generation outputs, returned rows, stage outcomes, timing, usage, commit and source hashes.
+[Before](../artifacts/evaluation/vietstyle-metrics-v1/inventory/before.json) uses archived unchanged source `78ddb20`. [Final after](../artifacts/evaluation/vietstyle-metrics-v1/inventory/after-complete.json) uses runtime `fa74b34`. Both use the same eight inventory questions, `qwen/qwen3.8-27b`, temperature 0, reasoning disabled, 1,000 output tokens, sequential 20-second pacing and the existing read-only repository. Case hash and model/settings equality are asserted. No model change, fine-tuning, report synthesis or production write probe occurred.
 
-Environment: `qwen/qwen3.8-27b`, temperature 0, reasoning disabled as configured by the existing provider, maximum 1,000 output tokens, sequential cases with 20 seconds between cases. This runs SQLAnalyticsAgent only, without answer/report synthesis. The existing analytics reader verifies its role and runs read-only queries. No live UPDATE/write probe was run.
+Calculations are checked against freshly queried [frozen aggregate gold](../artifacts/evaluation/vietstyle-metrics-v1/inventory/gold.json), not hardcoded application values. A passing metric requires numeric/group/date agreement **and** canonical formula/date/dimension validation. Fill ranking permits ties at the cutoff. A matching number alone fails semantic scoring. Saved plans are replayed through current validators without executing rejected SQL. Generation/SQL-validation counts use final strict JSON plans and the current safety validator; they are reported separately from original-agent execution.
 
-| Case | Before outcome | Meaning |
+| Measure | Before | Final after |
 | --- | --- | --- |
-| Q5 monthly revenue and gross profit, 2022 | Executed, 12 rows | Existing source-sales definition; not proof of net revenue |
-| Q6 top products by units, category and sales value | Clarification | Day-grain revenue conflict; suggests inventory units as an alternative |
-| Q7 category return rates | Clarification | Correctly asks order-based versus unit-based definition |
-| Q8 lowest product fill rates, latest snapshot | Rejected: MetricDefinitionError | Unsupported output dimension; no query executed |
-| Q9 average delivery time by shipping month, 2022 | Executed, 12 rows | Ship-date cohort |
-| Orders by status | Executed, six rows | No recognized canonical metric in baseline |
-| Recorded payment value | Executed, one row | No recognized canonical metric in baseline |
-| Unsupported website conversion | Clarification | No approved definition/attribution; arbitrary user formula must not create authorization |
+| Supported questions producing strict JSON SQL | 5/6 | 5/6 |
+| Supported plans passing current SQL safety validation | 4/6 | 5/6 |
+| Supported questions executed | 1/6 | 5/6 |
+| Executed calculations matching gold | 1/6 | 5/6 |
+| Full current metric/date/evidence correctness | 0/6 | 5/6 |
+| Unresolved questions safely withheld | 2/2 | 2/2 |
+| Targeted clarification with expected structured code | 0/2 | 2/2 |
 
-Four executions, three clarifications and one rejection are outcome counts only. Generation success, AST validation, execution accuracy, metric correctness and clarification quality require separate scoring. There is no after result yet.
+The original stock total matched the number but omitted the historical date from returned evidence, so it earns calculation credit and fails the stricter semantic/evidence score. Before weighted-fill clarification already asked about weighting, but suggested defining a custom calculation; it receives no structured catalog-clarification credit. This is not a claim that every before clarification was generic or unsafe.
 
-## Database reconciliation and risks
+| Case | Final outcome |
+| --- | --- |
+| Q8 lowest stored product fill rates | Correct ten historical product rates; exact source values, not AVG by product. |
+| Stock on hand, 2022-12-31 | Correct 104,235, with snapshot date. |
+| Mean stored fill rate by category | Four correct unweighted category means. |
+| Stock by snapshot in 2022 | Twelve correct separately dated totals; no cross-date balance sum. |
+| Units received, latest snapshot | Correct 4,081 recorded movement units, with snapshot date. |
+| Stockout share by category | Final run rejected Markdown-fenced JSON twice; no unsafe execution. The immediately preceding run executed four correct category shares. |
+| Reorder quantity | Pre-generation `metric_unresolved`; missing operational inputs explained. |
+| Demand-weighted fill rate | Pre-generation `metric_unresolved`; missing numerator/denominator and weights explained. |
 
-The [profile evidence](../artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json) rechecks the source totals, types, keys, NULLs, date ranges, states, inventory coverage, monetary differences and fanout. Specifically:
+Median elapsed time across eight cases: 1.39s before, 2.94s after. Across six supported cases: 1.39s before, 3.15s after. Most before cases failed early; these medians do not compare equally successful workloads. Unresolved after cases take approximately 1?2 ms and zero model calls. All timings exclude deliberate inter-case pacing.
 
-- Source revenue 16,430,476,585.53; recorded payments and calculated net item value each 15,680,869,265.43. Equality is not metric equivalence.
-- A payment/item fanout SELECT produces an invalid inflated total of 17,106,421,854.80. Preserve rejection of this pattern in application validation.
-- All inventory rows are month-end snapshots, latest 2022-12-31. Latest coverage is 424 of 2,412 catalog IDs, not the complete catalog.
-- Sixteen order/product pairs have multiple item lines. Two return pairs have repeated events. Correct return-quantity calculations require pair-level aggregation and uniqueness proofs.
-- Signup chronology and incomplete traffic channel-day coverage constrain acquisition and attribution claims.
-- Controlled policy excerpts require unknown currency, compatible grain, explicit historical dates, read-only authority, evidence and clarification.
+The benefit comes from explicit team semantics, alias corrections, relevant prompts, dated evidence and deterministic enforcement. No benefit is attributed to a different model. This small live sample cannot establish a general accuracy rate. The earlier `after-reviewed.json` run achieved 6/6 supported calculations and two targeted clarifications; the final repeat achieved 5/6 because the provider returned Markdown fences despite unchanged settings. Preserve all trials (`after.json`, `after-final.json`, `after-reviewed.json`, `after-complete.json`) rather than selecting the best score. The remaining strict JSON formatting limitation is reported, not bypassed. Raw responses, repairs, returned rows, source hashes and per-case timing are retained.
 
-## Planned verification after review
+Reproduce without overwriting evidence:
 
-- Catalog schema, unique IDs/versions, bilingual/plural aliases, status/provenance separation, valid column references, unresolved execution rejection.
-- Real calculations on small deterministic fixtures, including orders with multiple lines, repeated returns, cancellations, partial returns, zero denominators, missing snapshots and varied SKU coverage.
-- Per-metric dimensions/source lineage, required filters, explicit request-period scope, scalar stored-value versus aggregate semantics, and safe latest-snapshot behavior.
-- Q6: product units and value use the reviewed transaction definition; never substitute inventory units without an explicit choice.
-- Q7: bare return rate clarifies; explicit category order/unit variants calculate the correct cohort and denominator without fanout.
-- Q8: historical latest-snapshot SKU ranking returns the correct stored fill values and as-of scope.
-- RBAC denial happens before provider or execution; malformed/unapproved SQL, unsafe joins, writes and unsupported aggregates never execute.
-- Analytics summary and Report source contracts retain limitations and clarification without changing Report generation behavior.
-- Replay frozen before-case outputs through the new validator to isolate enforcement changes, then run the same-model live after benchmark. Record provider failures and scope changes rather than attributing them to semantic improvement.
+```powershell
+.venv/Scripts/python.exe scripts/agents/benchmark_inventory_metrics.py --source-ref 78ddb20 --output NEW-before.json
+.venv/Scripts/python.exe scripts/agents/benchmark_inventory_metrics.py --output NEW-after.json
+.venv/Scripts/python.exe scripts/agents/compare_inventory_metrics.py --before NEW-before.json --after NEW-after.json --gold artifacts/evaluation/vietstyle-metrics-v1/inventory/gold.json --output NEW-comparison.json
+.venv/Scripts/python.exe -m unittest discover -s tests -p test_inventory_metric_dictionary.py -v
+```
 
-## Files added in this inspection phase
+These benchmark commands use the configured provider and database reader. They run read-only SELECTs and refuse to overwrite their output. The original broader smoke results remain in `preflight/`; out-of-scope sales/return cases do not affect the inventory comparison.
 
-| File | Reason and contents | Checks/results |
+## Changed-file accountability
+
+Verification labels: **I** = 20 inventory tests pass; **F** = focused suite 133/134 with the known UI fixture failure; **C** = compatibility suite 16/24 with all eight old financial failures reproduced before; **B** = live paired runs and frozen-gold scoring; **S** = compilation, schema/JSON/whitespace checks. Documentation was reviewed against the implementation and evidence. No clean full-suite or Docker-build claim is made.
+
+| File | Reason and change | Checks/results |
 | --- | --- | --- |
-| CAPABILITY-MAP-business-metric-dictionary.md | Proposed module responsibilities, dependencies and initial assumptions | Human review pending |
-| docs/business_metric_dictionary.md | Existing path inspection, live data findings, catalog shape, conventions and unresolved decisions | Cross-referenced to SELECT evidence and baseline |
-| docs/metric_validation_report.md | This pre-implementation report and verification plan | 84 existing focused tests; results above |
-| artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json | SQL/results and selected policy evidence | Read-only metadata/aggregates; no customer rows |
-| artifacts/evaluation/vietstyle-metrics-v1/preflight/offline-baseline.json | Existing test IDs and outcomes | 83 pass, one existing fixture failure |
-| artifacts/evaluation/vietstyle-metrics-v1/preflight/contracts-baseline.json | Additional analytics, routing, planning and Report contract baseline | All 30 pass |
-| artifacts/evaluation/vietstyle-metrics-v1/preflight/llm-before.json | Frozen original-model baseline, plans and returned data | Eight cases completed; no provider/model changes |
+| `CAPABILITY-MAP-business-metric-dictionary.md` | Scope the approved modules to inventory; preserve unrelated services. | Documentation review; S pass |
+| `SPEC-metric-catalog.md` | Record catalog schema, governance and bilingual contract. | I pass; documentation review |
+| `SPEC-metric-enforcement.md` | Record formula, dimension, grain, snapshot and clarification acceptance criteria. | I pass; documentation review |
+| `SPEC-metric-evaluation.md` | Record deterministic evaluation and unchanged-model boundaries. | I/B pass with stated generation limitation |
+| `data/semantic/vietstyle_metrics_v1.yaml` | Provide 15 executable definitions and six unresolved candidates with explicit assumptions. | I/S pass; B five final supported cases correct |
+| `data/evaluation/inventory_metric_dictionary_cases.json` | Freeze six supported and two unresolved inventory questions. | Unique IDs/case hash checked; B completed |
+| `docker/Dockerfile.backend-api` | Copy runtime semantic YAML into the backend image. | Static packaging inspection; image build not run |
+| `pyproject.toml` | Declare already installed PyYAML as a direct runtime dependency. | Offline lock refresh and runtime imports pass |
+| `uv.lock` | Record the direct dependency without upgrading its locked version. | Offline lock refresh pass |
+| `src/core/analytics/metric_ontology.py` | Load validated inventory YAML into the existing ontology; normalize bilingual/plural aliases and stored-rate rankings. | I pass; F/C known baseline issues only |
+| `src/core/analytics/metric_validation.py` | Validate governance, canonical formulas, source dimensions, scalar/aggregate grain, snapshot/date scope and coded clarifications. | I pass; F known fixture failure; B final five correct |
+| `src/core/analytics/text_to_sql.py` | Reuse strict snapshot proof and supply relevant inventory definitions/schema without mutating the allowlist. | I/F safety tests pass; B formatting rejection retained |
+| `src/core/prompts/sql.py` | Explain exact-date evidence, canonical joins, explicit source-grain counts and historical conventions. | I pass; B final five executions |
+| `src/core/agents/sql_analytics_agent.py` | Validate requests before generation and retain governance/date metadata plus compatible errors. | I/F permission and execution tests pass |
+| `src/core/agents/execution.py` | Retain metrics/limitations when collecting SQL task results for reports. | I direct/orchestrated evidence tests pass; F report tests pass |
+| `src/core/reports/sources.py` | Pass inventory definitions and historical limitations into existing evidence context. | I both collection paths pass; F report tests pass |
+| `scripts/agents/benchmark_inventory_metrics.py` | Record immutable original-source/changed-source live runs with matching model/settings. | B completed; S pass; output overwrite refusal |
+| `scripts/agents/compare_inventory_metrics.py` | Score numbers separately from semantics, dates, clarifications and latency. | I scoring regressions pass; B comparisons complete |
+| `tests/test_inventory_metric_dictionary.py` | Add 20 deterministic catalog, calculation, safety, clarification, report-context and scoring regressions. | 20/20 pass |
+| `tests/test_sql_metric_definitions.py` | Keep legacy coverage while aligning inventory formulas and returned snapshot evidence with the catalog. | All tests in this module pass in F |
+| `tasks/inventory-metric-dictionary-plan.md` | Track the three approved, verified implementation slices. | Completed; original tasks/plan.md preserved |
+| `docs/business_metric_dictionary.md` | Document inventory-only formulas, governance, source inconsistencies and unresolved business decisions. | Documentation/evidence review; S pass |
+| `docs/metric_validation_report.md` | Report measured results, limitations and every changed file. | Evidence/JSON review; S pass |
 
-No runtime files have been changed. The executable catalog, enforcement changes, new tests and before/after comparison remain to be implemented after the invoked specification review gates.
+Evidence files are test deliverables, not runtime registries. All JSON files parse successfully; benchmark files were retained without overwrite. Logs are local ignored files.
+
+| File | Purpose and verification |
+| --- | --- |
+| `artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json` | Original read-only schema/profile/policy evidence; used for catalog assumptions; preserved. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/preflight/offline-baseline.json` | Original 84-test baseline, including known UI failure; preserved. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/preflight/contracts-baseline.json` | Original 30 passing contract tests; preserved. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/preflight/llm-before.json` | Original broader smoke evidence; preserved and excluded from scoped scoring. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/before.json` | Original-source eight-case inventory benchmark; B completed. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/after.json` | First implementation trial; failures retained as evidence. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/after-final.json` | Intermediate prompt trial; five supported executions; retained. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/after-reviewed.json` | Six supported executions with correct calculations; retained. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/after-complete.json` | Final runtime repeat: five correct supported executions, two targeted clarifications; fenced JSON rejection retained. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/gold.json` | Read-only aggregate query and deterministic expected values; B verified. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/comparison.json` | Intermediate before/reviewed-after scoring; preserved. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/comparison-complete.json` | Final paired stage, calculation, semantic and latency comparison; scoring tests pass. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/focused-tests.json` | 134-test main suite outcomes and module list. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/compatibility-baseline.json` | Original-source 24-test compatibility outcomes. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/compatibility-tests.json` | Changed-source same 24 tests; same failures/errors. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/test-comparison.json` | Selected-module aggregate comparison; existing failure/error sets asserted equal. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/full-baseline.json` | 150-second original-source diagnostic timeout and environment limits. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/full-discovery.json` | 150-second changed-source discovery timeout and environment limits. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/full-partial-comparison.json` | Observed common/one-sided problem lines; explicitly incomplete and excludes new inventory tests. JSON parse pass. |
+| `artifacts/evaluation/vietstyle-metrics-v1/inventory/import-diagnostics.json` | Concrete existing missing modules/symbols and legacy-field import errors. JSON parse pass. |
+
+## Remaining review and risk
+
+Demand-weighted fill rate, reorder quantity/point, safety stock, accuracy and turnover require business evidence. Source flag thresholds, stored rate formulas and movement-period semantics remain undocumented. Inventory is historical through 2022, with incomplete product coverage per snapshot. Language resolution is conservative and may request exact dates; a semantic catalog cannot guarantee LLM formatting or interpretation. The full repository suite remains incomplete with pre-existing failures; Docker image build and live report synthesis were not run. No database, RLS, migration, model or Report-generation changes were made.

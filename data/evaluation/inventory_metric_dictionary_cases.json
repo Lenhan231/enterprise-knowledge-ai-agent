@@ -1,0 +1,10 @@
+[
+  {"id":"lowest_fill","question":"Which 10 products had the lowest fill rates in the latest inventory snapshot?","field":"fill_rate","dimensions":[]},
+  {"id":"stock","question":"What was total stock on hand on 2022-12-31?","field":"stock_on_hand","dimensions":[]},
+  {"id":"mean_fill","question":"Show average stored fill rate by category at the latest available inventory snapshot.","field":"fill_rate","dimensions":["category"]},
+  {"id":"history","question":"Show stock on hand separately by inventory snapshot for 2022.","field":"stock_on_hand","dimensions":["snapshot_date"]},
+  {"id":"received","question":"How many units were received in the latest inventory snapshot?","field":"units_received","dimensions":[]},
+  {"id":"stockout","question":"Show stockout rate by category at the latest inventory snapshot.","field":"stockout_flag","dimensions":["category"]},
+  {"id":"reorder","question":"What quantity should we reorder for the latest inventory snapshot?","clarification_code":"metric_unresolved"},
+  {"id":"weighted_fill","question":"What is the demand-weighted fill rate on 2022-12-31?","clarification_code":"metric_unresolved"}
+]

@@ -1,0 +1,22 @@
+{
+  "tests_run": 24,
+  "failures": [
+    "test_sql_analytics.AnalyticsSqlSafetyTest.test_financial_analytics_must_keep_metric_and_year_dimensions"
+  ],
+  "errors": [
+    "test_sql_analytics.AnalyticsSqlSafetyTest.test_accepts_aggregate_select_and_caps_limit",
+    "test_sql_analytics.AnalyticsSqlSafetyTest.test_accepts_case_expressions_inside_allowlisted_aggregates",
+    "test_sql_analytics.AnalyticsSqlSafetyTest.test_agent_generates_sql_executes_it_and_returns_provenance",
+    "test_sql_analytics.AnalyticsSqlSafetyTest.test_document_analytics_cites_visible_documents_not_unrelated_metric_rows",
+    "test_sql_analytics.AnalyticsSqlSafetyTest.test_empty_aggregate_result_with_null_evidence_is_reported_as_no_verified_data",
+    "test_sql_analytics.AnalyticsSqlSafetyTest.test_metric_result_cites_only_matching_metric_and_year_within_same_document",
+    "test_sql_analytics.AnalyticsSqlSafetyTest.test_repository_executes_inside_read_only_timeout_and_role_filtered_ctes"
+  ],
+  "skipped": [],
+  "modules": [
+    "test_sql_analytics",
+    "test_inventory_dashboard",
+    "test_agent_route_evaluation",
+    "test_agentic_agent"
+  ]
+}

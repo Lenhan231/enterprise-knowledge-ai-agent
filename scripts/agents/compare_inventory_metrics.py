@@ -81,6 +81,8 @@ def compare(before, after, gold):
         cases = [score_case(case, gold['cases']) for case in run['cases']]
         report[name] = {'cases': cases, 'totals': {key: sum(bool(c.get(key)) for c in cases) for key in
                         ('generated_sql','sql_validation','executed','calculation','metric_correct','targeted_clarification')},
+                        'supported_totals': {key: sum(bool(c.get(key)) for c in cases if 'targeted_clarification' not in c)
+                                             for key in ('generated_sql','sql_validation','executed','calculation','metric_correct')},
                         'median_elapsed_ms': statistics.median(c['elapsed_ms'] for c in cases),
                         'supported_median_ms': statistics.median(c['elapsed_ms'] for c in cases if 'targeted_clarification' not in c)}
     return report

@@ -1,0 +1,250 @@
+{
+  "settings": {
+    "model": "qwen/qwen3.8-27b",
+    "temperature": 0,
+    "reasoning_effort": "none",
+    "max_output_tokens": 1000,
+    "case_sha256": "8c31f828a9eaa6b2de60e35c941920613756d8d4b3817784dcce951db659e2bc",
+    "pace_seconds": 20
+  },
+  "supported_cases": 6,
+  "unresolved_cases": 2,
+  "before": {
+    "cases": [
+      {
+        "id": "lowest_fill",
+        "elapsed_ms": 3035.48,
+        "generation_calls": 2,
+        "executed": false,
+        "clarification": false,
+        "current_semantics": false,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": false,
+        "metric_correct": false
+      },
+      {
+        "id": "stock",
+        "elapsed_ms": 3029.32,
+        "generation_calls": 2,
+        "executed": true,
+        "clarification": false,
+        "current_semantics": false,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": true,
+        "metric_correct": false
+      },
+      {
+        "id": "mean_fill",
+        "elapsed_ms": 1321.78,
+        "generation_calls": 2,
+        "executed": false,
+        "clarification": false,
+        "current_semantics": false,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": false,
+        "metric_correct": false
+      },
+      {
+        "id": "history",
+        "elapsed_ms": 1210.89,
+        "generation_calls": 2,
+        "executed": false,
+        "clarification": true,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": false,
+        "calculation": false,
+        "metric_correct": false
+      },
+      {
+        "id": "received",
+        "elapsed_ms": 1210.96,
+        "generation_calls": 2,
+        "executed": false,
+        "clarification": false,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": true,
+        "calculation": false,
+        "metric_correct": false
+      },
+      {
+        "id": "stockout",
+        "elapsed_ms": 1449.92,
+        "generation_calls": 2,
+        "executed": false,
+        "clarification": false,
+        "current_semantics": false,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": false,
+        "metric_correct": false
+      },
+      {
+        "id": "reorder",
+        "elapsed_ms": 2633.64,
+        "generation_calls": 2,
+        "executed": false,
+        "clarification": false,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": true,
+        "calculation": false,
+        "metric_correct": false,
+        "targeted_clarification": false
+      },
+      {
+        "id": "weighted_fill",
+        "elapsed_ms": 671.6,
+        "generation_calls": 1,
+        "executed": false,
+        "clarification": true,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": false,
+        "calculation": false,
+        "metric_correct": false,
+        "targeted_clarification": false
+      }
+    ],
+    "totals": {
+      "generated_sql": 6,
+      "sql_validation": 4,
+      "executed": 1,
+      "calculation": 1,
+      "metric_correct": 0,
+      "targeted_clarification": 0
+    },
+    "supported_totals": {
+      "generated_sql": 5,
+      "sql_validation": 4,
+      "executed": 1,
+      "calculation": 1,
+      "metric_correct": 0
+    },
+    "median_elapsed_ms": 1385.85,
+    "supported_median_ms": 1385.85
+  },
+  "after": {
+    "cases": [
+      {
+        "id": "lowest_fill",
+        "elapsed_ms": 6519.56,
+        "generation_calls": 2,
+        "executed": true,
+        "clarification": false,
+        "current_semantics": true,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": true,
+        "metric_correct": true
+      },
+      {
+        "id": "stock",
+        "elapsed_ms": 2962.13,
+        "generation_calls": 1,
+        "executed": true,
+        "clarification": false,
+        "current_semantics": true,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": true,
+        "metric_correct": true
+      },
+      {
+        "id": "mean_fill",
+        "elapsed_ms": 3463.89,
+        "generation_calls": 2,
+        "executed": true,
+        "clarification": false,
+        "current_semantics": true,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": true,
+        "metric_correct": true
+      },
+      {
+        "id": "history",
+        "elapsed_ms": 3346.28,
+        "generation_calls": 2,
+        "executed": true,
+        "clarification": false,
+        "current_semantics": true,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": true,
+        "metric_correct": true
+      },
+      {
+        "id": "received",
+        "elapsed_ms": 2918.79,
+        "generation_calls": 1,
+        "executed": true,
+        "clarification": false,
+        "current_semantics": true,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": true,
+        "metric_correct": true
+      },
+      {
+        "id": "stockout",
+        "elapsed_ms": 1586.21,
+        "generation_calls": 2,
+        "executed": false,
+        "clarification": false,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": false,
+        "calculation": false,
+        "metric_correct": false
+      },
+      {
+        "id": "reorder",
+        "elapsed_ms": 1.37,
+        "generation_calls": 0,
+        "executed": false,
+        "clarification": true,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": false,
+        "calculation": false,
+        "metric_correct": false,
+        "targeted_clarification": true
+      },
+      {
+        "id": "weighted_fill",
+        "elapsed_ms": 1.7,
+        "generation_calls": 0,
+        "executed": false,
+        "clarification": true,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": false,
+        "calculation": false,
+        "metric_correct": false,
+        "targeted_clarification": true
+      }
+    ],
+    "totals": {
+      "generated_sql": 5,
+      "sql_validation": 5,
+      "executed": 5,
+      "calculation": 5,
+      "metric_correct": 5,
+      "targeted_clarification": 2
+    },
+    "supported_totals": {
+      "generated_sql": 5,
+      "sql_validation": 5,
+      "executed": 5,
+      "calculation": 5,
+      "metric_correct": 5
+    },
+    "median_elapsed_ms": 2940.46,
+    "supported_median_ms": 3154.205
+  }
+}

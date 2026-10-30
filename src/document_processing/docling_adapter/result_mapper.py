@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import logging
 import math
 from typing import Any
 
 from document_processing.element_taxonomy import normalize_element_label
 from .digital_born.docx_semantics import apply_docx_semantics, docx_text_key
+from .scanned.postprocessing import clean_ocr_elements, recover_empty_cell_dashes
+
+_log = logging.getLogger(__name__)
 
 def map_result(
     result: Any,
@@ -25,6 +29,8 @@ def map_result(
     section_path: list[str] = []
     table_number_by_page: dict[int | None, int] = {}
     layout_table_cell_texts: set[str] = set()
+    page_images: dict[int, Any] = {}
+    dash_recovery: dict[int, list[list[int]]] = {}
     ocr_engine = str(config.get("docling_ocr_engine", "tesseract")).lower()
     included_content_layers = None
     if source_format in {"docx", "pdf", "png", "jpg", "jpeg", "tif", "tiff"}:
@@ -139,6 +145,7 @@ def map_result(
             data = item.data
             row_count, column_count = int(data.num_rows), int(data.num_cols)
             grid = [[""] * column_count for _ in range(row_count)]
+            recovered: list[list[int]] = []
             header_rows: set[int] = set()
             for cell in data.table_cells:
                 row = int(cell.start_row_offset_idx)
@@ -147,6 +154,15 @@ def map_result(
                     grid[row][column] = _cell(cell.text)
                     if cell.column_header:
                         header_rows.add(row)
+            if do_ocr and page is not None and row_count and column_count:
+                image = _get_page_image(page, page_images, page_number)
+                if image is not None:
+                    recovered = recover_empty_cell_dashes(
+                        list(data.table_cells), grid, image,
+                        float(page_size.width), float(page_size.height),
+                    )
+                    if recovered:
+                        dash_recovery[int(page_number)] = dash_recovery.get(int(page_number), []) + recovered
             has_header = bool(header_rows and 0 in header_rows)
             if has_header:
                 columns = [value or f"column_{index + 1}" for index, value in enumerate(grid[0])]
@@ -185,6 +201,11 @@ def map_result(
                     "table_structure_model": "Docling TableFormer",
                 },
             }
+            if recovered:
+                table["metadata"]["dash_recovery"] = {
+                    "count": len(recovered),
+                    "row_column_indices": recovered,
+                }
             if page_number is not None:
                 table["page_number"] = page_number
             tables.append(table)
@@ -227,14 +248,65 @@ def map_result(
             },
         })
 
+    page_sizes = {
+        int(number): (float(page.size.width), float(page.size.height))
+        for number, page in result.document.pages.items()
+    }
+    ocr_elements_present = any(
+        str((element.get("metadata") or {}).get("text_extraction_method", ""))
+        in {"docling.vietocr", "docling.tesseract"}
+        for element in elements
+    )
+    cleanup_diagnostics = []
+    if ocr_elements_present:
+        ocr_pages = {
+            int((element.get("metadata") or {}).get("page_number"))
+            for element in elements
+            if (element.get("metadata") or {}).get("page_number") is not None
+            and (element.get("metadata") or {}).get("text_extraction_method")
+            in {"docling.vietocr", "docling.tesseract"}
+        }
+        for page_number in ocr_pages:
+            page = result.document.pages.get(page_number)
+            _get_page_image(page, page_images, page_number)
+        elements, cleanup_diagnostics = clean_ocr_elements(
+            elements, tables, page_images, page_sizes, ocr_engine
+        )
+
     mapped = {
         "elements": elements,
         "tables": tables,
-        "metadata": {"docling_version": docling_version},
+        "metadata": {
+            "docling_version": docling_version,
+            **({"ocr_cleanup": cleanup_diagnostics} if cleanup_diagnostics else {}),
+            **({"table_dash_recovery": dash_recovery} if dash_recovery else {}),
+        },
     }
     if source_format == "docx":
         apply_docx_semantics(mapped, source_bytes)
     return mapped
+
+
+def _get_page_image(page: Any, cache: dict[int, Any], page_number: int | None):
+    if page is None or page_number is None:
+        return None
+    page_number = int(page_number)
+    if page_number in cache:
+        return cache[page_number]
+    try:
+        import cv2
+        import numpy as np
+
+        image = page.get_image(scale=1.0)
+        if image is None:
+            return None
+        cache[page_number] = cv2.cvtColor(
+            np.asarray(image.convert("RGB")), cv2.COLOR_RGB2BGR
+        )
+    except Exception:
+        _log.debug("Could not load source page image for OCR post-processing", exc_info=True)
+        return None
+    return cache[page_number]
 
 
 def _bbox(box: Any, page_height: float | None = None) -> list[float] | None:

@@ -150,6 +150,7 @@ class DoclingProcessor:
             LayoutObjectDetectionOptions, OcrAutoOptions, PdfPipelineOptions,
             TableFormerMode, TableStructureOptions, TesseractCliOcrOptions,
         )
+        from docling.datamodel.object_detection_engine_options import TransformersObjectDetectionEngineOptions
         from docling.datamodel.stage_model_specs import ObjectDetectionModelSpec
 
         device = AcceleratorDevice.CUDA if self.config.get("docling_device") == "cuda" else AcceleratorDevice.CPU
@@ -187,6 +188,7 @@ class DoclingProcessor:
             generate_page_images=generate_page_images,
             images_scale=1.0,
             layout_options=LayoutObjectDetectionOptions(
+                engine_options=TransformersObjectDetectionEngineOptions(score_threshold=0.4),
                 model_spec=ObjectDetectionModelSpec(
                     name="layout_heron",
                     repo_id="docling-project/docling-layout-heron",

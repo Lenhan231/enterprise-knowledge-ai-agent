@@ -297,7 +297,10 @@ def _get_page_image(page: Any, cache: dict[int, Any], page_number: int | None):
         import cv2
         import numpy as np
 
-        image = page.get_image(scale=1.0)
+        page_image = getattr(page, "image", None)
+        image = getattr(page_image, "pil_image", None)
+        if image is None:
+            image = page.get_image(scale=1.0)
         if image is None:
             return None
         cache[page_number] = cv2.cvtColor(

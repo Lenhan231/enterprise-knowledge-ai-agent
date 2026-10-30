@@ -1,3 +1,17 @@
+## 2026-10-30 - New main audit, Huy RBAC ownership, group report draft
+
+Read **docs/handoff/main-rbac-report-20261030.vi.md**. Fetched main at beac2f3;
+reviewed in detached worktree, Huy remains at 244803b. No runtime code changes,
+Supabase writes, model downloads or VPS verification. User now owns RBAC as well
+as chunking/embedding/retrieval/Knowledge AI. Main already propagates verified
+roles, but active-document filtering, empty-ACL/admin policy, revoke behavior and
+cross-agent acceptance remain unfinished. Selected local checks: 33 pass, 1 stale
+SQL-expectation failure, 2 import errors (missing cv2/docx); not a full-suite result.
+User chose a full English group-report draft with Nhân/An TODOs. Updated native
+Google Doc 1dmKUA7Ahqr7Zu2pyjc9P2dONwtPMEC0v6XQcoAPTAVU; local copy at
+docs/report/group-report-draft-20261030.en.md. Academic references, owner review,
+native TOC refresh and final layout remain pending. New docs are not yet pushed.
+
 ## 2026-10-30 - Desktop checkpoint
 
 Read **docs/handoff/desktop-20261030.vi.md** first. User authorized pushing this

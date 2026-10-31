@@ -342,6 +342,8 @@ def build_sql_prompt(
            'Use the declared ranking limit, otherwise LIMIT 200. For an inclusive date range use snapshot_date >= start '
            'AND snapshot_date < the day AFTER end. For latest use the unfiltered MAX subquery. '
            'Filters use field <operator> parameter (IN uses a list of parameters); do not add other restrictions.'
+           ' A concrete snapshot in the validated interpretation may have been resolved by the server from latest; '
+           'use that concrete date, not a MAX subquery, when time.mode is snapshot.'
            if interpretation is not None else '')
         + (SQL_REPAIR_PROMPT.format(validation_error=validation_error, previous_response=previous_response)
            if validation_error is not None else "")

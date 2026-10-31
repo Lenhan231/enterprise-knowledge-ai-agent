@@ -39,6 +39,7 @@ class AgentRouter:
         self.request_timeout = min(120, request_timeout)
         self.conversations = ConversationStore()
         self.report_conversations = ConversationStore()
+        self.sql_conversations = ConversationStore()
         self.last_destination = 'unrouted'  # Compatibility only; results carry request-local routing.
         graph = StateGraph(_State)
         for name in ('plan', 'execute', 'inspect', 'revise', 'combine'):
@@ -112,6 +113,8 @@ class AgentRouter:
         agent = agents[mode]
         if agent is None:
             return self._failure('This standalone request type is not supported.')
+        if mode == 'sql' and request.conversation_id:
+            return await self._run_sql_conversation(request,agent)
         with measure('agent_workflow'):
             result = agent.run(request)
             if inspect.isawaitable(result):
@@ -120,6 +123,35 @@ class AgentRouter:
         route = 'analytics' if mode == 'sql' else mode
         self.last_destination = route
         return result.model_copy(update={'metadata': {**result.metadata, 'selected_route': route}})
+
+    async def _run_sql_conversation(self, request, agent):
+        from core.analytics.metric_mapping import SQLConversationState, PendingSQLQuestion
+        token = deadline.set(time.monotonic()+remaining(self.request_timeout))
+        try:
+            async with asyncio.timeout(remaining()):
+                async with self.sql_conversations.session(request) as history:
+                    state = SQLConversationState.model_validate_json(history[-1]['sql_state']) if history else SQLConversationState()
+                    scoped = request.model_copy(update={'metadata':{**request.metadata,'_sql_context':state.model_dump()}})
+                    with measure('agent_workflow'):
+                        result = AgentResult.model_validate(await agent.run(scoped))
+                    action = result.metadata.pop('_sql_context_action','new')
+                    if result.data.get('query_status') == 'executed':
+                        state = SQLConversationState.model_validate({'accepted':result.metadata.get('semantic_interpretation')})
+                    elif state.pending and action != 'new':
+                        combined = state.pending.question+'\nClarification reply: '+request.question
+                        if len(combined) <= 2000:
+                            state.pending.question = combined
+                        state.pending.clarification = result.answer[:1000]
+                    else:
+                        state.pending = PendingSQLQuestion(question=request.question[:2000],clarification=result.answer[:1000],
+                                                           base=state.accepted if action == 'followup' else None)
+                    history[:] = [{'sql_state':state.model_dump_json()}]
+                self.last_destination = 'analytics'
+                return result.model_copy(update={'metadata':{**result.metadata,'selected_route':'analytics'}})
+        except TimeoutError:
+            return self._failure('The SQL conversation request timed out. Please retry or restate the complete scope.')
+        finally:
+            deadline.reset(token)
 
     async def _plan(self, state):
         with measure('routing'):

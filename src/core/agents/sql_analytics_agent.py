@@ -10,7 +10,7 @@ from typing import Any
 
 from core.agents.base import BaseAgent
 from core.analytics.metric_ontology import resolve_metric_names, get_metric_definition
-from core.analytics.metric_mapping import build_metric_mapping_prompt, decode_metric_mapping, validate_mapped_sql
+from core.analytics.metric_mapping import build_metric_mapping_prompt, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
 from core.analytics.metric_validation import MetricDefinitionError, validate_metric_definitions, validate_metric_request
 from core.analytics.text_to_sql import (
     APPROVED_COLUMNS,
@@ -70,7 +70,17 @@ class SQLAnalyticsAgent(BaseAgent):
 
     async def run_payload(self, request: Any) -> dict[str, Any]:
         self._authorize(request)
+        context_info = {}
+        result = await self._run_payload(request,context_info)
+        result.setdefault('metadata',{}).update(context_info)
+        return result
+
+    async def _run_payload(self, request: Any, context_info: dict) -> dict[str, Any]:
         question = self._query_text(request)
+        options = request.get('metadata',{}) if isinstance(request,Mapping) else getattr(request,'metadata',{})
+        context = options.get('_sql_context')
+        if context is not None:
+            context_info.update(context_used=False,_sql_context_action='new')
         metric_names = resolve_metric_names(question)
         definitions = {}
         raw = None
@@ -81,15 +91,35 @@ class SQLAnalyticsAgent(BaseAgent):
             except MetricDefinitionError as error:
                 if error.code != 'snapshot_required':
                     raise
-            if not metric_names or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names):
+            if context is not None or not metric_names or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names):
                 with measure('metric_interpretation'):
-                    mapped = await generate(self._provider(),build_metric_mapping_prompt(question),timeout=30)
-                interpretation = decode_metric_mapping(mapped,question)
+                    mapped = await generate(self._provider(),build_metric_mapping_prompt(question,context=context),timeout=30)
+                if context is None:
+                    interpretation = decode_metric_mapping(mapped,question)
+                else:
+                    interpretation, used = decode_sql_turn(mapped,question,context)
+                    context_info.update(context_used=used,_sql_context_action='followup' if used else 'new')
                 if interpretation.domain == 'inventory':
                     metric_names = set(interpretation.metrics)
+            resolved_latest = False
+            if context is not None and interpretation.domain == 'inventory' and interpretation.time.mode == 'latest':
+                snapshot_sql = 'SELECT MAX(i.snapshot_date) AS snapshot_date FROM commerce.inventory AS i LIMIT 1'
+                try:
+                    snapshots = await self.repository.execute_approved_query(snapshot_sql)
+                except Exception as error:
+                    return self._database_error(error,snapshot_sql,())
+                snapshot = snapshots[0].get('snapshot_date') if snapshots else None
+                if snapshot is None:
+                    raise MetricDefinitionError('No inventory snapshots are available.',code='snapshot_unavailable',clarification=True)
+                context_info['requested_time'] = interpretation.time.model_dump()
+                interpretation = interpretation.model_copy(update={'time':MetricTime(mode='snapshot',start=str(snapshot))})
+                interpretation = decode_metric_mapping(interpretation.model_dump_json(),interpretation.date_question())
+                resolved_latest = True
             prompt = build_sql_prompt(question,metric_names=metric_names,
                                       interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None)
         except MetricDefinitionError as error:
+            if context is not None and hasattr(error,'context_action'):
+                context_info['_sql_context_action'] = error.context_action
             return self._generation_error(error)
         except Exception as error:
             return self._generation_error(error)
@@ -102,7 +132,7 @@ class SQLAnalyticsAgent(BaseAgent):
                     definitions = validate_metric_definitions(plan.sql, metric_names, plan.parameters, APPROVED_COLUMNS,
                                                               question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question)
                     if interpretation:
-                        validate_mapped_sql(plan,interpretation,question=question)
+                        validate_mapped_sql(plan,interpretation,question=interpretation.date_question() if resolved_latest else question)
                 break
             except (SQLValidationError, MetricDefinitionError) as error:
                 if attempt == 0:

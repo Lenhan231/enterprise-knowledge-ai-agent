@@ -1,0 +1,27 @@
+{
+  "scores": [
+    {
+      "turn": "initial",
+      "calculation_correct": true,
+      "rows": 4,
+      "context_used": false,
+      "snapshot": "2022-12-31"
+    },
+    {
+      "turn": "blue",
+      "calculation_correct": true,
+      "rows": 4,
+      "context_used": true,
+      "snapshot": "2022-12-31"
+    },
+    {
+      "turn": "top_three",
+      "calculation_correct": true,
+      "rows": 3,
+      "context_used": true,
+      "snapshot": "2022-12-31"
+    }
+  ],
+  "all_calculations_correct": true,
+  "runtime_hashes_match": true
+}

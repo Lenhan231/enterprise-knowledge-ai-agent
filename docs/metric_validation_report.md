@@ -213,3 +213,44 @@ All following new evidence files are under artifacts/evaluation/vietstyle-metric
 | full-comparison.json | No new changed-source problem header; expected old missing-snapshot fixture difference explained. |
 
 Original inventory catalog versions/formulas, preflight artifacts and earlier smoke results were not overwritten. No database records, RLS, migrations, permissions, model choice or Report section generation were changed. The local backend is restarted after verification so Streamlit uses the new interpretation path.
+
+
+## Follow-up: session chat and safe SQL context (2026-10-31)
+
+Implemented the user-approved first two chat stages on QuocAn, without persistent storage, new dependencies, migrations, data changes or model changes. Streamlit renders up to 20 exchanges with answer-specific SQL/results/evidence and stable per-turn widget keys. Report mode stays separate. Reset retains sign-in/mode while clearing drafts/history/report state; sign-out clears user-specific state. Requests capture conversation/authentication identity and discard stale responses. Saved turns never trigger fresh API calls on rerender.
+
+Standalone SQL conversation requests reuse ConversationStore in a separate SQL-only store. Existing user/conversation keys, permission fingerprints, locks, capacity, character bounds and idle expiry apply. One serialized state entry holds the accepted MetricMapping and pending clarification, without result rows, answers or SQL. Internal _sql_context metadata is server owned; public metadata validation rejects it. Auto, Knowledge, Dashboard and Report do not receive this state; requests without conversation IDs remain stateless.
+
+Within the existing interpretation call, SQLTurn selects new, followup or answer. Typed patches inherit omitted slots, replace filters by field and support explicit field/all-filter and ranking removal. Fresh questions inherit nothing. Pending questions remain separate from the accepted scope; invalid/refused/failed turns cannot overwrite it or implicitly reactivate an unrelated scope. Current catalog validation runs after merging and all generated/repaired SQL remains bound to the accepted interpretation. Ranking requires a specified or sole active metric. Latest dates are resolved by a fixed approved read-only lookup, then generated SQL binds the concrete snapshot; refresh occurs only on an explicit new latest request. Context commits after execution, including empty results, and clears on completed non-inventory SQL. A request timeout does not commit new state. Summarization receives the accepted scope; API fields remain compatible with optional context_used metadata.
+
+Verification:
+- Thirteen new SQL context tests pass: three-turn execution and zero-row continuity; English/mixed-language patches; replacing/removing/clearing filters/ranking; fresh questions; missing/expired/restarted state; pending clarifications; rejected unknown metrics; user/session and permission isolation; client injection rejection; no context in other modes or absent-ID requests; failure preservation; serialized concurrent turns; timeout rollback; and authorization before provider/data access.
+- Six new Streamlit AppTests pass: multiple exchanges retain SQL/results and unique downloads; rerenders do not resubmit; mode changes preserve history; 20-exchange cap and error turns; reset/late response rejection; sign-out clears history/report/authentication; reports remain separate with fresh drafts; and repeated dashboard charts/context captions render without exceptions.
+- Final focused suite: 195 tests, 194 passes, one known pre-existing UI .files fixture failure, zero errors/skips. JSON preserves exact modules and test names.
+- Full discovery: 528 tests, 453 passes, 11 failures, 55 errors and nine skips. All 66 problem headers exactly match the recorded prior 509-test run; no new problem header appears. Existing removed-module/symbol, old financial, retrieval and UI fixture problems were not repaired. Full output logs are local ignored files; committed JSON preserves the summary and problem headers.
+- Live test with the unchanged Qwen provider and read-only commerce repository: stock by category at latest -> only blue products -> top three categories. All three executed, returned 4/4/3 rows, and retained snapshot 2022-12-31. Each numeric result matched an independently queried gold result. The first turn used no prior context; the next two used it. The live driver used SQLAnalyticsAgent through the router without answer synthesis or API telemetry writes, and paced turns by 60 seconds to respect the existing token allowance.
+- Compilation, JSON parsing, whitespace checks and recorded runtime hashes pass. UI tests exercise the login screen and sign-out lifecycle with a simulated authenticated client; live queries used the application read-only repository, not production DML probes.
+
+Changed-file accountability:
+
+| File | Reason/change | Verification |
+| --- | --- | --- |
+| src/core/analytics/metric_mapping.py | Typed SQL conversation/patch/clarification models, deterministic merge and existing catalog revalidation; contextual mapping prompt. | Thirteen context tests, existing 17 mapping tests and live sequence pass. |
+| src/core/agents/router.py | Separate locked SQL-only state, identity/expiry isolation, execution-only commits and timeout handling. | Context, concurrency, isolation, legacy routing and mode tests pass. |
+| src/core/agents/sql_analytics_agent.py | Server-only context consumption, latest resolution, exact pinned SQL validation, context metadata and sanitized snapshot-read failures. | Context sequence, existing SQL safety/metric tests and live numeric checks pass. |
+| src/core/analytics/text_to_sql.py | Explain server-resolved concrete dates in the existing generation prompt. | Pinned-date query and existing prompt/SQL regressions pass. |
+| src/core/agents/analytics_agent.py | Supply the accepted interpretation to answer summarization. | Analytics and summary regressions pass. |
+| src/core/prompts/agents.py | Add accepted query scope to the existing summary template. | Summary-format and report/orchestration regression checks pass. |
+| src/core/agents/streamlit_ui.py | Session transcript, keyed historical result rendering, separate Report controls, context captions, reset/sign-out and stale-response guards. | Six AppTests and existing Streamlit renderer/client tests pass. |
+| tests/test_sql_followups.py | Thirteen deterministic context, execution, rejection, identity and lifecycle tests. | 13/13 pass. |
+| tests/test_session_chat.py | Six session UI/retained-data/report/dashboard/reset AppTests. | 6/6 pass. |
+| docs/business_metric_dictionary.md | Explain session follow-ups and their boundaries. | Reviewed against tests and live evidence. |
+| docs/metric_validation_report.md | Preserve this implementation record and measured limitations. | Reviewed against evaluation JSON. |
+| tasks/inventory-metric-dictionary-plan.md | Record the completed first two chat stages and deferred persistence. | Matches the approved plan. |
+| artifacts/evaluation/session-chat/live-sequence.json | Unchanged-model raw prompts/responses, per-turn result payloads, independent gold queries/rows and runtime hashes. | All three numeric results match gold. |
+| artifacts/evaluation/session-chat/live-sequence-score.json | Deterministic numeric, context-use and pinned-date verification. | All three correct; runtime hashes match. |
+| artifacts/evaluation/session-chat/focused-tests.json | Exact focused test outcomes/modules. | 194/195 pass; known UI fixture failure retained. |
+| artifacts/evaluation/session-chat/full-discovery.json | Full discovery outcomes and existing problem headers. | Completed; known 66 failures/errors, nine skips. |
+| artifacts/evaluation/session-chat/full-comparison.json | Compare problem headers with the prior full run. | No new or removed problem headers. |
+
+Limits remain intentional: history is session/process-local, inventory SQL context is not shared across modes/workers, existing result/time limits remain, and language classification can still ask for clarification. The extra model context and answer synthesis can hit the existing provider token limit during rapid requests. Persistent conversation storage and token streaming were not implemented.

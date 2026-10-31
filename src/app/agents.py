@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.security import ROLE_PERMISSIONS, require_permission
+from app.security import ACCESS_DENIED_MESSAGE, ROLE_PERMISSIONS, require_permission
 from core.latency import latency_events, snapshot
 
 logger = logging.getLogger(__name__)
@@ -139,7 +139,7 @@ async def agent_chat(
         return result
     except PermissionError as error:
         error_type = type(error).__name__
-        raise HTTPException(403, "Your role cannot access the requested source") from None
+        raise HTTPException(403, ACCESS_DENIED_MESSAGE) from None
     except Exception as error:
         error_type = type(error).__name__
         logger.exception("Agent request failed")

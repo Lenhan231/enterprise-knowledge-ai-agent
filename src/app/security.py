@@ -34,6 +34,7 @@ ROLE_PERMISSIONS = {
 }
 
 auth_scheme = HTTPBearer(auto_error=False)
+ACCESS_DENIED_MESSAGE = "Bạn không có quyền truy cập chức năng hoặc tài liệu này."
 
 
 def _roles_with_permission(permission: str) -> tuple[str, ...]:
@@ -68,7 +69,7 @@ def require_roles(*roles: str):
     def dependency(request: Request, credentials: HTTPAuthorizationCredentials | None = Depends(auth_scheme)):
         user = _current_user(request, credentials)
         if user["role"] not in roles:
-            raise HTTPException(403, "Your role cannot access this feature")
+            raise HTTPException(403, ACCESS_DENIED_MESSAGE)
         return user
     return dependency
 

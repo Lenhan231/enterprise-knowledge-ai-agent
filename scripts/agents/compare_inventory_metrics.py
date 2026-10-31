@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT / 'src'))
 from sqlglot import exp, parse_one
 from core.analytics.metric_ontology import resolve_metric_names
 from core.analytics.metric_validation import validate_metric_definitions, validate_metric_request
-from core.analytics.text_to_sql import APPROVED_COLUMNS, decode_query_plan
+from core.analytics.text_to_sql import APPROVED_COLUMNS, decode_query_plan, parse_json_response
 
 
 def calculation_matches(case, gold):
@@ -48,14 +48,22 @@ def score_case(case, gold):
     raw = calls[-1].get('response') if calls else None
     if raw:
         try:
-            decoded = json.loads(raw)
+            decoded = parse_json_response(raw)
             score['generated_sql'] = bool(decoded.get('sql'))
             plan = decode_query_plan(raw)
             score['sql_validation'] = bool(plan.sql)
             if plan.sql:
-                names = resolve_metric_names(case['question'])
-                validate_metric_request(case['question'], names)
-                validate_metric_definitions(plan.sql, names, plan.parameters, APPROVED_COLUMNS, question=case['question'])
+                mapping = result.get('metadata',{}).get('semantic_interpretation')
+                question = case['question']
+                if mapping:
+                    from core.analytics.metric_mapping import decode_metric_mapping, validate_mapped_sql
+                    mapping = decode_metric_mapping(json.dumps(mapping),question)
+                    validate_mapped_sql(plan,mapping,question=question)
+                    names, question = set(mapping.metrics), mapping.date_question()
+                else:
+                    names = resolve_metric_names(question)
+                validate_metric_request(question, names)
+                validate_metric_definitions(plan.sql, names, plan.parameters, APPROVED_COLUMNS, question=question)
                 score['current_semantics'] = True
         except (ValueError, TypeError, KeyError):
             pass
@@ -76,7 +84,8 @@ def compare(before, after, gold):
         raise ValueError('Paired benchmark settings or questions differ')
     if [c['id'] for c in before['cases']] != [c['id'] for c in after['cases']]:
         raise ValueError('Paired benchmark cases differ')
-    report = {'settings': {key: before[key] for key in settings}, 'supported_cases': 6, 'unresolved_cases': 2}
+    unresolved = sum(bool(c.get('clarification_code')) for c in before['cases'])
+    report = {'settings': {key: before[key] for key in settings}, 'supported_cases': len(before['cases'])-unresolved, 'unresolved_cases': unresolved}
     for name, run in [('before', before), ('after', after)]:
         cases = [score_case(case, gold['cases']) for case in run['cases']]
         report[name] = {'cases': cases, 'totals': {key: sum(bool(c.get(key)) for c in cases) for key in

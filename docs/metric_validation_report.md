@@ -133,3 +133,83 @@ Changed files: `data/semantic/vietstyle_metrics_v1.yaml` adds lowest stock, high
 Both new regressions failed before the fix and pass afterward. All 22 inventory tests pass. The combined inventory, SQL generation, metric definitions, join safety, AnalyticsAgent, request-planning, inventory-dashboard and Report-orchestration suites pass **89/89 tests**. A separate discovery of `test_sql*.py` ran 64 tests with the same previously documented old financial test problems (one failure, seven errors); no unrelated repairs were made. Whitespace checks pass.
 
 A live SQLAnalyticsAgent test with the unchanged configured provider and the read-only commerce repository executed the exact question successfully: ten products with stock_on_hand 3, all at snapshot 2022-12-31, ordered by stock then product name. The returned definition is stock_on_hand using its stored-value representation. Detailed local evidence is in ignored `artifacts/local/lowest-stock-regression.json`. The backend was restarted to load the updated catalog; Streamlit remains at http://127.0.0.1:8501. Original benchmark artifacts and scores were not overwritten or rerun for this alias-only correction.
+
+
+## Follow-up: semantic mapping before SQL (2026-10-31)
+
+The user authorized a semantic interpretation step using the existing approved catalog. Inventory and unrecognized requests now map language into typed catalog IDs, dimensions, source-row filters, historical dates, product/aggregate representation and ranking. Recognized legacy non-inventory metric requests keep their existing path. Other generic requests receive a domain interpretation; an interpretation of domain=other cannot execute inventory SQL. The same configured Qwen model is used, without fine-tuning, schema discovery, new metric definitions, a new agent or a second registry.
+
+Mapping candidates are compact descriptions/statuses generated from the existing ontology. Python checks accepted/executable definitions, known metric omissions, allowed dimensions/fields, filter types/operators, date structure, representation and ranking limits before SQL generation. SQL generation receives only selected definitions and its approved stored-value or aggregate representation. The SQL is then checked against the accepted interpretation: output dimensions/metrics, filter values, date scope, grouping, ranking and limit must agree. These checks supplement the existing AST, fanout, placeholders, permissions and read-only execution checks. Only the existing single SQL repair is allowed; failed interpretations never authorize a generic fallback.
+
+The inventory/products FK makes their product IDs interchangeable through the approved join. Product representation explicitly selects stored fields without SUM/AVG or grouping. One JSON code fence may wrap a single JSON object, following existing agent conventions; writes, extra objects/text, unknown fields and invalid mapping/SQL still fail validation. SQL tokenization errors now reach the existing safe repair path. Accepted results expose semantic_interpretation metadata without removing existing API fields. Report section generation and database configuration are unchanged.
+
+### Evaluation evidence
+
+A new fixed eight-question matrix has five supported questions and three clarification/refusal cases. Wording includes unseen stock/balance/style synonyms and mixed Vietnamese-English. Original-source before is 54c6831; model/settings and case hashes match the changed-source live trials. Gold values were freshly read through the existing read-only commerce repository. No DML probe or database change was performed.
+
+| Outcome | Original source | Refined live trial |
+| --- | --- | --- |
+| Supported questions executed | 1/5 | 4/5 |
+| Calculations and current semantic/date contract correct | 0/5 | 4/5 |
+| Correct targeted ambiguity/unresolved clarification | 2/3 | 3/3 |
+
+The one original execution returned 200 raw snapshot rows for a question asking separate snapshot totals; execution alone does not count as metric correctness. The initial mapping trial, after.json, correctly executed three supported cases; it exposed an equivalent-product-ID false rejection and ambiguous stored-value generation instructions. Both were corrected with regressions. The refined after-refined.json executed stock ranking, category balances, category ranking and twelve dated snapshot totals correctly. Its remaining Vietnamese fill-ranking case produced the correct stored-value SQL inside a JSON fence, then a repair hit the provider's 7,000-input-token-per-minute limit. This is recorded as a failed live case, not silently scored as success.
+
+The final parser safely normalizes that wrapper. Saved-response replay against the actual read-only database passes **5/5 supported calculations and all three expected clarifications**, including the previously blocked fill ranking. Replay involves no fresh model inference and is not an LLM success-rate estimate. A separate **fresh model retest** of that exact Vietnamese fill-ranking question also executed ten correct stored rates and passed numerical/date/formula scoring. It uses the same model and is recorded separately in live-retest.json and live-retest-score.json; there is no claim that a final single eight-case live run achieved 5/5.
+
+Median supported-case elapsed time was 1.37s before and 3.85s in the refined live trial. Most before cases failed early, so these are not equally successful workloads. Interpretation normally adds one model call; rapid repeated requests can exceed the provider token allowance. Replay timings exclude model inference and must not be compared with live latency.
+
+### Verification and current limits
+
+The final focused run completed 164 tests: 163 pass and the same existing UI .files fixture fails, with zero errors or skips. Seventeen dedicated mapping tests pass, including unseen/mixed language, contract-bound SQL, permitted product-key equivalence, typed filters, IN/range/date parameters, malformed or SQL-bearing interpretation output, unresolved metrics, missing scope, changed filter/ranking/limit/dimension rejection, unauthorized requests, repeated violation without execution, and fenced JSON that still rejects writes/extra objects. Existing fake providers were updated to supply the new interpretation response before their original SQL responses. Authenticated local API and mocked Supabase smoke fixtures pass; no live write probe was run.
+
+Final full discovery completed **509 tests: 434 passed, 11 failures, 55 errors and nine skips**. The source-only original diagnostic completed 492 tests with 12 failures, 55 errors and nine skips. All 66 final problem headers also occur in the original-source run; no new problem header appears. The original-only failure is the updated missing-snapshot fixture expecting a mapping call, which the original implementation did not make. It is an expected fixture-contract difference, not a claimed unrelated improvement. Existing removed modules/symbols, old financial fixtures, retrieval expectations and the UI .files fixture remain outside this task. Full-suite JSON records every problem header; detailed logs remain local ignored files.
+
+The mapper is language interpretation, not proof of intent. It can still misunderstand a question or ask for clarification. Mapped SQL currently uses direct SELECTs; CTE/HAVING/DISTINCT rewrites, unsupported comparisons or unsupported dimensions are refused. Named/relative periods may require explicit ISO dates. Existing 200-row limits remain. A threshold, forecast, reorder rule or weighting formula does not become approved because an LLM proposes it. Catalog governance and the six unresolved definitions are unchanged. The full benchmark matrix was not rerun after JSON-wrapper normalization; the saved replay and isolated fresh retest are clearly separated.
+
+### Changed-file accountability for this follow-up
+
+| File | Reason/change | Verification |
+| --- | --- | --- |
+| src/core/analytics/metric_mapping.py | Typed interpretation, compact catalog selection and deterministic SQL contract checks. | 17 dedicated mapping tests pass; five replay calculations and fresh fill-ranking retest pass. |
+| src/core/agents/sql_analytics_agent.py | Authorize first; interpret/validate before generation; retain the accepted slots; check repaired SQL against them. | Mapping integration, RBAC, repeated-rejection and existing SQL/Analytics tests pass. |
+| src/core/analytics/text_to_sql.py | Relevant interpreted metrics, approved stored projections, bounded token-error repair and single-object JSON-fence normalization. | SQL and mapping tests pass; unsafe fenced SQL remains rejected. |
+| src/core/prompts/sql.py | Preserve requested ranking limit up to 200 instead of contradictory fixed-limit instructions. | Ranking contract tests and live rankings pass. |
+| tests/test_metric_mapping.py | Seventeen new contract, security, field, language and regression tests. | 17/17 pass. |
+| tests/test_inventory_metric_dictionary.py | Supply mapper response and update missing-snapshot call expectations; existing unresolved checks remain pre-generation. | Inventory regressions pass. |
+| tests/test_sql_generation.py | Keep original SQL/summary fixtures after an explicit other-domain response. | Existing SQL generation tests pass. |
+| tests/test_sql_join_duplication.py | Preserve unsafe-join tests across the new interpretation call. | All join/fanout tests pass. |
+| tests/test_sql_metric_definitions.py | Supply validated stockout interpretation and its default result limit. | Canonical formula and metric agent tests pass. |
+| tests/test_app_chat.py | Supply interpretation in the authenticated generic SQL client fixture. | API fixture suite passes. |
+| tests/test_supabase_analytics_smoke.py | Supply other-domain interpretations in the fake provider without changing read-only probe tests. | Mocked smoke tests pass; no live DML probe executed. |
+| scripts/agents/benchmark_inventory_metrics.py | Reuse existing runner for a separate eight-case matrix and archive versioned catalog data with original source. Record mapping/catalog hashes. | Original-source and two changed-source trials completed; immutable output refusal retained. |
+| scripts/agents/compare_inventory_metrics.py | Score mapped semantics and normalized JSON separately from numbers; derive matrix coverage from cases. | Numeric-versus-semantic regressions and saved comparisons pass. |
+| data/evaluation/inventory_semantic_mapping_cases.json | Freeze five supported unseen/mixed-language questions and three refusal/clarification cases. | Unique IDs and equal before/after case hashes checked. |
+| docs/business_metric_dictionary.md | Explain the new request flow and conservative limitations. | Reviewed against implementation and evidence. |
+| docs/metric_validation_report.md | Preserve this implementation/evaluation record and file accountability. | Reviewed against test and benchmark JSON. |
+| SPEC-metric-enforcement.md | Transcribe the user's approved semantic-mapping requirements and boundaries. | Contract tests cover the requirements. |
+| CAPABILITY-MAP-business-metric-dictionary.md | Include typed semantic interpretation within existing metric enforcement. | No new runtime agent/service added. |
+| tasks/inventory-metric-dictionary-plan.md | Record completed incremental implementation and verification slices. | Original task plan remains preserved. |
+
+All following new evidence files are under artifacts/evaluation/vietstyle-metrics-v1/semantic-mapping/ and parse as JSON:
+
+| File | Purpose/result |
+| --- | --- |
+| before.json | Original-source eight-case live results, raw prompts/responses, hashes and latency. |
+| after.json | Initial three-correct-case trial; failures preserved. |
+| after-refined.json | Four correct supported live cases, three targeted clarifications and the provider-blocked case. |
+| gold.json | Actual read-only SQL queries and expected aggregate/ranking values. |
+| comparison.json | Paired live calculation, semantic, clarification and latency scores. |
+| replay.json | Current validators/execution applied to saved model responses, without fresh inference. |
+| replay-comparison.json | Interim scorer result before aligning scorer JSON-fence normalization; preserved. |
+| replay-final-comparison.json | Final normalized scorer confirms five correct replay calculations and three expected clarifications; separate from live results. |
+| live-retest.json | Fresh same-model retest of the provider-blocked Vietnamese question. |
+| live-retest-score.json | Correct numerical/formula/date scoring for that retest. |
+| focused-tests.json | Earlier 149-test focused integration outcomes. |
+| focused-final.json | Final focused SQL/analytics/report/API fixture outcomes. |
+| full-discovery.json | Initial full discovery before two fake-provider fixture updates. |
+| full-baseline.json | Completed original-source diagnostic with captured unittest problem headers. |
+| full-final.json | Completed changed-source 509-test run and all remaining problem headers. |
+| full-comparison.json | No new changed-source problem header; expected old missing-snapshot fixture difference explained. |
+
+Original inventory catalog versions/formulas, preflight artifacts and earlier smoke results were not overwritten. No database records, RLS, migrations, permissions, model choice or Report section generation were changed. The local backend is restarted after verification so Streamlit uses the new interpretation path.

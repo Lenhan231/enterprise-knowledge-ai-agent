@@ -26,7 +26,7 @@ async def run(args, source):
     from core.llm.groq_provider import GroqProvider
     from core.models.agents import AgentRequest, VerifiedIdentity
 
-    cases = json.loads(CASES.read_text(encoding='utf-8'))
+    cases = json.loads(args.cases.read_text(encoding='utf-8'))
     assert len(cases) == len({case['id'] for case in cases}) == 8
     if args.output.exists():
         raise FileExistsError('Refusing to overwrite benchmark evidence')
@@ -56,11 +56,12 @@ async def run(args, source):
               'source_ref': args.source_ref or subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
               'model': provider.model_name, 'temperature': provider.temperature,
               'reasoning_effort': provider.reasoning_effort, 'max_output_tokens': 1000,
-              'case_sha256': hashlib.sha256(CASES.read_bytes()).hexdigest(),
+              'case_sha256': hashlib.sha256(args.cases.read_bytes()).hexdigest(),
               'pace_seconds': args.pace_seconds, 'write_probes': False,
               'source_sha256': {name: hashlib.sha256((source/name).read_bytes()).hexdigest()
                                 for name in ('src/core/analytics/metric_ontology.py', 'src/core/analytics/metric_validation.py',
-                                             'src/core/analytics/text_to_sql.py','src/core/agents/sql_analytics_agent.py','src/core/prompts/sql.py')},
+                                             'src/core/analytics/text_to_sql.py','src/core/agents/sql_analytics_agent.py','src/core/prompts/sql.py',
+                                             'src/core/analytics/metric_mapping.py','data/semantic/vietstyle_metrics_v1.yaml') if (source/name).exists()},
               'cases': []}
     try:
         repository = await create_repository_from_env()
@@ -89,6 +90,7 @@ async def run(args, source):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--cases', type=Path, default=CASES, help='Eight-case inventory evaluation matrix')
     parser.add_argument('--source-ref', help='Run unchanged source from this Git commit in an isolated temporary folder')
     parser.add_argument('--pace-seconds', type=float, default=20)
     args = parser.parse_args()
@@ -98,7 +100,10 @@ def main():
         source = ROOT
         if args.source_ref:
             source = Path(stack.enter_context(tempfile.TemporaryDirectory(prefix='inventory-metric-baseline-')))
-            archive = subprocess.check_output(['git','archive',args.source_ref,'src'],cwd=ROOT)
+            paths = ['src']
+            if subprocess.check_output(['git','ls-tree',args.source_ref,'data/semantic'],cwd=ROOT):
+                paths.append('data/semantic')
+            archive = subprocess.check_output(['git','archive',args.source_ref,*paths],cwd=ROOT)
             with tarfile.open(fileobj=io.BytesIO(archive)) as bundle:
                 bundle.extractall(source, filter='data')
         asyncio.run(run(args, source))

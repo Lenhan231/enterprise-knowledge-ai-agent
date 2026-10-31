@@ -7,3 +7,9 @@ The user approved the capability map and conventions with scope restricted to In
 - [x] metric-evaluation: preserve Report generation and propagate inventory metric context, freeze an inventory-only before benchmark from the original commit, replay before plans and run unchanged-model after cases, compare deterministic correctness and latency; run existing tests/full discovery and record limitations; commit.
 
 No new sales, finance, customer, returns or marketing definitions. Product identity/category/segment and inventory source consistency checks remain supporting inventory context. Unrelated existing functionality is preserved.
+
+
+Semantic mapping follow-up authorized 2026-10-31:
+- [x] Add typed catalog interpretation and deterministic SQL-contract checks; prove invalid/unsupported mappings cannot execute; commit the working slice.
+- [x] Verify unseen/mixed-language questions, preserve paired live trials and numeric gold, replay the provider-blocked case, run complete discovery and compare existing failures.
+- [x] Document interpretation behavior, measured limits and compatible JSON-fence handling; restart the local backend for Streamlit testing.

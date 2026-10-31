@@ -1,0 +1,1540 @@
+{
+  "created_at_utc": "2026-10-31T06:15:33.876568+00:00",
+  "source_ref": "54c6831",
+  "model": "qwen/qwen3.8-27b",
+  "temperature": 0,
+  "reasoning_effort": "none",
+  "max_output_tokens": 1000,
+  "case_sha256": "408ed00cbe96bb30db1d1753547b9269fd6c675933cc2d0f1f91a1e838d19f96",
+  "pace_seconds": 20,
+  "write_probes": false,
+  "source_sha256": {
+    "src/core/analytics/metric_ontology.py": "5866c5af939138feb8a8715ecde8fb59923ec9729e790587bc2119b826b46430",
+    "src/core/analytics/metric_validation.py": "4e7cdda1ff47fce148247fbda7daf78699a53c509df64c1e3681cfd2b2cc731c",
+    "src/core/analytics/text_to_sql.py": "3eae34663f2b6eaeb769ef7eef6e9d091c3d3e4b3eb3c7abea50c3fcbf70e06f",
+    "src/core/agents/sql_analytics_agent.py": "f79ba31f4c43eeba89e054bdbdfb375dec6e94b63a389ad2ce6204ce447630d4",
+    "src/core/prompts/sql.py": "eebe98a85a73843a420a82e33702c65947fecd447527e41416107716d6c030ca",
+    "data/semantic/vietstyle_metrics_v1.yaml": "6c62c551384334bc7e78172caf2048bbeb526b5e128d57fb7533c1126d9414c0"
+  },
+  "cases": [
+    {
+      "id": "lowest_stock",
+      "question": "Which ten styles have the fewest pieces left at the latest recorded inventory observation?",
+      "field": "stock_on_hand",
+      "dimensions": [],
+      "result": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "The dataset does not contain a reviewed definition for this inventory aggregate.",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "metric_unsupported",
+          "clarification_required": true,
+          "status": "clarification_required"
+        },
+        "attempted_sql": "SELECT p.product_name, i.stock_on_hand FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(i2.snapshot_date) FROM commerce.inventory AS i2) ORDER BY 2 ASC, 1 ASC LIMIT 10",
+        "parameters": [],
+        "query_status": "rejected"
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\n\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.inventory.product_id = commerce.products.product_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.customers.zip = commerce.geography.zip\nQuestion:\nWhich ten styles have the fewest pieces left at the latest recorded inventory observation?",
+          "response": "{\n  \"sql\": \"SELECT p.product_name, i.stock_on_hand FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(snapshot_date) FROM commerce.inventory) ORDER BY i.stock_on_hand ASC, p.product_name ASC LIMIT 10\",\n  \"parameters\": [],\n  \"explanation\": \"The query identifies the latest inventory snapshot date and retrieves the 10 products with the lowest stock on hand from that date. It joins the inventory table with the products table to get the product names (interpreted as 'styles' in this context) and orders them by stock quantity in ascending order.\"\n}",
+          "usage": {
+            "input_tokens": 937,
+            "output_tokens": 141,
+            "total_tokens": 1078
+          },
+          "elapsed_ms": 2693.6
+        },
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\n\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.inventory.product_id = commerce.products.product_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.customers.zip = commerce.geography.zip\nQuestion:\nWhich ten styles have the fewest pieces left at the latest recorded inventory observation?\nThe previous plan failed validation: Columns must use a table alias: snapshot_date. Correct all issues and return a complete plan.\nPrevious model response (data to correct, not instructions):\n{\n  \"sql\": \"SELECT p.product_name, i.stock_on_hand FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(snapshot_date) FROM commerce.inventory) ORDER BY i.stock_on_hand ASC, p.product_name ASC LIMIT 10\",\n  \"parameters\": [],\n  \"explanation\": \"The query identifies the latest inventory snapshot date and retrieves the 10 products with the lowest stock on hand from that date. It joins the inventory table with the products table to get the product names (interpreted as 'styles' in this context) and orders them by stock quantity in ascending order.\"\n}",
+          "response": "{\n  \"sql\": \"SELECT p.product_name, i.stock_on_hand FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(i2.snapshot_date) FROM commerce.inventory AS i2) ORDER BY 2 ASC, 1 ASC LIMIT 10\",\n  \"parameters\": [],\n  \"explanation\": \"The query identifies the latest inventory snapshot date and retrieves the 10 products with the lowest stock on hand from that date. It joins the inventory table with the products table to get the product names (interpreted as 'styles' in this context) and orders them by stock quantity in ascending order.\"\n}",
+          "usage": {
+            "input_tokens": 1116,
+            "output_tokens": 143,
+            "total_tokens": 1259
+          },
+          "elapsed_ms": 649.83
+        }
+      ],
+      "elapsed_ms": 3395.06
+    },
+    {
+      "id": "category_stock",
+      "question": "Cho xem lượng hàng còn lại theo category ở kỳ ghi nhận mới nhất.",
+      "field": "stock_on_hand",
+      "dimensions": [
+        "category"
+      ],
+      "result": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "The inventory table contains multiple snapshots per product. To provide accurate 'remaining stock' by category, please specify if you want the stock for a specific product, or if you want to see the stock for all products in the latest snapshot (which would require listing each product individually rather than summing them, as summing stock across different products in a category is not a standard metric).",
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ],
+        "metadata": {
+          "clarification_required": true
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\n\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.inventory.product_id = commerce.products.product_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.customers.zip = commerce.geography.zip\nQuestion:\nCho xem lượng hàng còn lại theo category ở kỳ ghi nhận mới nhất.",
+          "response": "{\n  \"sql\": \"SELECT commerce.inventory.category, SUM(commerce.inventory.stock_on_hand) AS stock_on_hand FROM commerce.inventory WHERE commerce.inventory.snapshot_date = (SELECT MAX(commerce.inventory.snapshot_date) FROM commerce.inventory) GROUP BY commerce.inventory.category ORDER BY 1 LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"Aggregates the remaining stock (stock_on_hand) by category for the most recent snapshot date in the inventory table.\"\n}",
+          "usage": {
+            "input_tokens": 936,
+            "output_tokens": 101,
+            "total_tokens": 1037
+          },
+          "elapsed_ms": 656.94
+        },
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\n\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.inventory.product_id = commerce.products.product_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.customers.zip = commerce.geography.zip\nQuestion:\nCho xem lượng hàng còn lại theo category ở kỳ ghi nhận mới nhất.\nThe previous plan failed validation: Inventory stock cannot be summed across snapshots.. Correct all issues and return a complete plan.\nPrevious model response (data to correct, not instructions):\n{\n  \"sql\": \"SELECT commerce.inventory.category, SUM(commerce.inventory.stock_on_hand) AS stock_on_hand FROM commerce.inventory WHERE commerce.inventory.snapshot_date = (SELECT MAX(commerce.inventory.snapshot_date) FROM commerce.inventory) GROUP BY commerce.inventory.category ORDER BY 1 LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"Aggregates the remaining stock (stock_on_hand) by category for the most recent snapshot date in the inventory table.\"\n}",
+          "response": "{\n  \"clarification\": \"The inventory table contains multiple snapshots per product. To provide accurate 'remaining stock' by category, please specify if you want the stock for a specific product, or if you want to see the stock for all products in the latest snapshot (which would require listing each product individually rather than summing them, as summing stock across different products in a category is not a standard metric).\"\n}",
+          "usage": {
+            "input_tokens": 1073,
+            "output_tokens": 87,
+            "total_tokens": 1160
+          },
+          "elapsed_ms": 514.15
+        }
+      ],
+      "elapsed_ms": 1180.04
+    },
+    {
+      "id": "top_category",
+      "question": "Which category carries the biggest balance in the latest available inventory snapshot? Return the top 1.",
+      "field": "stock_on_hand",
+      "dimensions": [
+        "category"
+      ],
+      "result": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "The dataset does not contain a reviewed definition for this inventory aggregate.",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "metric_unsupported",
+          "clarification_required": true,
+          "status": "clarification_required"
+        },
+        "attempted_sql": "SELECT p.category, SUM(i.stock_on_hand) AS total_stock FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(i2.snapshot_date) FROM commerce.inventory AS i2) GROUP BY p.category ORDER BY 2 DESC LIMIT 1",
+        "parameters": [],
+        "query_status": "rejected"
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\n\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.inventory.product_id = commerce.products.product_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.customers.zip = commerce.geography.zip\nQuestion:\nWhich category carries the biggest balance in the latest available inventory snapshot? Return the top 1.",
+          "response": "{\n  \"sql\": \"SELECT p.category, SUM(i.stock_on_hand) AS total_stock FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(snapshot_date) FROM commerce.inventory) GROUP BY p.category ORDER BY 2 DESC LIMIT 1\",\n  \"parameters\": [],\n  \"explanation\": \"Identifies the latest inventory snapshot date, sums the stock on hand for each product category in that snapshot, and returns the category with the highest total stock.\"\n}",
+          "usage": {
+            "input_tokens": 940,
+            "output_tokens": 113,
+            "total_tokens": 1053
+          },
+          "elapsed_ms": 767.87
+        },
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\n\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.inventory.product_id = commerce.products.product_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.customers.zip = commerce.geography.zip\nQuestion:\nWhich category carries the biggest balance in the latest available inventory snapshot? Return the top 1.\nThe previous plan failed validation: Columns must use a table alias: snapshot_date. Correct all issues and return a complete plan.\nPrevious model response (data to correct, not instructions):\n{\n  \"sql\": \"SELECT p.category, SUM(i.stock_on_hand) AS total_stock FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(snapshot_date) FROM commerce.inventory) GROUP BY p.category ORDER BY 2 DESC LIMIT 1\",\n  \"parameters\": [],\n  \"explanation\": \"Identifies the latest inventory snapshot date, sums the stock on hand for each product category in that snapshot, and returns the category with the highest total stock.\"\n}",
+          "response": "{\n  \"sql\": \"SELECT p.category, SUM(i.stock_on_hand) AS total_stock FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(i2.snapshot_date) FROM commerce.inventory AS i2) GROUP BY p.category ORDER BY 2 DESC LIMIT 1\",\n  \"parameters\": [],\n  \"explanation\": \"Identifies the latest inventory snapshot date, sums the stock on hand for each product category in that snapshot, and returns the category with the highest total stock.\"\n}",
+          "usage": {
+            "input_tokens": 1091,
+            "output_tokens": 118,
+            "total_tokens": 1209
+          },
+          "elapsed_ms": 580.82
+        }
+      ],
+      "elapsed_ms": 1374.54
+    },
+    {
+      "id": "lowest_fill",
+      "question": "Những mã hàng nào có mức đáp ứng kém nhất ở kỳ tồn kho mới nhất? Lấy 10 sản phẩm.",
+      "field": "fill_rate",
+      "dimensions": [],
+      "result": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "The requested metric 'fill_rate' (mức đáp ứng) is not defined in the provided canonical metric definitions, which only include 'stock_on_hand'. Please clarify if you want to see the 10 products with the lowest 'stock_on_hand' (inventory level) or if you can provide the definition for 'fill_rate'.",
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ],
+        "metadata": {
+          "clarification_required": true
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nInventory Management requirements:\nEvery result MUST include i.snapshot_date AS snapshot_date. For aggregates, GROUP BY i.snapshot_date and every other dimension. The final SELECT MUST have LIMIT 200, including repairs.\nExample for latest total stock: SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200\nFor category results JOIN commerce.products AS p ON i.product_id = p.product_id and select/group p.category. Never use i.category, i.year or i.month; use the approved product attributes and snapshot_date. For a requested year use i.snapshot_date >= $1 AND i.snapshot_date < $2, binding January 1 of that year and January 1 of the next year.\nproducts.product_id is a primary key; the inventory-to-products join is many-to-one. Flag ratios count i.product_id in both numerator and denominator so their source grain remains explicit. Never replace these counts with COUNT(*).\naggregation=value selects the stored product field without AVG or SUM; scalar_formula is only for ungrouped product rows. Means are explicitly unweighted. Do not invent source formulas or demand weights. Keep exact snapshot_date groups for trends; never sum balances across dates or invent zero for an absent product.\nLatest means the unfiltered MAX(snapshot_date) from commerce.inventory, never a guessed date. Historical flags do not authorize reorders. Team acceptance and validation do not imply official business approval. Unresolved/unreviewed metrics cannot execute.\nRequested metrics: {\"metrics\": [\"stock_on_hand\"]}\nCanonical metric definitions: {\"stock_on_hand\": {\"name\": \"Stock on hand\", \"description\": \"Closing stock across observed products within one snapshot.\", \"version\": \"1.0.0\", \"domain\": \"inventory_management\", \"aliases\": [\"stock on hand\", \"stock levels\", \"lowest stock\", \"highest stock\", \"inventory level\", \"inventory levels\", \"inventory stock\", \"historical inventory\", \"inventory history\", \"product inventory history\", \"tồn kho\", \"lượng tồn kho\", \"số lượng tồn\"], \"source\": \"commerce.inventory + commerce.products\", \"source_columns\": {\"commerce.inventory\": [\"snapshot_date\", \"product_id\", \"year\", \"month\", \"stock_on_hand\"], \"commerce.products\": [\"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\"]}, \"formula\": \"SUM(stock_on_hand) within one snapshot\", \"scalar_formula\": \"stock_on_hand\", \"grain\": \"product_snapshot\", \"dimensions\": [\"snapshot_date\", \"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\", \"year\", \"month\"], \"date_field\": \"commerce.inventory.snapshot_date\", \"temporal_semantics\": \"One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.\", \"aggregation\": \"sum\", \"unit\": \"units\", \"eligibility_filters\": [], \"null_handling\": \"Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.\", \"zero_denominator\": \"Return NULL using NULLIF; never substitute zero for an undefined ratio.\", \"join_requirements\": [\"inventory.product_id = products.product_id; many-to-one only\"], \"provenance\": \"team_defined\", \"definition_status\": \"executable\", \"approval_status\": \"team_accepted\", \"business_approval_status\": \"not_recorded\", \"validation_status\": \"data_profiled\", \"currency\": \"dataset_currency_unknown\", \"snapshot_required\": true, \"evidence\": [\"artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json\", \"VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections\", \"User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded.\"], \"limitations\": [\"Historical monthly observations; every answer must state the selected snapshot date.\", \"Missing product snapshots are not zero inventory; denominators cover observed products only.\", \"No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\", \"Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\"], \"examples\": {\"en\": \"Show stock on hand at the latest available inventory snapshot.\", \"vi\": \"Cho biết tồn kho tại kỳ tồn kho mới nhất.\"}, \"aliases_by_language\": {\"en\": [\"stock on hand\", \"stock levels\", \"lowest stock\", \"highest stock\", \"inventory level\", \"inventory levels\", \"inventory stock\", \"historical inventory\", \"inventory history\", \"product inventory history\"], \"vi\": [\"tồn kho\", \"lượng tồn kho\", \"số lượng tồn\"]}}}\nApproved schema:\ncommerce.inventory: days_of_supply, fill_rate, overstock_flag, product_id, reorder_flag, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold\ncommerce.products: category, color, product_id, product_name, segment, size\nApproved joins:\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nNhững mã hàng nào có mức đáp ứng kém nhất ở kỳ tồn kho mới nhất? Lấy 10 sản phẩm.",
+          "response": "{\n  \"sql\": \"SELECT i.product_id AS product_id, i.fill_rate AS fill_rate FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) ORDER BY i.fill_rate ASC, i.product_id ASC LIMIT 10\",\n  \"parameters\": [],\n  \"explanation\": \"Retrieves the 10 product IDs with the lowest fill_rate (worst fulfillment) from the latest inventory snapshot.\"\n}",
+          "usage": {
+            "input_tokens": 1598,
+            "output_tokens": 101,
+            "total_tokens": 1699
+          },
+          "elapsed_ms": 714.55
+        },
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nInventory Management requirements:\nEvery result MUST include i.snapshot_date AS snapshot_date. For aggregates, GROUP BY i.snapshot_date and every other dimension. The final SELECT MUST have LIMIT 200, including repairs.\nExample for latest total stock: SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200\nFor category results JOIN commerce.products AS p ON i.product_id = p.product_id and select/group p.category. Never use i.category, i.year or i.month; use the approved product attributes and snapshot_date. For a requested year use i.snapshot_date >= $1 AND i.snapshot_date < $2, binding January 1 of that year and January 1 of the next year.\nproducts.product_id is a primary key; the inventory-to-products join is many-to-one. Flag ratios count i.product_id in both numerator and denominator so their source grain remains explicit. Never replace these counts with COUNT(*).\naggregation=value selects the stored product field without AVG or SUM; scalar_formula is only for ungrouped product rows. Means are explicitly unweighted. Do not invent source formulas or demand weights. Keep exact snapshot_date groups for trends; never sum balances across dates or invent zero for an absent product.\nLatest means the unfiltered MAX(snapshot_date) from commerce.inventory, never a guessed date. Historical flags do not authorize reorders. Team acceptance and validation do not imply official business approval. Unresolved/unreviewed metrics cannot execute.\nRequested metrics: {\"metrics\": [\"stock_on_hand\"]}\nCanonical metric definitions: {\"stock_on_hand\": {\"name\": \"Stock on hand\", \"description\": \"Closing stock across observed products within one snapshot.\", \"version\": \"1.0.0\", \"domain\": \"inventory_management\", \"aliases\": [\"stock on hand\", \"stock levels\", \"lowest stock\", \"highest stock\", \"inventory level\", \"inventory levels\", \"inventory stock\", \"historical inventory\", \"inventory history\", \"product inventory history\", \"tồn kho\", \"lượng tồn kho\", \"số lượng tồn\"], \"source\": \"commerce.inventory + commerce.products\", \"source_columns\": {\"commerce.inventory\": [\"snapshot_date\", \"product_id\", \"year\", \"month\", \"stock_on_hand\"], \"commerce.products\": [\"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\"]}, \"formula\": \"SUM(stock_on_hand) within one snapshot\", \"scalar_formula\": \"stock_on_hand\", \"grain\": \"product_snapshot\", \"dimensions\": [\"snapshot_date\", \"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\", \"year\", \"month\"], \"date_field\": \"commerce.inventory.snapshot_date\", \"temporal_semantics\": \"One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.\", \"aggregation\": \"sum\", \"unit\": \"units\", \"eligibility_filters\": [], \"null_handling\": \"Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.\", \"zero_denominator\": \"Return NULL using NULLIF; never substitute zero for an undefined ratio.\", \"join_requirements\": [\"inventory.product_id = products.product_id; many-to-one only\"], \"provenance\": \"team_defined\", \"definition_status\": \"executable\", \"approval_status\": \"team_accepted\", \"business_approval_status\": \"not_recorded\", \"validation_status\": \"data_profiled\", \"currency\": \"dataset_currency_unknown\", \"snapshot_required\": true, \"evidence\": [\"artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json\", \"VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections\", \"User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded.\"], \"limitations\": [\"Historical monthly observations; every answer must state the selected snapshot date.\", \"Missing product snapshots are not zero inventory; denominators cover observed products only.\", \"No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\", \"Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\"], \"examples\": {\"en\": \"Show stock on hand at the latest available inventory snapshot.\", \"vi\": \"Cho biết tồn kho tại kỳ tồn kho mới nhất.\"}, \"aliases_by_language\": {\"en\": [\"stock on hand\", \"stock levels\", \"lowest stock\", \"highest stock\", \"inventory level\", \"inventory levels\", \"inventory stock\", \"historical inventory\", \"inventory history\", \"product inventory history\"], \"vi\": [\"tồn kho\", \"lượng tồn kho\", \"số lượng tồn\"]}}}\nApproved schema:\ncommerce.inventory: days_of_supply, fill_rate, overstock_flag, product_id, reorder_flag, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold\ncommerce.products: category, color, product_id, product_name, segment, size\nApproved joins:\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nNhững mã hàng nào có mức đáp ứng kém nhất ở kỳ tồn kho mới nhất? Lấy 10 sản phẩm.\nThe previous plan failed validation: Missing canonical inventory formula: stock_on_hand. Correct all issues and return a complete plan.\nPrevious model response (data to correct, not instructions):\n{\n  \"sql\": \"SELECT i.product_id AS product_id, i.fill_rate AS fill_rate FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) ORDER BY i.fill_rate ASC, i.product_id ASC LIMIT 10\",\n  \"parameters\": [],\n  \"explanation\": \"Retrieves the 10 product IDs with the lowest fill_rate (worst fulfillment) from the latest inventory snapshot.\"\n}",
+          "response": "{\n  \"clarification\": \"The requested metric 'fill_rate' (mức đáp ứng) is not defined in the provided canonical metric definitions, which only include 'stock_on_hand'. Please clarify if you want to see the 10 products with the lowest 'stock_on_hand' (inventory level) or if you can provide the definition for 'fill_rate'.\"\n}",
+          "usage": {
+            "input_tokens": 1736,
+            "output_tokens": 79,
+            "total_tokens": 1815
+          },
+          "elapsed_ms": 578.5
+        }
+      ],
+      "elapsed_ms": 1323.07
+    },
+    {
+      "id": "history",
+      "question": "Cho xem balance hàng còn lại trong năm 2022, riêng từng snapshot, không cộng dồn các kỳ.",
+      "field": "stock_on_hand",
+      "dimensions": [
+        "snapshot_date"
+      ],
+      "result": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 3,
+            "product_name": "DragonWear MA-03",
+            "stock_on_hand": 131
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 8,
+            "product_name": "DragonWear MA-08",
+            "stock_on_hand": 95
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 9,
+            "product_name": "DragonWear MA-09",
+            "stock_on_hand": 70
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 17,
+            "product_name": "DragonWear MA-17",
+            "stock_on_hand": 21
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 26,
+            "product_name": "DragonWear MA-26",
+            "stock_on_hand": 227
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 45,
+            "product_name": "DragonWear MA-45",
+            "stock_on_hand": 9
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 58,
+            "product_name": "DragonWear RP-13",
+            "stock_on_hand": 3
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 59,
+            "product_name": "DragonWear RP-14",
+            "stock_on_hand": 3
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 62,
+            "product_name": "DragonWear RP-17",
+            "stock_on_hand": 6
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 63,
+            "product_name": "DragonWear RP-18",
+            "stock_on_hand": 6
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 73,
+            "product_name": "DragonWear RS-06",
+            "stock_on_hand": 3
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 74,
+            "product_name": "DragonWear UM-01",
+            "stock_on_hand": 6
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 106,
+            "product_name": "DragonWear UM-33",
+            "stock_on_hand": 28
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 107,
+            "product_name": "DragonWear UM-34",
+            "stock_on_hand": 53
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 109,
+            "product_name": "DragonWear UM-36",
+            "stock_on_hand": 19
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 115,
+            "product_name": "DragonWear UM-42",
+            "stock_on_hand": 270
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 150,
+            "product_name": "DragonWear UR-21",
+            "stock_on_hand": 11
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 165,
+            "product_name": "DragonWear UR-36",
+            "stock_on_hand": 18
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 183,
+            "product_name": "DragonWear UE-11",
+            "stock_on_hand": 45
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 200,
+            "product_name": "IndigoViet UM-02",
+            "stock_on_hand": 35
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 201,
+            "product_name": "IndigoViet UM-03",
+            "stock_on_hand": 19
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 202,
+            "product_name": "IndigoViet UM-04",
+            "stock_on_hand": 95
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 204,
+            "product_name": "IndigoViet UM-06",
+            "stock_on_hand": 14
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 206,
+            "product_name": "IndigoViet UM-08",
+            "stock_on_hand": 235
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 207,
+            "product_name": "IndigoViet UM-09",
+            "stock_on_hand": 20
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 236,
+            "product_name": "LotusWear UR-08",
+            "stock_on_hand": 12
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 252,
+            "product_name": "LotusWear UR-24",
+            "stock_on_hand": 31
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 276,
+            "product_name": "LotusWear UR-48",
+            "stock_on_hand": 4
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 294,
+            "product_name": "LotusWear UE-15",
+            "stock_on_hand": 6
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 295,
+            "product_name": "LotusWear UE-16",
+            "stock_on_hand": 16
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 307,
+            "product_name": "LotusWear UE-28",
+            "stock_on_hand": 18
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 324,
+            "product_name": "LotusWear UE-45",
+            "stock_on_hand": 22
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 332,
+            "product_name": "LotusWear UE-53",
+            "stock_on_hand": 27
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 362,
+            "product_name": "LotusWear UE-83",
+            "stock_on_hand": 33
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 366,
+            "product_name": "LotusWear UE-87",
+            "stock_on_hand": 3
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 369,
+            "product_name": "LotusWear UE-90",
+            "stock_on_hand": 4
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 371,
+            "product_name": "LotusWear UE-92",
+            "stock_on_hand": 14
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 388,
+            "product_name": "LotusWear UC-02",
+            "stock_on_hand": 22
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 389,
+            "product_name": "LotusWear UC-03",
+            "stock_on_hand": 12
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 402,
+            "product_name": "SaigonFlex UM-07",
+            "stock_on_hand": 16
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 405,
+            "product_name": "SaigonFlex UM-10",
+            "stock_on_hand": 109
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 407,
+            "product_name": "SaigonFlex UM-12",
+            "stock_on_hand": 274
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 415,
+            "product_name": "SaigonFlex UM-20",
+            "stock_on_hand": 173
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 424,
+            "product_name": "SaigonFlex UM-29",
+            "stock_on_hand": 103
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 428,
+            "product_name": "SaigonFlex UM-33",
+            "stock_on_hand": 49
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 429,
+            "product_name": "SaigonFlex UM-34",
+            "stock_on_hand": 69
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 431,
+            "product_name": "SaigonFlex UM-36",
+            "stock_on_hand": 38
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 433,
+            "product_name": "SaigonFlex UM-38",
+            "stock_on_hand": 605
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 449,
+            "product_name": "SaigonFlex UM-54",
+            "stock_on_hand": 680
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 450,
+            "product_name": "SaigonFlex UM-55",
+            "stock_on_hand": 26
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 451,
+            "product_name": "SaigonFlex UM-56",
+            "stock_on_hand": 91
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 456,
+            "product_name": "SaigonFlex UM-61",
+            "stock_on_hand": 270
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 461,
+            "product_name": "SaigonFlex UM-66",
+            "stock_on_hand": 94
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 466,
+            "product_name": "SaigonFlex UM-71",
+            "stock_on_hand": 3
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 470,
+            "product_name": "SaigonFlex UM-75",
+            "stock_on_hand": 79
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 471,
+            "product_name": "SaigonFlex UM-76",
+            "stock_on_hand": 37
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 476,
+            "product_name": "SaigonFlex UM-81",
+            "stock_on_hand": 19
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 487,
+            "product_name": "SaigonFlex UM-92",
+            "stock_on_hand": 2011
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 489,
+            "product_name": "SaigonFlex UM-94",
+            "stock_on_hand": 122
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 491,
+            "product_name": "SaigonFlex UM-96",
+            "stock_on_hand": 1365
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 494,
+            "product_name": "SaigonFlex UM-99",
+            "stock_on_hand": 14
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 496,
+            "product_name": "SaigonFlex UM-01",
+            "stock_on_hand": 780
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 501,
+            "product_name": "SaigonFlex UM-06",
+            "stock_on_hand": 68
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 506,
+            "product_name": "SaigonFlex UM-11",
+            "stock_on_hand": 855
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 545,
+            "product_name": "SaigonFlex UC-10",
+            "stock_on_hand": 109
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 548,
+            "product_name": "SaigonFlex UC-13",
+            "stock_on_hand": 740
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 549,
+            "product_name": "SaigonFlex UC-14",
+            "stock_on_hand": 160
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 555,
+            "product_name": "SaigonFlex UC-20",
+            "stock_on_hand": 71
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 556,
+            "product_name": "SaigonFlex UC-21",
+            "stock_on_hand": 244
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 563,
+            "product_name": "SaigonFlex UC-28",
+            "stock_on_hand": 24
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 567,
+            "product_name": "SaigonFlex UC-32",
+            "stock_on_hand": 179
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 576,
+            "product_name": "SaigonFlex UC-41",
+            "stock_on_hand": 15
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 577,
+            "product_name": "SaigonFlex UC-42",
+            "stock_on_hand": 283
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 578,
+            "product_name": "SaigonFlex UC-43",
+            "stock_on_hand": 405
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 585,
+            "product_name": "SaigonFlex UC-50",
+            "stock_on_hand": 268
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 588,
+            "product_name": "SaigonFlex UC-53",
+            "stock_on_hand": 8
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 589,
+            "product_name": "SaigonFlex UC-54",
+            "stock_on_hand": 74
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 604,
+            "product_name": "SaigonFlex UC-69",
+            "stock_on_hand": 2319
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 609,
+            "product_name": "SaigonFlex UC-74",
+            "stock_on_hand": 1018
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 615,
+            "product_name": "SaigonFlex UC-80",
+            "stock_on_hand": 462
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 636,
+            "product_name": "SaigonFlex UC-01",
+            "stock_on_hand": 555
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 640,
+            "product_name": "SaigonFlex UC-05",
+            "stock_on_hand": 18
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 649,
+            "product_name": "SaigonFlex UC-14",
+            "stock_on_hand": 4
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 653,
+            "product_name": "SaigonFlex UC-18",
+            "stock_on_hand": 26
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 656,
+            "product_name": "SaigonFlex UC-21",
+            "stock_on_hand": 76
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 666,
+            "product_name": "SaigonFlex UC-31",
+            "stock_on_hand": 32
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 667,
+            "product_name": "SaigonFlex UC-32",
+            "stock_on_hand": 21
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 674,
+            "product_name": "SaigonFlex UC-39",
+            "stock_on_hand": 602
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 676,
+            "product_name": "SaigonFlex UC-41",
+            "stock_on_hand": 874
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 690,
+            "product_name": "SaigonFlex UC-55",
+            "stock_on_hand": 613
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 699,
+            "product_name": "HanoiStreet MA-06",
+            "stock_on_hand": 126
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 702,
+            "product_name": "HanoiStreet MA-09",
+            "stock_on_hand": 342
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 706,
+            "product_name": "HanoiStreet MA-13",
+            "stock_on_hand": 13
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 733,
+            "product_name": "HanoiStreet RP-21",
+            "stock_on_hand": 1312
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 734,
+            "product_name": "HanoiStreet RP-22",
+            "stock_on_hand": 1370
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 735,
+            "product_name": "HanoiStreet RP-23",
+            "stock_on_hand": 722
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 736,
+            "product_name": "HanoiStreet RP-24",
+            "stock_on_hand": 727
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 759,
+            "product_name": "HanoiStreet RP-47",
+            "stock_on_hand": 1300
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 760,
+            "product_name": "HanoiStreet RP-48",
+            "stock_on_hand": 1328
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 761,
+            "product_name": "HanoiStreet RP-49",
+            "stock_on_hand": 1188
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 762,
+            "product_name": "HanoiStreet RP-50",
+            "stock_on_hand": 1209
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 763,
+            "product_name": "HanoiStreet RP-51",
+            "stock_on_hand": 703
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 764,
+            "product_name": "HanoiStreet RP-52",
+            "stock_on_hand": 660
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 777,
+            "product_name": "HanoiStreet RP-65",
+            "stock_on_hand": 754
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 778,
+            "product_name": "HanoiStreet RP-66",
+            "stock_on_hand": 805
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 779,
+            "product_name": "HanoiStreet RP-67",
+            "stock_on_hand": 681
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 780,
+            "product_name": "HanoiStreet RP-68",
+            "stock_on_hand": 693
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 781,
+            "product_name": "HanoiStreet RP-69",
+            "stock_on_hand": 724
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 782,
+            "product_name": "HanoiStreet RP-70",
+            "stock_on_hand": 707
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 791,
+            "product_name": "HanoiStreet RP-79",
+            "stock_on_hand": 2605
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 792,
+            "product_name": "HanoiStreet RP-80",
+            "stock_on_hand": 2537
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 793,
+            "product_name": "HanoiStreet RP-81",
+            "stock_on_hand": 1108
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 794,
+            "product_name": "HanoiStreet RP-82",
+            "stock_on_hand": 1145
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 797,
+            "product_name": "HanoiStreet RS-01",
+            "stock_on_hand": 209
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 807,
+            "product_name": "HanoiStreet RS-11",
+            "stock_on_hand": 95
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 809,
+            "product_name": "HanoiStreet RS-13",
+            "stock_on_hand": 199
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 819,
+            "product_name": "HanoiStreet UM-03",
+            "stock_on_hand": 428
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 826,
+            "product_name": "HanoiStreet UM-10",
+            "stock_on_hand": 1901
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 835,
+            "product_name": "HanoiStreet UM-19",
+            "stock_on_hand": 11
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 839,
+            "product_name": "HanoiStreet UM-23",
+            "stock_on_hand": 53
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 846,
+            "product_name": "HanoiStreet UM-30",
+            "stock_on_hand": 6
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 854,
+            "product_name": "HanoiStreet UM-38",
+            "stock_on_hand": 139
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 882,
+            "product_name": "HanoiStreet UR-28",
+            "stock_on_hand": 28
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 896,
+            "product_name": "HanoiStreet UE-05",
+            "stock_on_hand": 3
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 907,
+            "product_name": "HanoiStreet UE-16",
+            "stock_on_hand": 1108
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 908,
+            "product_name": "HanoiStreet UE-17",
+            "stock_on_hand": 77
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 909,
+            "product_name": "HanoiStreet UE-18",
+            "stock_on_hand": 12
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 916,
+            "product_name": "HanoiStreet UE-25",
+            "stock_on_hand": 17
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 927,
+            "product_name": "HanoiStreet UE-36",
+            "stock_on_hand": 1865
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 939,
+            "product_name": "HanoiStreet UC-02",
+            "stock_on_hand": 437
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 942,
+            "product_name": "HanoiStreet UC-05",
+            "stock_on_hand": 17
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 945,
+            "product_name": "HanoiStreet UC-08",
+            "stock_on_hand": 148
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 963,
+            "product_name": "HanoiStreet UC-26",
+            "stock_on_hand": 49
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 966,
+            "product_name": "HanoiStreet UC-29",
+            "stock_on_hand": 740
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 973,
+            "product_name": "HanoiStreet UC-36",
+            "stock_on_hand": 30
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 974,
+            "product_name": "HanoiStreet UC-37",
+            "stock_on_hand": 26
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 975,
+            "product_name": "HanoiStreet UC-38",
+            "stock_on_hand": 3
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 980,
+            "product_name": "HanoiStreet UC-43",
+            "stock_on_hand": 18
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 981,
+            "product_name": "HanoiStreet UC-44",
+            "stock_on_hand": 1074
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 993,
+            "product_name": "HanoiStreet UC-56",
+            "stock_on_hand": 1365
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 997,
+            "product_name": "HanoiStreet UC-60",
+            "stock_on_hand": 17
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1000,
+            "product_name": "HanoiStreet YY-01",
+            "stock_on_hand": 1237
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1001,
+            "product_name": "HanoiStreet YY-02",
+            "stock_on_hand": 194
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1007,
+            "product_name": "HanoiStreet YY-08",
+            "stock_on_hand": 12
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1009,
+            "product_name": "HanoiStreet YY-10",
+            "stock_on_hand": 769
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1012,
+            "product_name": "HanoiStreet YY-13",
+            "stock_on_hand": 29
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1022,
+            "product_name": "HanoiStreet YY-23",
+            "stock_on_hand": 131
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1043,
+            "product_name": "MekongFit MA-01",
+            "stock_on_hand": 103
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1045,
+            "product_name": "MekongFit MA-03",
+            "stock_on_hand": 61
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1049,
+            "product_name": "MekongFit MA-07",
+            "stock_on_hand": 93
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1050,
+            "product_name": "MekongFit MA-08",
+            "stock_on_hand": 35
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1053,
+            "product_name": "MekongFit MA-11",
+            "stock_on_hand": 838
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1059,
+            "product_name": "MekongFit RP-05",
+            "stock_on_hand": 127
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1060,
+            "product_name": "MekongFit RP-06",
+            "stock_on_hand": 142
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1061,
+            "product_name": "MekongFit RP-07",
+            "stock_on_hand": 380
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1062,
+            "product_name": "MekongFit RP-08",
+            "stock_on_hand": 403
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1077,
+            "product_name": "MekongFit RP-23",
+            "stock_on_hand": 192
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1078,
+            "product_name": "MekongFit RP-24",
+            "stock_on_hand": 184
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1085,
+            "product_name": "MekongFit RP-31",
+            "stock_on_hand": 1342
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1086,
+            "product_name": "MekongFit RP-32",
+            "stock_on_hand": 1322
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1103,
+            "product_name": "MekongFit RP-49",
+            "stock_on_hand": 88
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1104,
+            "product_name": "MekongFit RP-50",
+            "stock_on_hand": 83
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1114,
+            "product_name": "MekongFit RS-02",
+            "stock_on_hand": 271
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1115,
+            "product_name": "MekongFit RS-03",
+            "stock_on_hand": 401
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1118,
+            "product_name": "MekongFit RS-06",
+            "stock_on_hand": 33
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1120,
+            "product_name": "MekongFit RS-08",
+            "stock_on_hand": 149
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1125,
+            "product_name": "MekongFit UM-02",
+            "stock_on_hand": 14
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1129,
+            "product_name": "MekongFit UM-06",
+            "stock_on_hand": 409
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1134,
+            "product_name": "MekongFit UM-11",
+            "stock_on_hand": 36
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1137,
+            "product_name": "MekongFit UM-14",
+            "stock_on_hand": 104
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1141,
+            "product_name": "MekongFit UM-18",
+            "stock_on_hand": 21
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1142,
+            "product_name": "MekongFit UM-19",
+            "stock_on_hand": 77
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1145,
+            "product_name": "MekongFit UR-02",
+            "stock_on_hand": 51
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1155,
+            "product_name": "MekongFit UR-12",
+            "stock_on_hand": 109
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1171,
+            "product_name": "MekongFit UE-07",
+            "stock_on_hand": 470
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1175,
+            "product_name": "MekongFit UE-11",
+            "stock_on_hand": 325
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1179,
+            "product_name": "MekongFit UE-15",
+            "stock_on_hand": 22
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1180,
+            "product_name": "MekongFit UE-16",
+            "stock_on_hand": 160
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1182,
+            "product_name": "MekongFit UE-18",
+            "stock_on_hand": 1792
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1183,
+            "product_name": "MekongFit UE-19",
+            "stock_on_hand": 175
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1212,
+            "product_name": "MekongFit UC-14",
+            "stock_on_hand": 307
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1214,
+            "product_name": "MekongFit UC-16",
+            "stock_on_hand": 16
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1220,
+            "product_name": "MekongFit UC-22",
+            "stock_on_hand": 4
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1223,
+            "product_name": "MekongFit UC-25",
+            "stock_on_hand": 433
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1239,
+            "product_name": "VietMode MP-07",
+            "stock_on_hand": 3
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1240,
+            "product_name": "VietMode MP-08",
+            "stock_on_hand": 3
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1245,
+            "product_name": "VietMode MP-13",
+            "stock_on_hand": 7
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1246,
+            "product_name": "VietMode MP-14",
+            "stock_on_hand": 8
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1249,
+            "product_name": "VietMode MP-17",
+            "stock_on_hand": 3
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1250,
+            "product_name": "VietMode MP-18",
+            "stock_on_hand": 3
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1263,
+            "product_name": "VietMode MP-31",
+            "stock_on_hand": 4
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1264,
+            "product_name": "VietMode MP-32",
+            "stock_on_hand": 4
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1279,
+            "product_name": "VietMode MA-15",
+            "stock_on_hand": 3
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1304,
+            "product_name": "VietMode MA-40",
+            "stock_on_hand": 6
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1308,
+            "product_name": "VietMode MA-44",
+            "stock_on_hand": 28
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1319,
+            "product_name": "VietMode RP-11",
+            "stock_on_hand": 15
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1320,
+            "product_name": "VietMode RP-12",
+            "stock_on_hand": 15
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1339,
+            "product_name": "VietMode RP-31",
+            "stock_on_hand": 29
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1340,
+            "product_name": "VietMode RP-32",
+            "stock_on_hand": 29
+          },
+          {
+            "snapshot_date": "2022-01-31",
+            "product_id": 1349,
+            "product_name": "VietMode RP-41",
+            "stock_on_hand": 65
+          }
+        ],
+        "answer": "Query completed.",
+        "sql": "SELECT i.snapshot_date, i.product_id, i.product_name, i.stock_on_hand FROM commerce.inventory AS i WHERE i.year = $1 ORDER BY 1, 2 LIMIT 200",
+        "parameters": [
+          2022
+        ],
+        "query_status": "executed",
+        "evidence": [
+          {
+            "source": "commerce.inventory",
+            "metadata": {
+              "metrics": {}
+            }
+          }
+        ],
+        "limitations": [],
+        "metadata": {
+          "source": [
+            "commerce.inventory"
+          ],
+          "explanation": "Retrieves the stock on hand (balance) for each product at each snapshot date in 2022, without aggregating across periods.",
+          "metrics": {}
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\n\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.inventory.product_id = commerce.products.product_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.customers.zip = commerce.geography.zip\nQuestion:\nCho xem balance hàng còn lại trong năm 2022, riêng từng snapshot, không cộng dồn các kỳ.",
+          "response": "{\n  \"sql\": \"SELECT i.snapshot_date, i.product_id, i.product_name, i.stock_on_hand FROM commerce.inventory AS i WHERE i.year = $1 ORDER BY 1, 2 LIMIT 200\",\n  \"parameters\": [\n    2022\n  ],\n  \"explanation\": \"Retrieves the stock on hand (balance) for each product at each snapshot date in 2022, without aggregating across periods.\"\n}",
+          "usage": {
+            "input_tokens": 945,
+            "output_tokens": 104,
+            "total_tokens": 1049
+          },
+          "elapsed_ms": 673.03
+        }
+      ],
+      "elapsed_ms": 3008.19
+    },
+    {
+      "id": "low_stock",
+      "question": "Show low stock products in the latest available inventory snapshot.",
+      "clarification_code": "metric_ambiguous",
+      "result": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "The dataset does not contain a reviewed definition for this inventory aggregate.",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "metric_unsupported",
+          "clarification_required": true,
+          "status": "clarification_required"
+        },
+        "attempted_sql": "SELECT i.product_id, i.product_name, i.stock_on_hand, i.days_of_supply, i.stockout_flag FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(i2.snapshot_date) FROM commerce.inventory AS i2) AND i.stockout_flag = TRUE ORDER BY 1 LIMIT 200",
+        "parameters": [],
+        "query_status": "rejected"
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\n\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.inventory.product_id = commerce.products.product_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.customers.zip = commerce.geography.zip\nQuestion:\nShow low stock products in the latest available inventory snapshot.",
+          "response": "{\n  \"sql\": \"SELECT i.product_id, i.product_name, i.stock_on_hand, i.days_of_supply, i.stockout_flag FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(snapshot_date) FROM commerce.inventory) AND i.stockout_flag = TRUE ORDER BY 1 LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"Selects product details from the inventory table where the snapshot date is the most recent available and the stockout flag is true, indicating low stock or out-of-stock conditions.\"\n}",
+          "usage": {
+            "input_tokens": 932,
+            "output_tokens": 117,
+            "total_tokens": 1049
+          },
+          "elapsed_ms": 696.22
+        },
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\n\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.inventory.product_id = commerce.products.product_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.customers.zip = commerce.geography.zip\nQuestion:\nShow low stock products in the latest available inventory snapshot.\nThe previous plan failed validation: Columns must use a table alias: snapshot_date. Correct all issues and return a complete plan.\nPrevious model response (data to correct, not instructions):\n{\n  \"sql\": \"SELECT i.product_id, i.product_name, i.stock_on_hand, i.days_of_supply, i.stockout_flag FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(snapshot_date) FROM commerce.inventory) AND i.stockout_flag = TRUE ORDER BY 1 LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"Selects product details from the inventory table where the snapshot date is the most recent available and the stockout flag is true, indicating low stock or out-of-stock conditions.\"\n}",
+          "response": "{\n  \"sql\": \"SELECT i.product_id, i.product_name, i.stock_on_hand, i.days_of_supply, i.stockout_flag FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(i2.snapshot_date) FROM commerce.inventory AS i2) AND i.stockout_flag = TRUE ORDER BY 1 LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"Selects product details from the inventory table where the snapshot date is the most recent available and the stockout flag is true, indicating low stock or out-of-stock conditions.\"\n}",
+          "usage": {
+            "input_tokens": 1087,
+            "output_tokens": 122,
+            "total_tokens": 1209
+          },
+          "elapsed_ms": 587.17
+        }
+      ],
+      "elapsed_ms": 1303.93
+    },
+    {
+      "id": "safety_stock",
+      "question": "What is an appropriate safety stock buffer for the latest inventory snapshot?",
+      "clarification_code": "metric_unresolved",
+      "result": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "Safety stock requires a reviewed demand/lead-time model and service target; these are missing.",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "metric_unresolved",
+          "clarification_required": true,
+          "status": "clarification_required"
+        }
+      },
+      "generation_calls": [],
+      "elapsed_ms": 1.72
+    },
+    {
+      "id": "weighted_fill",
+      "question": "What is the demand-weighted fill rate on 2022-12-31?",
+      "clarification_code": "metric_unresolved",
+      "result": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "The dataset does not contain a reviewed demand/fulfilled-units denominator or source weighting rule. Use a stored product fill rate or the team-defined unweighted mean instead.",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "metric_unresolved",
+          "clarification_required": true,
+          "status": "clarification_required"
+        }
+      },
+      "generation_calls": [],
+      "elapsed_ms": 1.33
+    }
+  ]
+}

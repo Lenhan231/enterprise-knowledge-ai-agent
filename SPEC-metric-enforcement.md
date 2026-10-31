@@ -27,3 +27,8 @@ Never: production DML/RLS/migrations, inferred currency, invented source formula
 
 ## Unresolved
 Original fill-rate denominator/weighting; operational reorder point/quantity, safety stock, lead times, live stock, inventory accuracy and turnover/valuation definitions without their required evidence remain non-executable.
+
+
+## Approved semantic-mapping follow-up (2026-10-31)
+
+The user explicitly requested LLM mapping of wording into existing metric IDs, dimensions, filters, dates and ranking, followed by deterministic validation before SQL generation. Implement this in the existing SQL agent with typed models and catalog lookup, not a new agent, service or registry. Reject unsupported IDs, unresolved definitions, missing/ambiguous scope and incompatible source fields. Bind generated SQL to the validated interpretation, preserving all existing authorization, AST, fanout, parameter and read-only checks. Expose the accepted interpretation as compatible result metadata. Test unseen and mixed-language questions, invalid model output and attempts to alter constraints. Keep the provider/model unchanged and retain unsuccessful live trials separately from replay evidence.

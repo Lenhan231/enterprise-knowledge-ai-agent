@@ -5,7 +5,7 @@ Status: user approved the module map and inventory conventions, with all new dom
 | Module id | Responsibility | Depends on |
 | --- | --- | --- |
 | metric-catalog | Versioned inventory YAML catalog, provenance/governance validation and unresolved inventory candidates | none |
-| metric-enforcement | Existing ontology integration; bilingual aliases, formulas, dimensions, grain, snapshot scope and targeted clarification | metric-catalog |
+| metric-enforcement | Existing ontology integration; typed semantic interpretation, bilingual aliases, formulas, dimensions, grain, snapshot scope and targeted clarification | metric-catalog |
 | metric-evaluation | Deterministic inventory regressions, unchanged-model benchmarks, minimal Report metadata compatibility and documentation | metric-enforcement |
 
 Build order: metric-catalog -> metric-enforcement -> metric-evaluation. These are review boundaries, not new runtime services.

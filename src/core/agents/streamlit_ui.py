@@ -90,17 +90,24 @@ def submit_report(question: str, filename: str | None = None, content: bytes | N
         raise RuntimeError("Could not connect to the FastAPI backend.") from None
 
 
-def display_result(st: Any, result: Mapping[str, Any]) -> None:
+def display_result(st: Any, result: Mapping[str, Any], *, key_prefix: str | None = None) -> None:
     metadata = result.get("metadata") or {}
+    if metadata.get('context_used'):
+        scope = metadata.get('semantic_interpretation') or {}
+        temporal = scope.get('time') or {}
+        st.caption('Following previous SQL scope. Snapshot: '+str(temporal.get('start') or temporal.get('mode','unknown')))
+        filters = scope.get('filters') or []
+        if filters:
+            st.caption('Filters: '+', '.join(f"{f['field']} {f['operator']} {f['value']}" for f in filters))
     if metadata.get("status"):
         st.caption("Status: " + metadata["status"].replace("_", " ") +
                    (" · evidence fallback" if metadata.get("fallback") else ""))
     st.markdown(result.get("answer", "No answer returned."))
     dashboard = (result.get("data") or {}).get("dashboard")
     if isinstance(dashboard, Mapping) and dashboard.get("outline_id") == "inventory_control":
-        _display_inventory_dashboard(st, dashboard)
+        _display_inventory_dashboard(st, dashboard, key_prefix=key_prefix)
     else:
-        _display_data(st, result.get("data") or {})
+        _display_data(st, result.get("data") or {}, key_prefix=key_prefix)
     evidence = result.get("evidence") or []
     if evidence:
         with st.expander("Sources"):
@@ -113,10 +120,11 @@ def display_result(st: Any, result: Mapping[str, Any]) -> None:
         st.caption(f"Limitation: {limitation}")
     if metadata.get("task_trace"):
         with st.expander("Execution details"):
-            st.dataframe(metadata["task_trace"], use_container_width=True, hide_index=True)
+            st.dataframe(metadata["task_trace"], use_container_width=True, hide_index=True,
+                         **({'key':key_prefix+':trace'} if key_prefix else {}))
 
 
-def _display_inventory_dashboard(st: Any, dashboard: Mapping[str, Any]) -> None:
+def _display_inventory_dashboard(st: Any, dashboard: Mapping[str, Any], *, key_prefix: str | None = None) -> None:
     st.subheader(dashboard.get("title", "Inventory Control & Exceptions"))
     st.caption(f"Latest available snapshot: {dashboard.get('snapshot_date', 'unknown')}")
     kpis = dashboard.get("kpis") or {}
@@ -146,12 +154,13 @@ def _display_inventory_dashboard(st: Any, dashboard: Mapping[str, Any]) -> None:
     exceptions = dashboard.get("exceptions") or []
     st.subheader("Inventory exceptions")
     if exceptions:
-        st.dataframe(exceptions, use_container_width=True, hide_index=True)
+        st.dataframe(exceptions, use_container_width=True, hide_index=True,
+                     **({'key':key_prefix+':exceptions'} if key_prefix else {}))
     else:
         st.caption("No flagged inventory exceptions in this snapshot.")
 
 
-def _display_data(st: Any, value: Any, label: str = "Results") -> None:
+def _display_data(st: Any, value: Any, label: str = "Results", *, key_prefix: str | None = None) -> None:
     if isinstance(value, Mapping):
         sql = value.get("sql") or value.get("attempted_sql")
         if isinstance(sql, str):
@@ -160,14 +169,31 @@ def _display_data(st: Any, value: Any, label: str = "Results") -> None:
             export = f"-- Query status: {status}\n-- Parameters (JSON): {parameters}\n{sql}\n"
             with st.expander(f"SQL query · {status}"):
                 st.code(sql, language="sql")
-                st.download_button("Download SQL", export, file_name="query.sql", mime="text/plain")
+                st.download_button("Download SQL", export, file_name="query.sql", mime="text/plain",
+                                   **({'key':key_prefix+':sql'} if key_prefix else {}))
         rows = value.get("rows")
         if isinstance(rows, list) and rows and all(isinstance(row, Mapping) for row in rows):
             st.subheader(label)
-            st.dataframe(rows, use_container_width=True, hide_index=True)
+            st.dataframe(rows, use_container_width=True, hide_index=True,
+                         **({'key':key_prefix+':rows'} if key_prefix else {}))
         for key, nested in value.items():
             if key != "rows" and isinstance(nested, Mapping):
-                _display_data(st, nested, key.title())
+                _display_data(st, nested, key.title(), key_prefix=key_prefix+':'+key if key_prefix else None)
+
+
+def reset_conversation(state, *, sign_out=False):
+    for key in list(state):
+        if key in {'chat_turns','last_result','report_download','conversation_id','report_conversation_id'} or str(key).startswith(('chat_input:','report_','category:')):
+            state.pop(key,None)
+    if sign_out:
+        state.pop('api_opener',None)
+        state.pop('agent_mode',None)
+        state.pop('login_username',None)
+        state.pop('login_password',None)
+    else:
+        state['conversation_id'] = uuid.uuid4().hex
+        state['report_conversation_id'] = uuid.uuid4().hex
+        state['chat_turns'] = []
 
 
 def main() -> None:
@@ -179,8 +205,8 @@ def main() -> None:
     prefix = os.getenv("API_AGENT_PREFIX", "/api/agents")
     if prefix == "/api/agents" and "api_opener" not in st.session_state:
         with st.form("sign_in"):
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
+            username = st.text_input("Username",key='login_username')
+            password = st.text_input("Password", type="password",key='login_password')
             signed_in = st.form_submit_button("Sign in")
         if signed_in:
             opener = build_opener(HTTPCookieProcessor(CookieJar()))
@@ -191,38 +217,38 @@ def main() -> None:
             try:
                 with opener.open(login_request, timeout=30) as response:
                     response.read()
+                reset_conversation(st.session_state)
                 st.session_state["api_opener"] = opener
                 st.rerun()
             except (HTTPError, URLError):
                 st.error("Sign-in failed. Check your account and backend connection.")
         st.stop()
     opener = st.session_state["api_opener"].open if "api_opener" in st.session_state else None
-    if opener and st.button("Sign out"):
-        for key in ("api_opener", "report_download", "last_result", "conversation_id", "report_conversation_id"):
-            st.session_state.pop(key, None)
+    if opener and st.button("Sign out",key='sign_out'):
+        reset_conversation(st.session_state,sign_out=True)
         st.rerun()
     if "conversation_id" not in st.session_state:
         st.session_state["conversation_id"] = uuid.uuid4().hex
     if "report_conversation_id" not in st.session_state:
         st.session_state["report_conversation_id"] = uuid.uuid4().hex
-    if st.button("New conversation"):
-        st.session_state["conversation_id"] = uuid.uuid4().hex
-        st.session_state["report_conversation_id"] = uuid.uuid4().hex
-        st.session_state.pop("last_result", None)
-        st.session_state.pop("report_download", None)
+    st.session_state.setdefault('chat_turns',[])
+    if st.button("New conversation",key='new_conversation'):
+        reset_conversation(st.session_state)
         st.rerun()
-    mode_label = st.selectbox("Agent", list(AGENT_MODES))
-    question = st.text_area("Question", height=100, placeholder="Ask about a VietStyle policy or commerce data…")
+    mode_label = st.selectbox("Agent", list(AGENT_MODES),key='agent_mode')
     is_report = AGENT_MODES[mode_label] == "report"
-    report_template = st.file_uploader("Report template (optional DOCX or Markdown)", type=["docx", "md"]) if is_report else None
+    report_id = st.session_state['report_conversation_id']
+    question = st.text_area('Report question',height=100,key='report_question:'+report_id) if is_report else ''
+    report_template = st.file_uploader("Report template (optional DOCX or Markdown)", type=["docx", "md"],key='report_template:'+report_id) if is_report else None
     source_mode = st.selectbox("Report sources", ["orchestrated", "documents", "analytics"],
         format_func=lambda mode: {'orchestrated': 'Auto (Knowledge + SQL)',
-                                  'documents': 'Documents only', 'analytics': 'Analytics only'}[mode]) if is_report else "documents"
-    output_format = st.selectbox("Output format", ["markdown", "docx"]) if is_report and report_template is None else None
-    category = st.text_input("Inventory category (optional)") if AGENT_MODES[mode_label] == "dashboard" else ""
+                                  'documents': 'Documents only', 'analytics': 'Analytics only'}[mode],key='report_source:'+report_id) if is_report else "documents"
+    output_format = st.selectbox("Output format", ["markdown", "docx"],key='report_format:'+report_id) if is_report and report_template is None else None
+    category = st.text_input("Inventory category (optional)",key='category:'+st.session_state['conversation_id']) if AGENT_MODES[mode_label] == "dashboard" else ""
     if is_report and st.button("Generate report", type="primary",
                                disabled=not question.strip()):
         st.session_state.pop("report_download", None)
+        report_client = st.session_state.get('api_opener')
         try:
             with st.spinner("Generating report…"):
                 payload, content_type, status = submit_report(
@@ -230,7 +256,9 @@ def main() -> None:
                     report_template.getvalue() if report_template else None,
                     source_mode=source_mode, output_format=output_format, opener=opener, agent_prefix=prefix,
                     conversation_id=st.session_state['report_conversation_id'])
-            st.session_state["report_download"] = (payload, content_type, status)
+            if (st.session_state.get('report_conversation_id') == report_id
+                    and st.session_state.get('api_opener') is report_client):
+                st.session_state["report_download"] = (payload, content_type, status)
         except (RuntimeError, ValueError) as error:
             st.error(str(error))
     if is_report and "report_download" in st.session_state:
@@ -240,22 +268,41 @@ def main() -> None:
         else:
             st.success("Report generated. Review the verification scope and sources before use.")
         extension = ".docx" if "wordprocessingml" in content_type else ".md"
-        st.download_button("Download report", payload, file_name=f"report{extension}", mime=content_type)
+        st.download_button("Download report", payload, file_name=f"report{extension}", mime=content_type,key='report_download:'+report_id)
         if extension == ".md":
             with st.expander("Report preview and limitations", expanded=True):
                 st.markdown(payload.decode("utf-8"))
-    if not is_report and st.button("Ask", type="primary", disabled=not question.strip()):
+    if is_report:
+        return
+    st.caption('This session shows the latest 20 exchanges. Inventory SQL follow-up context expires after 30 minutes of inactivity and is separate from other modes.')
+    for turn in st.session_state['chat_turns']:
+        with st.chat_message('user'):
+            st.caption(turn['mode'])
+            st.markdown(turn['question'])
+        with st.chat_message('assistant'):
+            if 'error' in turn:
+                st.error(turn['error'])
+            else:
+                display_result(st,turn['result'],key_prefix=turn['id'])
+    question = st.chat_input('Ask a question',max_chars=2000,key='chat_input:'+st.session_state['conversation_id'])
+    if question and question.strip():
+        conversation_id = st.session_state['conversation_id']
+        authenticated_client = st.session_state.get('api_opener')
+        turn = {'id':uuid.uuid4().hex,'question':question.strip(),'mode':mode_label}
+        with st.chat_message('user'):
+            st.caption(mode_label)
+            st.markdown(question.strip())
         try:
-            with st.spinner("Working…"):
+            with st.chat_message('assistant'), st.spinner('Working...'):
                 metadata = {"category": category.strip()} if category.strip() else None
-                result = submit_chat(question.strip(), AGENT_MODES[mode_label], metadata=metadata,
-                                     opener=opener, agent_prefix=prefix,
-                                     conversation_id=st.session_state["conversation_id"])
-            st.session_state["last_result"] = result
-        except (RuntimeError, ValueError) as error:
-            st.error(str(error))
-    if "last_result" in st.session_state:
-        display_result(st, st.session_state["last_result"])
+                turn['result'] = submit_chat(question.strip(),AGENT_MODES[mode_label],metadata=metadata,
+                    opener=opener,agent_prefix=prefix,conversation_id=conversation_id)
+        except (RuntimeError,ValueError) as error:
+            turn['error'] = str(error)
+        if (st.session_state.get('conversation_id') == conversation_id
+                and st.session_state.get('api_opener') is authenticated_client):
+            st.session_state['chat_turns'] = (st.session_state['chat_turns']+[turn])[-20:]
+        st.rerun()
 
 
 if __name__ == "__main__":

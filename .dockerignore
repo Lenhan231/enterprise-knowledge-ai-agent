@@ -21,6 +21,9 @@ artifacts/evaluation/document-pipelines/tools/*
 artifacts/evaluation/document-pipelines/tools/runners/*
 !artifacts/evaluation/document-pipelines/tools/runners/docling_vietocr.py
 data/*
+!data/semantic/
+data/semantic/*
+!data/semantic/vietstyle_metrics_v1.yaml
 !data/vietnam_enterprises/
 data/vietnam_enterprises/*
 !data/vietnam_enterprises/manifest.json

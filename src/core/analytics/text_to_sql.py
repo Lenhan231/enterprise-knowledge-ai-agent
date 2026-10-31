@@ -8,7 +8,7 @@ from datetime import date
 from typing import Any
 
 from sqlglot import exp, parse
-from sqlglot.errors import ParseError
+from sqlglot.errors import ParseError, TokenError
 
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
 from core.analytics.join_validation import validate_join_aggregations
@@ -127,7 +127,7 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
     """Validate one bounded SELECT, including its nested SELECTs and CTEs."""
     try:
         statements = parse(sql, read="postgres")
-    except ParseError as error:
+    except (ParseError, TokenError) as error:
         raise SQLValidationError("SQL could not be parsed.") from error
     if len(statements) != 1 or not isinstance(statements[0], exp.Select):
         raise SQLValidationError("Exactly one SELECT statement is allowed.")
@@ -295,8 +295,9 @@ def _date_parameter_indexes(sql: str) -> set[int]:
 
 def build_sql_prompt(
     question: str, *, validation_error: str | None = None, previous_response: str | None = None,
+    metric_names: set[str] | None = None, interpretation: dict | None = None,
 ) -> str:
-    metrics = sorted(resolve_metric_names(question))
+    metrics = sorted(resolve_metric_names(question) if metric_names is None else metric_names)
     definitions = {name: get_metric_definition(name) for name in metrics}
     inventory = any(definition.get('domain') == 'inventory_management' for definition in definitions.values())
     tables = {'commerce.inventory', 'commerce.products'} if inventory else set(APPROVED_COLUMNS)
@@ -319,6 +320,14 @@ def build_sql_prompt(
             joins=joins,
             question=question,
         )
+        + ('\nValidated interpretation: '+json.dumps(interpretation,ensure_ascii=False)+
+           '\nPreserve exactly these metrics, dimensions, source-row filters, date scope, output grain and ranking. '
+           'Project snapshot_date plus only the requested dimensions and metrics. Product representation uses stored scalar values. '
+           'Use GROUP BY qualified columns, ORDER BY positions, direct SELECT without CTE/HAVING/DISTINCT. '
+           'Use the declared ranking limit, otherwise LIMIT 200. For an inclusive date range use snapshot_date >= start '
+           'AND snapshot_date < the day AFTER end. For latest use the unfiltered MAX subquery. '
+           'Filters use field <operator> parameter (IN uses a list of parameters); do not add other restrictions.'
+           if interpretation is not None else '')
         + (SQL_REPAIR_PROMPT.format(validation_error=validation_error, previous_response=previous_response)
            if validation_error is not None else "")
     )

@@ -9,7 +9,8 @@ from collections.abc import Mapping
 from typing import Any
 
 from core.agents.base import BaseAgent
-from core.analytics.metric_ontology import resolve_metric_names
+from core.analytics.metric_ontology import resolve_metric_names, get_metric_definition
+from core.analytics.metric_mapping import build_metric_mapping_prompt, decode_metric_mapping, validate_mapped_sql
 from core.analytics.metric_validation import MetricDefinitionError, validate_metric_definitions, validate_metric_request
 from core.analytics.text_to_sql import (
     APPROVED_COLUMNS,
@@ -72,10 +73,24 @@ class SQLAnalyticsAgent(BaseAgent):
         metric_names = resolve_metric_names(question)
         definitions = {}
         raw = None
+        interpretation = None
         try:
-            validate_metric_request(question, metric_names)
-            prompt = build_sql_prompt(question)
+            try:
+                validate_metric_request(question, metric_names)
+            except MetricDefinitionError as error:
+                if error.code != 'snapshot_required':
+                    raise
+            if not metric_names or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names):
+                with measure('metric_interpretation'):
+                    mapped = await generate(self._provider(),build_metric_mapping_prompt(question),timeout=30)
+                interpretation = decode_metric_mapping(mapped,question)
+                if interpretation.domain == 'inventory':
+                    metric_names = set(interpretation.metrics)
+            prompt = build_sql_prompt(question,metric_names=metric_names,
+                                      interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None)
         except MetricDefinitionError as error:
+            return self._generation_error(error)
+        except Exception as error:
             return self._generation_error(error)
         for attempt in range(2):
             try:
@@ -84,12 +99,16 @@ class SQLAnalyticsAgent(BaseAgent):
                 plan = decode_query_plan(raw)
                 if plan.sql:
                     definitions = validate_metric_definitions(plan.sql, metric_names, plan.parameters, APPROVED_COLUMNS,
-                                                              question=question)
+                                                              question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question)
+                    if interpretation:
+                        validate_mapped_sql(plan,interpretation,question=question)
                 break
             except (SQLValidationError, MetricDefinitionError) as error:
                 if attempt == 0:
                     prompt = build_sql_prompt(
                         question, validation_error=str(error), previous_response=str(raw),
+                        metric_names=metric_names,
+                        interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None,
                     )
                     continue
                 return self._generation_error(
@@ -124,6 +143,8 @@ class SQLAnalyticsAgent(BaseAgent):
                for definition in definitions.values()):
             limitations.append("Ratio results are fractions: 0.25 means 25%; raw result rows are not rescaled.")
         metadata = {"source": list(validated.sources), "explanation": plan.explanation, "metrics": definitions}
+        if interpretation and interpretation.domain == 'inventory':
+            metadata['semantic_interpretation'] = interpretation.model_dump()
         if any(definition.get('domain') == 'inventory_management' for definition in definitions.values()):
             dates = sorted({str(row['snapshot_date']) for row in rows if row.get('snapshot_date') is not None})
             metadata.update(metric_catalog_version='1.0.0', historical_inventory=True, snapshot_dates=dates)

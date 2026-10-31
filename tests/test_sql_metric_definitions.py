@@ -164,6 +164,8 @@ class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
                 self.prompts = []
 
             def generate(self, prompt):
+                if prompt.startswith('Interpret the question BEFORE'):
+                    return json.dumps({'metrics':['stockout_rate'],'time':{'mode':'snapshot','start':'2022-12-31'}})
                 self.prompts.append(prompt)
                 return next(self.responses)
         return Provider()
@@ -209,7 +211,7 @@ class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
     async def test_ratio_rows_preserve_the_canonical_fraction(self):
         query = json.dumps({"sql": "SELECT i.snapshot_date, COUNT(i.product_id) FILTER (WHERE i.stockout_flag IS TRUE)::numeric / "
                            "NULLIF(COUNT(i.product_id), 0) AS rate FROM commerce.inventory AS i "
-                           "WHERE i.snapshot_date = '2022-12-31' GROUP BY i.snapshot_date LIMIT 1"})
+                           "WHERE i.snapshot_date = '2022-12-31' GROUP BY i.snapshot_date LIMIT 200"})
         repository = AsyncMock()
         repository.execute_approved_query.return_value = [{"snapshot_date": "2022-12-31", "rate": 0.25}]
         result = await SQLAnalyticsAgent(repository, llm=self.provider(query)).run(self.request("Stockout rate on 2022-12-31"))

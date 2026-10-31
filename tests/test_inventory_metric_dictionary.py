@@ -223,7 +223,9 @@ class InventoryRequestTest(unittest.IsolatedAsyncioTestCase):
                'WHERE i.snapshot_date=(SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) '
                'ORDER BY 3 ASC LIMIT 10')
         provider, repository = Mock(), AsyncMock()
-        provider.generate.return_value = json.dumps({'sql':sql,'parameters':[]})
+        provider.generate.side_effect = [json.dumps({'metrics':['stock_on_hand'],'representation':'product',
+            'dimensions':['product_name'],'time':{'mode':'latest'},
+            'ranking':{'metric':'stock_on_hand','direction':'asc','limit':10}}),json.dumps({'sql':sql,'parameters':[]})]
         repository.execute_approved_query.return_value = [{'snapshot_date':'2022-12-31','product_name':'Example','stock_on_hand':5}]
         result = await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
             question='Which 10 products had the lowest stock in the latest inventory snapshot?',
@@ -267,11 +269,12 @@ class InventoryRequestTest(unittest.IsolatedAsyncioTestCase):
                                ('What is stock on hand?', 'snapshot_required'),
                                ('What quantity should we reorder?', 'metric_unresolved')]:
             provider, repository = Mock(), AsyncMock()
+            provider.generate.return_value = json.dumps({'metrics':['stock_on_hand']})
             request = AgentRequest(question=question, identity=VerifiedIdentity(subject='test',permissions={'analytics:read'}))
             result = await SQLAnalyticsAgent(repository,llm=provider).run(request)
             self.assertTrue(result.metadata['clarification_required'], question)
             self.assertEqual(result.metadata['metric_error_code'], code)
-            provider.generate.assert_not_called()
+            self.assertEqual(provider.generate.call_count,1 if code == 'snapshot_required' else 0)
             repository.execute_approved_query.assert_not_awaited()
 
     async def test_rbac_still_precedes_catalog_and_provider(self):

@@ -1,3 +1,6 @@
+NO_MATCHING_DOCUMENTS_ANSWER = "Không tìm thấy tài liệu phù hợp trong phạm vi truy cập của bạn."
+INSUFFICIENT_ANSWER = "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này."
+
 ENTERPRISE_ASSISTANT_PROMPT = """
 Trả lời câu hỏi bằng tiếng Việt và chỉ dựa trên các nguồn được cung cấp.
 
@@ -8,7 +11,7 @@ Quy tắc:
    định dạng [S1].
 3. Không trích dẫn mã nguồn không được cung cấp.
 4. Nếu bằng chứng không đủ, chỉ trả lời đúng câu:
-   "Không đủ thông tin trong các tài liệu được truy xuất."
+   "__INSUFFICIENT_ANSWER__"
 5. Không tự tạo số liệu, ngày tháng, chính sách, trang hoặc mục còn thiếu.
 6. Giữ nguyên phạm vi của từng nguồn. Không suy rộng một giao dịch, số dư,
    ví dụ hay nội dung công bố riêng lẻ thành chính sách toàn doanh nghiệp hoặc
@@ -26,4 +29,4 @@ Câu hỏi:
 {question}
 
 Trả lời bằng tiếng Việt:
-"""
+""".replace("__INSUFFICIENT_ANSWER__", INSUFFICIENT_ANSWER)

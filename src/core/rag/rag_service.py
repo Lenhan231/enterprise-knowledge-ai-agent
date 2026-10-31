@@ -7,13 +7,12 @@ from pydantic import BaseModel, Field
 
 from core.llm.groq_provider import GroqProvider
 from core.latency import measure
-from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT
+from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT, INSUFFICIENT_ANSWER, NO_MATCHING_DOCUMENTS_ANSWER
 from core.retrieval.retrieval import RetrievalRequest
 from core.retrieval.retrieval_service import RetrievalService
 
 
 MAX_CONTEXT_CHARS = 24_000
-INSUFFICIENT_ANSWER = "Không đủ thông tin trong các tài liệu được truy xuất."
 CITATION_PATTERN = re.compile(
     r"\[\s*(?:(?:source|nguồn)\s*:\s*)?([A-Z]\d+)\s*\]"
     r"|【\s*(?:(?:source|nguồn)\s*:\s*)?([A-Z]\d+)\s*】",
@@ -155,7 +154,7 @@ class RAGService:
 
     def generate_from_contexts(self, question: str, contexts: list[dict]) -> RAGResult:
         if not contexts:
-            return RAGResult(answer=INSUFFICIENT_ANSWER, insufficient_context=True)
+            return RAGResult(answer=NO_MATCHING_DOCUMENTS_ANSWER, insufficient_context=True)
 
         prompt = ENTERPRISE_ASSISTANT_PROMPT.format(
             context=_format_contexts(contexts)[:MAX_CONTEXT_CHARS],

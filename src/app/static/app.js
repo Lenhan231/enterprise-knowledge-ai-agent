@@ -660,7 +660,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
               </div>
             </article>`;
         }).join("")}
-      </div>` : `<p class="no-citations">No matching documents found within your authorized scope.</p>`}`;
+      </div>` : ""}`;
 
   const copyBtn = panel.querySelector("#copy-answer-btn");
   if (copyBtn) {

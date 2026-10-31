@@ -181,6 +181,12 @@ class RetrievalServiceTest(unittest.TestCase):
             self.service.retrieve(RetrievalRequest(query="revenue"), method="sparse")
         self.assertEqual(self.embeddings.questions, [])
 
+    def test_parent_mode_drops_candidates_rejected_during_context_expansion(self):
+        result = self.service.retrieve(
+            RetrievalRequest(query="policy", top_k=1), roles=["employee"], method="parent",
+        )
+        self.assertEqual(result.results, [])
+
 
 if __name__ == "__main__":
     unittest.main()

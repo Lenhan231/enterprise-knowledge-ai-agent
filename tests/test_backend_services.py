@@ -1,11 +1,51 @@
 import os
+import subprocess
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 class BackendServicesTest(unittest.TestCase):
+    def test_remote_parser_imports_without_local_ocr_dependencies(self):
+        code = '''
+import base64
+import importlib.abc
+import os
+import sys
+from unittest.mock import patch
+
+class BlockLocalOCR(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == "cv2" or fullname.startswith("document_processing.docling_adapter"):
+            raise ImportError("Local OCR must not be imported by the remote parser client")
+
+sys.meta_path.insert(0, BlockLocalOCR())
+from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
+assert ".pdf" in SUPPORTED_FORMATS
+os.environ["DOCUMENT_PROCESSING_URL"] = "http://document-processing:8000"
+with patch("core.services.client.post", return_value={"elements": [], "tables": [], "metadata": {}}) as post:
+    result = DocumentProcessor().process("scan.pdf", b"pdf bytes", {})
+    assert result["elements"] == []
+    assert base64.b64decode(post.call_args.args[2]["content"]) == b"pdf bytes"
+'''
+        environment = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[1] / "src")}
+        result = subprocess.run([sys.executable, "-c", code], env=environment, capture_output=True, text=True, timeout=30)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_local_parser_still_calls_docling_when_remote_url_is_unset(self):
+        from types import SimpleNamespace
+        from document_processing.document_processor import DocumentProcessor
+        constructor = Mock()
+        constructor.return_value.process.return_value = {"elements": [], "tables": [], "metadata": {}}
+        with patch.dict(os.environ, {"DOCUMENT_PROCESSING_URL": ""}), patch.dict(
+            sys.modules, {"document_processing.docling_adapter.processor": SimpleNamespace(DoclingProcessor=constructor)},
+        ):
+            result = DocumentProcessor().process("a.txt", b"hello", {})
+        constructor.assert_called_once_with({"parser_engine": "docling"})
+        self.assertEqual(constructor.return_value.process.call_args.args[0], b"hello")
+        self.assertEqual(result["metadata"]["filename"], "a.txt")
+
     def test_remote_embedding_does_not_load_local_model(self):
         from core.embeddings.embedding_service import _load_backend
         _load_backend.cache_clear()

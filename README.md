@@ -52,7 +52,7 @@ The local agent demo can be run with
 It uses the authenticated backend at `http://127.0.0.1:8000` by default.
 
 - src/app: FastAPI routes and dashboard UI; isolated Upload Test API lives in `upload_test.py`
-- src/document_processing: Docling parser with Tesseract OCR and shared normalization
+- src/document_processing: Docling parser with VietOCR recognition, RapidOCR line detection, and shared normalization
 - tools/ingestion: seed ingestion orchestration and source-specific CLI workflows
 - src/core/chunking: shared text and table chunk creation
 - src/core/database: PostgreSQL repositories and table persistence
@@ -219,10 +219,10 @@ The upload route requires `SUPABASE_SECRET_KEY` on the server (legacy
 expose the secret key to frontend code. Text-based PDFs are extracted page by
 page, embedded and saved to `document_chunks` with their selected roles before
 the upload completes. PDF/DOCX/PPTX/XLSX/CSV/TXT/Markdown/PNG/JPEG/TIFF are
-supported. Tesseract handles scanned-page and image text OCR; extracted PDF and
-Office tables are stored separately. Table OCR uses PSM 3 for PDFs and PSM 6
-for direct image uploads based on a small labeled pilot; OCR-derived table
-metadata keeps the engine and settings used. See
+supported. The production document-processing container uses VietOCR recognition
+with RapidOCR line detection; Tesseract remains an available OCR override. Extracted
+PDF and Office tables are stored separately, and OCR-derived table metadata keeps
+the engine and settings used. See
 [`src/document_processing/docs/document-processing.md`](src/document_processing/docs/document-processing.md)
 for the evaluation and limitations. Upload processing indexes source content;
 it does not extract or publish dashboard KPIs. Successful uploads report page,

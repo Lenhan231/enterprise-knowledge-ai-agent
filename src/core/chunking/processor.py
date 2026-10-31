@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from core.chunking.config import ChunkingConfig
 from core.chunking.table.chunker import build_table_chunks
+from core.chunking.table.references import resolve_table_references
 from core.chunking.text.chunk_builder import build_text_chunks
 
 
@@ -63,7 +65,7 @@ class ChunkingProcessor:
         for source_order, element in enumerate(elements):
             metadata = dict(element.get("metadata") or {})
             element_type = str(metadata.get("element_type") or metadata.get("layout_type") or "text").lower()
-            if element_type == "table":
+            if element_type == "table" or "table_ref" in element:
                 flush()
                 continue
             text = str(element.get("text") or "").strip()
@@ -93,15 +95,19 @@ class ChunkingProcessor:
 
     @staticmethod
     def _table_entries(elements: list[dict[str, Any]], tables: list[dict[str, Any]]):
-        referenced: dict[int, tuple[int, dict[str, Any]]] = {}
-        for source_order, element in enumerate(elements):
-            metadata = dict(element.get("metadata") or {})
-            if str(metadata.get("element_type") or metadata.get("layout_type") or "").lower() != "table":
-                continue
-            table_ref = element.get("table_ref")
-            if isinstance(table_ref, int) and 0 <= table_ref < len(tables):
-                metadata.setdefault("table_index", tables[table_ref].get("table_index", table_ref))
-                referenced[table_ref] = (source_order, metadata)
+        referenced = resolve_table_references(elements, tables)
+        for table_ref, (source_order, metadata) in referenced.items():
+            table_metadata = tables[table_ref].get("metadata") or {}
+            for key in ("section_title", "section_path", "heading_level"):
+                if not metadata.get(key) and table_metadata.get(key):
+                    metadata[key] = table_metadata[key]
+            if not metadata.get("section_title") and metadata.get("section_path"):
+                metadata["section_title"] = metadata["section_path"][-1]
+            if not metadata.get("section_title") and source_order:
+                metadata.update(ChunkingProcessor._adjacent_table_section(
+                    elements[source_order - 1], metadata,
+                ))
+            metadata.setdefault("table_index", tables[table_ref].get("table_index", table_ref))
 
         entries = []
         for table_ref, table in enumerate(tables):
@@ -114,6 +120,36 @@ class ChunkingProcessor:
             metadata.update({"element_type": "table", "layout_type": "table"})
             entries.append((source_order, table, metadata))
         return entries
+
+    @staticmethod
+    def _adjacent_table_section(heading: dict[str, Any], table_metadata: dict[str, Any]) -> dict[str, Any]:
+        """Recover only an immediately preceding, geometrically adjacent heading."""
+        metadata = heading.get("metadata") or {}
+        if (metadata.get("element_type") or metadata.get("layout_type")) not in {"title", "section_header"}:
+            return {}
+        if metadata.get("page_number") is None or metadata.get("page_number") != table_metadata.get("page_number"):
+            return {}
+        if any(m.get("bbox_coordinate_origin") != "TOPLEFT" for m in (metadata, table_metadata)):
+            return {}
+        boxes = [m.get("bbox") for m in (metadata, table_metadata)]
+        if any(not isinstance(box, list) or len(box) != 4 or any(
+            not isinstance(v, (int, float)) or not math.isfinite(v) for v in box
+        ) for box in boxes):
+            return {}
+        h, t = boxes
+        if h[0] >= h[2] or h[1] >= h[3] or t[0] >= t[2] or t[1] >= t[3]:
+            return {}
+        # shortcut: infer only adjacent same-page headings; complex layouts need explicit parser links.
+        if not (0 <= t[1] - h[3] <= 2 * (h[3] - h[1]) and t[0] <= (h[0] + h[2]) / 2 <= t[2]):
+            return {}
+        title = str(metadata.get("section_title") or heading.get("text") or "").strip()
+        if not title:
+            return {}
+        section = {key: metadata[key] for key in ("section_path", "heading_level") if metadata.get(key)}
+        section["section_title"] = title
+        if metadata.get("source_elements"):
+            section["source_elements"] = [*table_metadata.get("source_elements", []), *metadata["source_elements"]]
+        return section
 
     def _merge_short_text_chunks(self, chunks: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Merge heading-only fragments into nearby prose before downstream indexing."""

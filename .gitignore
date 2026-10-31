@@ -32,4 +32,5 @@ ponytail.md
 /.vibe
 /.pytest_cache
 /artifacts/local/chunking-preview/
+/artifacts/local/
 

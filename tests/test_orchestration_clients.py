@@ -8,7 +8,7 @@ class WebConversationTest(unittest.TestCase):
 const fs = require('fs'), vm = require('vm'), assert = require('assert');
 const source = fs.readFileSync('src/app/static/app.js', 'utf8');
 const start = source.indexOf('$("#ask-form").addEventListener("submit"');
-const end = source.indexOf('$("#report-agent-form").addEventListener', start);
+const end = source.indexOf('function updateReportFormatVisibility', start);
 let handler, resolve, rendered = 0;
 const nodes = {};
 const context = {agentConversationId:'old', console,

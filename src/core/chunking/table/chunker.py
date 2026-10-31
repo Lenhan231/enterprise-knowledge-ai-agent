@@ -3,7 +3,7 @@
 from typing import Any
 
 from core.chunking.config import ChunkingConfig
-from core.chunking.text.chunk_builder import build_text_chunk
+from core.chunking.text.chunk_builder import build_text_chunk, section_context
 
 
 def build_table_chunks(
@@ -29,7 +29,7 @@ def build_table_chunks(
     if not columns:
         return []
 
-    section_title = str((metadata or {}).get("section_title") or "").strip()
+    section_title = section_context({**(table.get("metadata") or {}), **(metadata or {}), "element_type": "table"})
     prefix = ([f"Section: {section_title}"] if section_title else [])
     prefix.extend(([f"Table: {title}"] if title else []) + ["Columns: " + " | ".join(columns)])
     row_lines = [

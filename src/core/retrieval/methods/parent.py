@@ -27,7 +27,9 @@ def search(
     contexts = repository.expand_parent_contexts(candidates, company=company, roles=roles)
     selected = []
     for chunk in candidates:
-        context = contexts.get((chunk.document_id, chunk.chunk_index), {})
+        context = contexts.get((chunk.document_id, chunk.chunk_index))
+        if context is None:
+            continue
         indices = set(context.get("chunk_indices", [chunk.chunk_index]))
         title = chunk.metadata.get("section_title")
         page = chunk.metadata.get("page_number") if not title else None

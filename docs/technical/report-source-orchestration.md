@@ -84,3 +84,30 @@ Existing report generation and transport suites verify grounding, templates,
 permission checks, file status, and compatibility requests. The broader routing
 measurements and remaining live evidence gaps are recorded in
 [the implementation report](agent-orchestration-implementation.md).
+
+## Final verification and delivery
+
+- The real authenticated Streamlit Report flow completed a Markdown report using
+  Auto sources against the rebuilt Docker backend. The report cited one SQL row
+  plus the cycle-count SOP and inventory policy deck. All three built-in sections
+  passed the existing checks; the UI reported complete with zero exceptions.
+- Report generation/grounding/transport regression tests passed. The separate
+  report conversation store also prevents a chat ID matching the report prefix
+  from sharing context. Post-merge browser handler regression checks passed.
+- The final full suite ran 470 tests: 13 failures, 51 errors, and nine skips.
+  Its 64 failing identities match the original 426-test baseline exactly; no new
+  failures were introduced. The full repository suite remains below green.
+- Python compilation and JavaScript syntax checks passed. Changed router CLI help,
+  translation preparation CLI help, bilingual rank-fusion/language self-checks,
+  and Colab bundler imports were checked without rerunning inference or writing
+  frozen bundles. Translation script imports require Unix `resource` through an
+  existing embedding benchmark dependency; those checks passed in the Linux
+  backend container. Windows alone cannot run that import chain unchanged.
+- Temporary verification scripts, logs, and generated run output stay local and
+  are excluded from the main push. Benchmark input fixtures and permanent unit
+  tests remain versioned. Paths to generated artifacts in earlier documents are
+  local evidence references, not files included in this delivery.
+- Local backend, embedding, reranking, and document-processing containers are
+  healthy. The existing Streamlit demo remains at `http://127.0.0.1:8501`.
+  This delivery updates local Docker; it does not publish a registry image or
+  deploy the separate Vercel frontend.

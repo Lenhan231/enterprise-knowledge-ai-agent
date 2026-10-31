@@ -6,6 +6,12 @@ This document accompanies the [frontend API contract](agent-api-frontend-contrac
 the [approved capability map](../../CAPABILITY-MAP-agent-orchestration.md), and
 the [implementation task record](../../tasks/todo.md).
 
+Delivery note: temporary verification helpers, logs, and generated evaluation
+output are intentionally excluded from the main push. Artifact paths below refer
+to local validation evidence. Permanent benchmark fixtures and regression tests
+are included. See the [Report follow-up verification](report-source-orchestration.md#final-verification-and-delivery)
+for the later real Report run, script checks, and Docker update.
+
 ## Problem and accepted scope
 
 **Approved Report follow-up (2026-10-29):** Report's separate interface now uses

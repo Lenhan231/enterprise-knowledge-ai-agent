@@ -373,6 +373,21 @@ approved boundaries.
 
 ## Implementation evidence
 
+### Approved Report follow-up and clean main delivery
+
+- [x] Report Auto sources use the shared bounded Knowledge/SQL workflow; Combined
+  remains a compatibility alias. Separate Report UI, templates and downloads stay.
+- [x] Permanent report tests cover focused tasks, one collection, clarification,
+  partial sources and independent history. Documentation and frontend contract updated.
+- [x] Real authenticated Streamlit report completed with SQL and document sources;
+  backend and private Docker services healthy; existing demo remains on port 8501.
+- [x] Script compilation/CLI/self-check/import verification performed. Linux checks
+  cover the existing Unix-resource import limitation on Windows; frozen bundles preserved.
+- [x] Final suite: 470 tests, the same 64 baseline failing identities, nine skips,
+  no new failures. Broader live routing evidence target remains incomplete as below.
+- [x] Keep temporary tests/verification helpers, logs and generated evaluation
+  output local. Only implementation, permanent tests/fixtures and docs enter main.
+
 - T01 baseline: 25/25 focused tests passed (3 router, 4 analytics, 9 API, 1 report, 8 Streamlit). Existing localhost listeners: backend 8000 and Streamlit 8501. Streamlit is installed.
 - T14 report precollection and new dashboard routing are omitted under the approved scope amendment; standalone regression coverage is retained.
 

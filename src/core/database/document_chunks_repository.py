@@ -154,6 +154,8 @@ class DocumentChunkRepository:
         if roles is not None:
             filters.append("(d.allowed_roles && %s::text[] OR 'admin' = ANY(%s::text[]))")
             parameters.extend((roles, roles))
+        else:
+            filters.append("cardinality(d.allowed_roles) > 0")
         filter_sql = " AND " + " AND ".join(filters) if filters else ""
 
         query = f"""
@@ -173,7 +175,8 @@ class DocumentChunkRepository:
              AND c.chunk_index BETWEEN a.chunk_index - %s AND a.chunk_index + %s
              AND c.metadata->>'section_title' IS NOT DISTINCT FROM a.section_title
              AND c.metadata->>'page_number' IS NOT DISTINCT FROM a.page_number
-            WHERE coalesce(d.processing_status, 'ready') = 'ready'{filter_sql}
+            WHERE d.processing_status = 'ready'
+              AND d.knowledge_base_active IS TRUE{filter_sql}
             ORDER BY a.document_id, a.chunk_index, c.chunk_index
         """
         with self.conn.cursor() as cursor:
@@ -187,7 +190,9 @@ class DocumentChunkRepository:
         contexts = {}
         for chunk in chunks:
             key = (chunk.document_id, chunk.chunk_index)
-            siblings = grouped.get(key, [(chunk.chunk_index, chunk.content)])
+            siblings = grouped.get(key)
+            if not siblings:
+                continue
             contexts[key] = {
                 "text": "\n".join(content for _, content in siblings),
                 "chunk_indices": [index for index, _ in siblings],

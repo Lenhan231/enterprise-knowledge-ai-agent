@@ -77,7 +77,9 @@ class FakeLLM:
             ("commerce.products", "COUNT(*) AS products"),
         ]
 
-    def generate(self, _prompt):
+    def generate(self, prompt):
+        if prompt.startswith('Interpret the question BEFORE'):
+            return json.dumps({'domain':'other'})
         if not getattr(self, "pending_summary", False):
             table, expression = self.plans.pop(0)
             self.pending_summary = True

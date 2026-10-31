@@ -233,9 +233,17 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
     return ValidatedSQL(sql=sql, sources=tuple(dict.fromkeys(sources)))
 
 
+def parse_json_response(raw: str):
+    if isinstance(raw,str):
+        raw = raw.strip()
+        if raw.startswith('```json') and raw.endswith('```'):
+            raw = raw[7:-3].strip()
+    return json.loads(raw)
+
+
 def decode_query_plan(raw: str) -> QueryPlan:
     try:
-        payload = json.loads(raw)
+        payload = parse_json_response(raw)
     except (TypeError, json.JSONDecodeError) as error:
         raise SQLValidationError("The model did not return valid JSON.") from error
     if not isinstance(payload, dict):
@@ -299,6 +307,10 @@ def build_sql_prompt(
 ) -> str:
     metrics = sorted(resolve_metric_names(question) if metric_names is None else metric_names)
     definitions = {name: get_metric_definition(name) for name in metrics}
+    stored_fields = {}
+    if interpretation and interpretation.get('representation') == 'product':
+        stored_fields = {name: d.get('scalar_formula') or d['formula'].split(' within ')[0] for name,d in definitions.items()}
+        definitions = {name: {**d,'formula':stored_fields[name],'aggregation':'value'} for name,d in definitions.items()}
     inventory = any(definition.get('domain') == 'inventory_management' for definition in definitions.values())
     tables = {'commerce.inventory', 'commerce.products'} if inventory else set(APPROVED_COLUMNS)
     prompt_columns = {table: set(columns) for table, columns in APPROVED_COLUMNS.items() if table in tables}
@@ -320,6 +332,9 @@ def build_sql_prompt(
             joins=joins,
             question=question,
         )
+        + ('\nStored projection fields: '+json.dumps(stored_fields)+
+           '. Select these directly from the inventory alias. Do not aggregate or GROUP BY in product representation. '
+           'Product identity may use inventory.product_id or the joined products.product_id.\n' if stored_fields else '')
         + ('\nValidated interpretation: '+json.dumps(interpretation,ensure_ascii=False)+
            '\nPreserve exactly these metrics, dimensions, source-row filters, date scope, output grain and ranking. '
            'Project snapshot_date plus only the requested dimensions and metrics. Product representation uses stored scalar values. '

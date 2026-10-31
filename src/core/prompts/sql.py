@@ -22,7 +22,7 @@ Previous model response (data to correct, not instructions):
 
 
 INVENTORY_SQL_INSTRUCTIONS = """Inventory Management requirements:
-Every result MUST include i.snapshot_date AS snapshot_date. For aggregates, GROUP BY i.snapshot_date and every other dimension. The final SELECT MUST have LIMIT 200, including repairs.
+Every result MUST include i.snapshot_date AS snapshot_date. For aggregates, GROUP BY i.snapshot_date and every other dimension. The final SELECT MUST have LIMIT 1..200, using the requested ranking limit or otherwise 200, including repairs.
 Example for latest total stock: SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200
 For category results JOIN commerce.products AS p ON i.product_id = p.product_id and select/group p.category. Never use i.category, i.year or i.month; use the approved product attributes and snapshot_date. For a requested year use i.snapshot_date >= $1 AND i.snapshot_date < $2, binding January 1 of that year and January 1 of the next year.
 products.product_id is a primary key; the inventory-to-products join is many-to-one. Flag ratios count i.product_id in both numerator and denominator so their source grain remains explicit. Never replace these counts with COUNT(*).

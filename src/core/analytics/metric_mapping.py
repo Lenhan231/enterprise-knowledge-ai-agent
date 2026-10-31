@@ -16,7 +16,7 @@ from core.analytics.metric_validation import (
 
 
 class _StrictModel(BaseModel):
-    model_config = ConfigDict(extra='forbid', strict=True)
+    model_config = ConfigDict(extra='forbid', strict=True, allow_inf_nan=False)
 
 
 class MetricFilter(_StrictModel):
@@ -27,8 +27,8 @@ class MetricFilter(_StrictModel):
 
 class MetricTime(_StrictModel):
     mode: Literal['latest','snapshot','range','history']
-    start: str | None = None
-    end: str | None = None
+    start: str | None = Field(default=None,pattern=r'^\d{4}-\d{2}-\d{2}$')
+    end: str | None = Field(default=None,pattern=r'^\d{4}-\d{2}-\d{2}$')
 
 
 class MetricRanking(_StrictModel):
@@ -97,8 +97,9 @@ def _field(name):
 
 
 def decode_metric_mapping(raw, question):
+    from core.analytics.text_to_sql import parse_json_response
     try:
-        mapping = MetricMapping.model_validate_json(raw)
+        mapping = MetricMapping.model_validate(parse_json_response(raw))
     except (ValidationError,TypeError,ValueError) as error:
         raise MetricDefinitionError('The question interpretation was invalid. Please specify the inventory measure, grouping and snapshot.',
                                     code='interpretation_invalid',clarification=True) from error
@@ -151,6 +152,16 @@ def decode_metric_mapping(raw, question):
         _field(item.field)
         if (item.operator == 'in') != isinstance(item.value,list) or (isinstance(item.value,list) and not item.value):
             _error('Specify a nonempty list for IN and a scalar for other filters.')
+        unit = METRIC_ONTOLOGY.get(item.field,{}).get('unit')
+        if item.field in {'product_name','category','segment','size','color'}:
+            types = (str,)
+        elif item.field == 'product_id' or unit in {'units','product_days'}:
+            types = (int,)
+        else:
+            types = (bool,) if unit == 'boolean' else (int,float)
+        values = item.value if isinstance(item.value,list) else [item.value]
+        if any(type(value) not in types for value in values) or (types in {(str,),(bool,)} and item.operator not in {'eq','in'}):
+            _error('The filter value or comparison is incompatible with '+item.field+'.','interpretation_invalid')
     if mapping.ranking and mapping.ranking.metric not in mapping.metrics:
         _error('Rank using one of the requested catalog metrics.')
     if mapping.representation == 'product':
@@ -182,7 +193,10 @@ def validate_mapped_sql(plan, mapping, *, question=None):
     # shortcut: mapped queries use one SELECT; support transparent CTE rewrites when needed.
     if tree.args.get('with_') or not isinstance(tree,exp.Select):
         _error('Use one direct SELECT for the validated inventory interpretation.')
-    canonical = lambda node: _canonical(node,root,plan.parameters,{})
+    def canonical(node):
+        value = _canonical(node,root,plan.parameters,{})
+        # The approved FK join makes both product keys the same identity.
+        return value.transform(lambda n: _field('product_id') if n == exp.column('product_id',table='products',db='commerce') else n)
     projections = [canonical(p) for p in tree.selects]
     for dimension in mapping.dimensions:
         if _field(dimension) not in projections:

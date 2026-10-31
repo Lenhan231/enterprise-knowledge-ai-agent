@@ -17,6 +17,7 @@ from core.analytics.text_to_sql import (
     SQLValidationError,
     build_sql_prompt,
     decode_query_plan,
+    parse_json_response,
     validate_commerce_sql,
 )
 from core.database.commerce_repository import CommerceRepository
@@ -224,7 +225,7 @@ class SQLAnalyticsAgent(BaseAgent):
     @staticmethod
     def _attempted_sql(raw: Any) -> str | None:
         try:
-            plan = json.loads(raw)
+            plan = parse_json_response(raw)
         except (TypeError, json.JSONDecodeError):
             return None
         sql = plan.get("sql") if isinstance(plan, dict) else None
@@ -233,7 +234,7 @@ class SQLAnalyticsAgent(BaseAgent):
     @staticmethod
     def _attempted_parameters(raw: Any) -> tuple[Any, ...]:
         try:
-            plan = json.loads(raw)
+            plan = parse_json_response(raw)
         except (TypeError, json.JSONDecodeError):
             return ()
         parameters = plan.get("parameters") if isinstance(plan, dict) else None

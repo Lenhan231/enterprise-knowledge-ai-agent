@@ -30,10 +30,26 @@ class MetricMappingTest(unittest.TestCase):
         mapping=self.decode()
         validate_mapped_sql(decode_query_plan(json.dumps({'sql':SQL,'parameters':['blue']})),mapping)
 
+    def test_approved_product_key_join_preserves_product_identity(self):
+        payload=copy.deepcopy(MAPPING);payload['dimensions'].append('product_id')
+        sql=SQL.replace('p.product_name,','p.product_id,p.product_name,').replace('ORDER BY 3','ORDER BY 4')
+        validate_mapped_sql(decode_query_plan(json.dumps({'sql':sql,'parameters':['blue']})),self.decode(payload))
+
+    def test_generation_prompt_makes_stored_projection_explicit(self):
+        from core.analytics.text_to_sql import build_sql_prompt
+        prompt=build_sql_prompt('Fewest pieces left',metric_names={'stock_on_hand'},interpretation=MAPPING)
+        self.assertIn('Do not aggregate or GROUP BY',prompt)
+        self.assertIn('Stored projection fields',prompt)
+
     def test_unknown_metric_dimension_and_filters_are_rejected(self):
         for field,value in [('metrics',['predicted_stock']),('dimensions',['region']),
                             ('filters',[{'field':'customer_id','operator':'eq','value':1}])]:
             bad=copy.deepcopy(MAPPING);bad[field]=value
+            with self.subTest(field=field),self.assertRaises(MetricDefinitionError):self.decode(bad)
+
+    def test_filter_values_match_source_types(self):
+        for field,value in [('color',12),('product_id','12'),('stock_on_hand',True),('stockout_indicator','true')]:
+            bad=copy.deepcopy(MAPPING);bad['filters']=[{'field':field,'operator':'eq','value':value}]
             with self.subTest(field=field),self.assertRaises(MetricDefinitionError):self.decode(bad)
 
     def test_unresolved_or_dropped_known_metric_cannot_be_approved_by_model(self):
@@ -54,6 +70,17 @@ class MetricMappingTest(unittest.TestCase):
         from core.analytics.text_to_sql import SQLValidationError
         with self.assertRaises(SQLValidationError):
             decode_query_plan(json.dumps({'sql':"SELECT i.product_id FROM commerce.inventory AS i WHERE i.product_id IN ($1,$2) LIMIT 200",'parameters':[1,2]}))
+
+    def test_single_json_fence_does_not_bypass_validation(self):
+        from core.analytics.text_to_sql import SQLValidationError
+        raw=json.dumps({'sql':SQL,'parameters':['blue']})
+        self.assertEqual(decode_query_plan('```json\n'+raw+'\n```').sql,SQL)
+        self.assertEqual(decode_metric_mapping('```json\n'+json.dumps(MAPPING)+'\n```','Fewest pieces at latest observation').metrics,['stock_on_hand'])
+        for raw in ('```json\n{"sql":"DELETE FROM commerce.inventory"}\n```',
+                    '```json\n{}\n{}\n```', 'Explanation: '+raw):
+            with self.assertRaises(SQLValidationError):decode_query_plan(raw)
+        with self.assertRaises(MetricDefinitionError):
+            decode_metric_mapping('```json\n'+json.dumps({**MAPPING,'sql':'SELECT 1'})+'\n```','Fewest pieces at latest observation')
 
     def test_dates_and_domain_cannot_bypass_inventory_rules(self):
         with self.assertRaises(MetricDefinitionError):self.decode({'domain':'other'},question='Stock on hand latest snapshot')

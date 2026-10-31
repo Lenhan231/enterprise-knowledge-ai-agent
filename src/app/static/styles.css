@@ -514,3 +514,15 @@
 #report-agent-status[data-state="error"]{color:#b42318}
 #report-agent-status[data-state="success"]{color:#18794e}
 [data-theme="dark"] .report-agent-panel .review-form textarea,[data-theme="dark"] .report-agent-panel .review-form select{border-color:var(--line);background:#0e1722;color:var(--ink)}
+.chat-turn{margin:18px 0;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--paper,#fff)}
+.chat-turn-question{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;align-items:start}
+.chat-turn-question>span{color:var(--blue);font-size:10px;font-weight:700;letter-spacing:.7px}
+.chat-turn-question p{margin:0;color:var(--navy);font-size:13px;line-height:1.55;white-space:pre-wrap}
+.chat-turn-response{margin-top:10px;padding-top:12px}
+.chat-turn-response .answer-text{margin-top:12px}
+.query-status{margin-left:8px;font:500 10px "DM Sans",sans-serif}
+.query-status.is-executed{color:var(--green)}
+.query-status.is-not-executed{color:#a53d35}
+.agent-diagnostics{margin:10px 0;color:var(--muted);font-size:11px}
+.agent-diagnostics summary,.agent-data-result details summary{cursor:pointer}
+@media(max-width:600px){.chat-turn-question{grid-template-columns:1fr;gap:4px}}

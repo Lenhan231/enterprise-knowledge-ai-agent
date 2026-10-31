@@ -254,3 +254,36 @@ Changed-file accountability:
 | artifacts/evaluation/session-chat/full-comparison.json | Compare problem headers with the prior full run. | No new or removed problem headers. |
 
 Limits remain intentional: history is session/process-local, inventory SQL context is not shared across modes/workers, existing result/time limits remain, and language classification can still ask for clarification. The extra model context and answer synthesis can hit the existing provider token limit during rapid requests. Persistent conversation storage and token streaming were not implemented.
+
+## Main integration and frontend handoff (2026-10-31)
+
+Merged upstream `744dae2` into QuocAn, preserving its Knowledge access-control,
+document-processing and browser test corrections alongside the inventory changes.
+Also retained the existing local-main evaluation commit. Conflict review kept
+inventory definitions in SQL/report evidence, accepted-scope summarization,
+SQL-only context, and keyed session rendering; no database or model changes.
+
+The HTTP request schema remains compatible. Updated
+[the existing frontend contract](technical/agent-api-frontend-contract.md) with
+optional interpretation/context fields, pinned dates, mode isolation, session
+transcript/reset rules and stale-response handling. This documents work needed by
+the separate frontend; it does not claim that frontend has implemented it.
+
+Post-merge checks:
+
+- All 195 focused SQL, catalog, mapping, context, Streamlit, API, orchestration and
+  report tests pass, including the corrected browser handler fixture.
+- Full discovery: 559 tests, 482 passes, 11 failures, 51 errors and 15 skips.
+- Fresh upstream-main comparison in a detached checkout: 501 tests, 413 passes,
+  21 failures, 52 errors and 15 skips. No new failing/error test identity appears
+  after integration. Eleven upstream problem identities are absent from the merged
+  results; some reflect updated test fixtures, not eleven independent product fixes.
+- Python compilation, JavaScript syntax and Git whitespace checks pass. A targeted
+  scan found no provider keys or credential-bearing database URLs in the evaluation
+  artifacts. New verification logs/results remain under ignored `artifacts/local/`.
+
+The full suite remains below green because of existing failures, obsolete imports
+and unavailable dependencies. Local database integration tests are disabled; live
+model/database benchmarks were not repeated for this merge. Prior benchmark
+evidence remains preserved. The inventory catalog and frontend contract are the
+only new runtime/handoff scope; persistent history and fine-tuning remain deferred.

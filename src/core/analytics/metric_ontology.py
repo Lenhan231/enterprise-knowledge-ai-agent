@@ -245,7 +245,7 @@ def resolve_metric_names(text: str) -> set[str]:
             continue
         selected.append((start, end, metric_name))
     names = {metric_name for _, _, metric_name in selected}
-    if "stock_on_hand" in names and len(names) > 1 and not re.search(r"stock on hand|inventory levels?|l\u01b0\u1ee3ng t\u1ed3n kho", normalized):
+    if "stock_on_hand" in names and len(names) > 1 and not re.search(r"stock on hand|(?:inventory|stock) levels?|(?:lowest|highest) stock|l\u01b0\u1ee3ng t\u1ed3n kho", normalized):
         names.remove("stock_on_hand")
     if "fill_rate" in names and re.search(r"lowest|highest|worst|best|th\u1ea5p nh\u1ea5t|cao nh\u1ea5t|t\u1eebng s\u1ea3n ph\u1ea9m", normalized) and not re.search(r"average|mean|trung b\u00ecnh", normalized):
         names.remove("fill_rate")

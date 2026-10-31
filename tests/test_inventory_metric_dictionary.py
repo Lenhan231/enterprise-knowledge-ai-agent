@@ -13,6 +13,15 @@ from core.analytics.text_to_sql import APPROVED_COLUMNS, validate_commerce_sql
 
 
 class InventoryCatalogTest(unittest.TestCase):
+    def test_stock_ranking_paraphrases_resolve_without_claiming_unsupported_stock_metrics(self):
+        for wording in ('lowest stock', 'highest stock', 'stock levels'):
+            self.assertEqual(resolve_metric_names(f'Which products have {wording} in the latest inventory snapshot?'),
+                             {'stock_on_hand'})
+        self.assertEqual(resolve_metric_names('Safety stock at latest snapshot'), {'safety_stock'})
+        self.assertEqual(resolve_metric_names('Inventory turnover at latest snapshot'), {'inventory_turnover'})
+        self.assertEqual(resolve_metric_names('Stock levels and average fill rate at latest snapshot'),
+                         {'stock_on_hand','fill_rate'})
+
     def test_inventory_definitions_have_independent_governance(self):
         definition = get_metric_definition('fill_rate')
         self.assertEqual(definition['version'], '1.0.0')
@@ -205,6 +214,24 @@ class InventoryEnforcementTest(unittest.TestCase):
 
 
 class InventoryRequestTest(unittest.IsolatedAsyncioTestCase):
+    async def test_lowest_stock_question_executes_dated_product_values(self):
+        from unittest.mock import AsyncMock, Mock
+        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.models.agents import AgentRequest, VerifiedIdentity
+        sql = ('SELECT i.snapshot_date, p.product_name, i.stock_on_hand FROM commerce.inventory AS i '
+               'JOIN commerce.products AS p ON i.product_id=p.product_id '
+               'WHERE i.snapshot_date=(SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) '
+               'ORDER BY 3 ASC LIMIT 10')
+        provider, repository = Mock(), AsyncMock()
+        provider.generate.return_value = json.dumps({'sql':sql,'parameters':[]})
+        repository.execute_approved_query.return_value = [{'snapshot_date':'2022-12-31','product_name':'Example','stock_on_hand':5}]
+        result = await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
+            question='Which 10 products had the lowest stock in the latest inventory snapshot?',
+            identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
+        self.assertTrue(result.metadata['ok'],result.answer)
+        self.assertEqual(result.metadata['metrics']['stock_on_hand']['representation'],'stored_value')
+        repository.execute_approved_query.assert_awaited_once_with(sql)
+
     async def test_report_sources_receive_inventory_semantics_in_both_modes(self):
         from unittest.mock import AsyncMock, Mock
         from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity

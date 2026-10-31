@@ -35,7 +35,7 @@ metrics:
     name: "Stock on hand"
     description: "Closing stock across observed products within one snapshot."
     aliases:
-      en: ["stock on hand","inventory level","inventory levels","inventory stock","historical inventory","inventory history","product inventory history"]
+      en: ["stock on hand","stock levels","lowest stock","highest stock","inventory level","inventory levels","inventory stock","historical inventory","inventory history","product inventory history"]
       vi: ["tồn kho","lượng tồn kho","số lượng tồn"]
     source_columns:
       commerce.inventory: ["snapshot_date","product_id","year","month","stock_on_hand"]

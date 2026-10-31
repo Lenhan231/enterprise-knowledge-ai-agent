@@ -122,3 +122,14 @@ Evidence files are test deliverables, not runtime registries. All JSON files par
 ## Remaining review and risk
 
 Demand-weighted fill rate, reorder quantity/point, safety stock, accuracy and turnover require business evidence. Source flag thresholds, stored rate formulas and movement-period semantics remain undocumented. Inventory is historical through 2022, with incomplete product coverage per snapshot. Language resolution is conservative and may request exact dates; a semantic catalog cannot guarantee LLM formatting or interpretation. The full repository suite remains incomplete with pre-existing failures; Docker image build and live report synthesis were not run. No database, RLS, migration, model or Report-generation changes were made.
+
+
+## Follow-up: stock-ranking aliases (2026-10-31)
+
+The Streamlit question ?Which 10 products had the lowest stock in the latest inventory snapshot?? exposed a missing alias. The recognized metric set was empty; the latest-snapshot MAX() subquery then triggered the existing refusal of unknown inventory aggregates. This was a resolution failure, not a missing stock column or denied database permission.
+
+Changed files: `data/semantic/vietstyle_metrics_v1.yaml` adds lowest stock, highest stock and stock levels to the existing stock-on-hand definition; `src/core/analytics/metric_ontology.py` retains these explicit stock requests when other metrics are present; `tests/test_inventory_metric_dictionary.py` adds alias/protected-unresolved and agent-execution regressions; this report records the verification. No formula, permission, schema restriction, SQL parser or validator-bypass change was made.
+
+Both new regressions failed before the fix and pass afterward. All 22 inventory tests pass. The combined inventory, SQL generation, metric definitions, join safety, AnalyticsAgent, request-planning, inventory-dashboard and Report-orchestration suites pass **89/89 tests**. A separate discovery of `test_sql*.py` ran 64 tests with the same previously documented old financial test problems (one failure, seven errors); no unrelated repairs were made. Whitespace checks pass.
+
+A live SQLAnalyticsAgent test with the unchanged configured provider and the read-only commerce repository executed the exact question successfully: ten products with stock_on_hand 3, all at snapshot 2022-12-31, ordered by stock then product name. The returned definition is stock_on_hand using its stored-value representation. Detailed local evidence is in ignored `artifacts/local/lowest-stock-regression.json`. The backend was restarted to load the updated catalog; Streamlit remains at http://127.0.0.1:8501. Original benchmark artifacts and scores were not overwritten or rerun for this alias-only correction.

@@ -27,6 +27,24 @@ class CharacterTokenizer:
 
 
 class ProcessingOutputPreviewTest(unittest.TestCase):
+    def test_product_in_ancestor_heading_survives_token_splits(self):
+        counter = TokenCounter.__new__(TokenCounter)
+        counter.tokenizer = CharacterTokenizer()
+        from core.tokenization.embedding_chunker import build_embedding_chunks
+        parsed = {"elements": [{"table_ref": 0, "metadata": {
+            "element_type": "table", "section_title": "Weight",
+            "section_path": ["CTL-4100WL", "Specifications", "Weight"],
+        }}], "tables": [{"columns": ["Value"], "rows": [
+            {"Value": "250 g " * 40}
+        ]}]}
+        chunks = ChunkingProcessor().process(parsed)["chunks"]
+        bounded = build_embedding_chunks(chunks, counter, 128, "test")
+        self.assertGreater(len(bounded), 1)
+        for chunk in bounded:
+            self.assertTrue(chunk["text"].startswith("Section: CTL-4100WL > Specifications > Weight\n"))
+            self.assertEqual(chunk["text"].count("Section:"), 1)
+            self.assertLessEqual(chunk["metadata"]["token_count"], 126)
+
     def setUp(self):
         def text(value, y):
             return {"text": value, "metadata": {"page_number": 1, "bbox": [0, y, 100, y + 10],

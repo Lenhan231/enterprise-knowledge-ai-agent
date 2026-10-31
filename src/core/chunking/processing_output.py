@@ -3,6 +3,8 @@
 from copy import deepcopy
 import math
 
+from core.chunking.table.references import resolve_table_references
+
 
 def map_output(row: dict, document: dict) -> tuple[dict, list[str]]:
     """Restore text/table references while retaining the untouched source separately."""
@@ -34,10 +36,17 @@ def map_output(row: dict, document: dict) -> tuple[dict, list[str]]:
             table["metadata"] = {**common, **(table.get("metadata") or {}),
                                  "document_id": row["document_id"], "allowed_roles": common["allowed_roles"],
                                  "source_elements": [{"field": "tables", "index": index}]}
-        referenced = set()
+        referenced = resolve_table_references(row["elements"], tables)
         for index, source in enumerate(row["elements"]):
             element = deepcopy(source)
-            metadata = {**common, **(element.get("metadata") or {}),
+            if "table_ref" in element:
+                ref = element["table_ref"]
+                source_index, source_metadata = referenced[ref]
+                if index != source_index:
+                    continue
+            else:
+                source_metadata = element.get("metadata") or {}
+            metadata = {**common, **source_metadata,
                         "document_id": row["document_id"], "allowed_roles": common["allowed_roles"],
                         "source_elements": [{"field": "elements", "index": index}]}
             kind = metadata.get("element_type") or metadata.get("layout_type") or element.get("element_type") or "text"
@@ -45,9 +54,6 @@ def map_output(row: dict, document: dict) -> tuple[dict, list[str]]:
                 continue
             if kind == "table":
                 ref = element.get("table_ref")
-                if type(ref) is not int or not 0 <= ref < len(tables) or ref in referenced:
-                    raise ValueError("Table references must be valid and unique")
-                referenced.add(ref)
                 metadata = {**tables[ref]["metadata"], **metadata,
                             "element_type": "table", "layout_type": "table"}
                 metadata["source_elements"].append({"field": "tables", "index": ref})

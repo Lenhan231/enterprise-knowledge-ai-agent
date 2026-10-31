@@ -20,6 +20,33 @@ Tables stay structured in parser output and also produce row-aware text chunks.
 Each fragment repeats the section context, table title, and column headers;
 rows remain whole. The metadata records table identity and row ranges so a
 chunk can be traced to its source table.
+Table content includes the full `section_path` joined with ` > `, falling back
+to `section_title` when no usable path exists. Token fragments repeat that
+context; a context exceeding the token budget raises an error rather than
+silently removing ancestor headings.
+
+A valid integer `table_ref` identifies a table even if its element metadata
+was mislabeled as text. Repeated references keep the first reading position
+and fill missing section fields from compatible duplicates. Conflicting
+section or location fields raise an error rather than choosing a table context.
+The stored-output mapper uses the same resolution, retaining original source
+indexes and document access roles. Source payloads are not modified.
+
+Explicit table section metadata is preferred. When it is absent, chunking can
+inherit the immediately preceding heading only when both have valid TOPLEFT
+boxes on the same page, the heading center lies within the table's horizontal
+extent, and the gap is at most twice the heading height. Its source references
+are included with the table's references. This conservative fallback covers
+adjacent model/specification tables; it does not infer links across pages,
+intervening elements, or tables appended at the end of a document. Such layouts
+still require explicit parser links. Original parser elements/tables are unchanged.
+
+For newly parsed documents, the Docling mapper attaches the current heading
+path to both table markers and table metadata. It tracks heading levels in
+reading order, so intervening paragraphs do not break section membership.
+Native Word heading styles refine that path for DOCX tables. This depends on
+the parser's reading order and heading detection; it is not a guarantee for
+every multi-column layout. Existing stored outputs are not rewritten.
 
 ## Code path and configuration
 
@@ -92,8 +119,9 @@ parser output, so this worker is its only chunking stage. Regular uploads retain
 their inline chunking and indexing flow.
 
 Figures are retained in parser output but excluded from chunking. Missing
-context and approximate page/bbox ordering are logged rather than silently
-repaired. Known OCR and table-boundary quality issues remain.
+context and approximate page/bbox ordering are logged; only the limited adjacent
+heading recovery described above is applied. Known OCR and table-boundary
+quality issues remain.
 
 The Docker image contains chunking plus the two database helpers it needs,
 with psycopg, psycopg-pool, pgvector, python-dotenv, and no model dependencies
@@ -138,7 +166,8 @@ remain in the source output and are excluded from the embedding preview.
 
 Each chunk carries `source_elements` references into the original element/table
 arrays. References cover its contributing parser group, not exact character
-spans for each token fragment. Existing chunking boundaries are unchanged.
+spans for each token fragment. Restoring table context/order can change chunk
+boundaries and indexes.
 Roles come from the document record; empty roles stay empty (deny access).
 Missing company/roles and inactive documents are reported, never auto-filled
 or activated. The command uses the E5 tokenizer and checks `passage: ` plus

@@ -18,5 +18,7 @@ Semantic mapping follow-up authorized 2026-10-31:
 Session chat plan explicitly approved 2026-10-31:
 - [x] Reuse bounded, user-isolated server memory for standalone inventory SQL patches, pending clarifications, pinned dates and fresh execution.
 - [x] Add the 20-exchange Streamlit transcript, attached results/downloads, separate Report panel, and safe reset/sign-out/stale-response handling.
-- [x] Run 19 new tests, focused/full regressions and independently scored live three-turn queries; restart and open the local app.
+- [x] Run 19 new tests, focused/full regressions and independently scored live three-turn queries; restart the local services.
 - [ ] Persistent saved conversations: deferred by scope; no database changes.
+
+Automatic browser opening was attempted after restart, but the computer-use bridge reported no available browser (including iab). Both services pass HTTP health checks; open http://127.0.0.1:8501 manually for testing.

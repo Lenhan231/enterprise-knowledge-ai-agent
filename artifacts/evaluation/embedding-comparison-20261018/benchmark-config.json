@@ -1,0 +1,21 @@
+{
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "embedding_model_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+  "embedding_backend": "local",
+  "embedding_max_sequence_length": 512,
+  "vector_dimensions": 384,
+  "document_ids": [
+    "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+    "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+    "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+    "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+    "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+  ],
+  "indexed_corpus": "indexed-corpus.jsonl",
+  "indexed_corpus_sha256": "a52fdb6efaadfe428f7c477617b4c0b8072a30d3e3b9596dbfa205b67cc01352",
+  "vectors_file": "baseline-vectors.npy",
+  "vectors_file_sha256": "12f5790712a46bcf243afafbffa054787d265a6824da35733f0d21ebc26882a0",
+  "cases": "vietstyle-cases.json",
+  "language_note": "Document language labels were not added. Language-aware retrieval still requires a verified mapping.",
+  "note": "Baseline database availability restored; use these new upload IDs and this exact model/limit for query embeddings. Other embedding models require their own vectors."
+}

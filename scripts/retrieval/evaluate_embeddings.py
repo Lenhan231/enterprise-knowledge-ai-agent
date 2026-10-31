@@ -8,7 +8,10 @@ import hashlib
 import json
 import os
 import platform
-import resource
+try:
+    import resource
+except ImportError:
+    resource = None
 import sys
 import time
 from collections import defaultdict
@@ -49,7 +52,9 @@ MODELS = {
 }
 
 
-def _rss_peak_mb() -> float:
+def _rss_peak_mb() -> float | None:
+    if resource is None:
+        return None  # Windows does not expose POSIX getrusage.
     value = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     return round(value / (1024 if sys.platform != "darwin" else 1024 * 1024), 1)
 
@@ -117,7 +122,8 @@ def _load_public_corpus(path: Path, manifest_ids: set[str]) -> list[dict]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model", required=True, choices=sorted(MODELS))
+    parser.add_argument("--model", required=True, choices=["baseline", *sorted(MODELS)])
+    parser.add_argument("--model-id", help="Explicit configured model ID for the baseline")
     parser.add_argument("--cases", type=Path, default=REPO_ROOT / "data/evaluation/vinamilk_retrieval_cases.json")
     parser.add_argument("--corpus", type=Path, help="Optional public-manifest JSONL; avoids live database credentials")
     parser.add_argument("--output", type=Path)
@@ -168,7 +174,14 @@ def main() -> int:
         ).encode("utf-8")
     ).hexdigest()
 
-    spec = MODELS[args.model]
+    if args.model == "baseline":
+        if not args.model_id:
+            parser.error("--model-id is required for the baseline")
+        spec = {"model_id": args.model_id, "query_prefix": "", "passage_prefix": "", "instruction": None}
+    else:
+        if args.model_id:
+            parser.error("--model-id is only supported for the baseline")
+        spec = MODELS[args.model]
     from sentence_transformers import SentenceTransformer
     import torch
 
@@ -176,7 +189,7 @@ def main() -> int:
         parser.error("CUDA was requested but is unavailable")
     load_started = time.perf_counter()
     model = SentenceTransformer(spec["model_id"], device=args.device)
-    model.max_seq_length = 512
+    model.max_seq_length = min(model.max_seq_length, 512)
     if args.device == "cuda":
         torch.cuda.reset_peak_memory_stats()
     model_load_seconds = time.perf_counter() - load_started

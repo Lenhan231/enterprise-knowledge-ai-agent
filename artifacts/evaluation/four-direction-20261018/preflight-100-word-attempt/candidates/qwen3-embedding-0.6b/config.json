@@ -1,0 +1,22 @@
+{
+  "status": "failed",
+  "candidate": "qwen3-embedding-0.6b",
+  "model_id": "Qwen/Qwen3-Embedding-0.6B",
+  "query_prefix": "",
+  "passage_prefix": "",
+  "instruction": "Given a search query, retrieve relevant passages that answer the query",
+  "device": "cuda",
+  "dtype": "float32",
+  "batch_size": 1,
+  "max_sequence_length": 512,
+  "normalize_embeddings": true,
+  "chunks": 333,
+  "questions": 48,
+  "corpus_sha256": "876cc51455a382b193679e217e84067c604aef570b6d5d4f76f45e0514f3d16c",
+  "cases_sha256": "1464440db4666e5873f3ca3c0fd2b70886624e718a54caff1769849a419d35f5",
+  "row_order_sha256": "95886ec14ef31a0189f237afb335c0da31a6722286aaa2486e507ac70eb75184",
+  "runner_sha256": "d7a26402e6b322850995850b7ac38f5d62bc79f46a27a7fa5d4ff8b9616d7075",
+  "created_at": "2026-10-18T16:58:32.792725+00:00",
+  "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+  "error_type": "ValueError"
+}

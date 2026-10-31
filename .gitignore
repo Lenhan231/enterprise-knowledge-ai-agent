@@ -25,7 +25,7 @@ ponytail.md
 /.vibe
 /skills-lock.json
 
-/.claude    
+/.claude
 /.continue
 /.qwen
 /.rovodev
@@ -34,3 +34,16 @@ ponytail.md
 /artifacts/local/chunking-preview/
 /artifacts/local/
 
+# Preserved Huy benchmark/local-only file rules.
+/data/raw/apple/**/*.pdf
+/data/raw/vietnam_enterprises/
+/data/processed/apple/**/*.md
+/data/processed/vietnam_enterprises/
+/artifacts/evaluation/qa-review-private-key.json
+/artifacts/evaluation/qa-review-private-key-*.json
+/artifacts/evaluation/ocr-rendered/
+/artifacts/evaluation/ocr-kaggle-*/
+/artifacts/evaluation/kaggle-reranker-output/
+/artifacts/evaluation/kaggle-reranker-pulled/
+/artifacts/evaluation/kaggle-reranker-dataset/*.zip
+/supabase/.temp/

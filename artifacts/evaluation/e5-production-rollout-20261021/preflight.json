@@ -1,0 +1,11 @@
+{
+  "mode": "dry_run",
+  "model": "intfloat/multilingual-e5-base",
+  "revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+  "chunks": 532,
+  "dimensions": 768,
+  "vectors_sha256": "7609b2446a50153b0a2fb0ab79cb72e6285aea4440228976283ecb2a769f3a91",
+  "legacy_table_sha256": "ee735be06450d0ff9331ae7a00bf8a1394d8caada6247d6c27f7c5c80978b03e",
+  "source_content_preserved": true,
+  "target": "public.document_chunks"
+}

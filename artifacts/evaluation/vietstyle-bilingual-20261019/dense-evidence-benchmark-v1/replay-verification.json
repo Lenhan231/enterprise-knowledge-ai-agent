@@ -1,0 +1,14 @@
+{
+  "verified_models": [
+    "multilingual-e5-base",
+    "bge-m3",
+    "qwen3-embedding-0.6b"
+  ],
+  "verified_rankings": 240,
+  "method": "Saved normalized vectors; independent stable dense ranking and explicit source-character set coverage; no encoder/GPU/API/DB",
+  "results_sha256": {
+    "multilingual-e5-base": "e2bff51b75006e22b9d48ec251d022327bfdc827bfaf2b460c2aa9db3f8d270d",
+    "bge-m3": "36a5209298ce80cab22cbe42229f8c4d1a5a93c359fb1346ac708db849a7dc99",
+    "qwen3-embedding-0.6b": "ebb252983782a6d31e1f07ae45afdcedda2d0d186af564d15b6dbe07ff094a9e"
+  }
+}

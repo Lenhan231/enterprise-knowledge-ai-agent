@@ -1,0 +1,13 @@
+[
+  {
+    "id": "Q20-vi-to-vi",
+    "components": {
+      "Q20.proposal_checks": [
+        false,
+        true
+      ]
+    },
+    "complete_before": false,
+    "complete_after": true
+  }
+]

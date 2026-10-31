@@ -1,0 +1,17 @@
+{
+  "dense": {
+    "top10_exact_matches": 48,
+    "ranking_metrics_match": 48,
+    "full_evidence_match": 48
+  },
+  "dense_bge": {
+    "top10_exact_matches": 48,
+    "ranking_metrics_match": 48,
+    "full_evidence_match": 48
+  },
+  "translated_hybrid_bge": {
+    "top10_exact_matches": 48,
+    "ranking_metrics_match": 48,
+    "full_evidence_match": 48
+  }
+}

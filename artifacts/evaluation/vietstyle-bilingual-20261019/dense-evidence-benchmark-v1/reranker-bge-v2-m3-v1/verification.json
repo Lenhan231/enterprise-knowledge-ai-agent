@@ -1,0 +1,10 @@
+{
+  "cases_verified": 80,
+  "scores_verified": 2400,
+  "candidate_retrieval_replayed": true,
+  "independent_stable_score_sort": "passed",
+  "all_three_evidence_views_replayed": "passed",
+  "independent_character_coverage": "passed",
+  "results_sha256": "33fadf1a2962bd79c1aa5b2c6a449aeba422b859c9194c649cf25bb61ef35da8",
+  "scores_sha256": "1ed6efb965f9fbbcfa05412fa7921dea8a2be3a5ec77e60fbf35d4034aab7a0c"
+}

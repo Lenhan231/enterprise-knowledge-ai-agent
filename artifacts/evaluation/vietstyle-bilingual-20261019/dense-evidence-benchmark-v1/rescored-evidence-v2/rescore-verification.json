@@ -1,0 +1,105 @@
+{
+  "label_sha256": "6e7a502a4b99cd347940f8c28562ed19d082c2761e8f2e0bbf75f75d142a7f0b",
+  "original_label_sha256": "012d0864c0b82d252c5a0164a29ddf76a81ef7c8a289259fa9cde8b33163a207",
+  "rankings_replayed": 240,
+  "ranking_and_vector_changes": 0,
+  "independent_character_coverage_check": "passed",
+  "transitions": [
+    {
+      "model": "multilingual-e5-base",
+      "case_id": "Q11-vi-to-vi",
+      "direction": "vi->vi",
+      "before": false,
+      "after": true
+    },
+    {
+      "model": "multilingual-e5-base",
+      "case_id": "Q18-vi-to-vi",
+      "direction": "vi->vi",
+      "before": false,
+      "after": true
+    },
+    {
+      "model": "multilingual-e5-base",
+      "case_id": "Q18-en-to-vi",
+      "direction": "en->vi",
+      "before": false,
+      "after": true
+    },
+    {
+      "model": "multilingual-e5-base",
+      "case_id": "Q18-vi-to-en",
+      "direction": "vi->en",
+      "before": false,
+      "after": true
+    },
+    {
+      "model": "multilingual-e5-base",
+      "case_id": "Q18-en-to-en",
+      "direction": "en->en",
+      "before": false,
+      "after": true
+    },
+    {
+      "model": "bge-m3",
+      "case_id": "Q18-vi-to-vi",
+      "direction": "vi->vi",
+      "before": false,
+      "after": true
+    },
+    {
+      "model": "bge-m3",
+      "case_id": "Q18-en-to-vi",
+      "direction": "en->vi",
+      "before": false,
+      "after": true
+    },
+    {
+      "model": "bge-m3",
+      "case_id": "Q18-vi-to-en",
+      "direction": "vi->en",
+      "before": false,
+      "after": true
+    },
+    {
+      "model": "bge-m3",
+      "case_id": "Q18-en-to-en",
+      "direction": "en->en",
+      "before": false,
+      "after": true
+    },
+    {
+      "model": "qwen3-embedding-0.6b",
+      "case_id": "Q18-vi-to-vi",
+      "direction": "vi->vi",
+      "before": false,
+      "after": true
+    },
+    {
+      "model": "qwen3-embedding-0.6b",
+      "case_id": "Q18-en-to-vi",
+      "direction": "en->vi",
+      "before": false,
+      "after": true
+    },
+    {
+      "model": "qwen3-embedding-0.6b",
+      "case_id": "Q18-vi-to-en",
+      "direction": "vi->en",
+      "before": false,
+      "after": true
+    },
+    {
+      "model": "qwen3-embedding-0.6b",
+      "case_id": "Q18-en-to-en",
+      "direction": "en->en",
+      "before": false,
+      "after": true
+    }
+  ],
+  "original_results_sha256": {
+    "multilingual-e5-base": "e2bff51b75006e22b9d48ec251d022327bfdc827bfaf2b460c2aa9db3f8d270d",
+    "bge-m3": "36a5209298ce80cab22cbe42229f8c4d1a5a93c359fb1346ac708db849a7dc99",
+    "qwen3-embedding-0.6b": "ebb252983782a6d31e1f07ae45afdcedda2d0d186af564d15b6dbe07ff094a9e"
+  }
+}

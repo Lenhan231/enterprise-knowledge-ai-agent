@@ -1,0 +1,41 @@
+--- a/src/core/document_processing/document_processor.py
++++ b/src/core/document_processing/document_processor.py
+@@ -86,12 +86,13 @@
+             parser = parser or self._NATIVE_PARSERS.get(suffix, "tesseract")
+             element_metadata["parser"] = parser
+             element_metadata.setdefault("text_extraction_method", parser)
+-            element_type = str(element_metadata.get("element_type") or element_metadata.get("layout_type") or "text").lower()
++            element_type = str(element.get("element_type") or element_metadata.get("element_type") or element_metadata.get("layout_type") or "text").lower()
+             element_metadata["element_type"] = element_type
+             element_metadata.setdefault("layout_type", element_type)
+             element["metadata"] = element_metadata
+ 
+             if element_type == "table":
++                element_metadata["layout_type"] = "table"
+                 table_ref = element.get("table_ref")
+                 table = element.get("table_data")
+                 if table is not None:
+--- a/src/core/document_processing/chunking/processor.py
++++ b/src/core/document_processing/chunking/processor.py
+@@ -139,7 +139,7 @@
+             if index + 1 < len(chunks):
+                 next_metadata = chunks[index + 1].get("metadata") or {}
+                 title = str(metadata.get("section_title") or "").strip()
+-                heading = text.splitlines()[0].strip().strip("#* ") if text else ""
++                heading = text.strip().strip("#* ") if text else ""
+                 if title and location(metadata) == location(next_metadata) and heading == title and str(next_metadata.get("section_title") or "").strip() == title:
+                     continue
+             if element in {"text", "title", "paragraph"} and 0 < len(text) < 80 and index + 1 < len(chunks):
+--- a/src/core/document_processing/pipelines/built_in/scanned/pdf_ocr.py
++++ b/src/core/document_processing/pipelines/built_in/scanned/pdf_ocr.py
+@@ -131,8 +131,8 @@
+         metadata = {
+             "engine": "tesseract",
+             "language": self.config.get("ocr_language", "vie+eng"),
+-            "table_psm": self.config["tesseract_table_psm"],
+-            "render_scale": self.config["ocr_table_render_scale"],
++            "table_psm": self.config.get("tesseract_table_psm", 3),
++            "render_scale": self.config.get("ocr_table_render_scale", 2.5),
+         }
+         if orientation_correction_degrees:
+             metadata["orientation_correction_degrees"] = orientation_correction_degrees

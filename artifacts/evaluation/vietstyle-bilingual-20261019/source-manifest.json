@@ -1,0 +1,30 @@
+{
+  "archive_sha256": "168f971d77be8f4f3e46ee1111da10400ec15f1038f02f3f97c90e8a435b6231",
+  "files": {
+    "01_Inventory_Management_Policy_Manual_EN.docx": {
+      "sha256": "55771ec9b0387a11998d248351b19d9defc323a816e604b395631f1ba06bebba",
+      "parser_chunks": 19,
+      "tables": 5
+    },
+    "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf": {
+      "sha256": "3a9c476b1f08ddbf82a2295c2d4f333e9f7c4ffc631afe8d6374b4ea293de749",
+      "parser_chunks": 6,
+      "tables": 0
+    },
+    "03_Policy_Rules_Registry_EN.csv": {
+      "sha256": "bc7c3fd2b50e1eeb2475ffc116447917408d3b5e39062e7b6e915029f13d431e",
+      "parser_chunks": 12,
+      "tables": 1
+    },
+    "04_Inventory_Control_and_Reorder_Planner_EN.xlsx": {
+      "sha256": "12cf63a79c57caca094dea823afe5e44f84f27fc5ec2874615fdb7613bd46bd2",
+      "parser_chunks": 485,
+      "tables": 5
+    },
+    "05_Inventory_Policy_Training_Deck_EN.pptx": {
+      "sha256": "dab86eba38b4429c0640f859bfee5dc68a9b4b9e7fd7958ef1306e70711218b2",
+      "parser_chunks": 8,
+      "tables": 0
+    }
+  }
+}

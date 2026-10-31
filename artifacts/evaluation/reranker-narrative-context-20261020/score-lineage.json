@@ -1,0 +1,9 @@
+{
+  "cases": 80,
+  "matrix_entries_checked": 2400,
+  "each_policy_input_matches_original_or_parent_input": true,
+  "each_score_matches_its_recorded_input": true,
+  "new_model_calls": 0,
+  "source_results_sha256": "ec4e9ce1534ee4dca5f314e6b1b567298d844f2d645c23ceabc1bff3da2bc2bd",
+  "policy_scores_sha256": "0410993ef6a90f087ff6ac0910d7ae868a0306deaab7f9c98dc73ce7134fe7c9"
+}

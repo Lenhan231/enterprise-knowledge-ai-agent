@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "case_rankings_verified": 144,
+  "scores_verified": 4320,
+  "dense_pools_replayed": 48,
+  "independent_character_coverage": "passed",
+  "exact_rendering_and_score_lineage": "passed",
+  "results_sha256": "424bb73bf8d08f5f51db01c4d6df88a3b245eb252d159a3fdb3e26e10a5a9251",
+  "limits": "Offline replay validates artifacts, not independent inference or answer correctness."
+}

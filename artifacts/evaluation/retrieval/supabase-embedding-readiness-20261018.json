@@ -1,0 +1,91 @@
+{
+  "created_at": "2026-10-18T10:13:47.316292+00:00",
+  "read_only": true,
+  "counts": {
+    "public.document_chunks": 0,
+    "public.document_parser_chunks": 532,
+    "public.documents": 5,
+    "public.extracted_tables": 14
+  },
+  "documents": [
+    {
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "title": "01 Inventory Management Policy Manual",
+      "company": "Commerce Demo",
+      "format": "DOCX",
+      "processing_status": "failed",
+      "knowledge_base_active": "true",
+      "chunks": 0
+    },
+    {
+      "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+      "title": "02 SOP Cycle Count and Stock Adjustment",
+      "company": "Commerce Demo",
+      "format": "PDF",
+      "processing_status": "failed",
+      "knowledge_base_active": "true",
+      "chunks": 0
+    },
+    {
+      "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+      "title": "03 Policy Rules Registry",
+      "company": "Commerce Demo",
+      "format": "CSV",
+      "processing_status": "failed",
+      "knowledge_base_active": "true",
+      "chunks": 0
+    },
+    {
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "title": "04 Inventory Control and Reorder Planner",
+      "company": "Commerce Demo",
+      "format": "XLSX",
+      "processing_status": "failed",
+      "knowledge_base_active": "true",
+      "chunks": 0
+    },
+    {
+      "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+      "title": "05 Inventory Policy Training Deck",
+      "company": "Commerce Demo",
+      "format": "PPTX",
+      "processing_status": "failed",
+      "knowledge_base_active": "true",
+      "chunks": 0
+    }
+  ],
+  "embedding_groups": [],
+  "language_groups": [],
+  "chunk_health": {
+    "total": 0,
+    "empty_text": 0,
+    "null_vectors": 0,
+    "missing_document_id": 0,
+    "orphan_chunks": 0,
+    "missing_token_count": 0,
+    "missing_model": 0,
+    "max_characters": null
+  },
+  "parser_columns": [
+    [
+      "document_chunks",
+      "embedding",
+      "USER-DEFINED"
+    ],
+    [
+      "document_chunks",
+      "metadata",
+      "jsonb"
+    ],
+    [
+      "document_parser_chunks",
+      "metadata",
+      "jsonb"
+    ],
+    [
+      "documents",
+      "processing_status",
+      "text"
+    ]
+  ]
+}

@@ -1,0 +1,10 @@
+test_admin_cannot_bypass_empty_acl_or_inactive_or_unready_documents (test_retrieval_access.RetrievalAccessTest.test_admin_cannot_bypass_empty_acl_or_inactive_or_unready_documents) ... ok
+test_company_and_document_scope_remain_effective (test_retrieval_access.RetrievalAccessTest.test_company_and_document_scope_remain_effective) ... ok
+test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection (test_retrieval_access.RetrievalAccessTest.test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection) ... ok
+test_empty_user_roles_do_not_grant_document_access (test_retrieval_access.RetrievalAccessTest.test_empty_user_roles_do_not_grant_document_access) ... ok
+test_only_active_ready_role_visible_documents_reach_candidates_and_context (test_retrieval_access.RetrievalAccessTest.test_only_active_ready_role_visible_documents_reach_candidates_and_context) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 15.968s
+
+OK

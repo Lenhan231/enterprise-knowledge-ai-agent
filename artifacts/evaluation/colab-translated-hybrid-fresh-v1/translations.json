@@ -1,0 +1,346 @@
+{
+  "status": "completed",
+  "model": "openai/gpt-oss-20b",
+  "source_language_mode": "auto",
+  "external_api_consent": "User explicitly approved sending these 24 simulated question texts to Groq in chat 2026-10-21.",
+  "translator_sha256": "f1b04c95777b05cd5f3a5459f4c5777f721bc326ca95b505f36548f864f7c381",
+  "questions_sha256": "413af9d10b54b86fe7b1637e217d84e9af0e1731efb2788a68ce15403496678f",
+  "records": [
+    {
+      "question": "Khi nhận hàng phát hiện thiếu hoặc hư hỏng, phải ghi nhận lúc nào và cần những bằng chứng gì?",
+      "queries": {
+        "vn": "Khi nhận hàng phát hiện thiếu hoặc hư hỏng, phải ghi nhận lúc nào và cần những bằng chứng gì?",
+        "en": "When receiving goods and discovering shortages or damages, when must it be recorded and what evidence is required?"
+      },
+      "error": null,
+      "api_seconds": 1.6151519980001012,
+      "usage": {
+        "input_tokens": 171,
+        "output_tokens": 47,
+        "total_tokens": 218
+      }
+    },
+    {
+      "question": "When an inbound delivery is short or damaged, when must the exception be recorded and what evidence is required?",
+      "queries": {
+        "en": "When an inbound delivery is short or damaged, when must the exception be recorded and what evidence is required?",
+        "vn": "Khi một giao hàng vào bị thiếu hoặc hư hỏng, khi nào phải ghi nhận ngoại lệ và cần chứng cứ gì?"
+      },
+      "error": null,
+      "api_seconds": 0.4374422470000354,
+      "usage": {
+        "input_tokens": 167,
+        "output_tokens": 55,
+        "total_tokens": 222
+      }
+    },
+    {
+      "question": "Sau khi chiến dịch kết thúc, cần đối chiếu forecast với những chỉ số nào để cập nhật kế hoạch?",
+      "queries": {
+        "vn": "Sau khi chiến dịch kết thúc, cần đối chiếu forecast với những chỉ số nào để cập nhật kế hoạch?",
+        "en": "After the campaign ends, which metrics should be reconciled with the forecast to update the plan?"
+      },
+      "error": null,
+      "api_seconds": 0.38576418699994974,
+      "usage": {
+        "input_tokens": 169,
+        "output_tokens": 47,
+        "total_tokens": 216
+      }
+    },
+    {
+      "question": "After a campaign ends, which outcomes must be compared with the forecast to revise the plan?",
+      "queries": {
+        "en": "After a campaign ends, which outcomes must be compared with the forecast to revise the plan?",
+        "vn": "Sau khi chiến dịch kết thúc, những kết quả nào phải được so sánh với dự báo để điều chỉnh kế hoạch?"
+      },
+      "error": null,
+      "api_seconds": 0.4446789629998875,
+      "usage": {
+        "input_tokens": 164,
+        "output_tokens": 53,
+        "total_tokens": 217
+      }
+    },
+    {
+      "question": "Một PO khẩn cấp phải ghi rõ ba thông tin gì?",
+      "queries": {
+        "vn": "Một PO khẩn cấp phải ghi rõ ba thông tin gì?",
+        "en": "What three pieces of information must an urgent PO clearly state?"
+      },
+      "error": null,
+      "api_seconds": 0.4248687010001504,
+      "usage": {
+        "input_tokens": 159,
+        "output_tokens": 39,
+        "total_tokens": 198
+      }
+    },
+    {
+      "question": "Which three details must be documented for an emergency purchase order?",
+      "queries": {
+        "en": "Which three details must be documented for an emergency purchase order?",
+        "vn": "Ba chi tiết nào phải được ghi lại cho một đơn đặt hàng khẩn cấp?"
+      },
+      "error": null,
+      "api_seconds": 0.4658808419999332,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 45,
+        "total_tokens": 203
+      }
+    },
+    {
+      "question": "Với SKU có days of supply trên 240 ngày, ai cần đánh giá và xem xét những phương án nào theo quy định kế toán?",
+      "queries": {
+        "vn": "Với SKU có days of supply trên 240 ngày, ai cần đánh giá và xem xét những phương án nào theo quy định kế toán?",
+        "en": "For SKUs with days of supply over 240 days, who needs to evaluate and consider what options according to accounting regulations?"
+      },
+      "error": null,
+      "api_seconds": 0.4370377769998868,
+      "usage": {
+        "input_tokens": 175,
+        "output_tokens": 53,
+        "total_tokens": 228
+      }
+    },
+    {
+      "question": "For a SKU with more than 240 days of supply, who assesses it and which accounting actions are considered?",
+      "queries": {
+        "en": "For a SKU with more than 240 days of supply, who assesses it and which accounting actions are considered?",
+        "vn": "Với một SKU có hơn 240 ngày cung ứng, ai sẽ đánh giá nó và những hành động kế toán nào được xem xét?"
+      },
+      "error": null,
+      "api_seconds": 0.4649609990001409,
+      "usage": {
+        "input_tokens": 168,
+        "output_tokens": 56,
+        "total_tokens": 224
+      }
+    },
+    {
+      "question": "Nhu cầu bình quân trong workbook dùng tối đa bao nhiêu snapshot, và có bắt buộc là các tháng liên tiếp không?",
+      "queries": {
+        "vn": "Nhu cầu bình quân trong workbook dùng tối đa bao nhiêu snapshot, và có bắt buộc là các tháng liên tiếp không?",
+        "en": "What is the maximum number of snapshots that can be used in the workbook on average, and is it mandatory that they be consecutive months?"
+      },
+      "error": null,
+      "api_seconds": 0.4630634079999254,
+      "usage": {
+        "input_tokens": 173,
+        "output_tokens": 54,
+        "total_tokens": 227
+      }
+    },
+    {
+      "question": "How many snapshots can the workbook use for average demand, and must they be consecutive months?",
+      "queries": {
+        "en": "How many snapshots can the workbook use for average demand, and must they be consecutive months?",
+        "vn": "Có bao nhiêu bản sao lưu có thể được sử dụng cho nhu cầu trung bình, và chúng có phải là các tháng liên tiếp không?"
+      },
+      "error": null,
+      "api_seconds": 0.6068076239998845,
+      "usage": {
+        "input_tokens": 164,
+        "output_tokens": 54,
+        "total_tokens": 218
+      }
+    },
+    {
+      "question": "Theo phụ lục A, những trường nào nên được giữ cùng nhau trong một chunk chính sách dùng cho RAG?",
+      "queries": {
+        "vn": "Theo phụ lục A, những trường nào nên được giữ cùng nhau trong một chunk chính sách dùng cho RAG?",
+        "en": "According to Appendix A, which fields should be kept together in a single policy chunk for RAG?"
+      },
+      "error": null,
+      "api_seconds": 0.4414391959999193,
+      "usage": {
+        "input_tokens": 170,
+        "output_tokens": 47,
+        "total_tokens": 217
+      }
+    },
+    {
+      "question": "According to Appendix A, which fields should stay together in a policy chunk used for RAG?",
+      "queries": {
+        "en": "According to Appendix A, which fields should stay together in a policy chunk used for RAG?",
+        "vn": "Theo Phụ lục A, những trường nào nên được giữ lại cùng nhau trong một khối chính sách được sử dụng cho RAG?"
+      },
+      "error": null,
+      "api_seconds": 0.363550565000196,
+      "usage": {
+        "input_tokens": 165,
+        "output_tokens": 57,
+        "total_tokens": 222
+      }
+    },
+    {
+      "question": "Khi áp dụng blind count, ai phân công người đếm và người đếm có được xem số lượng hệ thống không?",
+      "queries": {
+        "vn": "Khi áp dụng blind count, ai phân công người đếm và người đếm có được xem số lượng hệ thống không?",
+        "en": "When applying blind count, who assigns the counter and does the counter have access to the system quantity?"
+      },
+      "error": null,
+      "api_seconds": 0.4437441840000247,
+      "usage": {
+        "input_tokens": 172,
+        "output_tokens": 47,
+        "total_tokens": 219
+      }
+    },
+    {
+      "question": "During a blind count, who assigns the counters and may they see the system quantities?",
+      "queries": {
+        "en": "During a blind count, who assigns the counters and may they see the system quantities?",
+        "vn": "Trong một đếm mù, ai là người giao phó các bộ đếm và họ có thể nhìn thấy số lượng hệ thống không?"
+      },
+      "error": null,
+      "api_seconds": 0.4588427879998562,
+      "usage": {
+        "input_tokens": 163,
+        "output_tokens": 57,
+        "total_tokens": 220
+      }
+    },
+    {
+      "question": "Có được gộp các biến thể gần giống nhau khi kiểm kê không, và cần đếm theo các chiều nào?",
+      "queries": {
+        "vn": "Có được gộp các biến thể gần giống nhau khi kiểm kê không, và cần đếm theo các chiều nào?",
+        "en": "Can similar variants be merged during inventory, and which dimensions need to be counted?"
+      },
+      "error": null,
+      "api_seconds": 0.48231540500000847,
+      "usage": {
+        "input_tokens": 171,
+        "output_tokens": 43,
+        "total_tokens": 214
+      }
+    },
+    {
+      "question": "May similar variants be combined during a count, and which identifiers must distinguish counted stock?",
+      "queries": {
+        "en": "May similar variants be combined during a count, and which identifiers must distinguish counted stock?",
+        "vn": "Các biến thể tương tự có thể được kết hợp trong quá trình đếm, và những định danh nào phải phân biệt cổ phiếu đã được đếm?"
+      },
+      "error": null,
+      "api_seconds": 0.452955774999964,
+      "usage": {
+        "input_tokens": 163,
+        "output_tokens": 60,
+        "total_tokens": 223
+      }
+    },
+    {
+      "question": "Theo bảng phê duyệt trong Inventory Management Policy Manual, ai duyệt điều chỉnh tồn nhỏ có đủ bằng chứng và thời hạn xử lý là bao lâu?",
+      "queries": {
+        "vn": "Theo bảng phê duyệt trong Inventory Management Policy Manual, ai duyệt điều chỉnh tồn nhỏ có đủ bằng chứng và thời hạn xử lý là bao lâu?",
+        "en": "According to the approval table in the Inventory Management Policy Manual, who approves small inventory adjustments with sufficient evidence and what is the processing time limit?"
+      },
+      "error": null,
+      "api_seconds": 0.44474966000007043,
+      "usage": {
+        "input_tokens": 178,
+        "output_tokens": 56,
+        "total_tokens": 234
+      }
+    },
+    {
+      "question": "According to the Inventory Management Policy Manual approval table, who approves a small inventory adjustment with sufficient evidence, and what is the processing deadline?",
+      "queries": {
+        "en": "According to the Inventory Management Policy Manual approval table, who approves a small inventory adjustment with sufficient evidence, and what is the processing deadline?",
+        "vn": "Theo bảng phê duyệt trong Hướng dẫn Chính sách Quản lý Hàng tồn kho, ai là người phê duyệt điều chỉnh hàng tồn kho nhỏ với đủ bằng chứng, và thời hạn xử lý là bao lâu?"
+      },
+      "error": null,
+      "api_seconds": 0.4676551860000018,
+      "usage": {
+        "input_tokens": 173,
+        "output_tokens": 82,
+        "total_tokens": 255
+      }
+    },
+    {
+      "question": "Thanh lý, scrap hoặc ghi giảm giá trị cần những bên nào phê duyệt và theo thẩm quyền nào?",
+      "queries": {
+        "vn": "Thanh lý, scrap hoặc ghi giảm giá trị cần những bên nào phê duyệt và theo thẩm quyền nào?",
+        "en": "Which parties need to approve liquidation, scrap, or write-down of value, and under what authority?"
+      },
+      "error": null,
+      "api_seconds": 0.43161020600018674,
+      "usage": {
+        "input_tokens": 170,
+        "output_tokens": 47,
+        "total_tokens": 217
+      }
+    },
+    {
+      "question": "Which parties approve disposal, scrap, or a write-down, and which authority governs it?",
+      "queries": {
+        "en": "Which parties approve disposal, scrap, or a write-down, and which authority governs it?",
+        "vn": "Ai là các bên phê duyệt việc thanh lý, hủy bỏ hoặc ghi giảm giá trị, và cơ quan nào quản lý?"
+      },
+      "error": null,
+      "api_seconds": 0.5427436279999256,
+      "usage": {
+        "input_tokens": 164,
+        "output_tokens": 56,
+        "total_tokens": 220
+      }
+    },
+    {
+      "question": "Nhóm B đóng góp khoảng bao nhiêu phần trăm giá trị tiêu thụ, được kiểm kê bao lâu một lần và có SLA điều tra bao lâu?",
+      "queries": {
+        "vn": "Nhóm B đóng góp khoảng bao nhiêu phần trăm giá trị tiêu thụ, được kiểm kê bao lâu một lần và có SLA điều tra bao lâu?",
+        "en": "What percentage of consumption value does Group B contribute, how often is it inventoried, and what is the investigation SLA?"
+      },
+      "error": null,
+      "api_seconds": 0.4593167190000713,
+      "usage": {
+        "input_tokens": 179,
+        "output_tokens": 52,
+        "total_tokens": 231
+      }
+    },
+    {
+      "question": "Approximately what consumption-value share defines class B, how often is it counted, and what is its variance-investigation SLA?",
+      "queries": {
+        "en": "Approximately what consumption-value share defines class B, how often is it counted, and what is its variance-investigation SLA?",
+        "vn": "Khoảng mức tiêu thụ-giá trị nào xác định lớp B, thường được tính bao lâu và SLA điều tra độ lệch chuẩn của nó là bao nhiêu?"
+      },
+      "error": null,
+      "api_seconds": 0.4177207550001185,
+      "usage": {
+        "input_tokens": 170,
+        "output_tokens": 64,
+        "total_tokens": 234
+      }
+    },
+    {
+      "question": "Theo bảng ngưỡng xử lý trong SOP, chênh lệch lặp lại hoặc giá trị lớn cần hành động gì và ai duyệt?",
+      "queries": {
+        "vn": "Theo bảng ngưỡng xử lý trong SOP, chênh lệch lặp lại hoặc giá trị lớn cần hành động gì và ai duyệt?",
+        "en": "According to the processing threshold table in the SOP, what action should be taken for a repeated discrepancy or a large value, and who approves it?"
+      },
+      "error": null,
+      "api_seconds": 0.3942107869997926,
+      "usage": {
+        "input_tokens": 177,
+        "output_tokens": 56,
+        "total_tokens": 233
+      }
+    },
+    {
+      "question": "According to the SOP handling-threshold table, what action and approvers apply to recurring or high-value variances?",
+      "queries": {
+        "en": "According to the SOP handling-threshold table, what action and approvers apply to recurring or high-value variances?",
+        "vn": "Theo bảng SOP xử lý ngưỡng, hành động và người phê duyệt nào áp dụng cho các sai lệch lặp lại hoặc có giá trị cao?"
+      },
+      "error": null,
+      "api_seconds": 0.4813743130000603,
+      "usage": {
+        "input_tokens": 169,
+        "output_tokens": 62,
+        "total_tokens": 231
+      }
+    }
+  ]
+}

@@ -1,0 +1,2597 @@
+{
+  "created_at": "2026-10-15T11:58:46.825142+00:00",
+  "quocan_commit": "3ea4f43bf93cb05327f80747ef9d6180fd69d5a3",
+  "retrieval_commit": "751469c1dafc573aa28c7b52e49bf7c4a447ccb7",
+  "case_sha256": "27e45ee2ed267aefae24286e85b275d99f1e5432b4843d2cfd1a16b6c20dcd74",
+  "live_snapshot_sha256": "905e457e6d3cf771630a249a44950c4592df5ef9c662e9a4bb18a35ef4144617",
+  "corpus_chunks": 827,
+  "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "protocol": "Same read-only repeatable-read snapshot, identical query vectors, top-k 10, no company/role filter as in original benchmark; generation not run",
+  "results": [
+    {
+      "id": "Q01",
+      "question": "What are the mission and vision of PetroVietnam Fertilizer and Chemicals Corporation (PVFCCo)?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4"
+      ],
+      "lexical_terms": "mission | vision | petrovietnam | fertilizer | chemicals | corporation | pvfcco",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::21",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::44",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::99",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::106",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::3"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::21",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::44",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::99",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::106",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::3"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::69",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::35",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.2,
+          "ndcg@10": 0.38685280723454163
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::21",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::3",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::44"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::21",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::44",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::99",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::3"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q02",
+      "question": "What is PVFCCo's stock ticker, and how many shares were listed on November 5, 2007?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13"
+      ],
+      "lexical_terms": "pvfcco | stock | ticker | shares | listed | november | 5 | 2007",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::32",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::32",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::96",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::101"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::96",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::96",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::97"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q03",
+      "question": "What were PVFCCo's main business sectors according to the 2008 Annual Report?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14"
+      ],
+      "lexical_terms": "pvfcco | main | business | sectors | according | 2008 | annual | report",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::105",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::84",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::33",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::18"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::92"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q04",
+      "question": "In 2008, how many tons of imported fertilizer did PVFCCo import and distribute in the domestic market?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "lexical_terms": "2008 | tons | imported | fertilizer | did | pvfcco | import | distribute | domestic | market",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::50",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::50",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::57",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.6309297535714575
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::50"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q05",
+      "question": "By how many tons per year was the urea production capacity expected to increase through the CO2 recovery project at the Phu My Fertilizer Plant?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "lexical_terms": "tons | per | year | urea | production | capacity | expected | increase | through | co2 | recovery | project | phu | my | fertilizer | plant",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::180",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::20"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::180",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::20"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.3333333333333333,
+          "ndcg@10": 0.5
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.1111111111111111,
+          "ndcg@10": 0.3010299956639812
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q06",
+      "question": "What were PVFCCo's total revenue, profit before tax, and tax payment in 2008?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "lexical_terms": "pvfcco | total | revenue | profit | before | tax | tax | payment | 2008",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.1111111111111111,
+          "ndcg@10": 0.3010299956639812
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.1111111111111111,
+          "ndcg@10": 0.3010299956639812
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::91",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::92"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.3333333333333333,
+          "ndcg@10": 0.5
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q07",
+      "question": "Compare PVFCCo's total revenue in 2007 and 2008.",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "lexical_terms": "compare | pvfcco | total | revenue | 2007 | 2008",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::177",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::177",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.25,
+          "ndcg@10": 0.43067655807339306
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q08",
+      "question": "What were PVFCCo's planned urea production and fertilizer imports for 2009?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6"
+      ],
+      "lexical_terms": "pvfcco | planned | urea | production | fertilizer | imports | 2009",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.1,
+          "ndcg@10": 0.2890648263178879
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.2,
+          "ndcg@10": 0.38685280723454163
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.25,
+          "ndcg@10": 0.43067655807339306
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q09",
+      "question": "What revenue, profit-before-tax, and state-budget tax-payment targets did PVFCCo set for 2009?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+      ],
+      "lexical_terms": "revenue | profit | before | tax | state | budget | tax | payment | targets | did | pvfcco | set | 2009",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.1111111111111111,
+          "ndcg@10": 0.3010299956639812
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.1111111111111111,
+          "ndcg@10": 0.3010299956639812
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::91",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::92",
+            "SHOPIFY-HELP-DEVELOPING-MARKETING-PLAN::chunk::28",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::92"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.6309297535714575
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.6309297535714575
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q10",
+      "question": "Where was the Phu My Fertilizer Plant located, and what were its designed daily ammonia and urea production capacities?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23"
+      ],
+      "lexical_terms": "where | phu | my | fertilizer | plant | located | its | designed | daily | ammonia | urea | production | capacities",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::106",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::99",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::21",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::44",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::158"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::106",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::99",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::21",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::44",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::158"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::106",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q11",
+      "question": "What technical solutions did PVFCCo implement to improve urea quality and plant operating efficiency?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26"
+      ],
+      "lexical_terms": "technical | solutions | did | pvfcco | implement | improve | urea | quality | plant | operating | efficiency",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::60",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::60",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::65"
+          ],
+          "recall@10": 0.5,
+          "precision@10": 0.1,
+          "mrr": 0.2,
+          "ndcg@10": 0.23719771276929622
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5"
+          ],
+          "recall@10": 0.5,
+          "precision@10": 0.1,
+          "mrr": 0.125,
+          "ndcg@10": 0.19342640361727081
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q12",
+      "question": "What were PVFCCo's current ratio and quick ratio in 2008?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55"
+      ],
+      "lexical_terms": "pvfcco | current | ratio | quick | ratio | 2008",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::57",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::75",
+            "AMAZON-FBA-RESTOCK-TOOL-GUIDE-2020::chunk::2",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::57",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.2,
+          "ndcg@10": 0.38685280723454163
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q13",
+      "question": "Under what business registration certificate number was Long Hau Joint Stock Company established, and on what date was it issued?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25"
+      ],
+      "lexical_terms": "under | business | registration | certificate | number | long | hau | joint | stock | company | established | date | it | issued",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 1.0,
+          "ndcg@10": 1.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+            "WMT-GFR-SUPPLIER-ONBOARDING-2025::chunk::8",
+            "WMT-GFR-SUPPLIER-ONBOARDING-2025::chunk::13",
+            "WMT-GFR-SUPPLIER-ONBOARDING-2025::chunk::10",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::35",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::20",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::69"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+            "WMT-GFR-SUPPLIER-ONBOARDING-2025::chunk::8",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "WMT-GFR-SUPPLIER-ONBOARDING-2025::chunk::13",
+            "SAMS-SUPPLIER-HUB-USER-GUIDE-2022::chunk::62",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::38"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::38",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::115"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q14",
+      "question": "Which audit firm audited Long Hau's separate financial statements for 2008?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7"
+      ],
+      "lexical_terms": "audit | firm | audited | long | hau | separate | financial | statements | 2008",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::42",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::45",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::42",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::45",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::108",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::110",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::111"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::110",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::108",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::111",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::110",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::111",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q15",
+      "question": "On what date was Long Hau's independent audit report for 2008 signed?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::9"
+      ],
+      "lexical_terms": "date | long | hau | independent | audit | report | 2008 | signed",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::69",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::72",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::74",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::74",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::108",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::18",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::72",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::108",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q16",
+      "question": "What were Long Hau's total assets at December 31, 2008 and at the beginning of 2008?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::14"
+      ],
+      "lexical_terms": "long | hau | total | assets | december | 31 | 2008 | beginning | 2008",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::122",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::75",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::142",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::116",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::124",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::143",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::122",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q17",
+      "question": "How did Long Hau's inventory value change between the end of 2008 and the beginning of 2008?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12"
+      ],
+      "lexical_terms": "did | long | hau | inventory | value | change | between | end | 2008 | beginning | 2008",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::17",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "SHOPEE-UNI-INVENTORY-MANAGEMENT-VN::chunk::8",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::17",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::140",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+            "AMAZON-FBA-RESTOCK-TOOL-GUIDE-2020::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "SHOPIFY-HELP-DEVELOPING-MARKETING-PLAN::chunk::27",
+            "SHOPIFY-MULTI-LOCATION-INVENTORY-2026::chunk::12",
+            "SAMS-SUPPLIER-HUB-USER-GUIDE-2022::chunk::32",
+            "AMAZON-FBA-RESTOCK-TOOL-GUIDE-2020::chunk::20",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::126",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::122"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::140",
+            "AMAZON-FBA-RESTOCK-TOOL-GUIDE-2020::chunk::1",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::122",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::139",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::17"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::17",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::122",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q18",
+      "question": "What was Long Hau's net revenue in 2008, and by how much did it increase compared with the previous year?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20"
+      ],
+      "lexical_terms": "long | hau | net | revenue | 2008 | did | it | increase | compared | previous | year",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "TTS-VN-PROMO-CAMPAIGN-PERFORMANCE-2025::chunk::0",
+            "SHOPIFY-HELP-DEVELOPING-MARKETING-PLAN::chunk::4",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30",
+            "SHOPIFY-HELP-DEVELOPING-MARKETING-PLAN::chunk::7",
+            "SHOPIFY-HELP-DEVELOPING-MARKETING-PLAN::chunk::27"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::135",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q19",
+      "question": "What was Long Hau's total accounting profit before tax in 2008 compared with 2007?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "lexical_terms": "long | hau | total | accounting | profit | before | tax | 2008 | compared | 2007",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::142",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::177",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::91",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::135"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::135",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::91",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q20",
+      "question": "According to the notes to the financial statements, what principle did Long Hau use to determine the value of inventory related to industrial-park development costs?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28"
+      ],
+      "lexical_terms": "according | notes | financial | statements | principle | did | long | hau | use | determine | value | inventory | related | industrial | park | development | costs",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.2,
+          "ndcg@10": 0.38685280723454163
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.2,
+          "ndcg@10": 0.38685280723454163
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::169",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::150",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::142",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::160",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::167",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::144",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::169",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::150",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::144",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::122",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::169",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::150",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q21",
+      "question": "What depreciation method did Long Hau use, and what estimated depreciation periods applied to its types of fixed assets?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29"
+      ],
+      "lexical_terms": "depreciation | method | did | long | hau | use | estimated | depreciation | periods | applied | its | types | fixed | assets",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.3333333333333333,
+          "ndcg@10": 0.5
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1"
+          ],
+          "recall@10": 1.0,
+          "precision@10": 0.1,
+          "mrr": 0.3333333333333333,
+          "ndcg@10": 0.5
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::117",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::121",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "IAB-COMMERCE-INCREMENTALITY-GUIDELINES-2025::chunk::9",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::135",
+            "IAB-COMMERCE-INCREMENTALITY-GUIDELINES-2025::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::138"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::117",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::154",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::150",
+            "IAB-COMMERCE-INCREMENTALITY-GUIDELINES-2025::chunk::6",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::151"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::117",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::154",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::151",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::118",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::169"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q22",
+      "question": "What were Long Hau's profit attributable to ordinary shareholders and basic earnings per share in 2008?",
+      "gold": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55"
+      ],
+      "lexical_terms": "long | hau | profit | attributable | ordinary | shareholders | basic | earnings | per | share | 2008",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::186",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::133",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::20",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::171",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::97"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::186",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::97",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::133",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::171"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::186",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::97",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q23",
+      "question": "Which two companies did the 2008 PVFCCo Annual Report and Long Hau's 2008 separate financial statements belong to?",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+      ],
+      "lexical_terms": "two | companies | did | 2008 | pvfcco | annual | report | long | hau | 2008 | separate | financial | statements | belong",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::90",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46"
+          ],
+          "recall@10": 0.5,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.38685280723454163
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::90",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46"
+          ],
+          "recall@10": 0.5,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.38685280723454163
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::110",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::110",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::110",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+          ],
+          "recall@10": 0.5,
+          "precision@10": 0.1,
+          "mrr": 0.1,
+          "ndcg@10": 0.17723928678404774
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    },
+    {
+      "id": "Q24",
+      "question": "Compare PVFCCo's and Long Hau's profit before tax in 2008, stating the figures and currency units used in each report.",
+      "gold": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "lexical_terms": "compare | pvfcco | long | hau | profit | before | tax | 2008 | stating | figures | currency | units | used | each | report",
+      "variants": {
+        "legacy_dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "dense": {
+          "ranked_chunk_ids": [
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        },
+        "bm25": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::135",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49"
+          ],
+          "recall@10": 0.5,
+          "precision@10": 0.1,
+          "mrr": 0.5,
+          "ndcg@10": 0.38685280723454163
+        },
+        "hybrid_1_2": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::91",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30"
+          ],
+          "recall@10": 0.5,
+          "precision@10": 0.1,
+          "mrr": 0.2,
+          "ndcg@10": 0.23719771276929622
+        },
+        "hybrid_2_1": {
+          "ranked_chunk_ids": [
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::91",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::133",
+            "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183",
+            "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27"
+          ],
+          "recall@10": 0.0,
+          "precision@10": 0.0,
+          "mrr": 0.0,
+          "ndcg@10": 0.0
+        }
+      },
+      "legacy_saved_ranking_matches": true,
+      "hybrid_saved_ranking_matches": false
+    }
+  ],
+  "aggregates": {
+    "all": {
+      "legacy_dense": {
+        "recall@10": 0.3958,
+        "precision@10": 0.0417,
+        "mrr": 0.2606,
+        "ndcg@10": 0.2865
+      },
+      "dense": {
+        "recall@10": 0.3958,
+        "precision@10": 0.0417,
+        "mrr": 0.2606,
+        "ndcg@10": 0.2865
+      },
+      "bm25": {
+        "recall@10": 0.4583,
+        "precision@10": 0.05,
+        "mrr": 0.3542,
+        "ndcg@10": 0.3721
+      },
+      "hybrid_1_2": {
+        "recall@10": 0.4167,
+        "precision@10": 0.0458,
+        "mrr": 0.242,
+        "ndcg@10": 0.2819
+      },
+      "hybrid_2_1": {
+        "recall@10": 0.3125,
+        "precision@10": 0.0333,
+        "mrr": 0.1789,
+        "ndcg@10": 0.21
+      }
+    },
+    "pvfcco": {
+      "legacy_dense": {
+        "recall@10": 0.5,
+        "precision@10": 0.05,
+        "mrr": 0.3519,
+        "ndcg@10": 0.3835
+      },
+      "dense": {
+        "recall@10": 0.5,
+        "precision@10": 0.05,
+        "mrr": 0.3519,
+        "ndcg@10": 0.3835
+      },
+      "bm25": {
+        "recall@10": 0.875,
+        "precision@10": 0.0917,
+        "mrr": 0.6667,
+        "ndcg@10": 0.712
+      },
+      "hybrid_1_2": {
+        "recall@10": 0.7917,
+        "precision@10": 0.0833,
+        "mrr": 0.4674,
+        "ndcg@10": 0.5441
+      },
+      "hybrid_2_1": {
+        "recall@10": 0.5833,
+        "precision@10": 0.0583,
+        "mrr": 0.3495,
+        "ndcg@10": 0.4052
+      }
+    },
+    "long_hau": {
+      "legacy_dense": {
+        "recall@10": 0.3,
+        "precision@10": 0.03,
+        "mrr": 0.1533,
+        "ndcg@10": 0.1887
+      },
+      "dense": {
+        "recall@10": 0.3,
+        "precision@10": 0.03,
+        "mrr": 0.1533,
+        "ndcg@10": 0.1887
+      },
+      "bm25": {
+        "recall@10": 0.0,
+        "precision@10": 0.0,
+        "mrr": 0.0,
+        "ndcg@10": 0.0
+      },
+      "hybrid_1_2": {
+        "recall@10": 0.0,
+        "precision@10": 0.0,
+        "mrr": 0.0,
+        "ndcg@10": 0.0
+      },
+      "hybrid_2_1": {
+        "recall@10": 0.0,
+        "precision@10": 0.0,
+        "mrr": 0.0,
+        "ndcg@10": 0.0
+      }
+    },
+    "cross_document": {
+      "legacy_dense": {
+        "recall@10": 0.25,
+        "precision@10": 0.05,
+        "mrr": 0.25,
+        "ndcg@10": 0.1934
+      },
+      "dense": {
+        "recall@10": 0.25,
+        "precision@10": 0.05,
+        "mrr": 0.25,
+        "ndcg@10": 0.1934
+      },
+      "bm25": {
+        "recall@10": 0.25,
+        "precision@10": 0.05,
+        "mrr": 0.25,
+        "ndcg@10": 0.1934
+      },
+      "hybrid_1_2": {
+        "recall@10": 0.25,
+        "precision@10": 0.05,
+        "mrr": 0.1,
+        "ndcg@10": 0.1186
+      },
+      "hybrid_2_1": {
+        "recall@10": 0.25,
+        "precision@10": 0.05,
+        "mrr": 0.05,
+        "ndcg@10": 0.0886
+      }
+    }
+  },
+  "saved_ranking_matches": {
+    "legacy_saved_ranking_matches": 24,
+    "hybrid_saved_ranking_matches": 0
+  }
+}

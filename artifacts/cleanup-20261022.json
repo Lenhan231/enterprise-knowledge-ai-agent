@@ -1,0 +1,740 @@
+{
+  "status": "completed_and_hash_verified",
+  "scan_text_files": 1048,
+  "frozen_heldout_manifest_sha256": "3f424cac026e098fb2cff98c03137e74e61cf48b7e4a219c503312a60b1a6a14",
+  "moves": [
+    {
+      "old_path": "artifacts/evaluation/employee-access-policy-qwen38-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/employee-access-policy-qwen38-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "428d9e46636021f169feb053ede5d5508138d9ebae94f7819872fddc4379376f"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-customer-service-policy-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-customer-service-policy-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "647f4175aff72118c36d527472b7a76e503ab83cbb08b0720a2d9e9b08408b67"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-executive-grounded-rerun-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-executive-grounded-rerun-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "326c554f7c126ad6f6d60c8d39ad4e56a0e3ed5f823c8f470758284e4d14be01"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-executive-grounded-rerun-v2-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-executive-grounded-rerun-v2-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "13e3e1c70def748ca1cebfb8e5b965ebd6ccfe12114ef2a5ea93a0613d51daaf"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-executive-report-guarded-rerun3-20260929.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-executive-report-guarded-rerun3-20260929.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "9ca4c1a930aa51d07f5d98200ddfa5bb25f638563efc08a9900f070ed070321d"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-executive-report-guarded-rerun4-20260929.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-executive-report-guarded-rerun4-20260929.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "660613b07200274c908283551cb0b26beab5cc51df3d94e9f2a51d1e861f4857"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-executive-rerun-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-executive-rerun-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "6c4b41f1ef93af97bb2025f6e56875b7062c9c52837fb2dd64978aa7171fbdf1"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-financial-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-financial-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "3fe792f6eab070fce3ef2af0310cebffe47d2db7858eb3bf9406051d54e03b33"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-financial-post-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-financial-post-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "e582c3eea30f60184a87b82e0083e36bebe54ae07a4f4ac2e53e6b9abaecb7d9"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-financial-report-guarded-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-financial-report-guarded-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "e0f9d6202ca7585f06a29b9637065e0d00489e23898557cf81c8804b13d5b918"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-financial-report-guarded-rerun2-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-financial-report-guarded-rerun2-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "9de9127358a8062411f3b2a0f9dd79bab5846ac9b9db21eacaf82375262c331e"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-full-post-invoice-guard-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-full-post-invoice-guard-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "19a42f0057541876e2bfd93951f575afb77c8cc8ce39c927b86025a83f4dacd0"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-gptoss20b-executive-report-rerun-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-gptoss20b-executive-report-rerun-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "cda33f1bc5fde813bcf4ef0b77fd40fde3ad90a05e139afaab4fe9b4df80172c"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-invoice-narrow-quote-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-invoice-narrow-quote-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "194f93f48e1bb43551eefee954ba09a0502476ec9d30967fff42cd73fb606501"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-invoice-parent-retrieval-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-invoice-parent-retrieval-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "6f759acad9a73f6445f2414dbcb1d407c7d3131c486b10b9b290fc048f31cdf1"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-invoice-scope-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-invoice-scope-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "224f8e1c7e1080cf206c1abfb89f661864c15d380ddadc670753e62faf51560a"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-invoice-scope-post-guard-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-invoice-scope-post-guard-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "8f9dd7489be60657cf9ab6330afd7ddc6fb8a6a28e6f31db43445ef95c09e50b"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-qwen38-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-qwen38-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "5d5cec0437e02fe3062e155bf0ff4061aedf509731d7afface4862afaa97a58a"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-qwen38-bi-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-qwen38-bi-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "b244da4bd3c13962e70176fbe3221c200af0a1cec2004a710f4425b16f1b25f0"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-qwen38-compliance-executive-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-qwen38-compliance-executive-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "939ec2b42ab75f877410683dbb0d5e60e5c0da264cdf611c7de9540054acc7ef"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-qwen38-customer-service-technical-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-qwen38-customer-service-technical-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "9b1d36478fdd9633185306b761a1a226d58545e8318c83453e71e34af0651a64"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-qwen38-executive-fixed-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-qwen38-executive-fixed-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "af32747dacbfd819ef62b9e934ba70803235075b617bd73b74bb1887cde2e8a0"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/proposal-business-app-qwen38-invoice-manufacturing-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/proposal-business-app-qwen38-invoice-manufacturing-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "317e241d24811c28e737a13c62c710ce3dbe5de5e12ece4379a949d1356afd84"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/qa-review-packet.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/qa-review-packet.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "43ae9a266ef2ec7e643518bc0ce15c7cc949ced7035791fa0fd78938e1f5b547"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/qa-review-reviewer-1.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/qa-review-reviewer-1.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "43ae9a266ef2ec7e643518bc0ce15c7cc949ced7035791fa0fd78938e1f5b547"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/qa-review-reviewer-2.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/qa-review-reviewer-2.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "43ae9a266ef2ec7e643518bc0ce15c7cc949ced7035791fa0fd78938e1f5b547"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/section-title-backfill-cgr-2025-applied-backup.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/section-title-backfill-cgr-2025-applied-backup.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "dd5f7aafaf619d00277ab92c2db857fe46b2fbeb1b3e496bd63049c8a4cc8186"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/section-title-backfill-cgr-2025-dry-run.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/section-title-backfill-cgr-2025-dry-run.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "4f981d90f33e9d088a5a4647cd4cc8ba5174bdfa368bac2154dca25096f1b0cd"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/section-title-backfill-cgr-2025-idempotence.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/section-title-backfill-cgr-2025-idempotence.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "d50e9cce47e27c225e0987c09b50b522ae3b152ce964b811eb81793f4249dcc2"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/section-title-backfill-governance-2020-2024-applied-backup.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/section-title-backfill-governance-2020-2024-applied-backup.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "de2bcaa6da8cf529ef13383c011c85f75aac58e42d5a2c25c4ded783663b3673"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/section-title-backfill-governance-2020-2025-dry-run.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/section-title-backfill-governance-2020-2025-dry-run.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "3f2be0966c33966bb8d6b5cc7088fb86150b5eb5783d269d5ba37191217a3bf6"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/section-title-backfill-governance-scans-applied-backup.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/section-title-backfill-governance-scans-applied-backup.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "860f5737b4863c6ecaf0138ab4f239eae3b6efc131dda90d99249691f9c55838"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/section-title-backfill-governance-scans-dry-run.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/section-title-backfill-governance-scans-dry-run.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "3f64e94c7caa22302f6a2431bc25056cfea7928ca8f20b9fa0ef17be7111c616"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-bm25-smoke.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-bm25-smoke.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "1ff7b2ddd8069a12158b3eabd669639985f3da58a01932e6eb79845d48798dec"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-chunking-retrieval-2024-pilot.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-chunking-retrieval-2024-pilot.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "39605bcc63fa236ac9ea7aca8c9d0234fee2fc14dc364eb825276f769b6e7f65"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-chunking-retrieval-audited-net-revenue-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-chunking-retrieval-audited-net-revenue-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "4342855b6942b0c1c4dbf7681300dd11f806d2c8de33f94fde16cffa5b291516"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-chunking-retrieval-repeat-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-chunking-retrieval-repeat-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "2b4ce2f291fa97b9234221b45a3b4c86fc2219d2382eab8ece0d0d10eec73352"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-corpus-metadata-audit-20260927.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-corpus-metadata-audit-20260927.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "2096b7d03f98577767661b105d24b8761e2696ee3e72cf3b60ecfd36a42fedb1"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-document-extraction-scan-table-v8.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-document-extraction-scan-table-v8.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "88d969a3429f795eb991f6fabd9b3758652c973d03e6c6db677f355d23f66a92"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-document-extraction-smoke-v2.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-document-extraction-smoke-v2.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "9c835e858f7c0f5715f5d6f0b029b22745b3441de956a72418d372c7f7ceeefc"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-document-extraction-smoke-v3.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-document-extraction-smoke-v3.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "cd7af3e3c4bfafe9c6676935392ade950071fe5c5514ae2971903da8cd1c0f3c"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-document-extraction-smoke-v5.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-document-extraction-smoke-v5.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "d7a229f8afcb7d1bd88cf2c065cd47f148ed8c42df52ff1d697415298f95dc0b"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-document-extraction-smoke-v6.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-document-extraction-smoke-v6.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "f545ce3f7d8605b7a4d28d0bb90fa1dde6a62ab06422b4501dcda5d27cdae2be"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-document-extraction-smoke-v7.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-document-extraction-smoke-v7.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "a8594fa78da86be7e2d436eefffc7ed83ca5ffe5d749fd5c6a17eef93d9a22d5"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-embedding-bge-m3-smoke.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-embedding-bge-m3-smoke.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "729138071383afaf1c64b3ae10a3eea5bdb751d90b2fe6dec01a1e2b1f33ed22"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-embedding-e5-large-v2-smoke.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-embedding-e5-large-v2-smoke.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "f5885908df3bc0cff46e26ded9bc5f91b040d79b8cee8664a3bd80aebfc5ce0a"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-embedding-qwen3-embedding-smoke.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-embedding-qwen3-embedding-smoke.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "29bf86afc5064f658729a5367284d0cfd5d4da8e5141f8ad0c2229d8eebf2418"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-embedding-three-model-expanded-25docs-20260927.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-embedding-three-model-expanded-25docs-20260927.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "1ab4ec650cce10910c329b7c439a777a1875578377543c507ed13f33f6c2608f"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-financial-summary-retrieval-post-query-rewrite-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-financial-summary-retrieval-post-query-rewrite-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "59de6dd91e40dc7a67ed3c6f6fcbcac16b645bbd75baea54d02c82bd2fbd5b85"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-2011-cafef-scan-tesseract-local-20260929.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-2011-cafef-scan-tesseract-local-20260929.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "81092432b5ee2c829a457624c27a3d1a9833225b381728b2318a2ec32f932e64"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-2011-cafef-scan-v2-tesseract-local-20260929.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-2011-cafef-scan-v2-tesseract-local-20260929.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "fd97b4738bab018c4714c13664dc1a81299d89ea643c1ac068cc91c2fda69a0b"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-2011-cafef-scan-v2-tesseract-psm11-local-20260929.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-2011-cafef-scan-v2-tesseract-psm11-local-20260929.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "1ee6f611aeea666a29be3c545a3d162043c368f9dc61fd74c959af46ad958a75"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-2011-cafef-scan-v2-tesseract-psm6-local-20260929.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-2011-cafef-scan-v2-tesseract-psm6-local-20260929.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "ede9081fb0d7ce54f049154b9792c6df47d3b0921ab69129bb42b927f416ab7d"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-2011-v2-tesseract-psm11-180dpi-20260929.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-2011-v2-tesseract-psm11-180dpi-20260929.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "9b8c1f5dd042c938e41e3723226b27f42e9ae62bb54970b2816f9d7d1bbd7172"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-2011-v2-tesseract-psm3-180dpi-20260929.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-2011-v2-tesseract-psm3-180dpi-20260929.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "2b2bba645904b01260033272f912bb5bfb84ecabab33278d97fef03430e85563"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-charter-scan-page8-tesseract-v1-20260929.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-charter-scan-page8-tesseract-v1-20260929.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "943450ac0bf1189bff7a7992ea3b4daa4945f8e28583e5343575dad1e3ad2d38"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-easy-tesseract-v6-cpu-comparison.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-easy-tesseract-v6-cpu-comparison.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "ff2705eb3c9365ee58576c30e54617bbecb0f836ebe7283fe96f3e8c3d44e4d6"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-human-reviewed-tesseract-v3.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-human-reviewed-tesseract-v3.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "eb9e7abd28af17cfbb5befde0feadba2b1682599bd665c0fe4f58457c3bf4d22"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-paddle-attempt.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-paddle-attempt.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "d25defe1a71e760506978888ba8c2ebda5b36ff8c2607a0c75d7314cbe64ed22"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-paddleocr-smoke.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-paddleocr-smoke.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "3286299f6066d0d54f9bdffdd9a3fce592ca23816fcd8366541022c4c83f9584"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-raster-embedded-tesseract.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-raster-embedded-tesseract.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "f8e9fb1f1adb870783e0c192145c64b7458ba2ff2aa8e548898e8b36f963cd17"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-surya-easy-tesseract-v5-comparison.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-surya-easy-tesseract-v5-comparison.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "11d369c05d640a37de0595aa8ad11ccc72dba013efda42d90925498a3920226d"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-tesseract-diagnostic-v2.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-tesseract-diagnostic-v2.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "c97cdc6db15dbcea74c59e9c2ac6e4cb724b6c071b52bd43ef67bf539525640b"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-ocr-tesseract-smoke.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-ocr-tesseract-smoke.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "b93fb180338bc429fb99ab125c7ef5a79a9236530e8420779f4fc7fa4c59b9e6"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-qa-gpt-oss-120b-facts-v3.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-qa-gpt-oss-120b-facts-v3.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "e2bfdcb393138e71272213e19f9e91583fe85df1d2196004aa49fec9a0fad365"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-qa-gpt-oss-20b-facts-v3.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-qa-gpt-oss-20b-facts-v3.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "b4e94b3b814ca1615f6430a52d517ee581459b266973a53eb7a59d69d7bad7b0"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-qa-qwen3.8-facts-v3.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-qa-qwen3.8-facts-v3.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "749d24e888c05d16492650f6a7f349fa5ac59b05efe9aa2419ef724ff5426f11"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-response-cache-api-smoke-post-shared-embedding-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-response-cache-api-smoke-post-shared-embedding-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "5ee2aedfcddb92fcadfb307200fdda2584d16ba7f710d6579f0e761f21f406b4"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-retrieval-audited-financials-20260928.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-retrieval-audited-financials-20260928.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "99c9fd8bf2c8ddd04aa8a9032907eda588cdd875ec597bc80406865eca6c0351"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-retrieval-comparison.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-retrieval-comparison.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "6fb9b753a9b0bec63365319bd0a5a71953d4c1fb5577f5b5a1394d6570a09a0c"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-retrieval-optimization-baseline-20260927.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-retrieval-optimization-baseline-20260927.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "d4bce9f0e95393cd33565a8b94398cd11ecb1cfd2db235eb80e6a76ce7c33d0d"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-retrieval-passage-smoke.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-retrieval-passage-smoke.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "5d3f6ef59f4495e459b8051dd141a95ce9759d07be79f0ead6ee8efa912d4726"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-retrieval.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-retrieval.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "d93df2d71e4e57b1690a76ec2d2bf8aa251b1df939979ebdc35aaddbcceb4886"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-scan-document-processor-2011-table-psm3-180dpi-20260929.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-scan-document-processor-2011-table-psm3-180dpi-20260929.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "1c206e61c7c8308134f131581e36227de49b375c12f89682eb5c61ad22836c52"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-scan-document-processor-2011-table-psm4-180dpi-20260929.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-scan-document-processor-2011-table-psm4-180dpi-20260929.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "aaceebda5439c8183149dcf7a9b9330464c3bbf2f2de5e7352c386bee54ada16"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-scan-document-processor-2011-table-reconstruction-20260929.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-scan-document-processor-2011-table-reconstruction-20260929.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "bfeaa492d1d2f70a0478c28bf275c3b30886f020134d88385fbbebbf6f342b1a"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-scan-document-processor-repeat-20260927.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-scan-document-processor-repeat-20260927.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "ded5325baf84c558cc190f6720995f932294cf77598850e1dbf15e21eb354c34"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-upload-processor-v8-scan-check-20260929.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-upload-processor-v8-scan-check-20260929.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "ab27f816406e6a0cca930dab921878e3c28b18dbc15c7f257639fd8696db51aa"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/vinamilk-year-ranking-check.json",
+      "new_path": "artifacts/archive/legacy-reports-20261022/vinamilk-year-ranking-check.json",
+      "reason": "Historical result with no external code/data/doc reference in the pre-cleanup scan.",
+      "files_sha256": {
+        ".": "941c55b8421ba29042780a46ed688ea8c2349fd3d4736cae5d3a04ed9fcecc73"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/main-review-20261021",
+      "new_path": "artifacts/archive/main-review-20261021",
+      "reason": "Superseded review/report; documentation references redirected.",
+      "files_sha256": {
+        "processing-checks.json": "67db2f77ffce94771b87cdec89fe70a4ad2810d61b783a4eeb72bda3438d5f5a",
+        "REVIEW.md": "8ff27d73a4788f5888f383c41108b7dfe6b34d125a12b4255d8d067ac3aec6f9"
+      },
+      "status": "moved_and_hash_verified"
+    },
+    {
+      "old_path": "artifacts/evaluation/retrieval-metrics-20261022-initial",
+      "new_path": "artifacts/archive/retrieval-metrics-20261022-initial",
+      "reason": "Superseded review/report; documentation references redirected.",
+      "files_sha256": {
+        "qrels.json": "6fc131614e552d938b336b4f4a1ac9d2538b93e44fbf838e6032057165e9020f",
+        "evaluator-at-run.py": "37835187a9a79a6a16d9a5f7b57d6fe721acee79b674efce6e388cea6d630d1b",
+        "results.json": "f47f1c2ceb0552e2e009c8a947d0305c0cc98ea9853e4d465815ff6b51ade235",
+        "metrics.csv": "f117ace1a13ce9eec8d144431cb610ed4b6f7d6217c5f3f8f14f8d3776440a17"
+      },
+      "status": "moved_and_hash_verified"
+    }
+  ]
+}

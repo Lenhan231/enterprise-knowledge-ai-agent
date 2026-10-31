@@ -1,0 +1,42 @@
+{
+  "checked_on": "2026-10-24",
+  "timezone": "Asia/Bangkok",
+  "method": "Read-only PostgreSQL query; independently counted frozen JSONL rows",
+  "database_writes": false,
+  "live_database": {
+    "document_records_total": 7,
+    "documents_by_status": {"ready": 5, "failed": 1, "parsed": 1},
+    "parser_chunks_total": 546,
+    "retrieval_chunks_total": 532,
+    "ready_document_parser_chunks": 532,
+    "ready_document_retrieval_chunks": 532,
+    "documents": [
+      {"document_id": "UPLOAD-0156883ba1344f848cfcd6a0035c7a99", "status": "failed", "parser_chunks": 3, "retrieval_chunks": 0},
+      {"document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b", "status": "ready", "parser_chunks": 12, "retrieval_chunks": 12},
+      {"document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20", "status": "ready", "parser_chunks": 485, "retrieval_chunks": 485},
+      {"document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2", "status": "ready", "parser_chunks": 9, "retrieval_chunks": 9},
+      {"document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e", "status": "ready", "parser_chunks": 18, "retrieval_chunks": 18},
+      {"document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b", "status": "ready", "parser_chunks": 8, "retrieval_chunks": 8},
+      {"document_id": "VSC-OPS-POL-001-v1.0", "status": "parsed", "parser_chunks": 11, "retrieval_chunks": 0}
+    ]
+  },
+  "frozen_artifacts": {
+    "root": "artifacts/evaluation/heldout-review2-v1/inputs",
+    "corpus_jsonl_rows": 1063,
+    "vi_document_count": 5,
+    "vi_corpus_rows": 532,
+    "en_document_count": 5,
+    "en_corpus_rows": 531,
+    "parser_vi_jsonl_rows": 532,
+    "parser_en_jsonl_rows": 531
+  },
+  "independent_token_recount": {
+    "model": "intfloat/multilingual-e5-base",
+    "revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "tokenizer_local_files_only": true,
+    "recipe": "passage: prefix plus special tokens, truncation disabled; frozen corpus content",
+    "vi": {"chunks": 532, "input_tokens": 224845, "longest": 476, "over_512": 0},
+    "en": {"chunks": 531, "input_tokens": 224358, "longest": 476, "over_512": 0}
+  },
+  "scope": "5 documents / 532 chunks describes the ready Vietnamese dataset, not every document record or every parser chunk in the live database. Counts are a point-in-time check; filenames/language identity follow the matching frozen document IDs. Tokens were recounted on frozen inputs, not live document content."
+}

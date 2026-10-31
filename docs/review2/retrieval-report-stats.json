@@ -1,0 +1,98 @@
+{
+  "embedding_model": "intfloat/multilingual-e5-base",
+  "embedding_revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+  "tokenizer_only": true,
+  "special_tokens_single": 2,
+  "languages": {
+    "vi": {
+      "documents": 5,
+      "chunks": 532,
+      "body_tokens_total": 222717,
+      "prefixed_sequence_tokens_total": 224845,
+      "max_sequence_tokens": 476,
+      "min_sequence_tokens": 37,
+      "over_512_sequences": 0,
+      "text_utf8_bytes": 662711,
+      "chunks_by_file": {
+        "03_Policy_Rules_Registry.csv": 12,
+        "04_Inventory_Control_and_Reorder_Planner.xlsx": 485,
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf": 9,
+        "01_Inventory_Management_Policy_Manual.docx": 18,
+        "05_Inventory_Policy_Training_Deck.pptx": 8
+      }
+    },
+    "en": {
+      "documents": 5,
+      "chunks": 531,
+      "body_tokens_total": 222234,
+      "prefixed_sequence_tokens_total": 224358,
+      "max_sequence_tokens": 476,
+      "min_sequence_tokens": 49,
+      "over_512_sequences": 0,
+      "text_utf8_bytes": 656493,
+      "chunks_by_file": {
+        "01_Inventory_Management_Policy_Manual_EN.docx": 19,
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf": 7,
+        "03_Policy_Rules_Registry_EN.csv": 12,
+        "04_Inventory_Control_and_Reorder_Planner_EN.xlsx": 485,
+        "05_Inventory_Policy_Training_Deck_EN.pptx": 8
+      }
+    }
+  },
+  "source_metadata_embedding_model_counts": {
+    "Qwen/Qwen3-Embedding-0.6B": 1063
+  },
+  "original_e5_candidate_config": {
+    "status": "completed",
+    "candidate": "multilingual-e5-base",
+    "model_id": "intfloat/multilingual-e5-base",
+    "query_prefix": "query: ",
+    "passage_prefix": "passage: ",
+    "instruction": null,
+    "device": "cuda",
+    "dtype": "float32",
+    "batch_size": 2,
+    "max_sequence_length": 512,
+    "normalize_embeddings": true,
+    "chunks": 1063,
+    "questions": 80,
+    "corpus_sha256": "b8f5aba0da18a0725ae17762bf083d9101b740f9b86d3a928674225e51db51e5",
+    "cases_sha256": "63965d79e46d26244e65dbd532e5e11076e321cb304a21e237e68e2af2fd37dc",
+    "row_order_sha256": "a95775105af42909f57663b3268892806210b22e4c8b33162cf5a3b4d269b071",
+    "runner_sha256": "041bf574205ec236727e94139951ac3556ad6b8ba115c8af03881438610555d8",
+    "created_at": "2026-10-19T14:40:19.215619+00:00",
+    "evidence": {
+      "path": "artifacts/evaluation/vietstyle-bilingual-20261019/evidence-v1/evidence.json",
+      "sha256": "012d0864c0b82d252c5a0164a29ddf76a81ef7c8a289259fa9cde8b33163a207"
+    },
+    "corpus_scope": "Five target-language documents compete; all chunks, admin role. No gold-source filtering.",
+    "evidence_scorer_sha256": "154ba6b72018b71508733d0ed79208b7862bcb6a2df73e8ed3ca7d80b92d0b34",
+    "revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "max_passage_tokens": 476,
+    "max_query_tokens": 48,
+    "truncated_inputs": 0,
+    "model_load_seconds": 16.412946064000607,
+    "gpu_name": "NVIDIA GeForce RTX 2060",
+    "dimensions": 768,
+    "corpus_embedding_seconds": 22.118347311000434,
+    "vectors_file_sha256": "96a9ab9cbd5c624d19f51f28890223272b19d3c29e58dddf3024b359e50fa663",
+    "query_vectors_file_sha256": "77db3de01909bc171a856ad1aba9b2c50fbc28b64206ff2b37abb71c7cab0393"
+  },
+  "document_vectors_sha256": "96a9ab9cbd5c624d19f51f28890223272b19d3c29e58dddf3024b359e50fa663",
+  "vectors_equal_original_e5_candidate": true,
+  "cached_weights": {
+    "intfloat/multilingual-e5-base": {
+      "weight_file": "model.safetensors",
+      "bytes": 1112201288,
+      "MiB": 1060.6778030395508
+    },
+    "BAAI/bge-reranker-v2-m3": {
+      "weight_file": "model.safetensors",
+      "bytes": 2271071852,
+      "MiB": 2165.862895965576
+    }
+  },
+  "run_gpu": "NVIDIA GeForce RTX 2060",
+  "cuda_peak_allocated_bytes": 2375105024,
+  "cuda_peak_allocated_GiB": 2.211988925933838
+}

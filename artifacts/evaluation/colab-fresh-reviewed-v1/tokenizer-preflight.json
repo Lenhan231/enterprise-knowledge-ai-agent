@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "cached_tokenizers_only": true,
+  "models_loaded": false,
+  "weights_downloaded": false,
+  "cases": 48,
+  "unique_queries": 24,
+  "all_possible_query_corpus_variant_pairs_checked": 76536,
+  "max_query_tokens": 42,
+  "query_limit": 512,
+  "max_pair_tokens": 682,
+  "pair_limit": 1024,
+  "truncated_inputs": 0,
+  "note": "Conservative check over all source passages, before new query embedding/candidate retrieval; not an inference benchmark. Subsequent code batches this same check to bound memory."
+}

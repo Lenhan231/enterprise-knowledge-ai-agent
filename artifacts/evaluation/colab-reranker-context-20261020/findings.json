@@ -1,0 +1,422 @@
+{
+  "summary": {
+    "plain": {
+      "en->en": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 55,
+        "required_component_coverage_at_10": 0.9016393442622951,
+        "mean_case_component_coverage_at_10": 0.9094444444444444,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 14,
+        "full_evidence_success_rate_at_10": 0.7368421052631579,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      },
+      "en->vi": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 49,
+        "required_component_coverage_at_10": 0.8032786885245902,
+        "mean_case_component_coverage_at_10": 0.8608333333333333,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 0.631578947368421,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      },
+      "vi->en": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 46,
+        "required_component_coverage_at_10": 0.7540983606557377,
+        "mean_case_component_coverage_at_10": 0.8094444444444444,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 0.631578947368421,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      },
+      "vi->vi": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 59,
+        "required_component_coverage_at_10": 0.9672131147540983,
+        "mean_case_component_coverage_at_10": 0.9819444444444444,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 17,
+        "full_evidence_success_rate_at_10": 0.8947368421052632,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      }
+    },
+    "source_context": {
+      "en->en": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 55,
+        "required_component_coverage_at_10": 0.9016393442622951,
+        "mean_case_component_coverage_at_10": 0.9094444444444444,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 14,
+        "full_evidence_success_rate_at_10": 0.7368421052631579,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      },
+      "en->vi": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 49,
+        "required_component_coverage_at_10": 0.8032786885245902,
+        "mean_case_component_coverage_at_10": 0.8608333333333333,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 0.631578947368421,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      },
+      "vi->en": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 46,
+        "required_component_coverage_at_10": 0.7540983606557377,
+        "mean_case_component_coverage_at_10": 0.8094444444444444,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 0.631578947368421,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      },
+      "vi->vi": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 58,
+        "required_component_coverage_at_10": 0.9508196721311475,
+        "mean_case_component_coverage_at_10": 0.9569444444444445,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 16,
+        "full_evidence_success_rate_at_10": 0.8421052631578947,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      }
+    }
+  },
+  "component_changes": [
+    {
+      "id": "Q01-vi-to-vi",
+      "direction": "vi->vi",
+      "requirements": {
+        "Q01.approval": [
+          true,
+          false
+        ]
+      },
+      "full_before": true,
+      "full_after": false
+    }
+  ],
+  "focused_cases": [
+    {
+      "id": "Q13-vi-to-vi",
+      "required": 9,
+      "plain_met": 8,
+      "context_met": 8,
+      "missing_before": [
+        "Q13.audit_update"
+      ],
+      "missing_after": [
+        "Q13.audit_update"
+      ],
+      "vi_guard_rank_plain": 21,
+      "vi_guard_rank_context": 21
+    },
+    {
+      "id": "Q15-vi-to-vi",
+      "required": 4,
+      "plain_met": 3,
+      "context_met": 3,
+      "missing_before": [
+        "Q15.history"
+      ],
+      "missing_after": [
+        "Q15.history"
+      ],
+      "vi_guard_rank_plain": 27,
+      "vi_guard_rank_context": 21
+    },
+    {
+      "id": "Q13-en-to-vi",
+      "required": 9,
+      "plain_met": 3,
+      "context_met": 3,
+      "missing_before": [
+        "Q13.prepare",
+        "Q13.independent",
+        "Q13.investigate",
+        "Q13.approve",
+        "Q13.audit_update",
+        "Q13.closure"
+      ],
+      "missing_after": [
+        "Q13.prepare",
+        "Q13.independent",
+        "Q13.investigate",
+        "Q13.approve",
+        "Q13.audit_update",
+        "Q13.closure"
+      ],
+      "vi_guard_rank_plain": null,
+      "vi_guard_rank_context": null
+    },
+    {
+      "id": "Q15-en-to-vi",
+      "required": 4,
+      "plain_met": 3,
+      "context_met": 3,
+      "missing_before": [
+        "Q15.history"
+      ],
+      "missing_after": [
+        "Q15.history"
+      ],
+      "vi_guard_rank_plain": null,
+      "vi_guard_rank_context": null
+    },
+    {
+      "id": "Q13-vi-to-en",
+      "required": 9,
+      "plain_met": 2,
+      "context_met": 2,
+      "missing_before": [
+        "Q13.prepare",
+        "Q13.freeze",
+        "Q13.independent",
+        "Q13.investigate",
+        "Q13.approve",
+        "Q13.audit_update",
+        "Q13.closure"
+      ],
+      "missing_after": [
+        "Q13.prepare",
+        "Q13.freeze",
+        "Q13.independent",
+        "Q13.investigate",
+        "Q13.approve",
+        "Q13.audit_update",
+        "Q13.closure"
+      ],
+      "vi_guard_rank_plain": null,
+      "vi_guard_rank_context": null
+    },
+    {
+      "id": "Q15-vi-to-en",
+      "required": 4,
+      "plain_met": 4,
+      "context_met": 4,
+      "missing_before": [],
+      "missing_after": [],
+      "vi_guard_rank_plain": null,
+      "vi_guard_rank_context": null
+    },
+    {
+      "id": "Q13-en-to-en",
+      "required": 9,
+      "plain_met": 8,
+      "context_met": 8,
+      "missing_before": [
+        "Q13.freeze"
+      ],
+      "missing_after": [
+        "Q13.freeze"
+      ],
+      "vi_guard_rank_plain": null,
+      "vi_guard_rank_context": null
+    },
+    {
+      "id": "Q15-en-to-en",
+      "required": 4,
+      "plain_met": 4,
+      "context_met": 4,
+      "missing_before": [],
+      "missing_after": [],
+      "vi_guard_rank_plain": null,
+      "vi_guard_rank_context": null
+    }
+  ],
+  "top10_order_changed_cases": 64,
+  "top10_set_changed_cases": 33,
+  "plain_order_differences_from_historical_fp16": [
+    "Q11-en-to-vi",
+    "Q13-en-to-en"
+  ],
+  "paired_inference_seconds": 51.51233321799975,
+  "diagnostic_passages": [
+    {
+      "id": "Q01-vi-to-vi",
+      "changed_top10_or_guard": [
+        {
+          "document": "03_Policy_Rules_Registry.csv",
+          "parser_index": 0,
+          "original_text": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 1: policy_id: INV-POL-001 | policy_name: Quản trị dữ liệu tồn kho | trigger: Mọi thay đổi SKU, tồn kho, giá vốn hoặc trạng thái hàng | rule_or_required_action: Lưu người thao tác, thời điểm, giá trị trước/sau và lý do; không ghi đè lịch sử | owner: Inventory Controller / Data Owner | sla_or_frequency: Trong ngày | approval: Bắt buộc | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "plain_rank": 9,
+          "context_rank": 12,
+          "plain_logit": 0.9400354027748108,
+          "context_logit": 1.10817551612854
+        },
+        {
+          "document": "03_Policy_Rules_Registry.csv",
+          "parser_index": 11,
+          "original_text": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 12: policy_id: INV-POL-012 | policy_name: AI / báo cáo tự động | trigger: AI Agent tạo câu trả lời hoặc đề xuất PO | rule_or_required_action: Chỉ dùng dữ liệu được phân quyền; trích dẫn nguồn và snapshot date; không tự ghi PO/điều chỉnh tồn kho; mâu thuẫn phải chuyển người duyệt | owner: System Owner + Inventory Controller | sla_or_frequency: Mỗi yêu cầu | approval: Human approval bắt buộc | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "plain_rank": 14,
+          "context_rank": 10,
+          "plain_logit": 0.5487286448478699,
+          "context_logit": 1.297279953956604
+        },
+        {
+          "document": "03_Policy_Rules_Registry.csv",
+          "parser_index": 4,
+          "original_text": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 5: policy_id: INV-POL-005 | policy_name: Điều chỉnh tồn kho | trigger: Có chênh lệch giữa đếm thực tế và hệ thống | rule_or_required_action: Không điều chỉnh khi chưa có biên bản, mã nguyên nhân và bằng chứng; phân tách người đếm và người duyệt | owner: Warehouse Supervisor + Inventory Controller | sla_or_frequency: Trong 1 ngày làm việc | approval: Sai lệch lớn cần Finance/Operations | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "plain_rank": 12,
+          "context_rank": 7,
+          "plain_logit": 0.7263709306716919,
+          "context_logit": 1.4031883478164673
+        },
+        {
+          "document": "05_Inventory_Policy_Training_Deck.pptx",
+          "parser_index": 0,
+          "original_text": "VIETSTYLE COMMERCE INVENTORY CONTROL POLICY & OPERATING MODEL Chính sách • Quy trình • Tồn kho • Ngoại lệ • Kiểm soát dữ liệu v1.0 | 16/10/2026 | Mô phỏng Datathon 2026 Dùng cho đào tạo và thiết kế quy trình; không phải chính sách đã được phê duyệt. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 1",
+          "plain_rank": 10,
+          "context_rank": 14,
+          "plain_logit": 0.9350099563598633,
+          "context_logit": 0.5460593700408936
+        }
+      ]
+    },
+    {
+      "id": "Q13-vi-to-vi",
+      "changed_top10_or_guard": [
+        {
+          "document": "03_Policy_Rules_Registry.csv",
+          "parser_index": 4,
+          "original_text": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 5: policy_id: INV-POL-005 | policy_name: Điều chỉnh tồn kho | trigger: Có chênh lệch giữa đếm thực tế và hệ thống | rule_or_required_action: Không điều chỉnh khi chưa có biên bản, mã nguyên nhân và bằng chứng; phân tách người đếm và người duyệt | owner: Warehouse Supervisor + Inventory Controller | sla_or_frequency: Trong 1 ngày làm việc | approval: Sai lệch lớn cần Finance/Operations | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "plain_rank": 14,
+          "context_rank": 9,
+          "plain_logit": -3.557192802429199,
+          "context_logit": -2.105212688446045
+        },
+        {
+          "document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+          "parser_index": 5,
+          "original_text": "Section: Policy Matrix\nColumns: Policy ID | Chính sách | Trigger | Hành động bắt buộc | Owner | SLA / Tần suất | Approval\nRow 5: Policy ID: INV-POL-005 | Chính sách: Điều chỉnh tồn kho | Trigger: Có chênh lệch giữa đếm thực tế và hệ thống | Hành động bắt buộc: Không điều chỉnh khi chưa có biên bản, mã nguyên nhân và bằng chứng; phân tách người đếm và người duyệt | Owner: Warehouse Supervisor + Inventory Controller | SLA / Tần suất: Trong 1 ngày làm việc | Approval: Sai lệch lớn cần Finance/Operations\nRow 6: Policy ID: INV-POL-006 | Chính sách: Hàng dư thừa / chậm luân chuyển | Trigger: Calculated days of supply > 120 ngày; > 180 ngày cần kế hoạch xử lý | Hành động bắt buộc: Dừng mua bổ sung; rà soát chuyển kho, bundle, markdown hoặc thanh lý; bảo vệ biên lợi nhuận | Owner: Merchandising + Procurement | SLA / Tần suất: Rà soát hằng tháng | Approval: Markdown theo thẩm quyền giá",
+          "plain_rank": 10,
+          "context_rank": 12,
+          "plain_logit": -2.462594985961914,
+          "context_logit": -2.462594985961914
+        },
+        {
+          "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+          "parser_index": 4,
+          "original_text": "Section: 7. Cập nhật hệ thống và đóng phiếu\n• Không xóa giao dịch cũ hoặc sửa trực tiếp file nguồn; dùng giao dịch điều chỉnh có thể truy vết.",
+          "plain_rank": 21,
+          "context_rank": 21,
+          "plain_logit": -4.593975067138672,
+          "context_logit": -4.428840160369873
+        }
+      ]
+    },
+    {
+      "id": "Q15-vi-to-vi",
+      "changed_top10_or_guard": [
+        {
+          "document": "03_Policy_Rules_Registry.csv",
+          "parser_index": 4,
+          "original_text": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 5: policy_id: INV-POL-005 | policy_name: Điều chỉnh tồn kho | trigger: Có chênh lệch giữa đếm thực tế và hệ thống | rule_or_required_action: Không điều chỉnh khi chưa có biên bản, mã nguyên nhân và bằng chứng; phân tách người đếm và người duyệt | owner: Warehouse Supervisor + Inventory Controller | sla_or_frequency: Trong 1 ngày làm việc | approval: Sai lệch lớn cần Finance/Operations | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "plain_rank": 6,
+          "context_rank": 11,
+          "plain_logit": -1.9855114221572876,
+          "context_logit": -2.2586591243743896
+        },
+        {
+          "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+          "parser_index": 2,
+          "original_text": "Section: 5. Ngưỡng xử lý và phê duyệt\n• Đóng băng giao dịch tại vị trí cần đếm hoặc ghi lại mọi giao dịch phát sinh trong cửa sổ đếm. • Chuẩn bị thiết bị quét, nhãn cách ly, biểu mẫu ghi nhận, camera và phương án xử lý hàng đang pick / pack / chuyển kho. 4. Thực hiện đếm và đối chiếu • Đếm theo SKU + size + color + vị trí; không gộp các biến thể gần giống nhau. • Ghi số lượng thực tế, đơn vị tính, người đếm, thời điểm và tình trạng bao bì. • Nếu có chênh lệch, thực hiện recount bởi người thứ hai trước khi sửa số liệu. • Đối chiếu receipts, picks, shipments, returns, transfers, cancellations và các giao dịch chờ đồng bộ. • Tính chênh lệch tuyệt đối = |thực tế − hệ thống|; tỷ lệ chênh lệch = chênh lệch / max(hệ thống, 1). 5.",
+          "plain_rank": 16,
+          "context_rank": 8,
+          "plain_logit": -3.396243095397949,
+          "context_logit": -1.9496710300445557
+        },
+        {
+          "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+          "parser_index": 4,
+          "original_text": "Section: 7. Cập nhật hệ thống và đóng phiếu\n• Không xóa giao dịch cũ hoặc sửa trực tiếp file nguồn; dùng giao dịch điều chỉnh có thể truy vết.",
+          "plain_rank": 27,
+          "context_rank": 21,
+          "plain_logit": -5.027083873748779,
+          "context_logit": -3.694674491882324
+        },
+        {
+          "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+          "parser_index": 6,
+          "original_text": "Columns: Bước | Đầu ra bắt buộc\nRow 1: Bước: 1. Chuẩn bị | Đầu ra bắt buộc: Danh sách SKU / vị trí, phạm vi đếm, thời điểm freeze giao dịch nếu cần\nRow 2: Bước: 2. Đếm độc lập | Đầu ra bắt buộc: Số lượng thực tế; người đếm; thời gian; ảnh / ghi chú ngoại lệ\nRow 3: Bước: 3. Đối chiếu | Đầu ra bắt buộc: Chênh lệch tuyệt đối và %, giá trị ảnh hưởng nếu có\nRow 4: Bước: 4. Điều tra | Đầu ra bắt buộc: Nguyên nhân gốc và chứng từ liên quan\nRow 5: Bước: 5. Phê duyệt | Đầu ra bắt buộc: Người duyệt độc lập với người đếm / nhập điều chỉnh\nRow 6: Bước: 6. Cập nhật | Đầu ra bắt buộc: Điều chỉnh có audit trail; thông báo cho Planner nếu ảnh hưởng ROP",
+          "plain_rank": 17,
+          "context_rank": 3,
+          "plain_logit": -3.4808554649353027,
+          "context_logit": 0.28117451071739197
+        },
+        {
+          "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+          "parser_index": 8,
+          "original_text": "Columns: Field | Nội dung\nRow 1: Field: Count ID / Date | Nội dung: Mã phiếu / thời điểm kiểm kê\nRow 2: Field: SKU / Size / Color / Location | Nội dung: Định danh biến thể và vị trí\nRow 3: Field: System Qty / Counted Qty | Nội dung: Số hệ thống / số đếm thực tế\nRow 4: Field: Variance / Reason Code | Nội dung: Chênh lệch / nguyên nhân\nRow 5: Field: Evidence / Counter / Reviewer | Nội dung: Bằng chứng / người đếm / người duyệt\nRow 6: Field: Adjustment Transaction ID | Nội dung: Mã giao dịch điều chỉnh sau duyệt",
+          "plain_rank": 11,
+          "context_rank": 6,
+          "plain_logit": -2.757551431655884,
+          "context_logit": -1.2391258478164673
+        },
+        {
+          "document": "01_Inventory_Management_Policy_Manual.docx",
+          "parser_index": 15,
+          "original_text": "12. Hồ sơ bắt buộc và lưu trữ\nPurchase request / PO và phê duyệt.\nBiên bản nhận hàng, ảnh ngoại lệ, chứng từ nhà cung cấp.\nPhiếu kiểm kê, chênh lệch, nguyên nhân và phê duyệt điều chỉnh.\nHồ sơ hàng trả về, kết quả QA và disposition.\nBáo cáo KPI, exception log, thay đổi tham số và audit trail.",
+          "plain_rank": 12,
+          "context_rank": 9,
+          "plain_logit": -2.97524356842041,
+          "context_logit": -2.0056991577148438
+        },
+        {
+          "document": "01_Inventory_Management_Policy_Manual.docx",
+          "parser_index": 2,
+          "original_text": "1. Mục đích và nguyên tắc\nTài liệu thiết lập cách kiểm soát hàng hóa từ lúc lập kế hoạch bổ sung đến khi nhận, lưu kho, kiểm kê, xử lý hàng trả về và thanh lý. Mục tiêu là cân bằng mức độ sẵn hàng, chi phí lưu kho, vốn bị chiếm dụng và độ chính xác của dữ liệu.\nMột nguồn dữ liệu chuẩn cho mỗi SKU; mọi điều chỉnh phải có dấu vết kiểm toán.\nKhông phát hành PO tự động khi có mâu thuẫn giữa số lượng tồn, tín hiệu stockout và days of supply.\nTách nhiệm vụ giữa người đếm, người nhập điều chỉnh và người phê duyệt.\nPhân biệt số liệu quan sát trong dataset với tham số chính sách được giả định để mô phỏng.\nAI chỉ hỗ trợ truy vấn / đề xuất; quyết định mua hàng, ghi giảm hoặc thanh lý phải có người chịu trách nhiệm.",
+          "plain_rank": 7,
+          "context_rank": 13,
+          "plain_logit": -2.2288756370544434,
+          "context_logit": -2.3024697303771973
+        },
+        {
+          "document": "01_Inventory_Management_Policy_Manual.docx",
+          "parser_index": 5,
+          "original_text": "4. Chính sách bổ sung hàng\nMô hình tham chiếu cho SKU có nhu cầu tương đối ổn định:\nInventory position = On-hand + Open PO − Backorder\nReorder Point (ROP) = Nhu cầu/ngày × (Lead time + Safety days)\nTarget Stock = Nhu cầu/ngày × (Lead time + Safety days + Review period)\nGiả định khởi tạo trong bộ mô phỏng: lead time 14 ngày, safety stock 7 ngày, review period 7 ngày. Các giá trị này có thể chỉnh theo nhà cung cấp / nhóm hàng; không phải lead time được suy ra từ dữ liệu.\nRà soát đề xuất bổ sung ít nhất mỗi tuần và trước chiến dịch khuyến mãi.\nTrước khi phát hành PO, kiểm tra tồn kho khả dụng, PO đang mở, hàng đang giữ, backorder, MOQ, ngân sách và lịch giao.\nNếu có stockout signal cùng days of supply > 120 ngày, không tự động mua thêm; mở điều tra P1.\nKhông đặt hàng bổ sung cho SKU vượt 120 ngày tồn kho trừ khi có phê duyệt chiến dịch, cam kết khách hàng hoặc lý do được ghi nhận.\nMọi PO khẩn cấp phải ghi rõ nguyên nhân, ảnh hưởng dịch vụ và người phê duyệt.",
+          "plain_rank": 8,
+          "context_rank": 12,
+          "plain_logit": -2.2856051921844482,
+          "context_logit": -2.2856051921844482
+        },
+        {
+          "document": "05_Inventory_Policy_Training_Deck.pptx",
+          "parser_index": 7,
+          "original_text": "07 | Dữ liệu sạch trước khi tự động hóa Đối với Inventory / RAG Agent 1. Giữ snapshot date và source file. 2. Trả lời kèm policy_id và trích dẫn nguồn. 3. Không suy đoán lead time / currency / PO. 4. Mâu thuẫn → DATA CONFLICT. 5. Không tự ghi PO hoặc điều chỉnh tồn. Lộ trình triển khai • Chuẩn hóa master SKU / size / color • Xác nhận định nghĩa flags và đơn vị đo • Bổ sung PO inbound, backorder, lead time, MOQ • Pilot trên nhóm A / SKU rủi ro • Theo dõi KPI và duyệt thay đổi chính sách Kết luận: tự động hóa chỉ sau khi xác minh nguồn dữ liệu, quyền truy cập và luồng phê duyệt. Tài liệu mô phỏng Datathon 2026 • v1.0 | 16/10/2026 VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 8",
+          "plain_rank": 10,
+          "context_rank": 15,
+          "plain_logit": -2.684852123260498,
+          "context_logit": -2.6933629512786865
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "label_sha256": "cf022622eafcde551eac6ba26e3bd4f8aac7fc4239533dd951e5dbac1cb648e3",
+  "original_label_sha256": "6e7a502a4b99cd347940f8c28562ed19d082c2761e8f2e0bbf75f75d142a7f0b",
+  "rankings_replayed": 320,
+  "ranking_and_vector_changes": 0,
+  "independent_character_coverage_check": "passed",
+  "transitions": [
+    {
+      "model": "bge-m3",
+      "case_id": "Q15-vi-to-vi",
+      "direction": "vi->vi",
+      "before": false,
+      "after": true
+    },
+    {
+      "model": "bge-m3",
+      "case_id": "Q15-en-to-vi",
+      "direction": "en->vi",
+      "before": false,
+      "after": true
+    }
+  ],
+  "original_results_sha256": {
+    "multilingual-e5-base": "e2bff51b75006e22b9d48ec251d022327bfdc827bfaf2b460c2aa9db3f8d270d",
+    "bge-m3": "36a5209298ce80cab22cbe42229f8c4d1a5a93c359fb1346ac708db849a7dc99",
+    "qwen3-embedding-0.6b": "ebb252983782a6d31e1f07ae45afdcedda2d0d186af564d15b6dbe07ff094a9e",
+    "e5-bge-reranker-v2-m3": "33fadf1a2962bd79c1aa5b2c6a449aeba422b859c9194c649cf25bb61ef35da8"
+  }
+}

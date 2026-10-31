@@ -1,0 +1,592 @@
+{
+  "provenance": {
+    "previous_path": "artifacts/evaluation/vietstyle-bilingual-20261019/evidence-v1/evidence.json",
+    "previous_sha256": "012d0864c0b82d252c5a0164a29ddf76a81ef7c8a289259fa9cde8b33163a207",
+    "review_scope": "Read all 20 question/requirement definitions. Focused source-equivalence audit Q11/Q12/Q13/Q18/Q20 in both languages; not an exhaustive independent relabelling of every corpus passage.",
+    "evaluation_warning": "Post-hoc label review after observing v1 errors. V2 is exploratory, not held-out performance improvement. Rankings and encoders unchanged; evaluate every candidate under the same v2.",
+    "unchanged": "Frozen sources, questions, reference answers, Q13 mandatory controls, Q14 unresolved policy-role requirements."
+  },
+  "changes": [
+    {
+      "requirement_id": "Q11.conflict",
+      "reason": "Training slide explicitly gives the same stockout + >120 days => DATA CONFLICT rule; accept it in both languages.",
+      "before": {
+        "id": "Q11.conflict",
+        "description_vi": "Stockout cùng hơn 120 ngày tồn: DATA CONFLICT",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-S3-57f9321043bb"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-S3-7faa0243b354"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true
+      },
+      "after": {
+        "id": "Q11.conflict",
+        "description_vi": "Stockout cùng hơn 120 ngày tồn: DATA CONFLICT",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-S3-57f9321043bb"
+                ]
+              },
+              {
+                "all_of": [
+                  "vi-v2-0c538705bcf2"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-S3-7faa0243b354"
+                ]
+              },
+              {
+                "all_of": [
+                  "en-v2-3fc84a52f4d7"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true,
+        "review_note": "Training slide explicitly gives the same stockout + >120 days => DATA CONFLICT rule; accept it in both languages."
+      }
+    },
+    {
+      "requirement_id": "Q11.block_checks",
+      "reason": "SOP provides available/held/unshipped stock, snapshot and formula; slide adds transaction/demand verification. Both spans are required together. Operational pending/unshipped-order wording matches the existing reference scope.",
+      "before": {
+        "id": "Q11.block_checks",
+        "description_vi": "Khóa PO, kiểm tra tồn khả dụng, hàng giữ, đơn treo, giao dịch, snapshot và cách tính nhu cầu",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-S3-781ea600a500",
+                  "vi-C2-910b90ee6788"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-S4-1fd105dab581",
+                  "en-C2-a7da26f90b2b"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true
+      },
+      "after": {
+        "id": "Q11.block_checks",
+        "description_vi": "Khóa PO, kiểm tra tồn khả dụng, hàng giữ, đơn treo, giao dịch, snapshot và cách tính nhu cầu",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-S3-781ea600a500",
+                  "vi-C2-910b90ee6788"
+                ]
+              },
+              {
+                "all_of": [
+                  "vi-S3-781ea600a500",
+                  "vi-v2-61a3349704cd"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-S4-1fd105dab581",
+                  "en-C2-a7da26f90b2b"
+                ]
+              },
+              {
+                "all_of": [
+                  "en-S4-1fd105dab581",
+                  "en-v2-9fa97751d163"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true,
+        "review_note": "SOP provides available/held/unshipped stock, snapshot and formula; slide adds transaction/demand verification. Both spans are required together. Operational pending/unshipped-order wording matches the existing reference scope."
+      }
+    },
+    {
+      "requirement_id": "Q12.verify",
+      "reason": "Apply the same checklist alternative consistently to the related flags question, not just the first observed E5 failure.",
+      "before": {
+        "id": "Q12.verify",
+        "description_vi": "Kiểm tra giao dịch, snapshot, đơn treo, tồn khả dụng và cách tính nhu cầu",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-S3-781ea600a500",
+                  "vi-C2-910b90ee6788"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-S4-1fd105dab581",
+                  "en-C2-a7da26f90b2b"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true
+      },
+      "after": {
+        "id": "Q12.verify",
+        "description_vi": "Kiểm tra giao dịch, snapshot, đơn treo, tồn khả dụng và cách tính nhu cầu",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-S3-781ea600a500",
+                  "vi-C2-910b90ee6788"
+                ]
+              },
+              {
+                "all_of": [
+                  "vi-S3-781ea600a500",
+                  "vi-v2-61a3349704cd"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-S4-1fd105dab581",
+                  "en-C2-a7da26f90b2b"
+                ]
+              },
+              {
+                "all_of": [
+                  "en-S4-1fd105dab581",
+                  "en-v2-9fa97751d163"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true,
+        "review_note": "Apply the same checklist alternative consistently to the related flags question, not just the first observed E5 failure."
+      }
+    },
+    {
+      "requirement_id": "Q18.no_guess",
+      "reason": "Data-unavailability evidence remains required. A separate instruction to avoid guessing is context, not a second required retrieval fact. This does not permit fabricated generation.",
+      "before": {
+        "id": "Q18.no_guess",
+        "description_vi": "Không đoán dữ liệu PO; cần nguồn bổ sung",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-D7-28c3bf9dfe2c"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-D7-ab65810b7d9c"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true
+      },
+      "after": {
+        "id": "Q18.no_guess",
+        "description_vi": "Không đoán dữ liệu PO; cần nguồn bổ sung",
+        "status": "optional_context",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-D7-28c3bf9dfe2c"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-D7-ab65810b7d9c"
+                ]
+              }
+            ]
+          }
+        },
+        "required": false,
+        "review_note": "Data-unavailability evidence remains required. A separate instruction to avoid guessing is context, not a second required retrieval fact. This does not permit fabricated generation."
+      }
+    },
+    {
+      "requirement_id": "Q20.no_write",
+      "reason": "Registry explicitly limits access, prohibits autonomous PO/inventory writes, and requires a human approver; accept equivalent policy evidence in both languages.",
+      "before": {
+        "id": "Q20.no_write",
+        "description_vi": "Agent chỉ đọc/đề xuất, không tự phát hành PO hoặc sửa tồn",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-D2-c01754cbcde3"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-D2-4df4ba3e9689"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true
+      },
+      "after": {
+        "id": "Q20.no_write",
+        "description_vi": "Agent chỉ đọc/đề xuất, không tự phát hành PO hoặc sửa tồn",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-D2-c01754cbcde3"
+                ]
+              },
+              {
+                "all_of": [
+                  "vi-v2-66ac2686b18b"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-D2-4df4ba3e9689"
+                ]
+              },
+              {
+                "all_of": [
+                  "en-v2-694b39aa2d8d"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true,
+        "review_note": "Registry explicitly limits access, prohibits autonomous PO/inventory writes, and requires a human approver; accept equivalent policy evidence in both languages."
+      }
+    },
+    {
+      "requirement_id": "Q20.citation_snapshot",
+      "reason": "Training slide jointly requires source citation and snapshot; accept the whole instruction pair.",
+      "before": {
+        "id": "Q20.citation_snapshot",
+        "description_vi": "Nêu nguồn và snapshot date",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-C11-63918a05cf0d"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-C11-773a32cd4968"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true
+      },
+      "after": {
+        "id": "Q20.citation_snapshot",
+        "description_vi": "Nêu nguồn và snapshot date",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-C11-63918a05cf0d"
+                ]
+              },
+              {
+                "all_of": [
+                  "vi-v2-bf286ca0ea82"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-C11-773a32cd4968"
+                ]
+              },
+              {
+                "all_of": [
+                  "en-v2-ef606164edcb"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true,
+        "review_note": "Training slide jointly requires source citation and snapshot; accept the whole instruction pair."
+      }
+    },
+    {
+      "requirement_id": "Q20.human_approval",
+      "reason": "Require normal Planner-to-Procurement approval flow for the stated scenario. Preserve the original larger bundle and accept the complete normal-flow row; the unstated exceptional branch is optional context.",
+      "before": {
+        "id": "Q20.human_approval",
+        "description_vi": "Planner lập đề xuất, Procurement duyệt; ngoại lệ lên Operations/Finance",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-M13-b01d3f30d7f4"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-M14-0e07b2fffa07"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true
+      },
+      "after": {
+        "id": "Q20.human_approval",
+        "description_vi": "Planner lập đề xuất, Procurement Manager duyệt trước phát hành; ngoại lệ là ngữ cảnh bổ sung",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-M13-b01d3f30d7f4"
+                ]
+              },
+              {
+                "all_of": [
+                  "vi-v2-8c112b52e6de"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-M14-0e07b2fffa07"
+                ]
+              },
+              {
+                "all_of": [
+                  "en-v2-31bac30663aa"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true,
+        "review_note": "Require normal Planner-to-Procurement approval flow for the stated scenario. Preserve the original larger bundle and accept the complete normal-flow row; the unstated exceptional branch is optional context."
+      }
+    },
+    {
+      "requirement_id": "Q20.conflict",
+      "reason": "Accept a complete SOP + policy-row bundle: DATA CONFLICT, block/check, Controller conclusion and Controller ownership. A generic human-approval mention alone still does not satisfy this component.",
+      "before": {
+        "id": "Q20.conflict",
+        "description_vi": "Mâu thuẫn: DATA CONFLICT, chặn PO, chuyển Controller xác minh",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-M14-61681a9c39dc"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-M15-e041f472ea8b"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true
+      },
+      "after": {
+        "id": "Q20.conflict",
+        "description_vi": "Mâu thuẫn: DATA CONFLICT, chặn PO, chuyển Controller xác minh",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-M14-61681a9c39dc"
+                ]
+              },
+              {
+                "all_of": [
+                  "vi-S3-57f9321043bb",
+                  "vi-S3-781ea600a500",
+                  "vi-S3-bffee2683004",
+                  "vi-v2-26ca9d5ef78b"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-M15-e041f472ea8b"
+                ]
+              },
+              {
+                "all_of": [
+                  "en-S3-7faa0243b354",
+                  "en-S4-1fd105dab581",
+                  "en-S4-a5df8ea798fa",
+                  "en-v2-944d3f095565"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true,
+        "review_note": "Accept a complete SOP + policy-row bundle: DATA CONFLICT, block/check, Controller conclusion and Controller ownership. A generic human-approval mention alone still does not satisfy this component."
+      }
+    },
+    {
+      "requirement_id": "Q20.exception_approval",
+      "reason": "Retain the exception branch as explicit optional context, not a mandatory fact for an ordinary PO question.",
+      "before": null,
+      "after": {
+        "id": "Q20.exception_approval",
+        "description_vi": "Ngữ cảnh bổ sung: PO vượt ngân sách hoặc ngoại lệ lên Operations/Finance",
+        "required": false,
+        "status": "optional_context",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-v2-b974aae6c66c"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-v2-365467d00abf"
+                ]
+              }
+            ]
+          }
+        },
+        "review_note": "Retain the exception branch as explicit optional context, not a mandatory fact for an ordinary PO question."
+      }
+    }
+  ],
+  "unchanged_reviewed": {
+    "Q13": "Keep detailed preparation, blind count and no-deletion source controls; summary table is insufficient for all controls.",
+    "Q14": "Both policy-role conflicts remain needs_policy_resolution.",
+    "Q12.conflict_block": "Retain direct generic both-flags conflict rule; a conditional stockout/DOS rule alone is not sufficient."
+  }
+}

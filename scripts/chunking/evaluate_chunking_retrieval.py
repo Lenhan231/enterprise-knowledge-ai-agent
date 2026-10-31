@@ -8,7 +8,10 @@ import hashlib
 import json
 import os
 import re
-import resource
+try:
+    import resource
+except ImportError:
+    resource = None
 import sys
 import tempfile
 import time
@@ -107,7 +110,9 @@ def _rank_chunks(chunks: list[dict], query_vector: np.ndarray, fiscal_year: str 
     return [dict(item[2], similarity=item[1]) for item in ranked]
 
 
-def _peak_rss_mb() -> float:
+def _peak_rss_mb() -> float | None:
+    if resource is None:
+        return None
     value = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     return round(value / (1024 if sys.platform != "darwin" else 1024 * 1024), 1)
 

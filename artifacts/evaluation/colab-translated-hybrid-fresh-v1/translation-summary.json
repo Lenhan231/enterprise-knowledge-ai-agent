@@ -1,0 +1,25 @@
+{
+  "model": "openai/gpt-oss-20b",
+  "unique_queries": 24,
+  "successes": 24,
+  "failures": 0,
+  "source_language_mode": "auto",
+  "usage": {
+    "input_tokens": 4052,
+    "output_tokens": 1289,
+    "total_tokens": 5341
+  },
+  "api_seconds_total": 12.027885913000091,
+  "sql_parity": [
+    {
+      "language": "vi",
+      "scores_verified": 58
+    },
+    {
+      "language": "en",
+      "scores_verified": 98
+    }
+  ],
+  "question_evidence_manifest_unchanged": true,
+  "gpu_reranking_status": "pending"
+}

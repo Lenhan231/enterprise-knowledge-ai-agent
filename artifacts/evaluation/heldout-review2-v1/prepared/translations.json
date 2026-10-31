@@ -1,0 +1,567 @@
+{
+  "model": "openai/gpt-oss-20b",
+  "questions_sha256": "9edd2641081aaa0f3b810cdfb0082f6557d10af16ffc03fca8ddfc32eea1791b",
+  "operator_opt_in": "--allow-groq; only original question text sent",
+  "records": [
+    {
+      "question": "Theo phần mục đích của Manual, chính sách tồn kho phải cân bằng bốn yếu tố nào?",
+      "queries": {
+        "vn": "Theo phần mục đích của Manual, chính sách tồn kho phải cân bằng bốn yếu tố nào?",
+        "en": "According to the purpose section of the Manual, what four factors must the inventory policy balance?"
+      },
+      "error": null,
+      "api_seconds": 1.5819286549995013,
+      "usage": {
+        "input_tokens": 167,
+        "output_tokens": 92,
+        "total_tokens": 259
+      }
+    },
+    {
+      "question": "According to the Manual purpose section, which four factors should the inventory policy balance?",
+      "queries": {
+        "en": "According to the Manual purpose section, which four factors should the inventory policy balance?",
+        "vn": "Theo mục Đích của Hướng dẫn, chính sách tồn kho nên cân bằng bốn yếu tố nào?"
+      },
+      "error": null,
+      "api_seconds": 0.4957535049998114,
+      "usage": {
+        "input_tokens": 162,
+        "output_tokens": 50,
+        "total_tokens": 212
+      }
+    },
+    {
+      "question": "Phần mô tả dataset liệt kê những nhóm hàng nào đang được quan sát?",
+      "queries": {
+        "vn": "Phần mô tả dataset liệt kê những nhóm hàng nào đang được quan sát?",
+        "en": "Which product groups are currently being observed in the dataset description?"
+      },
+      "error": null,
+      "api_seconds": 0.7175473529987357,
+      "usage": {
+        "input_tokens": 164,
+        "output_tokens": 39,
+        "total_tokens": 203
+      }
+    },
+    {
+      "question": "Which product categories are listed as observed in the dataset description?",
+      "queries": {
+        "en": "Which product categories are listed as observed in the dataset description?",
+        "vn": "Các danh mục sản phẩm nào được liệt kê như đã quan sát trong mô tả bộ dữ liệu?"
+      },
+      "error": null,
+      "api_seconds": 0.4049138700011099,
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 50,
+        "total_tokens": 208
+      }
+    },
+    {
+      "question": "Nếu lịch sử nhu cầu chưa đủ tin cậy để phân nhóm ABC, tài liệu cho phép làm gì và phải rà soát lại sau bao nhiêu chu kỳ?",
+      "queries": {
+        "vn": "Nếu lịch sử nhu cầu chưa đủ tin cậy để phân nhóm ABC, tài liệu cho phép làm gì và phải rà soát lại sau bao nhiêu chu kỳ?",
+        "en": "If the demand history is not reliable enough to classify ABC groups, what does the document allow to do and how many cycles should it be reviewed again?"
+      },
+      "error": null,
+      "api_seconds": 0.7987158070009173,
+      "usage": {
+        "input_tokens": 180,
+        "output_tokens": 57,
+        "total_tokens": 237
+      }
+    },
+    {
+      "question": "When demand history is not reliable enough for ABC classification, what temporary approach is allowed and after how many cycles must it be reviewed?",
+      "queries": {
+        "en": "When demand history is not reliable enough for ABC classification, what temporary approach is allowed and after how many cycles must it be reviewed?",
+        "vn": "Khi lịch sử nhu cầu không đủ tin cậy cho phân loại ABC, phương pháp tạm thời nào được phép và cần được xem xét sau bao nhiêu chu kỳ?"
+      },
+      "error": null,
+      "api_seconds": 0.3466898320002656,
+      "usage": {
+        "input_tokens": 172,
+        "output_tokens": 64,
+        "total_tokens": 236
+      }
+    },
+    {
+      "question": "Mục Hồ sơ bắt buộc và lưu trữ của Manual yêu cầu giữ những nhóm hồ sơ nào?",
+      "queries": {
+        "vn": "Mục Hồ sơ bắt buộc và lưu trữ của Manual yêu cầu giữ những nhóm hồ sơ nào?",
+        "en": "What mandatory file categories and storage requirements does the Manual specify for maintaining which groups of files?"
+      },
+      "error": null,
+      "api_seconds": 0.3889322089999041,
+      "usage": {
+        "input_tokens": 168,
+        "output_tokens": 45,
+        "total_tokens": 213
+      }
+    },
+    {
+      "question": "Which record groups must be retained under the Manual Required Records and Retention section?",
+      "queries": {
+        "en": "Which record groups must be retained under the Manual Required Records and Retention section?",
+        "vn": "Nhóm hồ sơ nào phải được lưu giữ theo mục Hồ sơ Bắt buộc và Bảo quản?"
+      },
+      "error": null,
+      "api_seconds": 0.3966570430002321,
+      "usage": {
+        "input_tokens": 162,
+        "output_tokens": 50,
+        "total_tokens": 212
+      }
+    },
+    {
+      "question": "Trong xử lý hàng chậm luân chuyển, ba nguyên nhân nào khiến giảm giá không được dùng làm biện pháp mặc định?",
+      "queries": {
+        "vn": "Trong xử lý hàng chậm luân chuyển, ba nguyên nhân nào khiến giảm giá không được dùng làm biện pháp mặc định?",
+        "en": "In handling slow-moving inventory, which three reasons prevent the use of discounting as a default measure?"
+      },
+      "error": null,
+      "api_seconds": 0.46880324199992174,
+      "usage": {
+        "input_tokens": 173,
+        "output_tokens": 47,
+        "total_tokens": 220
+      }
+    },
+    {
+      "question": "For slow-moving inventory, which three root causes mean discounting must not be the default response?",
+      "queries": {
+        "en": "For slow-moving inventory, which three root causes mean discounting must not be the default response?",
+        "vn": "Đối với hàng tồn kho di chuyển chậm, ba nguyên nhân gốc rễ nào khiến việc giảm giá không nên là phản ứng mặc định?"
+      },
+      "error": null,
+      "api_seconds": 0.411613717000364,
+      "usage": {
+        "input_tokens": 165,
+        "output_tokens": 59,
+        "total_tokens": 224
+      }
+    },
+    {
+      "question": "Trong sheet Inventory Control của snapshot mẫu, Product ID 17 (DragonWear MA-17) có size, màu và On-hand Units là gì?",
+      "queries": {
+        "vn": "Trong sheet Inventory Control của snapshot mẫu, Product ID 17 (DragonWear MA-17) có size, màu và On-hand Units là gì?",
+        "en": "In the sample snapshot's Inventory Control sheet, what are the size, color, and On-hand Units for Product ID 17 (DragonWear MA-17)?"
+      },
+      "error": null,
+      "api_seconds": 0.48191110500010836,
+      "usage": {
+        "input_tokens": 176,
+        "output_tokens": 61,
+        "total_tokens": 237
+      }
+    },
+    {
+      "question": "In the sample Inventory Control sheet, what are the size, color, and On-hand Units for Product ID 17 (DragonWear MA-17)?",
+      "queries": {
+        "en": "In the sample Inventory Control sheet, what are the size, color, and On-hand Units for Product ID 17 (DragonWear MA-17)?",
+        "vn": "Trong bảng điều khiển Kho hàng mẫu, kích thước, màu sắc và số lượng tồn kho của Sản phẩm ID 17 (DragonWear MA-17) là gì?"
+      },
+      "error": null,
+      "api_seconds": 0.393723711000348,
+      "usage": {
+        "input_tokens": 177,
+        "output_tokens": 65,
+        "total_tokens": 242
+      }
+    },
+    {
+      "question": "Đọc dòng Product ID 18 (DragonWear MA-18) trong Inventory Control: Stockout Days và Fill Rate ghi bao nhiêu?",
+      "queries": {
+        "vn": "Đọc dòng Product ID 18 (DragonWear MA-18) trong Inventory Control: Stockout Days và Fill Rate ghi bao nhiêu?",
+        "en": "Read the Product ID 18 (DragonWear MA-18) line in Inventory Control: Stockout Days and Fill Rate and note the values?"
+      },
+      "error": null,
+      "api_seconds": 0.44453701299971726,
+      "usage": {
+        "input_tokens": 175,
+        "output_tokens": 55,
+        "total_tokens": 230
+      }
+    },
+    {
+      "question": "Read the Inventory Control row for Product ID 18 (DragonWear MA-18): what Stockout Days and Fill Rate values are recorded?",
+      "queries": {
+        "en": "Read the Inventory Control row for Product ID 18 (DragonWear MA-18): what Stockout Days and Fill Rate values are recorded?",
+        "vn": "Đọc dòng Kiểm soát Tồn kho cho Mã sản phẩm 18 (DragonWear MA-18): các giá trị Ngày hết hàng và Tỷ lệ Đổ đầy được ghi lại là gì?"
+      },
+      "error": null,
+      "api_seconds": 0.6096555479998642,
+      "usage": {
+        "input_tokens": 174,
+        "output_tokens": 72,
+        "total_tokens": 246
+      }
+    },
+    {
+      "question": "Trong Inventory Control, Product ID 19 có Units Sold (Latest) và Avg Monthly Demand (3 snapshots) bao nhiêu?",
+      "queries": {
+        "vn": "Trong Inventory Control, Product ID 19 có Units Sold (Latest) và Avg Monthly Demand (3 snapshots) bao nhiêu?",
+        "en": "In Inventory Control, what are the Units Sold (Latest) and Avg Monthly Demand (3 snapshots) for Product ID 19?"
+      },
+      "error": null,
+      "api_seconds": 0.8707687220012303,
+      "usage": {
+        "input_tokens": 172,
+        "output_tokens": 54,
+        "total_tokens": 226
+      }
+    },
+    {
+      "question": "In Inventory Control, what Units Sold (Latest) and Avg Monthly Demand (3 snapshots) are recorded for Product ID 19?",
+      "queries": {
+        "en": "In Inventory Control, what Units Sold (Latest) and Avg Monthly Demand (3 snapshots) are recorded for Product ID 19?",
+        "vn": "Trong Kiểm soát Hàng tồn kho, các Đơn vị Bán (Mới nhất) và Nhu cầu Tháng Trung bình (3 khoảnh khắc) nào được ghi lại cho Mã Sản phẩm 19?"
+      },
+      "error": null,
+      "api_seconds": 0.366516178000893,
+      "usage": {
+        "input_tokens": 172,
+        "output_tokens": 77,
+        "total_tokens": 249
+      }
+    },
+    {
+      "question": "Theo KPI Summary của workbook, nhóm GenZ có bao nhiêu SKU, On-hand Units và Units Sold (Latest)?",
+      "queries": {
+        "vn": "Theo KPI Summary của workbook, nhóm GenZ có bao nhiêu SKU, On-hand Units và Units Sold (Latest)?",
+        "en": "According to the KPI Summary in the workbook, how many SKUs, On-hand Units, and Units Sold (Latest) does the GenZ group have?"
+      },
+      "error": null,
+      "api_seconds": 1.4071046909994038,
+      "usage": {
+        "input_tokens": 171,
+        "output_tokens": 57,
+        "total_tokens": 228
+      }
+    },
+    {
+      "question": "According to the workbook KPI Summary, how many SKUs, On-hand Units, and Units Sold (Latest) are recorded for GenZ?",
+      "queries": {
+        "en": "According to the workbook KPI Summary, how many SKUs, On-hand Units, and Units Sold (Latest) are recorded for GenZ?",
+        "vn": "Theo tóm tắt KPI trong workbook, có bao nhiêu SKU, Đơn vị có sẵn và Đơn vị bán (Mới nhất) được ghi nhận cho GenZ?"
+      },
+      "error": null,
+      "api_seconds": 0.407604160000119,
+      "usage": {
+        "input_tokens": 174,
+        "output_tokens": 66,
+        "total_tokens": 240
+      }
+    },
+    {
+      "question": "Theo bảng ngưỡng xử lý của SOP kiểm kê, nếu không có chênh lệch thì cần làm gì và ai là người duyệt?",
+      "queries": {
+        "vn": "Theo bảng ngưỡng xử lý của SOP kiểm kê, nếu không có chênh lệch thì cần làm gì và ai là người duyệt?",
+        "en": "According to the SOP inventory threshold table, if there is no discrepancy, what should be done and who is the approver?"
+      },
+      "error": null,
+      "api_seconds": 0.3350987619996886,
+      "usage": {
+        "input_tokens": 177,
+        "output_tokens": 52,
+        "total_tokens": 229
+      }
+    },
+    {
+      "question": "According to the cycle-count SOP handling-threshold table, when there is no variance, what actions are required and who is the approver?",
+      "queries": {
+        "en": "According to the cycle-count SOP handling-threshold table, when there is no variance, what actions are required and who is the approver?",
+        "vn": "Theo bảng ngưỡng xử lý SOP đếm chu kỳ, khi không có sai lệch, những hành động nào cần thực hiện và người phê duyệt là ai?"
+      },
+      "error": null,
+      "api_seconds": 0.48645551499976136,
+      "usage": {
+        "input_tokens": 174,
+        "output_tokens": 64,
+        "total_tokens": 238
+      }
+    },
+    {
+      "question": "So sánh hai dòng Inventory Control của Product ID 1 và Product ID 3: mỗi sản phẩm có size, màu và On-hand Units nào?",
+      "queries": {
+        "vn": "So sánh hai dòng Inventory Control của Product ID 1 và Product ID 3: mỗi sản phẩm có size, màu và On-hand Units nào?",
+        "en": "Compare the two Inventory Control lines for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?"
+      },
+      "error": null,
+      "api_seconds": 0.550634313000046,
+      "usage": {
+        "input_tokens": 177,
+        "output_tokens": 59,
+        "total_tokens": 236
+      }
+    },
+    {
+      "question": "Compare the Inventory Control rows for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?",
+      "queries": {
+        "en": "Compare the Inventory Control rows for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?",
+        "vn": "So sánh các dòng Kiểm soát Hàng tồn kho cho Mã Sản phẩm 1 và Mã Sản phẩm 3: mỗi sản phẩm có kích thước, màu sắc và Đơn vị Tồn kho nào?"
+      },
+      "error": null,
+      "api_seconds": 0.4902822690000903,
+      "usage": {
+        "input_tokens": 176,
+        "output_tokens": 78,
+        "total_tokens": 254
+      }
+    },
+    {
+      "question": "Trong Exception Log, Product ID 2212 và 927 có Calculated DOS và Review Status lần lượt là gì?",
+      "queries": {
+        "vn": "Trong Exception Log, Product ID 2212 và 927 có Calculated DOS và Review Status lần lượt là gì?",
+        "en": "In the Exception Log, what are the Calculated DOS and Review Status for Product ID 2212 and 927 respectively?"
+      },
+      "error": null,
+      "api_seconds": 0.660805336001431,
+      "usage": {
+        "input_tokens": 170,
+        "output_tokens": 51,
+        "total_tokens": 221
+      }
+    },
+    {
+      "question": "In the Exception Log, what are the Calculated DOS and Review Status values for Product IDs 2212 and 927 respectively?",
+      "queries": {
+        "en": "In the Exception Log, what are the Calculated DOS and Review Status values for Product IDs 2212 and 927 respectively?",
+        "vn": "Trong Nhật ký Ngoại lệ, giá trị DOS Tính toán và Trạng thái Đánh giá là gì cho ID Sản phẩm 2212 và 927 tương ứng?"
+      },
+      "error": null,
+      "api_seconds": 0.4653612959991733,
+      "usage": {
+        "input_tokens": 172,
+        "output_tokens": 64,
+        "total_tokens": 236
+      }
+    },
+    {
+      "question": "Khi chuẩn bị PO trong ngân sách và đúng tham số đã duyệt, Planner chuyển cho ai duyệt? Hồ sơ nhà cung cấp phải duy trì những thông tin nào và cập nhật theo tần suất nào?",
+      "queries": {
+        "vn": "Khi chuẩn bị PO trong ngân sách và đúng tham số đã duyệt, Planner chuyển cho ai duyệt? Hồ sơ nhà cung cấp phải duy trì những thông tin nào và cập nhật theo tần suất nào?",
+        "en": "When preparing a PO within the budget and with the approved parameters, who does the Planner forward it to for approval? What information must the supplier file maintain and how frequently should it be updated?"
+      },
+      "error": null,
+      "api_seconds": 0.4590780069993343,
+      "usage": {
+        "input_tokens": 190,
+        "output_tokens": 66,
+        "total_tokens": 256
+      }
+    },
+    {
+      "question": "When preparing a PO within budget and approved parameters, whom does the Planner submit it to for approval? Which supplier information must be maintained, and how often must it be updated?",
+      "queries": {
+        "en": "When preparing a PO within budget and approved parameters, whom does the Planner submit it to for approval? Which supplier information must be maintained, and how often must it be updated?",
+        "vn": "Khi chuẩn bị một đơn đặt hàng (PO) trong phạm vi ngân sách và các tham số đã được phê duyệt, người lập kế hoạch sẽ nộp nó cho ai để được phê duyệt? Thông tin nhà cung cấp nào phải được duy trì, và cần cập nhật thường xuyên như thế nào?"
+      },
+      "error": null,
+      "api_seconds": 0.44287154599987844,
+      "usage": {
+        "input_tokens": 181,
+        "output_tokens": 95,
+        "total_tokens": 276
+      }
+    },
+    {
+      "question": "Đối chiếu Product ID 8 và 9 trong Inventory Control: On-hand Units và Units Sold (Latest) của từng sản phẩm là bao nhiêu?",
+      "queries": {
+        "vn": "Đối chiếu Product ID 8 và 9 trong Inventory Control: On-hand Units và Units Sold (Latest) của từng sản phẩm là bao nhiêu?",
+        "en": "What are the On-hand Units and Units Sold (Latest) for Product ID 8 and 9 in Inventory Control?"
+      },
+      "error": null,
+      "api_seconds": 0.4059070269995573,
+      "usage": {
+        "input_tokens": 179,
+        "output_tokens": 52,
+        "total_tokens": 231
+      }
+    },
+    {
+      "question": "Compare Product IDs 8 and 9 in Inventory Control: what are the On-hand Units and Units Sold (Latest) for each product?",
+      "queries": {
+        "en": "Compare Product IDs 8 and 9 in Inventory Control: what are the On-hand Units and Units Sold (Latest) for each product?",
+        "vn": "So sánh ID sản phẩm 8 và 9 trong Kiểm soát Tồn kho: số lượng Đang có và số lượng Bán (Mới nhất) của mỗi sản phẩm là bao nhiêu?"
+      },
+      "error": null,
+      "api_seconds": 0.4826811610000732,
+      "usage": {
+        "input_tokens": 174,
+        "output_tokens": 72,
+        "total_tokens": 246
+      }
+    },
+    {
+      "question": "Theo KPI Summary, Streetwear có bao nhiêu SKU và On-hand Units; đối chiếu với mô tả dữ liệu, toàn bộ products.csv có bao nhiêu SKU?",
+      "queries": {
+        "vn": "Theo KPI Summary, Streetwear có bao nhiêu SKU và On-hand Units; đối chiếu với mô tả dữ liệu, toàn bộ products.csv có bao nhiêu SKU?",
+        "en": "According to the KPI Summary, how many SKUs and On-hand Units does Streetwear have; compared with the data description, how many SKUs does the entire products.csv contain?"
+      },
+      "error": null,
+      "api_seconds": 1.3353835609996167,
+      "usage": {
+        "input_tokens": 182,
+        "output_tokens": 62,
+        "total_tokens": 244
+      }
+    },
+    {
+      "question": "According to KPI Summary, how many SKUs and On-hand Units are listed for Streetwear, and how many SKUs are in the full products.csv master according to the data description?",
+      "queries": {
+        "en": "According to KPI Summary, how many SKUs and On-hand Units are listed for Streetwear, and how many SKUs are in the full products.csv master according to the data description?",
+        "vn": "Theo KPI Summary, có bao nhiêu SKU và số lượng hàng tồn kho được liệt kê cho Streetwear, và có bao nhiêu SKU trong tập master products.csv đầy đủ theo mô tả dữ liệu?"
+      },
+      "error": null,
+      "api_seconds": 0.9762931269997353,
+      "usage": {
+        "input_tokens": 183,
+        "output_tokens": 78,
+        "total_tokens": 261
+      }
+    },
+    {
+      "question": "Nếu gom nhật ký trả hàng, đơn bán, ưu đãi và vận chuyển thành một nguồn, có thể dùng nó thay sổ tồn chính thức không, hay chỉ phục vụ mục đích gì?",
+      "queries": {
+        "vn": "Nếu gom nhật ký trả hàng, đơn bán, ưu đãi và vận chuyển thành một nguồn, có thể dùng nó thay sổ tồn chính thức không, hay chỉ phục vụ mục đích gì?",
+        "en": "If we combine the return logs, sales orders, promotions, and shipping into one source, can it be used instead of the official inventory ledger, or does it only serve a specific purpose?"
+      },
+      "error": null,
+      "api_seconds": 0.48316920199977176,
+      "usage": {
+        "input_tokens": 187,
+        "output_tokens": 66,
+        "total_tokens": 253
+      }
+    },
+    {
+      "question": "If returns, order, promotion, and delivery logs are combined, can they replace the authoritative inventory book, or what purpose may they serve instead?",
+      "queries": {
+        "en": "If returns, order, promotion, and delivery logs are combined, can they replace the authoritative inventory book, or what purpose may they serve instead?",
+        "vn": "Nếu các bản ghi trả hàng, đặt hàng, khuyến mãi và giao hàng được kết hợp lại, chúng có thể thay thế sổ sách tồn kho chính thức không, hay chúng có thể phục vụ mục đích gì khác?"
+      },
+      "error": null,
+      "api_seconds": 0.3587646139985736,
+      "usage": {
+        "input_tokens": 175,
+        "output_tokens": 76,
+        "total_tokens": 251
+      }
+    },
+    {
+      "question": "Hàng đến có vẻ đủ số thùng rồi; để xác nhận giao đúng đơn, kho còn phải đối chiếu những thông tin nào theo Manual?",
+      "queries": {
+        "vn": "Hàng đến có vẻ đủ số thùng rồi; để xác nhận giao đúng đơn, kho còn phải đối chiếu những thông tin nào theo Manual?",
+        "en": "The goods seem to have the correct number of cartons; to confirm the delivery matches the order, what information does the warehouse still need to reconcile according to the Manual?"
+      },
+      "error": null,
+      "api_seconds": 0.47857970299992303,
+      "usage": {
+        "input_tokens": 177,
+        "output_tokens": 61,
+        "total_tokens": 238
+      }
+    },
+    {
+      "question": "A delivery appears to contain the expected number of cartons; to confirm that the right order arrived, what details must the warehouse reconcile under the Manual?",
+      "queries": {
+        "en": "A delivery appears to contain the expected number of cartons; to confirm that the right order arrived, what details must the warehouse reconcile under the Manual?",
+        "vn": "Một lô hàng dường như chứa số kiện hàng dự kiến; để xác nhận rằng đơn hàng đúng đã đến, kho cần đối chiếu những chi tiết nào theo Hướng dẫn Thủ công?"
+      },
+      "error": null,
+      "api_seconds": 0.399492056998497,
+      "usage": {
+        "input_tokens": 175,
+        "output_tokens": 69,
+        "total_tokens": 244
+      }
+    },
+    {
+      "question": "Doanh nghiệp không muốn bê nguyên các KPI mẫu vào vận hành. Theo tài liệu, ba yếu tố kinh doanh nào phải dùng để hiệu chỉnh các mục tiêu này?",
+      "queries": {
+        "vn": "Doanh nghiệp không muốn bê nguyên các KPI mẫu vào vận hành. Theo tài liệu, ba yếu tố kinh doanh nào phải dùng để hiệu chỉnh các mục tiêu này?",
+        "en": "The company does not want to blindly apply the sample KPIs into operations. According to the document, which three business factors must be used to adjust these targets?"
+      },
+      "error": null,
+      "api_seconds": 0.4146643439999025,
+      "usage": {
+        "input_tokens": 180,
+        "output_tokens": 58,
+        "total_tokens": 238
+      }
+    },
+    {
+      "question": "The business does not want to copy the sample KPI targets unchanged into operations. Which three business factors should be used to calibrate those targets?",
+      "queries": {
+        "en": "The business does not want to copy the sample KPI targets unchanged into operations. Which three business factors should be used to calibrate those targets?",
+        "vn": "Doanh nghiệp không muốn sao chép các mục tiêu KPI mẫu một cách nguyên văn vào hoạt động. Ba yếu tố kinh doanh nào nên được sử dụng để điều chỉnh những mục tiêu đó?"
+      },
+      "error": null,
+      "api_seconds": 0.40104338099990855,
+      "usage": {
+        "input_tokens": 174,
+        "output_tokens": 67,
+        "total_tokens": 241
+      }
+    },
+    {
+      "question": "Khách trả hàng vì sai cỡ hoặc giao chậm. Theo tài liệu, có cần gắn mã lý do trả hàng không, và thông tin này phải phản hồi tới những bộ phận nào?",
+      "queries": {
+        "vn": "Khách trả hàng vì sai cỡ hoặc giao chậm. Theo tài liệu, có cần gắn mã lý do trả hàng không, và thông tin này phải phản hồi tới những bộ phận nào?",
+        "en": "The customer returns goods due to wrong size or late delivery. According to the documentation, is it necessary to attach a return reason code, and to which departments must this information be reported?"
+      },
+      "error": null,
+      "api_seconds": 0.40530288700028905,
+      "usage": {
+        "input_tokens": 188,
+        "output_tokens": 64,
+        "total_tokens": 252
+      }
+    },
+    {
+      "question": "A customer returns an item because it did not fit or arrived late. Under the policy, must a return-reason code be assigned, and which departments should receive that feedback?",
+      "queries": {
+        "en": "A customer returns an item because it did not fit or arrived late. Under the policy, must a return-reason code be assigned, and which departments should receive that feedback?",
+        "vn": "Một khách hàng trả lại mặt hàng vì nó không vừa hoặc đến muộn. Theo chính sách, có phải gán mã lý do trả lại không, và các phòng ban nào nên nhận phản hồi đó?"
+      },
+      "error": null,
+      "api_seconds": 0.41812895000111894,
+      "usage": {
+        "input_tokens": 181,
+        "output_tokens": 71,
+        "total_tokens": 252
+      }
+    },
+    {
+      "question": "Trong bảng vai trò của Manual, ai chịu trách nhiệm tổ chức phân quyền, giải nghĩa các trường dữ liệu, quản lý nhật ký và kiểm soát AI?",
+      "queries": {
+        "vn": "Trong bảng vai trò của Manual, ai chịu trách nhiệm tổ chức phân quyền, giải nghĩa các trường dữ liệu, quản lý nhật ký và kiểm soát AI?",
+        "en": "In the Manual role table, who is responsible for organizing permissions, defining data fields, managing logs, and controlling AI?"
+      },
+      "error": null,
+      "api_seconds": 0.48797403299977304,
+      "usage": {
+        "input_tokens": 179,
+        "output_tokens": 51,
+        "total_tokens": 230
+      }
+    },
+    {
+      "question": "In the Manual roles table, who is responsible for access permissions, the meaning of data fields, logging, and AI controls?",
+      "queries": {
+        "en": "In the Manual roles table, who is responsible for access permissions, the meaning of data fields, logging, and AI controls?",
+        "vn": "Trong bảng vai trò Manual, ai chịu trách nhiệm về quyền truy cập, ý nghĩa của các trường dữ liệu, ghi nhật ký và kiểm soát AI?"
+      },
+      "error": null,
+      "api_seconds": 0.4823160939995432,
+      "usage": {
+        "input_tokens": 171,
+        "output_tokens": 60,
+        "total_tokens": 231
+      }
+    }
+  ]
+}

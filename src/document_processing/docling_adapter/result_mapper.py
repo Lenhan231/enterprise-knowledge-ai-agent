@@ -27,6 +27,7 @@ def map_result(
     elements: list[dict[str, Any]] = []
     tables: list[dict[str, Any]] = []
     section_path: list[str] = []
+    headings_by_level: dict[int, str] = {}
     table_number_by_page: dict[int | None, int] = {}
     layout_table_cell_texts: set[str] = set()
     page_images: dict[int, Any] = {}
@@ -189,6 +190,10 @@ def map_result(
                 continue
             table_index = table_number_by_page.get(page_number, 0)
             table_number_by_page[page_number] = table_index + 1
+            section_metadata = {
+                "section_path": list(section_path),
+                "section_title": section_path[-1] if section_path else None,
+            }
             table = {
                 "table_index": table_index,
                 "columns": columns,
@@ -196,6 +201,7 @@ def map_result(
                 "context": {},
                 "metadata": {
                     **base_metadata,
+                    **section_metadata,
                     "element_type": "table",
                     "layout_type": "table",
                     "table_structure_model": "Docling TableFormer",
@@ -213,6 +219,7 @@ def map_result(
                 "element_type": "table", "table_ref": len(tables) - 1,
                 "metadata": {
                     **base_metadata,
+                    **section_metadata,
                     "element_type": "table",
                     "layout_type": "table",
                     "table_index": table_index,
@@ -235,7 +242,10 @@ def map_result(
         if source_format == "docx" and docx_text_key(text) in layout_table_cell_texts:
             continue
         if element_label in {"title", "section_header"}:
-            section_path = [text] if element_label == "title" else (section_path[:1] + [text])
+            level = 0 if element_label == "title" else int(getattr(item, "level", 1))
+            headings_by_level = {key: value for key, value in headings_by_level.items() if key < level}
+            headings_by_level[level] = text
+            section_path = [headings_by_level[key] for key in sorted(headings_by_level)]
         elements.append({
             "text": text,
             "metadata": {
@@ -244,7 +254,7 @@ def map_result(
                 "layout_type": element_label,
                 "section_path": list(section_path),
                 "section_title": section_path[-1] if section_path else None,
-                "heading_level": min(len(section_path), 2) or None,
+                "heading_level": len(section_path) or None,
             },
         })
 

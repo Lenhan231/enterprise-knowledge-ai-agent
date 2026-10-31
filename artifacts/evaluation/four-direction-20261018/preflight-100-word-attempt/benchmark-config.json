@@ -1,0 +1,9 @@
+{
+  "indexed_corpus": "indexed-corpus.jsonl",
+  "indexed_corpus_sha256": "876cc51455a382b193679e217e84067c604aef570b6d5d4f76f45e0514f3d16c",
+  "cases": "cases.json",
+  "document_ids": [
+    "annual_report",
+    "long_hau_fs"
+  ]
+}

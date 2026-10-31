@@ -1,0 +1,13 @@
+{
+  "status": "prepared_not_run",
+  "zip_bytes": 3830858,
+  "zip_sha256": "6d27de94b0113a5d41403d9033957945ec8604974a8b4e718944562a0b323819",
+  "notebook_syntax": "passed",
+  "zip_crc": "passed",
+  "extracted_bundle_preflight": "passed",
+  "translation_successes": 24,
+  "translation_failures": 0,
+  "gpu_inference_run": false,
+  "weights_downloaded_locally": false,
+  "offline_tests": 3
+}

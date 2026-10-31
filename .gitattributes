@@ -11,3 +11,8 @@
 /artifacts/evaluation/colab-translated-hybrid-fresh-v1/**/*.txt text eol=lf
 /artifacts/evaluation/vietstyle-bilingual-20261019/dense-evidence-benchmark-v1/**/*.json text eol=lf
 /artifacts/evaluation/vietstyle-bilingual-20261019/dense-evidence-benchmark-v1/**/*.jsonl text eol=lf
+
+# Preserved Huy benchmark/local-only file rules.
+data/evaluation/embedding_benchmark_20261001/corpus.jsonl -text
+data/evaluation/embedding_benchmark_20261001/cases.json -text
+scripts/retrieval/evaluate_embeddings.py -text

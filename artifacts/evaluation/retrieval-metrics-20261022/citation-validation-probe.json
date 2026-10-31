@@ -1,0 +1,19 @@
+{
+  "probe": "synthetic generation response cites a source removed by context cap",
+  "external_api_calls": false,
+  "llm_inference": false,
+  "cap_chars": 5000,
+  "input_source_ids": [
+    "S1",
+    "S2"
+  ],
+  "delivered_source_ids": [
+    "S1"
+  ],
+  "accepted_answer_source_ids": [
+    "S2"
+  ],
+  "answer": "Synthetic answer [S2]",
+  "dangling_citation_accepted": true,
+  "scope": "Controlled code-path diagnostic; not a measured real-LLM failure rate. No production code changed."
+}

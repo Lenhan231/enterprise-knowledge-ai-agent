@@ -1,0 +1,2 @@
+# Preserve authored datasets and their recorded SHA-256 hashes across Windows/WSL.
+* -text whitespace=cr-at-eol

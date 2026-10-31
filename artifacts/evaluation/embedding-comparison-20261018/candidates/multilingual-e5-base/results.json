@@ -1,0 +1,623 @@
+{
+  "configuration": {
+    "status": "completed",
+    "candidate": "multilingual-e5-base",
+    "model_id": "intfloat/multilingual-e5-base",
+    "query_prefix": "query: ",
+    "passage_prefix": "passage: ",
+    "instruction": null,
+    "device": "cuda",
+    "dtype": "float32",
+    "batch_size": 2,
+    "max_sequence_length": 512,
+    "normalize_embeddings": true,
+    "chunks": 532,
+    "questions": 20,
+    "corpus_sha256": "a52fdb6efaadfe428f7c477617b4c0b8072a30d3e3b9596dbfa205b67cc01352",
+    "cases_sha256": "4f62e9502f25bd2cf7d5f3c2c04511ae70e675fb1f74c8fb60b6fbc908d5df83",
+    "row_order_sha256": "0635507d3aa3fd636d19f1a14fa38e02bd862367978ae9cbca9adba62cda0bde",
+    "runner_sha256": "05877d1c1fe3f7e077799303a49176f86717ce69e6444a7b435bab3bd84a9f32",
+    "created_at": "2026-10-18T15:57:02.457730+00:00",
+    "revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "max_passage_tokens": 476,
+    "max_query_tokens": 46,
+    "truncated_inputs": 0,
+    "model_load_seconds": 23.658600012000534,
+    "gpu_name": "NVIDIA GeForce RTX 2060",
+    "dimensions": 768,
+    "corpus_embedding_seconds": 14.152867666998645,
+    "vectors_file_sha256": "7609b2446a50153b0a2fb0ab79cb72e6285aea4440228976283ecb2a769f3a91"
+  },
+  "summary": {
+    "mean_source_recall_at_10": 0.9333333333333333,
+    "full_source_recall_cases": 16,
+    "mean_local_retrieval_latency_ms": 17.93644885037793,
+    "median_local_retrieval_latency_ms": 12.780709002981894,
+    "peak_gpu_allocated_mib": 1105.12158203125
+  },
+  "results": [
+    {
+      "id": "Q01",
+      "question": "Bộ chính sách VietStyle Commerce hiện ở phiên bản nào, ngày nào, và trạng thái phê duyệt ra sao?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "README.txt"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "missing_expected_sources": [
+        "README.txt"
+      ],
+      "unavailable_expected_sources": [
+        "README.txt"
+      ],
+      "source_recall_at_10": 0.6666666666666666,
+      "ranked_chunk_ids": [
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::0",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::0",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::8",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::0",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::9"
+      ],
+      "local_retrieval_latency_ms": 119.3803400019533
+    },
+    {
+      "id": "Q02",
+      "question": "Ai chịu trách nhiệm chính về KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::4",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::2",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::1",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6"
+      ],
+      "local_retrieval_latency_ms": 8.584347000578418
+    },
+    {
+      "id": "Q03",
+      "question": "Tần suất kiểm kê chu kỳ cho nhóm ABC là bao nhiêu và ABC được phân loại dựa trên tiêu chí nào?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::7",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::6",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::4",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7"
+      ],
+      "local_retrieval_latency_ms": 13.866430999769364
+    },
+    {
+      "id": "Q04",
+      "question": "Khi hàng trả về từ khách, hàng phải qua trạng thái nào trước khi được cộng vào tồn kho khả dụng?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1"
+      ],
+      "local_retrieval_latency_ms": 13.501964000170119
+    },
+    {
+      "id": "Q05",
+      "question": "Những KPI tồn kho nào cần theo dõi định kỳ theo bộ chính sách?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::0",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::1",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5"
+      ],
+      "local_retrieval_latency_ms": 15.868841997871641
+    },
+    {
+      "id": "Q06",
+      "question": "Trước một campaign, nhóm phải chuẩn bị kế hoạch tồn kho trước bao lâu và cần kiểm tra những thông tin nào?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::12",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8"
+      ],
+      "local_retrieval_latency_ms": 12.810751002689358
+    },
+    {
+      "id": "Q07",
+      "question": "Ở ngưỡng days of supply trên 120 ngày và trên 180 ngày, cần hành động gì?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::3",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6"
+      ],
+      "local_retrieval_latency_ms": 8.720743004232645
+    },
+    {
+      "id": "Q08",
+      "question": "Lead time 14 ngày, safety days 7 ngày và review period 7 ngày có phải là dữ liệu thực tế đã được xác nhận từ dataset không?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "missing_expected_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 0.6666666666666666,
+      "ranked_chunk_ids": [
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::8",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::1",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::1",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::2",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::7",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3"
+      ],
+      "local_retrieval_latency_ms": 11.737214001186658
+    },
+    {
+      "id": "Q09",
+      "question": "Theo công thức trong tài liệu, nếu nhu cầu bình quân là 10 đơn vị/ngày và dùng các tham số mặc định, ROP và Target Stock là bao nhiêu?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::3",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::215",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::172",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17"
+      ],
+      "local_retrieval_latency_ms": 16.081119996670168
+    },
+    {
+      "id": "Q10",
+      "question": "Inventory position được tính như thế nào? Nếu on-hand = 120, open PO = 40 và backorder = 25, inventory position bằng bao nhiêu?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::3",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::1",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::434",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::4",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::10"
+      ],
+      "local_retrieval_latency_ms": 13.682259996130597
+    },
+    {
+      "id": "Q11",
+      "question": "Một SKU có stockout signal nhưng calculated days of supply là 145 ngày. AI Agent nên làm gì trước khi đề xuất mua thêm?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::12",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::1",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::3",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::5"
+      ],
+      "local_retrieval_latency_ms": 12.388529001327697
+    },
+    {
+      "id": "Q12",
+      "question": "Cả stockout_flag và overstock_flag cùng bật cho một SKU. Có thể kết luận SKU chắc chắn vừa thiếu vừa dư hàng không? Hệ thống cần làm gì?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::4",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::1",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::434",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::1"
+      ],
+      "local_retrieval_latency_ms": 11.867695000546519
+    },
+    {
+      "id": "Q13",
+      "question": "Mô tả quy trình xử lý chênh lệch kiểm kê từ lúc chuẩn bị đến lúc đóng phiếu, gồm các điểm kiểm soát bắt buộc.",
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "found_expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::6",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::5",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::8"
+      ],
+      "local_retrieval_latency_ms": 12.75066700327443
+    },
+    {
+      "id": "Q14",
+      "question": "Ai được phép đếm, nhập điều chỉnh và phê duyệt? Có được để cùng một người thực hiện cả ba vai trò không?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::6",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::2",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::4",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::1",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4"
+      ],
+      "local_retrieval_latency_ms": 13.13267999648815
+    },
+    {
+      "id": "Q15",
+      "question": "Những trường thông tin tối thiểu nào phải lưu cho một giao dịch điều chỉnh tồn kho?",
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "found_expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::5",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::0",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::4",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::4",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::8",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3"
+      ],
+      "local_retrieval_latency_ms": 11.372929999197368
+    },
+    {
+      "id": "Q16",
+      "question": "QA phân loại ba lô hàng trả về thành A-grade, B-grade và C-grade. Mỗi nhóm được xử lý thế nào?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::6",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::6",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::6",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::3",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::7",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::9"
+      ],
+      "local_retrieval_latency_ms": 15.9454930035281
+    },
+    {
+      "id": "Q17",
+      "question": "Nhân viên phát hiện SKU nghi hàng giả hoặc sai nhãn nghiêm trọng. Có được tiếp tục bán nếu hệ thống vẫn ghi nhận tồn không?",
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "found_expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::9",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::3",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::5"
+      ],
+      "local_retrieval_latency_ms": 11.826230002043303
+    },
+    {
+      "id": "Q18",
+      "question": "Dataset cho biết PO inbound và backorder hiện tại của SKU X là bao nhiêu? Hãy cung cấp con số chính xác.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "README.txt"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "missing_expected_sources": [
+        "README.txt"
+      ],
+      "unavailable_expected_sources": [
+        "README.txt"
+      ],
+      "source_recall_at_10": 0.6666666666666666,
+      "ranked_chunk_ids": [
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::1",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::434",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::3",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::11"
+      ],
+      "local_retrieval_latency_ms": 9.544036998704541
+    },
+    {
+      "id": "Q19",
+      "question": "Snapshot tồn kho mới nhất trong bộ Datathon là ngày nào? Có thể dùng nó để khẳng định tồn kho hiện tại hôm nay không?",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "README.txt"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "missing_expected_sources": [
+        "README.txt"
+      ],
+      "unavailable_expected_sources": [
+        "README.txt"
+      ],
+      "source_recall_at_10": 0.6666666666666666,
+      "ranked_chunk_ids": [
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::1",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::14",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::3",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::0",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::11",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::0"
+      ],
+      "local_retrieval_latency_ms": 14.354251004988328
+    },
+    {
+      "id": "Q20",
+      "question": "Người dùng yêu cầu AI Agent tự tạo và phát hành PO ngay khi inventory position ≤ ROP. Agent có được thực hiện không? Hãy nêu giới hạn và luồng xử lý phù hợp.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::7",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::11",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::2",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::8",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::1",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::1",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::3",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::2"
+      ],
+      "local_retrieval_latency_ms": 11.312452996207867
+    }
+  ],
+  "limitations": "Source-file coverage labels, not passage relevance or answer accuracy. Same frozen text/questions, with model-required input formatting. Missing README.txt stays in denominator. Local normalized cosine ranking; ties preserve frozen row order. Local timing excludes database/network and cannot be compared directly to the saved DB baseline timing. No database/inference API access. Model downloads may use Hugging Face metadata/weight HTTP endpoints; document text remains local."
+}

@@ -1,0 +1,212 @@
+{
+  "status": "assistant-translated draft; pending human semantic review; not yet used for model scoring",
+  "source": "../embedding-comparison-20261018/vietstyle-cases.json",
+  "cases": [
+    {
+      "id": "Q01",
+      "question_vi": "Bộ chính sách VietStyle Commerce hiện ở phiên bản nào, ngày nào, và trạng thái phê duyệt ra sao?",
+      "question_en": "What version and date does the current VietStyle Commerce policy set have, and what is its approval status?",
+      "reference_answer_vi": "Phiên bản v1.0, ngày 16/10/2026; trạng thái SIMULATION_DRAFT/tài liệu mô phỏng, cần chủ sở hữu nghiệp vụ phê duyệt trước khi áp dụng thực tế.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "README.txt",
+        "03_Policy_Rules_Registry.csv"
+      ]
+    },
+    {
+      "id": "Q02",
+      "question_vi": "Ai chịu trách nhiệm chính về KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách?",
+      "question_en": "Who has primary responsibility for KPIs, inventory thresholds, exceptions, and policy approval?",
+      "reference_answer_vi": "Inventory Manager.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ]
+    },
+    {
+      "id": "Q03",
+      "question_vi": "Tần suất kiểm kê chu kỳ cho nhóm ABC là bao nhiêu và ABC được phân loại dựa trên tiêu chí nào?",
+      "question_en": "How often should classes A, B, and C be cycle-counted, and what criterion determines the ABC classification?",
+      "reference_answer_vi": "Nhóm A: hằng tuần, xấp xỉ 80% giá trị tiêu thụ năm; nhóm B: hằng tháng, khoảng 15% tiếp theo; nhóm C: hằng quý, phần còn lại khoảng 5%. Phân loại dựa trên annual consumption value (nhu cầu năm × cost), không chỉ số lượng bán.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q04",
+      "question_vi": "Khi hàng trả về từ khách, hàng phải qua trạng thái nào trước khi được cộng vào tồn kho khả dụng?",
+      "question_en": "When a customer returns an item, what status must it pass through before it can be added to available inventory?",
+      "reference_answer_vi": "Phải vào QUARANTINE để Returns QA kiểm tra và phân loại; chỉ được đưa vào available-to-promise sau khi QA xác nhận tình trạng và disposition.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q05",
+      "question_vi": "Những KPI tồn kho nào cần theo dõi định kỳ theo bộ chính sách?",
+      "question_en": "Which inventory KPIs must be monitored regularly under the policy set?",
+      "reference_answer_vi": "Fill rate, stockout rate, inventory record accuracy, days of supply, aged/slow-moving stock và PO adherence.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ]
+    },
+    {
+      "id": "Q06",
+      "question_vi": "Trước một campaign, nhóm phải chuẩn bị kế hoạch tồn kho trước bao lâu và cần kiểm tra những thông tin nào?",
+      "question_en": "How far in advance of a campaign must the team prepare its inventory plan, and what information must it check?",
+      "reference_answer_vi": "Tối thiểu 4 tuần trước campaign; forecast theo SKU/size/màu, tồn kho, PO và lead time, MOQ, ngày campaign, kênh, mức giảm, điều kiện đơn tối thiểu và stackable_flag; tăng target stock cần forecast hoặc phê duyệt.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q07",
+      "question_vi": "Ở ngưỡng days of supply trên 120 ngày và trên 180 ngày, cần hành động gì?",
+      "question_en": "What actions are required when days of supply exceeds 120 days and when it exceeds 180 days?",
+      "reference_answer_vi": "Trên 120 ngày: tạm dừng bổ sung và rà soát forecast, tồn theo size/màu, hàng đang chuyển và campaign. Trên 180 ngày: phải có kế hoạch xử lý như chuyển kho, bundle, markdown có kiểm soát hoặc thanh lý theo phê duyệt.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q08",
+      "question_vi": "Lead time 14 ngày, safety days 7 ngày và review period 7 ngày có phải là dữ liệu thực tế đã được xác nhận từ dataset không?",
+      "question_en": "Are the 14-day lead time, 7 safety days, and 7-day review period verified real-world values from the dataset?",
+      "reference_answer_vi": "Không. Đây là tham số mặc định giả định để mô phỏng; phải được thay thế/hiệu chỉnh bằng dữ liệu nhà cung cấp và chủ sở hữu nghiệp vụ phê duyệt.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q09",
+      "question_vi": "Theo công thức trong tài liệu, nếu nhu cầu bình quân là 10 đơn vị/ngày và dùng các tham số mặc định, ROP và Target Stock là bao nhiêu?",
+      "question_en": "Using the formulas in the documents, if average demand is 10 units per day and the default parameters apply, what are the ROP and Target Stock?",
+      "reference_answer_vi": "ROP = 10 × (14 + 7) = 210 đơn vị. Target Stock = 10 × (14 + 7 + 7) = 280 đơn vị. Đây là kết quả minh họa dựa trên tham số giả định.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q10",
+      "question_vi": "Inventory position được tính như thế nào? Nếu on-hand = 120, open PO = 40 và backorder = 25, inventory position bằng bao nhiêu?",
+      "question_en": "How is inventory position calculated? If on-hand is 120, open PO is 40, and backorder is 25, what is the inventory position?",
+      "reference_answer_vi": "Inventory Position = On-hand + Open PO − Backorder = 120 + 40 − 25 = 135 đơn vị.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q11",
+      "question_vi": "Một SKU có stockout signal nhưng calculated days of supply là 145 ngày. AI Agent nên làm gì trước khi đề xuất mua thêm?",
+      "question_en": "A SKU has a stockout signal but calculated days of supply is 145 days. What should the AI Agent do before recommending another purchase?",
+      "reference_answer_vi": "Đánh dấu DATA CONFLICT; tạm khóa đề xuất PO tự động; kiểm tra tồn khả dụng, hàng đang giữ, đơn chưa xuất/backorder, giao dịch, snapshot timestamp và công thức days of supply. Chỉ mở lại quyết định bổ sung sau khi Inventory Controller ghi nhận kết luận.",
+      "expected_sources_vi": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "01_Inventory_Management_Policy_Manual.docx"
+      ]
+    },
+    {
+      "id": "Q12",
+      "question_vi": "Cả stockout_flag và overstock_flag cùng bật cho một SKU. Có thể kết luận SKU chắc chắn vừa thiếu vừa dư hàng không? Hệ thống cần làm gì?",
+      "question_en": "Both stockout_flag and overstock_flag are enabled for a SKU. Can we conclude it is definitely both understocked and overstocked? What should the system do?",
+      "reference_answer_vi": "Không thể kết luận chỉ từ hai cờ. Đây là tín hiệu mâu thuẫn cần xác minh; chuyển DATA CONFLICT, tạm khóa PO tự động và kiểm tra giao dịch, snapshot, đơn hàng treo, tồn khả dụng và cách tính nhu cầu/days of supply.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ]
+    },
+    {
+      "id": "Q13",
+      "question_vi": "Mô tả quy trình xử lý chênh lệch kiểm kê từ lúc chuẩn bị đến lúc đóng phiếu, gồm các điểm kiểm soát bắt buộc.",
+      "question_en": "Describe the inventory-count variance handling process from preparation through ticket closure, including the mandatory controls.",
+      "reference_answer_vi": "Xuất danh sách SKU/vị trí và snapshot; chuẩn bị/freeze hoặc ghi nhận giao dịch phát sinh; đếm độc lập (blind count nếu áp dụng); recount bởi người thứ hai khi lệch; đối chiếu receipts, picks, shipments, returns, transfers, cancellations và giao dịch chờ đồng bộ; điều tra nguyên nhân; lập biên bản và xin phê duyệt độc lập; cập nhật bằng transaction có audit trail; đồng bộ và cập nhật exception report trước khi đóng phiếu.",
+      "expected_sources_vi": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ]
+    },
+    {
+      "id": "Q14",
+      "question_vi": "Ai được phép đếm, nhập điều chỉnh và phê duyệt? Có được để cùng một người thực hiện cả ba vai trò không?",
+      "question_en": "Who may perform the count, enter an adjustment, and approve it? May the same person perform all three roles?",
+      "reference_answer_vi": "Phải tách nhiệm vụ: người đếm khác người nhập điều chỉnh và khác người duyệt. Người duyệt phải độc lập; chênh lệch nhỏ có bằng chứng cần Inventory Controller/Supervisor duyệt; chênh lệch lớn, lặp lại hoặc vượt ngưỡng cần Inventory Manager cùng Finance/Operations theo tình huống.",
+      "expected_sources_vi": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q15",
+      "question_vi": "Những trường thông tin tối thiểu nào phải lưu cho một giao dịch điều chỉnh tồn kho?",
+      "question_en": "What minimum information must be retained for an inventory adjustment transaction?",
+      "reference_answer_vi": "Mã phiếu, policy ID, SKU, số lượng trước/sau, mã nguyên nhân, bằng chứng, người nhập và người duyệt; hồ sơ kiểm kê còn cần thời điểm, người đếm và Adjustment Transaction ID. Không xóa giao dịch cũ hoặc sửa trực tiếp file nguồn.",
+      "expected_sources_vi": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ]
+    },
+    {
+      "id": "Q16",
+      "question_vi": "QA phân loại ba lô hàng trả về thành A-grade, B-grade và C-grade. Mỗi nhóm được xử lý thế nào?",
+      "question_en": "QA classifies three batches of returned goods as A-grade, B-grade, and C-grade. How should each class be handled?",
+      "reference_answer_vi": "A-grade: có thể đưa lại vào bán sau khi QA xác nhận; B-grade: sửa chữa/đóng gói lại nếu được duyệt; C-grade: cách ly và xử lý riêng như trả nhà cung cấp, scrap hoặc ghi giảm. Không nhóm nào được cộng vào tồn khả dụng trước khi QA xác nhận disposition.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q17",
+      "question_vi": "Nhân viên phát hiện SKU nghi hàng giả hoặc sai nhãn nghiêm trọng. Có được tiếp tục bán nếu hệ thống vẫn ghi nhận tồn không?",
+      "question_en": "An employee discovers a SKU suspected of being counterfeit or seriously mislabeled. May it still be sold if the system records stock on hand?",
+      "reference_answer_vi": "Không. Gắn HOLD/QUARANTINE ngay; không bán và không đưa vào available-to-promise cho đến khi QA/Operations quyết định disposition. Nếu nghi gian lận hoặc mất mát, cách ly SKU và bảo toàn bằng chứng, thông báo Compliance/Operations.",
+      "expected_sources_vi": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ]
+    },
+    {
+      "id": "Q18",
+      "question_vi": "Dataset cho biết PO inbound và backorder hiện tại của SKU X là bao nhiêu? Hãy cung cấp con số chính xác.",
+      "question_en": "According to the dataset, what are the current inbound PO and backorder quantities for SKU X? Provide the exact numbers.",
+      "reference_answer_vi": "Không thể xác định từ tài liệu/dataset được mô tả: bộ dữ liệu không cung cấp đầy đủ PO inbound và backorder. Cần bổ sung hoặc truy vấn nguồn hệ thống được phân quyền; không được tự suy đoán.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "README.txt"
+      ]
+    },
+    {
+      "id": "Q19",
+      "question_vi": "Snapshot tồn kho mới nhất trong bộ Datathon là ngày nào? Có thể dùng nó để khẳng định tồn kho hiện tại hôm nay không?",
+      "question_en": "What is the latest inventory snapshot date in the Datathon dataset? Can it be used to claim what the current inventory is today?",
+      "reference_answer_vi": "Snapshot mới nhất là 31/12/2022. Không thể coi đó là tồn kho hiện tại; câu trả lời phải nêu snapshot date và yêu cầu dữ liệu hiện hành trước khi ra quyết định vận hành.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "README.txt"
+      ]
+    },
+    {
+      "id": "Q20",
+      "question_vi": "Người dùng yêu cầu AI Agent tự tạo và phát hành PO ngay khi inventory position ≤ ROP. Agent có được thực hiện không? Hãy nêu giới hạn và luồng xử lý phù hợp.",
+      "question_en": "A user asks the AI Agent to create and issue a PO immediately when inventory position is less than or equal to ROP. May the agent do this? Explain the limits and appropriate workflow.",
+      "reference_answer_vi": "Không. Agent chỉ đọc dữ liệu được phân quyền, trả lời/đề xuất có trích dẫn nguồn và snapshot date; không tự phát hành PO hoặc tự điều chỉnh tồn kho. Planner lập đề xuất, kiểm tra open PO, backorder, MOQ và ngân sách; Procurement/đúng cấp thẩm quyền phê duyệt trước khi phát hành. Nếu có mâu thuẫn dữ liệu thì khóa đề xuất tự động và chuyển Inventory Controller xác minh.",
+      "expected_sources_vi": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    }
+  ]
+}

@@ -6,7 +6,7 @@ from time import perf_counter
 
 latency_events: ContextVar[list[dict] | None] = ContextVar("latency_events", default=None)
 STAGES = (
-    "routing", "embedding", "database_retrieval", "retrieval_fusion",
+    "routing", "knowledge_search_planning", "embedding", "database_retrieval", "retrieval_fusion",
     "query_translation", "reranking", "answer_generation", "sql_planning",
     "sql_execution", "answer_synthesis", "retrieval_total", "agent_workflow",
 )

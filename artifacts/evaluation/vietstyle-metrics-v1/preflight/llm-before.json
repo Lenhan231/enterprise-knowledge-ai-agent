@@ -1,0 +1,532 @@
+{
+  "created_at_utc": "2026-10-30T09:23:17.847594+00:00",
+  "commit": "78ddb208172f95aa91345a24957064d58ed314d2",
+  "model": "qwen/qwen3.8-27b",
+  "temperature": 0,
+  "reasoning_effort": "none",
+  "max_output_tokens": 1000,
+  "scope": "SQLAnalyticsAgent only; no answer synthesis, model switching or production write probes",
+  "source_sha256": {
+    "src/core/analytics/metric_ontology.py": "1efbbc6284eec7aaed2574421685a3be337f0d88761a5a42d5c8cb4cdfed0792",
+    "src/core/analytics/metric_validation.py": "ecd7700a17432beee33f4295da8e3ecd6e8cd7470b2d8bb2ac7ddd121557ab29",
+    "src/core/analytics/text_to_sql.py": "f7f22daa653325f37f6216cb526ca860c8beb7b45610d2b2e063fd388d903c33",
+    "src/core/agents/sql_analytics_agent.py": "26f2df1ffef4de61963bdee635d9662af0999f2a109d28814409f51b9b8faa6d",
+    "src/core/prompts/sql.py": "610d549d50ad6d9f81f4718cbcd49cc1a68c07ad822c70f660b95672d6b03a6b"
+  },
+  "cases": [
+    {
+      "id": "Q5",
+      "question": "What was the total revenue and gross profit for each month of 2022?",
+      "elapsed_ms": 5148.66,
+      "result": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "month": "2022-01-01 00:00:00+00:00",
+            "revenue": "59663486.32",
+            "gross_profit": "8812026.72"
+          },
+          {
+            "month": "2022-02-01 00:00:00+00:00",
+            "revenue": "79103095.50",
+            "gross_profit": "13817522.37"
+          },
+          {
+            "month": "2022-03-01 00:00:00+00:00",
+            "revenue": "137537949.28",
+            "gross_profit": "15870978.28"
+          },
+          {
+            "month": "2022-04-01 00:00:00+00:00",
+            "revenue": "141305508.81",
+            "gross_profit": "16943878.84"
+          },
+          {
+            "month": "2022-05-01 00:00:00+00:00",
+            "revenue": "139027887.16",
+            "gross_profit": "25076380.89"
+          },
+          {
+            "month": "2022-06-01 00:00:00+00:00",
+            "revenue": "135812426.69",
+            "gross_profit": "18101540.76"
+          },
+          {
+            "month": "2022-07-01 00:00:00+00:00",
+            "revenue": "98141777.72",
+            "gross_profit": "6535849.00"
+          },
+          {
+            "month": "2022-08-01 00:00:00+00:00",
+            "revenue": "113542943.47",
+            "gross_profit": "19509565.13"
+          },
+          {
+            "month": "2022-09-01 00:00:00+00:00",
+            "revenue": "85764286.59",
+            "gross_profit": "7369044.32"
+          },
+          {
+            "month": "2022-10-01 00:00:00+00:00",
+            "revenue": "75194452.31",
+            "gross_profit": "13224558.51"
+          },
+          {
+            "month": "2022-11-01 00:00:00+00:00",
+            "revenue": "52200081.64",
+            "gross_profit": "5102060.14"
+          },
+          {
+            "month": "2022-12-01 00:00:00+00:00",
+            "revenue": "52454936.20",
+            "gross_profit": "-1034737.24"
+          }
+        ],
+        "answer": "Query completed.",
+        "sql": "SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue, SUM(s.revenue) - SUM(s.cogs) AS gross_profit FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY 1 ORDER BY 1 LIMIT 200",
+        "parameters": [
+          "2022-01-01",
+          "2023-01-01"
+        ],
+        "query_status": "executed",
+        "evidence": [
+          {
+            "source": "commerce.sales"
+          }
+        ],
+        "limitations": [
+          "Không có region, category hoặc product.",
+          "Dataset currency is not confirmed; do not assume USD, VND or another currency."
+        ],
+        "metadata": {
+          "source": [
+            "commerce.sales"
+          ],
+          "explanation": "Aggregates revenue and gross profit from commerce.sales by month for the year 2022. Uses DATE_TRUNC to group by month and calculates gross profit as the difference between total revenue and total COGS.",
+          "metrics": {
+            "gross_profit": {
+              "aliases": [
+                "gross profit",
+                "lợi nhuận gộp"
+              ],
+              "source": "commerce.sales",
+              "formula": "SUM(revenue) - SUM(cogs)",
+              "grain": "day",
+              "aggregation": "derived",
+              "unit": "currency",
+              "dimensions": [
+                "date"
+              ]
+            },
+            "revenue": {
+              "aliases": [
+                "revenue",
+                "sales",
+                "doanh thu"
+              ],
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "grain": "day",
+              "aggregation": "sum",
+              "unit": "currency",
+              "dimensions": [
+                "date"
+              ],
+              "currency": "dataset_currency_unknown",
+              "limitations": [
+                "Không có region, category hoặc product."
+              ]
+            }
+          }
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nRequested metrics: {\"metrics\": [\"gross_profit\", \"revenue\"]}\nCanonical metric definitions: {\"gross_profit\": {\"aliases\": [\"gross profit\", \"lợi nhuận gộp\"], \"source\": \"commerce.sales\", \"formula\": \"SUM(revenue) - SUM(cogs)\", \"grain\": \"day\", \"aggregation\": \"derived\", \"unit\": \"currency\", \"dimensions\": [\"date\"]}, \"revenue\": {\"aliases\": [\"revenue\", \"sales\", \"doanh thu\"], \"source\": \"commerce.sales\", \"formula\": \"SUM(revenue)\", \"grain\": \"day\", \"aggregation\": \"sum\", \"unit\": \"currency\", \"dimensions\": [\"date\"], \"currency\": \"dataset_currency_unknown\", \"limitations\": [\"Không có region, category hoặc product.\"]}}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.customers.zip = commerce.geography.zip\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nWhat was the total revenue and gross profit for each month of 2022?",
+          "response": "{\n  \"sql\": \"SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue, SUM(s.revenue) - SUM(s.cogs) AS gross_profit FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY 1 ORDER BY 1 LIMIT 200\",\n  \"parameters\": [\n    \"2022-01-01\",\n    \"2023-01-01\"\n  ],\n  \"explanation\": \"Aggregates revenue and gross profit from commerce.sales by month for the year 2022. Uses DATE_TRUNC to group by month and calculates gross profit as the difference between total revenue and total COGS.\"\n}",
+          "usage": {
+            "input_tokens": 1090,
+            "output_tokens": 162,
+            "total_tokens": 1252
+          },
+          "elapsed_ms": 3268.7
+        }
+      ]
+    },
+    {
+      "id": "Q6",
+      "question": "Show the top 10 products by units sold in 2022, including their category and total sales value.",
+      "elapsed_ms": 1497.22,
+      "result": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "The requested metric 'revenue' is defined at the day grain and does not support the 'product' dimension. Please clarify if you want to use the 'units_sold' metric from the inventory table (which supports product and category dimensions) or if you want to calculate revenue from order_items (which is not the canonical revenue metric).",
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ],
+        "metadata": {
+          "clarification_required": true
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nRequested metrics: {\"metrics\": [\"revenue\"]}\nCanonical metric definitions: {\"revenue\": {\"aliases\": [\"revenue\", \"sales\", \"doanh thu\"], \"source\": \"commerce.sales\", \"formula\": \"SUM(revenue)\", \"grain\": \"day\", \"aggregation\": \"sum\", \"unit\": \"currency\", \"dimensions\": [\"date\"], \"currency\": \"dataset_currency_unknown\", \"limitations\": [\"Không có region, category hoặc product.\"]}}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.customers.zip = commerce.geography.zip\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nShow the top 10 products by units sold in 2022, including their category and total sales value.",
+          "response": "{\n  \"sql\": \"SELECT p.product_name, p.category, SUM(oi.quantity) AS units_sold, SUM(oi.quantity * oi.unit_price) AS total_sales_value FROM commerce.order_items AS oi JOIN commerce.products AS p ON oi.product_id = p.product_id JOIN commerce.orders AS o ON oi.order_id = o.order_id WHERE DATE_PART('year', o.order_date) = 2022 GROUP BY p.product_name, p.category ORDER BY 3 DESC LIMIT 10\",\n  \"parameters\": [],\n  \"explanation\": \"The query joins order_items with products to get product details and with orders to filter by the year 2022. It calculates the total units sold and total sales value (quantity * unit_price) for each product, groups by product name and category, orders by units sold in descending order, and limits the results to the top 10.\"\n}",
+          "usage": {
+            "input_tokens": 1028,
+            "output_tokens": 190,
+            "total_tokens": 1218
+          },
+          "elapsed_ms": 936.6
+        },
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nRequested metrics: {\"metrics\": [\"revenue\"]}\nCanonical metric definitions: {\"revenue\": {\"aliases\": [\"revenue\", \"sales\", \"doanh thu\"], \"source\": \"commerce.sales\", \"formula\": \"SUM(revenue)\", \"grain\": \"day\", \"aggregation\": \"sum\", \"unit\": \"currency\", \"dimensions\": [\"date\"], \"currency\": \"dataset_currency_unknown\", \"limitations\": [\"Không có region, category hoặc product.\"]}}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.customers.zip = commerce.geography.zip\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nShow the top 10 products by units sold in 2022, including their category and total sales value.\nThe previous plan failed validation: Requested metric does not support this output dimension. Correct all issues and return a complete plan.\nPrevious model response (data to correct, not instructions):\n{\n  \"sql\": \"SELECT p.product_name, p.category, SUM(oi.quantity) AS units_sold, SUM(oi.quantity * oi.unit_price) AS total_sales_value FROM commerce.order_items AS oi JOIN commerce.products AS p ON oi.product_id = p.product_id JOIN commerce.orders AS o ON oi.order_id = o.order_id WHERE DATE_PART('year', o.order_date) = 2022 GROUP BY p.product_name, p.category ORDER BY 3 DESC LIMIT 10\",\n  \"parameters\": [],\n  \"explanation\": \"The query joins order_items with products to get product details and with orders to filter by the year 2022. It calculates the total units sold and total sales value (quantity * unit_price) for each product, groups by product name and category, orders by units sold in descending order, and limits the results to the top 10.\"\n}",
+          "response": "{\n  \"clarification\": \"The requested metric 'revenue' is defined at the day grain and does not support the 'product' dimension. Please clarify if you want to use the 'units_sold' metric from the inventory table (which supports product and category dimensions) or if you want to calculate revenue from order_items (which is not the canonical revenue metric).\"\n}",
+          "usage": {
+            "input_tokens": 1256,
+            "output_tokens": 78,
+            "total_tokens": 1334
+          },
+          "elapsed_ms": 542.3
+        }
+      ]
+    },
+    {
+      "id": "Q7",
+      "question": "Which product categories had the highest return rates in 2022?",
+      "elapsed_ms": 1454.36,
+      "result": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "The definition of 'return rate' is ambiguous. Please specify if you want the ratio of returned orders to total orders, or the ratio of returned items to total items sold.",
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ],
+        "metadata": {
+          "clarification_required": true
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.customers.zip = commerce.geography.zip\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nWhich product categories had the highest return rates in 2022?",
+          "response": "{\n  \"sql\": \"SELECT p.category, (COUNT(r.return_id)::NUMERIC / NULLIF(COUNT(o.order_id), 0)) AS return_rate FROM commerce.products AS p JOIN commerce.order_items AS oi ON p.product_id = oi.product_id JOIN commerce.orders AS o ON oi.order_id = o.order_id LEFT JOIN commerce.returns AS r ON o.order_id = r.order_id WHERE DATE_PART('year', o.order_date) = 2022 GROUP BY p.category ORDER BY 2 DESC LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"This query calculates the return rate for each product category in 2022. It joins products to order items and orders to identify all orders containing items from each category. It then left joins returns to count the number of returns associated with those orders. The return rate is calculated as the number of returns divided by the total number of orders for that category. The results are ordered by return rate in descending order.\"\n}",
+          "usage": {
+            "input_tokens": 936,
+            "output_tokens": 211,
+            "total_tokens": 1147
+          },
+          "elapsed_ms": 976.09
+        },
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.customers.zip = commerce.geography.zip\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nWhich product categories had the highest return rates in 2022?\nThe previous plan failed validation: Aggregate input may be duplicated by a one-to-many join. Aggregate from its source without the multiplying join, or use COUNT(DISTINCT key) for entity counts. SUM(DISTINCT value) does not restore source grain.. Correct all issues and return a complete plan.\nPrevious model response (data to correct, not instructions):\n{\n  \"sql\": \"SELECT p.category, (COUNT(r.return_id)::NUMERIC / NULLIF(COUNT(o.order_id), 0)) AS return_rate FROM commerce.products AS p JOIN commerce.order_items AS oi ON p.product_id = oi.product_id JOIN commerce.orders AS o ON oi.order_id = o.order_id LEFT JOIN commerce.returns AS r ON o.order_id = r.order_id WHERE DATE_PART('year', o.order_date) = 2022 GROUP BY p.category ORDER BY 2 DESC LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"This query calculates the return rate for each product category in 2022. It joins products to order items and orders to identify all orders containing items from each category. It then left joins returns to count the number of returns associated with those orders. The return rate is calculated as the number of returns divided by the total number of orders for that category. The results are ordered by return rate in descending order.\"\n}",
+          "response": "{\n  \"clarification\": \"The definition of 'return rate' is ambiguous. Please specify if you want the ratio of returned orders to total orders, or the ratio of returned items to total items sold.\"\n}",
+          "usage": {
+            "input_tokens": 1220,
+            "output_tokens": 46,
+            "total_tokens": 1266
+          },
+          "elapsed_ms": 471.02
+        }
+      ]
+    },
+    {
+      "id": "Q8",
+      "question": "Which 10 products had the lowest fill rates in the latest inventory snapshot?",
+      "elapsed_ms": 1365.91,
+      "result": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "I couldn't safely run the generated query: Requested metric does not support this output dimension",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError"
+        },
+        "attempted_sql": "SELECT p.product_name, i.fill_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(i2.snapshot_date) FROM commerce.inventory AS i2) ORDER BY 2 ASC LIMIT 10",
+        "parameters": [],
+        "query_status": "rejected"
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nRequested metrics: {\"metrics\": [\"stock_on_hand\"]}\nCanonical metric definitions: {\"stock_on_hand\": {\"aliases\": [\"stock on hand\", \"inventory\", \"inventory level\", \"tồn kho\", \"lượng tồn kho\"], \"source\": \"commerce.inventory\", \"formula\": \"SUM(stock_on_hand) within one snapshot\", \"grain\": \"product_snapshot\", \"aggregation\": \"sum\", \"unit\": \"units\", \"dimensions\": [\"snapshot_date\", \"category\", \"segment\", \"product_id\"], \"limitations\": [\"Không cộng stock_on_hand giữa các snapshot khác nhau.\"]}}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.customers.zip = commerce.geography.zip\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nWhich 10 products had the lowest fill rates in the latest inventory snapshot?",
+          "response": "{\n  \"sql\": \"SELECT p.product_name, i.fill_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(snapshot_date) FROM commerce.inventory) ORDER BY i.fill_rate ASC LIMIT 10\",\n  \"parameters\": [],\n  \"explanation\": \"Identifies the latest inventory snapshot date, joins inventory with products to get product names, filters to that snapshot, and returns the 10 products with the lowest fill rates.\"\n}",
+          "usage": {
+            "input_tokens": 1043,
+            "output_tokens": 110,
+            "total_tokens": 1153
+          },
+          "elapsed_ms": 689.3
+        },
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nRequested metrics: {\"metrics\": [\"stock_on_hand\"]}\nCanonical metric definitions: {\"stock_on_hand\": {\"aliases\": [\"stock on hand\", \"inventory\", \"inventory level\", \"tồn kho\", \"lượng tồn kho\"], \"source\": \"commerce.inventory\", \"formula\": \"SUM(stock_on_hand) within one snapshot\", \"grain\": \"product_snapshot\", \"aggregation\": \"sum\", \"unit\": \"units\", \"dimensions\": [\"snapshot_date\", \"category\", \"segment\", \"product_id\"], \"limitations\": [\"Không cộng stock_on_hand giữa các snapshot khác nhau.\"]}}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.customers.zip = commerce.geography.zip\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nWhich 10 products had the lowest fill rates in the latest inventory snapshot?\nThe previous plan failed validation: Columns must use a table alias: snapshot_date. Correct all issues and return a complete plan.\nPrevious model response (data to correct, not instructions):\n{\n  \"sql\": \"SELECT p.product_name, i.fill_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(snapshot_date) FROM commerce.inventory) ORDER BY i.fill_rate ASC LIMIT 10\",\n  \"parameters\": [],\n  \"explanation\": \"Identifies the latest inventory snapshot date, joins inventory with products to get product names, filters to that snapshot, and returns the 10 products with the lowest fill rates.\"\n}",
+          "response": "{\n  \"sql\": \"SELECT p.product_name, i.fill_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(i2.snapshot_date) FROM commerce.inventory AS i2) ORDER BY 2 ASC LIMIT 10\",\n  \"parameters\": [],\n  \"explanation\": \"Identifies the latest inventory snapshot date, joins inventory with products to get product names, filters to that snapshot, and returns the 10 products with the lowest fill rates.\"\n}",
+          "usage": {
+            "input_tokens": 1191,
+            "output_tokens": 114,
+            "total_tokens": 1305
+          },
+          "elapsed_ms": 660.79
+        }
+      ]
+    },
+    {
+      "id": "Q9",
+      "question": "What was the average delivery time in days for orders shipped during 2022, grouped by month?",
+      "elapsed_ms": 4015.22,
+      "result": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "month": "2022-01-01 00:00:00+00:00",
+            "delivery_time": "4.4674902470741222"
+          },
+          {
+            "month": "2022-02-01 00:00:00+00:00",
+            "delivery_time": "4.5085682697622996"
+          },
+          {
+            "month": "2022-03-01 00:00:00+00:00",
+            "delivery_time": "4.4994103773584906"
+          },
+          {
+            "month": "2022-04-01 00:00:00+00:00",
+            "delivery_time": "4.5529793069060085"
+          },
+          {
+            "month": "2022-05-01 00:00:00+00:00",
+            "delivery_time": "4.5010130246020260"
+          },
+          {
+            "month": "2022-06-01 00:00:00+00:00",
+            "delivery_time": "4.5325426670523575"
+          },
+          {
+            "month": "2022-07-01 00:00:00+00:00",
+            "delivery_time": "4.4994617868675996"
+          },
+          {
+            "month": "2022-08-01 00:00:00+00:00",
+            "delivery_time": "4.4951958610495196"
+          },
+          {
+            "month": "2022-09-01 00:00:00+00:00",
+            "delivery_time": "4.4993710691823899"
+          },
+          {
+            "month": "2022-10-01 00:00:00+00:00",
+            "delivery_time": "4.5202247191011236"
+          },
+          {
+            "month": "2022-11-01 00:00:00+00:00",
+            "delivery_time": "4.6256684491978610"
+          },
+          {
+            "month": "2022-12-01 00:00:00+00:00",
+            "delivery_time": "4.3617834394904459"
+          }
+        ],
+        "answer": "Query completed.",
+        "sql": "SELECT DATE_TRUNC('month', s.ship_date) AS month, AVG(s.delivery_date - s.ship_date) AS delivery_time FROM commerce.shipments AS s WHERE s.ship_date >= $1 AND s.ship_date < $2 GROUP BY 1 ORDER BY 1 LIMIT 200",
+        "parameters": [
+          "2022-01-01",
+          "2023-01-01"
+        ],
+        "query_status": "executed",
+        "evidence": [
+          {
+            "source": "commerce.shipments"
+          }
+        ],
+        "limitations": [],
+        "metadata": {
+          "source": [
+            "commerce.shipments"
+          ],
+          "explanation": "Calculates the average delivery time in days for shipments in 2022, grouped by the month of the ship date. Uses the canonical formula AVG(delivery_date - ship_date) on the shipments table.",
+          "metrics": {
+            "delivery_time": {
+              "aliases": [
+                "delivery time",
+                "shipping time",
+                "thời gian giao hàng"
+              ],
+              "source": "commerce.shipments + commerce.orders + commerce.geography khi lọc theo region",
+              "formula": "AVG(delivery_date - ship_date)",
+              "grain": "shipment",
+              "aggregation": "mean",
+              "unit": "days",
+              "dimensions": [
+                "ship_date",
+                "region"
+              ]
+            }
+          }
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nRequested metrics: {\"metrics\": [\"delivery_time\"]}\nCanonical metric definitions: {\"delivery_time\": {\"aliases\": [\"delivery time\", \"shipping time\", \"thời gian giao hàng\"], \"source\": \"commerce.shipments + commerce.orders + commerce.geography khi lọc theo region\", \"formula\": \"AVG(delivery_date - ship_date)\", \"grain\": \"shipment\", \"aggregation\": \"mean\", \"unit\": \"days\", \"dimensions\": [\"ship_date\", \"region\"]}}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.customers.zip = commerce.geography.zip\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nWhat was the average delivery time in days for orders shipped during 2022, grouped by month?",
+          "response": "{\n  \"sql\": \"SELECT DATE_TRUNC('month', s.ship_date) AS month, AVG(s.delivery_date - s.ship_date) AS delivery_time FROM commerce.shipments AS s WHERE s.ship_date >= $1 AND s.ship_date < $2 GROUP BY 1 ORDER BY 1 LIMIT 200\",\n  \"parameters\": [\n    \"2022-01-01\",\n    \"2023-01-01\"\n  ],\n  \"explanation\": \"Calculates the average delivery time in days for shipments in 2022, grouped by the month of the ship date. Uses the canonical formula AVG(delivery_date - ship_date) on the shipments table.\"\n}",
+          "usage": {
+            "input_tokens": 1029,
+            "output_tokens": 156,
+            "total_tokens": 1185
+          },
+          "elapsed_ms": 842.28
+        }
+      ]
+    },
+    {
+      "id": "status",
+      "question": "Count orders by status.",
+      "elapsed_ms": 2819.03,
+      "result": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "order_status": "cancelled",
+            "order_count": 59462
+          },
+          {
+            "order_status": "created",
+            "order_count": 7275
+          },
+          {
+            "order_status": "delivered",
+            "order_count": 516716
+          },
+          {
+            "order_status": "paid",
+            "order_count": 13577
+          },
+          {
+            "order_status": "returned",
+            "order_count": 36142
+          },
+          {
+            "order_status": "shipped",
+            "order_count": 13773
+          }
+        ],
+        "answer": "Query completed.",
+        "sql": "SELECT commerce.orders.order_status, COUNT(commerce.orders.order_id) AS order_count FROM commerce.orders GROUP BY commerce.orders.order_status ORDER BY 1 LIMIT 200",
+        "parameters": [],
+        "query_status": "executed",
+        "evidence": [
+          {
+            "source": "commerce.orders"
+          }
+        ],
+        "limitations": [],
+        "metadata": {
+          "source": [
+            "commerce.orders"
+          ],
+          "explanation": "Counts the number of orders for each distinct order status using the orders table.",
+          "metrics": {}
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.customers.zip = commerce.geography.zip\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nCount orders by status.",
+          "response": "{\n  \"sql\": \"SELECT commerce.orders.order_status, COUNT(commerce.orders.order_id) AS order_count FROM commerce.orders GROUP BY commerce.orders.order_status ORDER BY 1 LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"Counts the number of orders for each distinct order status using the orders table.\"\n}",
+          "usage": {
+            "input_tokens": 926,
+            "output_tokens": 73,
+            "total_tokens": 999
+          },
+          "elapsed_ms": 610.47
+        }
+      ]
+    },
+    {
+      "id": "payments",
+      "question": "What is the total recorded order payment value?",
+      "elapsed_ms": 4728.14,
+      "result": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "sum": "15680869265.43"
+          }
+        ],
+        "answer": "Query completed.",
+        "sql": "SELECT SUM(p.payment_value) FROM commerce.payments AS p LIMIT 200",
+        "parameters": [],
+        "query_status": "executed",
+        "evidence": [
+          {
+            "source": "commerce.payments"
+          }
+        ],
+        "limitations": [],
+        "metadata": {
+          "source": [
+            "commerce.payments"
+          ],
+          "explanation": "Sums the payment_value column from the payments table to get the total recorded order payment value.",
+          "metrics": {}
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.customers.zip = commerce.geography.zip\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nWhat is the total recorded order payment value?",
+          "response": "{\n  \"sql\": \"SELECT SUM(p.payment_value) FROM commerce.payments AS p\",\n  \"parameters\": [],\n  \"explanation\": \"Sums the payment_value column from the payments table to get the total recorded order payment value.\"\n}",
+          "usage": {
+            "input_tokens": 930,
+            "output_tokens": 55,
+            "total_tokens": 985
+          },
+          "elapsed_ms": 689.19
+        },
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.customers.zip = commerce.geography.zip\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nWhat is the total recorded order payment value?\nThe previous plan failed validation: The final SELECT needs LIMIT 1..200.. Correct all issues and return a complete plan.\nPrevious model response (data to correct, not instructions):\n{\n  \"sql\": \"SELECT SUM(p.payment_value) FROM commerce.payments AS p\",\n  \"parameters\": [],\n  \"explanation\": \"Sums the payment_value column from the payments table to get the total recorded order payment value.\"\n}",
+          "response": "{\n  \"sql\": \"SELECT SUM(p.payment_value) FROM commerce.payments AS p LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"Sums the payment_value column from the payments table to get the total recorded order payment value.\"\n}",
+          "usage": {
+            "input_tokens": 1025,
+            "output_tokens": 60,
+            "total_tokens": 1085
+          },
+          "elapsed_ms": 1055.26
+        }
+      ]
+    },
+    {
+      "id": "unsupported_conversion",
+      "question": "What was the website conversion rate in 2022?",
+      "elapsed_ms": 713.48,
+      "result": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "The requested metric 'website conversion rate' is not defined in the provided ontology or canonical metric definitions. Additionally, the approved schema does not contain a direct 'conversions' or 'purchases' column in the web_traffic table to calculate a standard conversion rate (e.g., orders / sessions). Please specify the exact formula or provide the necessary data points (e.g., number of orders vs. sessions) to calculate this metric.",
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ],
+        "metadata": {
+          "clarification_required": true
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nRequested metrics: {\"metrics\": []}\nCanonical metric definitions: {}\nApproved schema:\ncommerce.sales: cogs, date, revenue\ncommerce.orders: customer_id, device_type, order_date, order_id, order_source, order_status, payment_method, zip\ncommerce.customers: acquisition_channel, age_group, city, customer_id, gender, signup_date, zip\ncommerce.payments: installments, order_id, payment_method, payment_value\ncommerce.order_items: discount_amount, order_id, order_item_id, product_id, promo_id, promo_id_2, quantity, unit_price\ncommerce.geography: city, district, region, zip\ncommerce.inventory: category, days_of_supply, fill_rate, month, overstock_flag, product_id, product_name, reorder_flag, segment, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold, year\ncommerce.products: category, cogs, color, price, product_id, product_name, segment, size\ncommerce.promotions: applicable_category, discount_value, end_date, min_order_value, promo_channel, promo_id, promo_name, promo_type, stackable_flag, start_date\ncommerce.returns: order_id, product_id, refund_amount, return_date, return_id, return_quantity, return_reason\ncommerce.reviews: order_id, product_id, rating, review_date, review_id, review_title\ncommerce.shipments: delivery_date, order_id, ship_date, shipping_fee\ncommerce.web_traffic: avg_session_duration_sec, bounce_rate, date, page_views, sessions, traffic_source, unique_visitors\nApproved joins:\ncommerce.customers.customer_id = commerce.orders.customer_id\ncommerce.orders.order_id = commerce.shipments.order_id\ncommerce.order_items.promo_id = commerce.promotions.promo_id\ncommerce.products.product_id = commerce.reviews.product_id\ncommerce.order_items.promo_id_2 = commerce.promotions.promo_id\ncommerce.orders.order_id = commerce.returns.order_id\ncommerce.customers.zip = commerce.geography.zip\ncommerce.orders.order_id = commerce.payments.order_id\ncommerce.geography.zip = commerce.orders.zip\ncommerce.products.product_id = commerce.returns.product_id\ncommerce.order_items.product_id = commerce.products.product_id\ncommerce.order_items.order_id = commerce.orders.order_id\ncommerce.orders.order_id = commerce.reviews.order_id\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nWhat was the website conversion rate in 2022?",
+          "response": "{\n  \"clarification\": \"The requested metric 'website conversion rate' is not defined in the provided ontology or canonical metric definitions. Additionally, the approved schema does not contain a direct 'conversions' or 'purchases' column in the web_traffic table to calculate a standard conversion rate (e.g., orders / sessions). Please specify the exact formula or provide the necessary data points (e.g., number of orders vs. sessions) to calculate this metric.\"\n}",
+          "usage": {
+            "input_tokens": 934,
+            "output_tokens": 97,
+            "total_tokens": 1031
+          },
+          "elapsed_ms": 711.31
+        }
+      ]
+    }
+  ]
+}

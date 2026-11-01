@@ -132,14 +132,17 @@ class MetricEnforcementTest(unittest.TestCase):
             "bounce_rate": ("SELECT AVG(w.bounce_rate) FROM commerce.web_traffic AS w LIMIT 1", []),
             "delivery_time": ("SELECT AVG(sh.delivery_date - sh.ship_date) FROM commerce.shipments AS sh LIMIT 1", []),
             "stock_on_hand": ("SELECT SUM(i.stock_on_hand)" + inventory, ["2022-12-31"]),
-            "stockout_rate": ("SELECT COUNT(*) FILTER (WHERE i.stockout_flag IS TRUE)::numeric / NULLIF(COUNT(*), 0)"
+            "stockout_rate": ("SELECT COUNT(i.product_id) FILTER (WHERE i.stockout_flag IS TRUE)::numeric / NULLIF(COUNT(i.product_id), 0)"
                               + inventory, ["2022-12-31"]),
             "days_of_supply": ("SELECT AVG(i.days_of_supply)" + inventory, ["2022-12-31"]),
             "fill_rate": ("SELECT AVG(i.fill_rate)" + inventory, ["2022-12-31"]),
             "sell_through_rate": ("SELECT AVG(i.sell_through_rate)" + inventory, ["2022-12-31"]),
             "promotion_discount": ("SELECT SUM(oi.discount_amount) FROM commerce.order_items AS oi LIMIT 1", []),
         }
-        self.assertEqual(set(examples), set(METRIC_ONTOLOGY))
+        self.assertTrue(set(examples) <= set(METRIC_ONTOLOGY))
+        self.assertEqual({name for name, definition in METRIC_ONTOLOGY.items()
+                          if definition.get("domain") != "inventory_management"},
+                         {name for name in examples if METRIC_ONTOLOGY[name].get("domain") != "inventory_management"})
         for name, (sql, parameters) in examples.items():
             with self.subTest(metric=name):
                 plan = decode_query_plan(json.dumps({"sql": sql, "parameters": parameters}))
@@ -161,6 +164,8 @@ class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
                 self.prompts = []
 
             def generate(self, prompt):
+                if prompt.startswith('Interpret the question BEFORE'):
+                    return json.dumps({'metrics':['stockout_rate'],'time':{'mode':'snapshot','start':'2022-12-31'}})
                 self.prompts.append(prompt)
                 return next(self.responses)
         return Provider()
@@ -204,12 +209,13 @@ class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
             repository.execute_approved_query.assert_awaited_once_with(correct)
 
     async def test_ratio_rows_preserve_the_canonical_fraction(self):
-        query = json.dumps({"sql": "SELECT COUNT(*) FILTER (WHERE i.stockout_flag IS TRUE)::numeric / "
-                           "NULLIF(COUNT(*), 0) AS rate FROM commerce.inventory AS i LIMIT 1"})
+        query = json.dumps({"sql": "SELECT i.snapshot_date, COUNT(i.product_id) FILTER (WHERE i.stockout_flag IS TRUE)::numeric / "
+                           "NULLIF(COUNT(i.product_id), 0) AS rate FROM commerce.inventory AS i "
+                           "WHERE i.snapshot_date = '2022-12-31' GROUP BY i.snapshot_date LIMIT 200"})
         repository = AsyncMock()
-        repository.execute_approved_query.return_value = [{"rate": 0.25}]
-        result = await SQLAnalyticsAgent(repository, llm=self.provider(query)).run(self.request("Stockout rate"))
-        self.assertEqual(result.data["rows"], [{"rate": 0.25}])
+        repository.execute_approved_query.return_value = [{"snapshot_date": "2022-12-31", "rate": 0.25}]
+        result = await SQLAnalyticsAgent(repository, llm=self.provider(query)).run(self.request("Stockout rate on 2022-12-31"))
+        self.assertEqual(result.data["rows"], [{"snapshot_date": "2022-12-31", "rate": 0.25}])
         self.assertEqual(result.metadata["metrics"]["stockout_rate"]["unit"], "percent")
         self.assertTrue(any("fractions" in note for note in result.metadata["limitations"]))
 

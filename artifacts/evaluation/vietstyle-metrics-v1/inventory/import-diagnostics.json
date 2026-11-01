@@ -1,0 +1,26 @@
+{
+  "test_agents": {
+    "type": "ImportError",
+    "message": "cannot import name '_financial_retrieval_query' from 'core.agents.knowledge_agent' (C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\src\\core\\agents\\knowledge_agent.py)"
+  },
+  "test_commerce_knowledge_manifest": {
+    "type": "ModuleNotFoundError",
+    "message": "No module named 'tools.ingestion.generate_commerce_demo_policies'"
+  },
+  "test_document_processor": {
+    "type": "ModuleNotFoundError",
+    "message": "No module named 'document_processing.pipelines'"
+  },
+  "test_retrieval_callers": {
+    "type": "ImportError",
+    "message": "cannot import name '_RESPONSE_CACHE' from 'core.rag.rag_service' (C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\src\\core\\rag\\rag_service.py)"
+  },
+  "test_rag": {
+    "type": "ImportError",
+    "message": "cannot import name '_RESPONSE_CACHE' from 'core.rag.rag_service' (C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\src\\core\\rag\\rag_service.py)"
+  },
+  "test_metric_candidates": {
+    "type": "KeyError",
+    "message": "'source_labels'"
+  }
+}

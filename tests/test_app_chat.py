@@ -129,7 +129,9 @@ class ChatAPITest(unittest.TestCase):
             def __init__(self):
                 self.responses = [json.dumps({"sql": SQL, "parameters": []}), "Found product 42."]
 
-            def generate(self, _prompt):
+            def generate(self, prompt):
+                if prompt.startswith('Interpret the question BEFORE'):
+                    return json.dumps({'domain':'other'})
                 return self.responses.pop(0)
 
         with TestClient(create_app(

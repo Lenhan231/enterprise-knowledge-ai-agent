@@ -8,11 +8,13 @@ from datetime import date
 from typing import Any
 
 from sqlglot import exp, parse
-from sqlglot.errors import ParseError
+from sqlglot.errors import ParseError, TokenError
 
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
 from core.analytics.join_validation import validate_join_aggregations
-from core.prompts.sql import SQL_GENERATION_PROMPT, SQL_REPAIR_PROMPT
+from core.analytics.metric_validation import _single_snapshot
+from sqlglot.optimizer.scope import traverse_scope
+from core.prompts.sql import SQL_GENERATION_PROMPT, SQL_REPAIR_PROMPT, INVENTORY_SQL_INSTRUCTIONS
 
 
 MAX_RESULT_ROWS = 200
@@ -125,7 +127,7 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
     """Validate one bounded SELECT, including its nested SELECTs and CTEs."""
     try:
         statements = parse(sql, read="postgres")
-    except ParseError as error:
+    except (ParseError, TokenError) as error:
         raise SQLValidationError("SQL could not be parsed.") from error
     if len(statements) != 1 or not isinstance(statements[0], exp.Select):
         raise SQLValidationError("Exactly one SELECT statement is allowed.")
@@ -208,6 +210,7 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
             node = node.parent
         return node
 
+    select_scopes = {id(scope.expression): scope for scope in traverse_scope(tree)}
     for select in tree.find_all(exp.Select):
         inventory_sums = [
             aggregate for aggregate in select.find_all(exp.Sum)
@@ -219,22 +222,7 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
         ]
         if not inventory_sums:
             continue
-        group = select.args.get("group") or exp.Group()
-        snapshot_grouped = any(
-            relations.get(column.table.casefold(), (None,))[0] == "commerce.inventory"
-            and column.name.casefold() == "snapshot_date"
-            for column in group.find_all(exp.Column)
-        )
-        where = select.args.get("where") or exp.Where()
-        snapshot_filtered = any(
-            isinstance(column, exp.Column)
-            and relations.get(column.table.casefold(), (None,))[0] == "commerce.inventory"
-            and column.name.casefold() == "snapshot_date"
-            and isinstance(value, (exp.Parameter, exp.Literal))
-            for equality in where.find_all(exp.EQ)
-            for column, value in ((equality.this, equality.expression), (equality.expression, equality.this))
-        )
-        if not snapshot_grouped and not snapshot_filtered:
+        if not _single_snapshot([select_scopes[id(select)]], ()):
             raise SQLValidationError("Inventory stock cannot be summed across snapshots.")
 
     limit = tree.args.get("limit")
@@ -245,9 +233,17 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
     return ValidatedSQL(sql=sql, sources=tuple(dict.fromkeys(sources)))
 
 
+def parse_json_response(raw: str):
+    if isinstance(raw,str):
+        raw = raw.strip()
+        if raw.startswith('```json') and raw.endswith('```'):
+            raw = raw[7:-3].strip()
+    return json.loads(raw)
+
+
 def decode_query_plan(raw: str) -> QueryPlan:
     try:
-        payload = json.loads(raw)
+        payload = parse_json_response(raw)
     except (TypeError, json.JSONDecodeError) as error:
         raise SQLValidationError("The model did not return valid JSON.") from error
     if not isinstance(payload, dict):
@@ -307,15 +303,27 @@ def _date_parameter_indexes(sql: str) -> set[int]:
 
 def build_sql_prompt(
     question: str, *, validation_error: str | None = None, previous_response: str | None = None,
+    metric_names: set[str] | None = None, interpretation: dict | None = None,
 ) -> str:
-    schema = "\n".join(f"{table}: {', '.join(sorted(columns))}" for table, columns in APPROVED_COLUMNS.items())
-    joins = "\n".join(f"{left[0]}.{left[1]} = {right[0]}.{right[1]}" for join in APPROVED_JOINS
-                       for left, right in [sorted(join)])
-    functions = ", ".join(sorted(APPROVED_FUNCTIONS - {"AND"}))
-    metrics = sorted(resolve_metric_names(question))
+    metrics = sorted(resolve_metric_names(question) if metric_names is None else metric_names)
     definitions = {name: get_metric_definition(name) for name in metrics}
+    stored_fields = {}
+    if interpretation and interpretation.get('representation') == 'product':
+        stored_fields = {name: d.get('scalar_formula') or d['formula'].split(' within ')[0] for name,d in definitions.items()}
+        definitions = {name: {**d,'formula':stored_fields[name],'aggregation':'value'} for name,d in definitions.items()}
+    inventory = any(definition.get('domain') == 'inventory_management' for definition in definitions.values())
+    tables = {'commerce.inventory', 'commerce.products'} if inventory else set(APPROVED_COLUMNS)
+    prompt_columns = {table: set(columns) for table, columns in APPROVED_COLUMNS.items() if table in tables}
+    if inventory:
+        prompt_columns['commerce.inventory'] -= {'year', 'month', 'category', 'segment', 'product_name'}
+        prompt_columns['commerce.products'] -= {'price', 'cogs'}
+    schema = "\n".join(f"{table}: {', '.join(sorted(columns))}" for table, columns in prompt_columns.items())
+    joins = "\n".join(f"{left[0]}.{left[1]} = {right[0]}.{right[1]}" for join in APPROVED_JOINS
+                       for left, right in [sorted(join)] if left[0] in tables and right[0] in tables)
+    functions = ", ".join(sorted(APPROVED_FUNCTIONS - {"AND"}))
     return (
         SQL_GENERATION_PROMPT.format(
+            inventory_instructions=INVENTORY_SQL_INSTRUCTIONS if inventory else "",
             functions=functions,
             max_rows=MAX_RESULT_ROWS,
             metrics=json.dumps({'metrics': metrics}),
@@ -324,6 +332,19 @@ def build_sql_prompt(
             joins=joins,
             question=question,
         )
+        + ('\nStored projection fields: '+json.dumps(stored_fields)+
+           '. Select these directly from the inventory alias. Do not aggregate or GROUP BY in product representation. '
+           'Product identity may use inventory.product_id or the joined products.product_id.\n' if stored_fields else '')
+        + ('\nValidated interpretation: '+json.dumps(interpretation,ensure_ascii=False)+
+           '\nPreserve exactly these metrics, dimensions, source-row filters, date scope, output grain and ranking. '
+           'Project snapshot_date plus only the requested dimensions and metrics. Product representation uses stored scalar values. '
+           'Use GROUP BY qualified columns, ORDER BY positions, direct SELECT without CTE/HAVING/DISTINCT. '
+           'Use the declared ranking limit, otherwise LIMIT 200. For an inclusive date range use snapshot_date >= start '
+           'AND snapshot_date < the day AFTER end. For latest use the unfiltered MAX subquery. '
+           'Filters use field <operator> parameter (IN uses a list of parameters); do not add other restrictions.'
+           ' A concrete snapshot in the validated interpretation may have been resolved by the server from latest; '
+           'use that concrete date, not a MAX subquery, when time.mode is snapshot.'
+           if interpretation is not None else '')
         + (SQL_REPAIR_PROMPT.format(validation_error=validation_error, previous_response=previous_response)
            if validation_error is not None else "")
     )

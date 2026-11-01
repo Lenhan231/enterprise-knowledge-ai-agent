@@ -1,0 +1,8 @@
+{
+  "status": "timed_out",
+  "timeout_seconds": 150,
+  "source_ref": "78ddb20",
+  "elapsed_seconds": 150.86,
+  "offline_models": true,
+  "local_database_tests_disabled": true
+}

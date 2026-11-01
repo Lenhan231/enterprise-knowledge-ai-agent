@@ -2,6 +2,11 @@ const $ = (selector) => document.querySelector(selector);
 let activeTab = "knowledge";
 let currentUser = null;
 let knowledgeDocuments = [];
+let agentConversationId = crypto.randomUUID();
+let reportConversationId = crypto.randomUUID();
+let sessionTurns = [];
+let sessionGeneration = 0;
+let sessionSubject = null;
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
 }[char]));
@@ -521,12 +526,12 @@ function renderAnswerBody(answer) {
   return blocks.join("");
 }
 
-function renderAnswer(data, panel = $("#answer-panel")) {
+function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   panel.hidden = false;
   const citations = Array.isArray(data.citations) ? data.citations : [];
   const usedEvidenceFallback = Boolean(data.answer_fallback_reason || data.fallback);
   const responseTitle = ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Answer unavailable"})[data.status]
-    || (usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer");
+    || (data.ok === false ? "Answer unavailable" : usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer");
   const domainLabels = {
     inventory_allocation: "Inventory allocation",
     promotion_planning: "Promotion planning",
@@ -579,6 +584,22 @@ function renderAnswer(data, panel = $("#answer-panel")) {
   const limitations = Array.isArray(data.limitations) && data.limitations.length
     ? `<p class="analysis-caveat answer-provenance-note"><strong>Limits:</strong> ${data.limitations.map(escapeHtml).join(" · ")}</p>`
     : "";
+  const fallbackNotice = usedEvidenceFallback && !data.limitations?.length
+    ? '<p class="analysis-caveat answer-provenance-note" role="note"><strong>Evidence fallback.</strong> This is not successful model synthesis.</p>'
+    : "";
+  const sqlScope = data.context_used
+    ? (() => {
+      const scope = data.semantic_interpretation || {};
+      const time = scope.time || {};
+      const snapshot = time.start || (data.snapshot_dates || []).join(", ") || time.mode || "not reported";
+      const filters = (scope.filters || []).map((item) => `${item.field} ${item.operator} ${Array.isArray(item.value) ? item.value.join(", ") : item.value}`);
+      const snapshotLabel = data.historical_inventory ? "Historical snapshot" : "Snapshot";
+      return `<p class="analysis-caveat answer-provenance-note" role="status"><strong>Continuing the previous SQL scope.</strong> ${snapshotLabel}: ${escapeHtml(snapshot)}${filters.length ? ` · Filters: ${filters.map(escapeHtml).join("; ")}` : ""}</p>`;
+    })()
+    : "";
+  const routeDetails = data.selected_route || data.task_trace?.length
+    ? `<details class="agent-diagnostics"><summary>Run details</summary><p>Route: ${escapeHtml(data.selected_route || "not reported")}</p>${Array.isArray(data.task_trace) ? `<ul>${data.task_trace.map((task) => `<li>${escapeHtml(task.agent)} · ${escapeHtml(task.status)} · ${formatNumber(task.elapsed_ms)} ms${task.error_type ? ` · ${escapeHtml(task.error_type)}` : ""}</li>`).join("")}</ul>` : ""}</details>`
+    : "";
   panel.innerHTML = `
     <div class="answer-header-wrap">
       <div class="answer-heading">
@@ -586,7 +607,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
         <div><span class="eyebrow">${escapeHtml(({knowledge:"KNOWLEDGE AGENT",analytics:"ANALYTICS AGENT",sql_analytics:"ANALYTICS AGENT",dashboard:"INVENTORY AGENT",report:"REPORT AGENT",agentic:"AUTOMATIC ROUTER",hybrid:"KNOWLEDGE + ANALYTICS"})[data.agent] || "AGENT RESPONSE")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
       </div>
       <div class="answer-actions-bar">
-        <button type="button" class="action-btn" id="copy-answer-btn" title="Copy response text">Copy</button>
+        <button type="button" class="action-btn copy-answer-btn" title="Copy response text">Copy</button>
       </div>
     </div>
     ${domainNote}
@@ -594,6 +615,9 @@ function renderAnswer(data, panel = $("#answer-panel")) {
     ${referenceRetrievalNote}
     ${questionSqlFallbackNote}
     ${limitations}
+    ${fallbackNotice}
+    ${sqlScope}
+    ${routeDetails}
     ${tokenUsage}
     <div class="answer-text">${renderAnswerBody(data.answer)}</div>
     ${renderAgentInventoryDashboard(data.data?.dashboard)}
@@ -662,7 +686,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
         }).join("")}
       </div>` : ""}`;
 
-  const copyBtn = panel.querySelector("#copy-answer-btn");
+  const copyBtn = panel.querySelector(".copy-answer-btn");
   if (copyBtn) {
     copyBtn.addEventListener("click", async () => {
       try {
@@ -679,7 +703,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
     });
   }
 
-  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (shouldScroll) panel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderAgentInventoryDashboard(dashboard) {
@@ -717,22 +741,39 @@ async function loadInventorySnapshot() {
 }
 
 function renderAgentRows(data) {
-  const groups = [["Results", data], ...Object.entries(data || {}).filter(([, value]) => value && !Array.isArray(value) && typeof value === "object")];
+  const groups = Object.entries(data || {}).filter(([, value]) => value && !Array.isArray(value) && typeof value === "object");
+  if (Array.isArray(data?.rows)) groups.unshift(["Results", data]);
   return groups.map(([label, value]) => {
     const rows = value?.rows;
-    if (!Array.isArray(rows) || !rows.length || !rows.every((row) => row && typeof row === "object" && !Array.isArray(row))) return "";
-    const columns = Object.keys(rows[0]).slice(0, 12);
-    return `<section class="agent-data-result"><h4>${escapeHtml(label)}</h4><div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${rows.slice(0, 50).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`;
+    if (!Array.isArray(rows) && !value?.attempted_sql) return "";
+    const validRows = (rows || []).filter((row) => row && typeof row === "object" && !Array.isArray(row));
+    const columns = validRows.length ? Object.keys(validRows[0]).slice(0, 12) : [];
+    const executed = value.query_status === "executed";
+    const queryStatus = value.query_status
+      ? `<span class="query-status ${executed ? "is-executed" : "is-not-executed"}">${executed ? "Executed" : "Not executed · " + escapeHtml(value.query_status)}</span>`
+      : "";
+    const canShowRows = value.query_status == null || executed;
+    const table = canShowRows && validRows.length
+      ? `<div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${validRows.slice(0, 50).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`
+      : executed && Array.isArray(rows) ? '<p class="no-citations">The query ran and returned no rows.</p>' : "";
+    const diagnosticSql = value.attempted_sql || value.sql;
+    const parameters = Array.isArray(value.parameters) && value.parameters.length
+      ? `<p>Parameters: <code>${escapeHtml(JSON.stringify(value.parameters))}</code></p>`
+      : "";
+    const diagnostics = diagnosticSql || parameters
+      ? `<details><summary>${value.attempted_sql ? "Rejected query diagnostic" : executed ? "Executed query" : "Query details"}</summary>${diagnosticSql ? `<pre>${escapeHtml(diagnosticSql)}</pre>` : ""}${parameters}</details>`
+      : "";
+    return `<section class="agent-data-result"><h4>${escapeHtml(label.replace(/^task:/, "Task "))} ${queryStatus}</h4>${table}${diagnostics}</section>`;
   }).join("");
 }
 
-function renderAgentResult(result) {
+function renderAgentResult(result, panel = $("#answer-panel"), shouldScroll = true) {
   const citations = (result.evidence || []).map((item) => {
     const metadata = item.metadata || {};
     return { ...metadata, id: item.citation_id, title: item.source, source_type: item.source_type,
-      content: item.content, score: metadata.similarity_score };
+      excerpt: item.content || "", content: item.content, score: metadata.similarity_score };
   });
-  renderAnswer({ ...result.metadata, ...result, citations });
+  renderAnswer({ ...result, ...result.metadata, metadata: result.metadata, citations }, panel, shouldScroll);
 }
 
 function renderAgentMonitoring(data) {
@@ -772,9 +813,7 @@ async function api(path, options = {}) {
   headers["ngrok-skip-browser-warning"] = "1";
   const response = await fetch(path, { credentials: "same-origin", ...options, headers });
   if (response.status === 401 && path !== "/api/auth/login") {
-    $("#login-view").hidden = false;
-    $("#workspace").hidden = true;
-    $("#login-brand-sidebar").hidden = false;
+    clearExpiredSession();
     throw new Error("Sign in to continue");
   }
   let data;
@@ -794,7 +833,38 @@ async function api(path, options = {}) {
   return data;
 }
 
+function resetConversationState() {
+  agentConversationId = crypto.randomUUID();
+  reportConversationId = crypto.randomUUID();
+  sessionTurns = [];
+  $("#answer-panel").replaceChildren();
+  $("#answer-panel").hidden = true;
+  $("#report-agent-question").value = "";
+  $("#report-agent-template").value = "";
+  updateReportFormatVisibility();
+  $("#report-agent-status").textContent = "";
+  delete $("#report-agent-status").dataset.state;
+  $("#question").value = "";
+}
+
+function clearExpiredSession() {
+  sessionGeneration += 1;
+  sessionSubject = null;
+  currentUser = null;
+  resetConversationState();
+  $("#login-view").hidden = false;
+  $("#workspace").hidden = true;
+  $("#login-brand-sidebar").hidden = false;
+  $("#user-badge").hidden = true;
+  $("#logout-button").hidden = true;
+}
+
 async function loadWorkspace(user) {
+  if (sessionSubject !== user.username) {
+    sessionGeneration += 1;
+    sessionSubject = user.username;
+    resetConversationState();
+  }
   currentUser = user;
   $("#login-view").hidden = true;
   $("#login-brand-sidebar").hidden = true;
@@ -1041,11 +1111,8 @@ $("#login-form").addEventListener("submit", async (event) => {
 });
 
 $("#logout-button").addEventListener("click", async () => {
-  agentConversationId = crypto.randomUUID();
-  reportConversationId = crypto.randomUUID();
-  $("#answer-panel").hidden = true;
-  $("#answer-panel").textContent = "";
-  await api("/api/auth/logout", { method: "POST" });
+  clearExpiredSession();
+  await api("/api/auth/logout", { method: "POST" }).catch(() => {});
   $("#workspace").hidden = true;
   $("#login-view").hidden = false;
   $("#login-brand-sidebar").hidden = false;
@@ -1110,40 +1177,63 @@ $(".agent-grid").addEventListener("click", (event) => {
   }
 });
 
-let agentConversationId = crypto.randomUUID();
-let reportConversationId = crypto.randomUUID();
+function renderSessionTranscript(shouldScroll = false) {
+  const root = $("#answer-panel");
+  root.replaceChildren();
+  root.hidden = sessionTurns.length === 0;
+  for (const turn of sessionTurns) {
+    const entry = document.createElement("article");
+    entry.className = "chat-turn";
+    entry.dataset.turnId = turn.id;
+    entry.innerHTML = `<div class="chat-turn-question"><span>${escapeHtml(({auto:"AUTO",knowledge:"KNOWLEDGE",sql:"ANALYTICS"})[turn.mode] || turn.mode.toUpperCase())}</span><p>${escapeHtml(turn.question)}</p></div>`;
+    const response = document.createElement("div");
+    response.className = "answer-panel chat-turn-response";
+    entry.append(response);
+    root.append(entry);
+    if (turn.state === "pending") renderSkeletonAnswer(response, "Routing your request to the right agent...");
+    else if (turn.state === "error") response.innerHTML = `<p class="error-message">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
+    else if (turn.result) renderAgentResult(turn.result, response, false);
+  }
+  if (shouldScroll) root.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 $("#new-conversation").addEventListener("click", () => {
-  agentConversationId = crypto.randomUUID();
-  $("#answer-panel").hidden = true;
-  $("#answer-panel").textContent = "";
+  resetConversationState();
   $("#question").value = "";
 });
 
 $("#ask-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const requestConversationId = agentConversationId;
+  const requestGeneration = sessionGeneration;
+  const requestSubject = sessionSubject;
   const button = $("#ask-button");
   const question = $("#question").value.trim();
   if (!question) return;
+  const turn = { id: crypto.randomUUID(), mode: $("#agent-mode").value, question, state: "pending" };
+  sessionTurns.push(turn);
+  sessionTurns = sessionTurns.slice(-20);
+  renderSessionTranscript(true);
   button.disabled = true;
   button.innerHTML = "<span>Working...</span>";
-  const panel = $("#answer-panel");
-  renderSkeletonAnswer(panel, "Routing your request to the right agent...");
   try {
     const data = await api("/api/agents/chat", { method: "POST", body: JSON.stringify({
       question, agent_mode: $("#agent-mode").value, retrieval_method: "translated_hybrid_rerank",
       conversation_id: requestConversationId,
-    }) });
-    if (agentConversationId !== requestConversationId) return;
+    }), signal: AbortSignal.timeout(135_000) });
+    if (agentConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     $("#connection-status").textContent = "Agent services connected";
     $(".status-dot").classList.add("connected");
-    renderAgentResult(data);
+    turn.result = data;
+    turn.state = "complete";
   } catch (error) {
-    if (agentConversationId !== requestConversationId) return;
-    panel.innerHTML = '<p class="error-message">' + escapeHtml(error.message) + '. Please check service configuration or connection.</p>';
+    if (agentConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
+    turn.error = error.name === "TimeoutError" ? "The request timed out. No answer was received; try again or choose a specialist" : error.message;
+    turn.state = "error";
   } finally {
     button.disabled = false;
     button.innerHTML = "<span>Ask agent</span>";
+    if (sessionTurns.includes(turn)) renderSessionTranscript(false);
   }
 });
 
@@ -1158,6 +1248,8 @@ updateReportFormatVisibility();
 $("#report-agent-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const requestConversationId = reportConversationId;
+  const requestGeneration = sessionGeneration;
+  const requestSubject = sessionSubject;
   const button = $("#report-agent-submit");
   const status = $("#report-agent-status");
   const template = $("#report-agent-template").files[0];
@@ -1175,7 +1267,11 @@ $("#report-agent-form").addEventListener("submit", async (event) => {
       method: "POST", body: formData, credentials: "same-origin",
       headers: { "ngrok-skip-browser-warning": "1" },
     });
-    if (reportConversationId !== requestConversationId) return;
+    if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
+    if (response.status === 401) {
+      clearExpiredSession();
+      throw new Error("Sign in to continue");
+    }
     if (!response.ok) {
       let detail = "Report request failed (HTTP " + response.status + ")";
       try {
@@ -1208,7 +1304,7 @@ $("#report-agent-form").addEventListener("submit", async (event) => {
       ? "Partial report downloaded. Review its limitations before using it."
       : "Report generated and downloaded.";
   } catch (error) {
-    if (reportConversationId !== requestConversationId) return;
+    if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     status.dataset.state = "error";
     status.textContent = error.message;
   } finally {

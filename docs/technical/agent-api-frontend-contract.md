@@ -1,6 +1,6 @@
 # Agent chat API contract for the Vercel frontend
 
-Contract revision: 2026-10-29. Scope: unified Knowledge/SQL chat and Report source
+Contract revision: 2026-10-31. Scope: unified Knowledge/SQL chat, inventory SQL follow-ups, and Report source
 collection. Report and Inventory Dashboard retain separate, explicit interfaces. This contract describes
 the local implementation; publishing the frontend or changing Vercel settings is
 outside this change.
@@ -66,10 +66,86 @@ on New conversation, sign-out, and account change. Do not share IDs between user
 or put them in public URLs. Without an ID, requests are stateless.
 
 History is process-local and scoped to verified subject and current permission
-fingerprint: up to six exchanges, 12,000 retained characters, 30-minute idle expiry,
-and 100 conversations per process. Restarts, eviction, or another worker may lose
+fingerprint: Auto retains up to six exchanges; standalone SQL retains one bounded
+validated inventory scope and pending clarification, without rows, answers or SQL.
+Each store has a 12,000-character limit, 30-minute idle expiry,
+and capacity of 100 conversations per process. Restarts, eviction, or another worker may lose
 context. Handle a follow-up clarification normally; do not fabricate client-side
 history or silently reconstruct an answer from stale assistant text.
+
+### Standalone SQL follow-ups
+
+The HTTP request schema is unchanged. Send `agent_mode: "sql"` and reuse the
+conversation ID. SQL memory is isolated from Auto, Knowledge, Dashboard and Report,
+even when the same ID is used. Changing modes preserves the visible transcript;
+returning to SQL can resume its unexpired scope. Report keeps its own form and ID.
+
+Complete questions start fresh. Clear follow-ups inherit omitted metrics,
+dimensions, filters, date, representation and ranking. A filter on the same field
+replaces that field's conditions; explicit removal clears only named fields.
+Ambiguous references request clarification. Unsupported metrics remain blocked.
+Every calculation rechecks permissions and definitions and executes a fresh query.
+An executed zero-row result can establish scope; failed queries cannot replace
+the last accepted scope. A successful non-inventory SQL question clears that anchor.
+
+An explicit latest-snapshot request resolves the date once. Follow-ups keep that
+date until the user requests another snapshot or explicitly refreshes latest.
+Show the returned date as historical data, never as current inventory.
+
+Optional SQL metadata (absent fields must remain supported):
+
+```ts
+interface InventorySQLMetadata {
+  context_used?: boolean; // true when a follow-up/clarification used server scope
+  semantic_interpretation?: {
+    domain: "inventory" | "other";
+    metrics: string[];
+    dimensions: string[];
+    filters: Array<{
+      field: string;
+      operator: "eq" | "lt" | "lte" | "gt" | "gte" | "in";
+      value: string | number | boolean | Array<string | number | boolean>;
+    }>;
+    time: {mode: "latest" | "snapshot" | "range" | "history";
+           start?: string | null; end?: string | null} | null;
+    ranking: {metric: string; direction: "asc" | "desc"; limit: number} | null;
+    representation: "aggregate" | "product";
+    clarification?: string | null;
+  };
+  requested_time?: {mode: "latest" | "snapshot" | "range" | "history";
+                    start?: string | null; end?: string | null};
+  metric_catalog_version?: string;
+  historical_inventory?: boolean;
+  snapshot_dates?: string[]; // dates represented in rows; can be empty
+  metric_error_code?: string;
+}
+```
+
+Use `semantic_interpretation.time` for the accepted scope, including zero-row
+results. `requested_time` explains an explicit latest selector resolved by the
+server; it need not appear on later replies. When `context_used` is true, display
+the retained snapshot and filters beside that answer. Interpretation metadata is
+an explanation, not proof of execution: still check `data.query_status`.
+Never send this object back as trusted state or supply `_sql_context`; private
+metadata keys are rejected. Display returned clarification messages and reply
+through the same SQL conversation ID rather than constructing client-side patches.
+
+### Session transcript and reset behavior
+
+Keep the latest 20 exchanges in session memory, each with a stable turn ID,
+submitted mode, user question and original response payload (or transport error).
+Attach SQL, parameters, rows, sources, limitations and charts to that turn.
+Rerender saved payloads without submitting requests again. Scope download/widget
+keys to the turn ID and nested result path, so repeated answers do not collide.
+
+New conversation clears transcript, drafts, report outputs and both conversation
+IDs while retaining sign-in and selected mode. Sign-out/account change also clears
+authentication and user-specific state. Before submitting, capture the conversation
+ID and authenticated session identity/generation; discard late success or error
+responses if either changed. Clear the transcript before another user signs in.
+These are session records, not persistent history; no history-storage endpoint is
+introduced. This behavior is implemented in Streamlit; a separate frontend must
+implement its own transcript and stale-response guard.
 
 ## Response envelope
 

@@ -1,0 +1,19 @@
+{
+  "tests_run": 84,
+  "failures": [
+    "test_orchestration_clients.WebConversationTest.test_inflight_answer_cannot_cross_a_conversation_reset"
+  ],
+  "errors": [],
+  "skipped": [],
+  "modules": [
+    "test_sql_generation",
+    "test_sql_metric_definitions",
+    "test_sql_join_duplication",
+    "test_report_agent",
+    "test_report_reliability",
+    "test_report_orchestration",
+    "test_report_provider",
+    "test_orchestration_contracts",
+    "test_orchestration_clients"
+  ]
+}

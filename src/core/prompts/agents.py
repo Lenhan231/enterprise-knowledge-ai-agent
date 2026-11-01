@@ -39,6 +39,7 @@ ANALYTICS_SUMMARY_PROMPT = """Answer the user's question briefly using only the 
 Question: {question}
 Sources: {citations}
 Canonical metric definitions: {metrics}
+Validated query scope: {interpretation}
 Limitations: {limitations}
 Rows: {rows}"""
 

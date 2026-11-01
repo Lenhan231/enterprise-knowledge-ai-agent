@@ -128,6 +128,8 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
                 ]
 
             def generate(self, prompt):
+                if prompt.startswith("Interpret the question BEFORE"):
+                    return json.dumps({"domain":"other"})
                 self.prompts.append(prompt)
                 return self.responses.pop(0)
 
@@ -151,7 +153,9 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
         )
 
         class LLM:
-            def generate(self, _prompt):
+            def generate(self, prompt):
+                if prompt.startswith("Interpret the question BEFORE"):
+                    return json.dumps({"domain":"other"})
                 return json.dumps({"sql": sql, "parameters": ["2022-01-01", "2023-01-01"]})
 
         repository = AsyncMock()
@@ -168,7 +172,9 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
         sql = "SELECT p.category, COUNT(*) AS products FROM commerce.products AS p GROUP BY p.category LIMIT 20"
 
         class LLM:
-            def generate(self, _prompt):
+            def generate(self, prompt):
+                if prompt.startswith("Interpret the question BEFORE"):
+                    return json.dumps({"domain":"other"})
                 return json.dumps({"sql": sql, "parameters": [], "explanation": "Products by category"})
 
         repository = AsyncMock()
@@ -191,6 +197,8 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
                 self.prompts = []
 
             def generate(self, prompt):
+                if prompt.startswith("Interpret the question BEFORE"):
+                    return json.dumps({"domain":"other"})
                 self.prompts.append(prompt)
                 return self.responses.pop(0)
 
@@ -215,7 +223,9 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
             def __init__(self):
                 self.calls = 0
 
-            def generate(self, _prompt):
+            def generate(self, prompt):
+                if prompt.startswith("Interpret the question BEFORE"):
+                    return json.dumps({"domain":"other"})
                 self.calls += 1
                 if self.calls == 1:
                     return json.dumps({"sql": sql, "parameters": []})
@@ -241,7 +251,9 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_empty_results_and_database_failures_are_explicit(self):
         class LLM:
-            def generate(self, _prompt):
+            def generate(self, prompt):
+                if prompt.startswith("Interpret the question BEFORE"):
+                    return json.dumps({"domain":"other"})
                 return json.dumps({"sql": "SELECT p.product_id FROM commerce.products AS p LIMIT 20",
                                    "parameters": []})
 
@@ -264,7 +276,9 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_unsafe_generated_query_never_reaches_repository(self):
         class LLM:
-            def generate(self, _prompt):
+            def generate(self, prompt):
+                if prompt.startswith("Interpret the question BEFORE"):
+                    return json.dumps({"domain":"other"})
                 return json.dumps({"sql": "DELETE FROM commerce.products", "parameters": []})
 
         repository = AsyncMock()

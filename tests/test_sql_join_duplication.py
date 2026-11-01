@@ -106,6 +106,8 @@ class JoinRepairTest(unittest.IsolatedAsyncioTestCase):
     async def test_repeated_unsafe_plan_never_executes(self):
         class Provider:
             def generate(self, prompt):
+                if prompt.startswith("Interpret the question BEFORE"):
+                    return json.dumps({"domain":"other"})
                 return json.dumps({'sql': f'SELECT SUM(p.payment_value) AS total {JOIN} LIMIT 1'})
         repository = AsyncMock()
         result = await SQLAnalyticsAgent(repository, llm=Provider()).run(AgentRequest(
@@ -119,6 +121,8 @@ class JoinRepairTest(unittest.IsolatedAsyncioTestCase):
         responses = iter(json.dumps({'sql': sql}) for sql in (unsafe, safe))
         class Provider:
             def generate(self, prompt):
+                if prompt.startswith("Interpret the question BEFORE"):
+                    return json.dumps({"domain":"other"})
                 return next(responses)
         repository = AsyncMock()
         repository.execute_approved_query.return_value = [{'total': 200}]

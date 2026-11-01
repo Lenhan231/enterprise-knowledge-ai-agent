@@ -3,7 +3,6 @@
 ELEMENT_LABELS = (
     "title",
     "title_table",
-    "section_header",
     "text",
     "footnote",
     "document_index",
@@ -17,6 +16,7 @@ ELEMENT_LABELS = (
 _LABEL_SET = frozenset(ELEMENT_LABELS)
 
 _SOURCE_LABELS = {
+    "section_header": "title",
     "table_caption": "title_table",
     "table_title": "title_table",
     "picture": "figure",

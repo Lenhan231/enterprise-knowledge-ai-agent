@@ -12,6 +12,7 @@ from typing import Any
 from .digital_born.pdf import has_embedded_raster_images, has_native_text_on_every_page
 from .result_mapper import map_result
 from .converters import get_converter
+from .chart_recognition import recognize_chart_regions
 from .scanned.embedded_images import process_embedded_images
 
 _OFFICE_FORMATS = {
@@ -67,6 +68,10 @@ class DoclingProcessor:
             "docling_ocr_engine": str(self.config.get(
                 "docling_ocr_engine", os.environ.get("DOCUMENT_PROCESSING_OCR_ENGINE", "tesseract"),
             )).lower(),
+            "docling_layout_model": "PaddleOCR PP-DocLayout_plus-L",
+            "docling_layout_score_threshold": float(
+                self.config.get("docling_layout_score_threshold", 0.25)
+            ),
         }
         converter = get_converter(options)
 
@@ -105,6 +110,9 @@ class DoclingProcessor:
             ocr_enabled=scan_embedded_images,
             docling_version=docling_version,
         )
+        chart_recognition_results = recognize_chart_regions(
+            result.document, processor_config
+        )
 
         mapped = map_result(
             result,
@@ -115,6 +123,7 @@ class DoclingProcessor:
             source_format,
             source_bytes,
             embedded_image_results,
+            chart_recognition_results=chart_recognition_results,
         )
         if source_format == "pdf":
             mapped["metadata"].update({
@@ -147,11 +156,10 @@ class DoclingProcessor:
     def _pipeline_options(self, do_ocr, scan_embedded_images, generate_page_images):
         from docling.datamodel.accelerator_options import AcceleratorDevice, AcceleratorOptions
         from docling.datamodel.pipeline_options import (
-            LayoutObjectDetectionOptions, OcrAutoOptions, PdfPipelineOptions,
+            OcrAutoOptions, PdfPipelineOptions,
             TableFormerMode, TableStructureOptions, TesseractCliOcrOptions,
         )
-        from docling.datamodel.object_detection_engine_options import TransformersObjectDetectionEngineOptions
-        from docling.datamodel.stage_model_specs import ObjectDetectionModelSpec
+        from .layout_model import PPDocLayoutOptions, register_pp_doclayout
 
         device = AcceleratorDevice.CUDA if self.config.get("docling_device") == "cuda" else AcceleratorDevice.CPU
         ocr_engine = str(
@@ -178,6 +186,8 @@ class DoclingProcessor:
             )
         else:
             raise ValueError(f"Unsupported Docling OCR engine: {ocr_engine}")
+        layout_threshold = float(self.config.get("docling_layout_score_threshold", 0.25))
+        register_pp_doclayout()
         return PdfPipelineOptions(
             accelerator_options=AcceleratorOptions(
                 device=device,
@@ -187,13 +197,7 @@ class DoclingProcessor:
             do_table_structure=bool(self.config.get("docling_table_structure", True)),
             generate_page_images=generate_page_images,
             images_scale=1.0,
-            layout_options=LayoutObjectDetectionOptions(
-                engine_options=TransformersObjectDetectionEngineOptions(score_threshold=0.4),
-                model_spec=ObjectDetectionModelSpec(
-                    name="layout_heron",
-                    repo_id="docling-project/docling-layout-heron",
-                )
-            ),
+            layout_options=PPDocLayoutOptions(score_threshold=layout_threshold),
             table_structure_options=TableStructureOptions(
                 mode=TableFormerMode.ACCURATE,
                 do_cell_matching=True,

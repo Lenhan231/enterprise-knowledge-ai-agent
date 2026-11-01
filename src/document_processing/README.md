@@ -11,10 +11,11 @@ Shared provenance fields are listed in [`docs/metadata.md`](docs/metadata.md).
 
 ```text
 DocumentProcessor.process(file)
-    └── DoclingProcessor (format router)
-          ├── native document conversion → {elements, tables}
-          └── scanned/embedded_images → OCR selected PDF/Office pictures only
-                └── result_mapper → {elements, tables}
+    └── DoclingProcessor
+          ├── PP-DocLayout_plus-L → Docling layout regions
+          ├── Docling OCR + TableFormer → {elements, tables}
+          ├── detected chart bbox → exact crop → PaddleOCR-VL v1.5
+          └── result_mapper → {elements, tables}
     └── common cleanup + provenance
 
 application → core.chunking → persist chunks/tables
@@ -29,10 +30,17 @@ handle chunking, tokenization, embeddings, or retrieval indexing.
 | Path | Responsibility |
 | --- | --- |
 | `document_processor.py` | Route supported files to Docling; normalize output and provenance. |
-| `docling_adapter/processor.py` | Route native document conversion and scanned embedded images. |
+| `docling_adapter/processor.py` | Configure Docling, layout detection, chart recognition, and scanned embedded images. |
+| `docling_adapter/layout_model.py` | Adapt PP-DocLayout_plus-L detections into Docling layout clusters. |
+| `docling_adapter/chart_recognition.py` | Recognize chart blocks in exact detected chart boxes. |
 | `docling_adapter/digital_born/` | Native PDF detection and DOCX structure enrichment. |
 | `docling_adapter/scanned/` | Layout/OCR flow for selected raster images embedded in PDFs and Office documents. |
 | `docling_adapter/result_mapper.py` | Normalize native and scanned results into shared elements and tables. |
+
+Chart boxes are cropped exactly, without padding, and sent to PaddleOCR-VL
+v1.5. Its chart block text is attached to the existing `figure` element;
+captions remain separate Docling elements. The model loads only when a chart
+is detected.
 `pipeline_id` records the configured parser engine; `parser` identifies the
 component that produced an element or table. See [`docs/metadata.md`](docs/metadata.md).
 

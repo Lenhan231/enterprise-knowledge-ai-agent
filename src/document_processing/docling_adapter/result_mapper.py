@@ -22,6 +22,7 @@ def map_result(
     source_bytes: bytes | None = None,
     embedded_image_results: dict[int, dict[str, Any]] | None = None,
     preserve_chart_items: bool = False,
+    chart_recognition_results: dict[int, dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     """Normalize Docling items, provenance, structured tables, and parser metadata."""
     elements: list[dict[str, Any]] = []
@@ -55,6 +56,9 @@ def map_result(
             if furniture_label:
                 element_label = furniture_label
         text = str(getattr(item, "text", "") or "").strip()
+        chart_result = (chart_recognition_results or {}).get(id(item))
+        if label == "chart" and chart_result and chart_result.get("text"):
+            text = chart_result["text"].strip()
         provenance = next(iter(getattr(item, "prov", []) or []), None)
         page_number = int(provenance.page_no) if provenance is not None else None
         page = result.document.pages.get(page_number) if page_number is not None else None
@@ -78,6 +82,13 @@ def map_result(
                 else "docling.native"
             ),
         }
+        if label == "chart" and chart_result and chart_result.get("text"):
+            base_metadata.update({
+                "parser": "paddleocr_vl",
+                "text_extraction_method": "paddleocr_vl.chart_recognition",
+                "chart_recognition_model": chart_result.get("model"),
+                "chart_recognition_input": chart_result.get("input"),
+            })
 
         image_result = (embedded_image_results or {}).get(id(item))
         if image_result is not None:
@@ -241,8 +252,8 @@ def map_result(
             continue
         if source_format == "docx" and docx_text_key(text) in layout_table_cell_texts:
             continue
-        if element_label in {"title", "section_header"}:
-            level = 0 if element_label == "title" else int(getattr(item, "level", 1))
+        if element_label == "title":
+            level = 0 if label != "section_header" else int(getattr(item, "level", 1))
             headings_by_level = {key: value for key, value in headings_by_level.items() if key < level}
             headings_by_level[level] = text
             section_path = [headings_by_level[key] for key in sorted(headings_by_level)]
@@ -288,6 +299,10 @@ def map_result(
         "tables": tables,
         "metadata": {
             "docling_version": docling_version,
+            **({
+                "layout_model": config["docling_layout_model"],
+                "layout_score_threshold": config["docling_layout_score_threshold"],
+            } if config.get("docling_layout_model") else {}),
             **({"ocr_cleanup": cleanup_diagnostics} if cleanup_diagnostics else {}),
             **({"table_dash_recovery": dash_recovery} if dash_recovery else {}),
         },

@@ -1476,7 +1476,10 @@ dependencies = [
 [package.optional-dependencies]
 docling = [
     { name = "docling" },
+    { name = "langchain-text-splitters" },
     { name = "opencv-python-headless" },
+    { name = "paddleocr", extra = ["doc-parser"] },
+    { name = "paddlepaddle" },
 ]
 document-processing-ui = [
     { name = "streamlit" },
@@ -1508,11 +1511,14 @@ requires-dist = [
     { name = "langchain-core", specifier = "==1.4.0" },
     { name = "langchain-experimental", specifier = "==0.4.2" },
     { name = "langchain-huggingface", specifier = ">=1.2.2" },
+    { name = "langchain-text-splitters", marker = "extra == 'docling'", specifier = ">=1.0.0" },
     { name = "langgraph", specifier = ">=1.2.4" },
     { name = "numpy", specifier = ">=2.4.6" },
     { name = "openai", specifier = "==2.41.0" },
     { name = "opencv-python-headless", marker = "extra == 'docling'" },
     { name = "paddleocr", marker = "extra == 'ocr-paddle'", specifier = ">=3.0.3" },
+    { name = "paddleocr", extras = ["doc-parser"], marker = "extra == 'docling'", specifier = "==3.4.1" },
+    { name = "paddlepaddle", marker = "extra == 'docling'", specifier = "==3.3.1" },
     { name = "paddlepaddle", marker = "extra == 'ocr-paddle'", specifier = ">=3.3.1" },
     { name = "paddlex", extras = ["ocr"], marker = "extra == 'ocr-paddle'", specifier = "==3.4.3" },
     { name = "pgvector", specifier = ">=0.5.0" },
@@ -3788,6 +3794,11 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/11/93/643d26b16c9709e0eeddf750118e79d92ceddab3b7ed0f5ed97e662dd6b6/paddleocr-3.4.1-py3-none-any.whl", hash = "sha256:4538431f10cb9d7741caab5bf4e456f4da1ec0aa74eee93d11d5eba65fb66c1e", size = 88113, upload-time = "2026-04-14T05:48:05.492Z" },
 ]
 
+[package.optional-dependencies]
+doc-parser = [
+    { name = "paddlex", extra = ["genai-client", "ocr"] },
+]
+
 [[package]]
 name = "paddlepaddle"
 version = "3.3.1"
@@ -3847,6 +3858,9 @@ wheels = [
 ]
 
 [package.optional-dependencies]
+genai-client = [
+    { name = "openai" },
+]
 ocr = [
     { name = "beautifulsoup4" },
     { name = "einops" },

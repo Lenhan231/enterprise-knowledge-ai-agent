@@ -38,7 +38,7 @@ dependencies = [
 [project.optional-dependencies]
 ocr-paddle = ["paddleocr>=3.0.3", "paddlepaddle>=3.3.1", "paddlex[ocr]==3.4.3"]
 layout-yolo = ["doclayout-yolo==0.0.4"]
-docling = ["docling==2.129.0", "opencv-python-headless"]
+docling = ["docling==2.129.0", "opencv-python-headless", "paddleocr[doc-parser]==3.4.1", "paddlepaddle==3.3.1", "langchain-text-splitters>=1.0.0"]
 document-processing-ui = ["streamlit>=1.40,<2"]
 evaluation = [
     "grits-metric==0.6.1",

@@ -37,8 +37,8 @@ identifies the component that produced the element or table.
 
 Docling handles supported PDF, Office, CSV, TXT, Markdown, and image inputs.
 
-The production container uses CPU, 1.0 image scale, Heron layout detection at
-score threshold 0.40, RapidOCR text-line detection, VietOCR `vgg_seq2seq`
+The production container uses CPU, 1.0 image scale, PaddleOCR
+PP-DocLayout_plus-L layout detection at score threshold 0.25, RapidOCR text-line detection, VietOCR `vgg_seq2seq`
 recognition (greedy, maximum width 512), and TableFormer Accurate with cell
 matching. Tesseract OSD checks each OCR crop's orientation; Tesseract OCR can be
 selected with `DOCUMENT_PROCESSING_OCR_ENGINE=tesseract`. Production defaults to
@@ -46,6 +46,13 @@ two CPU threads; callers such as Upload Test may override the device, OCR
 engine, table stage, and thread count. Page-level auto-rotation from the
 benchmark harness is not yet applied in production; source-page geometry would
 need a rotation mapping.
+
+When layout detection returns a chart region, the parser crops that exact
+bbox, without padding, and sends it to PaddleOCR-VL v1.5 with chart recognition
+enabled. Only the returned `chart` block is attached as text to the existing
+`figure` element; captions remain separate Docling elements. The model loads
+on the first detected chart and stays cached for later requests. Set
+`docling_chart_recognition=false` in parser config to skip chart recognition.
 
 OCR post-processing drops exact normalized duplicate lines from overlapping
 OCR regions at bbox IoU 0.60. It removes only clear non-table artifacts such as

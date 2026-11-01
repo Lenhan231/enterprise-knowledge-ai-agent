@@ -12,7 +12,7 @@ RUN uv pip install --no-cache --no-deps "setuptools<81"
 RUN uv pip install --no-cache -c /constraints.txt pymupdf
 RUN .venv/bin/python -c "import cv2; from docling.document_converter import DocumentConverter; from paddleocr import LayoutDetection, PaddleOCRVL; from vietocr.tool.predictor import Predictor"
 COPY src ./src
-ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH="/app/src" PYTHONUNBUFFERED="1" HF_HOME="/models" PADDLE_PDX_HOME="/models/paddlex"
+ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH="/app/src" PYTHONUNBUFFERED="1" HF_HOME="/models" PADDLE_PDX_CACHE_HOME="/models/paddlex"
 EXPOSE 8000
 ENV DOCUMENT_PROCESSING_OCR_ENGINE="vietocr"
 ENV SERVICE_KIND="document-processing" EMBEDDING_BACKEND="local" RERANKER_ALLOW_DOWNLOAD="1"

@@ -49,7 +49,7 @@ services:
     environment:
       <<: *internal-env
       DOCLING_CACHE_DIR: /models/docling
-      PADDLE_PDX_HOME: /models/paddlex
+      PADDLE_PDX_CACHE_HOME: /models/paddlex
     volumes: ["document_model_cache:/models"]
 
   chunking:

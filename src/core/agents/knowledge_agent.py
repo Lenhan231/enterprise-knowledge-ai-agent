@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 from core.agents.base import BaseAgent
 from core.models.agents import (
@@ -41,6 +42,7 @@ class KnowledgeAgent(BaseAgent):
         result = await run_sync(
             self.rag.generate_answer,
             request.question,
+            decompose=os.getenv("KNOWLEDGE_MULTIQUERY_ENABLED", "0") == "1",
             roles=sorted(request.identity.document_roles) if request.identity and request.identity.document_roles else None,
             retrieval_method=request.metadata.get("retrieval_method", "translated_hybrid_rerank"),
         )

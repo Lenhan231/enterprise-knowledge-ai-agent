@@ -88,7 +88,6 @@ def process_embedded_images(
                 True,
                 docling_version,
                 "pdf",
-                preserve_chart_items=True,
             )
             for page_index, (image_key, _image) in enumerate(batch, 1):
                 image_outputs[image_key] = {

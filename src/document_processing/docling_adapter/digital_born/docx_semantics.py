@@ -31,7 +31,7 @@ def apply_docx_semantics(result: dict[str, Any], source_bytes: bytes | None) -> 
         style_id = str(getattr(style, "style_id", "") or "")
         style_name = str(getattr(style, "name", "") or "")
         paragraph_properties = paragraph._p.pPr
-        style_properties = style._element.pPr
+        style_properties = getattr(getattr(style, "_element", None), "pPr", None)
         outline_level = _outline_level(paragraph_properties, qn)
         if outline_level is None:
             outline_level = _outline_level(style_properties, qn)
@@ -95,7 +95,7 @@ def apply_docx_semantics(result: dict[str, Any], source_bytes: bytes | None) -> 
             section_path = section_path[: heading_level - 1] + [str(element.get("text") or "")]
             metadata.update({
                 "element_type": "title",
-                "layout_type": "section_header",
+                "layout_type": "title",
                 "heading_level": heading_level,
             })
         elif hint["centered_title"]:

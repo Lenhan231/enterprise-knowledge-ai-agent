@@ -5,7 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from document_processing.docling_adapter.processor import DoclingProcessor
 from document_processing.element_taxonomy import normalize_element_label
 
 SUPPORTED_FORMATS = frozenset({
@@ -25,12 +24,32 @@ class DocumentProcessor:
         suffix = Path(filename).suffix.lower()
         if suffix not in self.SUPPORTED:
             raise ValueError(f"Unsupported document format: {suffix or 'unknown'}")
-        common = {**metadata, "filename": Path(filename).name, "format": suffix[1:].upper()}
-        engine = self.config.get("parser_engine", "docling")
-        if engine != "docling":
-            raise ValueError(f"Unsupported parser pipeline: {engine}")
-        processor_config = {**self.config, "parser_engine": engine}
-        result = DoclingProcessor(processor_config).process(content, None, {"content": content, "metadata": common})
+        intent = str(self.config.get("intent", "document")).strip().lower()
+        if intent not in {"document", "invoice"}:
+            raise ValueError(f"Unsupported document intent: {intent}")
+        common = {
+            **metadata,
+            "filename": Path(filename).name,
+            "format": suffix[1:].upper(),
+            "intent": intent,
+        }
+        if intent == "invoice":
+            from document_processing.invoice.processor import VinternInvoiceProcessor
+
+            engine = "vintern_invoice"
+            result = VinternInvoiceProcessor(self.config).process(
+                filename, content, common
+            )
+        else:
+            engine = str(self.config.get("parser_engine", "docling"))
+            if engine != "docling":
+                raise ValueError(f"Unsupported parser pipeline: {engine}")
+            from document_processing.docling_adapter.processor import DoclingProcessor
+
+            processor_config = {**self.config, "parser_engine": engine}
+            result = DoclingProcessor(processor_config).process(
+                content, None, {"content": content, "metadata": common}
+            )
         elements = result.get("elements", [])
         tables = result.get("tables", [])
         if suffix in {".png", ".jpg", ".jpeg"}:

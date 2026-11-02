@@ -3,29 +3,32 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app/src \
+    HF_HOME=/models \
+    PADDLE_PDX_CACHE_HOME=/models/paddlex \
     DOCUMENT_PROCESSING_OCR_ENGINE=vietocr \
-    HF_HOME=/root/.cache/huggingface
+    SERVICE_KIND=document-processing \
+    EMBEDDING_BACKEND=local \
+    RERANKER_ALLOW_DOWNLOAD=1
 
 WORKDIR /app
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        tesseract-ocr \
-        tesseract-ocr-eng \
-        tesseract-ocr-osd \
-        tesseract-ocr-vie \
+        libgomp1 libgl1 libglib2.0-0 \
+        tesseract-ocr tesseract-ocr-eng tesseract-ocr-osd tesseract-ocr-vie \
     && rm -rf /var/lib/apt/lists/* \
     && python -m pip install --no-cache-dir --upgrade pip \
     && python -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu \
-        "torch==2.10.0" \
-        "torchvision==0.25.0" \
+        "torch==2.10.0" "torchvision==0.25.0" \
     && python -m pip install --no-cache-dir \
-        "docling==2.129.0" \
-        "rapidocr==3.9.2" \
-        "onnxruntime>=1.18,<2" \
-        "vietocr==0.3.13" \
-        "opencv-python-headless"
+        "fastapi>=0.115" "uvicorn>=0.30" \
+        "docling==2.129.0" "rapidocr==3.9.2" "onnxruntime>=1.18,<2" \
+        "paddlepaddle==3.3.1" "paddleocr[doc-parser]==3.7.0" \
+        "setuptools<81" "langchain-text-splitters>=1.0.0" \
+        "vietocr==0.3.13" "opencv-python-headless"
 
-COPY src/document_processing /app/src/document_processing
+COPY src ./src
 
-CMD ["python", "-c", "from docling.document_converter import DocumentConverter; from vietocr.tool.predictor import Predictor; from document_processing.document_processor import DocumentProcessor; print('PASS: Docling, VietOCR, and document_processing imports')"]
+EXPOSE 8000
+
+CMD ["uvicorn", "core.services.runtime:app", "--host", "0.0.0.0", "--port", "8000"]

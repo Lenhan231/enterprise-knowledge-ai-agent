@@ -37,10 +37,14 @@ identifies the component that produced the element or table.
 
 Docling handles supported PDF, Office, CSV, TXT, Markdown, and image inputs.
 
-The production container uses CPU, 1.0 image scale, Heron layout detection at
-score threshold 0.40, RapidOCR text-line detection, VietOCR `vgg_seq2seq`
-recognition (greedy, maximum width 512), and TableFormer Accurate with cell
-matching. Tesseract OSD checks each OCR crop's orientation; Tesseract OCR can be
+The production container uses CPU, 1.0 image scale, PaddleOCR 3.7.0 with
+PaddlePaddle 3.3.1 for PP-DocLayoutV3 layout detection at score threshold
+0.25. CPU oneDNN acceleration is disabled to avoid a PaddlePaddle 3.3.1 PIR
+runtime failure. The remaining stages are RapidOCR text-line detection, VietOCR
+`vgg_seq2seq` recognition (greedy, maximum width 512), and TableFormer Accurate
+with cell matching. PP-DocLayoutV3 supplies Docling's
+layout clusters; OCR and table structure continue through the existing Docling
+stages. Tesseract OSD checks each OCR crop's orientation; Tesseract OCR can be
 selected with `DOCUMENT_PROCESSING_OCR_ENGINE=tesseract`. Production defaults to
 two CPU threads; callers such as Upload Test may override the device, OCR
 engine, table stage, and thread count. Page-level auto-rotation from the
@@ -57,13 +61,11 @@ tables, a source-image check can restore a dash in an otherwise empty 1×1 cell.
 These heuristics are conservative and based on the reviewed pilot pages; they
 are not a general handwriting or decoration classifier.
 
-PDFs with at least 100 non-whitespace native text characters on every page are
-classified as digital-born and bypass OCR. Other PDFs use the configured OCR
-setting; the selected route and effective OCR state are included in parser
-result metadata. For digital-born PDFs, detected raster pictures are cropped
-and sent through OCR separately; their recognized boxes are mapped back onto
-the source page. Office files similarly keep native text and send embedded
-pictures through the scanned-image path.
+All PDFs use full-page OCR and ignore native text cells, since character count
+alone does not detect broken legacy font encodings such as VNI. PDF images are
+covered by the same page OCR pass; there is no second embedded-image OCR pass.
+The OCR toggle applies to standalone images and embedded Office pictures.
+Office files keep their native text path.
 
 The authoritative supported extension list is `SUPPORTED_FORMATS` in
 `document_processor.py`.

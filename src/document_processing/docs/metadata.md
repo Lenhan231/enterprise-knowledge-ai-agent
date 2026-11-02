@@ -62,6 +62,14 @@ production upload.
 Parser-specific fields are optional extensions to the shared fields. They must
 not replace or rename shared provenance keys.
 
+The Docling parser may also return a top-level `layout_detections` list for raw
+PP-DocLayoutV3 output. Each item contains `page_number`, the model's source
+`label`, `score`, page-space `bbox`, and the bbox coordinate convention. These
+raw detections retain the model's 25 classes for review; normalized `elements`
+continue to use the shared element taxonomy.
+V3 uses `figure_title` for figure, table, and chart titles; there is no distinct
+`table_title` source label.
+
 | Parser path | Example metadata |
 | --- | --- |
 | Default PDF | `parser="pymupdf"`, OCR method/settings when OCR was used, PDF page and table metadata. |

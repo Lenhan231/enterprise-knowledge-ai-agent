@@ -72,5 +72,11 @@
     "failures": 11,
     "errors": 51,
     "skipped": 15
+  },
+  "focused_checks": {
+    "run": 19,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
   }
 }

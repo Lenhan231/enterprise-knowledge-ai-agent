@@ -16,33 +16,33 @@
     "faithfulness": {
       "mean": 0.8449971739678525,
       "scored": 4,
-      "not_applicable": 25,
+      "not_applicable": 26,
       "evaluator_errors": 0,
-      "pending": 1
+      "pending": 0
     },
     "factual_correctness": {
-      "mean": 0.07172413793103448,
-      "scored": 29,
+      "mean": 0.06933333333333333,
+      "scored": 30,
       "not_applicable": 0,
       "evaluator_errors": 0,
-      "pending": 1
+      "pending": 0
     },
     "numerical_accuracy": {
       "mean": 1.0,
       "scored": 3,
-      "not_applicable": 26,
+      "not_applicable": 27,
       "evaluator_errors": 0,
-      "pending": 1,
+      "pending": 0,
       "verified_claims": 75,
       "unverified_claims": 206,
       "verification_coverage": 0.2669039145907473
     },
     "report_completeness": {
-      "mean": 0.09482758620689655,
-      "scored": 29,
+      "mean": 0.09166666666666666,
+      "scored": 30,
       "not_applicable": 0,
       "evaluator_errors": 0,
-      "pending": 1
+      "pending": 0
     }
   }
 }

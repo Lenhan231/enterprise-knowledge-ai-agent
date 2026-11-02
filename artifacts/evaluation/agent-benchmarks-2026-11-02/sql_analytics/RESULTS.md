@@ -1,4 +1,4 @@
-# SQL benchmark results ? 2026-11-02
+# SQL benchmark results - 2026-11-02
 
 Status: complete. All 30 original questions attempted; 90 current metric records, zero evaluator errors or pending metrics. Earlier attempts and scoring revisions remain in the audit files.
 

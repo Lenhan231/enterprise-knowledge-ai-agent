@@ -13,7 +13,7 @@
     "report": 30
   },
   "knowledge_status": "deferred",
-  "status": "sql_complete_report_pending",
+  "status": "completed_with_provider_and_reference_coverage_limits",
   "reference_frozen_at": "2026-11-02T09:28:35.083545+00:00",
   "reference_sha256": {
     "sql_analytics": "4ebff61142108f3eb0b0a65df4a09af16bb21985021d1b6a815ae7e66a9e1457",
@@ -45,11 +45,18 @@
   "lazy_provider_fallback_alias": "GROQ_API_KEY_3",
   "identity_counts_sha256": "44859af22ff155a300121d4984870d6d850286985777ae31ef57454af4dae599",
   "sql_status": "complete",
-  "report_status": "pending_resumption",
+  "report_status": "complete_with_coverage_limits",
   "sql_completed_at": "2026-11-02T11:01:17.289429+00:00",
   "sql_identity_validation_revision": 2,
   "numeric_tolerance": {
     "absolute": "1e-6",
     "relative": "1e-12"
+  },
+  "completed_at": "2026-11-02T11:09:55.405277+00:00",
+  "focused_validation": "19 targeted tests: benchmark metrics, Groq fallback, and Ragas judge adapter",
+  "evaluation_source_sha256": {
+    "evaluation/run_inventory_agents_benchmark.py": "4c2889d59ea434465ddef5234df25f68777ca50811d2934421b46fe8f9033881",
+    "evaluation/inventory_benchmark_metrics.py": "da8f0bf5d27c7a6542e5dcf8580446984ee0219cb973fa9e1f8c14ef1bf0f453",
+    "evaluation/inventory_benchmark_references.py": "8bdf5df6c7025ec957c2b7827d4db97e2937702dffcc918f08e9360e988816e8"
   }
 }

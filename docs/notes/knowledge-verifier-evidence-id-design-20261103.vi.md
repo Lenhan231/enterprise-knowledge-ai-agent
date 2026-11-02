@@ -97,8 +97,23 @@ Quan sát lặp lại ở hai key khác nhau (`v3-full-03`, `v3-transfer-01`): b
 
 ## Việc còn lại cho verifier
 
-1. Quyết định hạ `max_output_tokens` của audit (đề xuất 768; output thật 36–69 token/ca). Ảnh hưởng cả web khi bật verifier.
-2. Sau đó chạy lại 12 ca và 4 probe, output mới (`v3-transfer-02`, `v3-finance-probe-01`).
+1. ~~Hạ `max_output_tokens`~~ — đã làm, xem mục dưới.
+2. ~~Chạy lại 12 ca và 4 probe~~ — đã làm, xem mục dưới.
 3. Soạn ca held-out trước khi chạy: bằng chứng rời trong cùng nguồn, phủ định/ngoại lệ ở đơn vị giữa, đúng số nhưng sai dòng metric, một ca từ chunk bảng thật.
 4. Sáu câu VietStyle E2E/latency trên VPS (cần build backend; user tự chạy).
 5. Verifier web vẫn tắt. Kế hoạch user: ngày tiếp theo chuyển sang reranker.
+
+## Hạ trần output audit xuống 768 (03/11/2026, 02:10)
+
+`claim_verification.py`: hằng `AUDIT_MAX_OUTPUT_TOKENS = 768` thay cho số 3072 viết cứng; script benchmark ghi đúng hằng này vào manifest; test payload khóa giá trị 768. Nếu model nói dài hơn 768 token, JSON bị cắt → `unavailable`, không chứng nhận sai.
+
+Chạy bằng `GROQ_API_KEY_2`, pause 15 giây, mỗi bộ một lượt, **không RateLimitError**:
+
+| Bộ | Giữ đúng | Chặn sai | Sai lọt | Unavailable | Input / output token | Output lớn nhất/ca | Median audit |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 12 ca v2 (`v2-transfer-01`) | 5/5 | 7/7 | 0 | 0 | 6.301 / 501 | 99 | 632,18 ms |
+| 12 ca v3 (`v3-transfer-02`) | 5/5 | 7/7 | 0 | 0 | 7.094 / 398 | 72 | 540,28 ms |
+| 4 probe v2 (`v2-finance-probe-01`) | 3/3 | 1/1 | 0 | 0 | 2.630 / 220 | 102 | 627,44 ms |
+| 4 probe v3 (`v3-finance-probe-01`) | 3/3 | 1/1 | 0 | 0 | 3.026 / 186 | 72 | 597,00 ms |
+
+Không ca nào đổi kết quả so với v2. Tổng 10.704 token. Hai lượt trước với 3072 bị OTPM ở request thứ tư; lượt này 16 request liên tiếp qua — phù hợp giả thuyết giữ chỗ theo `max_output_tokens`, nhưng chưa có đối chứng chạy cùng lúc nên chưa kết luận chắc. 28 ca chưa chạy lại với 768.

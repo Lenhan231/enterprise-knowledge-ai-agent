@@ -79,6 +79,7 @@ class ClaimVerificationTest(unittest.TestCase):
         llm = Mock()
         llm.generate.return_value = json.dumps(review())
         self.assertEqual(verify_answer(llm, "Q", ANSWER, [SOURCE]).status, "supported")
+        self.assertEqual(llm.generate.call_args.kwargs["max_output_tokens"], 768)
         payload = json.loads(llm.generate.call_args.args[0].split("Payload (JSON):\n", 1)[1])
         self.assertNotIn("content", payload["sources"][0])
         self.assertEqual(payload["sources"][0]["units"], [

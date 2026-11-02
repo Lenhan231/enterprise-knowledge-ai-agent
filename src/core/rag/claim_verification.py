@@ -13,6 +13,8 @@ from core.rag.arithmetic import check_equalities
 from core.latency import measure
 from core.prompts.knowledge_verification import CLAIM_VERIFICATION_PROMPT
 
+# Groq reserves the full output cap against per-minute output quota; audits use ~40-70 tokens.
+AUDIT_MAX_OUTPUT_TOKENS = 768
 VERIFICATION_UNAVAILABLE_ANSWER = (
     "Chưa thể kiểm chứng đầy đủ câu trả lời với các nguồn được trích dẫn. "
     "Vui lòng thử lại hoặc hỏi rõ hơn."
@@ -109,7 +111,7 @@ def verify_answer(llm, question: str, answer: str, contexts: list[dict]) -> Veri
     token = None
     try:
         token = deadline.set(time.monotonic() + remaining(15))
-        raw = llm.generate(CLAIM_VERIFICATION_PROMPT + payload, max_output_tokens=3072)
+        raw = llm.generate(CLAIM_VERIFICATION_PROMPT + payload, max_output_tokens=AUDIT_MAX_OUTPUT_TOKENS)
         outcome = validate_review(answer, contexts, parse_review(raw))
         return outcome.model_copy(update={"arithmetic_checked": checked})
     except (APIError, ValueError, RuntimeError, TimeoutError) as error:

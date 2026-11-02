@@ -272,15 +272,29 @@ async function loadOcrTestRuns() {
 }
 
 function renderOcrTestDetails(run) {
+  const previewPages = run.pages || [];
+  const singlePreviewPage = previewPages.length === 1 ? Number(previewPages[0]) : null;
+  const elementPage = (element) => element.metadata?.page_number;
+  const tablePage = (table) => table.page_number ?? table.metadata?.page_number;
+  const inferredPageAssignment = singlePreviewPage != null && (
+    run.elements.some((element) => elementPage(element) == null)
+    || run.tables.some((table) => tablePage(table) == null)
+  );
   const allPages = [...new Set([
-    ...run.pages,
-    ...run.elements.map((element) => element.metadata?.page_number == null ? NaN : Number(element.metadata.page_number)).filter(Number.isFinite),
-    ...run.tables.map((table) => table.page_number == null ? NaN : Number(table.page_number)).filter(Number.isFinite),
+    ...previewPages,
+    ...run.elements.map((element) => elementPage(element) == null ? NaN : Number(elementPage(element))).filter(Number.isFinite),
+    ...run.tables.map((table) => tablePage(table) == null ? NaN : Number(tablePage(table))).filter(Number.isFinite),
   ])].sort((a, b) => a - b);
   const pageContent = allPages.map((pageNumber, pageIndex) => {
     const pagePreview = `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
-    const elements = run.elements.filter((element) => Number(element.metadata?.page_number) === pageNumber);
-    const tables = run.tables.filter((table) => Number(table.page_number) === pageNumber);
+    const elements = run.elements.filter((element) => {
+      const value = elementPage(element);
+      return value == null ? singlePreviewPage === pageNumber : Number(value) === pageNumber;
+    });
+    const tables = run.tables.filter((table) => {
+      const value = tablePage(table);
+      return value == null ? singlePreviewPage === pageNumber : Number(value) === pageNumber;
+    });
     const ocrDiagnostics = elements.flatMap((element) => element.metadata?.ocr_diagnostics || []);
     const tablesHtml = tables.map((table) => {
       const data = table.structured_data || {};
@@ -327,6 +341,7 @@ function renderOcrTestDetails(run) {
       <div class="ocr-test-page-content">
       <section class="ocr-test-raw"><h4>Raw page</h4>${pagePreview}</section>
       <section class="ocr-test-extracted"><h4>Extracted output</h4>
+        ${inferredPageAssignment ? '<p class="corpus-note">Page assignment inferred from the only preview; parser metadata has no page number.</p>' : ""}
         ${renderOcrDiagnostics(ocrDiagnostics)}
         <details class="ocr-test-elements"><summary>Document elements · ${formatNumber(elements.length)} elements</summary>${elements.map((element) => `<article class="ocr-test-element"><div class="candidate-heading"><strong>Element ${formatNumber(element.element_index + 1)}</strong><span>${formatNumber(element.content.length)} chars · ${escapeHtml(element.metadata?.element_type || "text")} · ${escapeHtml(element.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(element.content)}</pre><details class="candidate-source"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(element.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser elements on this page.</p>'}</details>
         <h4 class="ocr-test-table-heading">Extracted tables</h4>
@@ -335,8 +350,8 @@ function renderOcrTestDetails(run) {
       </div>
     </details>`;
   }).join("");
-  const unpagedElements = run.elements.filter((element) => element.metadata?.page_number == null);
-  const unpagedTables = run.tables.filter((table) => table.page_number == null);
+  const unpagedElements = run.elements.filter((element) => elementPage(element) == null && singlePreviewPage == null);
+  const unpagedTables = run.tables.filter((table) => tablePage(table) == null && singlePreviewPage == null);
   const unpagedOutput = unpagedElements.length || unpagedTables.length
     ? `<section class="ocr-test-page">
         <h3>Document content · no page previews</h3>

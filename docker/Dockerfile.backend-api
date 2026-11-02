@@ -11,4 +11,5 @@ ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH="/app/src" PYTHONUNBUFFERED="1" HF_HO
 EXPOSE 8000
 RUN rm -rf /app/src/app/static
 ENV BACKEND_ONLY="1" EMBEDDING_BACKEND="remote" EMBEDDING_PRELOAD="0" RERANKER_PRELOAD="0" USE_TORCH="0" USE_TF="0"
+RUN python -c "from core.agents.main import create_app"
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

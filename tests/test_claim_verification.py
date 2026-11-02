@@ -49,6 +49,23 @@ class ClaimVerificationTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_review(ANSWER + " Profit was 999 [S1].", [SOURCE], AnswerReview.model_validate(review()))
 
+    def test_separate_exact_quotes_from_one_source_pass_but_joined_spans_do_not(self):
+        source = {**SOURCE, "content": "Separate results. Unit: VND billion. Revenue: 2024 = 80. "
+                                       "Profit after tax: 2024 = 12."}
+        answer = "Lợi nhuận riêng năm 2024 là 12 tỷ đồng [S1]."
+
+        def quotes(*texts):
+            return AnswerReview.model_validate({"claims": [{"claim_id": "C1", "verdict": "supported",
+                "quotes": [{"source_id": "S1", "text": t} for t in texts]}]})
+
+        separate = quotes("Separate results. Unit: VND billion.", "Profit after tax: 2024 = 12.")
+        self.assertEqual(validate_review(answer, [source], separate).status, "supported")
+        for joined in ("Separate results. Unit: VND billion. Profit after tax: 2024 = 12.",
+                       "Unit: VND billion. … Profit after tax: 2024 = 12.",
+                       "Unit: VND billion. ... Profit after tax: 2024 = 12."):
+            with self.subTest(joined=joined), self.assertRaisesRegex(ValueError, "fabricated_source_quote"):
+                validate_review(answer, [source], quotes(joined))
+
     def test_server_preserves_shared_citation_block_without_model_rewrites(self):
         answer = "Đúng 50 triệu cần Trưởng phòng; 50.000.001 đồng cần thêm Mua sắm [S1]."
         self.assertEqual(claim_blocks(answer), [{"claim_id": "C1", "text": answer, "source_ids": ["S1"]}])

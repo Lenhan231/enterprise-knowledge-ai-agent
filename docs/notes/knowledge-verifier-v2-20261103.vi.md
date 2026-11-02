@@ -145,3 +145,25 @@ Giữ raw và summary tất cả lượt; nếu 429 thì dừng và đọc trư�
 ## Giải thích code từng dòng
 
 Xem `knowledge-verifier-v2-lines-20261103.vi.md` cùng thư mục. Các note v1 giữ làm lịch sử; schema text-span v1 không còn là protocol hiện tại.
+
+## Thử nghiệm F17: prompt tách quote (03/11/2026) — không giữ
+
+Giả thuyết: thêm vào prompt quy tắc "mỗi quote là một đoạn liền nhau; bằng chứng rời nhau thì trả nhiều quote cùng source_id" sẽ khiến model không ghép quote S2 của F17. Validator, schema và thứ tự validation giữ nguyên (schema đã cho phép nhiều quote cùng nguồn vì dòng kiểm so sánh tập source_id).
+
+Chạy local một lượt mỗi bộ, `qwen/qwen3.8-27b`, `GROQ_API_KEY`, pause 15 giây, không retry, không RateLimitError. Prompt thử nghiệm có hash `c5d195b1…`.
+
+| | v2 (`v2-full-01`) | prompt thử (`v2.1-full-01`) |
+|---|---:|---:|
+| Giữ câu đúng | 10/11 | 10/11 |
+| Câu sai lọt | 0 | 0 |
+| Chặn đúng câu sai | 17/17 | 17/17 |
+| Unavailable | 1 (F17) | 1 (F17) |
+| `fabricated_source_quote` | 1 | 1 |
+| Token tổng (27 lượt audit) | 19.869 | 21.245 |
+| Median audit | 584,87 ms | 581,60 ms |
+
+F17 thất bại cả lượt riêng (`v2.1-f17-01`) lẫn lượt 28 ca: model vẫn trả một quote S2 ghép "header + unit + dòng profit", bỏ dòng Revenue. Không ca nào đổi status/reason so với v2; chỉ P03 đổi hình thức sang hai quote S1 riêng nhưng vốn đã supported. Tổng 22.307 token cho hai lượt.
+
+Kết luận: quy tắc prompt không sửa F17 và tốn thêm khoảng 57 token input mỗi lượt, nên đã revert; prompt giữ nguyên hash v2. Giả thuyết chưa kiểm chứng: dòng prompt "including the labels/headers needed to interpret table cells" khiến model ưu tiên gộp header vào quote. Không tune prompt thêm theo F17. Bước tiếp theo cần review là evidence ID do server cấp.
+
+Giữ lại một test (`test_separate_exact_quotes_from_one_source_pass_but_joined_spans_do_not`): nhiều quote nguyên văn cùng nguồn được chấp nhận; quote ghép đoạn rời, quote dùng `…` hoặc `...` vẫn bị chặn `fabricated_source_quote`. Test này khóa hành vi strict matching hiện có, không đổi code.

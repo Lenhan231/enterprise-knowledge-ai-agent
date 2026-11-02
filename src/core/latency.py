@@ -8,7 +8,7 @@ latency_events: ContextVar[list[dict] | None] = ContextVar("latency_events", def
 STAGES = (
     "routing", "knowledge_search_planning", "embedding", "database_retrieval", "retrieval_fusion",
     "query_translation", "reranking", "answer_generation", "sql_planning",
-    "sql_execution", "answer_synthesis", "retrieval_total", "agent_workflow",
+    "sql_execution", "answer_synthesis", "retrieval_total", "agent_workflow", "telemetry_persistence",
 )
 
 

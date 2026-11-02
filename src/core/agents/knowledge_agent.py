@@ -1,5 +1,6 @@
 import asyncio
 import os
+import time
 
 from core.agents.base import BaseAgent
 from core.models.agents import (
@@ -9,7 +10,7 @@ from core.models.agents import (
 )
 from core.rag.rag_service import RAGService
 from core.agents.execution import authorize
-from core.agents.runtime import run_sync
+from core.agents.runtime import deadline, remaining, run_sync
 
 
 class KnowledgeAgent(BaseAgent):
@@ -39,13 +40,20 @@ class KnowledgeAgent(BaseAgent):
         request: AgentRequest,
     ) -> AgentResult:
         authorize(request, 'knowledge')
-        result = await run_sync(
-            self.rag.generate_answer,
-            request.question,
-            decompose=os.getenv("KNOWLEDGE_MULTIQUERY_ENABLED", "0") == "1",
-            roles=sorted(request.identity.document_roles) if request.identity and request.identity.document_roles else None,
-            retrieval_method=request.metadata.get("retrieval_method", "translated_hybrid_rerank"),
-        )
+        multiquery = os.getenv("KNOWLEDGE_MULTIQUERY_ENABLED", "0") == "1"
+        timeout = 90.0 if multiquery else 60.0
+        token = deadline.set(time.monotonic() + remaining(timeout))
+        try:
+            result = await run_sync(
+                self.rag.generate_answer,
+                request.question,
+                decompose=multiquery,
+                _timeout=timeout,
+                roles=sorted(request.identity.document_roles) if request.identity and request.identity.document_roles else None,
+                retrieval_method=request.metadata.get("retrieval_method", "translated_hybrid_rerank"),
+            )
+        finally:
+            deadline.reset(token)
         cited = set(result.source_ids)
 
         evidence = [

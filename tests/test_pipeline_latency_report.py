@@ -49,6 +49,16 @@ class PipelineLatencyReportTest(unittest.TestCase):
             self.assertEqual(saved["results"][0]["answer"], "Answer [S1]")
             self.assertEqual(saved["results"][0]["citation_count"], 1)
 
+    def test_checkpoint_is_private_and_keeps_previous_report_if_write_fails(self):
+        with tempfile.TemporaryDirectory() as folder:
+            output = Path(folder) / "results.json"
+            report.save_report(output, {"results": [1]})
+            self.assertEqual(output.stat().st_mode & 0o777, 0o600)
+            with patch.object(report.json, "dump", side_effect=OSError("disk failure")):
+                with self.assertRaises(OSError):
+                    report.save_report(output, {"results": [1, 2]})
+            self.assertEqual(json.loads(output.read_text()), {"results": [1]})
+
     def test_authentication_failure_stops_before_benchmark_requests(self):
         paths = []
         def handler(request):

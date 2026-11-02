@@ -8,6 +8,7 @@ import os
 import statistics
 import subprocess
 import threading
+import tempfile
 import time
 from uuid import uuid4
 from datetime import datetime, timezone
@@ -55,6 +56,15 @@ def summarize(rows):
         "stages": {stage: distribution([r["latency"]["stages_ms"][stage] for r in rows
                     if (r.get("latency") or {}).get("stages_ms", {}).get(stage) is not None]) for stage in stages},
     }
+
+
+def save_report(path, report):
+    # Replace atomically so container termination leaves the last complete report.
+    with tempfile.NamedTemporaryFile(mode="w", dir=path.parent, delete=False) as stream:
+        temporary = Path(stream.name)
+        json.dump(report, stream, indent=2)
+        stream.write("\n")
+    temporary.replace(path)
 
 
 def authenticate(client, username, password):
@@ -116,6 +126,7 @@ def main():
         "boundaries": {
             "http_e2e": "Client HTTP request through authentication, routing, agents and telemetry; login excluded",
             "request_total_ms": "Handler wall time before persistence of the agent event; authentication excluded",
+            "response_ready_ms": "Handler through telemetry persistence; excludes authentication and HTTP serialization/transport",
             "stages": "Wall times; null means skipped. Nested stages overlap; parallel agent durations must not be added to infer E2E",
             "first_pass": "First pass after restart; models preloaded. Only the first relevant request is first inference, not all ten",
             "warm_pass": "Same questions and order; includes the existing query-translation cache",
@@ -152,8 +163,7 @@ def main():
                         row["error_type"] = type(error).__name__
                     row["http_elapsed_ms"] = round((time.perf_counter() - request_started) * 1000, 2)
                     report["results"].append(row)
-                    args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-                    args.output.chmod(0o600)
+                    save_report(args.output, report)
                     print(json.dumps({k: row.get(k) for k in ["phase", "case_id", "status", "selected_route", "http_elapsed_ms", "citation_count", "application_ok"]}), flush=True)
                     if row.get("status") in {401, 403}:
                         raise RuntimeError("Authorization failed during benchmark; stopped")
@@ -168,8 +178,7 @@ def main():
         report["by_case"] = {case_id: summarize([r for r in report["results"] if r["case_id"] == case_id])
                              for case_id, _, _ in cases}
         report["limitations"] = "Timing smoke, not a quality or load benchmark. No OCR/upload work occurs during chat. Provider/network variance and translation caching affect results. Resource peaks are sampled container-wide, not attributed to E5."
-        args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-        args.output.chmod(0o600)
+        save_report(args.output, report)
     print(json.dumps({"output": str(args.output), "summary": report["summary"]}), flush=True)
     return int(any(r.get("status") != 200 or r.get("latency") is None
                    or (args.cases == "vietstyle" and r.get("application_ok") is not True)

@@ -70,6 +70,13 @@ class BenchmarkMetricsTests(unittest.TestCase):
         self.assertFalse(current_score({'metric':'numerical_accuracy','numeric_revision':1},{},'report'))
         self.assertFalse(current_score({'metric':'execution_accuracy','scoring_revision':3},{},'sql_analytics'))
 
+    def test_quota_delay_uses_groq_message_when_retry_header_is_absent(self):
+        from evaluation.run_inventory_agents_benchmark import quota_retry_delay
+        self.assertAlmostEqual(quota_retry_delay({},'Please try again in 19m31.152s.'),1171.152)
+        self.assertAlmostEqual(quota_retry_delay({},'Please try again in 4.26s.'),4.26)
+        self.assertEqual(quota_retry_delay({'retry-after':'12'},'Please try again in 4s.'),12)
+        self.assertEqual(quota_retry_delay({},'Rate limited'),60)
+
     def test_dataset_split_and_reference_coverage(self):
         import hashlib
         import json

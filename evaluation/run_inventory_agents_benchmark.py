@@ -76,6 +76,17 @@ def rate_limited(row):
             'rate_limit_exceeded' in row.get('answer',''))
 
 
+def quota_retry_delay(headers, message):
+    try:
+        return min(3600,max(1,float(headers['retry-after'])))
+    except (KeyError,ValueError,TypeError):
+        match=re.search(r'try again in ((?:\d+(?:\.\d+)?[hms])+)',message,re.I)
+        if not match:
+            return 60
+        return min(3600,max(1,sum(float(n)*{'h':3600,'m':60,'s':1}[unit]
+                                for n,unit in re.findall(r'(\d+(?:\.\d+)?)([hms])',match[1]))))
+
+
 async def references():
     """Freeze evaluator SQL and results before any agent responses are produced."""
     paths = [OUT/g/'references.json' for g in ('sql_analytics','report')]
@@ -139,16 +150,31 @@ async def generate(groups, identifiers):
     from core.models.agents import AgentRequest, VerifiedIdentity
     from core.agents.runtime import remaining
     from openai import RateLimitError
+    import httpx
 
     class PacedGroqProvider(GroqProvider):
+        def __init__(self):
+            super().__init__()
+
+            def accurate_retry_header(response):
+                if response.status_code==429:
+                    response.read()
+                    response.headers['retry-after']=str(quota_retry_delay(response.headers,response.text))
+
+            # Use the SDK's public HTTP-client override; normalize each key's 429 independently.
+            for index,client in enumerate(self._clients):
+                self._clients[index]=client.with_options(http_client=httpx.Client(event_hooks={'response':[accurate_retry_header]}))
+                client.close()
+            self.client=self._clients[0]
+
         def generate(self, prompt, *, max_output_tokens=1000):
             # Benchmark pacing only: preserve model, prompts and the report's existing deadline.
             for attempt in range(3):
                 wait = max(0, min(self._cooldowns)-time.monotonic())
                 if wait:
                     wait = min(wait+0.5, 60)
-                    if remaining(wait+1) < wait:
-                        raise TimeoutError('Report deadline cannot accommodate Groq cooldown')
+                    if remaining(60)<wait+5:
+                        raise self._last_rate_error or TimeoutError('Call deadline cannot accommodate Groq cooldown')
                     print('Groq cooldown', round(wait,1), 'seconds', flush=True)
                     time.sleep(wait)
                 try:
@@ -172,7 +198,7 @@ async def generate(groups, identifiers):
                     package_versions={p: importlib.metadata.version(p) for p in ('ragas','openai','pydantic')},
                     report_source_mode='orchestrated', confirmation_policy='first response only; no implicit scope acceptance')
     manifest['benchmark_pacing']='Up to 3 provider attempts for 429 only; wait for existing key cooldowns within normal report deadline. One case retry for previously recorded 429; originals retained.'
-    manifest['generation_harness_revision']=2
+    manifest['generation_harness_revision']=3
     save(OUT/'manifest.json', manifest)
     try:
         for group in groups:
@@ -182,16 +208,24 @@ async def generate(groups, identifiers):
                 prior = previous.get(case['id'])
                 wiring_retry=(group=='report' and prior and prior.get('harness_revision',1)<2
                               and 'source_collection' in prior.get('result',{}).get('metadata',{}))
-                if (prior and not wiring_retry and (not rate_limited(prior) or prior.get('attempt',1)>=2)) or identifiers and case['id'] not in identifiers:
+                pacing_retry=(group=='report' and prior and prior.get('harness_revision',1)<3
+                              and prior.get('result',{}).get('metadata',{}).get('error_code')=='provider_timeout')
+                if (prior and not (wiring_retry or pacing_retry) and (not rate_limited(prior) or prior.get('attempt',1)>=2)) or identifiers and case['id'] not in identifiers:
                     continue
+                while min(llm._cooldowns)>time.monotonic()+1:
+                    wait=min(60,min(llm._cooldowns)-time.monotonic()+0.5)
+                    print('Between-request Groq cooldown',round(wait,1),'seconds',flush=True)
+                    await asyncio.sleep(wait)
                 started = time.perf_counter()
                 request = AgentRequest(question=case['question'], identity=identity)
                 print('generate', group, case['id'], flush=True)
                 row = {'id':case['id'], 'question':case['question'], 'attempt': prior.get('attempt',1)+1 if prior else 1,
-                       'harness_revision':2,
+                       'harness_revision':3,
                        'started_at':datetime.now(timezone.utc).isoformat()}
                 if wiring_retry:
                     row['retry_reason']='Harness correction: use production fallback classifier and source-router wiring; earlier attempt retained.'
+                elif pacing_retry:
+                    row['retry_reason']='Harness correction: accurate per-key Groq cooldowns and no waits that consume the full per-call timeout; earlier attempt retained.'
                 try:
                     if group == 'report':
                         result, payload, media = await report.generate_from_template(request, source_mode='orchestrated')

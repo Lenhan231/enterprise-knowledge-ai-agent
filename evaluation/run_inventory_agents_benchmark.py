@@ -271,12 +271,30 @@ async def score(groups, identifiers):
     identity_rows=[r for ref in sql_references.values() if ref['reference'] for r in ref['reference']['rows']]
     identity_rows += [r for ref in report_references.values() for task in ref['evidence'].values() for r in task['rows']]
     identities={r['product_id']:r['product_name'] for r in identity_rows if 'product_id' in r and 'product_name' in r}
+    frozen_tasks={task['sql']:task for ref in report_references.values() for task in ref['evidence'].values()}
+    frozen_tasks.update({ref['reference']['sql']:ref['reference'] for ref in sql_references.values() if ref['reference']})
+
+    def numerical_reference(reference,row):
+        facts=row.get('result',{}).get('metadata',{}).get('facts',[])
+        ids={str(f['dimensions']['product_id']) for f in facts if 'product_id' in f.get('dimensions',{})}
+        aliases={'stockout_indicator':'stockout_flag','overstock_indicator':'overstock_flag',
+                 'reorder_indicator':'reorder_flag','inventory_units_sold':'units_sold',
+                 'stored_fill_rate':'fill_rate','stored_sell_through_rate':'sell_through_rate'}
+        fields={aliases.get(f['metric'],f['metric']) for f in facts}
+        selected=[]
+        for query,task in frozen_tasks.items():
+            rows=[{k:v for k,v in r.items() if k in fields|{'product_id','product_name','snapshot_date'}}
+                  for r in task['rows'] if str(r.get('product_id')) in ids and fields.intersection(r)]
+            if rows:
+                selected.append({'source_sql':query,'rows':rows})
+        return dumps({**reference,'supplementary_frozen_evidence':selected})
 
     async def run_case(group, row, reference):
         async with semaphore:
             path = OUT/group/'scores.jsonl'
             existing = {r['metric']:r for r in read_jsonl(path) if r['id']==row['id']
-                        and (group!='sql_analytics' or r.get('scoring_revision')==3)}
+                        and (group!='sql_analytics' or r.get('scoring_revision')==3)
+                        and (group!='report' or r['metric']!='numerical_accuracy' or r.get('numeric_revision')==2)}
             expected = ('execution_accuracy','sql_semantic_equivalence','numerical_accuracy') if group=='sql_analytics' else ('faithfulness','factual_correctness','numerical_accuracy','report_completeness')
             response = row['answer']
             data = row.get('result',{}).get('data',{})
@@ -337,7 +355,7 @@ async def score(groups, identifiers):
                         if name=='factual_correctness':
                             result = await factual.ascore(response=response,reference=report_reference_text(reference))
                         elif name=='numerical_accuracy':
-                            result = await numerical.ascore(response=response,reference=reference_text)
+                            result = await numerical.ascore(response=response,reference=numerical_reference(reference,row))
                         else:
                             result = await completeness.ascore(user_input=row['question'],response=response,reference=reference_text)
                         value = (result.value-1)/4 if name=='report_completeness' else result.value
@@ -346,6 +364,7 @@ async def score(groups, identifiers):
                 except Exception as error:
                     record = metric_record(None,error=f'{type(error).__name__}: {str(error)[:1500]}')
                 record.update(id=row['id'],metric=name,scoring_revision=3,
+                              numeric_revision=2,
                               generation_attempt=row.get('attempt',1),elapsed_seconds=round(time.perf_counter()-started,3))
                 append(path, record)
                 print('scored',row['id'],name,record['score'],record.get('error'),flush=True)
@@ -369,6 +388,12 @@ def summarize():
             metrics[name]={'mean':sum(values)/len(values) if values else None,'scored':len(values),
                 'not_applicable':sum(r['score'] is None and not r['error'] for r in rows),
                 'evaluator_errors':sum(bool(r['error']) for r in rows),'pending':30-len(rows)}
+            if group=='report' and name=='numerical_accuracy':
+                traces=[r.get('traces',{}).get('output',{}) for r in rows if r.get('traces')]
+                covered=sum(t.get('covered_claims',0) for t in traces)
+                unknown=sum(t.get('unverified_claims',0) for t in traces)
+                metrics[name].update(verified_claims=covered,unverified_claims=unknown,
+                    verification_coverage=covered/(covered+unknown) if covered+unknown else None)
         generations=latest_generations(group)
         save(OUT/group/'summary.json',{'cases':30,'generated':len(generations),
             'generation_attempts':len(read_jsonl(OUT/group/'generations.jsonl')),

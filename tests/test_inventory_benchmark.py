@@ -32,6 +32,7 @@ class BenchmarkMetricsTests(unittest.TestCase):
                 {'dimension_metric_date_unit_match':True,'response_value':'0','reference_value':None}]
         self.assertEqual(numeric_claim_score(claims),(1/3,1))
         self.assertEqual(numeric_claim_score([]),(None,0))
+        self.assertEqual(numeric_claim_score([{'reference_covered':False}]),(None,0))
 
     def test_execution_normalization_accepts_names_and_month_labels(self):
         from evaluation.inventory_benchmark_metrics import normalize_execution_rows

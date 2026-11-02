@@ -1,5 +1,6 @@
 """Upload Test routes for isolated document-processing experiments."""
 
+import base64
 import hashlib
 import logging
 import time
@@ -33,7 +34,7 @@ async def create_upload_test(
     _require_same_origin(request)
     filename = Path((file.filename or "").replace("\\", "/")).name
     suffix = Path(filename).suffix.lower()
-    from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
+    from document_processing.document_processor import SUPPORTED_FORMATS
     if suffix not in SUPPORTED_FORMATS:
         raise HTTPException(415, "Unsupported Upload Test file format")
     if parser_engine != "docling":
@@ -102,10 +103,19 @@ async def create_upload_test(
     run_id = uuid.uuid4()
     source_sha256 = hashlib.sha256(content).hexdigest()
     source_metadata = {"source_type": "upload_test", "source_sha256": source_sha256}
-    document_processor = DocumentProcessor(config)
     processing_started = time.perf_counter()
     try:
-        parsed = document_processor.process(filename, content, source_metadata)
+        from core.services.client import post
+
+        processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
+        if not processing_url:
+            raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
+        parsed = post(processing_url, "/parse", {
+            "filename": filename,
+            "content": base64.b64encode(content).decode("ascii"),
+            "metadata": source_metadata,
+            "config": config,
+        }, timeout=600)
     except (ValueError, RuntimeError) as error:
         status_code = 503 if isinstance(error, RuntimeError) else 422
         raise HTTPException(status_code, f"Upload Test processing failed: {error}") from error

@@ -8,6 +8,7 @@ import tempfile
 
 from PIL import Image
 
+from docling_core.types.doc import BoundingBox, CoordOrigin
 from docling.models.stages.ocr.tesseract_utils import parse_tesseract_orientation
 
 
@@ -52,3 +53,41 @@ def bbox_in_original_orientation(
     if correction_clockwise == 270:
         return width - bottom, left, width - top, right
     return bbox
+
+
+class OrientedPageBackend:
+    """Render one page in its OSD-corrected orientation for every pipeline stage."""
+
+    def __init__(self, backend: object, correction_clockwise: int):
+        self._backend = backend
+        self._correction = correction_clockwise % 360
+        self._source_size = backend.get_size()
+        width, height = self._source_size.width, self._source_size.height
+        if self._correction in (90, 270):
+            width, height = height, width
+        self._size = type(self._source_size)(width=width, height=height)
+
+    def __getattr__(self, name: str):
+        return getattr(self._backend, name)
+
+    def get_size(self):
+        return self._size
+
+    def get_page_image(self, scale: float = 1, cropbox: BoundingBox | None = None):
+        source_box = None
+        if cropbox is not None:
+            box = cropbox.to_top_left_origin(page_height=self._size.height)
+            left, top, right, bottom = bbox_in_original_orientation(
+                (box.l, box.t, box.r, box.b),
+                (self._source_size.width, self._source_size.height),
+                self._correction,
+            )
+            source_box = BoundingBox(
+                l=left,
+                t=top,
+                r=right,
+                b=bottom,
+                coord_origin=CoordOrigin.TOPLEFT,
+            )
+        image = self._backend.get_page_image(scale=scale, cropbox=source_box)
+        return rotate_for_reading(image, self._correction)

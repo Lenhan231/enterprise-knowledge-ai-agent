@@ -14,6 +14,8 @@ from urllib.request import Request, urlopen
 
 from PIL import Image, ImageOps
 
+from .orientation import rotate_for_reading
+
 _log = logging.getLogger(__name__)
 _OPENPARSER_MODEL = "PaddleOCR-VL 1.6 (OpenParser)"
 _PAGE_RENDER_SCALE = 3.0
@@ -43,6 +45,7 @@ def recognize_chart_regions(
     *,
     page_source: Any = None,
     source_format: str | None = None,
+    page_orientation_corrections: dict[int, int] | None = None,
 ) -> list[dict[str, Any]]:
     """Extract chart tables remotely, correcting only text against page OCR lines."""
     if not chart_regions:
@@ -113,6 +116,10 @@ def recognize_chart_regions(
                     rendered = pdf_page.render(scale=_PAGE_RENDER_SCALE * 1.5, rotation=0)
                     page_image = rendered.to_pil().copy()
                     rendered.close()
+                    page_image = rotate_for_reading(
+                        page_image,
+                        int((page_orientation_corrections or {}).get(page_number, 0)),
+                    )
                     page_image = page_image.resize((
                         round(float(page_size.width) * _PAGE_RENDER_SCALE),
                         round(float(page_size.height) * _PAGE_RENDER_SCALE),
@@ -123,6 +130,14 @@ def recognize_chart_regions(
                         if getattr(source_image, "n_frames", 1) > 1:
                             source_image.seek(page_number - 1)
                         page_image = ImageOps.exif_transpose(source_image).convert("RGB").copy()
+                    page_image = rotate_for_reading(
+                        page_image,
+                        int((page_orientation_corrections or {}).get(page_number, 0)),
+                    )
+                    page_image = page_image.resize((
+                        round(float(page_size.width) * _PAGE_RENDER_SCALE),
+                        round(float(page_size.height) * _PAGE_RENDER_SCALE),
+                    ))
                 else:
                     image_ref = getattr(page, "image", None)
                     page_image = getattr(image_ref, "pil_image", None)

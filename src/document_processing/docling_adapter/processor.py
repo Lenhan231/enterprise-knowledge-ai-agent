@@ -122,6 +122,15 @@ class DoclingProcessor:
             for detection in getattr(getattr(pipeline, "layout_model", None), "layout_detections", [])
             if isinstance(getattr(pipeline, "layout_model", None), PPDocLayoutModel)
         ]
+        page_orientation_corrections = {
+            page_number: correction
+            for pipeline in converter.initialized_pipelines.values()
+            for page_number, correction in getattr(
+                getattr(pipeline, "layout_model", None),
+                "page_orientation_corrections",
+                {},
+            ).items()
+        }
         page_sizes = {
             int(page_number): (float(page.size.width), float(page.size.height))
             for page_number, page in result.document.pages.items()
@@ -147,6 +156,7 @@ class DoclingProcessor:
             chart_regions,
             page_source=(input_path if input_path is not None and input_path.is_file() else payload),
             source_format=source_format,
+            page_orientation_corrections=page_orientation_corrections,
         )
 
         mapped = map_result(

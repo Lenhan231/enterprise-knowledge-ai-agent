@@ -16,9 +16,8 @@ from docling.models.base_layout_model import BaseLayoutModel
 from docling.models.factories import get_layout_factory
 from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel
 from .orientation import (
-    bbox_in_original_orientation,
     detect_tesseract_orientation,
-    rotate_for_reading,
+    OrientedPageBackend,
 )
 
 _log = logging.getLogger(__name__)
@@ -124,6 +123,7 @@ class PPDocLayoutModel(BaseLayoutModel):
         self.options = options
         self.chart_regions: list[dict[str, object]] = []
         self.layout_detections: list[dict[str, object]] = []
+        self.page_orientation_corrections: dict[int, int] = {}
         # PaddlePaddle 3.3.1 CPU oneDNN fails on this model's PIR attributes.
         self.model = LayoutDetection(
             model_name="PP-DocLayoutV3",
@@ -147,6 +147,7 @@ class PPDocLayoutModel(BaseLayoutModel):
         if pages and int(pages[0].page_no) == 1:
             self.chart_regions.clear()
             self.layout_detections.clear()
+            self.page_orientation_corrections.clear()
 
         predictions: list[LayoutPrediction] = []
         for page in pages:
@@ -156,7 +157,13 @@ class PPDocLayoutModel(BaseLayoutModel):
                 continue
 
             correction, _, _ = detect_tesseract_orientation(image)
-            layout_image = rotate_for_reading(image, correction)
+            self.page_orientation_corrections[int(page.page_no)] = correction
+            if correction:
+                page._backend = OrientedPageBackend(page._backend, correction)
+                page.size = page._backend.get_size()
+                page._image_cache.clear()
+                image = page.get_image(scale=1.0)
+            layout_image = image
             # PaddleX accepts NumPy image inputs in OpenCV's BGR channel order.
             image_bgr = np.asarray(layout_image.convert("RGB"))[:, :, ::-1].copy()
             result = next(iter(self.model.predict(
@@ -182,9 +189,6 @@ class PPDocLayoutModel(BaseLayoutModel):
                 if len(coordinates) != 4:
                     continue
                 x1, y1, x2, y2 = map(float, coordinates)
-                x1, y1, x2, y2 = bbox_in_original_orientation(
-                    (x1, y1, x2, y2), image.size, correction
-                )
                 source_label = str(box.get("label", "text")).strip().lower()
                 score = float(box.get("score", 0.0))
                 label = _LABELS.get(source_label)

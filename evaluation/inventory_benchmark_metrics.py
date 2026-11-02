@@ -26,6 +26,25 @@ def compare_rows(actual, expected):
     return not remaining
 
 
+def normalize_execution_rows(actual, expected, identities):
+    """Normalize presentation only, using identities from frozen reference evidence."""
+    actual,expected = [dict(r) for r in actual],[dict(r) for r in expected]
+    if not actual or not expected:
+        return actual,expected
+    if 'month' in expected[0] and 'snapshot_date' in actual[0] and 'month' not in actual[0]:
+        for row in actual:
+            row['month']=str(row.pop('snapshot_date'))[:7]
+        for row in expected:
+            row['month']=str(row['month'])[:7]
+    if 'product_name' in actual[0] and 'product_id' not in actual[0] and 'product_id' in expected[0]:
+        names = [identities.get(row['product_id']) for row in expected]
+        if all(name and list(identities.values()).count(name)==1 for name in names):
+            for row,name in zip(expected,names):
+                row.pop('product_id')
+                row['product_name']=name
+    return actual,expected
+
+
 def sql_numerical_accuracy(actual, expected):
     """Score reference numeric cells at matching dimensions; missing rows count wrong."""
     if not expected:

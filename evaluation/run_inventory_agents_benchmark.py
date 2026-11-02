@@ -28,7 +28,7 @@ sys.path.insert(0, str(ROOT / 'src'))
 load_dotenv(ROOT / '.env')
 OUT = ROOT / 'artifacts/evaluation/agent-benchmarks-2026-11-02'
 
-from evaluation.inventory_benchmark_metrics import metric_classes, sql_numerical_accuracy
+from evaluation.inventory_benchmark_metrics import metric_classes, sql_numerical_accuracy, normalize_execution_rows
 from evaluation.inventory_benchmark_references import SQL, EXTRA, REPORT_TASKS, COMMON_LIMITATIONS
 
 
@@ -227,6 +227,12 @@ def bind_sql(sql, parameters):
     return re.sub(r'\$(\d+)\b', lambda m: literal(parameters[int(m[1])-1]), sql)
 
 
+def bounded_reference_sql(sql):
+    from sqlglot import parse_one
+    tree=parse_one(sql,read='postgres')
+    return (tree if tree.args.get('limit') else tree.limit(200)).sql(dialect='postgres')
+
+
 def metric_record(value, reason=None, traces=None, error=None):
     return {'score':value, 'reason':reason, 'traces':traces, 'error':error}
 
@@ -260,11 +266,17 @@ async def score(groups, identifiers):
         'score4_description':'Nearly all query-specific requirements plus title, period, definitions, summary, findings, limitations and non-authorizing recommendations; minor gaps.',
         'score5_description':'All applicable requirements addressed with scoped evidence and clear limitations. Unsupported-only requests correctly explain missing evidence, refuse fabrication and offer a supported alternative; a full invented report is not required.'})
     semaphore = asyncio.Semaphore(2)
+    sql_references=json.loads((OUT/'sql_analytics'/'references.json').read_text(encoding='utf-8'))
+    report_references=json.loads((OUT/'report'/'references.json').read_text(encoding='utf-8'))
+    identity_rows=[r for ref in sql_references.values() if ref['reference'] for r in ref['reference']['rows']]
+    identity_rows += [r for ref in report_references.values() for task in ref['evidence'].values() for r in task['rows']]
+    identities={r['product_id']:r['product_name'] for r in identity_rows if 'product_id' in r and 'product_name' in r}
 
     async def run_case(group, row, reference):
         async with semaphore:
             path = OUT/group/'scores.jsonl'
-            existing = {r['metric']:r for r in read_jsonl(path) if r['id']==row['id']}
+            existing = {r['metric']:r for r in read_jsonl(path) if r['id']==row['id']
+                        and (group!='sql_analytics' or r.get('scoring_revision')==3)}
             expected = ('execution_accuracy','sql_semantic_equivalence','numerical_accuracy') if group=='sql_analytics' else ('faithfulness','factual_correctness','numerical_accuracy','report_completeness')
             response = row['answer']
             data = row.get('result',{}).get('data',{})
@@ -283,11 +295,11 @@ async def score(groups, identifiers):
                             record = metric_record(0.0,'Supported question did not execute successfully.')
                         elif name=='sql_semantic_equivalence':
                             result = await semantic.ascore(response=bind_sql(data['sql'],data.get('parameters',[])),
-                                reference=reference['reference']['sql'], reference_contexts=[dumps({k:sorted(v) for k,v in APPROVED_COLUMNS.items()})])
+                                reference=bounded_reference_sql(reference['reference']['sql']),
+                                reference_contexts=[dumps({k:sorted(v) for k,v in APPROVED_COLUMNS.items()})])
                             record = metric_record(result.value,result.reason,result.traces)
                         else:
-                            gold = reference['reference']['rows']
-                            actual = data.get('rows',[])
+                            actual,gold = normalize_execution_rows(data.get('rows',[]),reference['reference']['rows'],identities)
                             if aligned is None:
                                 actual_keys = list(actual[0]) if actual else []
                                 gold_keys = list(gold[0]) if gold else []
@@ -298,8 +310,9 @@ async def score(groups, identifiers):
                                         'response_sql':data['sql'],'reference_columns':gold_keys,'response_columns':actual_keys}),ColumnMappings)
                                     mapping = {c.reference_column:c.response_column for c in mappings.columns}
                                     if set(mapping)!=set(gold_keys) or len(set(mapping.values()))!=len(mapping) or not set(mapping.values())<=set(actual_keys):
-                                        raise ValueError('Judge could not align all reference result columns uniquely')
-                                    aligned = [{key:r.get(value) for key,value in mapping.items()} for r in actual]
+                                        aligned = []
+                                    else:
+                                        aligned = [{key:r.get(value) for key,value in mapping.items()} for r in actual]
                                 else:
                                     aligned = actual
                             if name=='execution_accuracy':
@@ -332,7 +345,8 @@ async def score(groups, identifiers):
                         if name=='report_completeness': record['raw_rubric_score']=result.value
                 except Exception as error:
                     record = metric_record(None,error=f'{type(error).__name__}: {str(error)[:1500]}')
-                record.update(id=row['id'],metric=name,elapsed_seconds=round(time.perf_counter()-started,3))
+                record.update(id=row['id'],metric=name,scoring_revision=3,
+                              generation_attempt=row.get('attempt',1),elapsed_seconds=round(time.perf_counter()-started,3))
                 append(path, record)
                 print('scored',row['id'],name,record['score'],record.get('error'),flush=True)
 
@@ -347,7 +361,7 @@ async def score(groups, identifiers):
 
 def summarize():
     for group in ('sql_analytics','report'):
-        scores=read_jsonl(OUT/group/'scores.jsonl')
+        scores=list({(r['id'],r['metric']):r for r in read_jsonl(OUT/group/'scores.jsonl')}.values())
         metrics={}
         for name in sorted({r['metric'] for r in scores}):
             rows=[r for r in scores if r['metric']==name]

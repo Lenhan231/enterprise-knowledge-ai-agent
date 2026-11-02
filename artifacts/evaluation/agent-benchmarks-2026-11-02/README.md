@@ -16,7 +16,7 @@ uv run python -m evaluation.run_inventory_agents_benchmark --stage summary
 uv run python -m unittest discover -s tests -p test_inventory_benchmark.py
 ```
 
-Stages resume missing work. They never regenerate successful responses or overwrite frozen references. One explicit infrastructure retry is allowed for previously recorded rate-limit failures; all original attempts are retained. Validation and answer failures are not retried. Agent execution is serial, with bounded waits/retries for Groq cooldowns (which consume the normal report deadline); judging runs at most two cases concurrently. Report's normal internal two-operation concurrency and 180-second deadline remain in effect. Decisions requiring user confirmation are recorded as the first response; the evaluator does not implicitly authorize restricted scope.
+Stages resume missing work. They never regenerate successful responses or overwrite frozen references. One explicit infrastructure retry is allowed for previously recorded rate-limit failures; all original attempts are retained. Validation and answer failures are not retried. Agent execution is serial, with bounded waits/retries for Groq cooldowns (which consume the normal report deadline); each scoring process runs at most two cases concurrently. Report's normal internal two-operation concurrency and 180-second deadline remain in effect. Decisions requiring user confirmation are recorded as the first response; the evaluator does not implicitly authorize restricted scope.
 
 ## Metrics
 
@@ -24,8 +24,8 @@ All reported scores are 0–1. Definitions and denominators matter more than a b
 
 | Agent | Metric | Method |
 |---|---|---|
-| SQL | Execution Accuracy | Custom Ragas metric: result multiset equality against independent read-only reference SQL, numeric tolerance 1e-6 absolute/relative. Judge aligns column aliases only; values are compared in code. Extra descriptive response columns are ignored; reference columns must match. |
-| SQL | SQL Semantic Equivalence | Ragas `SQLSemanticEquivalence` with the shared schema; generated parameters are bound before comparison. |
+| SQL | Execution Accuracy | Custom Ragas metric: result multiset equality against independent read-only reference SQL, numeric tolerance 1e-6 absolute/relative. Judge aligns column aliases; values are compared in code. Calendar-month labels are normalized, and names may replace product IDs only when frozen reference evidence verifies a unique identity. Extra descriptive response columns are ignored; the normalized reference columns must match. |
+| SQL | SQL Semantic Equivalence | Ragas `SQLSemanticEquivalence` with the shared schema; generated parameters are bound before comparison. The evaluator applies the same 200-row SQL ceiling to references without an explicit limit, preserving top-N limits. |
 | SQL | Numerical Accuracy | Reference numeric-cell accuracy at matching dimensions/entities; excludes dates and IDs, penalizes missing/extra rows. Uses the same alias alignment and decimal tolerance. |
 | Report | Faithfulness | Ragas `Faithfulness` against actual retrieved evidence and runtime validated facts, never the independent oracle or report text itself. |
 | Report | Factual Correctness | Ragas `FactualCorrectness`, F1 mode, against the independently frozen case reference. |
@@ -43,3 +43,9 @@ The bounded detail interpretation is 200 rows with explicit oracle ordering; top
 Historical evidence cannot establish current 2026 quantities, supplier receipt compliance or whether returns were restocked. Catalog COGS supports only explicitly labelled cost proxies, not approved accounting valuation. Source ratios, missing observations, overlapping flags, currency uncertainty and approval restrictions remain explicit in references.
 
 The dataset names a policy identifier/page but does not include policy passages. No invented policy text is used as gold; report factual correctness therefore has incomplete policy-reference coverage. Reference detail samples are capped at 200 and are not exhaustive truth for every possible report claim. Numerical claim enumeration and semantic scope alignment are model judgments, not formal proof. Large responses may exceed the judge's timeout; these remain visible evaluator errors. No manual scores are substituted for failed Ragas calls.
+
+## Evaluation audit
+
+Original attempts and scoring revisions remain in the append-only files. Summaries use the latest record per case/metric. SQL scoring revision 3 fixes presentation normalization and applies the shared SQL ceiling to semantic references; frozen source SQL/results and application code are unchanged. Failed column alignment is a zero for an unmatched required result projection, not an omitted evaluator error.
+
+Focused benchmark tests, Groq fallback tests, and the existing Ragas adapter test pass. The older `test_agent_benchmarks.py` suite has an existing failure: `test_known_citation_and_codex_auth_failures_are_retried` expects a citation-validation error to be classified as transient by the legacy runner. That unrelated runner was not changed.

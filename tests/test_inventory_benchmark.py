@@ -33,6 +33,23 @@ class BenchmarkMetricsTests(unittest.TestCase):
         self.assertEqual(numeric_claim_score(claims),(1/3,1))
         self.assertEqual(numeric_claim_score([]),(None,0))
 
+    def test_execution_normalization_accepts_names_and_month_labels(self):
+        from evaluation.inventory_benchmark_metrics import normalize_execution_rows
+        actual,gold=normalize_execution_rows([{'product_name':'A','quantity':10}],
+            [{'product_id':1,'product_name':'A','quantity':10}],{1:'A'})
+        self.assertTrue(compare_rows(actual,gold))
+        actual,gold=normalize_execution_rows([{'product_name':'A','quantity':10}],
+            [{'product_id':1,'quantity':10}],{1:'A',2:'B',3:'B'})
+        self.assertTrue(compare_rows(actual,gold))
+        actual,gold=normalize_execution_rows([{'snapshot_date':'2022-01-31','units':10}],
+            [{'month':'2022-01-01','units':10}],{})
+        self.assertTrue(compare_rows(actual,gold))
+
+    def test_semantic_reference_uses_same_ceiling_and_preserves_top_n(self):
+        from evaluation.run_inventory_agents_benchmark import bounded_reference_sql
+        self.assertTrue(bounded_reference_sql('SELECT COUNT(*) FROM commerce.inventory').endswith('LIMIT 200'))
+        self.assertTrue(bounded_reference_sql('SELECT product_id FROM commerce.inventory LIMIT 20').endswith('LIMIT 20'))
+
     def test_dataset_split_and_reference_coverage(self):
         import hashlib
         import json

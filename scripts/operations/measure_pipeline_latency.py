@@ -122,7 +122,8 @@ def main():
         "base_url": "http://127.0.0.1:8000", "mode": mode,
         "retrieval_method": "translated_hybrid_rerank", "role": "admin",
         "configuration": {"concurrency": 1, "passes": args.passes, "cases_per_pass": len(cases), "timeout_seconds": 180,
-                          "pause_seconds": args.pause, "multiquery_env": os.getenv("KNOWLEDGE_MULTIQUERY_ENABLED", "0")},
+                          "pause_seconds": args.pause, "multiquery_env": os.getenv("KNOWLEDGE_MULTIQUERY_ENABLED", "0"),
+                          "claim_verification_env": os.getenv("KNOWLEDGE_CLAIM_VERIFICATION_ENABLED", "0")},
         "boundaries": {
             "http_e2e": "Client HTTP request through authentication, routing, agents and telemetry; login excluded",
             "request_total_ms": "Handler wall time before persistence of the agent event; authentication excluded",
@@ -158,7 +159,8 @@ def main():
                                    selected_route=metadata.get("selected_route"), application_ok=metadata.get("ok"),
                                    citation_count=len(data.get("evidence", [])), latency=metadata.get("latency"),
                                    answer_characters=len(data.get("answer", "")), error=data.get("detail"),
-                                   answer=data.get("answer"), evidence=data.get("evidence", []))
+                                   answer=data.get("answer"), evidence=data.get("evidence", []),
+                                   claim_verification=metadata.get("claim_verification"))
                     except (httpx.HTTPError, ValueError) as error:
                         row["error_type"] = type(error).__name__
                     row["http_elapsed_ms"] = round((time.perf_counter() - request_started) * 1000, 2)

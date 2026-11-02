@@ -36,7 +36,7 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
     async def test_knowledge_insufficient_context_is_explicit_empty_outcome(self):
         rag = Mock()
         rag.generate_answer.return_value = type('R', (), {'answer': 'No evidence', 'contexts': [],
-                                                         'source_ids': [], 'insufficient_context': True})()
+                                                         'source_ids': [], 'insufficient_context': True, 'verification': None})()
         result = await KnowledgeAgent(rag).run(AgentRequest(question='policy', identity=IDENTITY))
         self.assertFalse(result.metadata['ok'])
         self.assertTrue(result.metadata['insufficient_context'])

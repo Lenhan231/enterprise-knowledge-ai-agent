@@ -287,7 +287,9 @@ def map_result(
                 "docling_label": "chart",
                 "docling_version": docling_version,
                 "text_extraction_method": (
-                    "paddleocr_vl.chart_recognition" if chart_text else "layout_only.chart"
+                    f"paddleocr_vl.{chart.get('text_refinement')}"
+                    if chart_text and chart.get("text_refinement") != "paddleocr_vl_only"
+                    else "paddleocr_vl.chart_recognition" if chart_text else "layout_only.chart"
                 ),
                 "chart_recognition_bbox": chart.get("recognition_bbox", bbox),
                 "chart_recognition_input": chart.get("input"),
@@ -299,6 +301,9 @@ def map_result(
                 **({
                     "chart_recognition_model": chart.get("model"),
                 } if chart_text else {}),
+                **({
+                    "chart_text_refinement": chart["text_refinement"],
+                } if chart_text and chart.get("text_refinement") else {}),
                 "element_type": "chart",
                 "layout_type": "chart",
             },

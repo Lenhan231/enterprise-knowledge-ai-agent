@@ -17,6 +17,7 @@ DocumentProcessor.process(file)
     │           ├── PP-DocLayoutV3 → native layout_detections + Docling clusters
     │           ├── Docling OCR + TableFormer → {elements, tables}
     │           ├── chart + matched title → union crop at 3× → PaddleOCR-VL v1.5
+    │           │     └── Groq vision + existing OCR line candidates → text-cell spelling corrections
     │           └── result_mapper → {elements, tables}
     └── intent=invoice
           └── Vintern in isolated Transformers runtime → invoice_extraction
@@ -76,6 +77,13 @@ separately. It emits a distinct `chart` element; generic
 pictures remain `figure` elements and captions remain separate. Docling still
 receives its supported internal picture label for chart regions.
 Set `docling_chart_recognition=false` to keep chart regions without chart text.
+When `GROQ_API_KEY` is set, the chart crop, PaddleOCR-VL table, and OCR text lines
+inside the crop are sent to `GROQ_VISION_MODEL` (default `qwen/qwen3.8-27b`).
+Groq returns indexed text-cell corrections only. The parser applies them to
+PaddleOCR-VL's original table; cells containing digits, row/column positions,
+and the original table structure remain unchanged. Missing credentials or a
+Groq error keeps the PaddleOCR-VL result. Docker Compose forwards these two
+environment variables to the document-processing service.
 
 ## Invoice intent
 

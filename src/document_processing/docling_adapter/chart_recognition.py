@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import json
 import logging
+import os
+import re
 import tempfile
+import base64
 from threading import Lock
 from io import BytesIO
 from typing import Any
@@ -17,6 +20,18 @@ _PAGE_RENDER_SCALE = 3.0
 _pipeline: Any | None = None
 _pipeline_device: str | None = None
 _pipeline_lock = Lock()
+_groq_client: Any | None = None
+_groq_api_key: str | None = None
+_groq_lock = Lock()
+_NUMERIC_CELL = re.compile(r"\d")
+_NON_TEXT_VALUE = re.compile(r"^[\s.,%$€£¥()+\-−–—/]+$")
+_CORRECTION_SYSTEM = """You correct OCR spelling in Vietnamese chart tables.
+The supplied PaddleOCR-VL table is the source of truth for structure and every numeric cell.
+The image is authoritative for spelling; OCR line candidates are noisy references.
+Return only JSON: {\"corrections\":[{\"row\":0,\"column\":0,\"text\":\"corrected text\"}]}.
+Rows and columns are zero-based in the supplied pipe-delimited table, including its header.
+Return corrections only for cells listed as editable. Do not add, remove, reorder, or combine cells.
+Never return numeric cells, values, or a replacement table. If uncertain, omit the correction."""
 
 
 def recognize_chart_regions(
@@ -57,6 +72,7 @@ def recognize_chart_regions(
             "title_match_score": region.get("title_match_score"),
             "text": "",
             "model": f"PaddleOCR-VL {_MODEL_VERSION}",
+            "text_refinement": "paddleocr_vl_only",
             "input": (
                 "chart_and_matched_title_union_crop"
                 if region.get("title_bbox") else "exact_layout_chart_bbox_crop"
@@ -150,11 +166,116 @@ def recognize_chart_regions(
                 if content
             ).strip()
             result["text"] = text
+            if text and config.get("docling_chart_llm_correction", True):
+                ocr_references = _ocr_text_candidates(page, box)
+                corrected = _correct_chart_text(crop, text, ocr_references)
+                if corrected is not None:
+                    result["text"] = corrected
+                    result["text_refinement"] = "groq_ocr_referenced_text_only"
+                    groq_model = os.getenv("GROQ_VISION_MODEL", "qwen/qwen3.8-27b")
+                    result["model"] = f"PaddleOCR-VL {_MODEL_VERSION} + Groq {groq_model}"
         except Exception:
             _log.exception("PaddleOCR-VL failed on chart region on page %s", page_number)
     if pdf_document is not None:
         pdf_document.close()
     return results
+
+
+def _ocr_text_candidates(page: Any, bbox: tuple[float, float, float, float]) -> list[str]:
+    """Collect existing OCR lines whose centers fall within the chart/title crop."""
+    x0, y0, x1, y1 = bbox
+    candidates = []
+    for cell in getattr(page, "cells", []):
+        if not getattr(cell, "from_ocr", False) or not str(getattr(cell, "text", "")).strip():
+            continue
+        box = cell.to_bounding_box()
+        if x0 <= (box.l + box.r) / 2 <= x1 and y0 <= (box.t + box.b) / 2 <= y1:
+            candidates.append((box.t, box.l, str(cell.text).strip()))
+    return [text for _, _, text in sorted(candidates)[:100]]
+
+
+def _correct_chart_text(crop: Image.Image, table_text: str, ocr_references: list[str]) -> str | None:
+    """Ask Groq to correct text cells only, then merge changes into Paddle's table."""
+    table_lines = [line for line in table_text.splitlines() if "|" in line]
+    rows = [line.split("|") for line in table_lines]
+    editable = [
+        {"row": row_index, "column": column_index, "text": cell.strip()}
+        for row_index, row in enumerate(rows)
+        for column_index, cell in enumerate(row)
+        if cell.strip() and not _NUMERIC_CELL.search(cell) and not _NON_TEXT_VALUE.fullmatch(cell)
+    ]
+    if not rows or not editable or not ocr_references:
+        return None
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return None
+
+    buffer = BytesIO()
+    crop.save(buffer, format="PNG")
+    image_url = "data:image/png;base64," + base64.b64encode(buffer.getvalue()).decode("ascii")
+    prompt = (
+        "Correct spelling and Vietnamese diacritics in editable table labels only. "
+        "Use the chart image and OCR lines as references. Preserve the source table exactly.\n\n"
+        f"PaddleOCR-VL table:\n{table_text}\n\n"
+        f"Editable text cells (row/column/text):\n{json.dumps(editable, ensure_ascii=False)}\n\n"
+        f"OCR line candidates:\n{json.dumps(ocr_references, ensure_ascii=False)}"
+    )
+    try:
+        response = _get_groq_client(api_key).chat.completions.create(
+            model=os.getenv("GROQ_VISION_MODEL", "qwen/qwen3.8-27b"),
+            messages=[
+                {"role": "system", "content": _CORRECTION_SYSTEM},
+                {"role": "user", "content": [
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": image_url, "detail": "high"}},
+                ]},
+            ],
+            temperature=0,
+            max_tokens=1500,
+            response_format={"type": "json_object"},
+        )
+        payload = json.loads(response.choices[0].message.content or "{}")
+        allowed = {(item["row"], item["column"]) for item in editable}
+        for item in payload.get("corrections", []):
+            if not isinstance(item, dict):
+                continue
+            row_index, column_index = item.get("row"), item.get("column")
+            replacement = item.get("text")
+            if (
+                type(row_index) is int and type(column_index) is int
+                and (row_index, column_index) in allowed
+                and isinstance(replacement, str) and replacement.strip()
+                and not _NUMERIC_CELL.search(replacement)
+                and not _NON_TEXT_VALUE.fullmatch(replacement)
+            ):
+                original = rows[row_index][column_index]
+                leading = original[:len(original) - len(original.lstrip())]
+                trailing = original[len(original.rstrip()):]
+                rows[row_index][column_index] = f"{leading}{replacement.strip()}{trailing}"
+        corrected_lines = iter("|".join(row) for row in rows)
+        return "\n".join(
+            next(corrected_lines) if "|" in line else line
+            for line in table_text.splitlines()
+        )
+    except Exception:
+        _log.exception("Groq chart text correction failed; keeping PaddleOCR-VL output")
+        return None
+
+
+def _get_groq_client(api_key: str) -> Any:
+    global _groq_client, _groq_api_key
+    with _groq_lock:
+        if _groq_client is None or _groq_api_key != api_key:
+            from openai import OpenAI
+
+            _groq_client = OpenAI(
+                api_key=api_key,
+                base_url="https://api.groq.com/openai/v1",
+                timeout=60,
+                max_retries=1,
+            )
+            _groq_api_key = api_key
+    return _groq_client
 
 
 def _get_pipeline(device: str) -> Any:

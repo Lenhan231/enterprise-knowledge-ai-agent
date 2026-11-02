@@ -25,7 +25,7 @@ RUN apt-get update \
         "docling==2.129.0" "rapidocr==3.9.2" "onnxruntime>=1.18,<2" \
         "paddlepaddle==3.3.1" "paddleocr[doc-parser]==3.7.0" \
         "setuptools<81" "langchain-text-splitters>=1.0.0" \
-        "vietocr==0.3.13" "opencv-python-headless"
+        "vietocr==0.3.13" "opencv-python-headless" "openai==2.41.0"
 
 COPY src ./src
 

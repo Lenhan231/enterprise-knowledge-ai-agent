@@ -1,5 +1,7 @@
 # Knowledge claim verification — bản thử nghiệm 02/11/2026
 
+Đây là ghi nhận phiên bản v1. Protocol hiện tại và lệnh deploy v2: `docs/notes/knowledge-verifier-v2-20261103.vi.md`.
+
 ## Mục tiêu và giới hạn
 
 Góp ý của An đúng: validator cũ chỉ buộc có citation và citation thuộc tập nguồn được cấp. Thử nghiệm cố định nguồn doanh thu 100, lợi nhuận 20 cho thấy cả số 999, nhầm lợi nhuận thành 100 và nhầm năm đều được chấp nhận nếu có `[S1]`. Kiểm tra số xuất hiện trong nguồn của Report cũng không đủ kiểm chứng chỉ tiêu/năm/phạm vi.

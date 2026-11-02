@@ -1,5 +1,7 @@
 # Giải thích từng dòng thay đổi — Knowledge verifier
 
+Đây là ghi nhận phiên bản v1. Protocol hiện tại và lệnh deploy v2: `docs/notes/knowledge-verifier-v2-20261103.vi.md`.
+
 Các số dòng trỏ vào code của bản sửa này. Dòng trống chỉ ngăn nhóm, không thực thi. File mới được liệt kê toàn bộ; file cũ chỉ liệt kê dòng thêm/sửa. Phần dưới giải thích test và script cùng với runtime; không có phụ thuộc mới.
 `supported` là kết luận của LLM đã qua kiểm tra hợp đồng bằng code, không phải chứng minh toán học rằng claim đúng. `rejected` nghĩa model tìm ra mâu thuẫn/thiếu bằng chứng; `unavailable` nghĩa chưa có kết quả kiểm chứng hợp lệ.
 

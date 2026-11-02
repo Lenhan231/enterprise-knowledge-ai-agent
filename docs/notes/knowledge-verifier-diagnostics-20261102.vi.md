@@ -1,5 +1,7 @@
 # Chẩn đoán ba ca verifier — không thay quyết định
 
+Đây là ghi nhận phiên bản v1. Protocol hiện tại và lệnh deploy v2: `docs/notes/knowledge-verifier-v2-20261103.vi.md`.
+
 ## Baseline cần giữ
 
 VPS đã hoàn tất 28 ca trong `artifacts/local/knowledge-latency/claim-verifier-full-01.jsonl`: 9/11 câu đúng được giữ, 16/17 câu sai bị chặn, R02 lọt qua, F10 bị chặn nhầm, P03 unavailable vì ValueError. Không ghi đè file, đổi nhãn hoặc chọn kết quả đẹp hơn để thay baseline này. Dữ liệu vẫn là bộ chẩn đoán phát triển tự soạn, chưa được review độc lập.

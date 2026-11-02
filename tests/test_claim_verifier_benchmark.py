@@ -101,8 +101,8 @@ class VerifierBenchmarkTest(unittest.TestCase):
         self.assertIsNone(benchmark.validation_error(json.dumps(review()), ANSWER, [SOURCE]))
         self.assertIsNone(benchmark.validation_error("```json\n" + json.dumps(review()) + "\n```", ANSWER, [SOURCE]))
         self.assertEqual(benchmark.validation_error("invalid", ANSWER, [SOURCE]), "invalid_review_schema")
-        self.assertEqual(benchmark.validation_error(json.dumps(review()), ANSWER + " Extra claim.", [SOURCE]),
-                         "incomplete_draft_coverage")
+        self.assertEqual(benchmark.validation_error(json.dumps(review()), ANSWER + " Extra claim [S1].", [SOURCE]),
+                         "incomplete_claim_coverage")
         self.assertEqual(benchmark.validation_error(json.dumps(review(quote="Invented quote")), ANSWER, [SOURCE]),
                          "fabricated_source_quote")
         self.assertEqual(benchmark.validation_error(json.dumps(review(quote=None)), ANSWER, [SOURCE]),
@@ -116,7 +116,7 @@ class VerifierBenchmarkTest(unittest.TestCase):
             wanted = []
             def audit(provider, question, answer, contexts):
                 wanted.append(answer)
-                provider.audit_raw = json.dumps(review(text=answer, verdict="contradicted", quote=None))
+                provider.audit_raw = json.dumps(review(verdict="contradicted", quote=None))
                 return VerificationOutcome(status="rejected", reason="contradicted", claim_count=1)
             with patch.object(benchmark, "AuditRecorder", return_value=llm), \
                  patch.object(benchmark, "verify_answer", side_effect=audit), \

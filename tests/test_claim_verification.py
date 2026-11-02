@@ -11,7 +11,7 @@ from core.latency import latency_events, snapshot
 from core.models.agents import AgentRequest, VerifiedIdentity
 from core.prompts.Knowledge import INSUFFICIENT_ANSWER
 from core.rag.claim_verification import (
-    AnswerReview, VERIFICATION_UNAVAILABLE_ANSWER, validate_review, verify_answer,
+    AnswerReview, VERIFICATION_UNAVAILABLE_ANSWER, claim_blocks, validate_review, verify_answer,
 )
 from core.rag.rag_service import RAGService
 
@@ -23,8 +23,8 @@ ANSWER = "Doanh thu hợp nhất năm 2024 là 100 tỷ đồng [S1]."
 QUOTE = "Consolidated revenue in 2024: VND 100 billion."
 
 
-def review(text=ANSWER, verdict="supported", quote=QUOTE):
-    return {"claims": [{"text": text, "verdict": verdict,
+def review(verdict="supported", quote=QUOTE, claim_id="C1"):
+    return {"claims": [{"claim_id": claim_id, "verdict": verdict,
                         "quotes": [{"source_id": "S1", "text": quote}] if quote else []}]}
 
 
@@ -35,29 +35,61 @@ class ClaimVerificationTest(unittest.TestCase):
         self.assertEqual(result.status, "supported")
         self.assertEqual(result.claim_count, 1)
 
-    def test_code_rejects_missing_claims_changed_text_and_fabricated_quotes(self):
-        for changed in (
-            review(text=ANSWER[:-5]), review(text=ANSWER + " Extra fact."),
-            review(quote="Revenue is 999 billion."), review(quote=None),
-            {"claims": [{"text": ANSWER, "verdict": "supported", "quotes": [
-                {"source_id": "S2", "text": QUOTE}]}]},
-            review(text=ANSWER.replace("[S1]", "[S2]")),
-        ):
+    def test_code_rejects_missing_duplicate_ids_rewrites_and_fabricated_quotes(self):
+        changed_text = review()
+        changed_text["claims"][0]["text"] = ANSWER
+        duplicate = review()
+        duplicate["claims"] *= 2
+        for changed in (review(claim_id="C2"), duplicate, changed_text,
+                        review(quote="Revenue is 999 billion."), review(quote=None),
+                        {"claims": [{"claim_id": "C1", "verdict": "supported", "quotes": [
+                            {"source_id": "S2", "text": QUOTE}]}]}):
             with self.subTest(changed=changed), self.assertRaises(ValueError):
                 validate_review(ANSWER, [SOURCE], AnswerReview.model_validate(changed))
-        # A verifier must not silently omit a second unsupported factual sentence.
         with self.assertRaises(ValueError):
             validate_review(ANSWER + " Profit was 999 [S1].", [SOURCE], AnswerReview.model_validate(review()))
 
-    def test_whitespace_and_multiple_claims_preserve_full_coverage(self):
+    def test_server_preserves_shared_citation_block_without_model_rewrites(self):
+        answer = "Đúng 50 triệu cần Trưởng phòng; 50.000.001 đồng cần thêm Mua sắm [S1]."
+        self.assertEqual(claim_blocks(answer), [{"claim_id": "C1", "text": answer, "source_ids": ["S1"]}])
+        self.assertEqual(claim_blocks("Two sources [S1][S2].")[0]["source_ids"], ["S1", "S2"])
+        with self.assertRaises(ValueError):
+            claim_blocks(ANSWER + " Uncited claim.")
+
+    def test_markdown_closers_are_preserved_but_uncited_text_is_not_hidden(self):
+        for answer in ("| Profit | 20 [S1] |", "**Profit is 20 [S1]**", "Profit is 20 ([S1])"):
+            blocks = claim_blocks(answer)
+            self.assertEqual("".join(blocks[0]["text"].split()), "".join(answer.split()))
+        with self.assertRaises(ValueError):
+            claim_blocks("Profit is 20 [S1] | Uncited new fact |")
+
+    def test_multiple_block_ids_allow_reordered_reviews_but_never_omissions(self):
         other = "Lợi nhuận là 20 tỷ đồng [S1]."
         data = review()
-        data["claims"] += review(text=other, quote="Profit: VND 20 billion.")["claims"]
+        data["claims"] += review(claim_id="C2", quote="Profit: VND 20 billion.")["claims"]
+        data["claims"].reverse()
         result = validate_review(ANSWER + "\n\n" + other, [SOURCE], AnswerReview.model_validate(data))
         self.assertEqual(result.claim_count, 2)
-        data["claims"].reverse()
+        data["claims"].pop()
         with self.assertRaises(ValueError):
             validate_review(ANSWER + other, [SOURCE], AnswerReview.model_validate(data))
+
+    def test_wrong_arithmetic_is_rejected_before_llm(self):
+        llm = Mock()
+        result = verify_answer(llm, "Giao 100, chấp nhận 90, từ chối 15?",
+                               "Hợp lệ vì 90 + 15 = 95, không vượt lượng giao 100 [S1].", [SOURCE])
+        self.assertEqual(result.status, "rejected")
+        self.assertEqual(result.reason, "arithmetic_mismatch")
+        self.assertEqual(result.arithmetic_checked, 1)
+        llm.generate.assert_not_called()
+
+    def test_correct_calculation_never_overrides_semantic_rejection(self):
+        llm = Mock()
+        llm.generate.return_value = json.dumps(review(verdict="contradicted", quote=None))
+        result = verify_answer(llm, "Profit?", "Profit is 90 + 15 = 105 billion [S1].", [SOURCE])
+        self.assertEqual(result.status, "rejected")
+        self.assertEqual(result.arithmetic_checked, 1)
+        llm.generate.assert_called_once()
 
     def test_negative_verdicts_reject_entire_draft(self):
         for verdict in ("contradicted", "insufficient"):
@@ -172,7 +204,7 @@ class KnowledgeVerificationIntegrationTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_rejected_draft_is_not_returned_or_exposed_as_evidence(self):
         draft = "Profit in 2024 was VND 100 billion [S1]."
-        for response in (json.dumps(review(text=draft, verdict="contradicted", quote=None)), "invalid JSON"):
+        for response in (json.dumps(review(verdict="contradicted", quote=None)), "invalid JSON"):
             rag = RAGService.__new__(RAGService)
             rag.retrieve_contexts = Mock(return_value=[SOURCE])
             rag.llm = Mock()

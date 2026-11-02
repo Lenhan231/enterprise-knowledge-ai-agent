@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from pydantic import ValidationError
 from dotenv import load_dotenv
 from core.llm.groq_provider import GroqProvider
-from core.rag.claim_verification import AnswerReview, validate_review, verify_answer
+from core.rag.claim_verification import parse_review, validate_review, verify_answer
 from core.prompts.knowledge_verification import CLAIM_VERIFICATION_PROMPT
 
 
@@ -31,9 +31,7 @@ def validation_error(raw, answer, contexts):
     if raw is None:
         return None
     try:
-        # Replay the existing parser/checks without another LLM call or changing its verdict.
-        fenced = re.fullmatch(r"\s*```(?:json)?\s*\n(.*?)\n```\s*", raw, flags=re.DOTALL | re.IGNORECASE)
-        review = AnswerReview.model_validate_json(fenced.group(1) if fenced else raw)
+        review = parse_review(raw)
         validate_review(answer, contexts, review)
     except ValidationError:
         return "invalid_review_schema"
@@ -72,6 +70,7 @@ def main():
             output.write(json.dumps({"dataset": dataset["dataset_id"], "model": llm.model_name,
                                      "limitations": dataset["limitations"], "api_key_env": args.api_key_env or "pool",
                                      "case_ids": [c["id"] for c in cases],
+                                     "verification_protocol": "claim-blocks-v2",
                                      "cases_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest(),
                                      "prompt_sha256": hashlib.sha256(CLAIM_VERIFICATION_PROMPT.encode()).hexdigest(),
                                      "verifier_timeout_seconds": 15, "max_output_tokens": 3072}) + "\n")
@@ -83,7 +82,7 @@ def main():
                 llm.audit_raw = None
                 started = time.perf_counter()
                 outcome = verify_answer(llm, case["question"], case["answer"], contexts)
-                row = {"id": case["id"], "expected": case["expected"], **outcome.model_dump(),
+                row = {"id": case["id"], "context": case["context"], "expected": case["expected"], **outcome.model_dump(),
                        "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
                        "usage": llm.last_usage, "audit_raw": llm.audit_raw,
                        "validation_error": validation_error(llm.audit_raw, case["answer"], contexts)}
@@ -96,18 +95,29 @@ def main():
                 if outcome.reason in {"RateLimitError", "AuthenticationError", "PermissionDeniedError"}:
                     break
                 time.sleep(args.pause)
-            summary = {"completed": len(results), "planned": len(cases),
-                       "expected_supported": sum(r["expected"] == "supported" for r in results),
-                       "expected_rejected": sum(r["expected"] == "rejected" for r in results),
-                       "supported_kept": sum(r["expected"] == "supported" and r["status"] == "supported" for r in results),
-                       "unsupported_passed": sum(r["expected"] == "rejected" and r["status"] == "supported" for r in results),
-                       "unsupported_rejected": sum(r["expected"] == "rejected" and r["status"] == "rejected" for r in results),
-                       "unavailable": sum(r["status"] == "unavailable" for r in results)}
+            summary = summarize_results(results, len(cases))
+            summary["by_context"] = {
+                group: summarize_results([r for r in results if r["context"] == group],
+                                         sum(c["context"] == group for c in cases))
+                for group in sorted({c["context"] for c in cases})
+            }
             output.write(json.dumps({"summary": summary}) + "\n")
             print(json.dumps({"summary": summary}), flush=True)
     finally:
         llm.close()
     return int(len(results) != len(cases) or any(r["status"] != r["expected"] for r in results))
+
+
+def summarize_results(results, planned):
+    return {
+        "completed": len(results), "planned": planned,
+        "expected_supported": sum(r["expected"] == "supported" for r in results),
+        "expected_rejected": sum(r["expected"] == "rejected" for r in results),
+        "supported_kept": sum(r["expected"] == "supported" and r["status"] == "supported" for r in results),
+        "unsupported_passed": sum(r["expected"] == "rejected" and r["status"] == "supported" for r in results),
+        "unsupported_rejected": sum(r["expected"] == "rejected" and r["status"] == "rejected" for r in results),
+        "unavailable": sum(r["status"] == "unavailable" for r in results),
+    }
 
 
 def rate_limit_details(provider):

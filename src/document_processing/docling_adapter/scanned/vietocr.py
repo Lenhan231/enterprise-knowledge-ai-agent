@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 import re
-import subprocess
-import tempfile
 import unicodedata
 from pathlib import Path
 from typing import ClassVar, Type
@@ -23,12 +21,10 @@ from docling_core.types.doc import BoundingBox, CoordOrigin
 from docling_core.types.doc.page import TextCell
 from docling.models.base_ocr_model import BaseOcrModel
 from docling.models.factories import get_ocr_factory
-from docling.models.stages.ocr.tesseract_utils import (
-    parse_tesseract_orientation,
-    tesseract_box_to_bounding_rectangle,
-)
+from docling.models.stages.ocr.tesseract_utils import tesseract_box_to_bounding_rectangle
 from docling.utils.profiling import TimeRecorder
 from .line_detection import create_line_detector, crop_line, detect_line_boxes
+from ..orientation import detect_tesseract_orientation, rotate_for_reading
 
 
 class VietOcrOptions(OcrOptions):
@@ -74,24 +70,8 @@ class VietOcrModel(BaseOcrModel):
 
     @staticmethod
     def _detect_orientation(image: Image.Image) -> tuple[int, int | None, float | None]:
-        """Return correction angle and OSD evidence; uncertain crops stay unrotated."""
-        with tempfile.NamedTemporaryFile(suffix=".png") as image_file:
-            image.save(image_file.name)
-            try:
-                output = subprocess.run(
-                    ["tesseract", image_file.name, "stdout", "--psm", "0", "-l", "osd"],
-                    capture_output=True,
-                    check=True,
-                    text=True,
-                ).stdout
-            except (OSError, subprocess.CalledProcessError):
-                return 0, None, None
-        orientation = re.search(r"Orientation in degrees:\s*(\d+)", output)
-        confidence = re.search(r"Orientation confidence:\s*([\d.]+)", output)
-        orientation_degrees = int(orientation.group(1)) if orientation else None
-        correction = parse_tesseract_orientation(orientation.group(1)) if orientation else 0
-        confidence_value = float(confidence.group(1)) if confidence else None
-        return correction, orientation_degrees, confidence_value
+        """Retain the region-level OSD hook used before RapidOCR line detection."""
+        return detect_tesseract_orientation(image)
 
     @staticmethod
     def _cell_bbox(cell: TextCell) -> tuple[float, float, float, float]:
@@ -181,7 +161,7 @@ class VietOcrModel(BaseOcrModel):
                         "osd_confidence": osd_confidence,
                     })
                     if doc_orientation:
-                        crop = crop.rotate(-doc_orientation, expand=True)
+                        crop = rotate_for_reading(crop, doc_orientation)
                     image_size = crop.size
                     image = cv2.cvtColor(np.asarray(crop), cv2.COLOR_RGB2BGR)
                     boxes = detect_line_boxes(self.detector, image)

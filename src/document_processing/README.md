@@ -14,8 +14,9 @@ See [`architect.md`](architect.md) for the current parser flow and invoice branc
 DocumentProcessor.process(file)
     ├── intent=document (default)
     │     └── DoclingProcessor
+    │           ├── page OSD → rotate detector view, map boxes back to source coordinates
     │           ├── PP-DocLayoutV3 → native layout_detections + Docling clusters
-    │           ├── Docling OCR + TableFormer → {elements, tables}
+    │           ├── OCR-region OSD → RapidOCR line detection → VietOCR; TableFormer → {elements, tables}
     │           ├── chart + matched title → union crop at 3× → OpenParser/PaddleOCR-VL 1.6 table
     │           │     └── Groq + existing VietOCR lines → text-cell spelling corrections
     │           │           (direct Groq vision extraction if OpenParser key is unavailable)
@@ -61,7 +62,12 @@ not provide a separate `table_title` class.
 The shared element taxonomy has 12 labels; the layout benchmark keeps its
 separate five-label mapping.
 
-PDFs always use full-page OCR; Docling skips extracting native PDF text cells.
+Before PP-DocLayoutV3 runs, Tesseract OSD checks each rendered page and rotates
+the detector's image view when needed. Detected boxes are mapped back to the
+original page coordinates, so previews and parser provenance keep the source
+orientation. VietOCR then runs OSD on each OCR region before RapidOCR line
+detection and recognition; this can correct a rotated region on an otherwise
+upright page. PDFs always use full-page OCR; Docling skips extracting native PDF text cells.
 The OCR engine remains configurable (`vietocr` or `tesseract`). OCR for
 embedded Office pictures and standalone images follows the `docling_ocr`
 setting. PDF images are covered by the full-page OCR pass and are not sent

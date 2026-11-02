@@ -15,6 +15,11 @@ from docling.datamodel.pipeline_options import BaseLayoutOptions
 from docling.models.base_layout_model import BaseLayoutModel
 from docling.models.factories import get_layout_factory
 from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel
+from .orientation import (
+    bbox_in_original_orientation,
+    detect_tesseract_orientation,
+    rotate_for_reading,
+)
 
 _log = logging.getLogger(__name__)
 
@@ -139,6 +144,10 @@ class PPDocLayoutModel(BaseLayoutModel):
         del conv_res
         import numpy as np
 
+        if pages and int(pages[0].page_no) == 1:
+            self.chart_regions.clear()
+            self.layout_detections.clear()
+
         predictions: list[LayoutPrediction] = []
         for page in pages:
             image = page.get_image(scale=1.0)
@@ -146,8 +155,10 @@ class PPDocLayoutModel(BaseLayoutModel):
                 predictions.append(LayoutPrediction())
                 continue
 
+            correction, _, _ = detect_tesseract_orientation(image)
+            layout_image = rotate_for_reading(image, correction)
             # PaddleX accepts NumPy image inputs in OpenCV's BGR channel order.
-            image_bgr = np.asarray(image.convert("RGB"))[:, :, ::-1].copy()
+            image_bgr = np.asarray(layout_image.convert("RGB"))[:, :, ::-1].copy()
             result = next(iter(self.model.predict(
                 input=image_bgr,
                 batch_size=1,
@@ -171,6 +182,9 @@ class PPDocLayoutModel(BaseLayoutModel):
                 if len(coordinates) != 4:
                     continue
                 x1, y1, x2, y2 = map(float, coordinates)
+                x1, y1, x2, y2 = bbox_in_original_orientation(
+                    (x1, y1, x2, y2), image.size, correction
+                )
                 source_label = str(box.get("label", "text")).strip().lower()
                 score = float(box.get("score", 0.0))
                 label = _LABELS.get(source_label)

@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from pydantic import ValidationError
 from dotenv import load_dotenv
 from core.llm.groq_provider import GroqProvider
-from core.rag.claim_verification import parse_review, validate_review, verify_answer
+from core.rag.claim_verification import AUDIT_MAX_OUTPUT_TOKENS, parse_review, validate_review, verify_answer
 from core.prompts.knowledge_verification import CLAIM_VERIFICATION_PROMPT
 
 
@@ -70,10 +70,10 @@ def main():
             output.write(json.dumps({"dataset": dataset["dataset_id"], "model": llm.model_name,
                                      "limitations": dataset["limitations"], "api_key_env": args.api_key_env or "pool",
                                      "case_ids": [c["id"] for c in cases],
-                                     "verification_protocol": "claim-blocks-v2",
+                                     "verification_protocol": "claim-evidence-v3",
                                      "cases_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest(),
                                      "prompt_sha256": hashlib.sha256(CLAIM_VERIFICATION_PROMPT.encode()).hexdigest(),
-                                     "verifier_timeout_seconds": 15, "max_output_tokens": 3072}) + "\n")
+                                     "verifier_timeout_seconds": 15, "max_output_tokens": AUDIT_MAX_OUTPUT_TOKENS}) + "\n")
             output.flush()
             for case in cases:
                 ids = set(re.findall(r"\[(S\d+)\]", case["answer"]))

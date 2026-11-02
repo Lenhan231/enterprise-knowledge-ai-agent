@@ -176,6 +176,10 @@ class DoclingProcessor:
             str(page_number): {"width": width, "height": height}
             for page_number, (width, height) in page_sizes.items()
         }
+        mapped["page_orientation_corrections"] = {
+            str(page_number): int(correction)
+            for page_number, correction in page_orientation_corrections.items()
+        }
         if source_format == "pdf":
             mapped["metadata"].update({
                 "pdf_processing_route": "full_page_ocr",

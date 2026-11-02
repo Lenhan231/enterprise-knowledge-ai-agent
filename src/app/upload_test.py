@@ -6,11 +6,13 @@ import logging
 import os
 import time
 import uuid
+from io import BytesIO
 from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import Response
+from PIL import Image
 
 from app.security import _require_same_origin, require_permission
 
@@ -120,11 +122,31 @@ async def create_upload_test(
     except (ValueError, RuntimeError) as error:
         status_code = 503 if isinstance(error, RuntimeError) else 422
         raise HTTPException(status_code, f"Upload Test processing failed: {error}") from error
+    page_orientation_corrections = parsed.get("page_orientation_corrections") or {}
+    for page_number, raw_correction in page_orientation_corrections.items():
+        correction = int(raw_correction) % 360
+        if correction == 0:
+            continue
+        index = int(page_number) - 1
+        if not 0 <= index < len(page_previews):
+            continue
+        with Image.open(BytesIO(page_previews[index])) as source_preview:
+            oriented_preview = source_preview.rotate(-correction, expand=True)
+            buffer = BytesIO()
+            oriented_preview.save(buffer, format="PNG")
+            page_previews[index] = buffer.getvalue()
+        if correction in {90, 270}:
+            page_size = preview_page_sizes[str(page_number)]
+            preview_page_sizes[str(page_number)] = {
+                "width": page_size["height"],
+                "height": page_size["width"],
+            }
     runtime_info = {
         "pymupdf": fitz.VersionBind,
         "docling": parsed["metadata"].get("docling_version"),
         "preview_page_sizes": preview_page_sizes,
         "parser_page_sizes": parsed.get("page_sizes") or preview_page_sizes,
+        "page_orientation_corrections": page_orientation_corrections,
     }
     runtime_info["processing_time_ms"] = max(
         0, round((time.perf_counter() - processing_started) * 1000),

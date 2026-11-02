@@ -339,6 +339,7 @@ function renderOcrTestDetails(run) {
       const columns = Array.isArray(data.columns) ? data.columns : [];
       const rows = Array.isArray(data.rows) ? data.rows : [];
       const headers = columns.length ? columns : [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
+      const tableMinWidth = Math.max(460, headers.length * 115);
       const metadata = table.metadata || {};
       const parserMetadata = metadata.parser_details || {};
       const ocr = { ...(metadata.ocr || parserMetadata.ocr || {}) };
@@ -362,7 +363,7 @@ function renderOcrTestDetails(run) {
         ...(continuation ? [["Continuation", continuation]] : []),
       ];
       return `<article class="ocr-test-table"><h5>Table ${formatNumber(table.table_index + 1)} <span>${formatNumber(rows.length)} rows</span></h5>
-        ${headers.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table"><thead><tr>${headers.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${headers.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
+        ${headers.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table" style="min-width:${tableMinWidth}px"><thead><tr>${headers.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${headers.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
         <details class="candidate-source"><summary>Table context</summary><dl class="ocr-context-list">
           <dt>Source</dt><dd>${escapeHtml(context.source_filename || run.source_filename)}</dd>
           <dt>Section</dt><dd>${escapeHtml(context.section_title || "Not extracted")}</dd>
@@ -402,9 +403,10 @@ function renderOcrTestDetails(run) {
             const rows = Array.isArray(data.rows) ? data.rows : [];
             const columns = Array.isArray(data.columns) && data.columns.length
               ? data.columns : [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
+            const tableMinWidth = Math.max(460, columns.length * 115);
             const location = table.metadata?.sheet_name ? ` · ${escapeHtml(table.metadata.sheet_name)}` : "";
             return `<article class="ocr-test-table"><h5>Table ${formatNumber(table.table_index + 1)}${location} <span>${formatNumber(rows.length)} rows</span></h5>
-              ${columns.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table"><thead><tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
+              ${columns.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table" style="min-width:${tableMinWidth}px"><thead><tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
               <details class="candidate-source"><summary>Table metadata</summary><pre>${escapeHtml(JSON.stringify(table.metadata, null, 2))}</pre></details></article>`;
           }).join("") || '<p class="ocr-test-empty">No unpaged structured tables.</p>'}
         </section>

@@ -101,55 +101,74 @@ Các số dòng trỏ vào code của bản sửa này. Dòng trống chỉ ngă
 | 24 | `parser.add_argument("--output", type=Path, required=True, help="New JSONL file; flushed after each case")` | Bắt buộc chọn output mới, ghi từng ca để giữ kết quả nếu bị ngắt. |
 | 25 | `parser.add_argument("--limit", type=int, default=0, help="0 runs all diagnostic cases")` | Cho phép chạy smoke một phần; 0 nghĩa toàn bộ bộ chẩn đoán. |
 | 26 | `parser.add_argument("--pause", type=float, default=15)` | Mặc định nghỉ 15 giây để giảm dồn request, không giải quyết quota ngày. |
-| 27 | `args = parser.parse_args()` | Parse CLI. |
-| 28 | `if args.limit < 0 or not 0 <= args.pause <= 60:` | Giới hạn limit và pause trước khi gọi provider. |
-| 29 | `parser.error("limit must be nonnegative and pause must be 0..60")` | Báo sai cấu hình, không bắt đầu tiêu token. |
-| 30 | `if args.output.exists():` | Kiểm tra file đã tồn tại. |
-| 31 | `parser.error("Choose a new output file; previous results are never overwritten")` | Bảo vệ kết quả cũ, yêu cầu tên khác. |
-| 32 | `load_dotenv(ROOT / ".env")` | Nạp biến môi trường, không ghi đè env container. |
-| 33 | `dataset = json.loads(args.cases.read_text())` | Đọc dữ liệu chẩn đoán tự soạn. |
-| 34 | `cases = dataset["cases"][:args.limit or None]` | Chọn số ca theo --limit; None giữ toàn bộ. |
-| 35 | `args.output.parent.mkdir(parents=True, exist_ok=True)` | Tạo thư mục kết quả nếu chưa có. |
-| 36 | `results = []` | Giữ các kết quả đã hoàn tất để tổng hợp. |
-| 37 | `llm = GroqProvider()` | Khởi tạo provider bằng env đang cấu hình, không dùng key hardcode. |
-| 38 | `try:` | Đảm bảo đóng provider ở finally. |
-| 39 | `with os.fdopen(os.open(args.output, os.O_WRONLY &#124; os.O_CREAT &#124; os.O_EXCL, 0o600), "w") as output:` | O_EXCL chặn ghi đè kể cả có race; quyền 0600; fdopen biến descriptor thành text stream. |
-| 40 | `output.write(json.dumps({"dataset": dataset["dataset_id"], "model": llm.model_name,` | Ghi manifest đầu file gồm dataset và model. |
-| 41 | `"limitations": dataset["limitations"],` | Giữ cảnh báo dữ liệu giả lập, chưa đại diện production. |
-| 42 | `"cases_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest(),` | Hash bytes của bộ test để phát hiện bộ test đã đổi. |
-| 43 | `"prompt_sha256": hashlib.sha256(CLAIM_VERIFICATION_PROMPT.encode()).hexdigest(),` | Hash prompt để không trộn kết quả giữa hai prompt. |
-| 44 | `"verifier_timeout_seconds": 15, "max_output_tokens": 3072}) + "\n")` | Ghi đúng ngân sách timeout/output của bản hiện tại. |
-| 45 | `output.flush()` | Đẩy manifest ra file ngay, không chờ xong cả benchmark. |
-| 46 | `for case in cases:` | Chạy tuần tự từng ca, không tạo tải đồng thời. |
-| 47 | `ids = set(re.findall(r"\[(S\d+)\]", case["answer"]))` | Trích ID từ bản nháp cố định. |
-| 48 | `contexts = [c for c in dataset["contexts"][case["context"]] if c["source_id"] in ids]` | Chỉ cấp nguồn được bản nháp cite, giống nhánh production. |
-| 49 | `llm.last_usage = None` | Xóa usage của ca trước để lỗi provider không bị gán nhầm token cũ. |
-| 50 | `started = time.perf_counter()` | Bắt đầu đo riêng lượt verifier. |
-| 51 | `outcome = verify_answer(llm, case["question"], case["answer"], contexts)` | Gọi audit với dữ liệu của ca, không sinh lại câu trả lời. |
-| 52 | `row = {"id": case["id"], "expected": case["expected"], **outcome.model_dump(),` | Ghi ID/nhãn chuẩn/trạng thái kiểm chứng của ca. |
-| 53 | `"elapsed_ms": round((time.perf_counter() - started) * 1000, 2),` | Đo thời gian millisecond, không gồm pause. |
-| 54 | `"usage": llm.last_usage}` | Lưu usage thực provider trả, có thể null khi lỗi. |
-| 55 | `results.append(row)` | Lưu kết quả để tổng hợp. |
-| 56 | `output.write(json.dumps(row) + "\n")` | Ghi một dòng JSON cho ca vừa hoàn tất. |
-| 57 | `output.flush()` | Flush ngay để không mất tất cả kết quả khi dừng sau đó. |
-| 58 | `print(json.dumps(row), flush=True)` | In tiến độ ra terminal. |
-| 59 | `if outcome.reason in {"RateLimitError", "AuthenticationError", "PermissionDeniedError"}:` | Nhận diện quota/auth không còn dùng được. |
-| 60 | `break` | Dừng sớm, không tiếp tục tiêu token/lặp lỗi toàn bộ bộ test. |
-| 61 | `time.sleep(args.pause)` | Nghỉ theo CLI sau ca. |
-| 62 | `summary = {"completed": len(results), "planned": len(cases),` | Tổng hợp số ca hoàn tất và số dự kiến. |
-| 63 | `"expected_supported": sum(r["expected"] == "supported" for r in results),` | Mẫu số câu đúng trong phần đã chạy. |
-| 64 | `"expected_rejected": sum(r["expected"] == "rejected" for r in results),` | Mẫu số câu sai trong phần đã chạy. |
-| 65 | `"supported_kept": sum(r["expected"] == "supported" and r["status"] == "supported" for r in results),` | Đếm câu đúng được giữ lại. |
-| 66 | `"unsupported_passed": sum(r["expected"] == "rejected" and r["status"] == "supported" for r in results),` | Đếm lỗi nguy hiểm: câu sai vẫn đi qua. |
-| 67 | `"unsupported_rejected": sum(r["expected"] == "rejected" and r["status"] == "rejected" for r in results),` | Đếm câu sai bị từ chối bằng verdict, không tính provider error là chặn đúng. |
-| 68 | `"unavailable": sum(r["status"] == "unavailable" for r in results)}` | Đếm riêng lượt chưa kiểm chứng được, gồm JSON, coverage, quota hoặc timeout. |
-| 69 | `output.write(json.dumps({"summary": summary}) + "\n")` | Ghi summary cuối file. |
-| 70 | `print(json.dumps({"summary": summary}), flush=True)` | In summary để người chạy gửi lại. |
-| 71 | `finally:` | Luôn đóng kết nối provider. |
-| 72 | `llm.close()` | Đóng các HTTP client của các key. |
-| 73 | `return int(len(results) != len(cases) or any(r["status"] != r["expected"] for r in results))` | Exit code 1 khi chưa chạy đủ hoặc bất kỳ ca nào khác nhãn chuẩn; không che thất bại. |
-| 76 | `if __name__ == "__main__":` | Chỉ tự chạy khi gọi script trực tiếp. |
-| 77 | `raise SystemExit(main())` | Trả exit code cho shell để CI/pipefail phát hiện lỗi. |
+| 27 | `parser.add_argument("--api-key-env", help="Use only this GROQ_API_KEY[_N] variable for this process")` | Chọn một biến Groq key để chẩn đoán riêng trong tiến trình CLI, không thay env của backend web. |
+| 28 | `args = parser.parse_args()` | Parse CLI. |
+| 29 | `if args.limit < 0 or not 0 <= args.pause <= 60:` | Giới hạn limit và pause trước khi gọi provider. |
+| 30 | `parser.error("limit must be nonnegative and pause must be 0..60")` | Báo sai cấu hình, không bắt đầu tiêu token. |
+| 31 | `if args.output.exists():` | Kiểm tra file đã tồn tại. |
+| 32 | `parser.error("Choose a new output file; previous results are never overwritten")` | Bảo vệ kết quả cũ, yêu cầu tên khác. |
+| 33 | `load_dotenv(ROOT / ".env")` | Nạp biến môi trường, không ghi đè env container. |
+| 34 | `if args.api_key_env and (not re.fullmatch(r"GROQ_API_KEY(?:_\d+)?", args.api_key_env)` | Chỉ nhận tên GROQ_API_KEY hoặc GROQ_API_KEY_N, không nhận biến bí mật tùy ý. |
+| 35 | `or not os.getenv(args.api_key_env, "").strip()):` | Biến được chọn phải có giá trị không rỗng; không in giá trị ra terminal. |
+| 36 | `parser.error("Selected Groq key variable is invalid or empty")` | Dừng trước provider/API call nếu tên biến sai hoặc chưa cấu hình. |
+| 37 | `dataset = json.loads(args.cases.read_text())` | Đọc dữ liệu chẩn đoán tự soạn. |
+| 38 | `cases = dataset["cases"][:args.limit or None]` | Chọn số ca theo --limit; None giữ toàn bộ. |
+| 39 | `args.output.parent.mkdir(parents=True, exist_ok=True)` | Tạo thư mục kết quả nếu chưa có. |
+| 40 | `results = []` | Giữ các kết quả đã hoàn tất để tổng hợp. |
+| 41 | `llm = GroqProvider(api_keys=[os.environ[args.api_key_env]]) if args.api_key_env else GroqProvider()` | Nếu chọn key thì chỉ tạo provider với key đó; nếu không giữ pool/failover cũ. |
+| 42 | `try:` | Đảm bảo đóng provider ở finally. |
+| 43 | `with os.fdopen(os.open(args.output, os.O_WRONLY &#124; os.O_CREAT &#124; os.O_EXCL, 0o600), "w") as output:` | O_EXCL chặn ghi đè kể cả có race; quyền 0600; fdopen biến descriptor thành text stream. |
+| 44 | `output.write(json.dumps({"dataset": dataset["dataset_id"], "model": llm.model_name,` | Ghi manifest đầu file gồm dataset và model. |
+| 45 | `"limitations": dataset["limitations"], "api_key_env": args.api_key_env or "pool",` | Ghi tên biến key hoặc pool làm provenance, không ghi key. |
+| 46 | `"cases_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest(),` | Hash bytes của bộ test để phát hiện bộ test đã đổi. |
+| 47 | `"prompt_sha256": hashlib.sha256(CLAIM_VERIFICATION_PROMPT.encode()).hexdigest(),` | Hash prompt để không trộn kết quả giữa hai prompt. |
+| 48 | `"verifier_timeout_seconds": 15, "max_output_tokens": 3072}) + "\n")` | Ghi đúng ngân sách timeout/output của bản hiện tại. |
+| 49 | `output.flush()` | Đẩy manifest ra file ngay, không chờ xong cả benchmark. |
+| 50 | `for case in cases:` | Chạy tuần tự từng ca, không tạo tải đồng thời. |
+| 51 | `ids = set(re.findall(r"\[(S\d+)\]", case["answer"]))` | Trích ID từ bản nháp cố định. |
+| 52 | `contexts = [c for c in dataset["contexts"][case["context"]] if c["source_id"] in ids]` | Chỉ cấp nguồn được bản nháp cite, giống nhánh production. |
+| 53 | `llm.last_usage = None` | Xóa usage của ca trước để lỗi provider không bị gán nhầm token cũ. |
+| 54 | `started = time.perf_counter()` | Bắt đầu đo riêng lượt verifier. |
+| 55 | `outcome = verify_answer(llm, case["question"], case["answer"], contexts)` | Gọi audit với dữ liệu của ca, không sinh lại câu trả lời. |
+| 56 | `row = {"id": case["id"], "expected": case["expected"], **outcome.model_dump(),` | Ghi ID/nhãn chuẩn/trạng thái kiểm chứng của ca. |
+| 57 | `"elapsed_ms": round((time.perf_counter() - started) * 1000, 2),` | Đo thời gian millisecond, không gồm pause. |
+| 58 | `"usage": llm.last_usage}` | Lưu usage thực provider trả, có thể null khi lỗi. |
+| 59 | `if outcome.reason == "RateLimitError":` | Chỉ trích chi tiết quota khi kết quả thật sự là RateLimitError. |
+| 60 | `row["rate_limit"] = rate_limit_details(llm)` | Gắn trường rate_limit an toàn vào JSONL và output, không còn chỉ ghi tên exception. |
+| 61 | `results.append(row)` | Lưu kết quả để tổng hợp. |
+| 62 | `output.write(json.dumps(row) + "\n")` | Ghi một dòng JSON cho ca vừa hoàn tất. |
+| 63 | `output.flush()` | Flush ngay để không mất tất cả kết quả khi dừng sau đó. |
+| 64 | `print(json.dumps(row), flush=True)` | In tiến độ ra terminal. |
+| 65 | `if outcome.reason in {"RateLimitError", "AuthenticationError", "PermissionDeniedError"}:` | Nhận diện quota/auth không còn dùng được. |
+| 66 | `break` | Dừng sớm, không tiếp tục tiêu token/lặp lỗi toàn bộ bộ test. |
+| 67 | `time.sleep(args.pause)` | Nghỉ theo CLI sau ca. |
+| 68 | `summary = {"completed": len(results), "planned": len(cases),` | Tổng hợp số ca hoàn tất và số dự kiến. |
+| 69 | `"expected_supported": sum(r["expected"] == "supported" for r in results),` | Mẫu số câu đúng trong phần đã chạy. |
+| 70 | `"expected_rejected": sum(r["expected"] == "rejected" for r in results),` | Mẫu số câu sai trong phần đã chạy. |
+| 71 | `"supported_kept": sum(r["expected"] == "supported" and r["status"] == "supported" for r in results),` | Đếm câu đúng được giữ lại. |
+| 72 | `"unsupported_passed": sum(r["expected"] == "rejected" and r["status"] == "supported" for r in results),` | Đếm lỗi nguy hiểm: câu sai vẫn đi qua. |
+| 73 | `"unsupported_rejected": sum(r["expected"] == "rejected" and r["status"] == "rejected" for r in results),` | Đếm câu sai bị từ chối bằng verdict, không tính provider error là chặn đúng. |
+| 74 | `"unavailable": sum(r["status"] == "unavailable" for r in results)}` | Đếm riêng lượt chưa kiểm chứng được, gồm JSON, coverage, quota hoặc timeout. |
+| 75 | `output.write(json.dumps({"summary": summary}) + "\n")` | Ghi summary cuối file. |
+| 76 | `print(json.dumps({"summary": summary}), flush=True)` | In summary để người chạy gửi lại. |
+| 77 | `finally:` | Luôn đóng kết nối provider. |
+| 78 | `llm.close()` | Đóng các HTTP client của các key. |
+| 79 | `return int(len(results) != len(cases) or any(r["status"] != r["expected"] for r in results))` | Exit code 1 khi chưa chạy đủ hoặc bất kỳ ca nào khác nhãn chuẩn; không che thất bại. |
+| 82 | `def rate_limit_details(provider):` | Hàm chẩn đoán quota từ lỗi rate limit cuối của provider. |
+| 83 | `error = provider._last_rate_error` | Đọc exception cuối được provider giữ sẵn, không gọi API thêm. |
+| 84 | `body = getattr(error, "body", {})` | Lấy body nếu có; thiếu thì dùng dict rỗng. |
+| 85 | `if isinstance(body, dict):` | Chỉ xử lý message từ body dạng dict. |
+| 86 | `body = body.get("error", body)` | Hỗ trợ cả lỗi bọc trong error và lỗi top-level. |
+| 87 | `message = str(body.get("message", "")) if isinstance(body, dict) else ""` | Chỉ đọc message nội bộ để trích trường quota; không trả nguyên message. |
+| 88 | `kind = re.search(r"\b(TPM&#124;TPD&#124;RPM&#124;RPD&#124;ITPM&#124;OTPM)\b", message)` | Nhận diện loại quota phút/ngày/token/request; không khớp thì unknown. |
+| 89 | `headers = getattr(getattr(error, "response", None), "headers", {})` | Đọc headers nếu exception có response; không dump toàn bộ headers. |
+| 90 | `# Only quota fields; never persist raw provider errors, keys or organization IDs.` | Giải thích vì sao chỉ xuất trường quota, tránh key/org ID trong thông báo lỗi. |
+| 91 | `values = {name.lower(): value.rstrip(",.") for name, value in` | Trích các trường số Limit/Used/Requested, bỏ dấu phân cách cuối câu. |
+| 92 | `re.findall(r"\b(Limit&#124;Used&#124;Requested)\s*:?\s*([\d,.]+)", message)}` | Regex chỉ nhận nhãn quota và số, không nhận văn bản nhạy cảm tùy ý. |
+| 93 | `return {"kind": kind.group(1) if kind else "unknown",` | Trả loại quota, hoặc unknown để không đoán khi message khác định dạng. |
+| 94 | `"retry_after": headers.get("retry-after"), **values}` | Trả retry-after và các trường số đã lọc, không phải thông báo lỗi nguyên văn. |
+| 97 | `if __name__ == "__main__":` | Chỉ tự chạy khi gọi script trực tiếp. |
+| 98 | `raise SystemExit(main())` | Trả exit code cho shell để CI/pipefail phát hiện lỗi. |
 
 ## `src/core/prompts/knowledge_verification.py`
 
@@ -444,40 +463,82 @@ Các số dòng trỏ vào code của bản sửa này. Dòng trống chỉ ngă
 | 21 | `with tempfile.TemporaryDirectory() as folder:` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
 | 22 | `output = Path(folder) / "diagnostic.jsonl"` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
 | 23 | `llm = Mock(model_name="test-model", last_usage=None)` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 24 | `with patch.object(benchmark, "GroqProvider", return_value=llm), \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
-| 25 | `patch.object(benchmark, "verify_answer", side_effect=[` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
-| 26 | `VerificationOutcome(status="supported", reason="all_claims_supported", claim_count=1),` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
-| 27 | `VerificationOutcome(status="unavailable", reason="RateLimitError")]) as verify, \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
-| 28 | `patch.object(benchmark.time, "sleep"), patch("builtins.print"), \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
-| 29 | `patch("sys.argv", ["benchmark", "--limit", "2", "--output", str(output)]):` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
-| 30 | `self.assertEqual(benchmark.main(), 1)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 31 | `rows = [json.loads(line) for line in output.read_text().splitlines()]` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 32 | `self.assertEqual(rows[0]["model"], "test-model")` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 33 | `self.assertEqual(len(rows[0]["prompt_sha256"]), 64)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 34 | `self.assertEqual(rows[-1]["summary"]["unsupported_rejected"], 0)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 35 | `self.assertEqual(rows[-1]["summary"]["unavailable"], 1)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 36 | `self.assertEqual(output.stat().st_mode & 0o777, 0o600)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 37 | `self.assertEqual([c["source_id"] for c in verify.call_args.args[3]], ["S1"])` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 38 | `llm.close.assert_called_once()` | Bảo đảm tài nguyên được đóng hoặc hàm chỉ được gọi đúng một lần. |
-| 40 | `def test_script_copied_directly_to_tmp_can_start(self):` | Bắt đầu ca `test_script_copied_directly_to_tmp_can_start`; tên mô tả hợp đồng cần giữ. |
-| 41 | `script = ROOT / "scripts/agents/benchmark_knowledge_verifier.py"` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 42 | `with tempfile.NamedTemporaryFile(mode="w", suffix=".py", dir="/tmp") as copied:` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
-| 43 | `copied.write(script.read_text())` | Thực thi bước setup/gọi hàm/cleanup của ca kiểm thử hiện tại. |
-| 44 | `copied.flush()` | Thực thi bước setup/gọi hàm/cleanup của ca kiểm thử hiện tại. |
-| 45 | `result = subprocess.run(` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 46 | `[sys.executable, copied.name, "--help"], cwd="/tmp",` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 47 | `env={**os.environ, "PYTHONPATH": str(ROOT / "src")},` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 48 | `capture_output=True, text=True, timeout=20,` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 49 | `)` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 50 | `self.assertEqual(result.returncode, 0, result.stderr)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 51 | `self.assertIn("--cases", result.stdout)` | Assertion assertIn: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 53 | `def test_all_fixture_labels_and_citations_are_explicit(self):` | Bắt đầu ca `test_all_fixture_labels_and_citations_are_explicit`; tên mô tả hợp đồng cần giữ. |
-| 54 | `dataset = json.loads((ROOT / "data/evaluation/knowledge_claim_verification_cases.json").read_text())` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 55 | `self.assertEqual(len({c["id"] for c in dataset["cases"]}), len(dataset["cases"]))` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 56 | `for c in dataset["cases"]:` | Chạy cùng hợp đồng với nhiều biến thể input để kiểm tra các nhánh. |
-| 57 | `self.assertIn(c["expected"], {"supported", "rejected"})` | Assertion assertIn: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 58 | `self.assertIn(c["context"], dataset["contexts"])` | Assertion assertIn: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 59 | `self.assertRegex(c["answer"], r"\[S\d+\]")` | Assertion assertRegex: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 24 | `llm._last_rate_error = None` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 25 | `with patch.object(benchmark, "GroqProvider", return_value=llm), \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 26 | `patch.object(benchmark, "verify_answer", side_effect=[` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 27 | `VerificationOutcome(status="supported", reason="all_claims_supported", claim_count=1),` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 28 | `VerificationOutcome(status="unavailable", reason="RateLimitError")]) as verify, \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 29 | `patch.object(benchmark.time, "sleep"), patch("builtins.print"), \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 30 | `patch("sys.argv", ["benchmark", "--limit", "2", "--output", str(output)]):` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 31 | `self.assertEqual(benchmark.main(), 1)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 32 | `rows = [json.loads(line) for line in output.read_text().splitlines()]` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 33 | `self.assertEqual(rows[0]["model"], "test-model")` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 34 | `self.assertEqual(len(rows[0]["prompt_sha256"]), 64)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 35 | `self.assertEqual(rows[-1]["summary"]["unsupported_rejected"], 0)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 36 | `self.assertEqual(rows[-1]["summary"]["unavailable"], 1)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 37 | `self.assertEqual(output.stat().st_mode & 0o777, 0o600)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 38 | `self.assertEqual([c["source_id"] for c in verify.call_args.args[3]], ["S1"])` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 39 | `llm.close.assert_called_once()` | Bảo đảm tài nguyên được đóng hoặc hàm chỉ được gọi đúng một lần. |
+| 41 | `def test_quota_details_are_safe_and_distinguish_minute_from_day(self):` | Bắt đầu ca `test_quota_details_are_safe_and_distinguish_minute_from_day`; tên mô tả hợp đồng cần giữ. |
+| 42 | `for kind in ("TPM", "TPD", "RPM", "RPD"):` | Chạy cùng hợp đồng với nhiều biến thể input để kiểm tra các nhánh. |
+| 43 | `provider = Mock()` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 44 | `provider._last_rate_error.body = {"message": (` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 45 | `f"Rate limit reached in organization org_PRIVATE on tokens ({kind}): "` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 46 | `"Limit 200000, Used 199146, Requested 1789. secret gsk_PRIVATE")}` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 47 | `provider._last_rate_error.response.headers = {"retry-after": "404"}` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 48 | `result = benchmark.rate_limit_details(provider)` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 49 | `self.assertEqual(result, {"kind": kind, "retry_after": "404", "limit": "200000",` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 50 | `"used": "199146", "requested": "1789"})` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 51 | `self.assertNotIn("PRIVATE", json.dumps(result))` | Assertion assertNotIn: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 52 | `provider._last_rate_error.body = {"error": {"message": "TPM: Limit 8000, Used 7900, Requested 3500."}}` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 53 | `self.assertEqual(benchmark.rate_limit_details(provider)["kind"], "TPM")` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 55 | `def test_explicit_key_selection_is_process_local_and_not_written_to_report(self):` | Bắt đầu ca `test_explicit_key_selection_is_process_local_and_not_written_to_report`; tên mô tả hợp đồng cần giữ. |
+| 56 | `with tempfile.TemporaryDirectory() as folder:` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 57 | `output = Path(folder) / "selected.jsonl"` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 58 | `llm = Mock(model_name="test-model", last_usage=None)` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 59 | `with patch.dict(os.environ, {"GROQ_API_KEY_2": "fake-secret"}), \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 60 | `patch.object(benchmark, "GroqProvider", return_value=llm) as factory, \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 61 | `patch.object(benchmark, "verify_answer", return_value=VerificationOutcome(` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 62 | `status="supported", reason="all_claims_supported", claim_count=1)), \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 63 | `patch.object(benchmark.time, "sleep"), patch("builtins.print"), \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 64 | `patch("sys.argv", ["benchmark", "--limit", "1", "--api-key-env", "GROQ_API_KEY_2",` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 65 | `"--output", str(output)]):` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 66 | `self.assertEqual(benchmark.main(), 0)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 67 | `factory.assert_called_once_with(api_keys=["fake-secret"])` | Thực thi bước setup/gọi hàm/cleanup của ca kiểm thử hiện tại. |
+| 68 | `self.assertEqual(os.environ["GROQ_API_KEY_2"], "fake-secret")` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 69 | `self.assertNotIn("fake-secret", output.read_text())` | Assertion assertNotIn: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 70 | `self.assertEqual(json.loads(output.read_text().splitlines()[0])["api_key_env"], "GROQ_API_KEY_2")` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 72 | `def test_key_selector_rejects_unrelated_or_empty_env_before_creating_provider(self):` | Bắt đầu ca `test_key_selector_rejects_unrelated_or_empty_env_before_creating_provider`; tên mô tả hợp đồng cần giữ. |
+| 73 | `with tempfile.TemporaryDirectory() as folder:` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 74 | `for key_name, env in (("OTHER_SECRET", {"OTHER_SECRET": "fake-secret"}),` | Chạy cùng hợp đồng với nhiều biến thể input để kiểm tra các nhánh. |
+| 75 | `("GROQ_API_KEY_2", {"GROQ_API_KEY_2": ""})):` | Chạy cùng hợp đồng với nhiều biến thể input để kiểm tra các nhánh. |
+| 76 | `with patch.dict(os.environ, env), patch.object(benchmark, "GroqProvider") as factory, \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 77 | `patch("sys.argv", ["benchmark", "--api-key-env", key_name,` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 78 | `"--output", str(Path(folder) / "unused.jsonl")]), \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 79 | `patch("sys.stderr"):` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 80 | `with self.assertRaises(SystemExit) as error:` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 81 | `benchmark.main()` | Thực thi bước setup/gọi hàm/cleanup của ca kiểm thử hiện tại. |
+| 82 | `self.assertEqual(error.exception.code, 2)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 83 | `factory.assert_not_called()` | Bảo đảm nhánh này không gọi provider ngoài dự kiến. |
+| 85 | `def test_script_copied_directly_to_tmp_can_start(self):` | Bắt đầu ca `test_script_copied_directly_to_tmp_can_start`; tên mô tả hợp đồng cần giữ. |
+| 86 | `script = ROOT / "scripts/agents/benchmark_knowledge_verifier.py"` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 87 | `with tempfile.NamedTemporaryFile(mode="w", suffix=".py", dir="/tmp") as copied:` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 88 | `copied.write(script.read_text())` | Thực thi bước setup/gọi hàm/cleanup của ca kiểm thử hiện tại. |
+| 89 | `copied.flush()` | Thực thi bước setup/gọi hàm/cleanup của ca kiểm thử hiện tại. |
+| 90 | `result = subprocess.run(` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 91 | `[sys.executable, copied.name, "--help"], cwd="/tmp",` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 92 | `env={**os.environ, "PYTHONPATH": str(ROOT / "src")},` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 93 | `capture_output=True, text=True, timeout=20,` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 94 | `)` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 95 | `self.assertEqual(result.returncode, 0, result.stderr)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 96 | `self.assertIn("--cases", result.stdout)` | Assertion assertIn: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 98 | `def test_all_fixture_labels_and_citations_are_explicit(self):` | Bắt đầu ca `test_all_fixture_labels_and_citations_are_explicit`; tên mô tả hợp đồng cần giữ. |
+| 99 | `dataset = json.loads((ROOT / "data/evaluation/knowledge_claim_verification_cases.json").read_text())` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 100 | `self.assertEqual(len({c["id"] for c in dataset["cases"]}), len(dataset["cases"]))` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 101 | `for c in dataset["cases"]:` | Chạy cùng hợp đồng với nhiều biến thể input để kiểm tra các nhánh. |
+| 102 | `self.assertIn(c["expected"], {"supported", "rejected"})` | Assertion assertIn: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 103 | `self.assertIn(c["context"], dataset["contexts"])` | Assertion assertIn: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 104 | `self.assertRegex(c["answer"], r"\[S\d+\]")` | Assertion assertRegex: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
 
 ## Fixture chẩn đoán
 

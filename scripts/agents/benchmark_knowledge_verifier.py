@@ -24,21 +24,25 @@ def main():
     parser.add_argument("--output", type=Path, required=True, help="New JSONL file; flushed after each case")
     parser.add_argument("--limit", type=int, default=0, help="0 runs all diagnostic cases")
     parser.add_argument("--pause", type=float, default=15)
+    parser.add_argument("--api-key-env", help="Use only this GROQ_API_KEY[_N] variable for this process")
     args = parser.parse_args()
     if args.limit < 0 or not 0 <= args.pause <= 60:
         parser.error("limit must be nonnegative and pause must be 0..60")
     if args.output.exists():
         parser.error("Choose a new output file; previous results are never overwritten")
     load_dotenv(ROOT / ".env")
+    if args.api_key_env and (not re.fullmatch(r"GROQ_API_KEY(?:_\d+)?", args.api_key_env)
+                             or not os.getenv(args.api_key_env, "").strip()):
+        parser.error("Selected Groq key variable is invalid or empty")
     dataset = json.loads(args.cases.read_text())
     cases = dataset["cases"][:args.limit or None]
     args.output.parent.mkdir(parents=True, exist_ok=True)
     results = []
-    llm = GroqProvider()
+    llm = GroqProvider(api_keys=[os.environ[args.api_key_env]]) if args.api_key_env else GroqProvider()
     try:
         with os.fdopen(os.open(args.output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w") as output:
             output.write(json.dumps({"dataset": dataset["dataset_id"], "model": llm.model_name,
-                                     "limitations": dataset["limitations"],
+                                     "limitations": dataset["limitations"], "api_key_env": args.api_key_env or "pool",
                                      "cases_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest(),
                                      "prompt_sha256": hashlib.sha256(CLAIM_VERIFICATION_PROMPT.encode()).hexdigest(),
                                      "verifier_timeout_seconds": 15, "max_output_tokens": 3072}) + "\n")
@@ -52,6 +56,8 @@ def main():
                 row = {"id": case["id"], "expected": case["expected"], **outcome.model_dump(),
                        "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
                        "usage": llm.last_usage}
+                if outcome.reason == "RateLimitError":
+                    row["rate_limit"] = rate_limit_details(llm)
                 results.append(row)
                 output.write(json.dumps(row) + "\n")
                 output.flush()
@@ -71,6 +77,21 @@ def main():
     finally:
         llm.close()
     return int(len(results) != len(cases) or any(r["status"] != r["expected"] for r in results))
+
+
+def rate_limit_details(provider):
+    error = provider._last_rate_error
+    body = getattr(error, "body", {})
+    if isinstance(body, dict):
+        body = body.get("error", body)
+    message = str(body.get("message", "")) if isinstance(body, dict) else ""
+    kind = re.search(r"\b(TPM|TPD|RPM|RPD|ITPM|OTPM)\b", message)
+    headers = getattr(getattr(error, "response", None), "headers", {})
+    # Only quota fields; never persist raw provider errors, keys or organization IDs.
+    values = {name.lower(): value.rstrip(",.") for name, value in
+              re.findall(r"\b(Limit|Used|Requested)\s*:?\s*([\d,.]+)", message)}
+    return {"kind": kind.group(1) if kind else "unknown",
+            "retry_after": headers.get("retry-after"), **values}
 
 
 if __name__ == "__main__":

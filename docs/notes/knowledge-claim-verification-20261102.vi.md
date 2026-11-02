@@ -134,3 +134,26 @@ Bản đầu dùng `Path(__file__).resolve().parents[2]`. Khi file nằm trực 
 Đã sửa thành `.parent.parent.parent`: đi lên từng cấp sẽ dừng tại `/` thay vì ném lỗi. Khi chạy trong repo vẫn xác định đúng root. Trong container dùng `PYTHONPATH=/app/src` có sẵn và tham số `--cases /tmp/...` rõ ràng; không phụ thuộc root giả định để tìm fixture.
 
 Test regression copy file thật trực tiếp vào `/tmp`, chạy subprocess từ `/tmp` với `--help`, mô phỏng PYTHONPATH container. Test đã tái hiện lỗi trước sửa và đạt sau sửa. Chỉ cập nhật script, test và note, không cần build/recreate backend: pull main, copy đè script vào `/tmp`, chạy lại lệnh benchmark cũ. File output cũ chưa được tạo bởi lỗi này nên có thể giữ tên `claim-verifier-smoke-01.jsonl` nếu chưa chạy thành công lần nào.
+
+## Chẩn đoán quota thay vì thử pause tiếp
+
+Các lượt trên VPS đã kiểm tra đúng F01 và F02, nhưng đợt 28 ca nhiều lần dừng do RateLimitError. Thử pause 15/20/45 giây không xác định được nguyên nhân vì script cũ chỉ giữ tên lỗi. Một request trả OK với output tối đa 16 token không chứng minh request verifier xin tối đa 3.072 token sẽ được chấp nhận. Chưa đủ bằng chứng kết luận cách Groq đang tính quota hoặc rằng chắc chắn là TPM/TPD.
+
+Đã thêm `rate_limit` vào kết quả lỗi: `kind` (TPM/TPD/RPM/RPD/ITPM/OTPM hoặc unknown), `retry_after`, và các số `limit`, `used`, `requested` nếu provider có cung cấp. Chỉ trích các trường quota, không in/lưu key, org ID hoặc thông báo lỗi nguyên văn. Nếu dùng pool thì đây là lỗi key cuối cùng provider giữ; muốn biết chính xác API 2 thì dùng `--api-key-env GROQ_API_KEY_2`.
+
+`--api-key-env` chỉ chọn key cho tiến trình benchmark. Không đổi `.env`, không restart và không ảnh hưởng người dùng web. Chỉ chấp nhận tên biến Groq đã có giá trị. Không nhận key trực tiếp trên command line hoặc ghi key vào output. Mặc định không truyền tham số thì pool/failover như trước.
+
+79 test liên quan đã đạt sau sửa, gồm quota phút/ngày, lọc thông tin nhạy cảm, chọn đúng key, từ chối biến rỗng/tên không hợp lệ và regression chạy trực tiếp /tmp. Không tiêu token thật để test phần chẩn đoán này.
+
+Chỉ pull và copy lại script, không cần build. Không chạy lại đủ 28 ca để lấy lỗi. Nếu muốn chẩn đoán tiếp, chạy tối đa một ca:
+
+```bash
+git pull --ff-only origin main
+docker compose cp scripts/agents/benchmark_knowledge_verifier.py backend-api:/tmp/benchmark_knowledge_verifier.py
+docker compose exec -T backend-api python -u /tmp/benchmark_knowledge_verifier.py \
+  --cases /tmp/knowledge_claim_verification_cases.json \
+  --api-key-env GROQ_API_KEY_2 --limit 1 --pause 0 \
+  --output /benchmarks/claim-verifier-quota-01.jsonl
+```
+
+Nếu ra TPD/RPD thì dừng theo quota ngày. Nếu TPM/RPM thì dùng thông tin thời gian chờ và usage chung để lên lịch thử lại; không tự retry vô hạn. Nếu unknown thì giữ output để kiểm tra parser/provider. Chưa có kết quả chất lượng 28/28 và chưa bật verifier cho web.

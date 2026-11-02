@@ -13,5 +13,11 @@
     "report": 30
   },
   "knowledge_status": "deferred",
-  "status": "preparing"
+  "status": "preparing",
+  "reference_frozen_at": "2026-11-02T09:28:35.083545+00:00",
+  "reference_sha256": {
+    "sql_analytics": "4ebff61142108f3eb0b0a65df4a09af16bb21985021d1b6a815ae7e66a9e1457",
+    "report": "7b6a62dcc7e593a13598d2c3eb82e1ba22a3979e662f32522b06b16ed0350a66"
+  },
+  "oracle_status": "independent SQL oracles, author review only; not externally certified gold"
 }

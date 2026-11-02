@@ -46,6 +46,12 @@ def sql_numerical_accuracy(actual, expected):
     return correct / ((len(expected) + len(remaining)) * len(numeric))
 
 
+def numeric_claim_score(claims):
+    correct = sum(c['dimension_metric_date_unit_match'] and c['reference_value'] is not None
+                  and numeric_equal(c['response_value'],c['reference_value']) for c in claims)
+    return (correct/len(claims) if claims else None), correct
+
+
 def metric_classes():
     # Keep dataset preparation and deterministic tests independent of optional Ragas imports.
     import json
@@ -80,9 +86,8 @@ def metric_classes():
                 'and false match. Do not invent missing reference facts. Record a concrete reason per claim.\n'
                 + json.dumps({'RESPONSE': response, 'REFERENCE': reference}, ensure_ascii=False), NumericClaims)
             claims = output.claims
-            correct = sum(c.dimension_metric_date_unit_match and c.reference_value is not None
-                          and numeric_equal(c.response_value, c.reference_value) for c in claims)
-            return MetricResult(correct/len(claims) if claims else None,
+            value, correct = numeric_claim_score([c.model_dump() for c in claims])
+            return MetricResult(value,
                                 reason=f'{correct}/{len(claims)} scoped numeric claims; judge alignment, decimal comparison',
                                 traces={'output': output.model_dump()})
 

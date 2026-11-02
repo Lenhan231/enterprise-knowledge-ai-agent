@@ -1,5 +1,5 @@
 import unittest
-from evaluation.inventory_benchmark_metrics import compare_rows, numeric_equal, sql_numerical_accuracy
+from evaluation.inventory_benchmark_metrics import compare_rows, numeric_equal, sql_numerical_accuracy, numeric_claim_score
 
 
 class BenchmarkMetricsTests(unittest.TestCase):
@@ -25,6 +25,13 @@ class BenchmarkMetricsTests(unittest.TestCase):
         from evaluation.run_inventory_agents_benchmark import bind_sql
         sql = bind_sql('SELECT $1,$10,$2', ["a'b", None, 3, 4, 5, 6, 7, 8, 9, True])
         self.assertEqual(sql, "SELECT 'a''b',TRUE,NULL")
+
+    def test_report_numeric_claims_reject_wrong_scope_and_unsupported_values(self):
+        claims=[{'dimension_metric_date_unit_match':True,'response_value':'0.25','reference_value':'0.25'},
+                {'dimension_metric_date_unit_match':False,'response_value':'100','reference_value':'100'},
+                {'dimension_metric_date_unit_match':True,'response_value':'0','reference_value':None}]
+        self.assertEqual(numeric_claim_score(claims),(1/3,1))
+        self.assertEqual(numeric_claim_score([]),(None,0))
 
     def test_dataset_split_and_reference_coverage(self):
         import hashlib

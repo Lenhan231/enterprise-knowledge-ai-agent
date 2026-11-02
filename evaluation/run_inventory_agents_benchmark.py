@@ -15,6 +15,7 @@ import re
 import subprocess
 import sys
 import time
+from collections import Counter
 from datetime import date, datetime, timezone
 from decimal import Decimal
 from pathlib import Path
@@ -230,6 +231,17 @@ def metric_record(value, reason=None, traces=None, error=None):
     return {'score':value, 'reason':reason, 'traces':traces, 'error':error}
 
 
+def report_reference_text(reference):
+    # SQL is provenance, not prose ground truth for Ragas claim decomposition.
+    facts = {name:item['rows'] for name,item in reference['evidence'].items()}
+    return ('Requested scope: '+reference['question']+'\nVerified database observations: '+dumps(facts)
+            +'\nHistorical observations do not establish current stock or operational execution. '
+            +'Missing observations are not zero. No currency or business approval is established. '
+            +('The requested operational facts are unavailable in the approved schema; explain the limitation '
+              'and offer a supported historical or policy alternative without fabricating results.'
+              if reference['unsupported_only'] else ''))
+
+
 async def score(groups, identifiers):
     from evaluation.ragas_judge import CodexCLIJudge
     from ragas.metrics.collections import Faithfulness, FactualCorrectness, SQLSemanticEquivalence, RubricsScoreWithReference
@@ -302,12 +314,15 @@ async def score(groups, identifiers):
                         if not row['contexts']:
                             record = metric_record(None,'No retrieved evidence: standard faithfulness is not applicable; inspect unsupported refusal with completeness/factual correctness.')
                         else:
-                            result = await faithfulness.ascore(user_input=row['question'],response=response,retrieved_contexts=row['contexts'])
+                            metadata=row.get('result',{}).get('metadata',{})
+                            runtime={key:metadata[key] for key in ('coverage','limitations','caveats','issues','sections','clarifications') if key in metadata}
+                            result = await faithfulness.ascore(user_input=row['question'],response=response,
+                                retrieved_contexts=row['contexts']+([dumps(runtime)] if runtime else []))
                             record = metric_record(result.value,result.reason,result.traces)
                     else:
                         reference_text = dumps(reference)
                         if name=='factual_correctness':
-                            result = await factual.ascore(response=response,reference=reference_text)
+                            result = await factual.ascore(response=response,reference=report_reference_text(reference))
                         elif name=='numerical_accuracy':
                             result = await numerical.ascore(response=response,reference=reference_text)
                         else:
@@ -343,6 +358,12 @@ def summarize():
         generations=latest_generations(group)
         save(OUT/group/'summary.json',{'cases':30,'generated':len(generations),
             'generation_attempts':len(read_jsonl(OUT/group/'generations.jsonl')),
+            'generation_outcomes':dict(Counter(
+                r.get('result',{}).get('metadata',{}).get('status') or
+                ('executed' if r.get('result',{}).get('data',{}).get('ok') else
+                 r.get('result',{}).get('metadata',{}).get('error_type') or
+                 ('exception' if r.get('generation_error') else 'unsuccessful')) for r in generations)),
+            'latest_rate_limit_failures':sum(rate_limited(r) for r in generations),
             'generation_exceptions':sum(bool(r.get('generation_error')) for r in generations),
             'metrics':metrics})
 
@@ -355,6 +376,12 @@ async def main():
     args=parser.parse_args()
     groups=('sql_analytics','report') if args.agent=='both' else (args.agent,)
     if args.stage in {'references','all'}: await references()
+    if args.stage in {'generate','score','all'}:
+        manifest=json.loads((OUT/'manifest.json').read_text())
+        for group in ('sql_analytics','report'):
+            path=OUT/group/'references.json'
+            if hashlib.sha256(path.read_bytes()).hexdigest()!=manifest['reference_sha256'][group]:
+                raise RuntimeError('Frozen reference hash mismatch: '+group)
     if args.stage in {'generate','all'}: await generate(groups,set(args.ids))
     if args.stage in {'score','all'}: await score(groups,set(args.ids))
     summarize()

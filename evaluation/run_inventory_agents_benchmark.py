@@ -72,6 +72,7 @@ def latest_generations(group):
 def rate_limited(row):
     return ('RateLimitError' in str(row.get('generation_error')) or
             row.get('result',{}).get('metadata',{}).get('error_type')=='RateLimitError' or
+            row.get('result',{}).get('metadata',{}).get('error_code')=='provider_rate_limited' or
             'rate_limit_exceeded' in row.get('answer',''))
 
 
@@ -294,7 +295,7 @@ async def score(groups, identifiers):
         async with semaphore:
             path = OUT/group/'scores.jsonl'
             existing = {r['metric']:r for r in read_jsonl(path) if r['id']==row['id']
-                        and (group!='sql_analytics' or r.get('scoring_revision')==3)
+                        and (group!='sql_analytics' or r.get('scoring_revision')==4)
                         and (group!='report' or r['metric']!='numerical_accuracy' or r.get('numeric_revision')==2)}
             expected = ('execution_accuracy','sql_semantic_equivalence','numerical_accuracy') if group=='sql_analytics' else ('faithfulness','factual_correctness','numerical_accuracy','report_completeness')
             response = row['answer']
@@ -310,7 +311,7 @@ async def score(groups, identifiers):
                     if group=='sql_analytics':
                         if not reference['supported']:
                             record = metric_record(None,'Unsupported request: no valid gold SQL/numeric result; assess refusal separately in generation output.')
-                        elif not data.get('ok'):
+                        elif data.get('query_status')!='executed':
                             record = metric_record(0.0,'Supported question did not execute successfully.')
                         elif name=='sql_semantic_equivalence':
                             result = await semantic.ascore(response=bind_sql(data['sql'],data.get('parameters',[])),
@@ -364,7 +365,7 @@ async def score(groups, identifiers):
                         if name=='report_completeness': record['raw_rubric_score']=result.value
                 except Exception as error:
                     record = metric_record(None,error=f'{type(error).__name__}: {str(error)[:1500]}')
-                record.update(id=row['id'],metric=name,scoring_revision=3,
+                record.update(id=row['id'],metric=name,scoring_revision=4,
                               numeric_revision=2,
                               generation_attempt=row.get('attempt',1),elapsed_seconds=round(time.perf_counter()-started,3))
                 append(path, record)

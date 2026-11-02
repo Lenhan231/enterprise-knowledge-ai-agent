@@ -46,7 +46,7 @@ The dataset names a policy identifier/page but does not include policy passages.
 
 ## Evaluation audit
 
-Original attempts and scoring revisions remain in the append-only files. Summaries use the latest record per case/metric. SQL scoring revision 3 fixes presentation normalization and applies the shared SQL ceiling to semantic references; frozen source SQL/results and application code are unchanged. Failed column alignment is a zero for an unmatched required result projection, not an omitted evaluator error.
+Original attempts and scoring revisions remain in the append-only files. Summaries use the latest record per case/metric. SQL scoring revision 4 fixes presentation normalization and applies the shared SQL ceiling to semantic references; it also treats an executed empty result as comparable, distinct from failure or a scalar zero; frozen source SQL/results and application code are unchanged. Failed column alignment is a zero for an unmatched required result projection, not an omitted evaluator error.
 
 Focused benchmark tests, Groq fallback tests, and the existing Ragas adapter test pass. The older `test_agent_benchmarks.py` suite has an existing failure: `test_known_citation_and_codex_auth_failures_are_retried` expects a citation-validation error to be classified as transient by the legacy runner. That unrelated runner was not changed.
 

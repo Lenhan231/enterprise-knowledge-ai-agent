@@ -14,6 +14,8 @@ class BenchmarkMetricsTests(unittest.TestCase):
         self.assertFalse(compare_rows([{'product_id': 2, 'stock': 10}, {'product_id': 1, 'stock': 20}], gold))
         self.assertFalse(compare_rows([gold[0], gold[0]], gold))
         self.assertFalse(compare_rows([{'product_id': 1, 'stock': 10}], gold))
+        self.assertTrue(compare_rows([],[]))
+        self.assertFalse(compare_rows([],[{'product_count':0}]))
 
     def test_numerical_scores_require_matching_entity_and_penalize_missing_rows(self):
         gold = [{'product_id': 1, 'stock': 10}, {'product_id': 2, 'stock': 20}]
@@ -53,6 +55,11 @@ class BenchmarkMetricsTests(unittest.TestCase):
         from evaluation.run_inventory_agents_benchmark import bounded_reference_sql
         self.assertTrue(bounded_reference_sql('SELECT COUNT(*) FROM commerce.inventory').endswith('LIMIT 200'))
         self.assertTrue(bounded_reference_sql('SELECT product_id FROM commerce.inventory LIMIT 20').endswith('LIMIT 20'))
+
+    def test_report_provider_quota_response_is_retryable_but_validation_is_not(self):
+        from evaluation.run_inventory_agents_benchmark import rate_limited
+        self.assertTrue(rate_limited({'result':{'metadata':{'error_code':'provider_rate_limited'}}}))
+        self.assertFalse(rate_limited({'result':{'metadata':{'error_code':'invalid_plan'}}}))
 
     def test_dataset_split_and_reference_coverage(self):
         import hashlib

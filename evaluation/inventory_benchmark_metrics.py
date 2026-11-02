@@ -128,4 +128,12 @@ def metric_classes():
         async def ascore(self, *, actual, expected):
             return MetricResult(float(compare_rows(actual, expected)), reason='Independent read-only SQL result multiset comparison')
 
-    return ExecutionAccuracy, NumericalAccuracy
+    class SQLNumericalAccuracy(BaseMetric):
+        def __init__(self):
+            super().__init__(name='numerical_accuracy')
+
+        async def ascore(self, *, actual, expected):
+            return MetricResult(sql_numerical_accuracy(actual,expected),
+                reason='Scoped reference numeric-cell accuracy; excludes IDs/dates, missing/extra rows penalized. Empty/no numeric reference is N/A.')
+
+    return ExecutionAccuracy, NumericalAccuracy, SQLNumericalAccuracy

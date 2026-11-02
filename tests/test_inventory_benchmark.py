@@ -42,6 +42,9 @@ class BenchmarkMetricsTests(unittest.TestCase):
         actual,gold=normalize_execution_rows([{'product_name':'A','quantity':10}],
             [{'product_id':1,'quantity':10}],{1:'A',2:'B',3:'B'})
         self.assertTrue(compare_rows(actual,gold))
+        actual,gold=normalize_execution_rows([{'product_name':'A','quantity':10}],
+            [{'product_id':1,'quantity':10}],{1:'A',2:'A'})
+        self.assertFalse(compare_rows(actual,gold))
         actual,gold=normalize_execution_rows([{'snapshot_date':'2022-01-31','units':10}],
             [{'month':'2022-01-01','units':10}],{})
         self.assertTrue(compare_rows(actual,gold))

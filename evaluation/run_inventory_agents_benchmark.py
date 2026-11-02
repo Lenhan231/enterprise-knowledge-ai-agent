@@ -28,7 +28,7 @@ sys.path.insert(0, str(ROOT / 'src'))
 load_dotenv(ROOT / '.env')
 OUT = ROOT / 'artifacts/evaluation/agent-benchmarks-2026-11-02'
 
-from evaluation.inventory_benchmark_metrics import metric_classes, sql_numerical_accuracy, normalize_execution_rows
+from evaluation.inventory_benchmark_metrics import metric_classes, normalize_execution_rows
 from evaluation.inventory_benchmark_references import SQL, EXTRA, REPORT_TASKS, COMMON_LIMITATIONS
 
 
@@ -253,8 +253,9 @@ async def score(groups, identifiers):
     from ragas.metrics.collections import Faithfulness, FactualCorrectness, SQLSemanticEquivalence, RubricsScoreWithReference
     from core.analytics.text_to_sql import APPROVED_COLUMNS
     judge = CodexCLIJudge()  # Deliberately same model/reasoning as the previous benchmark.
-    ExecutionAccuracy, NumericalAccuracy = metric_classes()
+    ExecutionAccuracy, NumericalAccuracy, SQLNumericalAccuracy = metric_classes()
     execution = ExecutionAccuracy()
+    sql_numerical=SQLNumericalAccuracy()
     numerical = NumericalAccuracy(judge)
     semantic = SQLSemanticEquivalence(llm=judge)
     faithfulness = Faithfulness(llm=judge)
@@ -337,8 +338,8 @@ async def score(groups, identifiers):
                                 result = await execution.ascore(actual=aligned,expected=gold)
                                 record = metric_record(result.value,result.reason)
                             else:
-                                value = sql_numerical_accuracy(aligned,gold)
-                                record = metric_record(value,'Scoped reference numeric-cell accuracy; excludes IDs/dates, missing/extra rows penalized. Empty/no numeric reference is N/A.')
+                                result=await sql_numerical.ascore(actual=aligned,expected=gold)
+                                record=metric_record(result.value,result.reason)
                     elif not response:
                         record = metric_record(0.0,'No response generated.')
                     elif name=='faithfulness':

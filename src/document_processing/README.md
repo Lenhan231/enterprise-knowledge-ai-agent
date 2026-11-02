@@ -62,17 +62,23 @@ not provide a separate `table_title` class.
 The shared element taxonomy has 12 labels; the layout benchmark keeps its
 separate five-label mapping.
 
-Before PP-DocLayoutV3 runs, Tesseract OSD checks each rendered page and rotates
-the detector's image view when needed. Detected boxes are mapped back to the
-original page coordinates, so previews and parser provenance keep the source
-orientation. VietOCR then runs OSD on each OCR region before RapidOCR line
-detection and recognition; this can correct a rotated region on an otherwise
-upright page. PDFs always use full-page OCR; Docling skips extracting native PDF text cells.
+OCR text elements assigned to the same raw PP-DocLayoutV3 `text` box are
+merged in reading order; text on separate lines stays on separate lines. Other
+layout labels, including tables, footer and number, are not merged this way.
+
+Before PP-DocLayoutV3 runs, PaddleOCR `PP-LCNet_x1_0_doc_ori` checks each
+rendered page and rotates it when needed. Page previews and detected boxes use
+the corrected page orientation. VietOCR uses the same classifier on each OCR
+region before RapidOCR line detection. A region is rotated only if confidence is
+at least 0.7; quarter-turn predictions are ignored for horizontal crops because
+they can be wrong even at high confidence. VietOCR uses
+detected layout boxes, falling back to full-page OCR if none are detected; text
+outside detected boxes may be missed. Tesseract uses full-page OCR. Docling skips
+extracting native PDF text cells.
 The OCR engine remains configurable (`vietocr` or `tesseract`). OCR for
 embedded Office pictures and standalone images follows the `docling_ocr`
-setting. PDF images are covered by the full-page OCR pass and are not sent
-through a second embedded-image pass. The route is recorded as
-`pdf_processing_route: full_page_ocr` in parser metadata.
+setting. PDF images are not sent through a second embedded-image pass. The OCR
+route is recorded in `pdf_processing_route` in parser metadata.
 
 For each PP-DocLayoutV3 chart region, the document path removes overlapping
 full-page OCR line results, then renders the page at 3× for chart extraction.
@@ -141,7 +147,7 @@ docker run --rm document-processing
 
 The image contains `document_processing`, Docling, PaddleOCR PP-DocLayoutV3,
 PaddleOCR-VL chart parsing,
-VietOCR, and Vietnamese/English Tesseract (used for orientation detection). It
+VietOCR, and Vietnamese/English Tesseract (available as an OCR engine). It
 does not install the full application's dependencies or include the FastAPI app,
 database credentials, or Streamlit. OCR defaults to VietOCR in this image;
 set `DOCUMENT_PROCESSING_OCR_ENGINE=tesseract` to select Tesseract instead.

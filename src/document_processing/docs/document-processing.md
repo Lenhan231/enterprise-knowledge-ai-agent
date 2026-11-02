@@ -44,12 +44,11 @@ runtime failure. The remaining stages are RapidOCR text-line detection, VietOCR
 `vgg_seq2seq` recognition (greedy, maximum width 512), and TableFormer Accurate
 with cell matching. PP-DocLayoutV3 supplies Docling's
 layout clusters; OCR and table structure continue through the existing Docling
-stages. Tesseract OSD checks each OCR crop's orientation; Tesseract OCR can be
+stages. PaddleOCR PP-LCNet checks page and VietOCR crop orientation; Tesseract OCR can be
 selected with `DOCUMENT_PROCESSING_OCR_ENGINE=tesseract`. Production defaults to
 two CPU threads; callers such as Upload Test may override the device, OCR
-engine, table stage, and thread count. Page-level auto-rotation from the
-benchmark harness is not yet applied in production; source-page geometry would
-need a rotation mapping.
+engine, table stage, and thread count. The parser applies page-level rotation
+before layout, OCR, and table processing.
 
 OCR post-processing drops exact normalized duplicate lines from overlapping
 OCR regions at bbox IoU 0.60. It removes only clear non-table artifacts such as

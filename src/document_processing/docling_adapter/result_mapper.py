@@ -272,6 +272,8 @@ def map_result(
             elements, tables, page_images, page_sizes, ocr_engine
         )
 
+    elements = _merge_text_layout_elements(elements, layout_detections or [])
+
     for chart in chart_recognition_results or []:
         page_number = int(chart["page_no"])
         bbox = list(map(float, chart["bbox"]))
@@ -325,6 +327,63 @@ def map_result(
     if source_format == "docx":
         apply_docx_semantics(mapped, source_bytes)
     return mapped
+
+
+def _merge_text_layout_elements(elements: list[dict], detections: list[dict]) -> list[dict]:
+    """Merge OCR fragments assigned to the same raw Paddle text region."""
+    groups: dict[int, list[int]] = {}
+    for index, element in enumerate(elements):
+        metadata = element.get("metadata") or {}
+        if metadata.get("element_type") != "text" or metadata.get("text_extraction_method") not in {
+            "docling.vietocr", "docling.tesseract",
+        } or not element.get("text"):
+            continue
+        box = metadata.get("bbox")
+        if not isinstance(box, (list, tuple)) or len(box) != 4:
+            continue
+        left, top, right, bottom = map(float, box)
+        area = max(0.0, right - left) * max(0.0, bottom - top)
+        if not area:
+            continue
+        matches = []
+        for detection_index, detection in enumerate(detections):
+            if detection.get("page_number") != metadata.get("page_number"):
+                continue
+            candidate = detection.get("bbox")
+            if not isinstance(candidate, (list, tuple)) or len(candidate) != 4:
+                continue
+            x1, y1, x2, y2 = map(float, candidate)
+            overlap = max(0.0, min(right, x2) - max(left, x1)) * max(0.0, min(bottom, y2) - max(top, y1))
+            coverage = overlap / area
+            if coverage >= 0.8:
+                matches.append((coverage, -max(0.0, x2 - x1) * max(0.0, y2 - y1), detection_index))
+        if matches:
+            detection_index = max(matches)[2]
+            if detections[detection_index].get("label") == "text":
+                groups.setdefault(detection_index, []).append(index)
+
+    replacements, removed = {}, set()
+    for detection_index, indices in groups.items():
+        if len(indices) < 2:
+            continue
+        ordered = sorted(indices, key=lambda i: (elements[i]["metadata"]["bbox"][1], elements[i]["metadata"]["bbox"][0]))
+        lines: list[list[int]] = []
+        for index in ordered:
+            box = elements[index]["metadata"]["bbox"]
+            if lines:
+                previous = elements[lines[-1][0]]["metadata"]["bbox"]
+                overlap = max(0.0, min(box[3], previous[3]) - max(box[1], previous[1]))
+                same_line = overlap >= 0.5 * min(box[3] - box[1], previous[3] - previous[1])
+            else:
+                same_line = False
+            if not same_line:
+                lines.append([])
+            lines[-1].append(index)
+        text = "\n".join(" ".join(str(elements[i]["text"]).strip() for i in sorted(line, key=lambda i: elements[i]["metadata"]["bbox"][0])) for line in lines)
+        first = min(indices)
+        replacements[first] = {**elements[first], "text": text, "metadata": {**elements[first]["metadata"], "bbox": list(detections[detection_index]["bbox"])}}
+        removed.update(i for i in indices if i != first)
+    return [replacements.get(i, element) for i, element in enumerate(elements) if i not in removed]
 
 
 def _associate_layout_titles(

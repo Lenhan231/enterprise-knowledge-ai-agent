@@ -24,7 +24,7 @@ from docling.models.factories import get_ocr_factory
 from docling.models.stages.ocr.tesseract_utils import tesseract_box_to_bounding_rectangle
 from docling.utils.profiling import TimeRecorder
 from .line_detection import create_line_detector, crop_line, detect_line_boxes
-from ..orientation import detect_tesseract_orientation, rotate_for_reading
+from ..orientation import detect_paddle_orientation, rotate_for_reading
 
 
 class VietOcrOptions(OcrOptions):
@@ -70,8 +70,8 @@ class VietOcrModel(BaseOcrModel):
 
     @staticmethod
     def _detect_orientation(image: Image.Image) -> tuple[int, int | None, float | None]:
-        """Retain the region-level OSD hook used before RapidOCR line detection."""
-        return detect_tesseract_orientation(image)
+        """Classify region orientation before RapidOCR line detection."""
+        return detect_paddle_orientation(image)
 
     @staticmethod
     def _cell_bbox(cell: TextCell) -> tuple[float, float, float, float]:
@@ -130,7 +130,12 @@ class VietOcrModel(BaseOcrModel):
                 continue
 
             with TimeRecorder(conv_res, "ocr"):
-                ocr_rects = self.get_ocr_rects(page)
+                layout = page.predictions.layout
+                ocr_rects = (
+                    [cluster.bbox for cluster in layout.clusters]
+                    if layout is not None and layout.clusters
+                    else self.get_ocr_rects(page)
+                )
                 print(
                     "OCR regions before line detection:",
                     self.current_reference_id,
@@ -149,6 +154,9 @@ class VietOcrModel(BaseOcrModel):
                         scale=self.scale, cropbox=ocr_rect
                     )
                     doc_orientation, osd_orientation, osd_confidence = self._detect_orientation(crop)
+                    # Quarter-turn predictions on horizontal crops can be wrong even at high confidence.
+                    if osd_confidence < 0.7 or (doc_orientation in (90, 270) and crop.width >= crop.height):
+                        doc_orientation = 0
                     region_index = self._orientation_counts.get(self.current_reference_id, 0) + 1
                     self._orientation_counts[self.current_reference_id] = region_index
                     self.orientation_diagnostics.append({

@@ -182,7 +182,7 @@ class DoclingProcessor:
         }
         if source_format == "pdf":
             mapped["metadata"].update({
-                "pdf_processing_route": "full_page_ocr",
+                "pdf_processing_route": "layout_region_ocr" if ocr_engine == "vietocr" else "full_page_ocr",
                 "ocr_enabled": do_ocr,
                 "embedded_image_ocr_enabled": False,
             })

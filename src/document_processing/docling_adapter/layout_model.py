@@ -16,7 +16,7 @@ from docling.models.base_layout_model import BaseLayoutModel
 from docling.models.factories import get_layout_factory
 from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel
 from .orientation import (
-    detect_tesseract_orientation,
+    detect_paddle_orientation,
     OrientedPageBackend,
 )
 
@@ -156,7 +156,7 @@ class PPDocLayoutModel(BaseLayoutModel):
                 predictions.append(LayoutPrediction())
                 continue
 
-            correction, _, _ = detect_tesseract_orientation(image)
+            correction, _, _ = detect_paddle_orientation(image)
             self.page_orientation_corrections[int(page.page_no)] = correction
             if correction:
                 page._backend = OrientedPageBackend(page._backend, correction)

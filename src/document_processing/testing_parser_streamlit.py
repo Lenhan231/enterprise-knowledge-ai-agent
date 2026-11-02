@@ -514,7 +514,7 @@ with settings_column:
             )
             num_threads = st.number_input("CPU threads", min_value=1, max_value=16, value=4)
             st.caption("Tables: Accurate mode")
-            st.caption("PDFs always use full-page OCR; their native text layer is ignored.")
+            st.caption("PDF native text is ignored; VietOCR uses detected layout regions and Tesseract uses full-page OCR.")
             st.caption(
                 "VietOCR uses RapidOCR line detection + vgg_seq2seq greedy recognition (512 px), "
                 "matching the 58-page OCR benchmark."

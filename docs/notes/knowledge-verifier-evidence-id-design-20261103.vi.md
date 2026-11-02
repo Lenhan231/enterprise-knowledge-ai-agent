@@ -66,3 +66,25 @@ LLM thật (mỗi bộ một lượt, output mới, không retry, có trần tok
 1. Đồng ý thiết kế (tách theo dòng + câu, không tự gắn header)?
 2. Ai soạn/duyệt ca held-out? Có dùng bộ của An nếu có?
 3. Ngân sách token cho lượt LLM thật sau khi code xong.
+
+## Kết quả LLM thật lượt đầu (03/11/2026)
+
+`qwen/qwen3.8-27b`, pause 15 giây, mỗi lượt một lần, không retry. Prompt hash v3 `02ab5bae…`, protocol `claim-evidence-v3`.
+
+- F17 riêng (`v3-f17-01`, `GROQ_API_KEY` cũ): supported, C2 chọn `S2.1, S2.2, S2.4` (header, đơn vị, dòng profit; bỏ dòng revenue). 957 input + 69 output token.
+- 28 ca bằng `GROQ_API_KEY` cũ (`v3-full-01`, `-02`) và key mới thay thế (`v3-full-03`) dừng vì RateLimitError OTPM (limit 1000; requested 1536, 1211, rồi 3072 đúng bằng `max_output_tokens`). `-03` có F01/F02/F03 đúng trước khi dừng. Giữ cả ba file; không tính vào kết quả.
+- 28 ca bằng `GROQ_API_KEY_2` (`v3-full-04`) hoàn tất, không lỗi provider. **Khác key với baseline v2.**
+
+| | v2 (`v2-full-01`) | v3 (`v3-full-04`) |
+|---|---:|---:|
+| Giữ câu đúng | 10/11 | 11/11 |
+| Câu sai lọt | 0 | 0 |
+| Chặn đúng câu sai | 17/17 | 17/17 |
+| Unavailable | 1 (F17) | 0 |
+| Lỗi bằng chứng (`fabricated_source_quote` / `unknown_evidence_id` / `missing_cited_source_evidence`) | 1 | 0 |
+| Token input / output / tổng (27 audit) | 18.144 / 1.725 / 19.869 | 20.644 / 1.293 / 21.937 |
+| Median audit | 584,87 ms | 556,06 ms |
+
+Chỉ F17 đổi kết quả. Đã đọc evidence của mọi ca supported: đều chọn đúng dòng metric/năm và kèm dòng phạm vi + đơn vị (hoặc header bảng với ca phê duyệt). Đây vẫn là regression bộ đã biết, chưa held-out.
+
+Rủi ro mở: Groq dường như tính trước `max_output_tokens=3072` vào OTPM (suy luận từ trường quota, chưa kiểm chứng). Output thực của v3 chỉ ~36–69 token/ca; hạ trần (ví dụ 768) là việc riêng cần user duyệt vì ảnh hưởng cả web khi bật verifier.

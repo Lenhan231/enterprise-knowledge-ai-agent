@@ -88,3 +88,17 @@ LLM thật (mỗi bộ một lượt, output mới, không retry, có trần tok
 Chỉ F17 đổi kết quả. Đã đọc evidence của mọi ca supported: đều chọn đúng dòng metric/năm và kèm dòng phạm vi + đơn vị (hoặc header bảng với ca phê duyệt). Đây vẫn là regression bộ đã biết, chưa held-out.
 
 Rủi ro mở: Groq dường như tính trước `max_output_tokens=3072` vào OTPM (suy luận từ trường quota, chưa kiểm chứng). Output thực của v3 chỉ ~36–69 token/ca; hạ trần (ví dụ 768) là việc riêng cần user duyệt vì ảnh hưởng cả web khi bật verifier.
+
+## Bộ 12 ca phát triển — dừng vì OTPM (03/11/2026, 02:07)
+
+`v3-transfer-01` bằng `GROQ_API_KEY_2`: N01 supported, N02/N03 rejected (đều đúng nhãn), N04 RateLimitError OTPM (limit 1000, requested 1432). Dừng, không retry; chưa chạy 4 probe. Token dùng 2.269.
+
+Quan sát lặp lại ở hai key khác nhau (`v3-full-03`, `v3-transfer-01`): ba request đầu qua, request thứ tư bị OTPM với pause 15 giây. Phù hợp giả thuyết provider giữ chỗ `max_output_tokens=3072` theo phút (chưa kiểm chứng với tài liệu Groq). `v3-full-04` chạy đủ 28 ca bằng key 2 trước đó, nên hạn mức có thể còn phụ thuộc workload chung của org.
+
+## Việc còn lại cho verifier
+
+1. Quyết định hạ `max_output_tokens` của audit (đề xuất 768; output thật 36–69 token/ca). Ảnh hưởng cả web khi bật verifier.
+2. Sau đó chạy lại 12 ca và 4 probe, output mới (`v3-transfer-02`, `v3-finance-probe-01`).
+3. Soạn ca held-out trước khi chạy: bằng chứng rời trong cùng nguồn, phủ định/ngoại lệ ở đơn vị giữa, đúng số nhưng sai dòng metric, một ca từ chunk bảng thật.
+4. Sáu câu VietStyle E2E/latency trên VPS (cần build backend; user tự chạy).
+5. Verifier web vẫn tắt. Kế hoạch user: ngày tiếp theo chuyển sang reranker.

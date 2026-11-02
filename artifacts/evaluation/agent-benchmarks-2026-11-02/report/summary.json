@@ -1,6 +1,48 @@
 {
   "cases": 30,
-  "generated": 0,
+  "generated": 30,
+  "generation_attempts": 34,
+  "generation_outcomes": {
+    "partial": 2,
+    "clarification_required": 13,
+    "complete": 1,
+    "failed": 11,
+    "unsupported": 2,
+    "confirmation_required": 1
+  },
+  "latest_rate_limit_failures": 4,
   "generation_exceptions": 0,
-  "metrics": {}
+  "metrics": {
+    "factual_correctness": {
+      "mean": 0.041739130434782605,
+      "scored": 23,
+      "not_applicable": 0,
+      "evaluator_errors": 0,
+      "pending": 7
+    },
+    "faithfulness": {
+      "mean": 0.8344818286649556,
+      "scored": 3,
+      "not_applicable": 20,
+      "evaluator_errors": 0,
+      "pending": 7
+    },
+    "numerical_accuracy": {
+      "mean": 1.0,
+      "scored": 2,
+      "not_applicable": 21,
+      "evaluator_errors": 0,
+      "pending": 7,
+      "verified_claims": 43,
+      "unverified_claims": 206,
+      "verification_coverage": 0.17269076305220885
+    },
+    "report_completeness": {
+      "mean": 0.06521739130434782,
+      "scored": 23,
+      "not_applicable": 0,
+      "evaluator_errors": 0,
+      "pending": 7
+    }
+  }
 }

@@ -13,11 +13,33 @@
     "report": 30
   },
   "knowledge_status": "deferred",
-  "status": "preparing",
+  "status": "in_progress",
   "reference_frozen_at": "2026-11-02T09:28:35.083545+00:00",
   "reference_sha256": {
     "sql_analytics": "4ebff61142108f3eb0b0a65df4a09af16bb21985021d1b6a815ae7e66a9e1457",
     "report": "7b6a62dcc7e593a13598d2c3eb82e1ba22a3979e662f32522b06b16ed0350a66"
   },
-  "oracle_status": "independent SQL oracles, author review only; not externally certified gold"
+  "oracle_status": "independent SQL oracles, author review only; not externally certified gold",
+  "agent_model": "qwen/qwen3.8-27b",
+  "agent_temperature": 0,
+  "groq_key_count": 2,
+  "groq_failover": "existing provider: rotate on RateLimitError, keep same model",
+  "runner_commit": "5a0ab5ad6b55ffb7f02e60c8c35f32ee127925b0",
+  "package_versions": {
+    "ragas": "0.1.dev1148+g735726d5c",
+    "openai": "2.41.0",
+    "pydantic": "2.11.7"
+  },
+  "report_source_mode": "orchestrated",
+  "confirmation_policy": "first response only; no implicit scope acceptance",
+  "benchmark_pacing": "Up to 3 provider attempts for 429 only; wait for existing key cooldowns within normal report deadline. One case retry for previously recorded 429; originals retained.",
+  "sql_scoring_revision": 4,
+  "report_numerical_revision": 2,
+  "benchmark_tests": "11 focused benchmark tests pass; 2 Groq fallback tests pass; 1 Ragas adapter test passes; 1 known legacy benchmark-suite failure",
+  "generation_harness_revision": 3,
+  "generation_harness_history": {
+    "initial": "8753816",
+    "paced": "f8d21b4",
+    "production_wiring_and_cooldown_correction": "5a0ab5a"
+  }
 }

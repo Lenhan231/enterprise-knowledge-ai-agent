@@ -55,10 +55,14 @@ class VietOcrModel(BaseOcrModel):
         )
         self.scale = options.scale
         import torch
+        import yaml
         from vietocr.tool.config import Cfg
         from vietocr.tool.predictor import Predictor
 
-        config = Cfg.load_config_from_name("vgg_seq2seq")
+        config_dir = Path(__file__).with_name("vietocr_config")
+        config = Cfg.load_config_from_file(config_dir / "base.yml")
+        with (config_dir / "vgg-seq2seq.yml").open(encoding="utf-8") as config_file:
+            config.update(yaml.safe_load(config_file))
         config["device"] = "cuda:0" if torch.cuda.is_available() else "cpu"
         config["dataset"]["image_max_width"] = 512
         config["predictor"]["beamsearch"] = False

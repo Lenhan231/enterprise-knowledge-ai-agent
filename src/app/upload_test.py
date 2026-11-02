@@ -124,6 +124,7 @@ async def create_upload_test(
         "pymupdf": fitz.VersionBind,
         "docling": parsed["metadata"].get("docling_version"),
         "preview_page_sizes": preview_page_sizes,
+        "parser_page_sizes": parsed.get("page_sizes") or preview_page_sizes,
     }
     runtime_info["processing_time_ms"] = max(
         0, round((time.perf_counter() - processing_started) * 1000),

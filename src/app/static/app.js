@@ -294,10 +294,19 @@ function renderOcrTestDetails(run) {
       const value = tablePage(table);
       return value == null ? singlePreviewPage === pageNumber : Number(value) === pageNumber;
     });
-    const pageSize = run.runtime_info?.preview_page_sizes?.[String(pageNumber)];
+    const pageSize = run.runtime_info?.parser_page_sizes?.[String(pageNumber)]
+      || run.runtime_info?.preview_page_sizes?.[String(pageNumber)];
     const pageWidth = Number(pageSize?.width);
     const pageHeight = Number(pageSize?.height);
-    const boxes = elements.flatMap((element) => {
+    const hasOutOfBoundsBox = elements.some((element) => {
+      const metadata = element.metadata || {};
+      const bbox = metadata.bbox;
+      if (metadata.bbox_coordinate_system !== "docling_page_coordinate" || !Array.isArray(bbox) || bbox.length !== 4) return false;
+      const [left, top, right, bottom] = bbox.map(Number);
+      return [left, top, right, bottom].every(Number.isFinite)
+        && (left < -1 || top < -1 || right > pageWidth + 1 || bottom > pageHeight + 1);
+    });
+    const boxes = hasOutOfBoundsBox ? "" : elements.flatMap((element) => {
       const metadata = element.metadata || {};
       const bbox = metadata.bbox;
       if (
@@ -369,6 +378,7 @@ function renderOcrTestDetails(run) {
       <section class="ocr-test-raw"><h4>Raw page</h4>${pagePreview}</section>
       <section class="ocr-test-extracted"><h4>Extracted output</h4>
         ${missingBoxScale ? '<p class="corpus-note">This run has element boxes but no saved page dimensions. Re-run Upload Test to overlay them on the page.</p>' : ""}
+        ${hasOutOfBoundsBox ? '<p class="corpus-note">Saved element boxes do not fit the page dimensions for this older run, so the overlay is hidden. Re-run Upload Test to save matching parser coordinates.</p>' : ""}
         ${inferredPageAssignment ? '<p class="corpus-note">Page assignment inferred from the only preview; parser metadata has no page number.</p>' : ""}
         ${renderOcrDiagnostics(ocrDiagnostics)}
         <details class="ocr-test-elements"><summary>Document elements · ${formatNumber(elements.length)} elements</summary>${elements.map((element) => `<article class="ocr-test-element"><div class="candidate-heading"><strong>Element ${formatNumber(element.element_index + 1)}</strong><span>${formatNumber(element.content.length)} chars · ${escapeHtml(element.metadata?.element_type || "text")} · ${escapeHtml(element.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(element.content)}</pre><details class="candidate-source"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(element.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser elements on this page.</p>'}</details>

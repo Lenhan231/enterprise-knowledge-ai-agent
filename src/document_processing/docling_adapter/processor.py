@@ -162,6 +162,10 @@ class DoclingProcessor:
             chart_recognition_results=chart_recognition_results,
             layout_detections=layout_detections,
         )
+        mapped["page_sizes"] = {
+            str(page_number): {"width": width, "height": height}
+            for page_number, (width, height) in page_sizes.items()
+        }
         if source_format == "pdf":
             mapped["metadata"].update({
                 "pdf_processing_route": "full_page_ocr",

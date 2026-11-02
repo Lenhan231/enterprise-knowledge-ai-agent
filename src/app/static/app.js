@@ -286,7 +286,6 @@ function renderOcrTestDetails(run) {
     ...run.tables.map((table) => tablePage(table) == null ? NaN : Number(tablePage(table))).filter(Number.isFinite),
   ])].sort((a, b) => a - b);
   const pageContent = allPages.map((pageNumber, pageIndex) => {
-    const pagePreview = `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
     const elements = run.elements.filter((element) => {
       const value = elementPage(element);
       return value == null ? singlePreviewPage === pageNumber : Number(value) === pageNumber;
@@ -295,6 +294,34 @@ function renderOcrTestDetails(run) {
       const value = tablePage(table);
       return value == null ? singlePreviewPage === pageNumber : Number(value) === pageNumber;
     });
+    const pageSize = run.runtime_info?.preview_page_sizes?.[String(pageNumber)];
+    const pageWidth = Number(pageSize?.width);
+    const pageHeight = Number(pageSize?.height);
+    const boxes = elements.flatMap((element) => {
+      const metadata = element.metadata || {};
+      const bbox = metadata.bbox;
+      if (
+        metadata.bbox_coordinate_system !== "docling_page_coordinate"
+        || !Array.isArray(bbox) || bbox.length !== 4
+        || !Number.isFinite(pageWidth) || !Number.isFinite(pageHeight)
+        || pageWidth <= 0 || pageHeight <= 0
+      ) return [];
+      const [left, top, right, bottom] = bbox.map(Number);
+      if (![left, top, right, bottom].every(Number.isFinite)) return [];
+      const x = Math.max(0, Math.min(pageWidth, left));
+      const y = Math.max(0, Math.min(pageHeight, top));
+      const width = Math.max(0, Math.min(pageWidth, right) - x);
+      const height = Math.max(0, Math.min(pageHeight, bottom) - y);
+      if (!width || !height) return [];
+      const label = String(metadata.element_type || "text").toLowerCase().replace(/[^a-z0-9_-]/g, "");
+      const snippet = String(element.content || "").replace(/\s+/g, " ").slice(0, 100);
+      return [`<g class="layout-region layout-region-${escapeHtml(label)}"><title>Element ${formatNumber(element.element_index + 1)} · ${escapeHtml(label)}${snippet ? `: ${escapeHtml(snippet)}` : ""}</title><rect x="${x}" y="${y}" width="${width}" height="${height}" /></g>`];
+    }).join("");
+    const pagePreviewImage = `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
+    const pagePreview = boxes && pageSize
+      ? `<div class="ocr-layout-preview">${pagePreviewImage}<svg viewBox="0 0 ${pageWidth} ${pageHeight}" preserveAspectRatio="none" aria-label="Parser element bounding boxes">${boxes}</svg></div>`
+      : pagePreviewImage;
+    const missingBoxScale = !pageSize && elements.some((element) => Array.isArray(element.metadata?.bbox));
     const ocrDiagnostics = elements.flatMap((element) => element.metadata?.ocr_diagnostics || []);
     const tablesHtml = tables.map((table) => {
       const data = table.structured_data || {};
@@ -341,6 +368,7 @@ function renderOcrTestDetails(run) {
       <div class="ocr-test-page-content">
       <section class="ocr-test-raw"><h4>Raw page</h4>${pagePreview}</section>
       <section class="ocr-test-extracted"><h4>Extracted output</h4>
+        ${missingBoxScale ? '<p class="corpus-note">This run has element boxes but no saved page dimensions. Re-run Upload Test to overlay them on the page.</p>' : ""}
         ${inferredPageAssignment ? '<p class="corpus-note">Page assignment inferred from the only preview; parser metadata has no page number.</p>' : ""}
         ${renderOcrDiagnostics(ocrDiagnostics)}
         <details class="ocr-test-elements"><summary>Document elements · ${formatNumber(elements.length)} elements</summary>${elements.map((element) => `<article class="ocr-test-element"><div class="candidate-heading"><strong>Element ${formatNumber(element.element_index + 1)}</strong><span>${formatNumber(element.content.length)} chars · ${escapeHtml(element.metadata?.element_type || "text")} · ${escapeHtml(element.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(element.content)}</pre><details class="candidate-source"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(element.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser elements on this page.</p>'}</details>

@@ -50,6 +50,7 @@ async def create_upload_test(
 
     page_count = 0
     page_previews = []
+    preview_page_sizes = {}
     try:
         if suffix == ".pdf":
             source = fitz.open(stream=content, filetype="pdf")
@@ -57,7 +58,11 @@ async def create_upload_test(
             if not 1 <= page_count <= 50:
                 source.close()
                 raise HTTPException(422, "Upload Test accepts PDFs with 1-50 pages")
-            for page in source:
+            for page_number, page in enumerate(source, start=1):
+                preview_page_sizes[str(page_number)] = {
+                    "width": float(page.rect.width),
+                    "height": float(page.rect.height),
+                }
                 scale = min(120 / 72, 1800 / page.rect.width, 2400 / page.rect.height)
                 page_previews.append(page.get_pixmap(
                     matrix=fitz.Matrix(scale, scale), alpha=False,
@@ -66,7 +71,11 @@ async def create_upload_test(
         elif suffix in {".png", ".jpg", ".jpeg", ".tif", ".tiff"}:
             source = fitz.open(stream=content, filetype=suffix[1:])
             page_count = len(source)
-            for page in source:
+            for page_number, page in enumerate(source, start=1):
+                preview_page_sizes[str(page_number)] = {
+                    "width": float(page.rect.width),
+                    "height": float(page.rect.height),
+                }
                 scale = min(1.0, 1800 / page.rect.width, 2400 / page.rect.height)
                 page_previews.append(page.get_pixmap(
                     matrix=fitz.Matrix(scale, scale), alpha=False,
@@ -103,6 +112,7 @@ async def create_upload_test(
     runtime_info = {
         "pymupdf": fitz.VersionBind,
         "docling": parsed["metadata"].get("docling_version"),
+        "preview_page_sizes": preview_page_sizes,
     }
     runtime_info["processing_time_ms"] = max(
         0, round((time.perf_counter() - processing_started) * 1000),

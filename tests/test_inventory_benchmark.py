@@ -61,6 +61,10 @@ class BenchmarkMetricsTests(unittest.TestCase):
         from evaluation.run_inventory_agents_benchmark import rate_limited
         self.assertTrue(rate_limited({'result':{'metadata':{'error_code':'provider_rate_limited'}}}))
         self.assertFalse(rate_limited({'result':{'metadata':{'error_code':'invalid_plan'}}}))
+        self.assertTrue(rate_limited({'result':{'metadata':{'status':'failed',
+            'source_collection':{'task_trace':[{'error_type':'RateLimitError'}]}}}}))
+        self.assertFalse(rate_limited({'result':{'metadata':{'status':'partial',
+            'source_collection':{'task_trace':[{'error_type':'RateLimitError'}]}}}}))
 
     def test_resumed_scores_must_match_the_generation_attempt(self):
         from evaluation.run_inventory_agents_benchmark import current_score
@@ -95,6 +99,12 @@ class BenchmarkMetricsTests(unittest.TestCase):
             summary=json.loads((root/'report/summary.json').read_text())
             self.assertEqual(summary['metrics']['faithfulness']['scored'],0)
             self.assertEqual(summary['metrics']['faithfulness']['pending'],30)
+
+    def test_tertiary_key_follows_primary_and_numbered_backups_without_duplicates(self):
+        from evaluation.run_inventory_agents_benchmark import benchmark_keys
+        self.assertEqual(benchmark_keys({'GROQ_API_KEY':'primary','GROQ_API_KEY_2':'backup',
+            'GROQ_API_KEY_RAGAS':'tertiary'}),['primary','backup','tertiary'])
+        self.assertEqual(benchmark_keys({'GROQ_API_KEY':'same','GROQ_API_KEY_RAGAS':'same'}),['same'])
 
     def test_dataset_split_and_reference_coverage(self):
         import hashlib

@@ -72,9 +72,13 @@ def latest_generations(group):
 
 
 def rate_limited(row):
+    metadata=row.get('result',{}).get('metadata',{})
     return ('RateLimitError' in str(row.get('generation_error')) or
-            row.get('result',{}).get('metadata',{}).get('error_type')=='RateLimitError' or
-            row.get('result',{}).get('metadata',{}).get('error_code')=='provider_rate_limited' or
+            metadata.get('error_type')=='RateLimitError' or
+            metadata.get('error_code')=='provider_rate_limited' or
+            (metadata.get('status')=='failed' and (
+                'provider_unavailable' in metadata.get('issues',{}).values() or
+                any(t.get('error_type')=='RateLimitError' for t in metadata.get('source_collection',{}).get('task_trace',[])))) or
             'rate_limit_exceeded' in row.get('answer',''))
 
 
@@ -87,6 +91,12 @@ def quota_retry_delay(headers, message):
             return 60
         return min(3600,max(1,sum(float(n)*{'h':3600,'m':60,'s':1}[unit]
                                 for n,unit in re.findall(r'(\d+(?:\.\d+)?)([hms])',match[1]))))
+
+
+def benchmark_keys(environ):
+    keys=[environ.get('GROQ_API_KEY'),*(environ[name] for name in sorted(environ)
+          if re.fullmatch(r'GROQ_API_KEY_\d+',name)),environ.get('GROQ_API_KEY_RAGAS')]
+    return list(dict.fromkeys(key for key in keys if key))
 
 
 async def references():
@@ -156,7 +166,7 @@ async def generate(groups, identifiers):
 
     class PacedGroqProvider(GroqProvider):
         def __init__(self):
-            super().__init__()
+            super().__init__(api_keys=benchmark_keys(os.environ))
 
             def accurate_retry_header(response):
                 if response.status_code==429:
@@ -195,7 +205,7 @@ async def generate(groups, identifiers):
     identity = VerifiedIdentity(subject='agent-benchmark', permissions={'analytics:read','documents:read'}, document_roles={'admin'})
     manifest = json.loads((OUT/'manifest.json').read_text())
     manifest.update(agent_model=llm.model_name, agent_temperature=llm.temperature,
-                    groq_key_count=len(llm._clients), groq_failover='existing provider: rotate on RateLimitError, keep same model',
+                    groq_key_count=len(llm._clients), groq_failover='primary, numbered backups, then GROQ_API_KEY_RAGAS; rotate on RateLimitError, keep same model',
                     runner_commit=subprocess.check_output(['git','rev-parse','HEAD'], cwd=ROOT, text=True).strip(),
                     package_versions={p: importlib.metadata.version(p) for p in ('ragas','openai','pydantic')},
                     report_source_mode='orchestrated', confirmation_policy='first response only; no implicit scope acceptance')
@@ -212,9 +222,10 @@ async def generate(groups, identifiers):
                               and 'source_collection' in prior.get('result',{}).get('metadata',{}))
                 pacing_retry=(group=='report' and prior and prior.get('harness_revision',1)<3
                               and prior.get('result',{}).get('metadata',{}).get('error_code')=='provider_timeout')
-                if (prior and not (wiring_retry or pacing_retry) and (not rate_limited(prior) or prior.get('attempt',1)>=2)) or identifiers and case['id'] not in identifiers:
+                new_key_retry=(prior and rate_limited(prior) and prior.get('groq_key_count',2)<len(llm._clients))
+                if (prior and not (wiring_retry or pacing_retry or new_key_retry) and (not rate_limited(prior) or prior.get('attempt',1)>=2)) or identifiers and case['id'] not in identifiers:
                     continue
-                while min(llm._cooldowns)>time.monotonic()+1:
+                if min(llm._cooldowns)>time.monotonic()+1:
                     wait=min(60,min(llm._cooldowns)-time.monotonic()+0.5)
                     print('Between-request Groq cooldown',round(wait,1),'seconds',flush=True)
                     await asyncio.sleep(wait)
@@ -223,11 +234,14 @@ async def generate(groups, identifiers):
                 print('generate', group, case['id'], flush=True)
                 row = {'id':case['id'], 'question':case['question'], 'attempt': prior.get('attempt',1)+1 if prior else 1,
                        'harness_revision':3,
+                       'groq_key_count':len(llm._clients),
                        'started_at':datetime.now(timezone.utc).isoformat()}
                 if wiring_retry:
                     row['retry_reason']='Harness correction: use production fallback classifier and source-router wiring; earlier attempt retained.'
                 elif pacing_retry:
                     row['retry_reason']='Harness correction: accurate per-key Groq cooldowns and no waits that consume the full per-call timeout; earlier attempt retained.'
+                elif new_key_retry:
+                    row['retry_reason']='User authorized GROQ_API_KEY_RAGAS as third fallback after primary and backup limits; earlier attempt retained.'
                 try:
                     if group == 'report':
                         result, payload, media = await report.generate_from_template(request, source_mode='orchestrated')

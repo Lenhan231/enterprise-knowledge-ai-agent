@@ -24,7 +24,6 @@ from docling.models.factories import get_ocr_factory
 from docling.models.stages.ocr.tesseract_utils import tesseract_box_to_bounding_rectangle
 from docling.utils.profiling import TimeRecorder
 from .line_detection import create_line_detector, crop_line, detect_line_boxes
-from ..orientation import detect_tesseract_orientation, rotate_for_reading
 
 
 class VietOcrOptions(OcrOptions):
@@ -65,13 +64,7 @@ class VietOcrModel(BaseOcrModel):
         self.recognizer = Predictor(config)
         self.detector = create_line_detector()
         self.orientation_diagnostics: list[dict] = []
-        self._orientation_counts: dict[str | None, int] = {}
         self.current_reference_id: str | None = None
-
-    @staticmethod
-    def _detect_orientation(image: Image.Image) -> tuple[int, int | None, float | None]:
-        """Retain the region-level OSD hook used before RapidOCR line detection."""
-        return detect_tesseract_orientation(image)
 
     @staticmethod
     def _cell_bbox(cell: TextCell) -> tuple[float, float, float, float]:
@@ -142,26 +135,12 @@ class VietOcrModel(BaseOcrModel):
                 )
                 cells: list[TextCell] = []
                 cell_region_indices: list[int] = []
-                for ocr_rect in ocr_rects:
+                for region_index, ocr_rect in enumerate(ocr_rects, start=1):
                     if ocr_rect.area() == 0:
                         continue
                     crop = page._backend.get_page_image(
                         scale=self.scale, cropbox=ocr_rect
                     )
-                    doc_orientation, osd_orientation, osd_confidence = self._detect_orientation(crop)
-                    region_index = self._orientation_counts.get(self.current_reference_id, 0) + 1
-                    self._orientation_counts[self.current_reference_id] = region_index
-                    self.orientation_diagnostics.append({
-                        "reference_id": self.current_reference_id,
-                        "ocr_region_index_1based": region_index,
-                        "bbox": [ocr_rect.l, ocr_rect.t, ocr_rect.r, ocr_rect.b],
-                        "crop_size": list(crop.size),
-                        "osd_orientation_degrees": osd_orientation,
-                        "correction_clockwise": doc_orientation,
-                        "osd_confidence": osd_confidence,
-                    })
-                    if doc_orientation:
-                        crop = rotate_for_reading(crop, doc_orientation)
                     image_size = crop.size
                     image = cv2.cvtColor(np.asarray(crop), cv2.COLOR_RGB2BGR)
                     boxes = detect_line_boxes(self.detector, image)
@@ -196,7 +175,7 @@ class VietOcrModel(BaseOcrModel):
                                     box,
                                     original_offset=ocr_rect,
                                     scale=self.scale,
-                                    orientation=doc_orientation,
+                                    orientation=0,
                                     im_size=image_size,
                                 ),
                             )

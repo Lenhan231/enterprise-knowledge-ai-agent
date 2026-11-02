@@ -1,4 +1,4 @@
-"""Experimental semantic audit; quote/coverage checks do not prove entailment."""
+"""Experimental semantic audit; evidence-ID/coverage checks do not prove entailment."""
 
 import json
 import re
@@ -17,20 +17,16 @@ VERIFICATION_UNAVAILABLE_ANSWER = (
     "Chưa thể kiểm chứng đầy đủ câu trả lời với các nguồn được trích dẫn. "
     "Vui lòng thử lại hoặc hỏi rõ hơn."
 )
-Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=6000)]
 
 
-class SupportingQuote(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    source_id: str = Field(pattern=r"^S\d+$")
-    text: Text
+EvidenceId = Annotated[str, StringConstraints(pattern=r"^S\d+\.\d+$")]
 
 
 class ClaimReview(BaseModel):
     model_config = ConfigDict(extra="forbid")
     claim_id: str = Field(pattern=r"^C[1-9]\d*$")
     verdict: Literal["supported", "contradicted", "insufficient"]
-    quotes: list[SupportingQuote] = Field(max_length=10)
+    evidence: list[EvidenceId] = Field(max_length=10)
 
 
 class AnswerReview(BaseModel):
@@ -59,6 +55,11 @@ def claim_blocks(answer):
     return blocks
 
 
+def evidence_units(content):
+    """Split a source per line, then at . ! ? followed by whitespace; numbers like 1.5 stay whole."""
+    return [part for line in content.splitlines() for part in re.split(r"(?<=[.!?])\s+", line.strip()) if part]
+
+
 def parse_review(raw):
     fenced = re.fullmatch(r"\s*```(?:json)?\s*\n(.*?)\n```\s*", raw, flags=re.DOTALL | re.IGNORECASE)
     return AnswerReview.model_validate_json(fenced.group(1) if fenced else raw)
@@ -69,17 +70,18 @@ def validate_review(answer: str, contexts: list[dict], review: AnswerReview) -> 
     identifiers = [c.claim_id for c in review.claims]
     if len(set(identifiers)) != len(identifiers) or set(identifiers) != set(blocks):
         raise ValueError("incomplete_claim_coverage")
-    sources = {c["source_id"]: " ".join(c["content"].split()) for c in contexts}
+    sources = {c["source_id"] for c in contexts}
+    units = {f"{c['source_id']}.{i}" for c in contexts for i, _ in enumerate(evidence_units(c["content"]), 1)}
     for claim in review.claims:
         cited = set(blocks[claim.claim_id]["source_ids"])
         if not cited or not cited.issubset(sources):
             raise ValueError("invalid_claim_citations")
         if claim.verdict != "supported":
             return VerificationOutcome(status="rejected", reason=claim.verdict, claim_count=len(review.claims))
-        if {q.source_id for q in claim.quotes} != cited:
-            raise ValueError("missing_cited_source_quotes")
-        if any(" ".join(q.text.split()) not in sources[q.source_id] for q in claim.quotes):
-            raise ValueError("fabricated_source_quote")
+        if {e.rsplit(".", 1)[0] for e in claim.evidence} != cited:
+            raise ValueError("missing_cited_source_evidence")
+        if not units.issuperset(claim.evidence):
+            raise ValueError("unknown_evidence_id")
     return VerificationOutcome(status="supported", reason="all_claims_supported", claim_count=len(review.claims))
 
 
@@ -97,7 +99,9 @@ def verify_answer(llm, question: str, answer: str, contexts: list[dict]) -> Veri
         return VerificationOutcome(status="unavailable", reason="uncited_or_oversized_draft", arithmetic_checked=checked)
     payload = json.dumps({"question": question, "claims": blocks, "sources": [
         {"source_id": c["source_id"], "document": c["document_name"],
-         "section": (c.get("metadata") or {}).get("section_title"), "content": c["content"]}
+         "section": (c.get("metadata") or {}).get("section_title"),
+         "units": [{"id": f"{c['source_id']}.{i}", "text": text}
+                   for i, text in enumerate(evidence_units(c["content"]), 1)]}
         for c in contexts
     ]}, ensure_ascii=False)
     if len(payload) > 40000:

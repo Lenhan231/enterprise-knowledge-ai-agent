@@ -1,0 +1,68 @@
+# Thiết kế đề xuất: evidence ID cho verifier (chưa triển khai)
+
+Ngày 03/11/2026. Trạng thái: **đã code cách B (tách dòng + câu, không tự gắn header)**, 104 test liên quan đạt; chưa chạy LLM thật. Nền: main `1241801`, Huy `58b7226`.
+
+## Vấn đề
+
+F17 là câu đúng nhưng bị chặn `fabricated_source_quote`: model nối hai đoạn rời của S2 thành một quote. Thử quy tắc prompt "mỗi quote liền nhau" đã thất bại 2/2 lượt (xem `knowledge-verifier-v2-20261103.vi.md`). Không nới matching quote.
+
+Hai sự thật từ code hiện tại quyết định phạm vi:
+
+1. Quote **không** đến tay user: `VerificationOutcome` chỉ có status/reason/count (`claim_verification.py:41-45`, `knowledge_agent.py:81-82`). Quote chỉ là bằng chứng chống bịa, không phải bằng chứng hiển thị.
+2. Quote nguyên văn chỉ chứng minh chuỗi có trong nguồn, không chứng minh nó hỗ trợ claim. Entailment vẫn là phán đoán của LLM.
+
+Vì vậy evidence ID giữ đúng chức năng hiện tại của quote (model phải chỉ ra nó dựa vào đâu trong nguồn đã cite) nhưng bỏ hẳn bước model chép chữ.
+
+## Thiết kế nhỏ nhất
+
+### Cắt nguồn thành đơn vị bằng chứng (server)
+
+- Chỉ cắt các `cited_contexts` mà `rag_service.py:274` đã lọc theo citation, trên nền nguồn đã lọc quyền. Không retrieve, không thêm nguồn.
+- Tách theo dòng (`\n`). Chunk bảng đã có dạng `Section: …` / `Table: …` / `Columns: …` / `Row N: cột: giá trị | …` (`chunking/table/chunker.py:33-40`), nên mỗi dòng bảng đã tự mang tên cột.
+- Mỗi dòng tách thêm tại ranh giới câu: dấu `.`/`!`/`?` + khoảng trắng. Không tách ở `;` vì sẽ cắt `Revenue: 2024 = 80; 2023 = 70.` làm mất nhãn của số 2023. `1.5` hoặc `50.000.001` không có khoảng trắng sau dấu chấm nên không bị cắt.
+- ID dạng `S2.1`, `S2.2`… theo thứ tự trong nguồn. Ghép các đơn vị theo thứ tự phải tái tạo lại nội dung nguồn (sau khi chuẩn hóa khoảng trắng); có assert/test cho bất biến này.
+- Cắt quá nhỏ (ví dụ sau "e.g.") chỉ làm model phải chọn nhiều ID hơn, không làm lọt sai, vì chữ hiển thị vẫn nguyên văn.
+
+F17 S2 sẽ thành `S2.1` "Separate financial results of the parent company." · `S2.2` "Unit: VND billion." · `S2.3` "Revenue: 2024 = 80; 2023 = 70." · `S2.4` "Profit after tax: 2024 = 12; 2023 = 10." Model chọn `S2.1, S2.2, S2.4`, không cần chép chữ.
+
+### Payload và schema
+
+- Payload gửi `units: [{"id": "S2.1", "text": "…"}]` **thay cho** `content`, không gửi cả hai, để không nhân đôi token input.
+- `SupportingQuote(source_id, text)` → `evidence: list[str]`, mỗi phần tử khớp `^S\d+\.\d+$`, tối đa 10 (giữ cùng giới hạn hiện tại).
+- Validation giữ nguyên thứ tự hiện tại; chỉ thay hai dòng kiểm quote:
+  - mọi ID phải tồn tại trong các đơn vị server đã cấp → nếu không: `unknown_evidence_id` (thay `fabricated_source_quote`);
+  - tập nguồn của các ID phải đúng bằng `source_ids` của block (giữ ý nghĩa `missing_cited_source_quotes`, đổi tên `missing_cited_source_evidence`).
+- Prompt: thay các dòng hướng dẫn chép quote bằng "chọn ID của mọi đơn vị cần thiết, gồm cả dòng tiêu đề/đơn vị/cột để hiểu ô bảng". Các dòng về groundedness giữ nguyên.
+- Manifest benchmark: `verification_protocol=claim-evidence-v3`; `validation_error` trong script dùng chung `validate_review`, nên tự theo.
+
+Ước lượng: khoảng 15–20 dòng ở `claim_verification.py`, khoảng 5 dòng prompt, 1 dòng script, và cập nhật các test đang dùng `quotes` (16 chỗ trong `test_claim_verification.py`, 6 chỗ trong `test_claim_verifier_benchmark.py`).
+
+## Rủi ro và giới hạn — không được nói là đã giải quyết
+
+- **Chọn sai bằng chứng vẫn có thể xảy ra**: model có thể chọn `S2.3` (Revenue) cho claim profit mà vẫn qua kiểm ID. Quote nguyên văn hiện tại cũng có lỗ hổng y hệt; chặn việc này là phần của LLM verdict, không phải code.
+- **Bỏ qua phủ định/ngoại lệ nằm ở đơn vị khác**: tương đương quote hiện tại. LLM vẫn thấy toàn bộ đơn vị của nguồn, nhưng code không chứng minh được nó đã đọc.
+- **Header/đơn vị**: không tự gắn header vào đơn vị (thêm logic, dễ sai với văn xuôi). Đơn vị/tiền tệ nằm ở dòng Section/Table hoặc câu đầu; prompt yêu cầu chọn chúng nhưng code không ép.
+- **Dòng bảng rất dài**: một dòng là một đơn vị dù dài; đã được giới hạn bởi chunk size.
+- **Chunk thật khác fixture**: fixture tổng hợp là một dòng văn xuôi; tài liệu thật đa số là dòng bảng/đoạn. Cần một ca dựng từ chunk bảng thật (dạng VietStyle bảng phê duyệt) trước khi tin vào kết quả.
+- **So sánh baseline**: prompt/schema đổi nên hash đổi; 28 ca + 12 + 4 chỉ là regression, không phải held-out.
+
+## Test cần có
+
+Unit (không gọi LLM):
+
+1. Cắt đơn vị: dòng bảng, văn xuôi nhiều câu, số `1.5`/`50.000.001` không bị cắt, ghép lại bằng nội dung nguồn.
+2. F17 dạng ID rời `S2.1,S2.2,S2.4` → supported.
+3. ID không tồn tại (`S2.9`), ID của nguồn không được cite (`S3.1`), thiếu ID cho một nguồn đã cite → bị chặn đúng mã lỗi.
+4. Giữ các test hiện có: coverage claim ID, verdict âm chặn cả draft, arithmetic trước LLM, deadline, chỉ nguồn đã cite và đã lọc quyền vào verifier.
+
+LLM thật (mỗi bộ một lượt, output mới, không retry, có trần token như lần trước):
+
+1. F17 riêng → 28 ca → 12 ca → 4 probe.
+2. **Trước khi chạy**, soạn vài ca held-out: bằng chứng rời trong cùng nguồn; bẫy phủ định/ngoại lệ ở đơn vị giữa; claim đúng số nhưng chọn được dòng sai metric; một ca từ chunk bảng thật.
+3. So với v2 theo từng bộ: giữ câu đúng, câu sai lọt, chặn nhầm, unavailable (theo mã lỗi), token input/output, median audit.
+
+## Cần user quyết định
+
+1. Đồng ý thiết kế (tách theo dòng + câu, không tự gắn header)?
+2. Ai soạn/duyệt ca held-out? Có dùng bộ của An nếu có?
+3. Ngân sách token cho lượt LLM thật sau khi code xong.

@@ -70,7 +70,7 @@ def main():
             output.write(json.dumps({"dataset": dataset["dataset_id"], "model": llm.model_name,
                                      "limitations": dataset["limitations"], "api_key_env": args.api_key_env or "pool",
                                      "case_ids": [c["id"] for c in cases],
-                                     "verification_protocol": "claim-blocks-v2",
+                                     "verification_protocol": "claim-evidence-v3",
                                      "cases_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest(),
                                      "prompt_sha256": hashlib.sha256(CLAIM_VERIFICATION_PROMPT.encode()).hexdigest(),
                                      "verifier_timeout_seconds": 15, "max_output_tokens": 3072}) + "\n")

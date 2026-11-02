@@ -11,7 +11,7 @@ from core.latency import latency_events, snapshot
 from core.models.agents import AgentRequest, VerifiedIdentity
 from core.prompts.Knowledge import INSUFFICIENT_ANSWER
 from core.rag.claim_verification import (
-    AnswerReview, VERIFICATION_UNAVAILABLE_ANSWER, claim_blocks, validate_review, verify_answer,
+    AnswerReview, VERIFICATION_UNAVAILABLE_ANSWER, claim_blocks, evidence_units, validate_review, verify_answer,
 )
 from core.rag.rag_service import RAGService
 
@@ -20,51 +20,70 @@ SOURCE = {"source_id": "S1", "document_name": "report.pdf", "chunk_index": 1,
           "similarity_score": 0.5, "metadata": {"document_id": "report", "section_title": "Results"},
           "content": "Consolidated revenue in 2024: VND 100 billion. Profit: VND 20 billion."}
 ANSWER = "Doanh thu hợp nhất năm 2024 là 100 tỷ đồng [S1]."
-QUOTE = "Consolidated revenue in 2024: VND 100 billion."
+EVIDENCE = "S1.1"
 
 
-def review(verdict="supported", quote=QUOTE, claim_id="C1"):
-    return {"claims": [{"claim_id": claim_id, "verdict": verdict,
-                        "quotes": [{"source_id": "S1", "text": quote}] if quote else []}]}
+def review(verdict="supported", evidence=EVIDENCE, claim_id="C1"):
+    return {"claims": [{"claim_id": claim_id, "verdict": verdict, "evidence": [evidence] if evidence else []}]}
 
 
 class ClaimVerificationTest(unittest.TestCase):
-    def test_valid_audit_and_exact_source_quote(self):
+    def test_valid_audit_and_server_evidence_id(self):
         data = AnswerReview.model_validate(review())
         result = validate_review(ANSWER, [SOURCE], data)
         self.assertEqual(result.status, "supported")
         self.assertEqual(result.claim_count, 1)
 
-    def test_code_rejects_missing_duplicate_ids_rewrites_and_fabricated_quotes(self):
+    def test_code_rejects_missing_duplicate_ids_rewrites_and_unknown_evidence(self):
         changed_text = review()
         changed_text["claims"][0]["text"] = ANSWER
         duplicate = review()
         duplicate["claims"] *= 2
         for changed in (review(claim_id="C2"), duplicate, changed_text,
-                        review(quote="Revenue is 999 billion."), review(quote=None),
-                        {"claims": [{"claim_id": "C1", "verdict": "supported", "quotes": [
-                            {"source_id": "S2", "text": QUOTE}]}]}):
+                        review(evidence="S1.9"), review(evidence=None), review(evidence="S2.1"),
+                        review(evidence="Consolidated revenue in 2024: VND 100 billion.")):
             with self.subTest(changed=changed), self.assertRaises(ValueError):
                 validate_review(ANSWER, [SOURCE], AnswerReview.model_validate(changed))
         with self.assertRaises(ValueError):
             validate_review(ANSWER + " Profit was 999 [S1].", [SOURCE], AnswerReview.model_validate(review()))
 
-    def test_separate_exact_quotes_from_one_source_pass_but_joined_spans_do_not(self):
-        source = {**SOURCE, "content": "Separate results. Unit: VND billion. Revenue: 2024 = 80. "
-                                       "Profit after tax: 2024 = 12."}
-        answer = "Lợi nhuận riêng năm 2024 là 12 tỷ đồng [S1]."
+    def test_units_split_lines_and_sentences_but_keep_numbers_and_rejoin_to_source(self):
+        table = "Section: Approval\nRow 1: Value: 50.000.001 đồng | Approver: Head; Procurement"
+        self.assertEqual(evidence_units(table), ["Section: Approval",
+                                                 "Row 1: Value: 50.000.001 đồng | Approver: Head; Procurement"])
+        prose = "Unit: VND billion. Revenue: 2024 = 1.5; 2023 = 70. Is it final? Yes!"
+        self.assertEqual(evidence_units(prose), ["Unit: VND billion.", "Revenue: 2024 = 1.5; 2023 = 70.",
+                                                 "Is it final?", "Yes!"])
+        for content in (table, prose, SOURCE["content"], "  spaced \n\n  lines.  Two  "):
+            self.assertEqual(" ".join(evidence_units(content)).split(), content.split())
 
-        def quotes(*texts):
-            return AnswerReview.model_validate({"claims": [{"claim_id": "C1", "verdict": "supported",
-                "quotes": [{"source_id": "S1", "text": t} for t in texts]}]})
+    def test_non_adjacent_units_of_one_source_pass_but_unknown_or_missing_ids_do_not(self):
+        # F17 shape: header and unit are separate from the profit row, with revenue in between.
+        sources = [{**SOURCE, "content": "Consolidated. Unit: VND billion. Revenue: 2024 = 100."},
+                   {**SOURCE, "source_id": "S2", "content": "Separate results of the parent company. "
+                    "Unit: VND billion. Revenue: 2024 = 80. Profit after tax: 2024 = 12."}]
+        answer = "Doanh thu hợp nhất 2024 là 100 tỷ đồng [S1]. Lợi nhuận riêng 2024 là 12 tỷ đồng [S2]."
 
-        separate = quotes("Separate results. Unit: VND billion.", "Profit after tax: 2024 = 12.")
-        self.assertEqual(validate_review(answer, [source], separate).status, "supported")
-        for joined in ("Separate results. Unit: VND billion. Profit after tax: 2024 = 12.",
-                       "Unit: VND billion. … Profit after tax: 2024 = 12.",
-                       "Unit: VND billion. ... Profit after tax: 2024 = 12."):
-            with self.subTest(joined=joined), self.assertRaisesRegex(ValueError, "fabricated_source_quote"):
-                validate_review(answer, [source], quotes(joined))
+        def audit(second):
+            return AnswerReview.model_validate({"claims": [
+                {"claim_id": "C1", "verdict": "supported", "evidence": ["S1.1", "S1.2", "S1.3"]},
+                {"claim_id": "C2", "verdict": "supported", "evidence": second}]})
+
+        self.assertEqual(validate_review(answer, sources, audit(["S2.1", "S2.2", "S2.4"])).status, "supported")
+        for second, error in ((["S2.5"], "unknown_evidence_id"), (["S1.1"], "missing_cited_source_evidence"),
+                              (["S2.4", "S1.1"], "missing_cited_source_evidence"), ([], "missing_cited_source_evidence")):
+            with self.subTest(second=second), self.assertRaisesRegex(ValueError, error):
+                validate_review(answer, sources, audit(second))
+
+    def test_payload_sends_numbered_units_instead_of_raw_content(self):
+        llm = Mock()
+        llm.generate.return_value = json.dumps(review())
+        self.assertEqual(verify_answer(llm, "Q", ANSWER, [SOURCE]).status, "supported")
+        payload = json.loads(llm.generate.call_args.args[0].split("Payload (JSON):\n", 1)[1])
+        self.assertNotIn("content", payload["sources"][0])
+        self.assertEqual(payload["sources"][0]["units"], [
+            {"id": "S1.1", "text": "Consolidated revenue in 2024: VND 100 billion."},
+            {"id": "S1.2", "text": "Profit: VND 20 billion."}])
 
     def test_server_preserves_shared_citation_block_without_model_rewrites(self):
         answer = "Đúng 50 triệu cần Trưởng phòng; 50.000.001 đồng cần thêm Mua sắm [S1]."
@@ -83,7 +102,7 @@ class ClaimVerificationTest(unittest.TestCase):
     def test_multiple_block_ids_allow_reordered_reviews_but_never_omissions(self):
         other = "Lợi nhuận là 20 tỷ đồng [S1]."
         data = review()
-        data["claims"] += review(claim_id="C2", quote="Profit: VND 20 billion.")["claims"]
+        data["claims"] += review(claim_id="C2", evidence="S1.2")["claims"]
         data["claims"].reverse()
         result = validate_review(ANSWER + "\n\n" + other, [SOURCE], AnswerReview.model_validate(data))
         self.assertEqual(result.claim_count, 2)
@@ -102,7 +121,7 @@ class ClaimVerificationTest(unittest.TestCase):
 
     def test_correct_calculation_never_overrides_semantic_rejection(self):
         llm = Mock()
-        llm.generate.return_value = json.dumps(review(verdict="contradicted", quote=None))
+        llm.generate.return_value = json.dumps(review(verdict="contradicted", evidence=None))
         result = verify_answer(llm, "Profit?", "Profit is 90 + 15 = 105 billion [S1].", [SOURCE])
         self.assertEqual(result.status, "rejected")
         self.assertEqual(result.arithmetic_checked, 1)
@@ -110,7 +129,7 @@ class ClaimVerificationTest(unittest.TestCase):
 
     def test_negative_verdicts_reject_entire_draft(self):
         for verdict in ("contradicted", "insufficient"):
-            result = validate_review(ANSWER, [SOURCE], AnswerReview.model_validate(review(verdict=verdict, quote=None)))
+            result = validate_review(ANSWER, [SOURCE], AnswerReview.model_validate(review(verdict=verdict, evidence=None)))
             self.assertEqual(result.status, "rejected")
             self.assertEqual(result.reason, verdict)
 
@@ -185,7 +204,7 @@ class ClaimVerificationTest(unittest.TestCase):
         result = rag.generate_from_contexts("Revenue?", [SOURCE, other], verify_claims=True)
         self.assertEqual(result.verification.status, "supported")
         prompt = rag.llm.generate.call_args.args[0]
-        self.assertIn(QUOTE, prompt)
+        self.assertIn("Consolidated revenue in 2024: VND 100 billion.", prompt)
         self.assertNotIn("UNUSED_CONTEXT_SENTINEL", prompt)
 
     def test_both_retrieval_paths_propagate_opt_in(self):
@@ -221,7 +240,7 @@ class KnowledgeVerificationIntegrationTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_rejected_draft_is_not_returned_or_exposed_as_evidence(self):
         draft = "Profit in 2024 was VND 100 billion [S1]."
-        for response in (json.dumps(review(verdict="contradicted", quote=None)), "invalid JSON"):
+        for response in (json.dumps(review(verdict="contradicted", evidence=None)), "invalid JSON"):
             rag = RAGService.__new__(RAGService)
             rag.retrieve_contexts = Mock(return_value=[SOURCE])
             rag.llm = Mock()

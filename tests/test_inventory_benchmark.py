@@ -106,6 +106,16 @@ class BenchmarkMetricsTests(unittest.TestCase):
             'GROQ_API_KEY_RAGAS':'tertiary'}),['primary','backup','tertiary'])
         self.assertEqual(benchmark_keys({'GROQ_API_KEY':'same','GROQ_API_KEY_RAGAS':'same'}),['same'])
 
+    def test_tertiary_alias_reaches_lazy_providers_without_overwriting_existing_keys(self):
+        from evaluation.run_inventory_agents_benchmark import install_tertiary_alias
+        env={'GROQ_API_KEY':'primary','GROQ_API_KEY_2':'backup','GROQ_API_KEY_RAGAS':'tertiary'}
+        self.assertEqual(install_tertiary_alias(env),'GROQ_API_KEY_3')
+        self.assertEqual(env['GROQ_API_KEY_3'],'tertiary')
+        self.assertEqual(install_tertiary_alias(env),'GROQ_API_KEY_3')
+        env['GROQ_API_KEY_3']='another'
+        self.assertEqual(install_tertiary_alias(env),'GROQ_API_KEY_4')
+        self.assertEqual(env['GROQ_API_KEY_3'],'another')
+
     def test_dataset_split_and_reference_coverage(self):
         import hashlib
         import json

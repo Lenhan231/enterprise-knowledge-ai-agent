@@ -99,6 +99,19 @@ def benchmark_keys(environ):
     return list(dict.fromkeys(key for key in keys if key))
 
 
+def install_tertiary_alias(environ):
+    key=environ.get('GROQ_API_KEY_RAGAS')
+    if not key:
+        return None
+    names=[name for name in environ if re.fullmatch(r'GROQ_API_KEY_\d+',name)]
+    for name in ['GROQ_API_KEY',*names]:
+        if environ.get(name)==key:
+            return name
+    alias='GROQ_API_KEY_'+str(max([1,*[int(name.rsplit('_',1)[1]) for name in names]])+1)
+    environ[alias]=key
+    return alias
+
+
 async def references():
     """Freeze evaluator SQL and results before any agent responses are produced."""
     paths = [OUT/g/'references.json' for g in ('sql_analytics','report')]
@@ -151,6 +164,8 @@ async def references():
 
 
 async def generate(groups, identifiers):
+    # Process-local alias lets existing lazy/nested providers use the authorized fallback too.
+    tertiary_alias=install_tertiary_alias(os.environ)
     from core.agents.main import _LazyKnowledgeAgent, _FallbackClassifier
     from core.agents.analytics_agent import AnalyticsAgent
     from core.agents.dashboard_agent import InventoryDashboardAgent
@@ -211,6 +226,7 @@ async def generate(groups, identifiers):
                     report_source_mode='orchestrated', confirmation_policy='first response only; no implicit scope acceptance')
     manifest['benchmark_pacing']='Up to 3 provider attempts for 429 only; wait for existing key cooldowns within normal report deadline. One case retry for previously recorded 429; originals retained.'
     manifest['generation_harness_revision']=3
+    manifest['lazy_provider_fallback_alias']=tertiary_alias
     save(OUT/'manifest.json', manifest)
     try:
         for group in groups:
@@ -223,7 +239,11 @@ async def generate(groups, identifiers):
                 pacing_retry=(group=='report' and prior and prior.get('harness_revision',1)<3
                               and prior.get('result',{}).get('metadata',{}).get('error_code')=='provider_timeout')
                 new_key_retry=(prior and rate_limited(prior) and prior.get('groq_key_count',2)<len(llm._clients))
-                if (prior and not (wiring_retry or pacing_retry or new_key_retry) and (not rate_limited(prior) or prior.get('attempt',1)>=2)) or identifiers and case['id'] not in identifiers:
+                lazy_retry=(group=='report' and prior and tertiary_alias and
+                    not prior.get('tertiary_lazy_propagated') and
+                    prior.get('result',{}).get('metadata',{}).get('status')=='failed' and
+                    any(t.get('agent')=='knowledge' for t in prior.get('result',{}).get('metadata',{}).get('source_collection',{}).get('task_trace',[])))
+                if (prior and not (wiring_retry or pacing_retry or new_key_retry or lazy_retry) and (not rate_limited(prior) or prior.get('attempt',1)>=2)) or identifiers and case['id'] not in identifiers:
                     continue
                 if min(llm._cooldowns)>time.monotonic()+1:
                     wait=min(60,min(llm._cooldowns)-time.monotonic()+0.5)
@@ -235,6 +255,7 @@ async def generate(groups, identifiers):
                 row = {'id':case['id'], 'question':case['question'], 'attempt': prior.get('attempt',1)+1 if prior else 1,
                        'harness_revision':3,
                        'groq_key_count':len(llm._clients),
+                       'tertiary_lazy_propagated':bool(tertiary_alias),
                        'started_at':datetime.now(timezone.utc).isoformat()}
                 if wiring_retry:
                     row['retry_reason']='Harness correction: use production fallback classifier and source-router wiring; earlier attempt retained.'
@@ -242,6 +263,8 @@ async def generate(groups, identifiers):
                     row['retry_reason']='Harness correction: accurate per-key Groq cooldowns and no waits that consume the full per-call timeout; earlier attempt retained.'
                 elif new_key_retry:
                     row['retry_reason']='User authorized GROQ_API_KEY_RAGAS as third fallback after primary and backup limits; earlier attempt retained.'
+                elif lazy_retry:
+                    row['retry_reason']='Propagate the authorized third fallback to lazy document-source providers through a process-local numbered-key alias; earlier attempt retained.'
                 try:
                     if group == 'report':
                         result, payload, media = await report.generate_from_template(request, source_mode='orchestrated')

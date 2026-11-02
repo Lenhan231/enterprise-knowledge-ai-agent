@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 import re
-import subprocess
-import tempfile
 import unicodedata
 from pathlib import Path
 from typing import ClassVar, Type
@@ -23,12 +21,10 @@ from docling_core.types.doc import BoundingBox, CoordOrigin
 from docling_core.types.doc.page import TextCell
 from docling.models.base_ocr_model import BaseOcrModel
 from docling.models.factories import get_ocr_factory
-from docling.models.stages.ocr.tesseract_utils import (
-    parse_tesseract_orientation,
-    tesseract_box_to_bounding_rectangle,
-)
+from docling.models.stages.ocr.tesseract_utils import tesseract_box_to_bounding_rectangle
 from docling.utils.profiling import TimeRecorder
 from .line_detection import create_line_detector, crop_line, detect_line_boxes
+from ..orientation import detect_paddle_orientation, rotate_for_reading
 
 
 class VietOcrOptions(OcrOptions):
@@ -55,10 +51,14 @@ class VietOcrModel(BaseOcrModel):
         )
         self.scale = options.scale
         import torch
+        import yaml
         from vietocr.tool.config import Cfg
         from vietocr.tool.predictor import Predictor
 
-        config = Cfg.load_config_from_name("vgg_seq2seq")
+        config_dir = Path(__file__).with_name("vietocr_config")
+        config = Cfg.load_config_from_file(config_dir / "base.yml")
+        with (config_dir / "vgg-seq2seq.yml").open(encoding="utf-8") as config_file:
+            config.update(yaml.safe_load(config_file))
         config["device"] = "cuda:0" if torch.cuda.is_available() else "cpu"
         config["dataset"]["image_max_width"] = 512
         config["predictor"]["beamsearch"] = False
@@ -70,24 +70,8 @@ class VietOcrModel(BaseOcrModel):
 
     @staticmethod
     def _detect_orientation(image: Image.Image) -> tuple[int, int | None, float | None]:
-        """Return correction angle and OSD evidence; uncertain crops stay unrotated."""
-        with tempfile.NamedTemporaryFile(suffix=".png") as image_file:
-            image.save(image_file.name)
-            try:
-                output = subprocess.run(
-                    ["tesseract", image_file.name, "stdout", "--psm", "0", "-l", "osd"],
-                    capture_output=True,
-                    check=True,
-                    text=True,
-                ).stdout
-            except (OSError, subprocess.CalledProcessError):
-                return 0, None, None
-        orientation = re.search(r"Orientation in degrees:\s*(\d+)", output)
-        confidence = re.search(r"Orientation confidence:\s*([\d.]+)", output)
-        orientation_degrees = int(orientation.group(1)) if orientation else None
-        correction = parse_tesseract_orientation(orientation.group(1)) if orientation else 0
-        confidence_value = float(confidence.group(1)) if confidence else None
-        return correction, orientation_degrees, confidence_value
+        """Classify region orientation before RapidOCR line detection."""
+        return detect_paddle_orientation(image)
 
     @staticmethod
     def _cell_bbox(cell: TextCell) -> tuple[float, float, float, float]:
@@ -146,7 +130,12 @@ class VietOcrModel(BaseOcrModel):
                 continue
 
             with TimeRecorder(conv_res, "ocr"):
-                ocr_rects = self.get_ocr_rects(page)
+                layout = page.predictions.layout
+                ocr_rects = (
+                    [cluster.bbox for cluster in layout.clusters]
+                    if layout is not None and layout.clusters
+                    else self.get_ocr_rects(page)
+                )
                 print(
                     "OCR regions before line detection:",
                     self.current_reference_id,
@@ -165,6 +154,9 @@ class VietOcrModel(BaseOcrModel):
                         scale=self.scale, cropbox=ocr_rect
                     )
                     doc_orientation, osd_orientation, osd_confidence = self._detect_orientation(crop)
+                    # Quarter-turn predictions on horizontal crops can be wrong even at high confidence.
+                    if osd_confidence < 0.7 or (doc_orientation in (90, 270) and crop.width >= crop.height):
+                        doc_orientation = 0
                     region_index = self._orientation_counts.get(self.current_reference_id, 0) + 1
                     self._orientation_counts[self.current_reference_id] = region_index
                     self.orientation_diagnostics.append({
@@ -177,7 +169,7 @@ class VietOcrModel(BaseOcrModel):
                         "osd_confidence": osd_confidence,
                     })
                     if doc_orientation:
-                        crop = crop.rotate(-doc_orientation, expand=True)
+                        crop = rotate_for_reading(crop, doc_orientation)
                     image_size = crop.size
                     image = cv2.cvtColor(np.asarray(crop), cv2.COLOR_RGB2BGR)
                     boxes = detect_line_boxes(self.detector, image)

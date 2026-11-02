@@ -12,6 +12,7 @@ from openai import APIError
 from pydantic import BaseModel, Field, StringConstraints, field_validator
 
 from core.llm.groq_provider import GroqProvider
+from core.rag.claim_verification import VerificationOutcome, VERIFICATION_UNAVAILABLE_ANSWER, verify_answer
 from core.latency import measure
 from core.agents.runtime import deadline, remaining
 from core.prompts.knowledge_search import SEARCH_PLAN_PROMPT
@@ -87,6 +88,7 @@ class RAGResult(BaseModel):
     source_ids: list[str] = Field(default_factory=list)
     insufficient_context: bool = False
     prompt_sha256: str | None = None
+    verification: VerificationOutcome | None = None
 
 
 def _format_contexts(contexts: list[dict]) -> str:
@@ -184,6 +186,7 @@ class RAGService:
         query_language: str = "auto",
         document_languages: dict[str, str] | None = None,
         decompose: bool = False,
+        verify_claims: bool = False,
     ) -> RAGResult:
         if decompose:
             questions = self._search_questions(question)
@@ -204,7 +207,7 @@ class RAGService:
             if any(groups) and (not contexts or missing_branch):
                 return RAGResult(answer=INSUFFICIENT_ANSWER, contexts=contexts, insufficient_context=True)
             remaining()
-            return self.generate_from_contexts(question, contexts)
+            return self.generate_from_contexts(question, contexts, verify_claims=verify_claims)
         contexts = self.retrieve_contexts(
             question,
             limit=limit,
@@ -216,7 +219,7 @@ class RAGService:
             query_language=query_language,
             document_languages=document_languages,
         )
-        return self.generate_from_contexts(question, contexts)
+        return self.generate_from_contexts(question, contexts, verify_claims=verify_claims)
 
     def _search_questions(self, question: str) -> list[str]:
         token = deadline.set(time.monotonic() + remaining(15))
@@ -234,7 +237,7 @@ class RAGService:
         finally:
             deadline.reset(token)
 
-    def generate_from_contexts(self, question: str, contexts: list[dict]) -> RAGResult:
+    def generate_from_contexts(self, question: str, contexts: list[dict], *, verify_claims: bool = False) -> RAGResult:
         if not contexts:
             return RAGResult(answer=NO_MATCHING_DOCUMENTS_ANSWER, insufficient_context=True)
 
@@ -266,11 +269,20 @@ class RAGService:
                 f"{sorted(unknown_source_ids)}"
             )
 
+        verification = None
+        if verify_claims:
+            cited_contexts = [c for c in contexts if c["source_id"] in source_ids]
+            verification = verify_answer(self.llm, question, answer, cited_contexts)
+            if verification.status != "supported":
+                return RAGResult(answer=VERIFICATION_UNAVAILABLE_ANSWER, contexts=contexts,
+                                 prompt_sha256=prompt_sha256, verification=verification)
+
         return RAGResult(
             answer=answer,
             contexts=contexts,
             source_ids=source_ids,
             prompt_sha256=prompt_sha256,
+            verification=verification,
         )
 
     def close(self) -> None:

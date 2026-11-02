@@ -65,7 +65,7 @@ class KnowledgeOutcomeTest(unittest.IsolatedAsyncioTestCase):
                 self.assertTrue(result.metadata["insufficient_context"])
                 self.assertEqual(result.evidence, [])
                 service.generate_answer.assert_called_once_with(
-                    "policy?", decompose=True, roles=["employee"], retrieval_method="translated_hybrid_rerank",
+                    "policy?", decompose=True, verify_claims=False, roles=["employee"], retrieval_method="translated_hybrid_rerank",
                 )
 
     async def test_multiquery_switch_defaults_off_and_requires_explicit_one(self):

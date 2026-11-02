@@ -30,6 +30,34 @@ class AgentMonitoringTest(unittest.TestCase):
         runtime.run_mode.assert_not_called()
         self.assertEqual(result.agent, "knowledge")
 
+    def test_failed_application_outcomes_always_have_a_failure_type(self):
+        from app.agents import AgentChatRequest, agent_chat
+
+        cases = [
+            ({"ok": False, "insufficient_context": True}, "InsufficientContext"),
+            ({"ok": False, "claim_verification": {"status": "rejected"}}, "AgentFailed"),
+            ({"ok": False, "claim_verification": {"status": "unavailable"}}, "AgentFailed"),
+            ({"ok": False}, "AgentFailed"),
+            ({"status": "partial"}, "AgentPartial"),
+            ({"ok": True}, None),
+        ]
+        for metadata, expected in cases:
+            runtime = Mock()
+            runtime.run_mode = AsyncMock(return_value=AgentResult(
+                answer="No supported answer", agent="knowledge", metadata=metadata))
+            with self.subTest(metadata=metadata), \
+                 patch("app.agents._get_runtime", new=AsyncMock(return_value=runtime)), \
+                 patch("app.agents._record_agent_run") as record:
+                result = asyncio.run(agent_chat(
+                    AgentChatRequest(question="policy?", agent_mode="knowledge"), Mock(),
+                    user={"role": "admin", "sub": "test"}))
+            event = record.call_args.kwargs
+            self.assertEqual(event["status"], "failed" if expected else "completed")
+            self.assertEqual(event["error_type"], expected)
+            # Match the existing database CHECK, without weakening the schema.
+            self.assertEqual(event["status"] == "completed", event["error_type"] is None)
+            self.assertEqual(result.metadata["ok"] if "ok" in metadata else False, metadata.get("ok", False))
+
     def test_admin_can_read_monitoring_snapshot(self):
         environment = {
             "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",

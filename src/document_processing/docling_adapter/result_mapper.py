@@ -21,13 +21,14 @@ def map_result(
     source_format: str,
     source_bytes: bytes | None = None,
     embedded_image_results: dict[int, dict[str, Any]] | None = None,
-    preserve_chart_items: bool = False,
+    chart_regions: list[dict[str, Any]] | None = None,
+    chart_recognition_results: list[dict[str, Any]] | None = None,
+    layout_detections: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Normalize Docling items, provenance, structured tables, and parser metadata."""
     elements: list[dict[str, Any]] = []
     tables: list[dict[str, Any]] = []
     section_path: list[str] = []
-    headings_by_level: dict[int, str] = {}
     table_number_by_page: dict[int | None, int] = {}
     layout_table_cell_texts: set[str] = set()
     page_images: dict[int, Any] = {}
@@ -63,6 +64,14 @@ def map_result(
             _bbox(provenance.bbox, float(page_size.height) if page_size is not None else None)
             if provenance is not None else None
         )
+        if (
+            do_ocr
+            and source_format in {"pdf", "png", "jpg", "jpeg", "tif", "tiff"}
+            and page_number is not None
+            and bbox is not None
+            and _inside_chart_region(bbox, page_number, chart_regions or [])
+        ):
+            continue
         base_metadata = {
             **({"page_number": page_number} if page_number is not None else {}),
             **({
@@ -78,7 +87,6 @@ def map_result(
                 else "docling.native"
             ),
         }
-
         image_result = (embedded_image_results or {}).get(id(item))
         if image_result is not None:
             image_metadata = {
@@ -190,10 +198,6 @@ def map_result(
                 continue
             table_index = table_number_by_page.get(page_number, 0)
             table_number_by_page[page_number] = table_index + 1
-            section_metadata = {
-                "section_path": list(section_path),
-                "section_title": section_path[-1] if section_path else None,
-            }
             table = {
                 "table_index": table_index,
                 "columns": columns,
@@ -201,7 +205,6 @@ def map_result(
                 "context": {},
                 "metadata": {
                     **base_metadata,
-                    **section_metadata,
                     "element_type": "table",
                     "layout_type": "table",
                     "table_structure_model": "Docling TableFormer",
@@ -219,7 +222,6 @@ def map_result(
                 "element_type": "table", "table_ref": len(tables) - 1,
                 "metadata": {
                     **base_metadata,
-                    **section_metadata,
                     "element_type": "table",
                     "layout_type": "table",
                     "table_index": table_index,
@@ -227,25 +229,12 @@ def map_result(
             })
             continue
 
-        if label == "chart" and preserve_chart_items:
-            elements.append({
-                "text": text,
-                "metadata": {
-                    **base_metadata,
-                    "element_type": "figure",
-                    "layout_type": "figure",
-                },
-            })
-            continue
         if not text and element_label not in {"figure", "seal"}:
             continue
         if source_format == "docx" and docx_text_key(text) in layout_table_cell_texts:
             continue
-        if element_label in {"title", "section_header"}:
-            level = 0 if element_label == "title" else int(getattr(item, "level", 1))
-            headings_by_level = {key: value for key, value in headings_by_level.items() if key < level}
-            headings_by_level[level] = text
-            section_path = [headings_by_level[key] for key in sorted(headings_by_level)]
+        if element_label == "title":
+            section_path = [text] if label != "section_header" else (section_path[:1] + [text])
         elements.append({
             "text": text,
             "metadata": {
@@ -254,7 +243,7 @@ def map_result(
                 "layout_type": element_label,
                 "section_path": list(section_path),
                 "section_title": section_path[-1] if section_path else None,
-                "heading_level": len(section_path) or None,
+                "heading_level": min(len(section_path), 2) or None,
             },
         })
 
@@ -283,18 +272,412 @@ def map_result(
             elements, tables, page_images, page_sizes, ocr_engine
         )
 
+    elements = _merge_text_layout_elements(elements, layout_detections or [])
+
+    for chart in chart_recognition_results or []:
+        page_number = int(chart["page_no"])
+        bbox = list(map(float, chart["bbox"]))
+        chart_text = str(chart.get("text") or "").strip()
+        elements.append({
+            "text": chart_text,
+            "metadata": {
+                "page_number": page_number,
+                "bbox": bbox,
+                "bbox_coordinate_system": "docling_page_coordinate",
+                "bbox_coordinate_origin": "TOPLEFT",
+                "parser": _chart_parser(chart) if chart_text else "docling",
+                "docling_label": "chart",
+                "docling_version": docling_version,
+                "text_extraction_method": _chart_text_extraction_method(chart) if chart_text else "layout_only.chart",
+                "chart_recognition_bbox": chart.get("recognition_bbox", bbox),
+                "chart_recognition_input": chart.get("input"),
+                **({"chart_member_bboxes": chart["member_bboxes"]} if chart.get("member_bboxes") else {}),
+                **({
+                    "chart_title_bbox": chart["title_bbox"],
+                    "chart_title_match_score": chart.get("title_match_score"),
+                } if chart.get("title_bbox") else {}),
+                **({
+                    "chart_recognition_model": chart.get("model"),
+                } if chart_text else {}),
+                **({
+                    "chart_text_refinement": chart["text_refinement"],
+                } if chart_text and chart.get("text_refinement") else {}),
+                "element_type": "chart",
+                "layout_type": "chart",
+            },
+        })
+
+    _associate_layout_titles(layout_detections or [], elements, tables, page_sizes)
+
     mapped = {
         "elements": elements,
         "tables": tables,
         "metadata": {
             "docling_version": docling_version,
+            **({
+                "layout_model": config["docling_layout_model"],
+                "layout_score_threshold": config["docling_layout_score_threshold"],
+            } if config.get("docling_layout_model") else {}),
             **({"ocr_cleanup": cleanup_diagnostics} if cleanup_diagnostics else {}),
             **({"table_dash_recovery": dash_recovery} if dash_recovery else {}),
         },
     }
+    if layout_detections:
+        mapped["layout_detections"] = layout_detections
     if source_format == "docx":
         apply_docx_semantics(mapped, source_bytes)
     return mapped
+
+
+def _merge_text_layout_elements(elements: list[dict], detections: list[dict]) -> list[dict]:
+    """Merge OCR fragments assigned to the same raw Paddle text region."""
+    groups: dict[int, list[int]] = {}
+    for index, element in enumerate(elements):
+        metadata = element.get("metadata") or {}
+        if metadata.get("element_type") != "text" or metadata.get("text_extraction_method") not in {
+            "docling.vietocr", "docling.tesseract",
+        } or not element.get("text"):
+            continue
+        box = metadata.get("bbox")
+        if not isinstance(box, (list, tuple)) or len(box) != 4:
+            continue
+        left, top, right, bottom = map(float, box)
+        area = max(0.0, right - left) * max(0.0, bottom - top)
+        if not area:
+            continue
+        matches = []
+        for detection_index, detection in enumerate(detections):
+            if detection.get("page_number") != metadata.get("page_number"):
+                continue
+            candidate = detection.get("bbox")
+            if not isinstance(candidate, (list, tuple)) or len(candidate) != 4:
+                continue
+            x1, y1, x2, y2 = map(float, candidate)
+            overlap = max(0.0, min(right, x2) - max(left, x1)) * max(0.0, min(bottom, y2) - max(top, y1))
+            coverage = overlap / area
+            if coverage >= 0.8:
+                matches.append((coverage, -max(0.0, x2 - x1) * max(0.0, y2 - y1), detection_index))
+        if matches:
+            detection_index = max(matches)[2]
+            if detections[detection_index].get("label") == "text":
+                groups.setdefault(detection_index, []).append(index)
+
+    replacements, removed = {}, set()
+    for detection_index, indices in groups.items():
+        if len(indices) < 2:
+            continue
+        ordered = sorted(indices, key=lambda i: (elements[i]["metadata"]["bbox"][1], elements[i]["metadata"]["bbox"][0]))
+        lines: list[list[int]] = []
+        for index in ordered:
+            box = elements[index]["metadata"]["bbox"]
+            if lines:
+                previous = elements[lines[-1][0]]["metadata"]["bbox"]
+                overlap = max(0.0, min(box[3], previous[3]) - max(box[1], previous[1]))
+                same_line = overlap >= 0.5 * min(box[3] - box[1], previous[3] - previous[1])
+            else:
+                same_line = False
+            if not same_line:
+                lines.append([])
+            lines[-1].append(index)
+        text = "\n".join(" ".join(str(elements[i]["text"]).strip() for i in sorted(line, key=lambda i: elements[i]["metadata"]["bbox"][0])) for line in lines)
+        first = min(indices)
+        replacements[first] = {**elements[first], "text": text, "metadata": {**elements[first]["metadata"], "bbox": list(detections[detection_index]["bbox"])}}
+        removed.update(i for i in indices if i != first)
+    return [replacements.get(i, element) for i, element in enumerate(elements) if i not in removed]
+
+
+def _associate_layout_titles(
+    detections: list[dict[str, Any]],
+    elements: list[dict[str, Any]],
+    tables: list[dict[str, Any]],
+    page_sizes: dict[int, tuple[float, float]],
+) -> None:
+    """Link title detections to the nearest aligned chart, figure, or table."""
+    targets: list[dict[str, Any]] = []
+    for table_index, table in enumerate(tables):
+        metadata = table.get("metadata") or {}
+        bbox = metadata.get("bbox")
+        page_number = table.get("page_number", metadata.get("page_number"))
+        if bbox and page_number is not None:
+            targets.append({
+                "type": "table", "index": table_index,
+                "page_number": int(page_number), "bbox": list(map(float, bbox)),
+                "metadata": metadata, "record": table,
+            })
+    for element_index, element in enumerate(elements):
+        metadata = element.get("metadata") or {}
+        label = normalize_element_label(
+            metadata.get("element_type") or metadata.get("layout_type") or element.get("element_type")
+        )
+        if label not in {"chart", "figure"}:
+            continue
+        bbox = metadata.get("bbox")
+        page_number = metadata.get("page_number")
+        if bbox and page_number is not None:
+            targets.append({
+                "type": label, "index": element_index,
+                "page_number": int(page_number), "bbox": list(map(float, bbox)),
+                "metadata": metadata, "record": element,
+            })
+
+    for detection_index, detection in enumerate(detections):
+        if detection.get("associated_target"):
+            continue
+        source_label = str(detection.get("label", "")).lower()
+        if source_label not in {
+            "figure_title", "diagram_title", "table_title", "title_table", "paragraph_title",
+        }:
+            continue
+        title_bbox = detection.get("bbox")
+        page_number = detection.get("page_number")
+        if not title_bbox or page_number is None:
+            continue
+        title_bbox = list(map(float, title_bbox))
+        page_number = int(page_number)
+        page_width, page_height = page_sizes.get(page_number, (0.0, 0.0))
+        candidates = []
+        for target in targets:
+            if target["page_number"] != page_number:
+                continue
+            if source_label in {"table_title", "title_table"} and target["type"] != "table":
+                continue
+            if source_label == "diagram_title" and target["type"] not in {"chart", "figure"}:
+                continue
+            score = _title_target_distance(
+                title_bbox, target["bbox"], page_width, page_height
+            )
+            if score is not None:
+                candidates.append((score, target))
+        if not candidates:
+            continue
+
+        distance, target = min(candidates, key=lambda pair: pair[0])
+        association = {
+            "target_type": target["type"],
+            "target_index": target["index"],
+            "target_bbox": target["bbox"],
+            "method": "nearest_aligned_bbox",
+            "distance_score": round(distance, 4),
+        }
+        detection["associated_target"] = association
+        title_text, title_elements = _text_inside_bbox(elements, page_number, title_bbox)
+        if title_text:
+            detection["associated_title_text"] = title_text
+            target_metadata = target["metadata"]
+            target_metadata.setdefault("associated_titles", []).append({
+                "text": title_text,
+                "source_label": source_label,
+                "bbox": title_bbox,
+                "layout_detection_index": detection_index,
+            })
+            target_metadata["title"] = title_text
+            if target["type"] == "table":
+                target["record"].setdefault("context", {})["title"] = title_text
+                target_metadata["table_name"] = title_text
+        for title_element in title_elements:
+            title_element.setdefault("metadata", {})["associated_target"] = association
+
+
+def associate_chart_title_regions(
+    chart_regions: list[dict[str, Any]],
+    detections: list[dict[str, Any]],
+    page_sizes: dict[int, tuple[float, float]],
+) -> None:
+    """Attach only unambiguous title boxes so chart crops can include them."""
+    title_boxes = [
+        (index, detection)
+        for index, detection in enumerate(detections)
+        if str(detection.get("label", "")).lower()
+        in {"figure_title", "diagram_title", "paragraph_title"}
+        and detection.get("bbox")
+        and detection.get("page_number") is not None
+    ]
+    chart_candidates: dict[int, list[tuple[float, int]]] = {}
+    title_candidates: dict[int, list[tuple[float, int]]] = {}
+    for chart_index, chart in enumerate(chart_regions):
+        page_number = int(chart["page_no"])
+        page_width, page_height = page_sizes.get(page_number, (0.0, 0.0))
+        for title_index, title in title_boxes:
+            if int(title["page_number"]) != page_number:
+                continue
+            score = _title_target_distance(
+                list(map(float, title["bbox"])),
+                list(map(float, chart["bbox"])),
+                page_width,
+                page_height,
+            )
+            if score is None:
+                continue
+            chart_candidates.setdefault(chart_index, []).append((score, title_index))
+            title_candidates.setdefault(title_index, []).append((score, chart_index))
+
+    def unique_best(candidates: list[tuple[float, int]]) -> tuple[float, int] | None:
+        ordered = sorted(candidates)
+        if len(ordered) > 1 and ordered[1][0] - ordered[0][0] < 0.2:
+            return None
+        return ordered[0] if ordered else None
+
+    grouped_charts: set[int] = set()
+    for title_index, candidates in title_candidates.items():
+        title = detections[title_index]
+        title_bbox = list(map(float, title["bbox"]))
+        page_number = int(title["page_number"])
+        page_width, page_height = page_sizes.get(page_number, (0.0, 0.0))
+        ordered = sorted(candidates)
+        nearby = [item for item in ordered if item[0] - ordered[0][0] < 0.2]
+        if len(nearby) < 2:
+            continue
+        if any(index in grouped_charts for _, index in nearby):
+            continue
+        chart_boxes = [list(map(float, chart_regions[index]["bbox"])) for _, index in nearby]
+        group_left = min(box[0] for box in chart_boxes)
+        group_top = min(box[1] for box in chart_boxes)
+        group_right = max(box[2] for box in chart_boxes)
+        group_bottom = max(box[3] for box in chart_boxes)
+        title_left, title_top, title_right, title_bottom = title_bbox
+        centers_inside_title = all(
+            title_left <= (box[0] + box[2]) / 2 <= title_right
+            for box in chart_boxes
+        )
+        same_row = max(box[1] for box in chart_boxes) - min(box[1] for box in chart_boxes) <= page_height * 0.08
+        title_covers_group = title_right - title_left >= (group_right - group_left) * 0.6
+        if not (centers_inside_title and same_row and title_covers_group):
+            continue
+
+        group_id = f"{page_number}:{title_index}"
+        recognition_bbox = [
+            min(group_left, title_left), min(group_top, title_top),
+            max(group_right, title_right), max(group_bottom, title_bottom),
+        ]
+        for score, chart_index in nearby:
+            chart = chart_regions[chart_index]
+            chart.update({
+                "title_bbox": title_bbox,
+                "title_detection_index": title_index,
+                "title_match_score": round(score, 4),
+                "recognition_bbox": recognition_bbox,
+                "recognition_group_id": group_id,
+                "recognition_group_bbox": [group_left, group_top, group_right, group_bottom],
+                "recognition_group_member_bboxes": chart_boxes,
+            })
+            grouped_charts.add(chart_index)
+
+    for chart_index, candidates in chart_candidates.items():
+        if chart_index in grouped_charts:
+            continue
+        best_title = unique_best(candidates)
+        if best_title is None:
+            continue
+        score, title_index = best_title
+        best_chart = unique_best(title_candidates[title_index])
+        if best_chart is None or best_chart[1] != chart_index:
+            continue
+        title = detections[title_index]
+        title_bbox = list(map(float, title["bbox"]))
+        chart = chart_regions[chart_index]
+        chart_bbox = list(map(float, chart["bbox"]))
+        chart["title_bbox"] = title_bbox
+        chart["title_detection_index"] = title_index
+        chart["title_match_score"] = round(score, 4)
+        chart["recognition_bbox"] = [
+            min(chart_bbox[0], title_bbox[0]),
+            min(chart_bbox[1], title_bbox[1]),
+            max(chart_bbox[2], title_bbox[2]),
+            max(chart_bbox[3], title_bbox[3]),
+        ]
+
+
+def _title_target_distance(
+    title: list[float], target: list[float], page_width: float, page_height: float,
+) -> float | None:
+    left, top, right, bottom = title
+    target_left, target_top, target_right, target_bottom = target
+    title_width, title_height = max(0.0, right - left), max(0.0, bottom - top)
+    if not title_width or not title_height:
+        return None
+    overlap_x = max(0.0, min(right, target_right) - max(left, target_left))
+    overlap_y = max(0.0, min(bottom, target_bottom) - max(top, target_top))
+    horizontal_alignment = overlap_x / title_width
+    center_offset = abs((left + right - target_left - target_right) / 2)
+    center_limit = max((target_right - target_left) * 0.25, page_width * 0.025)
+    horizontally_aligned = horizontal_alignment >= 0.35 or center_offset <= center_limit
+
+    if horizontally_aligned and bottom <= target_top:
+        gap = target_top - bottom
+        max_gap = max(title_height * 2.5, page_height * 0.045)
+        if gap <= max_gap:
+            return gap / max_gap + (1.0 - min(1.0, horizontal_alignment))
+    if horizontally_aligned and top >= target_bottom:
+        gap = top - target_bottom
+        max_gap = max(title_height * 2.5, page_height * 0.045)
+        if gap <= max_gap:
+            return 1.1 + gap / max_gap + (1.0 - min(1.0, horizontal_alignment))
+    if overlap_y / title_height >= 0.5:
+        if right <= target_left:
+            gap = target_left - right
+        elif left >= target_right:
+            gap = left - target_right
+        else:
+            return 0.25
+        max_gap = max(title_height * 1.5, page_width * 0.02)
+        if gap <= max_gap:
+            return 1.5 + gap / max_gap
+    return None
+
+
+def _text_inside_bbox(
+    elements: list[dict[str, Any]], page_number: int, box: list[float],
+) -> tuple[str, list[dict[str, Any]]]:
+    left, top, right, bottom = box
+    box_area = max(0.0, right - left) * max(0.0, bottom - top)
+    if not box_area:
+        return "", []
+    matches = []
+    for element in elements:
+        metadata = element.get("metadata") or {}
+        if metadata.get("page_number") != page_number:
+            continue
+        text = str(element.get("text") or "").strip()
+        element_box = metadata.get("bbox")
+        if not text or not element_box:
+            continue
+        element_box = list(map(float, element_box))
+        x0, y0, x1, y1 = element_box
+        area = max(0.0, x1 - x0) * max(0.0, y1 - y0)
+        intersection = (
+            max(0.0, min(right, x1) - max(left, x0))
+            * max(0.0, min(bottom, y1) - max(top, y0))
+        )
+        if area and (
+            intersection / area >= 0.5
+            or (area <= box_area * 2 and intersection / box_area >= 0.5)
+        ):
+            matches.append((y0, x0, text, element))
+    matches.sort(key=lambda item: (item[0], item[1]))
+    unique_text = list(dict.fromkeys(item[2] for item in matches))
+    return " ".join(unique_text), [item[3] for item in matches]
+
+
+def _inside_chart_region(
+    element_box: list[float],
+    page_number: int,
+    chart_regions: list[dict[str, Any]],
+) -> bool:
+    left, top, right, bottom = element_box
+    area = max(0.0, right - left) * max(0.0, bottom - top)
+    if not area:
+        return False
+    for chart in chart_regions:
+        if int(chart.get("page_no", -1)) != page_number:
+            continue
+        chart_left, chart_top, chart_right, chart_bottom = map(float, chart["bbox"])
+        intersection = (
+            max(0.0, min(right, chart_right) - max(left, chart_left))
+            * max(0.0, min(bottom, chart_bottom) - max(top, chart_top))
+        )
+        if intersection / area >= 0.5:
+            return True
+    return False
 
 
 def _get_page_image(page: Any, cache: dict[int, Any], page_number: int | None):
@@ -356,6 +739,26 @@ def _cell(value: Any) -> str:
     except (TypeError, ValueError):
         pass
     return str(value).strip()
+
+
+def _chart_parser(chart: dict[str, Any]) -> str:
+    refinement = str(chart.get("text_refinement") or "")
+    if refinement.startswith("openparser") or "openparser" in str(chart.get("model") or "").lower():
+        return "openparser"
+    if refinement.startswith("groq"):
+        return "groq"
+    return "paddleocr_vl"
+
+
+def _chart_text_extraction_method(chart: dict[str, Any]) -> str:
+    refinement = str(chart.get("text_refinement") or "")
+    if refinement == "groq_ocr_referenced_text_only":
+        return "openparser.groq_text_correction"
+    if refinement == "groq_direct_ocr_referenced_extraction":
+        return "groq.chart_recognition"
+    if refinement == "openparser_only":
+        return "openparser.chart_recognition"
+    return "paddleocr_vl.chart_recognition"
 
 
 def _project_embedded_bbox(

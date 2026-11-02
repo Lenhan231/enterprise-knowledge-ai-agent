@@ -29,7 +29,9 @@ services:
       RERANKER_URL: http://reranker:8000
       DOCUMENT_PROCESSING_URL: http://document-processing:8000
     ports: ["127.0.0.1:8000:8000"]
-    volumes: ["embedding_model_cache:/models"]
+    volumes:
+      - embedding_model_cache:/models
+      - ./artifacts/local/knowledge-latency:/benchmarks
     depends_on:
       embeddings: {condition: service_healthy}
       reranker: {condition: service_healthy}
@@ -49,6 +51,10 @@ services:
     environment:
       <<: *internal-env
       DOCLING_CACHE_DIR: /models/docling
+      PADDLE_PDX_CACHE_HOME: /models/paddlex
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_VISION_MODEL: ${GROQ_VISION_MODEL:-qwen/qwen3.8-27b}
+      OPEN_PARSER_API_KEY: ${OPEN_PARSER_API_KEY:-}
     volumes: ["document_model_cache:/models"]
 
   chunking:

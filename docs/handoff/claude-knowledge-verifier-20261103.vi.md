@@ -4,7 +4,7 @@ Cập nhật: 03/11/2026, giờ Việt Nam. Đây là context bàn giao, không 
 
 ## Prompt khởi động có thể dán vào Claude
 
-> Đọc `docs/handoff/claude-knowledge-verifier-20261103.vi.md` trước. Đối chiếu với `origin/main`, vì branch local có thể cũ và còn thay đổi chưa commit. Tóm tắt trạng thái bạn hiểu, review vấn đề F17 và đề xuất phương án cùng test cần có. Trong lượt đầu chỉ đọc/review, chưa sửa code, đổi env, commit/push hoặc deploy. Phân biệt rõ điều đã kiểm chứng với giả thuyết và phần chưa kiểm tra.
+> Đọc `docs/handoff/claude-knowledge-verifier-20261103.vi.md` trước. Làm trực tiếp trên nhánh Huy đã đồng bộ main; user không muốn tạo nhánh/worktree mới. Kiểm tra status và main trước khi làm. Trong lượt đầu tóm tắt trạng thái, review F17 và phương án cùng test cần có; chưa sửa code, đổi env, commit/push hoặc deploy nếu user chưa giao việc đó. Phân biệt điều đã kiểm chứng với giả thuyết.
 
 Nếu không truy cập filesystem/repo, cần gửi nội dung file này và các file source liên quan; không được giả vờ đã đọc code hoặc chạy test.
 
@@ -14,13 +14,15 @@ Repo: `Lenhan231/enterprise-knowledge-ai-agent`.
 
 Main mới nhất đã được bàn giao ở commit **`1241801` — fix: anchor verifier reviews to claim IDs and check exact arithmetic**. Hãy fetch để kiểm tra main có tiến thêm không, đừng coi hash này luôn là HEAD mới nhất.
 
-Ở thời điểm viết handoff:
+Cập nhật sau yêu cầu đồng bộ nhánh của user:
 
 - Workspace Desktop: `/home/eroz/projects/enterprise-knowledge-ai-agent`.
-- Branch workspace là **Huy**, HEAD `59cf0b5`, cũ hơn main đáng kể.
-- Có hai file đã sửa nhưng chưa commit từ công việc trước: `docs/handoff/knowledge-planner-20261102.vi.md` và `docs/notes/knowledge-planner-criteria-20261102.vi.md`. Giữ nguyên chúng.
-- Code main đã sửa/test ở checkout riêng `/tmp/backend-runtime-dependencies-20261102`, HEAD `1241801`, clean khi hoàn tất. Đây là đường dẫn tạm, không phải nơi lưu bền vững.
-- File handoff này được tạo ở workspace Desktop; tại thời điểm bàn giao chưa commit/push.
+- **Làm trực tiếp trên Huy; user không muốn tạo nhánh hoặc worktree mới.**
+- Các note/handoff dang dở đã được giữ trong commit `dd43de0` trước khi merge.
+- Đã merge `origin/main` tại `1241801` vào Huy, giữ lịch sử và công cụ/ghi chú riêng của Huy. Code `src`, tests, Docker/config/dependency hiện khớp main ở thời điểm merge; Huy không nhất thiết có hash bằng main vì giữ lịch sử riêng.
+- Có 7 conflict khi merge: giữ code/test mới từ main và giữ hai note xác minh VPS của Huy. Không reset Huy để làm nó giống hệt main.
+- Checkout tạm `/tmp/backend-runtime-dependencies-20261102` là nơi assistant trước đã phát triển các commit trên main, chỉ là lịch sử; không tiếp tục sửa tại đó trong workflow mới.
+- Handoff đã được track trong Git. Kiểm tra `git status` lại trước khi làm, đừng mặc định workspace luôn clean.
 
 Kiểm tra trước:
 
@@ -32,14 +34,14 @@ git fetch origin main
 git log -5 --oneline origin/main
 ```
 
-Có thể đọc code main mà không đổi branch:
+Có thể đối chiếu code main mà không rời nhánh Huy:
 
 ```bash
 git show origin/main:src/core/rag/claim_verification.py
 git show origin/main:src/core/rag/arithmetic.py
 ```
 
-Nếu cần chạy/sửa, dùng checkout/worktree riêng dựa trên main mới nhất. Không reset, xóa hoặc tự stash các thay đổi của user. Không review source Huy cũ rồi kết luận đó là source hiện chạy trên main.
+Nếu cần chạy/sửa, làm trên Huy theo yêu cầu user. Không reset, xóa hoặc tự stash thay đổi của user; không tạo thêm nhánh/worktree. Nếu main tiến thêm thì xem diff và merge main vào Huy có kiểm tra, không tự mang toàn bộ lịch sử/artifact riêng của Huy ngược lên main.
 
 **VPS đã deploy v2 `1241801` hay chưa: chưa được user xác nhận.** Git đã pull không chứng minh image/container đã nạp code mới.
 
@@ -235,9 +237,13 @@ Separate financial results of the parent company. Unit: VND billion. Profit afte
 
 Nó bỏ đoạn Revenue ở giữa nhưng nối thành một chuỗi quote. Không nới validator thành fuzzy/subsequence matching: cách đó có thể bỏ mất phủ định/ngoại lệ và hợp thức hóa bằng chứng sai.
 
-**Đề xuất cuối cùng chưa triển khai:** server cấp ID cho các đoạn bằng chứng, model chọn ID thay vì chép quote; hai đoạn rời nhau vẫn là hai bằng chứng riêng, code lấy nguyên văn từ nguồn. Cần review thiết kế, granularity/span/header/unit, quyền truy cập và test chống chọn sai bằng chứng. Đừng coi đề xuất này là code đã có hoặc bảo đảm semantic entailment.
+**Đề xuất ban đầu, chưa triển khai:** server cấp ID cho các đoạn bằng chứng, model chọn ID thay vì chép quote; hai đoạn rời nhau vẫn là hai bằng chứng riêng, code lấy nguyên văn từ nguồn. Cần review thiết kế, granularity/span/header/unit, quyền truy cập và test chống chọn sai bằng chứng. Đừng coi đề xuất này là code đã có hoặc bảo đảm semantic entailment.
 
-Lượt đầu của Claude nên review phương án này và các lựa chọn nhỏ hơn. Chưa mặc định triển khai thêm trước khi user giao nhiệm vụ cụ thể. Dù dùng ID, LLM vẫn có thể chọn bằng chứng không hỗ trợ claim.
+Review Claude đã chỉ ra schema hiện cho phép nhiều quote cùng source_id, nên có lựa chọn nhỏ hơn: chỉ thêm một câu prompt yêu cầu mỗi quote là đoạn liền nhau, các đoạn rời phải là nhiều quote riêng cùng source_id. Assistant đã đề xuất thử lựa chọn prompt này trước, không gộp đổi thứ tự validation. Chưa có thay đổi code cho F17 sau review đó. Evidence ID chỉ nên cân nhắc nếu cách nhỏ hơn không đủ.
+
+Claude cũng nêu việc validator dừng ở lỗi đầu có thể khiến unavailable xuất hiện trước một verdict contradicted ở block sau. Đây là lựa chọn ưu tiên phân loại, không mặc nhiên là đếm sai; cần đánh giá riêng, không đổi cùng lúc với prompt rồi mất khả năng phân biệt tác động.
+
+Lượt đầu của Claude nên đối chiếu review hiện tại và lựa chọn nhỏ hơn. Chưa mặc định triển khai thêm trước khi user giao nhiệm vụ cụ thể. Dù dùng ID, LLM vẫn có thể chọn bằng chứng không hỗ trợ claim.
 
 Sau xử lý/đánh giá F17: regression 28 ca + bộ mới, rồi sáu câu VietStyle E2E/latency; khi verifier đạt mức chấp nhận được mới sang reranker. Không tự bật flag cho web chung.
 
@@ -258,7 +264,7 @@ Các note v1 giữ lịch sử, schema `text` trong review của v1 không còn 
 
 ## 12. Test và benchmark
 
-Chạy trong checkout main mới nhất. Venv Desktop hiện có ở `/home/eroz/projects/enterprise-knowledge-ai-agent/.venv`; nếu dùng worktree cần chọn interpreter đó hoặc dựng môi trường theo lock. Không tự nâng package ngoài scope.
+Chạy trên Huy đã đồng bộ main, kiểm tra status trước. Venv Desktop hiện có ở `/home/eroz/projects/enterprise-knowledge-ai-agent/.venv`; dùng interpreter đó hoặc dựng môi trường theo lock. Không tự nâng package ngoài scope.
 
 ```bash
 PYTHONPATH=src:tests /home/eroz/projects/enterprise-knowledge-ai-agent/.venv/bin/python -m unittest \

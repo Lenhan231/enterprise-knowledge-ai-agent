@@ -1,14 +1,18 @@
 """Upload Test routes for isolated document-processing experiments."""
 
+import base64
 import hashlib
 import logging
+import os
 import time
 import uuid
+from io import BytesIO
 from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import Response
+from PIL import Image
 
 from app.security import _require_same_origin, require_permission
 
@@ -33,7 +37,7 @@ async def create_upload_test(
     _require_same_origin(request)
     filename = Path((file.filename or "").replace("\\", "/")).name
     suffix = Path(filename).suffix.lower()
-    from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
+    from document_processing.document_processor import SUPPORTED_FORMATS
     if suffix not in SUPPORTED_FORMATS:
         raise HTTPException(415, "Unsupported Upload Test file format")
     if parser_engine != "docling":
@@ -50,6 +54,7 @@ async def create_upload_test(
 
     page_count = 0
     page_previews = []
+    preview_page_sizes = {}
     try:
         if suffix == ".pdf":
             source = fitz.open(stream=content, filetype="pdf")
@@ -57,7 +62,11 @@ async def create_upload_test(
             if not 1 <= page_count <= 50:
                 source.close()
                 raise HTTPException(422, "Upload Test accepts PDFs with 1-50 pages")
-            for page in source:
+            for page_number, page in enumerate(source, start=1):
+                preview_page_sizes[str(page_number)] = {
+                    "width": float(page.rect.width),
+                    "height": float(page.rect.height),
+                }
                 scale = min(120 / 72, 1800 / page.rect.width, 2400 / page.rect.height)
                 page_previews.append(page.get_pixmap(
                     matrix=fitz.Matrix(scale, scale), alpha=False,
@@ -66,7 +75,11 @@ async def create_upload_test(
         elif suffix in {".png", ".jpg", ".jpeg", ".tif", ".tiff"}:
             source = fitz.open(stream=content, filetype=suffix[1:])
             page_count = len(source)
-            for page in source:
+            for page_number, page in enumerate(source, start=1):
+                preview_page_sizes[str(page_number)] = {
+                    "width": float(page.rect.width),
+                    "height": float(page.rect.height),
+                }
                 scale = min(1.0, 1800 / page.rect.width, 2400 / page.rect.height)
                 page_previews.append(page.get_pixmap(
                     matrix=fitz.Matrix(scale, scale), alpha=False,
@@ -93,16 +106,47 @@ async def create_upload_test(
     run_id = uuid.uuid4()
     source_sha256 = hashlib.sha256(content).hexdigest()
     source_metadata = {"source_type": "upload_test", "source_sha256": source_sha256}
-    document_processor = DocumentProcessor(config)
     processing_started = time.perf_counter()
     try:
-        parsed = document_processor.process(filename, content, source_metadata)
+        from core.services.client import post
+
+        processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
+        if not processing_url:
+            raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
+        parsed = post(processing_url, "/parse", {
+            "filename": filename,
+            "content": base64.b64encode(content).decode("ascii"),
+            "metadata": source_metadata,
+            "config": config,
+        }, timeout=600)
     except (ValueError, RuntimeError) as error:
         status_code = 503 if isinstance(error, RuntimeError) else 422
         raise HTTPException(status_code, f"Upload Test processing failed: {error}") from error
+    page_orientation_corrections = parsed.get("page_orientation_corrections") or {}
+    for page_number, raw_correction in page_orientation_corrections.items():
+        correction = int(raw_correction) % 360
+        if correction == 0:
+            continue
+        index = int(page_number) - 1
+        if not 0 <= index < len(page_previews):
+            continue
+        with Image.open(BytesIO(page_previews[index])) as source_preview:
+            oriented_preview = source_preview.rotate(-correction, expand=True)
+            buffer = BytesIO()
+            oriented_preview.save(buffer, format="PNG")
+            page_previews[index] = buffer.getvalue()
+        if correction in {90, 270}:
+            page_size = preview_page_sizes[str(page_number)]
+            preview_page_sizes[str(page_number)] = {
+                "width": page_size["height"],
+                "height": page_size["width"],
+            }
     runtime_info = {
         "pymupdf": fitz.VersionBind,
         "docling": parsed["metadata"].get("docling_version"),
+        "preview_page_sizes": preview_page_sizes,
+        "parser_page_sizes": parsed.get("page_sizes") or preview_page_sizes,
+        "page_orientation_corrections": page_orientation_corrections,
     }
     runtime_info["processing_time_ms"] = max(
         0, round((time.perf_counter() - processing_started) * 1000),

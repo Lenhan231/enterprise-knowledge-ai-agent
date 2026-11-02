@@ -1,5 +1,6 @@
 import asyncio
 import os
+import time
 
 from core.agents.base import BaseAgent
 from core.models.agents import (
@@ -9,7 +10,7 @@ from core.models.agents import (
 )
 from core.rag.rag_service import RAGService
 from core.agents.execution import authorize
-from core.agents.runtime import run_sync
+from core.agents.runtime import deadline, remaining, run_sync
 
 
 class KnowledgeAgent(BaseAgent):
@@ -39,13 +40,21 @@ class KnowledgeAgent(BaseAgent):
         request: AgentRequest,
     ) -> AgentResult:
         authorize(request, 'knowledge')
-        result = await run_sync(
-            self.rag.generate_answer,
-            request.question,
-            decompose=os.getenv("KNOWLEDGE_MULTIQUERY_ENABLED", "0") == "1",
-            roles=sorted(request.identity.document_roles) if request.identity and request.identity.document_roles else None,
-            retrieval_method=request.metadata.get("retrieval_method", "translated_hybrid_rerank"),
-        )
+        multiquery = os.getenv("KNOWLEDGE_MULTIQUERY_ENABLED", "0") == "1"
+        timeout = 90.0 if multiquery else 60.0
+        token = deadline.set(time.monotonic() + remaining(timeout))
+        try:
+            result = await run_sync(
+                self.rag.generate_answer,
+                request.question,
+                decompose=multiquery,
+                verify_claims=os.getenv("KNOWLEDGE_CLAIM_VERIFICATION_ENABLED", "0") == "1",
+                _timeout=timeout,
+                roles=sorted(request.identity.document_roles) if request.identity and request.identity.document_roles else None,
+                retrieval_method=request.metadata.get("retrieval_method", "translated_hybrid_rerank"),
+            )
+        finally:
+            deadline.reset(token)
         cited = set(result.source_ids)
 
         evidence = [
@@ -68,11 +77,16 @@ class KnowledgeAgent(BaseAgent):
             if context["source_id"] in cited
         ]
 
+        metadata = {"ok": not result.insufficient_context, "insufficient_context": result.insufficient_context}
+        if result.verification is not None:
+            metadata["claim_verification"] = result.verification.model_dump()
+            metadata["ok"] = metadata["ok"] and result.verification.status == "supported"
+
         return AgentResult(
             answer=result.answer,
             agent="knowledge",
             evidence=evidence,
-            metadata={"ok": not result.insufficient_context, "insufficient_context": result.insufficient_context},
+            metadata=metadata,
         )
 
     async def close(self) -> None:

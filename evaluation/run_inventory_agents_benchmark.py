@@ -27,6 +27,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 load_dotenv(ROOT / '.env')
 OUT = ROOT / 'artifacts/evaluation/agent-benchmarks-2026-11-02'
+METRICS={'sql_analytics':('execution_accuracy','sql_semantic_equivalence','numerical_accuracy'),
+         'report':('faithfulness','factual_correctness','numerical_accuracy','report_completeness')}
 
 from evaluation.inventory_benchmark_metrics import metric_classes, normalize_execution_rows
 from evaluation.inventory_benchmark_references import SQL, EXTRA, REPORT_TASKS, COMMON_LIMITATIONS
@@ -349,7 +351,7 @@ async def score(groups, identifiers):
             path = OUT/group/'scores.jsonl'
             existing = {r['metric']:r for r in read_jsonl(path) if r['id']==row['id']
                         and current_score(r,row,group)}
-            expected = ('execution_accuracy','sql_semantic_equivalence','numerical_accuracy') if group=='sql_analytics' else ('faithfulness','factual_correctness','numerical_accuracy','report_completeness')
+            expected = METRICS[group]
             response = row['answer']
             data = row.get('result',{}).get('data',{})
             aligned = None
@@ -434,9 +436,12 @@ async def score(groups, identifiers):
 
 def summarize():
     for group in ('sql_analytics','report'):
-        scores=list({(r['id'],r['metric']):r for r in read_jsonl(OUT/group/'scores.jsonl')}.values())
+        generations=latest_generations(group)
+        by_id={r['id']:r for r in generations}
+        scores=[r for r in {(r['id'],r['metric']):r for r in read_jsonl(OUT/group/'scores.jsonl')}.values()
+                if r['id'] in by_id and current_score(r,by_id[r['id']],group)]
         metrics={}
-        for name in sorted({r['metric'] for r in scores}):
+        for name in METRICS[group]:
             rows=[r for r in scores if r['metric']==name]
             values=[r['score'] for r in rows if r['score'] is not None]
             metrics[name]={'mean':sum(values)/len(values) if values else None,'scored':len(values),
@@ -448,7 +453,6 @@ def summarize():
                 unknown=sum(t.get('unverified_claims',0) for t in traces)
                 metrics[name].update(verified_claims=covered,unverified_claims=unknown,
                     verification_coverage=covered/(covered+unknown) if covered+unknown else None)
-        generations=latest_generations(group)
         save(OUT/group/'summary.json',{'cases':30,'generated':len(generations),
             'generation_attempts':len(read_jsonl(OUT/group/'generations.jsonl')),
             'generation_outcomes':dict(Counter(

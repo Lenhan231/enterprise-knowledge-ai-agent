@@ -77,6 +77,25 @@ class BenchmarkMetricsTests(unittest.TestCase):
         self.assertEqual(quota_retry_delay({'retry-after':'12'},'Please try again in 4s.'),12)
         self.assertEqual(quota_retry_delay({},'Rate limited'),60)
 
+    def test_summary_excludes_scores_for_superseded_responses(self):
+        import json
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        from unittest.mock import patch
+        import evaluation.run_inventory_agents_benchmark as runner
+        with TemporaryDirectory() as directory:
+            root=Path(directory)
+            for group in ('sql_analytics','report'):
+                (root/group).mkdir()
+            runner.append(root/'report/generations.jsonl',{'id':'R01','attempt':2})
+            runner.append(root/'report/scores.jsonl',{'id':'R01','metric':'faithfulness',
+                'generation_attempt':1,'score':1.0,'error':None})
+            with patch.object(runner,'OUT',root):
+                runner.summarize()
+            summary=json.loads((root/'report/summary.json').read_text())
+            self.assertEqual(summary['metrics']['faithfulness']['scored'],0)
+            self.assertEqual(summary['metrics']['faithfulness']['pending'],30)
+
     def test_dataset_split_and_reference_coverage(self):
         import hashlib
         import json

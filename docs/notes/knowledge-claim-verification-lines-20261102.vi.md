@@ -89,7 +89,7 @@ Các số dòng trỏ vào code của bản sửa này. Dòng trống chỉ ngă
 | 8 | `import sys` | Thêm đường dẫn source của repo khi chạy script độc lập. |
 | 9 | `import time` | Đo thời gian bằng perf_counter và nghỉ giữa các ca. |
 | 10 | `from pathlib import Path` | Dùng Path để xử lý đường dẫn. |
-| 12 | `ROOT = Path(__file__).resolve().parents[2]` | Tính root từ vị trí script; khi copy vào /tmp trên VPS sẽ truyền --cases rõ ràng. |
+| 12 | `ROOT = Path(__file__).resolve().parent.parent.parent` | Đi lên từng parent thay vì lấy index; dừng an toàn tại / nếu script nằm trực tiếp /tmp. Trên VPS truyền --cases rõ ràng và dùng PYTHONPATH=/app/src có sẵn. |
 | 13 | `sys.path.insert(0, str(ROOT / "src"))` | Cho Python tìm được module trong src; container vẫn có PYTHONPATH=/app/src. |
 | 15 | `from dotenv import load_dotenv` | Nạp .env local nếu có; không in key. |
 | 16 | `from core.llm.groq_provider import GroqProvider` | Dùng provider/model/cơ chế chuyển key hiện có. |
@@ -427,42 +427,57 @@ Các số dòng trỏ vào code của bản sửa này. Dòng trống chỉ ngă
 |---:|---|---|
 | 1 | `import importlib.util` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
 | 2 | `import json` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
-| 3 | `import tempfile` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
-| 4 | `import unittest` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
-| 5 | `from pathlib import Path` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
-| 6 | `from unittest.mock import Mock, patch` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
-| 8 | `from core.rag.claim_verification import VerificationOutcome` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
-| 10 | `ROOT = Path(__file__).resolve().parents[1]` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 11 | `spec = importlib.util.spec_from_file_location("verifier_benchmark", ROOT / "scripts/agents/benchmark_knowledge_verifier.py")` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 12 | `benchmark = importlib.util.module_from_spec(spec)` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 13 | `spec.loader.exec_module(benchmark)` | Thực thi bước setup/gọi hàm/cleanup của ca kiểm thử hiện tại. |
-| 16 | `class VerifierBenchmarkTest(unittest.TestCase):` | Nhóm test độc lập; IsolatedAsyncioTestCase cấp event loop riêng cho test async. |
-| 17 | `def test_fixed_cases_flushed_with_provenance_and_unavailable_is_not_correct(self):` | Bắt đầu ca `test_fixed_cases_flushed_with_provenance_and_unavailable_is_not_correct`; tên mô tả hợp đồng cần giữ. |
-| 18 | `with tempfile.TemporaryDirectory() as folder:` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
-| 19 | `output = Path(folder) / "diagnostic.jsonl"` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 20 | `llm = Mock(model_name="test-model", last_usage=None)` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 21 | `with patch.object(benchmark, "GroqProvider", return_value=llm), \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
-| 22 | `patch.object(benchmark, "verify_answer", side_effect=[` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
-| 23 | `VerificationOutcome(status="supported", reason="all_claims_supported", claim_count=1),` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
-| 24 | `VerificationOutcome(status="unavailable", reason="RateLimitError")]) as verify, \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
-| 25 | `patch.object(benchmark.time, "sleep"), patch("builtins.print"), \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
-| 26 | `patch("sys.argv", ["benchmark", "--limit", "2", "--output", str(output)]):` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
-| 27 | `self.assertEqual(benchmark.main(), 1)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 28 | `rows = [json.loads(line) for line in output.read_text().splitlines()]` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 29 | `self.assertEqual(rows[0]["model"], "test-model")` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 30 | `self.assertEqual(len(rows[0]["prompt_sha256"]), 64)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 31 | `self.assertEqual(rows[-1]["summary"]["unsupported_rejected"], 0)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 32 | `self.assertEqual(rows[-1]["summary"]["unavailable"], 1)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 33 | `self.assertEqual(output.stat().st_mode & 0o777, 0o600)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 34 | `self.assertEqual([c["source_id"] for c in verify.call_args.args[3]], ["S1"])` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 35 | `llm.close.assert_called_once()` | Bảo đảm tài nguyên được đóng hoặc hàm chỉ được gọi đúng một lần. |
-| 37 | `def test_all_fixture_labels_and_citations_are_explicit(self):` | Bắt đầu ca `test_all_fixture_labels_and_citations_are_explicit`; tên mô tả hợp đồng cần giữ. |
-| 38 | `dataset = json.loads((ROOT / "data/evaluation/knowledge_claim_verification_cases.json").read_text())` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
-| 39 | `self.assertEqual(len({c["id"] for c in dataset["cases"]}), len(dataset["cases"]))` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 40 | `for c in dataset["cases"]:` | Chạy cùng hợp đồng với nhiều biến thể input để kiểm tra các nhánh. |
-| 41 | `self.assertIn(c["expected"], {"supported", "rejected"})` | Assertion assertIn: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 42 | `self.assertIn(c["context"], dataset["contexts"])` | Assertion assertIn: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
-| 43 | `self.assertRegex(c["answer"], r"\[S\d+\]")` | Assertion assertRegex: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 3 | `import os` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
+| 4 | `import subprocess` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
+| 5 | `import sys` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
+| 6 | `import tempfile` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
+| 7 | `import unittest` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
+| 8 | `from pathlib import Path` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
+| 9 | `from unittest.mock import Mock, patch` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
+| 11 | `from core.rag.claim_verification import VerificationOutcome` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
+| 13 | `ROOT = Path(__file__).resolve().parents[1]` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 14 | `spec = importlib.util.spec_from_file_location("verifier_benchmark", ROOT / "scripts/agents/benchmark_knowledge_verifier.py")` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 15 | `benchmark = importlib.util.module_from_spec(spec)` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 16 | `spec.loader.exec_module(benchmark)` | Thực thi bước setup/gọi hàm/cleanup của ca kiểm thử hiện tại. |
+| 19 | `class VerifierBenchmarkTest(unittest.TestCase):` | Nhóm test độc lập; IsolatedAsyncioTestCase cấp event loop riêng cho test async. |
+| 20 | `def test_fixed_cases_flushed_with_provenance_and_unavailable_is_not_correct(self):` | Bắt đầu ca `test_fixed_cases_flushed_with_provenance_and_unavailable_is_not_correct`; tên mô tả hợp đồng cần giữ. |
+| 21 | `with tempfile.TemporaryDirectory() as folder:` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 22 | `output = Path(folder) / "diagnostic.jsonl"` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 23 | `llm = Mock(model_name="test-model", last_usage=None)` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 24 | `with patch.object(benchmark, "GroqProvider", return_value=llm), \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 25 | `patch.object(benchmark, "verify_answer", side_effect=[` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 26 | `VerificationOutcome(status="supported", reason="all_claims_supported", claim_count=1),` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 27 | `VerificationOutcome(status="unavailable", reason="RateLimitError")]) as verify, \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 28 | `patch.object(benchmark.time, "sleep"), patch("builtins.print"), \` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 29 | `patch("sys.argv", ["benchmark", "--limit", "2", "--output", str(output)]):` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 30 | `self.assertEqual(benchmark.main(), 1)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 31 | `rows = [json.loads(line) for line in output.read_text().splitlines()]` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 32 | `self.assertEqual(rows[0]["model"], "test-model")` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 33 | `self.assertEqual(len(rows[0]["prompt_sha256"]), 64)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 34 | `self.assertEqual(rows[-1]["summary"]["unsupported_rejected"], 0)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 35 | `self.assertEqual(rows[-1]["summary"]["unavailable"], 1)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 36 | `self.assertEqual(output.stat().st_mode & 0o777, 0o600)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 37 | `self.assertEqual([c["source_id"] for c in verify.call_args.args[3]], ["S1"])` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 38 | `llm.close.assert_called_once()` | Bảo đảm tài nguyên được đóng hoặc hàm chỉ được gọi đúng một lần. |
+| 40 | `def test_script_copied_directly_to_tmp_can_start(self):` | Bắt đầu ca `test_script_copied_directly_to_tmp_can_start`; tên mô tả hợp đồng cần giữ. |
+| 41 | `script = ROOT / "scripts/agents/benchmark_knowledge_verifier.py"` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 42 | `with tempfile.NamedTemporaryFile(mode="w", suffix=".py", dir="/tmp") as copied:` | Giới hạn thời gian sống patch/fixture và tự khôi phục khi ra khỏi khối. |
+| 43 | `copied.write(script.read_text())` | Thực thi bước setup/gọi hàm/cleanup của ca kiểm thử hiện tại. |
+| 44 | `copied.flush()` | Thực thi bước setup/gọi hàm/cleanup của ca kiểm thử hiện tại. |
+| 45 | `result = subprocess.run(` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 46 | `[sys.executable, copied.name, "--help"], cwd="/tmp",` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 47 | `env={**os.environ, "PYTHONPATH": str(ROOT / "src")},` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 48 | `capture_output=True, text=True, timeout=20,` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 49 | `)` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 50 | `self.assertEqual(result.returncode, 0, result.stderr)` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 51 | `self.assertIn("--cases", result.stdout)` | Assertion assertIn: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 53 | `def test_all_fixture_labels_and_citations_are_explicit(self):` | Bắt đầu ca `test_all_fixture_labels_and_citations_are_explicit`; tên mô tả hợp đồng cần giữ. |
+| 54 | `dataset = json.loads((ROOT / "data/evaluation/knowledge_claim_verification_cases.json").read_text())` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
+| 55 | `self.assertEqual(len({c["id"] for c in dataset["cases"]}), len(dataset["cases"]))` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 56 | `for c in dataset["cases"]:` | Chạy cùng hợp đồng với nhiều biến thể input để kiểm tra các nhánh. |
+| 57 | `self.assertIn(c["expected"], {"supported", "rejected"})` | Assertion assertIn: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 58 | `self.assertIn(c["context"], dataset["contexts"])` | Assertion assertIn: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
+| 59 | `self.assertRegex(c["answer"], r"\[S\d+\]")` | Assertion assertRegex: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
 
 ## Fixture chẩn đoán
 

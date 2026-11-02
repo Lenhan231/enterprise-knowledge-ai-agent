@@ -1,5 +1,8 @@
 import importlib.util
 import json
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -33,6 +36,19 @@ class VerifierBenchmarkTest(unittest.TestCase):
             self.assertEqual(output.stat().st_mode & 0o777, 0o600)
             self.assertEqual([c["source_id"] for c in verify.call_args.args[3]], ["S1"])
             llm.close.assert_called_once()
+
+    def test_script_copied_directly_to_tmp_can_start(self):
+        script = ROOT / "scripts/agents/benchmark_knowledge_verifier.py"
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", dir="/tmp") as copied:
+            copied.write(script.read_text())
+            copied.flush()
+            result = subprocess.run(
+                [sys.executable, copied.name, "--help"], cwd="/tmp",
+                env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
+                capture_output=True, text=True, timeout=20,
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("--cases", result.stdout)
 
     def test_all_fixture_labels_and_citations_are_explicit(self):
         dataset = json.loads((ROOT / "data/evaluation/knowledge_claim_verification_cases.json").read_text())

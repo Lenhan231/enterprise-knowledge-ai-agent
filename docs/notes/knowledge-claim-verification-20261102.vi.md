@@ -126,3 +126,11 @@ Rollback flag về 0 rồi recreate backend, không cần build lại; giữ k�
 ## Giải thích code từng dòng
 
 Xem `docs/notes/knowledge-claim-verification-lines-20261102.vi.md`: liệt kê từng dòng runtime và script thay đổi, giải thích schema, prompt, nhánh chặn và phép đo; test/fixture có bảng mô tả mục đích từng ca.
+
+## Sửa lỗi đường dẫn script copy vào /tmp
+
+Bản đầu dùng `Path(__file__).resolve().parents[2]`. Khi file nằm trực tiếp `/tmp/benchmark_knowledge_verifier.py`, chỉ có hai parent là `/tmp` và `/`; index 2 vượt giới hạn và gây `IndexError` trước khi gọi provider hoặc ghi output. Vì vậy hai lần chạy lỗi này không tiêu token.
+
+Đã sửa thành `.parent.parent.parent`: đi lên từng cấp sẽ dừng tại `/` thay vì ném lỗi. Khi chạy trong repo vẫn xác định đúng root. Trong container dùng `PYTHONPATH=/app/src` có sẵn và tham số `--cases /tmp/...` rõ ràng; không phụ thuộc root giả định để tìm fixture.
+
+Test regression copy file thật trực tiếp vào `/tmp`, chạy subprocess từ `/tmp` với `--help`, mô phỏng PYTHONPATH container. Test đã tái hiện lỗi trước sửa và đạt sau sửa. Chỉ cập nhật script, test và note, không cần build/recreate backend: pull main, copy đè script vào `/tmp`, chạy lại lệnh benchmark cũ. File output cũ chưa được tạo bởi lỗi này nên có thể giữ tên `claim-verifier-smoke-01.jsonl` nếu chưa chạy thành công lần nào.

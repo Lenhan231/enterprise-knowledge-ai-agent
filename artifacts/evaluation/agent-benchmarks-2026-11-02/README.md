@@ -2,7 +2,7 @@
 
 The attached 90-case JSONL is archived unchanged in `source-dataset.jsonl`; its SHA-256 is in `manifest.json`. Each agent has its own directory and question file. **Knowledge's 30 cases are deferred.** SQL and Report each run all 30 original questions, without rewriting prompts or supplying a template.
 
-The application baseline was committed and pushed to `QuocAn` before evaluation (`f8996f6`). Generation uses the configured Groq model at temperature 0. The existing provider automatically switches to numbered `.env` keys on rate/quota errors, preserving the model. No keys are written to artifacts. Judge: the existing `CodexCLIJudge`, `gpt-5.6-luna`, reasoning `medium`, with the same evaluator preamble.
+The application baseline was committed and pushed to `QuocAn` before evaluation (`f8996f6`). Generation uses the configured Groq model at temperature 0. The existing provider switches to numbered `.env` keys on rate/quota errors, preserving the model. During this run the user also authorized `GROQ_API_KEY_RAGAS` as a third generation fallback; the Codex judge configuration is unchanged. A process-local numbered alias propagates this fallback to lazy document-source providers without editing `.env` or application code. No keys are written to artifacts. Judge: the existing `CodexCLIJudge`, `gpt-5.6-luna`, reasoning `medium`, with the same evaluator preamble.
 
 ## Files and reproduction
 
@@ -53,3 +53,7 @@ Focused benchmark tests, Groq fallback tests, and the existing Ragas adapter tes
 Report numerical revision 2 separates missing reference coverage from incorrect claims and supplements numeric checks with matching entity/metric rows selected from the already frozen independent reference pool. It does not execute model SQL or use generated values as gold. Numeric scores must be read with their verified/unverified claim counts. Earlier exploratory numerical scores remain in the audit file and are superseded.
 
 Generation harness revision 2 explicitly installs the same fallback classifier and source-router specialists as the production app. Earlier legacy-path attempts used ReportAgent?s standalone router fallback; those attempts are retained and superseded by a single harness-correction run. Planned inventory reports and SQL responses are not regenerated for this wiring correction. Scores are tied to their generation attempt so resumed runs cannot reuse stale judgments.
+
+The later authorized third-key retries preserve all earlier outcomes. Only failed provider-limited work and failed nested-source attempts requiring fallback propagation are retried; successful reports and validation outcomes are retained. Report availability is constrained by Groq?s observed per-minute output and daily token allowances. Some report-sized requests exceed the primary account?s output allowance even after waiting. This is an operationally constrained baseline, not a clean capability-only comparison.
+
+No dependencies were added. Reproduction commands assume the existing local environment; exact installed Ragas/OpenAI/Pydantic versions are in the manifest. Full-suite validation ran 624 tests with 11 failures, 51 errors and 15 skips. An existing-tests-only check ran 612 tests with the same 11 failures and 51 errors; missing optional/platform modules and stale interfaces are outside this benchmark change. See `validation.json`.

@@ -41,12 +41,15 @@ class BenchmarkMetricsTests(unittest.TestCase):
         from evaluation.inventory_benchmark_metrics import normalize_execution_rows
         actual,gold=normalize_execution_rows([{'product_name':'A','quantity':10}],
             [{'product_id':1,'product_name':'A','quantity':10}],{1:'A'})
-        self.assertTrue(compare_rows(actual,gold))
+        self.assertFalse(compare_rows(actual,gold))
         actual,gold=normalize_execution_rows([{'product_name':'A','quantity':10}],
-            [{'product_id':1,'quantity':10}],{1:'A',2:'B',3:'B'})
+            [{'product_id':1,'quantity':10}],{1:'A',2:'B',3:'B'},{'A':1,'B':2})
         self.assertTrue(compare_rows(actual,gold))
+        actual,gold=normalize_execution_rows([{'product_name':'A','quantity':10},{'product_name':'B','quantity':20}],
+            [{'product_id':1,'quantity':10},{'product_id':2,'quantity':20}],{1:'A',2:'B'},{'A':1,'B':2})
+        self.assertEqual(sql_numerical_accuracy(actual,gold),1/3)
         actual,gold=normalize_execution_rows([{'product_name':'A','quantity':10}],
-            [{'product_id':1,'quantity':10}],{1:'A',2:'A'})
+            [{'product_id':1,'quantity':10}],{1:'A'},{'A':2})
         self.assertFalse(compare_rows(actual,gold))
         actual,gold=normalize_execution_rows([{'snapshot_date':'2022-01-31','units':10}],
             [{'month':'2022-01-01','units':10}],{})
@@ -115,6 +118,12 @@ class BenchmarkMetricsTests(unittest.TestCase):
         env['GROQ_API_KEY_3']='another'
         self.assertEqual(install_tertiary_alias(env),'GROQ_API_KEY_4')
         self.assertEqual(env['GROQ_API_KEY_3'],'another')
+
+    def test_generation_status_distinguishes_empty_execution_from_failure(self):
+        from evaluation.run_inventory_agents_benchmark import generation_status
+        self.assertEqual(generation_status({'result':{'data':{'query_status':'executed','rows':[]}}}),'executed_empty')
+        self.assertEqual(generation_status({'result':{'data':{'query_status':'executed','rows':[{'n':0}]}}}),'executed_with_rows')
+        self.assertEqual(generation_status({'result':{'metadata':{'clarification_required':True}}}),'clarification_required')
 
     def test_dataset_split_and_reference_coverage(self):
         import hashlib

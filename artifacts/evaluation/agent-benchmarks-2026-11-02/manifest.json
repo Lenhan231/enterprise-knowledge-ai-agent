@@ -13,7 +13,7 @@
     "report": 30
   },
   "knowledge_status": "deferred",
-  "status": "in_progress",
+  "status": "sql_complete_report_pending",
   "reference_frozen_at": "2026-11-02T09:28:35.083545+00:00",
   "reference_sha256": {
     "sql_analytics": "4ebff61142108f3eb0b0a65df4a09af16bb21985021d1b6a815ae7e66a9e1457",
@@ -22,9 +22,9 @@
   "oracle_status": "independent SQL oracles, author review only; not externally certified gold",
   "agent_model": "qwen/qwen3.8-27b",
   "agent_temperature": 0,
-  "groq_key_count": 2,
-  "groq_failover": "existing provider: rotate on RateLimitError, keep same model",
-  "runner_commit": "5a0ab5ad6b55ffb7f02e60c8c35f32ee127925b0",
+  "groq_key_count": 3,
+  "groq_failover": "primary, numbered backups, then GROQ_API_KEY_RAGAS; rotate on RateLimitError, keep same model",
+  "runner_commit": "86d64ef5e4942e85472d5fa494d52f5f2d8b29e9",
   "package_versions": {
     "ragas": "0.1.dev1148+g735726d5c",
     "openai": "2.41.0",
@@ -41,5 +41,15 @@
     "initial": "8753816",
     "paced": "f8d21b4",
     "production_wiring_and_cooldown_correction": "5a0ab5a"
+  },
+  "lazy_provider_fallback_alias": "GROQ_API_KEY_3",
+  "identity_counts_sha256": "44859af22ff155a300121d4984870d6d850286985777ae31ef57454af4dae599",
+  "sql_status": "complete",
+  "report_status": "pending_resumption",
+  "sql_completed_at": "2026-11-02T11:01:17.289429+00:00",
+  "sql_identity_validation_revision": 2,
+  "numeric_tolerance": {
+    "absolute": "1e-6",
+    "relative": "1e-12"
   }
 }

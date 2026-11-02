@@ -26,7 +26,7 @@ def compare_rows(actual, expected):
     return not remaining
 
 
-def normalize_execution_rows(actual, expected, identities):
+def normalize_execution_rows(actual, expected, identities, identity_counts=None):
     """Normalize presentation only, using identities from frozen reference evidence."""
     actual,expected = [dict(r) for r in actual],[dict(r) for r in expected]
     if not actual or not expected:
@@ -37,11 +37,12 @@ def normalize_execution_rows(actual, expected, identities):
         for row in expected:
             row['month']=str(row['month'])[:7]
     if 'product_name' in actual[0] and 'product_id' not in actual[0] and 'product_id' in expected[0]:
-        names = [identities.get(row['product_id']) for row in expected]
-        if all(name and list(identities.values()).count(name)==1 for name in names):
-            for row,name in zip(expected,names):
-                row.pop('product_id')
-                row['product_name']=name
+        verified={name:identifier for identifier,name in identities.items()
+                  if identity_counts and identity_counts.get(name)==1}
+        for row in actual:
+            row['product_id']=verified.get(row['product_name'])
+            if 'product_name' not in expected[0]:
+                row.pop('product_name')
     return actual,expected
 
 

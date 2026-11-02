@@ -1,48 +1,48 @@
 {
   "cases": 30,
   "generated": 30,
-  "generation_attempts": 34,
+  "generation_attempts": 50,
   "generation_outcomes": {
-    "partial": 2,
-    "clarification_required": 13,
+    "partial": 3,
+    "clarification_required": 18,
     "complete": 1,
-    "failed": 11,
     "unsupported": 2,
-    "confirmation_required": 1
+    "confirmation_required": 1,
+    "failed": 5
   },
   "latest_rate_limit_failures": 4,
   "generation_exceptions": 0,
   "metrics": {
+    "faithfulness": {
+      "mean": 0.8449971739678525,
+      "scored": 4,
+      "not_applicable": 25,
+      "evaluator_errors": 0,
+      "pending": 1
+    },
     "factual_correctness": {
-      "mean": 0.041739130434782605,
-      "scored": 23,
+      "mean": 0.07172413793103448,
+      "scored": 29,
       "not_applicable": 0,
       "evaluator_errors": 0,
-      "pending": 7
-    },
-    "faithfulness": {
-      "mean": 0.8344818286649556,
-      "scored": 3,
-      "not_applicable": 20,
-      "evaluator_errors": 0,
-      "pending": 7
+      "pending": 1
     },
     "numerical_accuracy": {
       "mean": 1.0,
-      "scored": 2,
-      "not_applicable": 21,
+      "scored": 3,
+      "not_applicable": 26,
       "evaluator_errors": 0,
-      "pending": 7,
-      "verified_claims": 43,
+      "pending": 1,
+      "verified_claims": 75,
       "unverified_claims": 206,
-      "verification_coverage": 0.17269076305220885
+      "verification_coverage": 0.2669039145907473
     },
     "report_completeness": {
-      "mean": 0.06521739130434782,
-      "scored": 23,
+      "mean": 0.09482758620689655,
+      "scored": 29,
       "not_applicable": 0,
       "evaluator_errors": 0,
-      "pending": 7
+      "pending": 1
     }
   }
 }

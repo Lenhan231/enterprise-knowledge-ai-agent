@@ -10,7 +10,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from document_processing.docling_adapter.chart_recognition import (
     _chart_blocks,
-    _top_left_bbox,
     recognize_chart_regions,
 )
 
@@ -25,26 +24,12 @@ class ChartRecognitionTest(unittest.TestCase):
 
         self.assertEqual(_chart_blocks(output), "Year | Revenue\n2025 | 10")
 
-    def test_converts_bottom_left_box_to_top_left(self):
-        box = SimpleNamespace(
-            l=10, t=20, r=110, b=70,
-            coord_origin="BOTTOMLEFT",
-        )
-
-        self.assertEqual(_top_left_bbox(box, 100), (10.0, 30.0, 110.0, 80.0))
-
-    def test_recognizes_exact_detected_crop_without_padding(self):
-        bbox = SimpleNamespace(l=10, t=20, r=40, b=60, coord_origin="TOPLEFT")
-        item = SimpleNamespace(
-            label="chart", prov=[SimpleNamespace(page_no=1, bbox=bbox)]
-        )
+    def test_recognizes_chart_from_three_x_page_crop(self):
         page = SimpleNamespace(
             size=SimpleNamespace(width=100, height=100),
-            get_image=lambda scale: Image.new("RGB", (100, 100), "white"),
+            image=SimpleNamespace(pil_image=Image.new("RGB", (100, 100), "white")),
         )
-        document = SimpleNamespace(
-            pages={1: page}, iterate_items=lambda: [(item, 0)]
-        )
+        document = SimpleNamespace(pages={1: page})
 
         class FakePipeline:
             def predict(self, path):
@@ -59,10 +44,14 @@ class ChartRecognitionTest(unittest.TestCase):
             "document_processing.docling_adapter.chart_recognition._get_pipeline",
             return_value=fake_pipeline,
         ):
-            result = recognize_chart_regions(document, {})
+            result = recognize_chart_regions(
+                document,
+                {},
+                [{"page_no": 1, "bbox": [10, 20, 40, 60]}],
+            )
 
-        self.assertEqual(fake_pipeline.crop_size, (30, 40))
-        self.assertEqual(result[id(item)]["text"], "Year | Value")
+        self.assertEqual(fake_pipeline.crop_size, (90, 120))
+        self.assertEqual(result[0]["text"], "Year | Value")
 
 
 if __name__ == "__main__":

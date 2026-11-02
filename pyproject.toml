@@ -17,9 +17,6 @@ dependencies = [
     "openai==2.41.0",
     "psycopg[binary,pool]>=3.3.5",
     "pydantic==2.11.7",
-    "pyyaml==6.0.2",
-    "asyncpg>=0.32.0",
-    "python-docx>=1.2,<2",
     "pymupdf==1.27.2.3",
     "python-dotenv==1.1.1",
     "python-multipart==0.0.32",
@@ -27,7 +24,7 @@ dependencies = [
     "supabase>=2.31.0",
     "uvicorn==0.35.0",
     "pgvector>=0.5.0",
-    "numpy>=2.4.6",
+    "numpy>=2.3.5,<2.4",
     "groq>=1.7.0",
     "pyjwt==2.14.0",
     "langgraph>=1.2.4",
@@ -36,13 +33,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ocr-paddle = ["paddleocr>=3.0.3", "paddlepaddle>=3.3.1", "paddlex[ocr]==3.4.3"]
+ocr-paddle = ["paddleocr>=3.7,<3.8", "paddlepaddle>=3.3.1", "paddlex[ocr]>=3.7,<3.8"]
 layout-yolo = ["doclayout-yolo==0.0.4"]
-docling = ["docling==2.129.0", "opencv-python-headless", "paddleocr[doc-parser]==3.4.1", "paddlepaddle==3.3.1", "langchain-text-splitters>=1.0.0"]
-document-processing-ui = ["streamlit>=1.40,<2"]
+docling = ["docling==2.129.0", "rapidocr==3.9.2", "onnxruntime>=1.18,<2", "paddleocr[doc-parser]==3.7.0", "paddlepaddle==3.3.1", "setuptools<81", "langchain-text-splitters>=1.0.0"]
 evaluation = [
     "grits-metric==0.6.1",
-    "pyvi==0.1.1",
     "rapidfuzz>=3.14.0",
 ]
 

@@ -1,4 +1,4 @@
-"""PaddleOCR PP-DocLayout_plus-L adapter for Docling's layout stage."""
+"""PaddleOCR PP-DocLayoutV3 adapter for Docling's layout stage."""
 
 from __future__ import annotations
 
@@ -18,6 +18,15 @@ from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel
 
 _log = logging.getLogger(__name__)
 
+# PP-DocLayoutV3 inference.yml label_list.
+PADDLE_LAYOUT_LABELS = frozenset({
+    "abstract", "algorithm", "aside_text", "chart", "content", "display_formula",
+    "doc_title", "figure_title", "footer", "footer_image", "footnote",
+    "formula_number", "header", "header_image", "image", "inline_formula",
+    "number", "paragraph_title", "reference", "reference_content", "seal",
+    "table", "text", "vertical_text", "vision_footnote",
+})
+
 _LABELS = {
     "table": DocItemLabel.TABLE,
     "document_index": DocItemLabel.DOCUMENT_INDEX,
@@ -30,6 +39,9 @@ _LABELS = {
     "paragraph": DocItemLabel.TEXT,
     "doc_title": DocItemLabel.TITLE,
     "title": DocItemLabel.TITLE,
+    "title_table": DocItemLabel.TITLE,
+    "table_title": DocItemLabel.CAPTION,
+    "diagram_title": DocItemLabel.CAPTION,
     "paragraph_title": DocItemLabel.SECTION_HEADER,
     "section_header": DocItemLabel.SECTION_HEADER,
     "header": DocItemLabel.PAGE_HEADER,
@@ -39,14 +51,22 @@ _LABELS = {
     "number": DocItemLabel.PAGE_FOOTER,
     "page_number": DocItemLabel.PAGE_FOOTER,
     "image": DocItemLabel.PICTURE,
+    "header_image": DocItemLabel.PICTURE,
+    "footer_image": DocItemLabel.PICTURE,
     "figure": DocItemLabel.PICTURE,
     "seal": DocItemLabel.PICTURE,
-    "chart": DocItemLabel.CHART,
+    # Docling 2.129's layout postprocessor/page assembler do not support CHART.
+    # Keep chart detections as picture clusters and retain their source boxes below.
+    "chart": DocItemLabel.PICTURE,
     "formula": DocItemLabel.FORMULA,
+    "display_formula": DocItemLabel.FORMULA,
+    "inline_formula": DocItemLabel.FORMULA,
+    "formula_number": DocItemLabel.TEXT,
     "caption": DocItemLabel.CAPTION,
     "figure_title": DocItemLabel.CAPTION,
-    "table_title": DocItemLabel.CAPTION,
     "footnote": DocItemLabel.FOOTNOTE,
+    "vision_footnote": DocItemLabel.FOOTNOTE,
+    "vertical_text": DocItemLabel.TEXT,
     "list": DocItemLabel.LIST_ITEM,
     "list_item": DocItemLabel.LIST_ITEM,
     "code": DocItemLabel.CODE,
@@ -55,18 +75,19 @@ _LABELS = {
     "form": DocItemLabel.FORM,
     "key_value_region": DocItemLabel.KEY_VALUE_REGION,
     "handwritten_text": DocItemLabel.HANDWRITTEN_TEXT,
+    "reference_content": DocItemLabel.TEXT,
 }
 
 
 class PPDocLayoutOptions(BaseLayoutOptions):
-    """Options for PaddleOCR's PP-DocLayout_plus-L model."""
+    """Options for PaddleOCR's PP-DocLayoutV3 model."""
 
-    kind: ClassVar[str] = "paddle_doclayout_plus_l"
+    kind: ClassVar[str] = "paddle_doclayout_v3"
     score_threshold: float = Field(default=0.25, ge=0.0, le=1.0)
 
 
 class PPDocLayoutModel(BaseLayoutModel):
-    """Run PP-DocLayout_plus-L and convert detections into Docling clusters."""
+    """Run PP-DocLayoutV3 and convert detections into Docling clusters."""
 
     def __init__(
         self,
@@ -80,7 +101,7 @@ class PPDocLayoutModel(BaseLayoutModel):
             from paddleocr import LayoutDetection
         except ImportError as error:
             raise RuntimeError(
-                "PP-DocLayout_plus-L requires PaddleOCR and PaddlePaddle; install the document-processing image dependencies."
+                "PP-DocLayoutV3 requires PaddleOCR and PaddlePaddle; install the document-processing image dependencies."
             ) from error
 
         requested_device = str(
@@ -89,16 +110,18 @@ class PPDocLayoutModel(BaseLayoutModel):
         if requested_device.startswith("cuda"):
             if not paddle.is_compiled_with_cuda():
                 raise RuntimeError(
-                    "CUDA was requested for PP-DocLayout_plus-L, but this image has CPU-only PaddlePaddle."
+                    "CUDA was requested for PP-DocLayoutV3, but this image has CPU-only PaddlePaddle."
                 )
             device = "gpu:0"
         else:
             device = "cpu"
 
         self.options = options
+        self.chart_regions: list[dict[str, object]] = []
+        self.layout_detections: list[dict[str, object]] = []
         # PaddlePaddle 3.3.1 CPU oneDNN fails on this model's PIR attributes.
         self.model = LayoutDetection(
-            model_name="PP-DocLayout_plus-L",
+            model_name="PP-DocLayoutV3",
             device=device,
             threshold=options.score_threshold,
             enable_mkldnn=False,
@@ -149,24 +172,39 @@ class PPDocLayoutModel(BaseLayoutModel):
                     continue
                 x1, y1, x2, y2 = map(float, coordinates)
                 source_label = str(box.get("label", "text")).strip().lower()
+                score = float(box.get("score", 0.0))
                 label = _LABELS.get(source_label)
                 if label is None:
                     _log.warning(
-                        "Unmapped PP-DocLayout_plus-L label %r; keeping region as text.",
+                        "Unmapped PP-DocLayoutV3 label %r; keeping region as text.",
                         source_label,
                     )
                     label = DocItemLabel.TEXT
+                bbox = BoundingBox(
+                    l=max(0.0, min(x1 * scale_x, float(page.size.width))),
+                    t=max(0.0, min(y1 * scale_y, float(page.size.height))),
+                    r=max(0.0, min(x2 * scale_x, float(page.size.width))),
+                    b=max(0.0, min(y2 * scale_y, float(page.size.height))),
+                    coord_origin=CoordOrigin.TOPLEFT,
+                )
+                self.layout_detections.append({
+                    "page_number": int(page.page_no),
+                    "label": source_label,
+                    "score": score,
+                    "bbox": [bbox.l, bbox.t, bbox.r, bbox.b],
+                    "bbox_coordinate_system": "docling_page_coordinate",
+                    "bbox_coordinate_origin": "TOPLEFT",
+                })
+                if source_label == "chart":
+                    self.chart_regions.append({
+                        "page_no": page.page_no,
+                        "bbox": (bbox.l, bbox.t, bbox.r, bbox.b),
+                    })
                 clusters.append(Cluster(
                     id=index,
                     label=label,
-                    confidence=float(box.get("score", 0.0)),
-                    bbox=BoundingBox(
-                        l=max(0.0, min(x1 * scale_x, float(page.size.width))),
-                        t=max(0.0, min(y1 * scale_y, float(page.size.height))),
-                        r=max(0.0, min(x2 * scale_x, float(page.size.width))),
-                        b=max(0.0, min(y2 * scale_y, float(page.size.height))),
-                        coord_origin=CoordOrigin.TOPLEFT,
-                    ),
+                    confidence=score,
+                    bbox=bbox,
                     cells=[],
                 ))
             predictions.append(LayoutPrediction(clusters=clusters))

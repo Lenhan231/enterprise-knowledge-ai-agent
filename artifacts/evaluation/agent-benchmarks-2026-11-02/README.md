@@ -16,7 +16,7 @@ uv run python -m evaluation.run_inventory_agents_benchmark --stage summary
 uv run python -m unittest discover -s tests -p test_inventory_benchmark.py
 ```
 
-Stages resume missing work. They never regenerate successful responses, silently retry failed cases, or overwrite frozen references. Agent execution is serial to limit Groq pressure; judging runs at most two cases concurrently. Report's normal internal two-operation concurrency and 180-second deadline remain in effect. Decisions requiring user confirmation are recorded as the first response; the evaluator does not implicitly authorize restricted scope.
+Stages resume missing work. They never regenerate successful responses or overwrite frozen references. One explicit infrastructure retry is allowed for previously recorded rate-limit failures; all original attempts are retained. Validation and answer failures are not retried. Agent execution is serial, with bounded waits/retries for Groq cooldowns (which consume the normal report deadline); judging runs at most two cases concurrently. Report's normal internal two-operation concurrency and 180-second deadline remain in effect. Decisions requiring user confirmation are recorded as the first response; the evaluator does not implicitly authorize restricted scope.
 
 ## Metrics
 

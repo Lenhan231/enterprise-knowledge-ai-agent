@@ -48,19 +48,30 @@ def read_jsonl(path):
 
 
 def append(path, value):
-    with path.open('a', encoding='utf-8') as stream:
+    with path.open('a', encoding='utf-8', newline='\n') as stream:
         stream.write(dumps(value)+'\n')
         stream.flush()
 
 
 def save(path, value):
     temp = path.with_suffix('.tmp')
-    temp.write_text(json.dumps(value, indent=2, ensure_ascii=False, default=encode, allow_nan=False)+'\n', encoding='utf-8')
+    with temp.open('w', encoding='utf-8', newline='\n') as stream:
+        stream.write(json.dumps(value, indent=2, ensure_ascii=False, default=encode, allow_nan=False)+'\n')
     temp.replace(path)
 
 
 def load_cases(group):
     return read_jsonl(OUT/group/'questions.jsonl')
+
+
+def latest_generations(group):
+    return list({row['id']: row for row in read_jsonl(OUT/group/'generations.jsonl')}.values())
+
+
+def rate_limited(row):
+    return ('RateLimitError' in str(row.get('generation_error')) or
+            row.get('result',{}).get('metadata',{}).get('error_type')=='RateLimitError' or
+            'rate_limit_exceeded' in row.get('answer',''))
 
 
 async def references():
@@ -121,8 +132,28 @@ async def generate(groups, identifiers):
     from core.database.commerce_repository import create_repository_from_env
     from core.llm.groq_provider import GroqProvider
     from core.models.agents import AgentRequest, VerifiedIdentity
+    from core.agents.runtime import remaining
+    from openai import RateLimitError
+
+    class PacedGroqProvider(GroqProvider):
+        def generate(self, prompt, *, max_output_tokens=1000):
+            # Benchmark pacing only: preserve model, prompts and the report's existing deadline.
+            for attempt in range(3):
+                wait = max(0, min(self._cooldowns)-time.monotonic())
+                if wait:
+                    wait = min(wait+0.5, 60)
+                    if remaining(wait+1) < wait:
+                        raise TimeoutError('Report deadline cannot accommodate Groq cooldown')
+                    print('Groq cooldown', round(wait,1), 'seconds', flush=True)
+                    time.sleep(wait)
+                try:
+                    return super().generate(prompt,max_output_tokens=max_output_tokens)
+                except RateLimitError:
+                    if attempt==2:
+                        raise
+
     repo = await create_repository_from_env()
-    llm = GroqProvider()
+    llm = PacedGroqProvider()
     knowledge = _LazyKnowledgeAgent()
     sql = SQLAnalyticsAgent(repo, llm=llm)
     report = ReportAgent(knowledge, sql, llm=llm)
@@ -133,18 +164,21 @@ async def generate(groups, identifiers):
                     runner_commit=subprocess.check_output(['git','rev-parse','HEAD'], cwd=ROOT, text=True).strip(),
                     package_versions={p: importlib.metadata.version(p) for p in ('ragas','openai','pydantic')},
                     report_source_mode='orchestrated', confirmation_policy='first response only; no implicit scope acceptance')
+    manifest['benchmark_pacing']='Up to 3 provider attempts for 429 only; wait for existing key cooldowns within normal report deadline. One case retry for previously recorded 429; originals retained.'
     save(OUT/'manifest.json', manifest)
     try:
         for group in groups:
             path = OUT/group/'generations.jsonl'
-            done = {r['id'] for r in read_jsonl(path)}
+            previous = {r['id']:r for r in latest_generations(group)}
             for case in load_cases(group):
-                if case['id'] in done or identifiers and case['id'] not in identifiers:
+                prior = previous.get(case['id'])
+                if (prior and (not rate_limited(prior) or prior.get('attempt',1)>=2)) or identifiers and case['id'] not in identifiers:
                     continue
                 started = time.perf_counter()
                 request = AgentRequest(question=case['question'], identity=identity)
                 print('generate', group, case['id'], flush=True)
-                row = {'id':case['id'], 'question':case['question'], 'started_at':datetime.now(timezone.utc).isoformat()}
+                row = {'id':case['id'], 'question':case['question'], 'attempt': prior.get('attempt',1)+1 if prior else 1,
+                       'started_at':datetime.now(timezone.utc).isoformat()}
                 try:
                     if group == 'report':
                         result, payload, media = await report.generate_from_template(request, source_mode='orchestrated')
@@ -290,7 +324,7 @@ async def score(groups, identifiers):
     jobs=[]
     for group in groups:
         refs=json.loads((OUT/group/'references.json').read_text(encoding='utf-8'))
-        for row in read_jsonl(OUT/group/'generations.jsonl'):
+        for row in latest_generations(group):
             if not identifiers or row['id'] in identifiers:
                 jobs.append(run_case(group,row,refs[row['id']]))
     await asyncio.gather(*jobs)
@@ -306,8 +340,9 @@ def summarize():
             metrics[name]={'mean':sum(values)/len(values) if values else None,'scored':len(values),
                 'not_applicable':sum(r['score'] is None and not r['error'] for r in rows),
                 'evaluator_errors':sum(bool(r['error']) for r in rows),'pending':30-len(rows)}
-        generations=read_jsonl(OUT/group/'generations.jsonl')
+        generations=latest_generations(group)
         save(OUT/group/'summary.json',{'cases':30,'generated':len(generations),
+            'generation_attempts':len(read_jsonl(OUT/group/'generations.jsonl')),
             'generation_exceptions':sum(bool(r.get('generation_error')) for r in generations),
             'metrics':metrics})
 

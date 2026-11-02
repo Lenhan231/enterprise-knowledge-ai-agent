@@ -3,6 +3,8 @@
 Các số dòng trỏ vào code của bản sửa này. Dòng trống chỉ ngăn nhóm, không thực thi. File mới được liệt kê toàn bộ; file cũ chỉ liệt kê dòng thêm/sửa. Phần dưới giải thích test và script cùng với runtime; không có phụ thuộc mới.
 `supported` là kết luận của LLM đã qua kiểm tra hợp đồng bằng code, không phải chứng minh toán học rằng claim đúng. `rejected` nghĩa model tìm ra mâu thuẫn/thiếu bằng chứng; `unavailable` nghĩa chưa có kết quả kiểm chứng hợp lệ.
 
+Phần script bên dưới mô tả phiên bản trước khi thêm raw audit/selector. Với thay đổi chẩn đoán mới, số dòng và giải thích cập nhật nằm trong `docs/notes/knowledge-verifier-diagnostics-20261102.vi.md`.
+
 ## `src/core/rag/claim_verification.py`
 
 | Dòng | Code | Giải thích |

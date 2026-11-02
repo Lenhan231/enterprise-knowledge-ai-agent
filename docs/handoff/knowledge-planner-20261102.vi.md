@@ -94,3 +94,31 @@ ON server ok 18/18; OFF 15/18, V6 thiếu thông tin cả ba lần. Đây không
 - docs/notes/huy-knowledge-multiquery-explained.vi.md
 
 Còn cần làm sau khi VPS có code: ghi nhận version thực tế, số retrieval, đáp án và latency V3/V4/V6; nếu đạt mới mở rộng lượt đo. Không fine-tune E5 ở bước này.
+
+## Cập nhật sau deploy do Huy xác minh trên VPS — 02/11/2026
+
+Phần trạng thái “Deploy chưa thực hiện” ở trên là tại thời điểm assistant bàn giao; cập nhật này thay thế trạng thái đó. Huy đã build/recreate backend, chạy script mới và gửi kết quả. Assistant vẫn không có quyền SSH; không tự quan sát VPS hoặc xác minh hash image đang chạy.
+
+Một vòng smoke sáu câu EN: HTTP 200 6/6, application_ok 6/6, không lỗi HTTP; median E2E 23,35 giây, min 22,76, max 44,48. Chưa chấm nội dung độc lập cả sáu đáp án mới. File VPS: /tmp/vietstyle-criteria-smoke-01.json.
+
+Đã đọc output nội dung và số events Huy gửi cho ba ca chính:
+
+| Câu | Retrieval / rerank | E2E | Đánh giá nội dung |
+|---|---|---:|---|
+| V3 | 1 / 1 | 23,53 giây | Đúng ngưỡng 5 triệu / 5.000.001; đúng cấp duyệt và báo giá, xác nhận ngân sách, điều kiện thị trường |
+| V4 | 1 / 1 | 23,12 giây | Đúng số lượng >0, không trùng yêu cầu mở, ghi nhận ngân sách và tuyến tìm nguồn |
+| V6 | 2 / 2 | 44,48 giây | Đúng ba bên duyệt, ba báo giá hoặc lý do một nguồn ĐÃ DUYỆT; PO sau duyệt và hoàn tất các kiểm tra; citation S1/S4/S2 |
+
+So tham khảo với ON prompt cũ (median 3 lượt): V3 40,33→23,53 giây; V4 43,33→23,12; V6 39,63→44,48. Không báo đây là mức cải thiện ổn định hoặc quan hệ nhân quả đã kiểm soát: bên mới mới có một lượt, trạng thái cache/tải/provider khác nhau.
+
+Kết luận chốt ngày: đã kiểm chứng mục tiêu bỏ lượt tìm/rerank thừa ở V3/V4 mà giữ đủ hai nhóm bằng chứng V6. Có thể giữ cấu hình đang thử, tiếp tục theo dõi; chưa chứng nhận production dưới tải hoặc ổn định dài hạn. Chưa có benchmark đầy đủ sau thay đổi trên VI và bộ câu hỏi rộng hơn.
+
+Trước khi recreate container tiếp, copy report ra host:
+
+```bash
+mkdir -p artifacts/local/knowledge-latency
+docker compose cp backend-api:/tmp/vietstyle-criteria-smoke-01.json \
+  artifacts/local/knowledge-latency/criteria-smoke-01.json
+```
+
+Việc tiếp theo ngày sau: lặp ít nhất hai vòng cùng cấu hình mới, chấm đáp án và nguồn; xem median/max theo câu, lỗi 429/timeout, rồi mới cân nhắc đo nhiều người dùng. Chưa cần đổi E5 hay embedding lại.

@@ -324,7 +324,8 @@ function renderOcrTestDetails(run) {
       if (!width || !height) return [];
       const label = String(metadata.element_type || "text").toLowerCase().replace(/[^a-z0-9_-]/g, "");
       const snippet = String(element.content || "").replace(/\s+/g, " ").slice(0, 100);
-      return [`<g class="layout-region layout-region-${escapeHtml(label)}"><title>Element ${formatNumber(element.element_index + 1)} · ${escapeHtml(label)}${snippet ? `: ${escapeHtml(snippet)}` : ""}</title><rect x="${x}" y="${y}" width="${width}" height="${height}" /></g>`];
+      const linkId = `${pageNumber}:${element.element_index}`;
+      return [`<g class="layout-region layout-region-${escapeHtml(label)}" data-bbox-link="${escapeHtml(linkId)}"><title>Element ${formatNumber(element.element_index + 1)} · ${escapeHtml(label)}${snippet ? `: ${escapeHtml(snippet)}` : ""}</title><rect x="${x}" y="${y}" width="${width}" height="${height}" /></g>`];
     }).join("");
     const pagePreviewImage = `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
     const pagePreview = boxes && pageSize
@@ -381,7 +382,7 @@ function renderOcrTestDetails(run) {
         ${hasOutOfBoundsBox ? '<p class="corpus-note">Saved element boxes do not fit the page dimensions for this older run, so the overlay is hidden. Re-run Upload Test to save matching parser coordinates.</p>' : ""}
         ${inferredPageAssignment ? '<p class="corpus-note">Page assignment inferred from the only preview; parser metadata has no page number.</p>' : ""}
         ${renderOcrDiagnostics(ocrDiagnostics)}
-        <details class="ocr-test-elements"><summary>Document elements · ${formatNumber(elements.length)} elements</summary>${elements.map((element) => `<article class="ocr-test-element"><div class="candidate-heading"><strong>Element ${formatNumber(element.element_index + 1)}</strong><span>${formatNumber(element.content.length)} chars · ${escapeHtml(element.metadata?.element_type || "text")} · ${escapeHtml(element.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(element.content)}</pre><details class="candidate-source"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(element.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser elements on this page.</p>'}</details>
+        <details class="ocr-test-elements"><summary>Document elements · ${formatNumber(elements.length)} elements</summary>${elements.map((element) => `<article class="ocr-test-element" data-bbox-link="${escapeHtml(`${pageNumber}:${element.element_index}`)}" tabindex="0" aria-label="Element ${formatNumber(element.element_index + 1)} on page ${formatNumber(pageNumber)}"><div class="candidate-heading"><strong>Element ${formatNumber(element.element_index + 1)}</strong><span>${formatNumber(element.content.length)} chars · ${escapeHtml(element.metadata?.element_type || "text")} · ${escapeHtml(element.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(element.content)}</pre><details class="candidate-source"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(element.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser elements on this page.</p>'}</details>
         <h4 class="ocr-test-table-heading">Extracted tables</h4>
         ${tablesHtml || '<p class="ocr-test-empty">No structured table detected on this page.</p>'}
       </section>
@@ -417,6 +418,53 @@ function renderOcrTestDetails(run) {
     <div class="ocr-test-pages">${pageContent}${unpagedOutput}</div>
   </article>`;
 }
+
+function setUploadTestHighlight(item) {
+  const page = item.closest(".ocr-test-page-content");
+  if (!page) return;
+  page.querySelectorAll("[data-bbox-link]").forEach((linkedItem) => {
+    linkedItem.classList.toggle("is-highlighted", linkedItem.dataset.bboxLink === item.dataset.bboxLink);
+  });
+}
+
+function clearUploadTestHighlight(item) {
+  item.closest(".ocr-test-page-content")?.querySelectorAll(".is-highlighted").forEach((linkedItem) => {
+    linkedItem.classList.remove("is-highlighted");
+  });
+}
+
+document.addEventListener("pointerover", (event) => {
+  const item = event.target.closest?.("[data-bbox-link]");
+  if (!item || (event.relatedTarget instanceof Element && item.contains(event.relatedTarget))) return;
+  setUploadTestHighlight(item);
+});
+
+document.addEventListener("pointerout", (event) => {
+  const item = event.target.closest?.("[data-bbox-link]");
+  if (!item || (event.relatedTarget instanceof Node && item.contains(event.relatedTarget))) return;
+  const nextItem = event.relatedTarget instanceof Element ? event.relatedTarget.closest("[data-bbox-link]") : null;
+  if (nextItem && nextItem.closest(".ocr-test-page-content") === item.closest(".ocr-test-page-content")) {
+    setUploadTestHighlight(nextItem);
+  } else {
+    clearUploadTestHighlight(item);
+  }
+});
+
+document.addEventListener("focusin", (event) => {
+  const item = event.target.closest?.("[data-bbox-link]");
+  if (item) setUploadTestHighlight(item);
+});
+
+document.addEventListener("focusout", (event) => {
+  const item = event.target.closest?.("[data-bbox-link]");
+  if (!item) return;
+  const nextItem = event.relatedTarget instanceof Element ? event.relatedTarget.closest("[data-bbox-link]") : null;
+  if (nextItem && nextItem.closest(".ocr-test-page-content") === item.closest(".ocr-test-page-content")) {
+    setUploadTestHighlight(nextItem);
+  } else {
+    clearUploadTestHighlight(item);
+  }
+});
 
 async function openOcrTestRun(runId) {
   $("#ocr-test-results").innerHTML = '<p class="loading-card">Loading test pages and parser output…</p>';

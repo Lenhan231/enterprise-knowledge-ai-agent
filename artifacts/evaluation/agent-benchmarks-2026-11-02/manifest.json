@@ -1,0 +1,17 @@
+{
+  "source_sha256": "a811884f94446d055da4f92158e7db5485a5f5eeb2d0aa8b797cc659c44e7303",
+  "baseline_commit": "f8996f62dfda0bc4cb9c9eaf5549128cace1ff58",
+  "branch": "QuocAn",
+  "judge": {
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "medium",
+    "adapter": "evaluation.ragas_judge.CodexCLIJudge"
+  },
+  "cases": {
+    "knowledge": 30,
+    "sql_analytics": 30,
+    "report": 30
+  },
+  "knowledge_status": "deferred",
+  "status": "preparing"
+}

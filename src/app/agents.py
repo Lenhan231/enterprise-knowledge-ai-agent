@@ -135,6 +135,8 @@ async def agent_chat(
         prefix = 'Report' if result.agent == 'report' else 'Agent'
         error_type = {"partial": prefix + "Partial", "failed": prefix + "Failed",
                       "clarification_required": prefix + "ClarificationRequired"}.get(report_status)
+        if status == "failed" and error_type is None:
+            error_type = "InsufficientContext" if result.metadata.get("insufficient_context") else prefix + "Failed"
         citation_count = len(result.evidence)
         return result
     except PermissionError as error:

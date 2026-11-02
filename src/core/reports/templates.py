@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from copy import deepcopy
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import PurePosixPath
@@ -16,7 +17,7 @@ from docx.text.paragraph import Paragraph
 MAX_TEMPLATE_BYTES = 10 * 1024 * 1024
 MAX_DOCX_EXPANDED_BYTES = 20 * 1024 * 1024
 _HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
-_TABLE_SEPARATOR = re.compile(r"^\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?$")
+_TABLE_SEPARATOR = re.compile(r"^\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)*\|?$")
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,7 @@ class ReportTemplate:
     headings: tuple[str, ...]
     table_headers: tuple[tuple[str, ...], ...]
     table_sections: tuple[str, ...] = ()
+    marked: bool = False
 
 
 def default_report_template(output_format="markdown") -> ReportTemplate:
@@ -41,7 +43,7 @@ def default_report_template(output_format="markdown") -> ReportTemplate:
     return parse_report_template("report.docx", raw.getvalue())
 
 
-def _bounded_template(format, content, headings, tables, owners):
+def _bounded_template(format, content, headings, tables, owners, marked=False):
     if not headings or len(headings) > 20:
         raise ValueError("Template must contain between 1 and 20 headings")
     if len(headings) != len(set(headings)):
@@ -52,7 +54,30 @@ def _bounded_template(format, content, headings, tables, owners):
         raise ValueError("Template supports at most 20 tables with 1 to 20 columns")
     if any(not owner for owner in owners):
         raise ValueError("Every table must follow a heading")
-    return ReportTemplate(format, content, tuple(headings), tuple(tables), tuple(owners))
+    return ReportTemplate(format, content, tuple(headings), tuple(tables), tuple(owners), marked)
+
+
+def _validate_markers(blocks, headings):
+    marked = any('{{report:' in text for kind, text in blocks)
+    if not marked:
+        return False
+    owner, seen = '', []
+    for kind, text in blocks:
+        if kind == 'heading':
+            owner = text
+        elif kind == 'table':
+            rows = text.splitlines()
+            if not rows or rows[0].count('{{report:rows}}') != 1 or any('{{report:' in r for r in rows[1:]):
+                raise ValueError('Every marked table needs {{report:rows}} in its first placeholder data row')
+            if '{{report:' in rows[0].replace('{{report:rows}}', ''):
+                raise ValueError('Unknown table fill marker')
+        elif '{{report:' in text:
+            if text.strip() != '{{report:'+owner+'}}' or owner not in headings:
+                raise ValueError('Section marker must be standalone beneath its matching heading')
+            seen.append(owner)
+    if sorted(seen) != sorted(headings):
+        raise ValueError('Marked templates need exactly one fill marker for every heading; mixed templates are unsupported')
+    return True
 
 
 def parse_report_template(filename: str, content: bytes) -> ReportTemplate:
@@ -75,7 +100,23 @@ def parse_report_template(filename: str, content: bytes) -> ReportTemplate:
                 owner = match.group(2).strip()
             if index + 1 < len(lines) and line.strip().startswith("|") and _TABLE_SEPARATOR.match(lines[index + 1].strip()):
                 owners.append(owner)
-        return _bounded_template("markdown", text, headings, tables, owners)
+        blocks = []
+        index = 0
+        while index < len(lines):
+            if match := _HEADING.match(lines[index]):
+                blocks.append(('heading', match.group(2).strip()))
+            elif index+1 < len(lines) and lines[index].strip().startswith('|') and _TABLE_SEPARATOR.match(lines[index+1].strip()):
+                index += 2
+                data = []
+                while index < len(lines) and lines[index].strip().startswith('|'):
+                    data.append(lines[index]); index += 1
+                blocks.append(('table', '\n'.join(data)))
+                continue
+            else:
+                blocks.append(('text', lines[index]))
+            index += 1
+        marked = _validate_markers(blocks, headings)
+        return _bounded_template("markdown", text, headings, tables, owners, marked)
     if extension != "docx":
         raise ValueError("Template must be a DOCX or Markdown file")
     _validate_docx_package(content)
@@ -89,12 +130,18 @@ def parse_report_template(filename: str, content: bytes) -> ReportTemplate:
                           for table in document.tables if table.rows)
     owner = ""
     owners = []
+    blocks = []
     for block in document.iter_inner_content():
         if isinstance(block, Paragraph) and block.style.name.startswith("Heading") and block.text.strip():
             owner = block.text.strip()
+            blocks.append(('heading', owner))
+        elif isinstance(block, Paragraph):
+            blocks.append(('text', block.text))
         elif not isinstance(block, Paragraph):
             owners.append(owner)
-    return _bounded_template("docx", content, headings, table_headers, owners)
+            blocks.append(('table', '\n'.join(' | '.join(c.text for c in r.cells) for r in block.rows[1:])))
+    marked = _validate_markers(blocks, headings)
+    return _bounded_template("docx", content, headings, table_headers, owners, marked)
 
 
 def render_report_template(template: ReportTemplate, sections: dict[str, str],
@@ -135,23 +182,31 @@ def _render_markdown(template: ReportTemplate, sections: dict[str, str],
         heading = _HEADING.match(line)
         if heading:
             output.append(line)
-            body = sections[heading.group(2).strip()]
-            output.extend(("", body.strip(), ""))
+            if not template.marked:
+                body = sections[heading.group(2).strip()]
+                output.extend(("", body.strip(), ""))
             index += 1
             continue
         if (index + 1 < len(source_lines) and line.strip().startswith("|")
                 and _TABLE_SEPARATOR.match(source_lines[index + 1].strip())):
             headers = template.table_headers[table_index]
             rows = tables[table_index]
-            output.append(line)
-            output.append(source_lines[index + 1])
-            output.extend("| " + " | ".join(cell.replace("|", "&#124;").replace("\r", "").replace("\n", "<br>")
-                                           for cell in row) + " |" for row in rows)
+            for start in range(0, max(1, len(rows)), 50):
+                if len(rows) > 50:
+                    output.extend(('', f'Rows {start+1}–{min(start+50,len(rows))}', ''))
+                output.extend((line, source_lines[index+1]))
+                output.extend("| " + " | ".join(cell.replace("|", "&#124;").replace("\r", "").replace("\n", "<br>")
+                                               for cell in row) + " |" for row in rows[start:start+50])
             table_index += 1
             index += 2
             while index < len(source_lines) and source_lines[index].strip().startswith("|"):
+                if template.marked and '{{report:rows}}' not in source_lines[index]:
+                    output.append(source_lines[index])
                 index += 1
             continue
+        if template.marked:
+            marker = re.fullmatch(r'\s*\{\{report:(.+)\}\}\s*', line)
+            output.append(sections[marker.group(1)] if marker else line)
         index += 1
     return "\n".join(output).strip() + "\n"
 
@@ -160,14 +215,17 @@ def _render_docx(template: ReportTemplate, sections: dict[str, str],
                  tables: list[list[list[str]]]) -> bytes:
     document = Document(BytesIO(template.content))
     for paragraph in list(document.paragraphs):
-        if not paragraph.style.name.startswith("Heading"):
+        if not template.marked and not paragraph.style.name.startswith("Heading"):
             paragraph._p.getparent().remove(paragraph._p)
-    headings = [paragraph for paragraph in document.paragraphs
-                if paragraph.style.name.startswith("Heading") and paragraph.text.strip()]
-    for paragraph in reversed(headings):
+    anchors = [p for p in document.paragraphs if (
+        p.text.strip().startswith('{{report:') if template.marked else p.style.name.startswith('Heading') and p.text.strip())]
+    for paragraph in reversed(anchors):
         previous = paragraph._p
-        for text in [part.strip() for part in sections[paragraph.text.strip()].splitlines() if part.strip()]:
+        heading = paragraph.text.strip()[9:-2] if template.marked else paragraph.text.strip()
+        for text in [part.strip() for part in sections[heading].splitlines() if part.strip()]:
             element = OxmlElement("w:p")
+            if template.marked and paragraph._p.pPr is not None:
+                element.append(deepcopy(paragraph._p.pPr))
             previous.addnext(element)
             inserted = Paragraph(element, paragraph._parent)
             if text.startswith(("- ", "* ")):
@@ -176,13 +234,52 @@ def _render_docx(template: ReportTemplate, sections: dict[str, str],
             for index, part in enumerate(text.split("**")):
                 inserted.add_run(part).bold = bool(index % 2)
             previous = element
+        if template.marked:
+            paragraph._p.getparent().remove(paragraph._p)
     for table, rows in zip(document.tables, tables):
-        while len(table.rows) > 1:
-            table._tbl.remove(table.rows[-1]._tr)
-        for values in rows:
-            cells = table.add_row().cells
-            for cell, value in zip(cells, values):
-                cell.text = value
+        prototype = deepcopy(table.rows[1]._tr) if len(table.rows) > 1 else None
+        if template.marked:
+            anchor = table.rows[1]._tr
+            table._tbl.remove(anchor)
+        else:
+            while len(table.rows) > 1:
+                table._tbl.remove(table.rows[-1]._tr)
+        base = deepcopy(table._tbl)
+        previous_table = table._tbl
+        for start in range(0, max(1, len(rows)), 50):
+            target = table
+            if start:
+                from docx.table import Table
+                cloned = deepcopy(base)
+                for row in list(cloned.tr_lst)[1:]:
+                    cloned.remove(row)
+                previous_table.addnext(cloned)
+                previous_table = cloned
+                target = Table(cloned, table._parent)
+            if len(rows) > 50:
+                label = OxmlElement('w:p')
+                target._tbl.addprevious(label)
+                Paragraph(label, table._parent).text = f'Rows {start+1}–{min(start+50,len(rows))}'
+            insert_after = target.rows[0]._tr
+            for values in rows[start:start+50]:
+                if prototype is not None:
+                    element = deepcopy(prototype)
+                    insert_after.addnext(element)
+                    from docx.table import _Row
+                    cells = _Row(element, target).cells
+                    insert_after = element
+                else:
+                    cells = target.add_row().cells
+                for cell, value in zip(cells, values):
+                    # Keep paragraph/run formatting from the placeholder when present.
+                    paragraph = cell.paragraphs[0]
+                    properties = deepcopy(paragraph.runs[0]._r.rPr) if paragraph.runs and paragraph.runs[0]._r.rPr is not None else None
+                    paragraph.clear()
+                    run = paragraph.add_run(value)
+                    if properties is not None:
+                        run._r.insert(0, properties)
+                    for extra in list(cell.paragraphs)[1:]:
+                        extra._p.getparent().remove(extra._p)
     output = BytesIO()
     document.save(output)
     return output.getvalue()

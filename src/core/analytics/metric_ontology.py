@@ -158,7 +158,7 @@ METRIC_ONTOLOGY = {
         "dimensions": ("order_date", "region"),
     },
     "return_rate": {
-        "aliases": ("return rate", "refund rate", "tỷ lệ trả hàng", "tỷ lệ hoàn hàng"),
+        "aliases": ("return rate", "refund rate", "tỷ lệ trả hàng", "tỷ lệ hoàn hàng", "tỉ lệ trả hàng", "tỉ lệ hoàn hàng"),
         "source": "commerce.returns + commerce.orders (+ commerce.geography khi lọc theo region)",
         "formula": "COUNT(DISTINCT returns.order_id)::numeric / NULLIF(COUNT(DISTINCT orders.order_id), 0)",
         "grain": "order",

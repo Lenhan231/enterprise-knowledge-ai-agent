@@ -86,14 +86,20 @@ class CommerceRepository:
         await self.pool.close()
 
     async def _fetch(self, query: str, *args: Any) -> list[dict[str, Any]]:
-        async with self.pool.acquire() as connection:
+        from core.agents.runtime import deadline, remaining
+        timeout = remaining(self.statement_timeout_ms / 1000) if deadline.get() is not None else None
+        acquire_options = {'timeout': timeout} if timeout is not None else {}
+        async with self.pool.acquire(**acquire_options) as connection:
             # readonly=True prevents INSERT/UPDATE/DELETE even if a future
             # caller accidentally reuses this connection for another query.
             async with connection.transaction(readonly=True):
-                await connection.execute(
-                    f"SET LOCAL statement_timeout = '{self.statement_timeout_ms}ms'"
-                )
-                rows = await connection.fetch(query, *args)
+                milliseconds = self.statement_timeout_ms
+                if timeout is not None:
+                    milliseconds = max(1, int(remaining(milliseconds/1000)*1000))
+                execute_options = {'timeout': remaining(milliseconds/1000)} if timeout is not None else {}
+                await connection.execute(f"SET LOCAL statement_timeout = '{milliseconds}ms'", **execute_options)
+                fetch_options = {'timeout': remaining(milliseconds/1000)} if timeout is not None else {}
+                rows = await connection.fetch(query, *args, **fetch_options)
                 return [dict(row) for row in rows]
 
 async def create_repository_from_env() -> CommerceRepository:

@@ -7,6 +7,7 @@ class BenchmarkMetricsTests(unittest.TestCase):
         self.assertTrue(numeric_equal('0.3', '0.30000001'))
         self.assertFalse(numeric_equal(None, 0))
         self.assertFalse(numeric_equal(True, 1))
+        self.assertFalse(numeric_equal('100000000', '100000001'))
 
     def test_rows_ignore_order_but_preserve_scope_and_duplicates(self):
         gold = [{'product_id': 1, 'stock': 10}, {'product_id': 2, 'stock': 20}]
@@ -60,6 +61,14 @@ class BenchmarkMetricsTests(unittest.TestCase):
         from evaluation.run_inventory_agents_benchmark import rate_limited
         self.assertTrue(rate_limited({'result':{'metadata':{'error_code':'provider_rate_limited'}}}))
         self.assertFalse(rate_limited({'result':{'metadata':{'error_code':'invalid_plan'}}}))
+
+    def test_resumed_scores_must_match_the_generation_attempt(self):
+        from evaluation.run_inventory_agents_benchmark import current_score
+        record={'metric':'faithfulness','generation_attempt':1}
+        self.assertFalse(current_score(record,{'attempt':2},'report'))
+        self.assertTrue(current_score(record,{'attempt':1},'report'))
+        self.assertFalse(current_score({'metric':'numerical_accuracy','numeric_revision':1},{},'report'))
+        self.assertFalse(current_score({'metric':'execution_accuracy','scoring_revision':3},{},'sql_analytics'))
 
     def test_dataset_split_and_reference_coverage(self):
         import hashlib

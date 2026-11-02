@@ -7,7 +7,7 @@ def numeric_equal(left, right):
         return type(left) is type(right) and left == right
     try:
         a, b = Decimal(str(left)), Decimal(str(right))
-        return a.is_finite() and b.is_finite() and abs(a-b) <= max(Decimal('0.000001'), abs(b)*Decimal('0.000001'))
+        return a.is_finite() and b.is_finite() and abs(a-b) <= max(Decimal('0.000001'), abs(b)*Decimal('0.000000000001'))
     except InvalidOperation:
         return str(left) == str(right)
 

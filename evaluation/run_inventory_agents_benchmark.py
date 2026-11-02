@@ -128,7 +128,10 @@ async def references():
 
 
 async def generate(groups, identifiers):
-    from core.agents.main import _LazyKnowledgeAgent
+    from core.agents.main import _LazyKnowledgeAgent, _FallbackClassifier
+    from core.agents.analytics_agent import AnalyticsAgent
+    from core.agents.dashboard_agent import InventoryDashboardAgent
+    from core.agents.router import AgentRouter
     from core.agents.report_agent import ReportAgent
     from core.agents.sql_analytics_agent import SQLAnalyticsAgent
     from core.database.commerce_repository import create_repository_from_env
@@ -159,6 +162,8 @@ async def generate(groups, identifiers):
     knowledge = _LazyKnowledgeAgent()
     sql = SQLAnalyticsAgent(repo, llm=llm)
     report = ReportAgent(knowledge, sql, llm=llm)
+    report.source_router=AgentRouter(_FallbackClassifier(),knowledge,AnalyticsAgent(sql),
+        dashboard_agent=InventoryDashboardAgent(repo),report_agent=report,llm=llm)
     identity = VerifiedIdentity(subject='agent-benchmark', permissions={'analytics:read','documents:read'}, document_roles={'admin'})
     manifest = json.loads((OUT/'manifest.json').read_text())
     manifest.update(agent_model=llm.model_name, agent_temperature=llm.temperature,
@@ -167,6 +172,7 @@ async def generate(groups, identifiers):
                     package_versions={p: importlib.metadata.version(p) for p in ('ragas','openai','pydantic')},
                     report_source_mode='orchestrated', confirmation_policy='first response only; no implicit scope acceptance')
     manifest['benchmark_pacing']='Up to 3 provider attempts for 429 only; wait for existing key cooldowns within normal report deadline. One case retry for previously recorded 429; originals retained.'
+    manifest['generation_harness_revision']=2
     save(OUT/'manifest.json', manifest)
     try:
         for group in groups:
@@ -174,13 +180,18 @@ async def generate(groups, identifiers):
             previous = {r['id']:r for r in latest_generations(group)}
             for case in load_cases(group):
                 prior = previous.get(case['id'])
-                if (prior and (not rate_limited(prior) or prior.get('attempt',1)>=2)) or identifiers and case['id'] not in identifiers:
+                wiring_retry=(group=='report' and prior and prior.get('harness_revision',1)<2
+                              and 'source_collection' in prior.get('result',{}).get('metadata',{}))
+                if (prior and not wiring_retry and (not rate_limited(prior) or prior.get('attempt',1)>=2)) or identifiers and case['id'] not in identifiers:
                     continue
                 started = time.perf_counter()
                 request = AgentRequest(question=case['question'], identity=identity)
                 print('generate', group, case['id'], flush=True)
                 row = {'id':case['id'], 'question':case['question'], 'attempt': prior.get('attempt',1)+1 if prior else 1,
+                       'harness_revision':2,
                        'started_at':datetime.now(timezone.utc).isoformat()}
+                if wiring_retry:
+                    row['retry_reason']='Harness correction: use production fallback classifier and source-router wiring; earlier attempt retained.'
                 try:
                     if group == 'report':
                         result, payload, media = await report.generate_from_template(request, source_mode='orchestrated')
@@ -236,6 +247,14 @@ def bounded_reference_sql(sql):
 
 def metric_record(value, reason=None, traces=None, error=None):
     return {'score':value, 'reason':reason, 'traces':traces, 'error':error}
+
+
+def current_score(record, generation, group):
+    if record.get('generation_attempt',1)!=generation.get('attempt',1):
+        return False
+    if group=='sql_analytics':
+        return record.get('scoring_revision')==4
+    return record['metric']!='numerical_accuracy' or record.get('numeric_revision')==2
 
 
 def report_reference_text(reference):
@@ -295,8 +314,7 @@ async def score(groups, identifiers):
         async with semaphore:
             path = OUT/group/'scores.jsonl'
             existing = {r['metric']:r for r in read_jsonl(path) if r['id']==row['id']
-                        and (group!='sql_analytics' or r.get('scoring_revision')==4)
-                        and (group!='report' or r['metric']!='numerical_accuracy' or r.get('numeric_revision')==2)}
+                        and current_score(r,row,group)}
             expected = ('execution_accuracy','sql_semantic_equivalence','numerical_accuracy') if group=='sql_analytics' else ('faithfulness','factual_correctness','numerical_accuracy','report_completeness')
             response = row['answer']
             data = row.get('result',{}).get('data',{})

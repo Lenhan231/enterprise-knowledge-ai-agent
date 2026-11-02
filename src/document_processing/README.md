@@ -16,8 +16,9 @@ DocumentProcessor.process(file)
     │     └── DoclingProcessor
     │           ├── PP-DocLayoutV3 → native layout_detections + Docling clusters
     │           ├── Docling OCR + TableFormer → {elements, tables}
-    │           ├── chart + matched title → union crop at 3× → PaddleOCR-VL v1.5
-    │           │     └── Groq vision + existing OCR line candidates → text-cell spelling corrections
+    │           ├── chart + matched title → union crop at 3× → OpenParser/PaddleOCR-VL 1.6 table
+    │           │     └── Groq + existing VietOCR lines → text-cell spelling corrections
+    │           │           (direct Groq vision extraction if OpenParser key is unavailable)
     │           └── result_mapper → {elements, tables}
     └── intent=invoice
           └── Vintern in isolated Transformers runtime → invoice_extraction
@@ -68,7 +69,7 @@ through a second embedded-image pass. The route is recorded as
 `pdf_processing_route: full_page_ocr` in parser metadata.
 
 For each PP-DocLayoutV3 chart region, the document path removes overlapping
-full-page OCR line results, then renders the page at 3× for PaddleOCR-VL v1.5.
+full-page OCR line results, then renders the page at 3× for chart extraction.
 The crop starts from the chart bbox; when a title detection has a unique,
 geometrically aligned match, the crop becomes the union of the title and chart
 bboxes. If one title spans multiple adjacent charts, one group crop covers the
@@ -77,13 +78,14 @@ separately. It emits a distinct `chart` element; generic
 pictures remain `figure` elements and captions remain separate. Docling still
 receives its supported internal picture label for chart regions.
 Set `docling_chart_recognition=false` to keep chart regions without chart text.
-When `GROQ_API_KEY` is set, the chart crop, PaddleOCR-VL table, and OCR text lines
-inside the crop are sent to `GROQ_VISION_MODEL` (default `qwen/qwen3.8-27b`).
-Groq returns indexed text-cell corrections only. The parser applies them to
-PaddleOCR-VL's original table; cells containing digits, row/column positions,
-and the original table structure remain unchanged. Missing credentials or a
-Groq error keeps the PaddleOCR-VL result. Docker Compose forwards these two
-environment variables to the document-processing service.
+With `OPEN_PARSER_API_KEY`, the chart crop goes to OpenParser's PaddleOCR-VL 1.6
+endpoint for a structured table. When `GROQ_API_KEY` is set, Groq receives that
+table, the crop, and existing OCR lines; it can correct indexed text cells only.
+Numeric cells and the OpenParser table structure remain unchanged. If OpenParser
+is not configured or unavailable, Groq extracts a structured chart directly
+from the crop and OCR lines. This avoids loading PaddleOCR-VL locally in the
+document-processing container. Docker Compose forwards both API keys and the
+Groq model setting to that service.
 
 ## Invoice intent
 

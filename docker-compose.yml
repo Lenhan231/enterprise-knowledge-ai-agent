@@ -52,6 +52,7 @@ services:
       PADDLE_PDX_CACHE_HOME: /models/paddlex
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       GROQ_VISION_MODEL: ${GROQ_VISION_MODEL:-qwen/qwen3.8-27b}
+      OPEN_PARSER_API_KEY: ${OPEN_PARSER_API_KEY:-}
     volumes: ["document_model_cache:/models"]
 
   chunking:

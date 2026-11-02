@@ -283,14 +283,10 @@ def map_result(
                 "bbox": bbox,
                 "bbox_coordinate_system": "docling_page_coordinate",
                 "bbox_coordinate_origin": "TOPLEFT",
-                "parser": "paddleocr_vl" if chart_text else "docling",
+                "parser": _chart_parser(chart) if chart_text else "docling",
                 "docling_label": "chart",
                 "docling_version": docling_version,
-                "text_extraction_method": (
-                    f"paddleocr_vl.{chart.get('text_refinement')}"
-                    if chart_text and chart.get("text_refinement") != "paddleocr_vl_only"
-                    else "paddleocr_vl.chart_recognition" if chart_text else "layout_only.chart"
-                ),
+                "text_extraction_method": _chart_text_extraction_method(chart) if chart_text else "layout_only.chart",
                 "chart_recognition_bbox": chart.get("recognition_bbox", bbox),
                 "chart_recognition_input": chart.get("input"),
                 **({"chart_member_bboxes": chart["member_bboxes"]} if chart.get("member_bboxes") else {}),
@@ -684,6 +680,26 @@ def _cell(value: Any) -> str:
     except (TypeError, ValueError):
         pass
     return str(value).strip()
+
+
+def _chart_parser(chart: dict[str, Any]) -> str:
+    refinement = str(chart.get("text_refinement") or "")
+    if refinement.startswith("openparser") or "openparser" in str(chart.get("model") or "").lower():
+        return "openparser"
+    if refinement.startswith("groq"):
+        return "groq"
+    return "paddleocr_vl"
+
+
+def _chart_text_extraction_method(chart: dict[str, Any]) -> str:
+    refinement = str(chart.get("text_refinement") or "")
+    if refinement == "groq_ocr_referenced_text_only":
+        return "openparser.groq_text_correction"
+    if refinement == "groq_direct_ocr_referenced_extraction":
+        return "groq.chart_recognition"
+    if refinement == "openparser_only":
+        return "openparser.chart_recognition"
+    return "paddleocr_vl.chart_recognition"
 
 
 def _project_embedded_bbox(

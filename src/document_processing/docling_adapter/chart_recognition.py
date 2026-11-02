@@ -2,24 +2,21 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import logging
 import os
 import re
-import tempfile
-import base64
-from threading import Lock
 from io import BytesIO
+from threading import Lock
 from typing import Any
+from urllib.request import Request, urlopen
 
 from PIL import Image, ImageOps
 
 _log = logging.getLogger(__name__)
-_MODEL_VERSION = "v1.5"
+_OPENPARSER_MODEL = "PaddleOCR-VL 1.6 (OpenParser)"
 _PAGE_RENDER_SCALE = 3.0
-_pipeline: Any | None = None
-_pipeline_device: str | None = None
-_pipeline_lock = Lock()
 _groq_client: Any | None = None
 _groq_api_key: str | None = None
 _groq_lock = Lock()
@@ -32,6 +29,11 @@ Return only JSON: {\"corrections\":[{\"row\":0,\"column\":0,\"text\":\"corrected
 Rows and columns are zero-based in the supplied pipe-delimited table, including its header.
 Return corrections only for cells listed as editable. Do not add, remove, reorder, or combine cells.
 Never return numeric cells, values, or a replacement table. If uncertain, omit the correction."""
+_DIRECT_SYSTEM = """Extract the chart(s) visible in this image as JSON:
+{\"charts\":[{\"title\":\"string\",\"headers\":[\"string\"],\"rows\":[{\"label\":\"string\",\"values\":[\"string\"]}]}]}.
+The image is authoritative. OCR lines are noisy spelling references. Keep every number exactly as printed;
+do not calculate, normalize, infer, or invent data. Preserve chart order, row order, and column order.
+Return only JSON. If a value cannot be read, use an empty string."""
 
 
 def recognize_chart_regions(
@@ -42,7 +44,7 @@ def recognize_chart_regions(
     page_source: Any = None,
     source_format: str | None = None,
 ) -> list[dict[str, Any]]:
-    """Run PaddleOCR-VL on chart boxes, including a clearly matched title when present."""
+    """Extract chart tables remotely, correcting only text against page OCR lines."""
     if not chart_regions:
         return []
 
@@ -71,8 +73,8 @@ def recognize_chart_regions(
             "title_bbox": region.get("title_bbox"),
             "title_match_score": region.get("title_match_score"),
             "text": "",
-            "model": f"PaddleOCR-VL {_MODEL_VERSION}",
-            "text_refinement": "paddleocr_vl_only",
+            "model": _OPENPARSER_MODEL,
+            "text_refinement": "openparser_only",
             "input": (
                 "chart_and_matched_title_union_crop"
                 if region.get("title_bbox") else "exact_layout_chart_bbox_crop"
@@ -83,13 +85,6 @@ def recognize_chart_regions(
     if not config.get("docling_chart_recognition", True):
         for result in results:
             result["input"] = "disabled_chart_recognition"
-        return results
-
-    device = "gpu:0" if str(config.get("docling_device", "cpu")).lower() == "cuda" else "cpu"
-    try:
-        pipeline = _get_pipeline(device)
-    except Exception:
-        _log.exception("Could not initialize PaddleOCR-VL chart recognition")
         return results
 
     pdf_document = None
@@ -157,25 +152,25 @@ def recognize_chart_regions(
 
         try:
             crop = page_image.convert("RGB").crop(crop_box)
-            with tempfile.NamedTemporaryFile(suffix=".png") as temporary:
-                crop.save(temporary.name, format="PNG")
-                outputs = list(pipeline.predict(temporary.name))
-            text = "\n".join(
-                content
-                for content in (_chart_blocks(output) for output in outputs)
-                if content
-            ).strip()
-            result["text"] = text
-            if text and config.get("docling_chart_llm_correction", True):
-                ocr_references = _ocr_text_candidates(page, box)
-                corrected = _correct_chart_text(crop, text, ocr_references)
-                if corrected is not None:
-                    result["text"] = corrected
-                    result["text_refinement"] = "groq_ocr_referenced_text_only"
-                    groq_model = os.getenv("GROQ_VISION_MODEL", "qwen/qwen3.8-27b")
-                    result["model"] = f"PaddleOCR-VL {_MODEL_VERSION} + Groq {groq_model}"
+            ocr_references = _ocr_text_candidates(page, box)
+            table_text = _recognize_with_openparser(crop)
+            if table_text:
+                result["text"] = table_text
+                result["model"] = _OPENPARSER_MODEL
+                if config.get("docling_chart_llm_correction", True):
+                    corrected = _correct_chart_text(crop, table_text, ocr_references)
+                    if corrected is not None:
+                        result["text"] = corrected
+                        result["text_refinement"] = "groq_ocr_referenced_text_only"
+                        result["model"] = f"{_OPENPARSER_MODEL} + Groq {os.getenv('GROQ_VISION_MODEL', 'qwen/qwen3.8-27b')}"
+            else:
+                direct_text = _recognize_with_groq(crop, ocr_references)
+                if direct_text:
+                    result["text"] = direct_text
+                    result["text_refinement"] = "groq_direct_ocr_referenced_extraction"
+                    result["model"] = f"Groq {os.getenv('GROQ_VISION_MODEL', 'qwen/qwen3.8-27b')}"
         except Exception:
-            _log.exception("PaddleOCR-VL failed on chart region on page %s", page_number)
+            _log.exception("Chart extraction failed on page %s", page_number)
     if pdf_document is not None:
         pdf_document.close()
     return results
@@ -278,40 +273,130 @@ def _get_groq_client(api_key: str) -> Any:
     return _groq_client
 
 
-def _get_pipeline(device: str) -> Any:
-    global _pipeline, _pipeline_device
-    with _pipeline_lock:
-        if _pipeline is None or _pipeline_device != device:
-            from paddleocr import PaddleOCRVL
-
-            _pipeline = PaddleOCRVL(
-                pipeline_version=_MODEL_VERSION,
-                device=device,
-                use_chart_recognition=True,
-                use_doc_orientation_classify=False,
-                use_doc_unwarping=False,
-            )
-            _pipeline_device = device
-    return _pipeline
-
-
-def _chart_blocks(output: Any) -> str:
-    payload = getattr(output, "json", {})
-    if callable(payload):
-        payload = payload()
-    if isinstance(payload, str):
-        try:
-            payload = json.loads(payload)
-        except json.JSONDecodeError:
-            return ""
-    if not isinstance(payload, dict):
-        return ""
-    result = payload.get("res", payload)
-    blocks = result.get("parsing_res_list", []) if isinstance(result, dict) else []
-    return "\n".join(
-        str(block.get("block_content") or "").strip()
-        for block in blocks
-        if isinstance(block, dict)
-        and str(block.get("block_label", "")).lower() == "chart"
-        and str(block.get("block_content") or "").strip()
+def _recognize_with_openparser(crop: Image.Image) -> str | None:
+    """Use OpenParser's PaddleOCR-VL service as Flow 2's structured-table source."""
+    api_key = os.getenv("OPEN_PARSER_API_KEY")
+    if not api_key:
+        return None
+    boundary = "----DoclingOpenParser" + os.urandom(12).hex()
+    image_buffer = BytesIO()
+    crop.save(image_buffer, format="PNG")
+    parts = [
+        (
+            f"--{boundary}\r\nContent-Disposition: form-data; name=\"request\"\r\n"
+            "Content-Type: application/json\r\n\r\n"
+            '{"ocr_model":"paddleocr-vl-1.6","output_format":"openparser@1"}\r\n'
+        ).encode(),
+        (
+            f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"chart.png\"\r\n"
+            "Content-Type: image/png\r\n\r\n"
+        ).encode() + image_buffer.getvalue() + b"\r\n",
+        f"--{boundary}--\r\n".encode(),
+    ]
+    request = Request(
+        "https://api.openparser.dev/parse",
+        data=b"".join(parts),
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Idempotency-Key": f"chart-{os.urandom(12).hex()}",
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+        },
     )
+    try:
+        with urlopen(request, timeout=180) as response:
+            payload = json.loads(response.read())
+    except Exception:
+        _log.exception("OpenParser chart extraction failed; trying Groq direct-vision fallback")
+        return None
+
+    elements = payload.get("elements", []) if isinstance(payload, dict) else []
+    titles = [
+        _element_plain_text(element)
+        for element in elements
+        if element.get("kind") == "text"
+        and element.get("source", {}).get("native_label") in {"figure_title", "diagram_title"}
+        and _element_plain_text(element)
+    ]
+    tables = [
+        _openparser_table(element)
+        for element in elements
+        if element.get("kind") == "table"
+        and element.get("source", {}).get("native_label") == "chart"
+    ]
+    pieces = []
+    for index, table in enumerate(tables):
+        if table:
+            if index < len(titles):
+                pieces.append(f"Chart title: {titles[index]}")
+            pieces.append(table)
+    return "\n\n".join(pieces) or None
+
+
+def _element_plain_text(element: dict[str, Any]) -> str:
+    return re.sub(r"<[^>]+>", " ", str(element.get("text") or "")).strip()
+
+
+def _openparser_table(element: dict[str, Any]) -> str:
+    rows: dict[int, dict[int, str]] = {}
+    for cell in element.get("cells", []):
+        if not isinstance(cell, dict):
+            continue
+        try:
+            row, column = int(cell["row_index"]), int(cell["column_index"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        rows.setdefault(row, {})[column] = str(cell.get("text") or "")
+    return "\n".join(
+        " | ".join(values.get(column, "") for column in range(max(values) + 1))
+        for _, values in sorted(rows.items()) if values
+    )
+
+
+def _recognize_with_groq(crop: Image.Image, ocr_references: list[str]) -> str | None:
+    """Extract structured chart text directly when OpenParser is not configured."""
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return None
+    buffer = BytesIO()
+    crop.save(buffer, format="PNG")
+    image_url = "data:image/png;base64," + base64.b64encode(buffer.getvalue()).decode("ascii")
+    try:
+        response = _get_groq_client(api_key).chat.completions.create(
+            model=os.getenv("GROQ_VISION_MODEL", "qwen/qwen3.8-27b"),
+            messages=[
+                {"role": "system", "content": _DIRECT_SYSTEM},
+                {"role": "user", "content": [
+                    {"type": "text", "text": "OCR line candidates (noisy references):\n" + json.dumps(ocr_references, ensure_ascii=False)},
+                    {"type": "image_url", "image_url": {"url": image_url, "detail": "high"}},
+                ]},
+            ],
+            temperature=0,
+            max_tokens=2400,
+            response_format={"type": "json_object"},
+        )
+        payload = json.loads(response.choices[0].message.content or "{}")
+        charts = payload.get("charts")
+        if not isinstance(charts, list) or not charts:
+            return None
+        return "\n\n".join(
+            text for chart in charts if isinstance(chart, dict)
+            if (text := _chart_to_text(chart))
+        ) or None
+    except Exception:
+        _log.exception("Groq direct chart extraction failed")
+        return None
+
+
+def _chart_to_text(chart: dict[str, Any]) -> str:
+    lines = []
+    if chart.get("title"):
+        lines.append(f"Chart title: {str(chart['title']).strip()}")
+    headers = chart.get("headers") if isinstance(chart.get("headers"), list) else []
+    if headers:
+        lines.append(" | ".join(map(str, headers)))
+    for row in chart.get("rows", []):
+        if isinstance(row, dict):
+            values = row.get("values") if isinstance(row.get("values"), list) else []
+            lines.append(" | ".join([str(row.get("label") or ""), *map(str, values)]))
+    return "\n".join(lines)

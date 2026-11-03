@@ -9,6 +9,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from core.agents.base import BaseAgent
+from core.analytics.commerce_decision_support import resolve_commerce_decision_domain, unavailable_commerce_dimensions
 from core.analytics.metric_ontology import resolve_metric_names, get_metric_definition
 from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
 from core.analytics.metric_validation import MetricDefinitionError, validate_metric_definitions, validate_metric_request
@@ -89,6 +90,13 @@ class SQLAnalyticsAgent(BaseAgent):
         context = options.get('_sql_context')
         if context is not None:
             context_info.update(context_used=False,_sql_context_action='new')
+        unavailable = unavailable_commerce_dimensions(question, resolve_commerce_decision_domain(question) or '',
+                                                      set().union(*APPROVED_COLUMNS.values()))
+        if unavailable:
+            return self._generation_error(MetricDefinitionError(
+                'The full approved schema does not support these requested dimensions: '+', '.join(unavailable)+'. '
+                'A supported alternative is inventory observations by product/category at an available historical snapshot.',
+                code='unsupported_dimension', clarification=True))
         metric_names = resolve_metric_names(question)
         definitions = {}
         raw = None

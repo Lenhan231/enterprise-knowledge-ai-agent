@@ -174,9 +174,6 @@ class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
                             identity=VerifiedIdentity(subject=subject,permissions=permissions or {'analytics:read'},document_roles={'admin'}))
 
     async def test_three_turn_sequence_pins_latest_and_executes_each_turn(self):
-        first='SELECT i.snapshot_date,p.category,SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id=p.product_id WHERE i.snapshot_date=$1 GROUP BY i.snapshot_date,p.category LIMIT 200'
-        second=first.replace(' GROUP BY',' AND p.color=$2 GROUP BY')
-        third=second.replace('LIMIT 200','ORDER BY 3 DESC LIMIT 3')
         provider=Mock()
         provider.generate.side_effect=[json.dumps({'action':'new','mapping':{**BASE,'time':{'mode':'latest'}}}),
                                        json.dumps({'action':'followup','changes':{'filters':[{'field':'color','operator':'eq','value':'blue'}]}}),

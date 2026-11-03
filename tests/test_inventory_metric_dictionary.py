@@ -218,14 +218,10 @@ class InventoryRequestTest(unittest.IsolatedAsyncioTestCase):
         from unittest.mock import AsyncMock, Mock
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
-        sql = ('SELECT i.snapshot_date, p.product_name, i.stock_on_hand FROM commerce.inventory AS i '
-               'JOIN commerce.products AS p ON i.product_id=p.product_id '
-               'WHERE i.snapshot_date=(SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) '
-               'ORDER BY 3 ASC LIMIT 10')
         provider, repository = Mock(), AsyncMock()
-        provider.generate.side_effect = [json.dumps({'metrics':['stock_on_hand'],'representation':'product',
+        provider.generate.return_value = json.dumps({'metrics':['stock_on_hand'],'representation':'product',
             'dimensions':['product_name'],'time':{'mode':'latest'},
-            'ranking':{'metric':'stock_on_hand','direction':'asc','limit':10}}),json.dumps({'sql':sql,'parameters':[]})]
+            'ranking':{'metric':'stock_on_hand','direction':'asc','limit':10}})
         repository.execute_approved_query.return_value = [{'snapshot_date':'2022-12-31','product_name':'Example','stock_on_hand':5}]
         result = await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
             question='Which 10 products had the lowest stock in the latest inventory snapshot?',

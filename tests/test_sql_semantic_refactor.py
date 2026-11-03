@@ -129,6 +129,20 @@ class SchemaContextTest(unittest.TestCase):
 
 
 class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_missing_dimension_uses_full_schema_and_offers_supported_scope(self):
+        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.models.agents import AgentRequest, VerifiedIdentity
+        for question in ['Which suppliers delivered stock late in December 2022?',
+                         'Tổng hợp tồn kho theo nhà cung cấp tại snapshot 2022-12-31']:
+            provider, repo = Mock(), AsyncMock()
+            result=await SQLAnalyticsAgent(repo,llm=provider).run(AgentRequest(question=question,
+                identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
+            self.assertEqual(result.metadata.get('metric_error_code'), 'unsupported_dimension')
+            self.assertIn('supplier',result.answer)
+            self.assertIn('alternative',result.answer)
+            provider.generate.assert_not_called()
+            repo.execute_approved_query.assert_not_awaited()
+
     async def test_unreviewed_alias_cannot_be_replaced_with_an_approved_metric(self):
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent
         from core.analytics.metric_ontology import METRIC_ONTOLOGY

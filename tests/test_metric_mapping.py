@@ -126,12 +126,11 @@ class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
         provider.generate.assert_not_called()
         repository.execute_approved_query.assert_not_awaited()
 
-    async def test_repeated_contract_violation_never_reaches_repository(self):
+    async def test_compiler_contract_violation_never_reaches_repository(self):
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest,VerifiedIdentity
         provider,repository=Mock(),AsyncMock()
-        bad=json.dumps({'sql':SQL.replace('AND p.color=$1',''),'parameters':[]})
-        provider.generate.side_effect=[json.dumps(MAPPING),bad,bad]
+        provider.generate.return_value=json.dumps(MAPPING)
         with patch('core.agents.sql_analytics_agent.compile_inventory_query', return_value=(SQL.replace('AND p.color=$1',''), ())):
             result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
                 question='Which blue styles have the fewest pieces left at latest snapshot?',
@@ -141,11 +140,11 @@ class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(provider.generate.call_count,1)
         repository.execute_approved_query.assert_not_awaited()
 
-    async def test_mapping_precedes_sql_for_mixed_language_request(self):
+    async def test_mapping_compiles_for_mixed_language_request(self):
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest,VerifiedIdentity
         provider,repository=Mock(),AsyncMock()
-        provider.generate.side_effect=[json.dumps(MAPPING),json.dumps({'sql':SQL,'parameters':['blue']})]
+        provider.generate.return_value=json.dumps(MAPPING)
         repository.execute_approved_query.return_value=[{'snapshot_date':'2022-12-31','product_name':'A','stock_on_hand':3}]
         result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
             question='Top 10 styles màu blue còn ít pieces nhất ở kỳ ghi nhận mới nhất?',

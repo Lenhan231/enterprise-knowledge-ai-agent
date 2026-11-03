@@ -76,6 +76,10 @@ def variant_sources(variant):
                 source = source.replace('    relevant_schema_tables,\n','').replace(
                     "if (context is not None\n                    or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)\n                    or (not metric_names and 'commerce.inventory' in relevant_schema_tables(question, {}))):",
                     "if context is not None or not metric_names or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names):")
+                source = source.replace('from core.analytics.commerce_decision_support import resolve_commerce_decision_domain, unavailable_commerce_dimensions\n','')
+                start = source.index('        unavailable = ')
+                end = source.index('        metric_names = ',start)
+                source = source[:start]+source[end:]
         result[name] = source
     return result
 
@@ -152,6 +156,9 @@ def comparison():
     """Keep coverage and infrastructure failures alongside every accuracy estimate."""
     refs = json.loads((FROZEN/'sql_analytics/references.json').read_text())
     focused = {'S02','S03','S04','S10','S11','S14','S23','S26','S27','S28'}
+    from evaluation.inventory_benchmark_metrics import sql_numerical_accuracy
+    numeric_ids = {identifier for identifier, ref in refs.items() if ref['supported']
+                   and sql_numerical_accuracy([],ref['reference']['rows']) is not None}
 
     def cohort(folder, identifiers=None):
         rows = list({r['id']:r for r in benchmark.read_jsonl(folder/'sql_analytics/generations.jsonl')}.values())
@@ -172,7 +179,9 @@ def comparison():
             metrics[metric] = {'mean':statistics.mean(values) if values else None,
                 'scored':len(values), 'not_applicable':sum(r['score'] is None and not r['error'] for r in selected),
                 'evaluator_errors':sum(bool(r['error']) for r in selected),'pending':len(rows)-len(selected)}
-        return {'cases':len(rows), 'metrics':metrics,
+        expected_cases = len(identifiers) if identifiers is not None else 30
+        return {'cases':len(rows), 'expected_cases':expected_cases,
+            'generation_pending':expected_cases-len(rows), 'metrics':metrics,
             'outcomes':dict(benchmark.Counter(benchmark.generation_status(r) for r in rows)),
             'supported_clarifications':sum(bool(r['result']['metadata'].get('clarification_required')) for r in supported),
             'supported_cases':len(supported),
@@ -189,11 +198,21 @@ def comparison():
                 for key in ('input_tokens','output_tokens','total_tokens')},
             'unmetered_calls':sum(c.get('usage') is None for c in calls)}
 
-    data = {'frozen_baseline':cohort(FROZEN),
+    data = {'final_application_revision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+        'frozen_baseline':cohort(FROZEN),
         'full_comparison':{v:cohort(OUTPUT/v) for v in ('baseline','combined')},
+        'verified_live_6ed9a19':cohort(OUTPUT/'live-6ed9a19'),
+        'quota_limited_95aa2b3':cohort(OUTPUT/'quota-95aa2b3'),
         'focused_ablation':{v:cohort(OUTPUT/v,focused) for v in VARIANTS},
+        'focused_combined_6ed9a19':cohort(OUTPUT/'live-6ed9a19',focused),
+        'fixed_numeric_applicability':{'case_ids':sorted(numeric_ids),
+            'baseline':cohort(OUTPUT/'baseline',numeric_ids)['metrics']['numerical_accuracy'],
+            'live_6ed9a19':cohort(OUTPUT/'live-6ed9a19',numeric_ids)['metrics']['numerical_accuracy']},
         'notes':['No source references, metric formulas, model or judge settings changed.',
+            'The 95aa2b3 run stopped after five cases (four daily-quota failures). The final code also adds a deterministic full-schema dimension guard; its full combined run remains pending. Do not compare a small available sample as a full cohort.',
+            'The most recent complete live combined cohort is application revision 6ed9a19, before standalone transaction routing and the explicit unreviewed-alias guard.',
             'Supported clarifications are a proxy, not certified unnecessary-clarification labels.',
+            'The inherited scorer gives failed supported questions numerical zero before checking numerical applicability. S14 becomes N/A when it executes because its reference contains only identifiers/names. Raw metrics are retained; a supplementary fixed-eligibility numerical comparison excludes date/identifier-only cases in both cohorts.',
             'Latency includes provider retries/cooldowns inside a request, excludes the same 10-second between-request pacing.',
             'Sequential unrandomized runs are descriptive measurements, not a controlled live-performance guarantee.',
             'Token totals include reported successful-call usage only; unavailable usage is counted separately.',

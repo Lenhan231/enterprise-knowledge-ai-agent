@@ -67,6 +67,7 @@ class VietOcrModel(BaseOcrModel):
         with (config_dir / "vgg-seq2seq.yml").open(encoding="utf-8") as config_file:
             config.update(yaml.safe_load(config_file))
         config["device"] = "cuda:0" if torch.cuda.is_available() else "cpu"
+        config["cnn"]["pretrained"] = False
         config["dataset"]["image_max_width"] = 512
         config["predictor"]["beamsearch"] = False
         self.recognizer = Predictor(config)
@@ -116,6 +117,7 @@ class VietOcrModel(BaseOcrModel):
         handwriting_config = config_type.load_config_from_name("vgg_transformer")
         handwriting_config["weights"] = handwriting_path
         handwriting_config["device"] = device
+        handwriting_config["cnn"]["pretrained"] = False
         handwriting_config["dataset"]["image_max_width"] = 512
         handwriting_config["predictor"]["beamsearch"] = False
         self.handwriting_recognizer = predictor_type(handwriting_config)

@@ -389,6 +389,16 @@ def relevant_schema_tables(question, definitions):
     return tables or set(APPROVED_COLUMNS)
 
 
+def approved_join_path(tables):
+    reached = {min(tables)} if tables else set()
+    while True:
+        expanded = reached | {table for edge in APPROVED_JOINS for table, _ in edge
+                              if any(source in reached for source, _ in edge) and table in tables}
+        if expanded == reached:
+            return bool(tables) and reached == set(tables)
+        reached = expanded
+
+
 def build_sql_prompt(
     question: str, *, validation_error: str | None = None, previous_response: str | None = None,
     metric_names: set[str] | None = None, interpretation: dict | None = None,
@@ -443,6 +453,10 @@ def build_sql_prompt(
           'Use typed DATE range parameters for transaction periods; avoid EXTRACT on an untyped parameter.'
           ' Product names are not unique: product-level results must include product_id, and product-level '
           'aggregates must group by product_id as well as any displayed name.'
+          ' For missing returned product-order pairs, anchor returns through its approved products and orders joins, '
+          'then use NOT EXISTS order_items with order_items.product_id=products.product_id AND '
+          'order_items.order_id=orders.order_id. Select DISTINCT product_id,order_id when pairs are requested. '
+          'An indirect approved path does not require user confirmation; preserve source grain and validated keys.'
         + ('\nStored projection fields: '+json.dumps(stored_fields)+
            '. Select these directly from the inventory alias. Do not aggregate or GROUP BY in product representation. '
            'Product identity may use inventory.product_id or the joined products.product_id.\n' if stored_fields else '')

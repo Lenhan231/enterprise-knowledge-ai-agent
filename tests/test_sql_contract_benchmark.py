@@ -17,6 +17,11 @@ class FrozenContractBenchmarkTest(unittest.TestCase):
         self.assertFalse(provider_failed(row('source_failed','ConnectionError')))
         self.assertFalse(provider_failed(row('validation_failed','SQLValidationError')))
         self.assertFalse(provider_failed(row('executed',None)))
+        from evaluation.run_inventory_agents_benchmark import metric_provider_failed
+        self.assertTrue(metric_provider_failed({'error':'Codex judge: hit your usage limit'}))
+        self.assertTrue(metric_provider_failed({'error':'APIConnectionError'}))
+        self.assertFalse(metric_provider_failed({'error':'ValueError: missing column'}))
+        self.assertFalse(metric_provider_failed({'error':None}))
 
     def test_prepare_reuses_exact_frozen_inputs_and_rejects_changes(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(runner,'OUTPUT',Path(folder)), patch.object(

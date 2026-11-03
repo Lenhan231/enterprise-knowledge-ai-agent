@@ -38,7 +38,7 @@ def prepare(*, check_application=True, selected_group=None, selected_ids=None):
     target = OUTPUT/'manifest.json'
     if target.exists():
         existing = json.loads(target.read_text(encoding='utf-8'))
-        if check_application and existing['application_source_sha256'] != hashes:
+        if check_application and existing.get('reproduction_source_sha256',existing['application_source_sha256']) != hashes:
             raise ValueError('Application changed: use a separate benchmark directory.')
     else:
         manifest = {key:manifest[key] for key in ('judge','source_sha256','reference_sha256','oracle_status')}
@@ -56,8 +56,8 @@ def cohort(directory, group, ids=None):
     rows = list({r['id']:r for r in benchmark.read_jsonl(directory/group/'generations.jsonl')
                  if ids is None or r['id'] in ids}.values())
     by_id = {r['id']:r for r in rows}
-    scores = [r for r in benchmark.read_jsonl(directory/group/'scores.jsonl')
-              if r['id'] in by_id and benchmark.current_score(r,by_id[r['id']],group)]
+    scores = list({(r['id'],r['metric']):r for r in benchmark.read_jsonl(directory/group/'scores.jsonl')
+              if r['id'] in by_id and benchmark.current_score(r,by_id[r['id']],group)}.values())
     refs = json.loads((FROZEN/group/'references.json').read_text(encoding='utf-8'))
     metrics = {}
     for name in benchmark.METRICS[group]:
@@ -119,7 +119,7 @@ async def main():
     elif args.stage=='summary':
         summary()
     elif args.stage=='score':
-        await benchmark.score((args.group,), set(ids))
+        await benchmark.score((args.group,), set(ids),retry_provider_errors=args.retry_provider_errors)
         summary()
     else:
         if subprocess.run(['git','diff','--quiet','HEAD','--','src'],cwd=benchmark.ROOT).returncode:

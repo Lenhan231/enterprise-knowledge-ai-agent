@@ -16,6 +16,7 @@ from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_i
 from core.analytics.metric_validation import MetricDefinitionError, inventory_explicit_dates, validate_metric_definitions, validate_metric_request
 from core.analytics.text_to_sql import (
     APPROVED_COLUMNS,
+    approved_join_path,
     QueryPlan,
     relevant_schema_tables,
     SQLValidationError,
@@ -167,6 +168,11 @@ class SQLAnalyticsAgent(BaseAgent):
                     with measure("sql_planning"):
                         raw = await generate(self._provider(), prompt, timeout=60)
                     plan = decode_query_plan(raw)
+                    if plan.clarification and attempt == 0 and approved_join_path(tables) and re.search(
+                            r'join|relationship', plan.clarification, re.I):
+                        raise SQLValidationError('An approved bridge path exists in the supplied schema. '
+                            'Use that path with independent aggregates or correlated EXISTS as appropriate; '
+                            'do not introduce direct fact joins or ask the user to approve an existing relationship.')
                 if plan.sql:
                     if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validate_commerce_sql(plan.sql).sources):
                         raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')

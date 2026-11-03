@@ -171,6 +171,12 @@ def provider_failed(row):
             {'APIConnectionError','APITimeoutError','InternalServerError','ServiceUnavailableError','ConnectionError','TimeoutError'})
 
 
+def metric_provider_failed(record):
+    return bool(record.get('error') and re.search(
+        r'usage limit|rate.?limit|quota|APIConnectionError|APITimeoutError|connection (?:error|reset)|timed? ?out|service unavailable',
+        str(record['error']),re.I))
+
+
 async def generate(groups, identifiers, *, retry_provider_errors=False):
     # Process-local alias lets existing lazy/nested providers use the authorized fallback too.
     tertiary_alias=install_tertiary_alias(os.environ)
@@ -367,7 +373,7 @@ def report_reference_text(reference):
               if reference['unsupported_only'] else ''))
 
 
-async def score(groups, identifiers):
+async def score(groups, identifiers, *, retry_provider_errors=False):
     from evaluation.ragas_judge import CodexCLIJudge
     from ragas.metrics.collections import Faithfulness, FactualCorrectness, SQLSemanticEquivalence, RubricsScoreWithReference
     from core.analytics.text_to_sql import APPROVED_COLUMNS
@@ -416,6 +422,8 @@ async def score(groups, identifiers):
             path = OUT/group/'scores.jsonl'
             existing = {r['metric']:r for r in read_jsonl(path) if r['id']==row['id']
                         and current_score(r,row,group)}
+            if retry_provider_errors:
+                existing = {name:r for name,r in existing.items() if not metric_provider_failed(r)}
             expected = METRICS[group]
             response = row['answer']
             data = row.get('result',{}).get('data',{})

@@ -112,6 +112,13 @@ class DerivedJoinContractTest(unittest.TestCase):
     def test_independent_product_aggregates_are_safe(self):
         validate_commerce_sql(self.ratio)
 
+    def test_grouped_operands_can_join_the_unique_product_catalog_key(self):
+        sql = self.ratio.replace('FROM ret JOIN ord ON ret.product_id=ord.product_id',
+            'FROM commerce.products p JOIN ret ON p.product_id=ret.product_id JOIN ord ON p.product_id=ord.product_id')
+        validate_commerce_sql(sql)
+        with self.assertRaises(SQLValidationError):
+            validate_commerce_sql(sql.replace('p.product_id=ret.product_id','p.category=ret.product_id'))
+
     def test_inner_limit_does_not_hide_incomplete_operands(self):
         with self.assertRaises(SQLValidationError):
             validate_commerce_sql(self.ratio.replace('GROUP BY r.product_id)', 'GROUP BY r.product_id LIMIT 10)'))
@@ -207,6 +214,22 @@ class CrossDomainInventoryTest(unittest.TestCase):
 
 
 class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_approved_bridge_replaces_an_unnecessary_join_clarification(self):
+        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.models.agents import AgentRequest, VerifiedIdentity
+        provider, repository = Mock(), AsyncMock()
+        sql=('SELECT DISTINCT r.product_id,r.order_id FROM commerce.returns r '
+             'JOIN commerce.products p ON r.product_id=p.product_id '
+             'JOIN commerce.orders o ON r.order_id=o.order_id WHERE NOT EXISTS '
+             '(SELECT 1 FROM commerce.order_items oi WHERE oi.product_id=p.product_id AND oi.order_id=o.order_id) LIMIT 200')
+        provider.generate.side_effect=[json.dumps({'clarification':'No direct approved join relationship exists.'}),json.dumps({'sql':sql})]
+        repository.execute_approved_query.return_value=[]
+        result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
+            question='Find returned product-order pairs absent from their original order_items records.',
+            identity=VerifiedIdentity(subject='analyst',permissions={'analytics:read'})))
+        self.assertEqual(result.metadata['execution_status'],'executed_empty',result.answer)
+        self.assertEqual(provider.generate.call_count,2)
+
     async def test_clear_unimplemented_change_is_not_a_user_clarification(self):
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity

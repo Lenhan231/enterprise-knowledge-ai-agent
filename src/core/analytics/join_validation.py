@@ -46,6 +46,10 @@ def column_origin(scope, column, visited=()):
     return None
 
 
+def relation_key(source):
+    return PRIMARY_KEYS.get(source.name.casefold()) if isinstance(source, exp.Table) else grouped_key(source)
+
+
 def approved_derived_join(scope, equalities, approved_joins):
     """Permit independently grouped, unique keys with approved dimension lineage."""
     keys = {}
@@ -64,8 +68,8 @@ def approved_derived_join(scope, equalities, approved_joins):
         same_dimension = origins[0] == origins[1] and origins[0][0] == 'commerce.products'
         if not (same_dimension or set(origins) <= product_keys or frozenset(origins) in approved_joins):
             return False
-    return bool(keys) and all(grouped_key(scope.sources.get(alias)) is not None
-                              and grouped_key(scope.sources[alias]) <= columns
+    return bool(keys) and all(relation_key(scope.sources.get(alias)) is not None
+                              and relation_key(scope.sources[alias]) <= columns
                               for alias, columns in keys.items())
 
 
@@ -90,7 +94,7 @@ def validate_join_aggregations(tree, error_type):
             while True:
                 additions = set()
                 for alias, source in relations.items():
-                    key = PRIMARY_KEYS.get(source.name.casefold()) if isinstance(source, exp.Table) else grouped_key(source)
+                    key = relation_key(source)
                     columns = {column for left, right, column in edges if left in reached and right == alias}
                     if key and key <= columns:
                         additions.add(alias)

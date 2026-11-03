@@ -4,9 +4,23 @@ This is a separate experiment over the frozen [November 2 benchmark](../agent-be
 
 Read [AUDIT.md](AUDIT.md) for the case-specific root causes and evidence limits. Final measurements are in `comparison.json`; raw attempts and metric judgments are separated by variant. Report compatibility is covered by regression tests; this experiment does not re-score Report or Knowledge.
 
+## Resumed SQL comparison ? November 3
+
+Report benchmarking was stopped at the user's request. SQL generation and scoring are complete for all 30 questions: 44 attempts including bounded quota retries, 90 current metric records, no evaluator errors or pending SQL scores.
+
+| Metric | November 2 | Resumed November 3 | Change |
+|---|---:|---:|---:|
+| Execution accuracy (28 scored) | 21.4% | 46.4% | +25.0 percentage points |
+| SQL semantic equivalence (28 scored) | 14.3% | 17.9% | +3.6 points |
+| Numerical accuracy (27 scored) | 22.3% | 44.8% | +22.5 points |
+
+The same questions, frozen references, model and judge configuration were used. All three configured Groq keys produced successful responses during the resumed SQL run. Nine latest case outcomes still failed on quota limits, so this is an operational result under provider constraints, not a clean estimate of algorithm-only improvement. Query execution increased from 11 to 17; clarification responses decreased from 14 to 3, with several failures now caused by quotas instead.
+
+Machine-readable comparison: [resumed-comparison.json](resumed-comparison.json). Report's interrupted run and per-key quota diagnostic are retained separately in `../report-rebenchmark-2026-11-03/`; it is not a completed Report evaluation.
+
 ## Measured results and release coverage
 
-The most recent **complete live** combined cohort is revision **`6ed9a19`**. It precedes the final standalone transaction-routing change, explicit unreviewed-alias protection and deterministic missing-dimension guard. These later changes have regression coverage; do not attribute the following full-cohort measurements to them.
+The earlier **complete live cohort without final provider failures** is revision **`6ed9a19`**. It precedes the final standalone transaction-routing change, explicit unreviewed-alias protection and deterministic missing-dimension guard. These later changes have regression coverage; do not attribute the following full-cohort measurements to them.
 
 | Metric | Frozen November 2 | Fresh baseline `3ba340d` | Complete live `6ed9a19` |
 |---|---:|---:|---:|
@@ -30,7 +44,7 @@ The inherited numerical scorer gives a failed supported request zero before chec
 
 These timing samples are descriptive, not a statistical performance guarantee. Pipeline-call reduction for accepted inventory mappings is additionally verified with mocks. Provider refusals before an underlying generation attempt can yield zero counted calls; the quota-limited sample is unsuitable for call/latency comparisons.
 
-The subsequent **`95aa2b3`** run is retained in `quota-95aa2b3/`: **5/30 cases attempted, 1 executed and 4 daily-quota failures**, after exhausting primary, backup and `GROQ_API_KEY_RAGAS`. The other 25 were not scheduled. Its small-sample scores are not an overall accuracy estimate. After the final missing-dimension guard was added, the full final-revision `combined/` rerun remains pending. The separate [scope smoke](unsupported-scope-smoke.json) initialized the real least-privilege repository and verified S30's deterministic supported alternative with **zero provider calls and zero request-time database queries**; this was not a staging HTTP test.
+The subsequent **`95aa2b3`** run is retained in `quota-95aa2b3/`: **5/30 cases attempted, 1 executed and 4 daily-quota failures**, after exhausting primary, backup and `GROQ_API_KEY_RAGAS`. The other 25 were not scheduled. Its small-sample scores are not an overall accuracy estimate. The final-revision `combined/` rerun was subsequently resumed with all three keys; its completed results are shown above. The separate [scope smoke](unsupported-scope-smoke.json) initialized the real least-privilege repository and verified S30's deterministic supported alternative with **zero provider calls and zero request-time database queries**; this was not a staging HTTP test.
 
 | Focused ablation, audited 10 cases | Execution | Semantic | Numerical | Final quota failures |
 |---|---:|---:|---:|---:|

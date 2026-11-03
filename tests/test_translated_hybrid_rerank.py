@@ -96,6 +96,16 @@ class RerankTest(unittest.IsolatedAsyncioTestCase):
         finally:
             reranker._load_model.cache_clear()
 
+    def test_model_is_selected_by_env_and_unknown_names_fail_at_import(self):
+        import subprocess, sys
+        code = "from core.retrieval import reranker as r; print(r.MODEL_ID, r.REVISION, r.MAX_LENGTH)"
+        def run(name):
+            return subprocess.run([sys.executable, "-c", code], capture_output=True, text=True,
+                                  env={**__import__("os").environ, "RERANKER_MODEL": name})
+        self.assertEqual(run("bge").stdout.split(), ["BAAI/bge-reranker-v2-m3", REVISION, "1024"])
+        self.assertEqual(run("mminilm").stdout.split()[0::2], ["cross-encoder/mmarco-mMiniLMv2-L12-H384-v1", "512"])
+        self.assertIn("KeyError", run("typo").stderr)
+
     def test_missing_weights_raise_actionable_error_without_fallback(self):
         with patch("core.retrieval.reranker._load_model", side_effect=OSError("not cached")):
             with self.assertRaisesRegex(RuntimeError, "RERANKER_ALLOW_DOWNLOAD"):

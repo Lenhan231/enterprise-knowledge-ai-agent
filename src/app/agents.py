@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Uplo
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.security import ACCESS_DENIED_MESSAGE, ROLE_PERMISSIONS, require_permission
-from core.latency import latency_events, measure, snapshot
+from core.latency import latency_events, snapshot
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/agents", tags=["agents"])
@@ -104,6 +104,12 @@ def _record_agent_run(**event):
                 logger.exception("Could not close agent telemetry connection")
 
 
+def _record_in_background(**event):
+    # Each insert opens a fresh Supabase session (~3.4 s on the VPS); the user should not wait for it.
+    # The loop's default executor is joined on shutdown, so a clean stop still writes the row.
+    asyncio.get_running_loop().run_in_executor(None, lambda: _record_agent_run(**event))
+
+
 @router.post("/chat")
 async def agent_chat(
     payload: AgentChatRequest, http_request: Request,
@@ -149,14 +155,12 @@ async def agent_chat(
     finally:
         handler_ms = (perf_counter() - started) * 1000
         try:
-            with measure("telemetry_persistence"):
-                await asyncio.to_thread(
-                    _record_agent_run,
-                    actor_role=user["role"], agent_name=agent_name,
-                    retrieval_method=retrieval_method, status=status,
-                    elapsed_ms=max(0, int(handler_ms)),
-                    citation_count=citation_count, error_type=error_type,
-                )
+            _record_in_background(
+                actor_role=user["role"], agent_name=agent_name,
+                retrieval_method=retrieval_method, status=status,
+                elapsed_ms=max(0, int(handler_ms)),
+                citation_count=citation_count, error_type=error_type,
+            )
         finally:
             timing = snapshot()
             timing["request_total_ms"] = handler_ms
@@ -210,8 +214,7 @@ async def generate_agent_report(
         logger.exception("Report agent request failed")
         raise HTTPException(503, "The report service is unavailable") from error
     finally:
-        await asyncio.to_thread(
-            _record_agent_run,
+        _record_in_background(
             actor_role=user["role"], agent_name="report", retrieval_method="hybrid",
             status="completed" if status == "complete" else "failed",
             elapsed_ms=max(0, int((perf_counter() - started) * 1000)),

@@ -92,8 +92,9 @@ services:
       dockerfile: docker/Dockerfile.reranker
     environment:
       <<: *internal-env
-      RERANKER_MODEL: ${RERANKER_MODEL:-bge}
-      RERANKER_QUANTIZE: ${RERANKER_QUANTIZE-int8}
+      # mMiniLM fp32: VPS rerank ~2-8 s vs ~21 s BGE int8, same VietStyle answers; BGE: RERANKER_MODEL=bge RERANKER_QUANTIZE=int8.
+      RERANKER_MODEL: ${RERANKER_MODEL:-mminilm}
+      RERANKER_QUANTIZE: ${RERANKER_QUANTIZE-}
     volumes: ["embedding_model_cache:/models"]
 
   proxy:

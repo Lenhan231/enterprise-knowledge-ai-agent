@@ -84,7 +84,7 @@ class RerankTest(unittest.IsolatedAsyncioTestCase):
 
         def load(env):
             reranker._load_model.cache_clear()
-            with patch.dict("os.environ", env), \
+            with patch.dict("os.environ", {"RERANKER_DEVICE": "cpu", **env}), \
                     patch("sentence_transformers.CrossEncoder", lambda *a, **k: torch.nn.Sequential(torch.nn.Linear(4, 2))):
                 return reranker._load_model()
         try:

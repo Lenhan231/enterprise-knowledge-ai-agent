@@ -3,7 +3,7 @@ import sys
 import unittest
 from datetime import date
 from pathlib import Path
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 
@@ -129,6 +129,22 @@ class SchemaContextTest(unittest.TestCase):
 
 
 class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_unreviewed_alias_cannot_be_replaced_with_an_approved_metric(self):
+        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.analytics.metric_ontology import METRIC_ONTOLOGY
+        from core.models.agents import AgentRequest, VerifiedIdentity
+        provider, repo = Mock(), AsyncMock()
+        provider.generate.return_value=json.dumps({'metrics':['stock_on_hand'], 'time':{'mode':'latest'}})
+        repo.execute_approved_query.return_value=[]
+        with patch.dict(METRIC_ONTOLOGY, {'stored_fill_rate':{**METRIC_ONTOLOGY['stored_fill_rate'],
+                                                             'approval_status':'unreviewed'}}):
+            result=await SQLAnalyticsAgent(repo,llm=provider).run(AgentRequest(
+                question='Stored fill rate at latest snapshot',
+                identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
+        self.assertEqual(result.metadata.get('metric_error_code'), 'metric_unapproved')
+        provider.generate.assert_not_called()
+        repo.execute_approved_query.assert_not_awaited()
+
     async def test_transaction_question_does_not_pass_through_inventory_interpreter(self):
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity

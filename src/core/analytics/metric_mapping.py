@@ -234,7 +234,8 @@ def decode_metric_mapping(raw, question):
         _error('Which inventory measure do you mean?','metric_ambiguous')
     if any(METRIC_ONTOLOGY.get(name,{}).get('domain') != 'inventory_management' for name in mapping.metrics):
         _error('The dataset does not contain a reviewed definition for this inventory metric.','metric_unsupported')
-    protected = {name for name in known if METRIC_ONTOLOGY[name].get('definition_status') in {'unresolved', 'draft'}}
+    protected = {name for name in known if METRIC_ONTOLOGY[name].get('definition_status') in {'unresolved', 'draft'}
+                 or METRIC_ONTOLOGY[name].get('approval_status') == 'unreviewed'}
     if protected - set(mapping.metrics):
         _error('The interpretation omitted or changed a recognized metric. Please clarify which measures you need.','metric_ambiguous')
     if mapping.time is None:

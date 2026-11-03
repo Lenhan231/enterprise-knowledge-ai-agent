@@ -42,7 +42,7 @@ def variant_sources(variant):
                                      function_source(old, 'validate_metric_definitions'))
             elif name.endswith('metric_mapping'):
                 decoder = function_source(new,'decode_metric_mapping').replace(
-                    "    protected = {name for name in known if METRIC_ONTOLOGY[name].get('definition_status') in {'unresolved', 'draft'}}\n    if protected - set(mapping.metrics):",
+                    "    protected = {name for name in known if METRIC_ONTOLOGY[name].get('definition_status') in {'unresolved', 'draft'}\n                 or METRIC_ONTOLOGY[name].get('approval_status') == 'unreviewed'}\n    if protected - set(mapping.metrics):",
                     '    if known - set(mapping.metrics):')
                 source = old.replace('validate_metric_request, _validate_inventory_time,',
                     'validate_metric_request, _validate_inventory_time, inventory_time_scope,')
@@ -71,7 +71,7 @@ def variant_sources(variant):
             if name.endswith('metric_mapping'):
                 source = old+'\n\n'+function_source(new, 'compile_inventory_query')+'\n'
             elif name.endswith('sql_analytics_agent'):
-                source = new.replace("validate_metric_request(question, {name for name in metric_names\n                    if get_metric_definition(name).get('definition_status') in {'unresolved', 'draft'}})",
+                source = new.replace("validate_metric_request(question, {name for name in metric_names\n                    if get_metric_definition(name).get('definition_status') in {'unresolved', 'draft'}\n                    or get_metric_definition(name).get('approval_status') == 'unreviewed'})",
                                      'validate_metric_request(question, metric_names)', 1)
                 source = source.replace('    relevant_schema_tables,\n','').replace(
                     "if (context is not None\n                    or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)\n                    or (not metric_names and 'commerce.inventory' in relevant_schema_tables(question, {}))):",

@@ -96,7 +96,8 @@ class SQLAnalyticsAgent(BaseAgent):
         try:
             try:
                 validate_metric_request(question, {name for name in metric_names
-                    if get_metric_definition(name).get('definition_status') in {'unresolved', 'draft'}})
+                    if get_metric_definition(name).get('definition_status') in {'unresolved', 'draft'}
+                    or get_metric_definition(name).get('approval_status') == 'unreviewed'})
             except MetricDefinitionError as error:
                 if error.code != 'snapshot_required':
                     raise

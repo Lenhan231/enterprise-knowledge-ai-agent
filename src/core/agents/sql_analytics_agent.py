@@ -15,6 +15,7 @@ from core.analytics.metric_validation import MetricDefinitionError, validate_met
 from core.analytics.text_to_sql import (
     APPROVED_COLUMNS,
     QueryPlan,
+    relevant_schema_tables,
     SQLValidationError,
     build_sql_prompt,
     decode_query_plan,
@@ -99,7 +100,9 @@ class SQLAnalyticsAgent(BaseAgent):
             except MetricDefinitionError as error:
                 if error.code != 'snapshot_required':
                     raise
-            if context is not None or not metric_names or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names):
+            if (context is not None
+                    or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
+                    or (not metric_names and 'commerce.inventory' in relevant_schema_tables(question, {}))):
                 with measure('metric_interpretation'):
                     mapped = await generate(self._provider(),build_metric_mapping_prompt(question,context=context),timeout=30)
                 if context is None:

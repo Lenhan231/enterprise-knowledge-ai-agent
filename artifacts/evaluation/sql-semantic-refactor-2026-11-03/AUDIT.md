@@ -4,7 +4,7 @@ Baseline: `3ba340d`, branch `QuocAn`; application baseline `f8996f6`. November 2
 
 | Case | Answerable / catalog | Observed failure and verified boundary | Interpretation of evidence |
 |---|---|---|---|
-| S02 | Yes; distinct observed products is a structural count, not a business KPI | Mapping returned `invalid_date_scope` before SQL; original model mapping was not recorded | Date is explicit. Exact malformed slot cannot be established from the trace. Generic inventory aggregates are also blocked by `validate_metric_definitions`. |
+| S02 | Yes; `observed_product_count` exists, and a key-only structural count is also meaningful | Mapping returned `invalid_date_scope` before SQL; original model mapping was not recorded | Date is explicit. Exact malformed slot cannot be established from the original trace. Generic inventory aggregates are also blocked by `validate_metric_definitions`. |
 | S03 | Yes; stock_on_hand scalar | Same pre-SQL date error; underscore field name produces no alias candidate | Snapshot mappings reject even an identical redundant end date; report planner already normalizes this case. This is a reproducible code defect, not proof of the unrecorded model response. |
 | S04 | Yes; stock_on_hand sum per category | Same pre-SQL date error | Same limitation of trace attribution; no SQL or data failure observed. |
 | S10 | Yes; unweighted stored fill_rate mean per observation | SQL uses `< 2022-12-31`, omitting month-end | SQL generation error, correctly rejected. Natural month validator separately interprets year alone; mapping/compiler must preserve inclusive month scope. Oracle uses the sole December observation, not a newly approved monthly KPI. |
@@ -24,3 +24,11 @@ The inventory mapping plus second SQL LLM call repeats already resolved choices.
 First fix shared temporal normalization, candidate-versus-required handling, task-relevant schema context, deterministic canonical inventory compilation, and narrowly safe outer-join predicates. Reach SQL agent, report planning caller, shared analytics helpers, regression tests and a separate evaluation output. No catalog formula or approval changes, migrations, dependencies, UI changes, or frozen reference edits.
 
 Do not claim all cross-domain cases fixed by this slice. Derived aggregate joins require lineage and uniqueness validation before execution. Preserve conservative refusal until that proof exists. Provider quotas and absent historical observations are separate from interpretation defects.
+
+## Subsequent verification
+
+The fresh baseline replay records interpretation responses in `baseline/sql_analytics/generations.jsonl`. S02–S04 reproduce the identical `snapshot.start` and `snapshot.end` date and select the correct catalog IDs. This confirms the reproduced failure mechanism without claiming the missing original response was observed. S10 and S11 select the intended catalog metrics and December range; the redundant SQL generation stage introduces the faulty boundary/grouping.
+
+The new structural-query path permits inventory key/date observation diagnostics only. Source measures remain restricted even when hidden in WHERE, HAVING or nested scope projections. It does not approve numeric stock thresholds, custom fulfillment formulas, or arbitrary cross-domain aggregates. The safe outer-join change requires an approved equality key in addition to date predicates.
+
+No changes were needed in report narrative generation: existing report tests exercise the shared compiler and evidence contract. Live Report scores are not re-measured by this SQL experiment.

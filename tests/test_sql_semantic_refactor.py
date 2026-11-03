@@ -129,6 +129,21 @@ class SchemaContextTest(unittest.TestCase):
 
 
 class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_transaction_question_does_not_pass_through_inventory_interpreter(self):
+        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.models.agents import AgentRequest, VerifiedIdentity
+        provider, repo = Mock(), AsyncMock()
+        provider.generate.return_value = json.dumps({'sql':
+            'SELECT r.product_id,SUM(r.return_quantity) AS returned_units FROM commerce.returns r '
+            'WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY r.product_id ORDER BY 2 DESC LIMIT 10',
+            'parameters':['2022-01-01','2023-01-01']})
+        repo.execute_approved_query.return_value = [{'product_id':1,'returned_units':7}]
+        result = await SQLAnalyticsAgent(repo,llm=provider).run(AgentRequest(
+            question='Which 10 products had the most units returned in 2022?',
+            identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
+        self.assertTrue(result.metadata['ok'],result.answer)
+        self.assertEqual(provider.generate.call_count,1)
+
     async def test_provider_failure_is_not_a_validation_failure(self):
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity

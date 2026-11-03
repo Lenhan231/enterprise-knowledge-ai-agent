@@ -73,6 +73,9 @@ def variant_sources(variant):
             elif name.endswith('sql_analytics_agent'):
                 source = new.replace("validate_metric_request(question, {name for name in metric_names\n                    if get_metric_definition(name).get('definition_status') in {'unresolved', 'draft'}})",
                                      'validate_metric_request(question, metric_names)', 1)
+                source = source.replace('    relevant_schema_tables,\n','').replace(
+                    "if (context is not None\n                    or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)\n                    or (not metric_names and 'commerce.inventory' in relevant_schema_tables(question, {}))):",
+                    "if context is not None or not metric_names or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names):")
         result[name] = source
     return result
 
@@ -105,10 +108,19 @@ def prepare(variant):
         data.update(ablation_variant=variant, application_baseline=BASELINE,
                     baseline_reference_directory=str(FROZEN.relative_to(ROOT)),
                     between_request_seconds=10,
-                    source_sha256=hashes)
+                    application_source_sha256=hashes)
         benchmark.save(manifest,data)
-    elif json.loads(manifest.read_text())['source_sha256'] != hashes:
+    data = json.loads(manifest.read_text())
+    if isinstance(data['source_sha256'],dict):
+        data['application_source_sha256'] = data['source_sha256']
+        data['source_sha256'] = json.loads((FROZEN/'manifest.json').read_text())['source_sha256']
+    if data['application_source_sha256'] != hashes:
         raise ValueError('Application changed since this variant was generated; use a separate output directory.')
+    for key in ('completed_at','sql_completed_at','focused_validation','benchmark_tests','sql_status',
+                'report_status','generation_harness_history'):
+        data.pop(key,None)
+    data['status'] = 'ablation_run; see comparison.json for completion and coverage'
+    benchmark.save(manifest,data)
     return destination
 
 

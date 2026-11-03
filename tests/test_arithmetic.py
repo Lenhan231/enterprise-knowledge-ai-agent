@@ -10,6 +10,7 @@ class ExactArithmeticTest(unittest.TestCase):
             "2 + 3 * 4 = 14", "(2 + 3) * 4 = 20", "-5 + 2 = -3", "5 − 2 = 3",
             "1 / 3 = 2 / 6", "1 + 2 = 3 = 6 / 2", "5.000.001 + 1 = 5.000.002",
             "Không hợp lệ vì 90 + 15 = 105, lớn hơn lượng giao 100 [S1].",
+            "Tổng chấp nhận và từ chối (90 + 15 = 105) lớn hơn 100 [S1].", "((2 + 3) * 4 = 20)",
         ):
             with self.subTest(text=text):
                 self.assertEqual(check_equalities(text), (1, None))
@@ -29,7 +30,7 @@ class ExactArithmeticTest(unittest.TestCase):
 
     def test_false_equalities_are_rejected_including_chains(self):
         for text in ("90 + 15 = 95", "Hợp lệ vì 90 + 15 = 95, không vượt 100 [S1].", "6 * 7 = 41", "2 + 3 * 4 = 20", "10 / 4 = 3",
-                     "(2 + 3) * 4 = 14", "90 + 15 = 105 = 100", "1 / 3 = 0.33"):
+                     "(2 + 3) * 4 = 14", "90 + 15 = 105 = 100", "1 / 3 = 0.33", "(90 + 15 = 95)"):
             with self.subTest(text=text):
                 self.assertEqual(check_equalities(text)[1], "arithmetic_mismatch")
 

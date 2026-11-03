@@ -45,6 +45,16 @@ def _evaluate(node, values):
     raise ValueError("unsupported_arithmetic")
 
 
+def _trim_unbalanced(part):
+    """'(90 + 15 = 105)' splits into '(90 + 15' and '105)'; drop the outer parenthesis each side does not close."""
+    part = part.strip()
+    while part.startswith("(") and part.count("(") > part.count(")"):
+        part = part[1:].strip()
+    while part.endswith(")") and part.count(")") > part.count("("):
+        part = part[:-1].strip()
+    return part
+
+
 def check_equalities(text):
     """Return (number checked, issue); skip comparisons/assignments without arithmetic."""
     checked = 0
@@ -61,7 +71,7 @@ def check_equalities(text):
         line = text[line_start:line_end if line_end >= 0 else len(text)]
         if re.search(r"làm tròn|xấp xỉ|rounded|approximately", line, flags=re.IGNORECASE):
             return checked, "unverified_arithmetic"
-        parts = expression.split("=")
+        parts = [_trim_unbalanced(part) for part in expression.split("=")]
         if any(not part.strip() for part in parts):
             return checked, "unsupported_arithmetic"
         try:

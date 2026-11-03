@@ -100,7 +100,7 @@ class InventoryEnforcementTest(unittest.TestCase):
         from core.analytics.metric_validation import validate_metric_request
         for question, code in [('Stock on hand on 2022-02-30','invalid_date_scope'),
                                ('Stock on hand at latest snapshot in 2022','ambiguous_snapshot'),
-                               ('Stock on hand in quarter 1 of 2022','snapshot_required')]:
+                               ('Stock on hand last month','snapshot_required')]:
             with self.subTest(question=question), self.assertRaises(MetricDefinitionError) as error:
                 validate_metric_request(question,{'stock_on_hand'})
             self.assertEqual(error.exception.code,code)
@@ -232,7 +232,8 @@ class InventoryRequestTest(unittest.IsolatedAsyncioTestCase):
             identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
         self.assertTrue(result.metadata['ok'],result.answer)
         self.assertEqual(result.metadata['metrics']['stock_on_hand']['representation'],'stored_value')
-        repository.execute_approved_query.assert_awaited_once_with(sql)
+        repository.execute_approved_query.assert_awaited_once_with(result.data['sql'])
+        self.assertEqual(provider.generate.call_count, 1)
 
     async def test_report_sources_receive_inventory_semantics_in_both_modes(self):
         from unittest.mock import AsyncMock, Mock

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
@@ -11,7 +12,7 @@ from sqlglot import exp, parse
 from sqlglot.errors import ParseError, TokenError
 
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
-from core.analytics.join_validation import validate_join_aggregations
+from core.analytics.join_validation import PRIMARY_KEYS, validate_join_aggregations
 from core.analytics.metric_validation import _single_snapshot
 from sqlglot.optimizer.scope import traverse_scope
 from core.prompts.sql import SQL_GENERATION_PROMPT, SQL_REPAIR_PROMPT, INVENTORY_SQL_INSTRUCTIONS
@@ -198,10 +199,29 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
             raise SQLValidationError("JOIN does not match an approved relationship.")
         return (expression,)
 
+    def join_predicates(expression):
+        if isinstance(expression, exp.And):
+            yield from join_predicates(expression.this)
+            yield from join_predicates(expression.expression)
+        else:
+            yield expression
+
     for join in tree.find_all(exp.Join):
         if (join.kind or "").casefold() == "cross" or not join.args.get("on"):
             raise SQLValidationError("CROSS JOIN and JOIN without ON are not allowed.")
-        join_equalities(join.args["on"])
+        keys = 0
+        for predicate in join_predicates(join.args['on']):
+            # Snapshot filters belong in ON for an outer join to preserve missing observations.
+            if isinstance(predicate, (exp.EQ, exp.GTE, exp.GT, exp.LTE, exp.LT)):
+                left, right = predicate.this, predicate.expression
+                column, value = (left, right) if isinstance(left, exp.Column) else (right, left)
+                if (isinstance(column, exp.Column)
+                        and (relations.get(column.table.casefold(), (None,))[0], column.name.casefold()) in APPROVED_DATE_COLUMNS
+                        and isinstance(value, (exp.Parameter, exp.Literal))):
+                    continue
+            keys += len(join_equalities(predicate))
+        if not keys:
+            raise SQLValidationError('JOIN requires an approved relationship in addition to any date filters.')
 
     validate_join_aggregations(tree, SQLValidationError)
 
@@ -301,6 +321,37 @@ def _date_parameter_indexes(sql: str) -> set[int]:
     return indexes
 
 
+def relevant_schema_tables(question, definitions):
+    """Select prompt context only; authorization always uses the full backend allowlist."""
+    text = question.casefold().replace('_', ' ')
+    tables = {table for definition in definitions.values()
+              for table in re.findall(r'commerce\.\w+', definition['source'])}
+    cues = {
+        'inventory': r'inventory|stock|snapshot|tồn kho',
+        'products': r'product|category|catalog|sku|sản phẩm|danh mục',
+        'returns': r'return|refund|trả hàng|hoàn hàng',
+        'orders': r'order|ordered|đơn hàng',
+        'order_items': r'quantity|quantities|ordered units|line value|order items|ordered quantities',
+        'customers': r'customer|khách hàng',
+        'geography': r'region|district|city|khu vực|thành phố',
+        'payments': r'payment|installment|thanh toán',
+        'promotions': r'promotion|promo|khuyến mãi',
+        'reviews': r'review|rating|đánh giá',
+        'shipments': r'shipment|shipping|delivery|giao hàng',
+        'web_traffic': r'session|traffic|bounce|truy cập',
+        'sales': r'revenue|cogs|gross profit|doanh thu|lợi nhuận',
+    }
+    tables.update('commerce.'+name for name, pattern in cues.items() if re.search(pattern, text))
+    # Supply bridge tables for approved paths, without inventing direct fact-to-fact joins.
+    if tables & {'commerce.inventory', 'commerce.returns', 'commerce.reviews', 'commerce.order_items'}:
+        tables.add('commerce.products')
+    if 'commerce.orders' in tables and 'commerce.products' in tables:
+        tables.add('commerce.order_items')
+    if 'commerce.order_items' in tables:
+        tables.add('commerce.orders')
+    return tables or set(APPROVED_COLUMNS)
+
+
 def build_sql_prompt(
     question: str, *, validation_error: str | None = None, previous_response: str | None = None,
     metric_names: set[str] | None = None, interpretation: dict | None = None,
@@ -312,13 +363,13 @@ def build_sql_prompt(
         stored_fields = {name: d.get('scalar_formula') or d['formula'].split(' within ')[0] for name,d in definitions.items()}
         definitions = {name: {**d,'formula':stored_fields[name],'aggregation':'value'} for name,d in definitions.items()}
     inventory = any(definition.get('domain') == 'inventory_management' for definition in definitions.values())
-    tables = {'commerce.inventory', 'commerce.products'} if inventory else set(APPROVED_COLUMNS)
+    tables = relevant_schema_tables(question, definitions)
     prompt_columns = {table: set(columns) for table, columns in APPROVED_COLUMNS.items() if table in tables}
     if inventory:
         prompt_columns['commerce.inventory'] -= {'year', 'month', 'category', 'segment', 'product_name'}
         prompt_columns['commerce.products'] -= {'price', 'cogs'}
     schema = "\n".join(f"{table}: {', '.join(sorted(columns))}" for table, columns in prompt_columns.items())
-    joins = "\n".join(f"{left[0]}.{left[1]} = {right[0]}.{right[1]}" for join in APPROVED_JOINS
+    joins = "\n".join(f"{left[0]}.{left[1]} = {right[0]}.{right[1]}" for join in sorted(APPROVED_JOINS, key=lambda edge: sorted(edge))
                        for left, right in [sorted(join)] if left[0] in tables and right[0] in tables)
     functions = ", ".join(sorted(APPROVED_FUNCTIONS - {"AND"}))
     return (
@@ -332,6 +383,8 @@ def build_sql_prompt(
             joins=joins,
             question=question,
         )
+        + '\nPrimary keys (one row per key; inventory is product_snapshot grain): '+json.dumps(
+            {table: sorted(PRIMARY_KEYS[table.split('.')[1]]) for table in sorted(tables)})
         + ('\nStored projection fields: '+json.dumps(stored_fields)+
            '. Select these directly from the inventory alias. Do not aggregate or GROUP BY in product representation. '
            'Product identity may use inventory.product_id or the joined products.product_id.\n' if stored_fields else '')

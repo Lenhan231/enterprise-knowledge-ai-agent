@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import calendar
 from datetime import date, timedelta
 
 from sqlglot import exp, parse_one
@@ -21,6 +22,32 @@ class MetricDefinitionError(ValueError):
 def _inventory_question(question):
     return re.sub(r'\b(\d{1,2})/(\d{1,2})/((?:19|20)\d{2})\b',
                   lambda match: f'{match[3]}-{int(match[2]):02}-{int(match[1]):02}', _normalize(question))
+
+
+def inventory_time_scope(question):
+    """Resolve explicit historical periods; ranges retain separate snapshot observations."""
+    question = _inventory_question(question)
+    dates = re.findall(r'\b\d{4}-\d{2}-\d{2}\b', question)
+    if dates:
+        parsed = [date.fromisoformat(value) for value in dates]
+        return ('snapshot', min(parsed).isoformat(), None) if len(set(parsed)) == 1 else (
+            'range', min(parsed).isoformat(), max(parsed).isoformat())
+    month = re.search(r'\b('+'|'.join(calendar.month_name[1:]).lower()+r')\s+((?:19|20)\d{2})\b', question)
+    numeric = re.search(r'tháng\s+(\d{1,2})\s+(?:năm\s+)?((?:19|20)\d{2})\b', question)
+    quarter = re.search(r'(?:\bq|quarter\s*|quý\s*)([1-4])\s+(?:of\s+|năm\s+)?((?:19|20)\d{2})\b', question)
+    years = set(re.findall(r'\b(?:19|20)\d{2}\b', question))
+    if len(years) != 1:
+        return None
+    year = int(next(iter(years)))
+    if month or numeric:
+        first = list(calendar.month_name).index(month[1].title()) if month else int(numeric[1])
+        last = first
+    elif quarter:
+        first = (int(quarter[1])-1)*3+1
+        last = first+2
+    else:
+        first, last = 1, 12
+    return 'range', date(year, first, 1).isoformat(), date(year, last, calendar.monthrange(year, last)[1]).isoformat()
 
 
 def validate_metric_request(question, metric_names):
@@ -48,7 +75,12 @@ def validate_metric_request(question, metric_names):
                 raise MetricDefinitionError('Use a valid snapshot date (YYYY-MM-DD).', code='invalid_date_scope', clarification=True) from error
         if not re.search(r'\b\d{4}-\d{2}-\d{2}\b', question) and re.search(
                 r'quarter|quý|tháng\s+\d+|\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+(?:19|20)\d{2}|last month|last year|tháng trước|năm ngoái', question):
-            raise MetricDefinitionError('Specify an exact historical snapshot date or ISO date range for that period.', code='snapshot_required', clarification=True)
+            try:
+                scope = inventory_time_scope(question)
+            except ValueError:
+                scope = None
+            if scope is None:
+                raise MetricDefinitionError('Specify an exact historical snapshot date or ISO date range for that period.', code='snapshot_required', clarification=True)
     if inventory and not re.search(r'\b(?:19|20)\d{2}\b|latest|histor|trend|snapshot_date|mới nhất|gần nhất|lịch sử|xu hướng', question, re.I):
         raise MetricDefinitionError('The available inventory records are historical. Which snapshot should I use?',
                                     code='snapshot_required', clarification=True)
@@ -96,6 +128,11 @@ def _canonical(node, scope, parameters, used_scopes, path=()):
         elif isinstance(value, list):
             result.set(key, [_canonical(item, scope, parameters, used_scopes, path)
                              if isinstance(item, exp.Expression) else item for item in value])
+    if isinstance(result, exp.Cast) and result.to.this == exp.DataType.Type.DATE and isinstance(result.this, exp.Literal):
+        try:
+            return exp.convert(date.fromisoformat(result.this.this).isoformat())
+        except (ValueError, TypeError):
+            pass
     return result
 
 
@@ -189,6 +226,13 @@ def _validate_inventory_time(scopes, parameters, question):
             else:
                 upper.append(parsed + timedelta(days=int(operator is exp.LTE)))
     requested = re.findall(r'\b\d{4}-\d{2}-\d{2}\b', question)
+    period = inventory_time_scope(question)
+    if period and period[0] == 'range' and not requested:
+        start, end = date.fromisoformat(period[1]), date.fromisoformat(period[2])
+        if lower and upper and max(lower) == start and min(upper) == end + timedelta(days=1):
+            return
+        if start.month != 1 or start.day != 1 or end.month != 12 or end.day != 31:
+            raise MetricDefinitionError('The generated inventory date scope does not match the requested period.', code='invalid_date_scope')
     if requested:
         try:
             expected = [date.fromisoformat(value) for value in requested]
@@ -273,7 +317,7 @@ def _validate_inventory_metrics(sql, metric_names, parameters, table_columns, qu
             raise MetricDefinitionError('Inventory aggregate does not match an accepted catalog formula.')
         if any(column.name not in dimensions or column.sql() not in dimension_sources for column in expression.find_all(exp.Column)):
             raise MetricDefinitionError('This inventory metric does not support the requested output dimension.', code='unsupported_dimension', clarification=True)
-    if not _single_snapshot(list(used_scopes.values()), parameters):
+    if has_aggregates and not _single_snapshot(list(used_scopes.values()), parameters):
         raise MetricDefinitionError('Inventory metrics require one snapshot or separate exact snapshot_date groups.', code='invalid_date_scope')
     if set(metric_names) - matched:
         raise MetricDefinitionError('Missing canonical inventory formula: ' + ', '.join(sorted(set(metric_names)-matched)))
@@ -285,11 +329,37 @@ def _validate_inventory_metrics(sql, metric_names, parameters, table_columns, qu
     return {name: {**active[name], 'representation': representations[name]} for name in sorted(matched)}
 
 
+def inventory_observation_query(sql, parameters=()):
+    """Recognize key/presence diagnostics without approving any business measure."""
+    scopes = list(traverse_scope(parse_one(sql, read='postgres')))
+    for scope in scopes:
+        for projection in scope.expression.selects:
+            try:
+                value = _canonical(projection, scope, parameters, {})
+            except (MetricDefinitionError, IndexError):
+                return False
+            if any(c.db == 'commerce' and c.table == 'inventory' and c.name not in {'product_id','snapshot_date'}
+                   for c in value.find_all(exp.Column)):
+                return False
+            for aggregate in value.find_all(exp.AggFunc):
+                if isinstance(aggregate, exp.Count):
+                    continue
+                if isinstance(aggregate, (exp.Min, exp.Max)) and aggregate.this == exp.column(
+                        'snapshot_date', table='inventory', db='commerce'):
+                    continue
+                # Duplicate-row diagnostics sum counts, never source measures or identifier values.
+                if isinstance(aggregate, exp.Sum) and aggregate.find(exp.Count) and not list(value.find_all(exp.Column)):
+                    continue
+                return False
+    return True
+
+
 def validate_metric_definitions(sql, metric_names, parameters, table_columns, *, question=None):
     """Verify recognized metrics; generic queries retain the existing SQL safety path."""
     if not metric_names:
         tree = parse_one(sql, read='postgres')
-        if tree.find(exp.AggFunc) and any(table.name == 'inventory' and table.db == 'commerce' for table in tree.find_all(exp.Table)):
+        if (tree.find(exp.AggFunc) and any(table.name == 'inventory' and table.db == 'commerce' for table in tree.find_all(exp.Table))
+                and not inventory_observation_query(sql, parameters)):
             raise MetricDefinitionError('The dataset does not contain a reviewed definition for this inventory aggregate.', code='metric_unsupported', clarification=True)
         return {}
     if any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names):

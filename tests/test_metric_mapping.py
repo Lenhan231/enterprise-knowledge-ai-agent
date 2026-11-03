@@ -3,7 +3,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 
@@ -132,12 +132,13 @@ class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
         provider,repository=Mock(),AsyncMock()
         bad=json.dumps({'sql':SQL.replace('AND p.color=$1',''),'parameters':[]})
         provider.generate.side_effect=[json.dumps(MAPPING),bad,bad]
-        result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
-            question='Which blue styles have the fewest pieces left at latest snapshot?',
-            identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
+        with patch('core.agents.sql_analytics_agent.compile_inventory_query', return_value=(SQL.replace('AND p.color=$1',''), ())):
+            result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
+                question='Which blue styles have the fewest pieces left at latest snapshot?',
+                identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
         self.assertFalse(result.metadata['ok'])
         self.assertEqual(result.metadata['metric_error_code'],'interpretation_mismatch')
-        self.assertEqual(provider.generate.call_count,3)
+        self.assertEqual(provider.generate.call_count,1)
         repository.execute_approved_query.assert_not_awaited()
 
     async def test_mapping_precedes_sql_for_mixed_language_request(self):
@@ -151,7 +152,7 @@ class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
             identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
         self.assertTrue(result.metadata['ok'],result.answer)
         self.assertIn('semantic_interpretation',result.metadata)
-        self.assertEqual(provider.generate.call_count,2)
+        self.assertEqual(provider.generate.call_count,1)
         repository.execute_approved_query.assert_awaited_once()
 
     async def test_bad_interpretation_stops_before_sql_and_execution(self):

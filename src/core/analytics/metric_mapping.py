@@ -11,7 +11,7 @@ from sqlglot.optimizer.scope import traverse_scope
 from core.analytics.metric_ontology import METRIC_ONTOLOGY, resolve_metric_names, _normalize
 from core.analytics.metric_validation import (
     MetricDefinitionError, _canonical, _conjuncts, _formula, _latest_snapshot,
-    validate_metric_request, _validate_inventory_time,
+    validate_metric_request, _validate_inventory_time, inventory_time_scope, inventory_observation_query,
 )
 
 
@@ -170,12 +170,16 @@ def build_metric_mapping_prompt(question, *, context=None):
     return ('Interpret the question BEFORE generating SQL. Return one JSON object, no Markdown, SQL, formulas or new metric IDs.\n'
             'Map English, Vietnamese and mixed language, synonyms and paraphrases onto inventory catalog IDs. '
             'Use domain=other only for requests entirely outside inventory analytics (e.g. list products, orders, payments). '
+            'Structural observation queries (latest snapshot date only, distinct product counts, missing observations, duplicate keys) '
+            'also use domain=other with every other slot empty. These are not stock or fulfillment KPIs. '
             'Never use other to evade an unsupported inventory metric. If unclear, ask a specific clarification. '
             'Low stock without a numeric threshold or explicit top/bottom ranking is ambiguous. Do not invent thresholds, weights, forecasts or reorder rules. '
             'Unresolved IDs must remain unresolved; never substitute a different metric. '
             'For product-level rankings use representation=product and product_name/product_id dimensions. '
             'For category totals use aggregate and category. Stored fill rankings use stored_fill_rate; means use fill_rate. '
             'Filters apply to source rows, not computed aggregates. Date ranges are inclusive. '
+            'A snapshot uses start=the ISO date and end=null. A named month, quarter or year uses its full inclusive range; '
+            'keep separate snapshot_date groups, never reinterpret a period as its closing balance. '
             'Require a requested historical date/range/history or explicit latest AVAILABLE snapshot; do not silently turn today/current stock into historical latest. '
             'Do not omit any requested filter, metric, dimension, ranking or time constraint. Snapshot date is always included automatically. '
             'Preserve supplied filter values; translate field concepts, not product codes or category names.\n'
@@ -230,11 +234,14 @@ def decode_metric_mapping(raw, question):
         _error('Which inventory measure do you mean?','metric_ambiguous')
     if any(METRIC_ONTOLOGY.get(name,{}).get('domain') != 'inventory_management' for name in mapping.metrics):
         _error('The dataset does not contain a reviewed definition for this inventory metric.','metric_unsupported')
-    if known - set(mapping.metrics):
+    protected = {name for name in known if METRIC_ONTOLOGY[name].get('definition_status') in {'unresolved', 'draft'}}
+    if protected - set(mapping.metrics):
         _error('The interpretation omitted or changed a recognized metric. Please clarify which measures you need.','metric_ambiguous')
     if mapping.time is None:
         _error('The inventory records are historical. Which snapshot should I use?','snapshot_required')
     temporal = mapping.time
+    if temporal.mode == 'snapshot' and temporal.start and temporal.end == temporal.start:
+        temporal.end = None
     try:
         if temporal.mode in {'snapshot','range'}:
             start = date.fromisoformat(temporal.start or '')
@@ -247,6 +254,14 @@ def decode_metric_mapping(raw, question):
     except ValueError as error:
         raise MetricDefinitionError('Specify valid historical ISO snapshot dates or an ordered inclusive range.',
                                     code='invalid_date_scope',clarification=True) from error
+    try:
+        expected_time = inventory_time_scope(question)
+    except ValueError as error:
+        raise MetricDefinitionError('Specify a valid historical period.', code='invalid_date_scope', clarification=True) from error
+    if expected_time and (temporal.mode, temporal.start, temporal.end) != expected_time:
+        _error('The interpretation changed the requested historical period.', 'invalid_date_scope')
+    if not expected_time and re.search(r'last month|last year|tháng trước|năm ngoái', _normalize(question)):
+        _error('Specify the historical month or year explicitly.', 'snapshot_required')
     validate_metric_request(mapping.date_question(),set(mapping.metrics))
     # Existing explicit-date/ambiguity checks must also hold for the original wording.
     try:
@@ -297,7 +312,8 @@ def validate_mapped_sql(plan, mapping, *, question=None):
     from core.analytics.text_to_sql import APPROVED_COLUMNS
     tree = parse_one(plan.sql,read='postgres')
     if mapping.domain == 'other':
-        if any(t.db.casefold() == 'commerce' and t.name.casefold() == 'inventory' for t in tree.find_all(exp.Table)):
+        if (any(t.db.casefold() == 'commerce' and t.name.casefold() == 'inventory' for t in tree.find_all(exp.Table))
+                and not inventory_observation_query(plan.sql, plan.parameters)):
             _error('Inventory queries require an inventory interpretation.')
         return
     root = list(traverse_scope(tree))[-1]
@@ -365,3 +381,59 @@ def validate_mapped_sql(plan, mapping, *, question=None):
         expected_order = _field(mapping.ranking.metric) if mapping.representation == 'product' else _formula(definition,APPROVED_COLUMNS)
         if canonical(value) != expected_order or bool(first.args.get('desc')) != (mapping.ranking.direction == 'desc'):
             _error('SQL ranking differs from the validated interpretation.','interpretation_mismatch')
+
+
+def compile_inventory_query(mapping):
+    """Compile a validated inventory mapping; retain every existing SQL boundary."""
+    from core.analytics.text_to_sql import APPROVED_COLUMNS, decode_query_plan, validate_commerce_sql
+    from core.analytics.metric_validation import validate_metric_definitions
+    parameters = []
+    dimensions = list(dict.fromkeys(['snapshot_date', *mapping.dimensions]))
+    projections = [_field(d).as_(d) for d in dimensions]
+    for name in mapping.metrics:
+        definition = METRIC_ONTOLOGY[name]
+        if definition.get('definition_status') != 'executable':
+            raise ValueError('Unresolved metric: '+name)
+        value = _field(name) if mapping.representation == 'product' else _formula(definition, APPROVED_COLUMNS)
+        projections.append(value.as_(name))
+    query = exp.select(*projections).from_('commerce.inventory').join(
+        'commerce.products', on='inventory.product_id = products.product_id')
+    for item in mapping.filters:
+        query = query.where(_filter_expression(item))
+    temporal = mapping.time
+    if temporal is None:
+        raise ValueError('Inventory snapshot scope is required')
+    if temporal.mode == 'latest':
+        query = query.where(exp.EQ(this=_field('snapshot_date'), expression=parse_one(
+            '(SELECT MAX(inventory.snapshot_date) FROM commerce.inventory)', read='postgres')))
+    elif temporal.mode == 'snapshot':
+        query = query.where(exp.EQ(this=_field('snapshot_date'), expression=exp.convert(temporal.start)))
+    elif temporal.mode == 'range':
+        query = query.where(exp.GTE(this=_field('snapshot_date'), expression=exp.convert(temporal.start)))
+        end = (date.fromisoformat(temporal.end)+timedelta(days=1)).isoformat()
+        query = query.where(exp.LT(this=_field('snapshot_date'), expression=exp.convert(end)))
+    if mapping.representation == 'aggregate':
+        query = query.group_by(*(_field(d) for d in dimensions))
+    orders = []
+    if mapping.ranking:
+        name = mapping.ranking.metric
+        value = _field(name) if mapping.representation == 'product' else _formula(METRIC_ONTOLOGY[name], APPROVED_COLUMNS)
+        orders.append(exp.Ordered(this=value, desc=mapping.ranking.direction == 'desc'))
+    orders.extend(_field(d) for d in dimensions)
+    query = query.order_by(*orders).limit(mapping.ranking.limit if mapping.ranking else 200)
+    # Parameterize literals, including catalog filters, before crossing the database boundary.
+    def bind(node):
+        if isinstance(node, exp.Literal) and not isinstance(node.parent, exp.Limit):
+            value = node.this if node.is_string else (float(node.this) if '.' in node.this else int(node.this))
+            parameters.append(value)
+            return exp.Parameter(this=exp.Var(this=str(len(parameters))))
+        return node
+    query = query.transform(bind)
+    sql = query.sql(dialect='postgres')
+    validate_commerce_sql(sql)
+    # Reuse the shared decoder's date binding and placeholder validation for asyncpg.
+    plan = decode_query_plan(json.dumps({'sql': sql, 'parameters': parameters}))
+    validate_metric_definitions(plan.sql, set(mapping.metrics), plan.parameters, APPROVED_COLUMNS,
+                                question=mapping.date_question())
+    validate_mapped_sql(plan, mapping, question=mapping.date_question())
+    return plan.sql, plan.parameters

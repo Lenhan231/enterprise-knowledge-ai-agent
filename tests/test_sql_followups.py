@@ -178,9 +178,9 @@ class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
         second=first.replace(' GROUP BY',' AND p.color=$2 GROUP BY')
         third=second.replace('LIMIT 200','ORDER BY 3 DESC LIMIT 3')
         provider=Mock()
-        provider.generate.side_effect=[json.dumps({'action':'new','mapping':{**BASE,'time':{'mode':'latest'}}}),json.dumps({'sql':first,'parameters':['2022-12-31']}),
-                                       json.dumps({'action':'followup','changes':{'filters':[{'field':'color','operator':'eq','value':'blue'}]}}),json.dumps({'sql':second,'parameters':['2022-12-31','blue']}),
-                                       json.dumps({'action':'followup','changes':{'ranking':{'direction':'desc','limit':3}}}),json.dumps({'sql':third,'parameters':['2022-12-31','blue']})]
+        provider.generate.side_effect=[json.dumps({'action':'new','mapping':{**BASE,'time':{'mode':'latest'}}}),
+                                       json.dumps({'action':'followup','changes':{'filters':[{'field':'color','operator':'eq','value':'blue'}]}}),
+                                       json.dumps({'action':'followup','changes':{'ranking':{'direction':'desc','limit':3}}})]
         repository=AsyncMock()
         repository.execute_approved_query.side_effect=[[{'snapshot_date':date(2022,12,31)}],
             [{'snapshot_date':date(2022,12,31),'category':'A','stock_on_hand':12}],[],

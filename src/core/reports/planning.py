@@ -1,16 +1,15 @@
 """Report plans share the Auto/SQL schema and select validated evidence tasks."""
-from datetime import date, timedelta
 from decimal import Decimal
 import json
 import re
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
-from sqlglot import exp, parse_one
+from sqlglot import exp
 
-from core.analytics.metric_mapping import MetricMapping, MetricFilter, decode_metric_mapping, _field, _filter_expression, _required_metrics, validate_mapped_sql
+from core.analytics.metric_mapping import compile_inventory_query, MetricMapping, MetricFilter, decode_metric_mapping, _required_metrics
 from core.analytics.metric_ontology import METRIC_ONTOLOGY, _normalize, resolve_metric_names
-from core.analytics.metric_validation import MetricDefinitionError, _formula, _inventory_question, validate_metric_definitions, validate_metric_request
+from core.analytics.metric_validation import MetricDefinitionError, _inventory_question, inventory_time_scope, validate_metric_request
 from core.analytics.commerce_decision_support import unavailable_commerce_dimensions, resolve_commerce_decision_domain
 from core.analytics.text_to_sql import APPROVED_COLUMNS, APPROVED_JOINS, validate_commerce_sql, decode_query_plan
 from core.reports.grounding import NUMBER, numeric_value
@@ -124,6 +123,9 @@ def validate_plan(plan, question):
         raise ValueError('Every report section must reference supplied tasks; every task must be used')
     requested = _required_metrics(question)
     explicit_dates = set(re.findall(r'\b\d{4}-\d{2}-\d{2}\b', _inventory_question(question)))
+    normalized_time = inventory_time_scope(question)
+    if normalized_time:
+        explicit_dates.update(value for value in normalized_time[1:] if value)
     without_dates = re.sub(r'\b\d{4}-\d{2}-\d{2}\b', '', _inventory_question(question))
     explicit_numbers = {numeric_value(token) for token in NUMBER.findall(without_dates)} - {None}
     selected = set()
@@ -226,40 +228,7 @@ def build_task_sql(task):
             query = query.order_by(exp.column('product_id', table='p'))
         query = query.limit(200)
     else:
-        mapping = task.mapping
-        dimensions = list(dict.fromkeys(['snapshot_date', *mapping.dimensions]))
-        projections = [_field(d).as_(d) for d in dimensions]
-        for name in mapping.metrics:
-            definition = METRIC_ONTOLOGY[name]
-            if definition.get('definition_status') != 'executable':
-                raise ValueError('Unresolved metric: '+name)
-            value = _field(name) if mapping.representation == 'product' else _formula(definition, APPROVED_COLUMNS)
-            projections.append(value.as_(name))
-        query = exp.select(*projections).from_('commerce.inventory').join(
-            'commerce.products', on='inventory.product_id = products.product_id')
-        for item in mapping.filters:
-            query = query.where(_filter_expression(item))
-        temporal = mapping.time
-        if temporal is None:
-            raise ValueError('Inventory snapshot scope is required')
-        if temporal.mode == 'latest':
-            query = query.where(exp.EQ(this=_field('snapshot_date'), expression=parse_one(
-                '(SELECT MAX(inventory.snapshot_date) FROM commerce.inventory)', read='postgres')))
-        elif temporal.mode == 'snapshot':
-            query = query.where(exp.EQ(this=_field('snapshot_date'), expression=exp.convert(temporal.start)))
-        elif temporal.mode == 'range':
-            query = query.where(exp.GTE(this=_field('snapshot_date'), expression=exp.convert(temporal.start)))
-            end = (date.fromisoformat(temporal.end)+timedelta(days=1)).isoformat()
-            query = query.where(exp.LT(this=_field('snapshot_date'), expression=exp.convert(end)))
-        if mapping.representation == 'aggregate':
-            query = query.group_by(*(_field(d) for d in dimensions))
-        orders = []
-        if mapping.ranking:
-            name = mapping.ranking.metric
-            value = _field(name) if mapping.representation == 'product' else _formula(METRIC_ONTOLOGY[name], APPROVED_COLUMNS)
-            orders.append(exp.Ordered(this=value, desc=mapping.ranking.direction == 'desc'))
-        orders.extend(_field(d) for d in dimensions)
-        query = query.order_by(*orders).limit(mapping.ranking.limit if mapping.ranking else 200)
+        return compile_inventory_query(task.mapping)
     # Parameterize literals, including catalog filters, before crossing the database boundary.
     def bind(node):
         if isinstance(node, exp.Literal) and not isinstance(node.parent, exp.Limit):
@@ -272,8 +241,4 @@ def build_task_sql(task):
     validate_commerce_sql(sql)
     # Reuse the shared decoder's date binding and placeholder validation for asyncpg.
     plan = decode_query_plan(json.dumps({'sql': sql, 'parameters': parameters}))
-    if task.mapping:
-        validate_metric_definitions(plan.sql, set(task.mapping.metrics), plan.parameters, APPROVED_COLUMNS,
-                                    question=task.mapping.date_question())
-        validate_mapped_sql(plan, task.mapping, question=task.mapping.date_question())
     return plan.sql, plan.parameters

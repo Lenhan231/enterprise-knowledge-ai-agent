@@ -10,10 +10,11 @@ from typing import Any
 
 from core.agents.base import BaseAgent
 from core.analytics.metric_ontology import resolve_metric_names, get_metric_definition
-from core.analytics.metric_mapping import build_metric_mapping_prompt, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
+from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
 from core.analytics.metric_validation import MetricDefinitionError, validate_metric_definitions, validate_metric_request
 from core.analytics.text_to_sql import (
     APPROVED_COLUMNS,
+    QueryPlan,
     SQLValidationError,
     build_sql_prompt,
     decode_query_plan,
@@ -72,7 +73,13 @@ class SQLAnalyticsAgent(BaseAgent):
         self._authorize(request)
         context_info = {}
         result = await self._run_payload(request,context_info)
-        result.setdefault('metadata',{}).update(context_info)
+        metadata = result.setdefault('metadata',{})
+        metadata.update(context_info)
+        metadata['execution_status'] = (('executed' if result.get('rows') else 'executed_empty')
+            if result.get('query_status') == 'executed' else
+            ('clarification_required' if metadata.get('clarification_required') else
+             'source_failed' if result.get('query_status') == 'error' else
+             'validation_failed' if metadata.get('error_type') in {'SQLValidationError','MetricDefinitionError'} else 'planning_failed'))
         return result
 
     async def _run_payload(self, request: Any, context_info: dict) -> dict[str, Any]:
@@ -87,7 +94,8 @@ class SQLAnalyticsAgent(BaseAgent):
         interpretation = None
         try:
             try:
-                validate_metric_request(question, metric_names)
+                validate_metric_request(question, {name for name in metric_names
+                    if get_metric_definition(name).get('definition_status') in {'unresolved', 'draft'}})
             except MetricDefinitionError as error:
                 if error.code != 'snapshot_required':
                     raise
@@ -125,9 +133,14 @@ class SQLAnalyticsAgent(BaseAgent):
             return self._generation_error(error)
         for attempt in range(2):
             try:
-                with measure("sql_planning"):
-                    raw = await generate(self._provider(), prompt, timeout=60)
-                plan = decode_query_plan(raw)
+                if interpretation and interpretation.domain == 'inventory':
+                    sql, parameters = compile_inventory_query(interpretation)
+                    plan = QueryPlan(sql=sql, parameters=parameters,
+                                     explanation='Compiled from the validated inventory interpretation.')
+                else:
+                    with measure("sql_planning"):
+                        raw = await generate(self._provider(), prompt, timeout=60)
+                    plan = decode_query_plan(raw)
                 if plan.sql:
                     definitions = validate_metric_definitions(plan.sql, metric_names, plan.parameters, APPROVED_COLUMNS,
                                                               question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question)
@@ -135,7 +148,7 @@ class SQLAnalyticsAgent(BaseAgent):
                         validate_mapped_sql(plan,interpretation,question=interpretation.date_question() if resolved_latest else question)
                 break
             except (SQLValidationError, MetricDefinitionError) as error:
-                if attempt == 0:
+                if attempt == 0 and not (interpretation and interpretation.domain == 'inventory'):
                     prompt = build_sql_prompt(
                         question, validation_error=str(error), previous_response=str(raw),
                         metric_names=metric_names,
@@ -174,8 +187,12 @@ class SQLAnalyticsAgent(BaseAgent):
                for definition in definitions.values()):
             limitations.append("Ratio results are fractions: 0.25 means 25%; raw result rows are not rescaled.")
         metadata = {"source": list(validated.sources), "explanation": plan.explanation, "metrics": definitions}
+        metadata['columns'] = [{'name': name, 'unit': definitions.get(name, {}).get('unit')}
+                               for name in (rows[0] if rows else ())]
         if interpretation and interpretation.domain == 'inventory':
             metadata['semantic_interpretation'] = interpretation.model_dump()
+            metadata['filters'] = [item.model_dump() for item in interpretation.filters]
+            metadata['time_scope'] = interpretation.time.model_dump()
         if any(definition.get('domain') == 'inventory_management' for definition in definitions.values()):
             dates = sorted({str(row['snapshot_date']) for row in rows if row.get('snapshot_date') is not None})
             metadata.update(metric_catalog_version='1.0.0', historical_inventory=True, snapshot_dates=dates)

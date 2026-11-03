@@ -11,7 +11,7 @@ import time
 from evaluation import run_inventory_agents_benchmark as benchmark
 
 FROZEN = benchmark.OUT
-OUTPUT = benchmark.ROOT / 'artifacts/evaluation/sql-semantic-contracts-2026-11-03'
+OUTPUT = benchmark.ROOT / 'artifacts/evaluation/sql-semantic-contracts-2026-11-03/final'
 REPORT_IDS = {'R01', 'R06', 'R16', 'R17', 'R20', 'R28'}
 
 

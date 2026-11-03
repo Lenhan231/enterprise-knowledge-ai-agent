@@ -177,6 +177,8 @@ def build_metric_mapping_prompt(question, *, context=None):
             'Unresolved IDs must remain unresolved; never substitute a different metric. '
             'For product-level rankings use representation=product and product_name/product_id dimensions. '
             'For category totals use aggregate and category. Stored fill rankings use stored_fill_rate; means use fill_rate. '
+            'Counting flagged products uses observed_product_count with a boolean indicator filter; '
+            'rank categories by observed_product_count, never aggregate or rank a boolean indicator as a count. '
             'Ranking without an explicit row count uses limit=200; never invent top 10. '
             'Filters apply to source rows, not computed aggregates. Date ranges are inclusive. '
             'A snapshot uses start=the ISO date and end=null. A named month, quarter or year uses its full inclusive range; '
@@ -231,6 +233,17 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
         return mapping
     # Vietnamese "inventory" is also a legacy stock alias; context alone cannot force a stock measure.
     known = _required_metrics(question)
+    count_requested = re.search(r'how many|\bcount\b|number of|most.*products|đếm|bao nhiêu|nhiều.*sản phẩm', question, re.I)
+    if mapping.representation == 'aggregate' and len(mapping.metrics) == 1 and count_requested:
+        name = mapping.metrics[0]
+        definition = METRIC_ONTOLOGY.get(name, {})
+        if (definition.get('aggregation') == 'value' and definition.get('unit') == 'boolean'
+                and definition.get('definition_status') == 'executable'
+                and definition.get('approval_status') in {'team_accepted','business_approved'}
+                and any(f.field == name and f.operator == 'eq' and isinstance(f.value, bool) for f in mapping.filters)):
+            mapping.metrics = ['observed_product_count']
+            if mapping.ranking and mapping.ranking.metric == name:
+                mapping.ranking.metric = 'observed_product_count'
     if not mapping.metrics or len(set(mapping.metrics)) != len(mapping.metrics):
         _error('Which inventory measure do you mean?','metric_ambiguous')
     if any(METRIC_ONTOLOGY.get(name,{}).get('domain') != 'inventory_management' for name in mapping.metrics):

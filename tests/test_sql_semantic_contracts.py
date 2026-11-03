@@ -15,6 +15,20 @@ from core.analytics.text_to_sql import APPROVED_COLUMNS
 
 
 class InterpretationRegressionTest(unittest.TestCase):
+    def test_flagged_product_count_is_not_a_boolean_aggregate(self):
+        from core.analytics.metric_mapping import compile_inventory_query
+        mapping = decode_metric_mapping(json.dumps({'metrics':['overstock_indicator'],
+            'dimensions':['category'],'representation':'aggregate',
+            'filters':[{'field':'overstock_indicator','operator':'eq','value':True}],
+            'time':{'mode':'snapshot','start':'2022-12-31'},
+            'ranking':{'metric':'overstock_indicator','direction':'desc','limit':10}}),
+            'Which categories have the most overstock_flag=true products on 2022-12-31?')
+        self.assertEqual(mapping.metrics,['observed_product_count'])
+        self.assertEqual(mapping.ranking.metric,'observed_product_count')
+        sql, _ = compile_inventory_query(mapping)
+        self.assertIn('COUNT(DISTINCT',sql)
+        self.assertNotIn('SUM(',sql)
+
     def test_duplicate_conventions_differ_on_nonempty_fixture(self):
         with sqlite3.connect(':memory:') as db:
             db.executescript('CREATE TABLE observations (snapshot_date TEXT, product_id INT); '

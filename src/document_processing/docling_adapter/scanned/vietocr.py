@@ -24,7 +24,7 @@ from docling.models.base_ocr_model import BaseOcrModel
 from docling.models.factories import get_ocr_factory
 from docling.models.stages.ocr.tesseract_utils import tesseract_box_to_bounding_rectangle
 from docling.utils.profiling import TimeRecorder
-from .line_detection import create_line_detector, crop_line, detect_line_boxes
+from .line_detection import create_line_detector, crop_line, detect_line_boxes, merge_line_fragments
 from ..orientation import detect_paddle_orientation, rotate_for_reading
 
 _TEXT_TYPE_REPO = "VItaldob/text-type-classifier-resnet18"
@@ -262,12 +262,17 @@ class VietOcrModel(BaseOcrModel):
                             value=(255, 255, 255),
                         )
                         boxes = detect_line_boxes(self.detector, detection_image)
+                    boxes = merge_line_fragments(boxes)
                     if boxes is None or len(boxes) == 0:
                         continue
 
-                    for index, quad in enumerate(boxes):
+                    for index, (quad, merged_fragments) in enumerate(boxes):
                         quad = np.asarray(quad, dtype=np.float32)
-                        line = crop_line(detection_image, quad)
+                        line = crop_line(
+                            detection_image,
+                            quad,
+                            padding=2 if merged_fragments else 0,
+                        )
                         text, route = self._recognize_line(line)
                         routing_counts[route] += 1
                         if not text:

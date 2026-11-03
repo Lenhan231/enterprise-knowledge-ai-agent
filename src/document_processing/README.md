@@ -76,7 +76,9 @@ OCR text elements assigned to the same raw PP-DocLayoutV3 `text` box are
 merged in reading order; text on separate lines stays on separate lines. Other
 layout labels, including tables, footer and number, are not merged this way.
 
-VietOCR classifies each detected line crop as printed or handwritten. Printed
+VietOCR first joins nearby detector fragments that share a text line, then
+classifies each resulting line crop as printed or handwritten. This prevents
+small detached marks from being recognized as independent words. Printed
 lines use the existing `vgg_seq2seq` recognizer; handwritten lines use the
 Vietnamese handwriting fine-tune `DungHugging/vietocr-handwritten-finetune`
 (`vgg_transformer`). The ResNet-18 style classifier is

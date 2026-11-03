@@ -231,5 +231,36 @@ class DocumentChunkRepositorySearchTest(unittest.TestCase):
             self.repository.similarity_search([0.1, 0.2], 2)
 
 
+class SearchConnectionPoolTest(unittest.TestCase):
+    def test_extra_connections_are_capped_reused_and_dropped_when_broken(self):
+        from unittest.mock import patch
+        import core.database.document_chunks_repository as module
+
+        def connection(name):
+            conn = MagicMock(name=name, closed=False, broken=False)
+            conn.info.transaction_status = None
+            return conn
+
+        main, first, second, third = (connection(n) for n in ("main", "first", "second", "third"))
+        with patch.dict("os.environ", {"DATABASE_URL": "postgresql://test"}), \
+                patch.object(module, "connect_database", side_effect=[main, first, second, third]) as connect, \
+                patch.object(module, "register_vector"), \
+                patch.object(module, "close_database_connection") as close:
+            repository = DocumentChunkRepository()
+            borrowed = [repository._borrow_search_connection() for _ in range(3)]
+            self.assertEqual(borrowed, [first, second, main])  # capped at 2 extras, then share main
+            for conn in borrowed:
+                repository._return_search_connection(conn)
+            self.assertIs(repository._borrow_search_connection(), first)  # idle extra is reused
+            first.broken = True
+            repository._return_search_connection(first)
+            close.assert_called_once_with(first)
+            self.assertIs(repository._borrow_search_connection(), second)
+            self.assertIs(repository._borrow_search_connection(), third)  # broken slot reopened
+            self.assertEqual(connect.call_count, 4)
+            repository.close()
+            self.assertEqual({c.args[0] for c in close.call_args_list}, {first, second, third, main})
+
+
 if __name__ == "__main__":
     unittest.main()

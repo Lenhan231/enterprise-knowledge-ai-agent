@@ -80,18 +80,28 @@ class AgentMonitoringTest(unittest.TestCase):
         self.assertEqual(response.json()["summary"]["total_runs"], 2)
         repository.close.assert_called_once()
 
-    def test_telemetry_failure_does_not_escape_agent_request_cleanup(self):
-        repository = Mock()
-        repository.close.side_effect = RuntimeError("close failed")
+    def test_telemetry_reuses_one_connection_and_drops_it_after_a_failure(self):
+        import app.agents as agents
+        broken, fresh = Mock(), Mock()
+        broken.record_event.side_effect = [None, RuntimeError("connection lost")]
+        broken.close.side_effect = RuntimeError("close failed")
         event = {
             "actor_role": "admin", "agent_name": "knowledge",
             "retrieval_method": "hybrid", "status": "completed",
             "elapsed_ms": 12, "citation_count": 1, "error_type": None,
         }
-        with patch("core.database.agent_run_repository.AgentRunRepository", return_value=repository):
-            _record_agent_run(**event)
-
-        repository.record_event.assert_called_once_with(**event)
+        agents._telemetry_repository = None
+        try:
+            with patch("core.database.agent_run_repository.AgentRunRepository",
+                       side_effect=[broken, fresh]) as factory, patch("app.agents.logger"):
+                for _ in range(3):
+                    _record_agent_run(**event)  # never raises, even when close fails too
+            self.assertEqual(factory.call_count, 2)
+            self.assertEqual(broken.record_event.call_count, 2)
+            fresh.record_event.assert_called_once_with(**event)
+            self.assertIs(agents._telemetry_repository, fresh)
+        finally:
+            agents._telemetry_repository = None
 
     def test_agent_chat_records_privacy_minimized_run(self):
         environment = {

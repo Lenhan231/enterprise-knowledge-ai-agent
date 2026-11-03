@@ -32,6 +32,11 @@ Production upload and Upload Test call this parser package and the separate
 chunking module. Upload Test stores isolated results. This package does not
 handle chunking, tokenization, embeddings, or retrieval indexing.
 
+Upload Test accepts self-contained SVG images and renders them as PNG for
+Docling while retaining SVG source metadata. External references, scripts,
+stylesheets and document type declarations are rejected. Corpus upload does
+not yet accept SVG.
+
 ## Package map
 
 | Path | Responsibility |

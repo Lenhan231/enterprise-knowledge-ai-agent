@@ -4,13 +4,47 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
+import math
+import re
+import xml.etree.ElementTree as ET
 
 from document_processing.element_taxonomy import normalize_element_label
 
 SUPPORTED_FORMATS = frozenset({
     ".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md",
-    ".png", ".jpg", ".jpeg", ".tif", ".tiff",
+    ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".svg",
 })
+
+
+def render_svg(content: bytes) -> bytes:
+    """Render a self-contained SVG as PNG without fetching external resources."""
+    try:
+        text = content.decode("utf-8-sig")
+        if re.search(r"<!\s*(?:DOCTYPE|ENTITY)|<\?xml-stylesheet", text, re.IGNORECASE):
+            raise ValueError("SVG document declarations are not supported")
+        root = ET.fromstring(text)
+        if root.tag != "{http://www.w3.org/2000/svg}svg" and root.tag != "svg":
+            raise ValueError("File is not an SVG")
+        for node in root.iter():
+            for name, value in node.attrib.items():
+                if name.rsplit("}", 1)[-1] == "href" and not value.strip().startswith("#"):
+                    raise ValueError("SVG external references are not supported")
+                if re.search(r"url\s*\(\s*['\"]?(?!#)", value, re.IGNORECASE):
+                    raise ValueError("SVG external references are not supported")
+            if node.tag.rsplit("}", 1)[-1] in {"script", "style", "foreignObject"}:
+                raise ValueError("SVG scripts, stylesheets and foreign objects are not supported")
+        import fitz
+        with fitz.open(stream=content, filetype="svg") as document:
+            page = document[0]
+            width, height = page.rect.width, page.rect.height
+            if not all(math.isfinite(v) and 0 < v <= 10000 for v in (width, height)):
+                raise ValueError("SVG dimensions are invalid")
+            scale = min(2.0, 4096 / width, 4096 / height)
+            return page.get_pixmap(matrix=fitz.Matrix(scale, scale), alpha=False).tobytes("png")
+    except ValueError:
+        raise
+    except Exception as error:
+        raise ValueError("Could not render SVG") from error
 
 class DocumentProcessor:
     """Parse a source file; original bytes and persistence belong to app/storage layers."""
@@ -47,12 +81,14 @@ class DocumentProcessor:
             from document_processing.docling_adapter.processor import DoclingProcessor
 
             processor_config = {**self.config, "parser_engine": engine}
+            parser_content = render_svg(content) if suffix == ".svg" else content
+            parser_metadata = {**common, "format": "PNG"} if suffix == ".svg" else common
             result = DoclingProcessor(processor_config).process(
-                content, None, {"content": content, "metadata": common}
+                parser_content, None, {"content": parser_content, "metadata": parser_metadata}
             )
         elements = result.get("elements", [])
         tables = result.get("tables", [])
-        if suffix in {".png", ".jpg", ".jpeg"}:
+        if suffix in {".png", ".jpg", ".jpeg", ".svg"}:
             for element in elements:
                 (element.get("metadata") or {}).pop("page_number", None)
             for table in tables:
@@ -66,6 +102,8 @@ class DocumentProcessor:
                 for row in table.get("rows", []) if isinstance(row, dict)
             ]
             table_metadata = table.setdefault("metadata", {})
+            if suffix == ".svg":
+                table_metadata["format"] = "SVG"
             table_metadata.update({key: value for key, value in common.items() if key not in table_metadata and key not in {"title", "uploaded_by"}})
             table_metadata.update({"pipeline_id": engine, "parser_engine": engine})
             table_metadata.update({"element_type": "table", "layout_type": "table"})
@@ -79,6 +117,8 @@ class DocumentProcessor:
 
         for element in elements:
             element_metadata = dict(element.get("metadata") or {})
+            if suffix == ".svg":
+                element_metadata["format"] = "SVG"
             element_metadata.pop("word_style", None)
             element_metadata.pop("word_style_id", None)
             element_metadata.update({

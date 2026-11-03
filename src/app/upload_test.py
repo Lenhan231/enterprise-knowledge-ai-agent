@@ -37,7 +37,7 @@ async def create_upload_test(
     _require_same_origin(request)
     filename = Path((file.filename or "").replace("\\", "/")).name
     suffix = Path(filename).suffix.lower()
-    from document_processing.document_processor import SUPPORTED_FORMATS
+    from document_processing.document_processor import SUPPORTED_FORMATS, render_svg
     if suffix not in SUPPORTED_FORMATS:
         raise HTTPException(415, "Unsupported Upload Test file format")
     if parser_engine != "docling":
@@ -72,8 +72,9 @@ async def create_upload_test(
                     matrix=fitz.Matrix(scale, scale), alpha=False,
                 ).tobytes("png"))
             source.close()
-        elif suffix in {".png", ".jpg", ".jpeg", ".tif", ".tiff"}:
-            source = fitz.open(stream=content, filetype=suffix[1:])
+        elif suffix in {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".svg"}:
+            preview_content = render_svg(content) if suffix == ".svg" else content
+            source = fitz.open(stream=preview_content, filetype="png" if suffix == ".svg" else suffix[1:])
             page_count = len(source)
             for page_number, page in enumerate(source, start=1):
                 preview_page_sizes[str(page_number)] = {
@@ -88,7 +89,7 @@ async def create_upload_test(
     except HTTPException:
         raise
     except Exception as error:
-        raise HTTPException(422, "Could not open the uploaded PDF") from error
+        raise HTTPException(422, "Could not open the uploaded file") from error
 
     docling_settings = {
         "docling_device": docling_device,

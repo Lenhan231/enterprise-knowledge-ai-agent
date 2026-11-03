@@ -27,6 +27,8 @@ RUN apt-get update \
         "setuptools<81" "langchain-text-splitters>=1.0.0" \
         "vietocr==0.3.13" "opencv-python-headless" "openai==2.41.0"
 
+RUN python -m pip install --no-cache-dir "pymupdf==1.27.2.3"
+
 COPY src ./src
 
 EXPOSE 8000

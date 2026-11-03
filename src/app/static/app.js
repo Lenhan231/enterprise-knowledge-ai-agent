@@ -263,7 +263,10 @@ async function loadOcrTestRuns() {
     const config = run.processor_config || {};
     const engine = config.parser_engine;
     const selected = config.parser_settings?.[engine] || config;
-    const parserSettings = `Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`;
+    const intent = config.intent || "document";
+    const parserSettings = intent === "document"
+      ? `Document · Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`
+      : `${intent === "invoice" ? "Invoice" : "Receipt"} · Vintern`;
     const settings = parserSettings;
     const previewSummary = run.page_count ? `${formatNumber(run.page_count)} page previews` : "no page previews";
     const processingSummary = `processing ${formatDuration(run.runtime_info?.processing_time_ms)}`;
@@ -478,14 +481,17 @@ async function openOcrTestRun(runId) {
 }
 
 function updateUploadTestParserSettings() {
-  const engine = $("#ocr-test-parser").value;
+  const intent = $("#ocr-test-parser").value;
   document.querySelectorAll("#ocr-test-form [data-parser-settings]").forEach((fieldset) => {
-    const active = fieldset.dataset.parserSettings === engine;
+    const active = fieldset.dataset.parserSettings === intent;
     fieldset.hidden = !active;
     fieldset.querySelectorAll("input, select, textarea").forEach((control) => {
       control.disabled = !active;
     });
   });
+  $("#ocr-test-file").accept = intent === "document"
+    ? ".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.svg,.webp"
+    : ".pdf,.png,.jpg,.jpeg,.tif,.tiff,.webp";
 }
 
 $("#ocr-test-parser").addEventListener("change", updateUploadTestParserSettings);
@@ -1179,9 +1185,9 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
   const form = event.currentTarget;
   const button = $("#ocr-test-button");
   button.disabled = true;
-  const parserEngine = form.elements.namedItem("parser_engine").value;
-  const parserLabel = "Docling";
-  $("#ocr-test-status").textContent = `Running ${parserLabel} with shared output cleanup…`;
+  const intent = form.elements.namedItem("intent").value;
+  const parserLabel = intent === "document" ? "Docling" : `Vintern ${intent}`;
+  $("#ocr-test-status").textContent = `Running ${parserLabel}…`;
   try {
     const result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
     $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.element_count} parser elements, ${result.table_count} tables. No production document was created.`;

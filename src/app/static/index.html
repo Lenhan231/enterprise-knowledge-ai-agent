@@ -337,15 +337,15 @@
     <section id="tab-ocr-lab" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-ocr-lab" hidden>
       <section class="candidate-review">
         <div class="section-heading">
-          <div><p class="eyebrow">ISOLATED UPLOAD TEST</p><h2>Run the Docling parser</h2></div>
+          <div><p class="eyebrow">ISOLATED UPLOAD TEST</p><h2>Run a document-processing pipeline</h2></div>
         </div>
-        <p>Upload Test runs Docling and saves ordered document-processing elements and structured tables for inspection.</p>
+        <p>Choose general document parsing, invoice extraction, or receipt extraction. Results are saved for inspection without creating a production document.</p>
         <form id="ocr-test-form" class="upload-form">
           <div class="ocr-test-field"><label for="ocr-test-file">Document to upload-test (up to 20 MiB; PDFs up to 50 pages)</label>
           <input id="ocr-test-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.svg,.webp" required></div>
-          <div class="ocr-test-field"><label for="ocr-test-parser">Document parser</label>
-          <select id="ocr-test-parser" name="parser_engine"><option value="docling" selected>Docling</option></select></div>
-          <fieldset data-parser-settings="docling" hidden><legend>Docling tuning</legend>
+          <div class="ocr-test-field"><label for="ocr-test-parser">Processing type</label>
+          <select id="ocr-test-parser" name="intent"><option value="document" selected>Document · Docling</option><option value="invoice">Invoice · Vintern</option><option value="receipt">Receipt · Vintern</option></select></div>
+          <fieldset data-parser-settings="document" hidden><legend>Docling tuning</legend>
             <div class="ocr-test-field"><label for="ocr-test-docling-device">Device</label><select id="ocr-test-docling-device" name="docling_device"><option value="cpu" selected>CPU</option><option value="cuda">NVIDIA CUDA</option></select></div>
             <div class="ocr-test-field"><label for="ocr-test-docling-ocr">OCR</label><select id="ocr-test-docling-ocr" name="docling_ocr"><option value="true" selected>On · scanned pages</option><option value="false">Off · digital text only</option></select></div>
             <div class="ocr-test-field"><label for="ocr-test-docling-language">Tesseract language</label><select id="ocr-test-docling-language" name="docling_ocr_language"><option value="vie+eng" selected>Vietnamese + English</option><option value="eng">English only</option></select></div>

@@ -25,7 +25,7 @@ router = APIRouter()
 async def create_upload_test(
     request: Request,
     file: UploadFile = File(...),
-    parser_engine: str = Form(default="docling"),
+    intent: str = Form(default="document"),
     docling_device: str = Form(default="cpu"),
     docling_ocr: bool = Form(default=True),
     docling_ocr_language: str = Form(default="vie+eng"),
@@ -40,8 +40,10 @@ async def create_upload_test(
     from document_processing.document_processor import SUPPORTED_FORMATS, render_svg, render_webp
     if suffix not in SUPPORTED_FORMATS:
         raise HTTPException(415, "Unsupported Upload Test file format")
-    if parser_engine != "docling":
-        raise HTTPException(422, "Only Docling is available")
+    if intent not in {"document", "invoice", "receipt"}:
+        raise HTTPException(422, "Choose document, invoice, or receipt processing")
+    if intent in {"invoice", "receipt"} and suffix not in {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp"}:
+        raise HTTPException(422, "Invoice and receipt extraction support PDF and image files only")
     if docling_device not in {"cpu", "cuda"} or docling_ocr_language not in {"vie+eng", "eng"} or not 1 <= docling_num_threads <= 16:
         raise HTTPException(422, "Unsupported Docling device, OCR language, or thread count")
     content = await file.read(20 * 1024 * 1024 + 1)
@@ -99,7 +101,8 @@ async def create_upload_test(
         "docling_num_threads": docling_num_threads,
     }
     config = {
-        "parser_engine": "docling",
+        "parser_engine": "docling" if intent == "document" else f"vintern_{intent}",
+        "intent": intent,
         "parser_settings": {"docling": docling_settings},
         **docling_settings,
         "vision_captioning": False,
@@ -144,11 +147,13 @@ async def create_upload_test(
             }
     runtime_info = {
         "pymupdf": fitz.VersionBind,
-        "docling": parsed["metadata"].get("docling_version"),
+        "pipeline_id": parsed["metadata"].get("pipeline_id"),
         "preview_page_sizes": preview_page_sizes,
         "parser_page_sizes": parsed.get("page_sizes") or preview_page_sizes,
         "page_orientation_corrections": page_orientation_corrections,
     }
+    if parsed["metadata"].get("docling_version"):
+        runtime_info["docling"] = parsed["metadata"]["docling_version"]
     runtime_info["processing_time_ms"] = max(
         0, round((time.perf_counter() - processing_started) * 1000),
     )

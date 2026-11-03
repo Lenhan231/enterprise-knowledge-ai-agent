@@ -6,7 +6,7 @@ and persistence are handled by separate modules in the application.
 
 For supported formats and OCR settings, see the [processing guide](docs/document-processing.md).
 Shared provenance fields are listed in [`docs/metadata.md`](docs/metadata.md).
-See [`architect.md`](architect.md) for the current parser flow and invoice branch.
+See [`architect.md`](architect.md) for the current parser flow and extraction intents.
 
 ## Flow
 
@@ -21,8 +21,10 @@ DocumentProcessor.process(file)
     │           │     └── Groq + existing VietOCR lines → text-cell spelling corrections
     │           │           (direct Groq vision extraction if OpenParser key is unavailable)
     │           └── result_mapper → {elements, tables}
-    └── intent=invoice
-          └── Vintern in isolated Transformers runtime → invoice_extraction
+    ├── intent=invoice
+    │     └── Vintern in isolated Transformers runtime → invoice_extraction
+    └── intent=receipt
+          └── Vintern in isolated Transformers runtime → receipt_extraction
     └── common cleanup + provenance
 
 application → core.chunking → persist chunks/tables
@@ -42,9 +44,11 @@ as PNG before parsing; corpus upload does not yet accept WebP.
 
 | Path | Responsibility |
 | --- | --- |
-| `document_processor.py` | Dispatch supported files to Docling or invoice extraction; normalize output and provenance. |
+| `document_processor.py` | Dispatch supported files to Docling, invoice extraction, or receipt extraction; normalize output and provenance. |
 | `invoice/processor.py` | Render invoice pages and dispatch them to the isolated Vintern runtime. |
 | `invoice/vintern_worker.py` | Load Vintern and extract invoice fields page by page. |
+| `receipt/processor.py` | Render receipt pages and dispatch them to the isolated Vintern runtime. |
+| `receipt/vintern_worker.py` | Load Vintern and extract receipt fields page by page. |
 | `docling_adapter/processor.py` | Configure Docling stages, chart recognition, and scanned embedded-image routing. |
 | `docling_adapter/layout_model.py` | Adapt PP-DocLayoutV3 detections into Docling layout clusters. |
 | `docling_adapter/chart_recognition.py` | Recognize chart blocks in chart boxes, including a matched or shared title. |
@@ -105,15 +109,15 @@ from the crop and OCR lines. This avoids loading PaddleOCR-VL locally in the
 document-processing container. Docker Compose forwards both API keys and the
 Groq model setting to that service.
 
-## Invoice intent
+## Invoice and receipt intents
 
 The local owner-store UI defaults to **General document · current pipeline**.
-Choose **Invoice · Vintern extraction** to extract draft fields directly from
-PDF/image pages. Results are stored under `invoice_extraction.pages`; a JSON
-summary is also written to `elements` for search and chunking. Every extraction
-is marked for human review because the notebook's fine-tuned checkpoint has not
-been validated on a held-out invoice set. This branch currently accepts PDF and
-image files only.
+Choose **Invoice · Vintern extraction** for invoice fields, or **Receipt ·
+Vintern extraction** for retail receipt fields. Results are stored under
+`invoice_extraction.pages` or `receipt_extraction.pages`; a JSON summary is also
+written to `elements` for search and chunking. Every extraction is marked for
+human review because the model has not been validated on a held-out set. Both
+intents currently accept PDF and image files only.
 
 The notebook pins Transformers 4.47, while the main app environment uses
 Transformers 5. Keep the model in a separate virtualenv:

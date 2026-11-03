@@ -15,16 +15,17 @@ from typing import Any
 from PIL import Image, ImageOps, ImageSequence
 
 
-_IMAGE_FORMATS = {".png", ".jpg", ".jpeg", ".tif", ".tiff"}
+_IMAGE_FORMATS = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp"}
 _MODEL_ID = "5CD-AI/Vintern-1B-v2"
 _MODEL_REVISION = "5ec005391798968cd62f41cb71b22c1cee0b13d8"
-_PROMPT = """Trích xuất hóa đơn trong ảnh thành đúng một JSON object, không markdown.
-Giữ nguyên chuỗi số và cách viết số tiền trên ảnh; không tự suy đoán giá trị bị mờ.
-Dùng null nếu không đọc được. Dùng các khóa sau:
-{"ten_cua_hang":null,"dia_chi":null,"ma_so_thue":null,"so_hoa_don":null,
-"ngay":null,"gio":null,"nguoi_mua":null,"mat_hang":[],"tam_tinh":null,
-"giam_gia":null,"thue":null,"tong_cong":null,"tien_khach_tra":null,
-"tien_thua":null,"phuong_thuc_thanh_toan":null}
+_INVOICE_PROMPT = """Trích xuất hóa đơn trong ảnh thành đúng một JSON object, không markdown.
+Giữ nguyên chuỗi số và cách viết trên ảnh; không suy đoán, dùng null nếu không đọc được.
+Dùng các khóa sau:
+{"so_hoa_don":null,"ky_hieu":null,"ngay_lap":null,"don_vi_tien_te":null,
+"nguoi_ban":{"ten":null,"dia_chi":null,"ma_so_thue":null},
+"nguoi_mua":{"ten":null,"dia_chi":null,"ma_so_thue":null},
+"mat_hang":[],"tien_truoc_thue":null,"thue_suat":null,"tien_thue":null,
+"giam_gia":null,"tong_thanh_toan":null,"han_thanh_toan":null}
 Mỗi mat_hang là object có ten, so_luong, don_vi, don_gia, thanh_tien."""
 
 
@@ -40,7 +41,7 @@ def resolve_vintern_python(config: dict[str, Any] | None = None) -> Path | None:
 
 
 class VinternInvoiceProcessor:
-    """Run the receipt VLM in a separate environment from the Docling stack."""
+    """Run the invoice pipeline in an isolated environment."""
 
     def __init__(self, config: dict[str, Any]):
         self.config = config
@@ -49,6 +50,7 @@ class VinternInvoiceProcessor:
         self, filename: str, content: bytes, metadata: dict[str, Any]
     ) -> dict[str, Any]:
         suffix = Path(filename).suffix.lower()
+        intent = "invoice"
         if suffix != ".pdf" and suffix not in _IMAGE_FORMATS:
             raise ValueError("Invoice intent currently supports PDF and image files only.")
 
@@ -88,7 +90,7 @@ class VinternInvoiceProcessor:
                         _MODEL_REVISION if model_id == _MODEL_ID else None
                     ),
                     "device": device,
-                    "prompt": _PROMPT,
+                    "prompt": _INVOICE_PROMPT,
                     "pages": [
                         {"page_number": page["page_number"], "image_path": page["image_path"]}
                         for page in pages
@@ -146,8 +148,8 @@ class VinternInvoiceProcessor:
                         "page_number": page_number,
                         "element_type": "text",
                         "layout_type": "text",
-                        "parser": "vintern_invoice",
-                        "text_extraction_method": "vintern_invoice_extraction",
+                        "parser": f"vintern_{intent}",
+                        "text_extraction_method": f"vintern_{intent}_extraction",
                         "review_required": True,
                     },
                 })
@@ -166,7 +168,7 @@ class VinternInvoiceProcessor:
             return {
                 "elements": elements,
                 "tables": [],
-                "invoice_extraction": {
+                f"{intent}_extraction": {
                     "model": model_id,
                     "status": "review_required",
                     "review_required": True,
@@ -175,12 +177,12 @@ class VinternInvoiceProcessor:
                 "page_previews": page_previews,
                 "page_sizes": page_sizes,
                 "metadata": {
-                    "pipeline_id": "vintern_invoice",
-                    "parser_engine": "vintern_invoice",
-                    "intent": "invoice",
-                    "invoice_model": model_id,
-                    "invoice_model_revision": worker_result.get("revision"),
-                    "invoice_review_required": True,
+                    "pipeline_id": f"vintern_{intent}",
+                    "parser_engine": f"vintern_{intent}",
+                    "intent": intent,
+                    f"{intent}_model": model_id,
+                    f"{intent}_model_revision": worker_result.get("revision"),
+                    f"{intent}_review_required": True,
                 },
             }
 

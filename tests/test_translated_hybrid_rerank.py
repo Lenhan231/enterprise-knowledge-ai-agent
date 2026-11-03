@@ -78,6 +78,24 @@ class RerankTest(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(ValueError):
                 reranker.rerank("question", [existing.chunk("EN", 0)], 1)
 
+    def test_int8_env_quantizes_linear_layers_and_rejects_bad_values(self):
+        import torch
+        from core.retrieval import reranker
+
+        def load(env):
+            reranker._load_model.cache_clear()
+            with patch.dict("os.environ", env), \
+                    patch("sentence_transformers.CrossEncoder", lambda *a, **k: torch.nn.Sequential(torch.nn.Linear(4, 2))):
+                return reranker._load_model()
+        try:
+            self.assertIs(type(load({"RERANKER_QUANTIZE": ""})[0]), torch.nn.Linear)
+            self.assertIsNot(type(load({"RERANKER_QUANTIZE": "int8"})[0]), torch.nn.Linear)
+            for env in ({"RERANKER_QUANTIZE": "int4"}, {"RERANKER_QUANTIZE": "int8", "RERANKER_DEVICE": "cuda"}):
+                with self.assertRaises(ValueError):
+                    load(env)
+        finally:
+            reranker._load_model.cache_clear()
+
     def test_missing_weights_raise_actionable_error_without_fallback(self):
         with patch("core.retrieval.reranker._load_model", side_effect=OSError("not cached")):
             with self.assertRaisesRegex(RuntimeError, "RERANKER_ALLOW_DOWNLOAD"):

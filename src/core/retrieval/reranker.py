@@ -15,12 +15,19 @@ _INFERENCE_LOCK = Lock()
 def _load_model():
     import torch
     from sentence_transformers import CrossEncoder
-    return CrossEncoder(
-        MODEL_ID, revision=REVISION, max_length=1024,
-        device=os.getenv("RERANKER_DEVICE", "cpu"),
+    quantize, device = os.getenv("RERANKER_QUANTIZE", ""), os.getenv("RERANKER_DEVICE", "cpu")
+    if quantize not in ("", "int8") or (quantize and device != "cpu"):
+        raise ValueError("RERANKER_QUANTIZE supports only int8 on cpu")
+    model = CrossEncoder(
+        MODEL_ID, revision=REVISION, max_length=1024, device=device,
         local_files_only=os.getenv("RERANKER_ALLOW_DOWNLOAD", "0") != "1",
         model_kwargs={"torch_dtype": torch.float32},
     )
+    if quantize:
+        # ~1.75x faster on the 6-core VPS; 80-case VietStyle eval: full@10 57 vs 55 fp32.
+        # shortcut: torch.ao quantize_dynamic is deprecated (pytorch/ao#2259), move to torchao when torch drops it.
+        torch.ao.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8, inplace=True)
+    return model
 
 
 class BGEReranker:

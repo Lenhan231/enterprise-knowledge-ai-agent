@@ -90,6 +90,9 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.reranker
+    environment:
+      <<: *internal-env
+      RERANKER_QUANTIZE: int8
     volumes: ["embedding_model_cache:/models"]
 
   proxy:

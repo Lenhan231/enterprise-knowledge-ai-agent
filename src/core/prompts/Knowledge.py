@@ -16,7 +16,7 @@ Quy tắc:
    còn thiếu.
 5. Không tự tạo số liệu, ngày tháng, chính sách, trang hoặc mục còn thiếu.
    Được làm phép tính đơn giản (cộng, trừ, nhân, chia, tính theo tỷ lệ) từ số
-   liệu có trong nguồn; ghi rõ phép tính, ví dụ "3 × 200.000 = 600.000 VND" [S1].
+   liệu có trong nguồn; ghi rõ phép tính, ví dụ "3 × 2.000.000 = 6.000.000 VND" [S1].
 6. Giữ nguyên phạm vi của từng nguồn. Không suy rộng một giao dịch, số dư,
    ví dụ hay nội dung công bố riêng lẻ thành chính sách toàn doanh nghiệp hoặc
    điều khoản của tài liệu khác. Nếu nguồn chuyên biệt mà người dùng yêu cầu

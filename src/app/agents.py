@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import threading
 from pathlib import Path
 from time import perf_counter
 from typing import Literal
@@ -87,25 +88,32 @@ def _agent_request(user: dict, question: str, **values):
     return AgentRequest(question=question, user_id=user["sub"], identity=identity, **values)
 
 
+_telemetry_repository = None
+_telemetry_lock = threading.Lock()
+
+
 def _record_agent_run(**event):
+    """Insert on one reused connection; a failed connection is dropped and reopened on the next event."""
+    global _telemetry_repository
     from core.database.agent_run_repository import AgentRunRepository
 
-    repository = None
-    try:
-        repository = AgentRunRepository()
-        repository.record_event(**event)
-    except Exception:
-        logger.exception("Could not record agent run telemetry")
-    finally:
-        if repository is not None:
-            try:
-                repository.close()
-            except Exception:
-                logger.exception("Could not close agent telemetry connection")
+    with _telemetry_lock:
+        try:
+            if _telemetry_repository is None:
+                _telemetry_repository = AgentRunRepository()
+            _telemetry_repository.record_event(**event)
+        except Exception:
+            logger.exception("Could not record agent run telemetry")
+            if _telemetry_repository is not None:
+                try:
+                    _telemetry_repository.close()
+                except Exception:
+                    logger.exception("Could not close agent telemetry connection")
+                _telemetry_repository = None
 
 
 def _record_in_background(**event):
-    # Each insert opens a fresh Supabase session (~3.4 s on the VPS); the user should not wait for it.
+    # Supabase is ~0.4 s per round trip from the VPS; the user should not wait for the insert.
     # The loop's default executor is joined on shutdown, so a clean stop still writes the row.
     asyncio.get_running_loop().run_in_executor(None, lambda: _record_agent_run(**event))
 

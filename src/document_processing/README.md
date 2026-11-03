@@ -35,7 +35,8 @@ handle chunking, tokenization, embeddings, or retrieval indexing.
 Upload Test accepts self-contained SVG images and renders them as PNG for
 Docling while retaining SVG source metadata. External references, scripts,
 stylesheets and document type declarations are rejected. Corpus upload does
-not yet accept SVG.
+not yet accept SVG. Upload Test also accepts single-frame WebP images, rendered
+as PNG before parsing; corpus upload does not yet accept WebP.
 
 ## Package map
 

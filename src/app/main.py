@@ -365,7 +365,7 @@ async def upload_document(
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
     from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
-    if not filename or extension not in SUPPORTED_FORMATS or extension == ".svg":
+    if not filename or extension not in SUPPORTED_FORMATS or extension in {".svg", ".webp"}:
         raise HTTPException(415, "Supported formats: PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG, TIF")
     if not title.strip() or not document_type.strip() or not domain.strip():
         raise HTTPException(422, "Title, document type, and domain are required")

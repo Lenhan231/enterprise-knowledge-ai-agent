@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
+from io import BytesIO
 import math
 import re
 import xml.etree.ElementTree as ET
@@ -12,8 +13,30 @@ from document_processing.element_taxonomy import normalize_element_label
 
 SUPPORTED_FORMATS = frozenset({
     ".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md",
-    ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".svg",
+    ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".svg", ".webp",
 })
+
+
+def render_webp(content: bytes) -> bytes:
+    """Convert a single WebP image to PNG for Docling and preview generation."""
+    from PIL import Image
+
+    try:
+        with Image.open(BytesIO(content)) as image:
+            if image.format != "WEBP" or getattr(image, "n_frames", 1) != 1:
+                raise ValueError("Expected a single-frame WebP image")
+            if image.width * image.height > 16_000_000:
+                raise ValueError("WebP image is too large")
+            output = BytesIO()
+            rgba = image.convert("RGBA")
+            background = Image.new("RGB", image.size, "white")
+            background.paste(rgba, mask=rgba.getchannel("A"))
+            background.save(output, format="PNG")
+            return output.getvalue()
+    except ValueError:
+        raise
+    except Exception as error:
+        raise ValueError("Could not open WebP image") from error
 
 
 def render_svg(content: bytes) -> bytes:
@@ -81,14 +104,14 @@ class DocumentProcessor:
             from document_processing.docling_adapter.processor import DoclingProcessor
 
             processor_config = {**self.config, "parser_engine": engine}
-            parser_content = render_svg(content) if suffix == ".svg" else content
-            parser_metadata = {**common, "format": "PNG"} if suffix == ".svg" else common
+            parser_content = render_svg(content) if suffix == ".svg" else render_webp(content) if suffix == ".webp" else content
+            parser_metadata = {**common, "format": "PNG"} if suffix in {".svg", ".webp"} else common
             result = DoclingProcessor(processor_config).process(
                 parser_content, None, {"content": parser_content, "metadata": parser_metadata}
             )
         elements = result.get("elements", [])
         tables = result.get("tables", [])
-        if suffix in {".png", ".jpg", ".jpeg", ".svg"}:
+        if suffix in {".png", ".jpg", ".jpeg", ".svg", ".webp"}:
             for element in elements:
                 (element.get("metadata") or {}).pop("page_number", None)
             for table in tables:
@@ -102,8 +125,8 @@ class DocumentProcessor:
                 for row in table.get("rows", []) if isinstance(row, dict)
             ]
             table_metadata = table.setdefault("metadata", {})
-            if suffix == ".svg":
-                table_metadata["format"] = "SVG"
+            if suffix in {".svg", ".webp"}:
+                table_metadata["format"] = suffix[1:].upper()
             table_metadata.update({key: value for key, value in common.items() if key not in table_metadata and key not in {"title", "uploaded_by"}})
             table_metadata.update({"pipeline_id": engine, "parser_engine": engine})
             table_metadata.update({"element_type": "table", "layout_type": "table"})
@@ -117,8 +140,8 @@ class DocumentProcessor:
 
         for element in elements:
             element_metadata = dict(element.get("metadata") or {})
-            if suffix == ".svg":
-                element_metadata["format"] = "SVG"
+            if suffix in {".svg", ".webp"}:
+                element_metadata["format"] = suffix[1:].upper()
             element_metadata.pop("word_style", None)
             element_metadata.pop("word_style_id", None)
             element_metadata.update({

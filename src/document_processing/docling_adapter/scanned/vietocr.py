@@ -172,13 +172,27 @@ class VietOcrModel(BaseOcrModel):
                         crop = rotate_for_reading(crop, doc_orientation)
                     image_size = crop.size
                     image = cv2.cvtColor(np.asarray(crop), cv2.COLOR_RGB2BGR)
-                    boxes = detect_line_boxes(self.detector, image)
-                    if boxes is None:
+                    detection_image = image
+                    boxes = detect_line_boxes(self.detector, detection_image)
+                    vertical_padding = 0
+                    if boxes is None or len(boxes) == 0:
+                        vertical_padding = max(10, int(round(image.shape[0] * 0.4)))
+                        detection_image = cv2.copyMakeBorder(
+                            image,
+                            vertical_padding,
+                            vertical_padding,
+                            0,
+                            0,
+                            cv2.BORDER_CONSTANT,
+                            value=(255, 255, 255),
+                        )
+                        boxes = detect_line_boxes(self.detector, detection_image)
+                    if boxes is None or len(boxes) == 0:
                         continue
 
                     for index, quad in enumerate(boxes):
                         quad = np.asarray(quad, dtype=np.float32)
-                        line = crop_line(image, quad)
+                        line = crop_line(detection_image, quad)
                         text = str(
                             self.recognizer.predict(
                                 Image.fromarray(cv2.cvtColor(line, cv2.COLOR_BGR2RGB))
@@ -187,8 +201,12 @@ class VietOcrModel(BaseOcrModel):
                         ).strip()
                         if not text:
                             continue
-                        left, top = quad.min(axis=0)
-                        right, bottom = quad.max(axis=0)
+                        page_quad = quad.copy()
+                        page_quad[:, 1] -= vertical_padding
+                        page_quad[:, 0] = np.clip(page_quad[:, 0], 0, image_size[0] - 1)
+                        page_quad[:, 1] = np.clip(page_quad[:, 1], 0, image_size[1] - 1)
+                        left, top = page_quad.min(axis=0)
+                        right, bottom = page_quad.max(axis=0)
                         box = BoundingBox(
                             l=float(left), t=float(top), r=float(right), b=float(bottom),
                             coord_origin=CoordOrigin.TOPLEFT,

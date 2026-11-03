@@ -508,7 +508,7 @@ def validate_metric_definitions(sql, metric_names, parameters, table_columns, *,
             raise MetricDefinitionError('The requested unit ratio must retain both independently aggregated sources.')
         return _unit_ratio(list(traverse_scope(tree)), parameters, question)
     if question and 'duplicate' in question.casefold() and 'inventory' in tables and not re.search(
-            r'duplicate groups|participating|all rows|all participating', question, re.I):
+            r'\bgroups?\b|participating|all rows|all participating', question, re.I):
         root = list(traverse_scope(tree))[-1]
         expected = parse_one('COALESCE(SUM(COUNT(*) - 1), 0)', read='postgres')
         if len(root.expression.selects) != 1 or _canonical(root.expression.selects[0], root, parameters, {}) != expected:

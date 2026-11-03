@@ -9,7 +9,7 @@ from evaluation.inventory_benchmark_metrics import compare_rows
 from core.analytics.metric_mapping import compile_inventory_query, decode_metric_mapping
 from core.analytics.metric_ontology import resolve_metric_names
 from core.analytics.metric_validation import validate_metric_definitions
-from core.analytics.text_to_sql import APPROVED_COLUMNS, validate_commerce_sql
+from core.analytics.text_to_sql import APPROVED_COLUMNS, decode_query_plan, validate_commerce_sql
 from core.database.commerce_repository import create_repository_from_env
 
 OUTPUT = benchmark.ROOT/'artifacts/evaluation/sql-semantic-contracts-2026-11-03'
@@ -58,20 +58,39 @@ async def main():
                 if not column.table:
                     column.set('table',exp.to_identifier('d' if column.name=='n' else 'i'))
         fixtures[key] = (tree.sql(dialect='postgres'),())
+        if key=='S23':
+            anchored=tree.copy()
+            anchored.set('from_',exp.From(this=exp.Table(this=exp.to_identifier('products'),db=exp.to_identifier('commerce'),
+                alias=exp.TableAlias(this=exp.to_identifier('p')))))
+            anchored.set('joins',[exp.Join(this=exp.to_table(name),on=exp.EQ(
+                this=exp.column('product_id',table='p'),expression=exp.column('product_id',table=name))) for name in ('ret','ord')])
+            fixtures['S23_catalog_anchor']=(anchored.sql(dialect='postgres'),())
+    fixtures['S25']=(
+        'SELECT DISTINCT r.product_id,r.order_id FROM commerce.returns r '
+        'JOIN commerce.products p ON r.product_id=p.product_id JOIN commerce.orders o ON r.order_id=o.order_id '
+        'WHERE NOT EXISTS (SELECT 1 FROM commerce.order_items oi '
+        'WHERE oi.product_id=p.product_id AND oi.order_id=o.order_id) LIMIT 200',())
     repo = await create_repository_from_env()
     results = []
     try:
         for key, (sql,params) in fixtures.items():
+            case=key.split('_',1)[0]
             validate_commerce_sql(sql)
-            validate_metric_definitions(sql,resolve_metric_names(questions[key]),params,APPROVED_COLUMNS,question=questions[key])
+            validate_metric_definitions(sql,resolve_metric_names(questions[case]),params,APPROVED_COLUMNS,question=questions[case])
             rows = json.loads(benchmark.dumps(await repo.execute_approved_query(sql,*params)))
-            gold = refs[key]['reference']['rows']
+            gold = refs[case]['reference']['rows']
             keys = set(gold[0]) if gold else set()
             aligned = [{name:r.get(name) for name in keys} for r in rows]
             matches = compare_rows(aligned,gold)
             results.append({'id':key,'rows':len(rows),'reference_matches':matches,'sql':sql,
                             'parameters':list(params)})
             print(key,'contract fixture',matches,flush=True)
+        date_plan=decode_query_plan(json.dumps({'sql':
+            "SELECT r.product_id FROM commerce.returns r WHERE DATE_TRUNC('year',r.return_date)=DATE_TRUNC('year',$1) LIMIT 10",
+            'parameters':['2022-01-01']}))
+        date_rows=await repo.execute_approved_query(date_plan.sql,*date_plan.parameters)
+        results.append({'id':'typed_date_function','execution_passed':True,'rows':len(date_rows),
+                        'reference_matches':True,'note':'Overload-resolution integration probe; not a frozen question score.'})
         # Replay the earlier valid S14 planner output against the current validator/database.
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity

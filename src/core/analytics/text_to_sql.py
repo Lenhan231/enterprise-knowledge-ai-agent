@@ -434,6 +434,7 @@ def build_sql_prompt(
         + '\nPrimary keys (one row per key; inventory is product_snapshot grain): '+json.dumps(
             {table: sorted(PRIMARY_KEYS[table.split('.')[1]]) for table in sorted(tables)})
         + '\nExplicit calculations with clear operands are supported without creating a canonical KPI. '
+          'Aliases must be unique across the entire query, including base tables inside CTEs and outer CTE aliases. '
           'For returned-unit / ordered-unit ratios, independently aggregate returns.return_quantity by return_date '
           'and order_items.quantity by orders.order_date at the requested product grain and period, '
           'then join their complete grouped product keys. Cast numerator AS NUMERIC and divide by NULLIF(denominator,0). '

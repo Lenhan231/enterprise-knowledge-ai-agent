@@ -66,6 +66,8 @@ class InterpretationRegressionTest(unittest.TestCase):
         with self.assertRaises(MetricDefinitionError):
             validate_metric_definitions(sql, set(), (), APPROVED_COLUMNS,
                 question='How many inventory rows have duplicate (snapshot_date,product_id) keys?')
+        validate_metric_definitions(sql,set(),(),APPROVED_COLUMNS,
+            question='How many groups contain duplicate inventory keys?')
         validate_metric_definitions(sql.replace('COUNT(*) AS duplicate_rows', 'COALESCE(SUM(d.n-1),0) AS duplicate_rows'),
             set(), (), APPROVED_COLUMNS,
             question='How many inventory rows have duplicate (snapshot_date,product_id) keys?')

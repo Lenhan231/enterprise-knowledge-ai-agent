@@ -163,7 +163,15 @@ async def references():
     save(OUT/'manifest.json', manifest)
 
 
-async def generate(groups, identifiers):
+def provider_failed(row):
+    if rate_limited(row):
+        return True
+    metadata = row.get('result',{}).get('metadata',{})
+    return (metadata.get('execution_status')=='planning_failed' and metadata.get('error_type') in
+            {'APIConnectionError','APITimeoutError','InternalServerError','ServiceUnavailableError','ConnectionError','TimeoutError'})
+
+
+async def generate(groups, identifiers, *, retry_provider_errors=False):
     # Process-local alias lets existing lazy/nested providers use the authorized fallback too.
     tertiary_alias=install_tertiary_alias(os.environ)
     from core.agents.main import _LazyKnowledgeAgent, _FallbackClassifier
@@ -243,7 +251,8 @@ async def generate(groups, identifiers):
                     not prior.get('tertiary_lazy_propagated') and
                     prior.get('result',{}).get('metadata',{}).get('status')=='failed' and
                     any(t.get('agent')=='knowledge' for t in prior.get('result',{}).get('metadata',{}).get('source_collection',{}).get('task_trace',[])))
-                if (prior and not (wiring_retry or pacing_retry or new_key_retry or lazy_retry) and (not rate_limited(prior) or prior.get('attempt',1)>=2)) or identifiers and case['id'] not in identifiers:
+                provider_retry = bool(retry_provider_errors and prior and provider_failed(prior))
+                if (prior and not (provider_retry or wiring_retry or pacing_retry or new_key_retry or lazy_retry) and (not rate_limited(prior) or prior.get('attempt',1)>=2)) or identifiers and case['id'] not in identifiers:
                     continue
                 if min(llm._cooldowns)>time.monotonic()+1:
                     wait=min(60,min(llm._cooldowns)-time.monotonic()+0.5)
@@ -257,7 +266,9 @@ async def generate(groups, identifiers):
                        'groq_key_count':len(llm._clients),
                        'tertiary_lazy_propagated':bool(tertiary_alias),
                        'started_at':datetime.now(timezone.utc).isoformat()}
-                if wiring_retry:
+                if provider_retry:
+                    row['retry_reason']='Explicit provider-error retry; successful and semantic-failure attempts are retained without regeneration.'
+                elif wiring_retry:
                     row['retry_reason']='Harness correction: use production fallback classifier and source-router wiring; earlier attempt retained.'
                 elif pacing_retry:
                     row['retry_reason']='Harness correction: accurate per-key Groq cooldowns and no waits that consume the full per-call timeout; earlier attempt retained.'

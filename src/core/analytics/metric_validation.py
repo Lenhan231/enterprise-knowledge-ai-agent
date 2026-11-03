@@ -24,14 +24,25 @@ def _inventory_question(question):
                   lambda match: f'{match[3]}-{int(match[2]):02}-{int(match[1]):02}', _normalize(question))
 
 
+def inventory_explicit_dates(question):
+    question = _inventory_question(question)
+    dates = [date.fromisoformat(value) for value in re.findall(r'\b\d{4}-\d{2}-\d{2}\b', question)]
+    years = set(re.findall(r'\b(?:19|20)\d{2}\b', question))
+    months = {name.casefold():index for index,name in enumerate(calendar.month_name) if name}
+    for month, day, year in re.findall(r'\b('+'|'.join(months)+r')\s+(\d{1,2})\b(?:,?\s+((?:19|20)\d{2})\b)?', question):
+        year = year or (next(iter(years)) if len(years)==1 else None)
+        if year:
+            dates.append(date(int(year), months[month], int(day)))
+    return sorted(set(dates))
+
+
 def inventory_time_scope(question):
     """Resolve explicit historical periods; ranges retain separate snapshot observations."""
     question = _inventory_question(question)
-    dates = re.findall(r'\b\d{4}-\d{2}-\d{2}\b', question)
+    dates = inventory_explicit_dates(question)
     if dates:
-        parsed = [date.fromisoformat(value) for value in dates]
-        return ('snapshot', min(parsed).isoformat(), None) if len(set(parsed)) == 1 else (
-            'range', min(parsed).isoformat(), max(parsed).isoformat())
+        return ('snapshot', dates[0].isoformat(), None) if len(dates) == 1 else (
+            'range', dates[0].isoformat(), dates[-1].isoformat())
     month = re.search(r'\b('+'|'.join(calendar.month_name[1:]).lower()+r')\s+((?:19|20)\d{2})\b', question)
     numeric = re.search(r'tháng\s+(\d{1,2})\s+(?:năm\s+)?((?:19|20)\d{2})\b', question)
     quarter = re.search(r'(?:\bq|quarter\s*|quý\s*)([1-4])\s+(?:of\s+|năm\s+)?((?:19|20)\d{2})\b', question)
@@ -112,7 +123,10 @@ def _canonical(node, scope, parameters, used_scopes, path=()):
         value = parameters[int(node.this.name) - 1]
         return exp.convert(value.isoformat() if hasattr(value, "isoformat") else value)
     if isinstance(node, exp.Column):
-        source = {name.casefold(): value for name, value in scope.sources.items()}.get(node.table.casefold())
+        owner = scope
+        while owner is not None and node.table.casefold() not in {name.casefold() for name in owner.sources}:
+            owner = owner.parent
+        source = {name.casefold(): value for name, value in owner.sources.items()}.get(node.table.casefold()) if owner else None
         if isinstance(source, exp.Table):
             return exp.column(node.name.casefold(), table=source.name.casefold(), db=source.db.casefold())
         key = (id(source), node.name.casefold())

@@ -13,7 +13,7 @@ from core.agents.base import BaseAgent
 from core.analytics.commerce_decision_support import resolve_commerce_decision_domain, unavailable_commerce_dimensions
 from core.analytics.metric_ontology import resolve_metric_names, get_metric_definition
 from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
-from core.analytics.metric_validation import MetricDefinitionError, validate_metric_definitions, validate_metric_request
+from core.analytics.metric_validation import MetricDefinitionError, inventory_explicit_dates, validate_metric_definitions, validate_metric_request
 from core.analytics.text_to_sql import (
     APPROVED_COLUMNS,
     QueryPlan,
@@ -99,6 +99,16 @@ class SQLAnalyticsAgent(BaseAgent):
                 'A supported alternative is inventory observations by product/category at an available historical snapshot.',
                 code='unsupported_dimension', clarification=True))
         metric_names = resolve_metric_names(question)
+        if metric_names == {'stock_on_hand'} and re.search(r'\bchange\b|thay đổi', question, re.I):
+            try:
+                comparison_dates = inventory_explicit_dates(question)
+            except ValueError:
+                comparison_dates = []
+            if len(comparison_dates) == 2:
+                return self._generation_error(MetricDefinitionError(
+                    'The requested two-snapshot change and product-intersection calculation is clear, but this SQL planner '
+                    'does not yet have a verified comparison contract. This is a planner limitation. '
+                    'A supported alternative is to request each dated snapshot separately.', code='comparison_contract_unavailable'))
         definitions = {}
         raw = None
         interpretation = None

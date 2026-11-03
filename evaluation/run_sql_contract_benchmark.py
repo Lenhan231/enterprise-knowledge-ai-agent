@@ -7,6 +7,7 @@ import shutil
 import statistics
 import subprocess
 import time
+from pathlib import Path
 
 from evaluation import run_inventory_agents_benchmark as benchmark
 
@@ -19,7 +20,7 @@ class QuotaExhausted(RuntimeError):
     pass
 
 
-def prepare():
+def prepare(*, check_application=True, selected_group=None, selected_ids=None):
     manifest = json.loads((FROZEN/'manifest.json').read_text(encoding='utf-8'))
     for group in ('sql_analytics', 'report'):
         (OUTPUT/group).mkdir(parents=True, exist_ok=True)
@@ -37,7 +38,7 @@ def prepare():
     target = OUTPUT/'manifest.json'
     if target.exists():
         existing = json.loads(target.read_text(encoding='utf-8'))
-        if existing['application_source_sha256'] != hashes:
+        if check_application and existing['application_source_sha256'] != hashes:
             raise ValueError('Application changed: use a separate benchmark directory.')
     else:
         manifest = {key:manifest[key] for key in ('judge','source_sha256','reference_sha256','oracle_status')}
@@ -45,6 +46,8 @@ def prepare():
                         application_source_sha256=hashes,
                         sql_ids=[f'S{i:02}' for i in range(1,31)], report_ids=sorted(REPORT_IDS),
                         knowledge_status='deferred', status='in_progress', between_request_seconds=10)
+        if selected_group and selected_ids is not None:
+            manifest['sql_ids' if selected_group=='sql_analytics' else 'report_ids'] = selected_ids
         benchmark.save(target, manifest)
     benchmark.OUT = OUTPUT
 
@@ -67,7 +70,11 @@ def cohort(directory, group, ids=None):
     latency = [r['elapsed_seconds'] for r in rows]
     unsupported = [r for r in rows if group=='sql_analytics' and not refs[r['id']]['supported']]
     refused = [r for r in unsupported if r['result'].get('metadata',{}).get('clarification_required')]
-    return {'cases':len(rows), 'metrics':metrics,
+    expected = len(ids) if ids is not None else (30 if group=='sql_analytics' else len(REPORT_IDS))
+    if ids is None and (directory/'manifest.json').exists():
+        manifest = json.loads((directory/'manifest.json').read_text(encoding='utf-8'))
+        expected = len(manifest.get('sql_ids' if group=='sql_analytics' else 'report_ids', range(expected)))
+    return {'cases':len(rows), 'expected_cases':expected, 'unattempted':expected-len(rows), 'metrics':metrics,
             'outcomes':dict(benchmark.Counter(benchmark.generation_status(r) for r in rows)),
             'executed':sum(r['result'].get('data',{}).get('query_status')=='executed' for r in rows),
             'downloads':sum(r.get('payload_available',False) for r in rows),
@@ -90,11 +97,21 @@ def summary():
 
 
 async def main():
+    global OUTPUT
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--stage',choices=('verify','generate','score','summary'),required=True)
     parser.add_argument('--group',choices=('sql_analytics','report'),default='sql_analytics')
+    parser.add_argument('--output',type=Path,default=OUTPUT)
+    parser.add_argument('--ids',nargs='+')
+    parser.add_argument('--retry-provider-errors',action='store_true')
     args = parser.parse_args()
-    prepare()
+    OUTPUT = args.output.resolve()
+    prepare(check_application=args.stage in {'generate','verify'},selected_group=args.group,selected_ids=args.ids)
+    manifest = json.loads((OUTPUT/'manifest.json').read_text(encoding='utf-8'))
+    ids = args.ids or manifest['sql_ids' if args.group=='sql_analytics' else 'report_ids']
+    original_cases = benchmark.load_cases
+    order = {identifier:index for index,identifier in enumerate(ids)}
+    benchmark.load_cases = lambda group: sorted([c for c in original_cases(group) if c['id'] in order],key=lambda c:order[c['id']])
     if args.stage=='verify':
         from evaluation import run_sql_semantic_ablation as ablation
         ablation.OUTPUT = OUTPUT
@@ -102,7 +119,7 @@ async def main():
     elif args.stage=='summary':
         summary()
     elif args.stage=='score':
-        await benchmark.score((args.group,), REPORT_IDS if args.group=='report' else set())
+        await benchmark.score((args.group,), set(ids))
         summary()
     else:
         if subprocess.run(['git','diff','--quiet','HEAD','--','src'],cwd=benchmark.ROOT).returncode:
@@ -134,7 +151,7 @@ async def main():
 
         GroqProvider.generate, benchmark.append = measured, append
         try:
-            await benchmark.generate((args.group,), REPORT_IDS if args.group=='report' else set())
+            await benchmark.generate((args.group,), set(ids),retry_provider_errors=args.retry_provider_errors)
         except QuotaExhausted as error:
             print(str(error),flush=True)
         summary()

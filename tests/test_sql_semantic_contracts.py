@@ -15,6 +15,22 @@ from core.analytics.text_to_sql import APPROVED_COLUMNS
 
 
 class InterpretationRegressionTest(unittest.TestCase):
+    def test_named_snapshot_dates_are_not_replaced_with_a_whole_year(self):
+        from core.analytics.metric_validation import inventory_time_scope
+        self.assertEqual(inventory_time_scope('Between November 30 and December 31, 2022'),
+                         ('range','2022-11-30','2022-12-31'))
+        self.assertEqual(inventory_time_scope('On November 30, 2022'),('snapshot','2022-11-30',None))
+
+    def test_correlated_missing_observation_remains_a_structural_query(self):
+        from core.analytics.metric_mapping import validate_mapped_sql
+        question = 'Which catalog products are missing an inventory row on 2022-12-31?'
+        mapping = decode_metric_mapping('{"domain":"other"}',question)
+        plan = decode_query_plan(json.dumps({'sql':
+            'SELECT p.product_id,p.product_name FROM commerce.products p WHERE NOT EXISTS '
+            '(SELECT 1 FROM commerce.inventory i WHERE i.product_id=p.product_id AND i.snapshot_date=$1) LIMIT 200',
+            'parameters':['2022-12-31']}))
+        validate_mapped_sql(plan,mapping,question=question)
+
     def test_flagged_product_count_is_not_a_boolean_aggregate(self):
         from core.analytics.metric_mapping import compile_inventory_query
         mapping = decode_metric_mapping(json.dumps({'metrics':['overstock_indicator'],
@@ -191,6 +207,19 @@ class CrossDomainInventoryTest(unittest.TestCase):
 
 
 class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_clear_unimplemented_change_is_not_a_user_clarification(self):
+        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.models.agents import AgentRequest, VerifiedIdentity
+        provider, repository = Mock(), AsyncMock()
+        result = await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
+            question='How did stock_on_hand change between November 30 and December 31, 2022, for products present on both dates?',
+            identity=VerifiedIdentity(subject='analyst',permissions={'analytics:read'})))
+        self.assertFalse(result.metadata.get('clarification_required',False))
+        self.assertEqual(result.metadata.get('metric_error_code'),'comparison_contract_unavailable')
+        self.assertIn('planner limitation',result.answer)
+        provider.generate.assert_not_called()
+        repository.execute_approved_query.assert_not_awaited()
+
     async def test_comparison_reaches_shared_sql_path_and_readonly_repository(self):
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
         from core.models.agents import AgentRequest, VerifiedIdentity

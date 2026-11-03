@@ -333,6 +333,14 @@ def inventory_observation_query(sql, parameters=()):
     """Recognize key/presence diagnostics without approving any business measure."""
     scopes = list(traverse_scope(parse_one(sql, read='postgres')))
     for scope in scopes:
+        for column in scope.columns:
+            try:
+                value = _canonical(column, scope, parameters, {})
+            except MetricDefinitionError:
+                return False
+            if any(c.db == 'commerce' and c.table == 'inventory' and c.name not in {'product_id','snapshot_date'}
+                   for c in value.find_all(exp.Column)):
+                return False
         for projection in scope.expression.selects:
             try:
                 value = _canonical(projection, scope, parameters, {})

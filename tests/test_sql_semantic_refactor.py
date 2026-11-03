@@ -101,6 +101,15 @@ class SafeJoinPredicateTest(unittest.TestCase):
                 plan = decode_query_plan(json.dumps({'sql':sql,'parameters':[]}))
                 validate_mapped_sql(plan, mapping)
 
+    def test_observation_path_cannot_hide_a_business_threshold_in_where(self):
+        from core.analytics.metric_mapping import validate_mapped_sql
+        mapping = decode_metric_mapping('{"domain":"other"}', 'Check observation keys')
+        plan = decode_query_plan(json.dumps({'sql':
+            'SELECT i.product_id FROM commerce.inventory i WHERE i.stock_on_hand<5 LIMIT 200',
+            'parameters':[]}))
+        with self.assertRaises(MetricDefinitionError):
+            validate_mapped_sql(plan, mapping)
+
 
 class SchemaContextTest(unittest.TestCase):
     def test_return_context_keeps_keys_grain_and_excludes_web_traffic(self):

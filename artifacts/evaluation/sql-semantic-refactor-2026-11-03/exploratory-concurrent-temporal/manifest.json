@@ -1,0 +1,62 @@
+{
+  "source_sha256": "a811884f94446d055da4f92158e7db5485a5f5eeb2d0aa8b797cc659c44e7303",
+  "baseline_commit": "f8996f62dfda0bc4cb9c9eaf5549128cace1ff58",
+  "branch": "QuocAn",
+  "judge": {
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "medium",
+    "adapter": "evaluation.ragas_judge.CodexCLIJudge"
+  },
+  "cases": {
+    "knowledge": 30,
+    "sql_analytics": 30,
+    "report": 30
+  },
+  "knowledge_status": "deferred",
+  "status": "exploratory_superseded",
+  "reference_frozen_at": "2026-11-02T09:28:35.083545+00:00",
+  "reference_sha256": {
+    "sql_analytics": "4ebff61142108f3eb0b0a65df4a09af16bb21985021d1b6a815ae7e66a9e1457",
+    "report": "7b6a62dcc7e593a13598d2c3eb82e1ba22a3979e662f32522b06b16ed0350a66"
+  },
+  "oracle_status": "independent SQL oracles, author review only; not externally certified gold",
+  "agent_model": "qwen/qwen3.8-27b",
+  "agent_temperature": 0,
+  "groq_key_count": 3,
+  "groq_failover": "primary, numbered backups, then GROQ_API_KEY_RAGAS; rotate on RateLimitError, keep same model",
+  "runner_commit": "3ba340dc9aa165c5b5a82d1b21a25d104cc63244",
+  "package_versions": {
+    "ragas": "0.1.dev1148+g735726d5c",
+    "openai": "2.41.0",
+    "pydantic": "2.11.7"
+  },
+  "report_source_mode": "orchestrated",
+  "confirmation_policy": "first response only; no implicit scope acceptance",
+  "benchmark_pacing": "Up to 3 provider attempts for 429 only; wait for existing key cooldowns within normal report deadline. One case retry for previously recorded 429; originals retained.",
+  "sql_scoring_revision": 4,
+  "report_numerical_revision": 2,
+  "generation_harness_revision": 3,
+  "lazy_provider_fallback_alias": "GROQ_API_KEY_3",
+  "identity_counts_sha256": "44859af22ff155a300121d4984870d6d850286985777ae31ef57454af4dae599",
+  "sql_identity_validation_revision": 2,
+  "numeric_tolerance": {
+    "absolute": "1e-6",
+    "relative": "1e-12"
+  },
+  "evaluation_source_sha256": {
+    "evaluation/run_inventory_agents_benchmark.py": "4c2889d59ea434465ddef5234df25f68777ca50811d2934421b46fe8f9033881",
+    "evaluation/inventory_benchmark_metrics.py": "da8f0bf5d27c7a6542e5dcf8580446984ee0219cb973fa9e1f8c14ef1bf0f453",
+    "evaluation/inventory_benchmark_references.py": "8bdf5df6c7025ec957c2b7827d4db97e2937702dffcc918f08e9360e988816e8"
+  },
+  "ablation_variant": "temporal",
+  "application_baseline": "3ba340d",
+  "baseline_reference_directory": "artifacts\\evaluation\\agent-benchmarks-2026-11-02",
+  "application_source_sha256": {
+    "core.analytics.metric_validation": "2d1962745e000953d3ca5e99642b9f72b75760cfaff13ac477787826b1759847",
+    "core.analytics.metric_mapping": "235d375cb3203485e11b95ec6772b81721e90099ff45fb8b7e60795382d9f426",
+    "core.analytics.text_to_sql": "5c4f7407a7a9f5817df215422ae6bb75ebe55e125e7b45692ebd9ab4c82a5ef2",
+    "core.agents.sql_analytics_agent": "f20f66d792a303de8757ee66f79ad7cd305f60181cb4f3deb565ee807fe69695",
+    "core.reports.planning": "ef2d77c279a5afaebd50715945b4b973482fbe732165e5990ba84ae8eb975ee8"
+  },
+  "excluded_from_comparison": true
+}

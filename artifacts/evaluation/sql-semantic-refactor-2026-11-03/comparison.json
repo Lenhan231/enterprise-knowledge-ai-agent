@@ -1,0 +1,701 @@
+{
+  "final_application_revision": "5ac3fc2a868d9bac15bc92b2df195b9e7f4017a6",
+  "frozen_baseline": {
+    "cases": 30,
+    "expected_cases": 30,
+    "generation_pending": 0,
+    "metrics": {
+      "execution_accuracy": {
+        "mean": 0.21428571428571427,
+        "scored": 28,
+        "not_applicable": 2,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "sql_semantic_equivalence": {
+        "mean": 0.14285714285714285,
+        "scored": 28,
+        "not_applicable": 2,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "numerical_accuracy": {
+        "mean": 0.2229608525904822,
+        "scored": 27,
+        "not_applicable": 3,
+        "evaluator_errors": 0,
+        "pending": 0
+      }
+    },
+    "outcomes": {
+      "executed_with_rows": 9,
+      "clarification_required": 14,
+      "executed_empty": 2,
+      "MetricDefinitionError": 3,
+      "SQLValidationError": 2
+    },
+    "supported_clarifications": 13,
+    "supported_cases": 28,
+    "validation_failures": 5,
+    "provider_rate_limit_failures": 0,
+    "query_execution_success": 11,
+    "latency_seconds": {
+      "p50": 8.0475,
+      "p95": 21.06375
+    },
+    "llm_calls": {
+      "total": null,
+      "per_request": null,
+      "instrumented_requests": 0,
+      "failed_calls": 0
+    },
+    "reported_tokens": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "total_tokens": 0
+    },
+    "unmetered_calls": 0
+  },
+  "full_comparison": {
+    "baseline": {
+      "cases": 30,
+      "expected_cases": 30,
+      "generation_pending": 0,
+      "metrics": {
+        "execution_accuracy": {
+          "mean": 0.25,
+          "scored": 28,
+          "not_applicable": 2,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "sql_semantic_equivalence": {
+          "mean": 0.14285714285714285,
+          "scored": 28,
+          "not_applicable": 2,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "numerical_accuracy": {
+          "mean": 0.25999788962751924,
+          "scored": 27,
+          "not_applicable": 3,
+          "evaluator_errors": 0,
+          "pending": 0
+        }
+      },
+      "outcomes": {
+        "executed_with_rows": 10,
+        "clarification_required": 14,
+        "executed_empty": 1,
+        "MetricDefinitionError": 3,
+        "SQLValidationError": 2
+      },
+      "supported_clarifications": 13,
+      "supported_cases": 28,
+      "validation_failures": 5,
+      "provider_rate_limit_failures": 0,
+      "query_execution_success": 11,
+      "latency_seconds": {
+        "p50": 2.598,
+        "p95": 4.2565
+      },
+      "llm_calls": {
+        "total": 61,
+        "per_request": 2.033333333333333,
+        "instrumented_requests": 30,
+        "failed_calls": 0
+      },
+      "reported_tokens": {
+        "input_tokens": 102264,
+        "output_tokens": 7535,
+        "total_tokens": 109799
+      },
+      "unmetered_calls": 0
+    },
+    "combined": {
+      "cases": 0,
+      "expected_cases": 30,
+      "generation_pending": 30,
+      "metrics": {
+        "execution_accuracy": {
+          "mean": null,
+          "scored": 0,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "sql_semantic_equivalence": {
+          "mean": null,
+          "scored": 0,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "numerical_accuracy": {
+          "mean": null,
+          "scored": 0,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        }
+      },
+      "outcomes": {},
+      "supported_clarifications": 0,
+      "supported_cases": 0,
+      "validation_failures": 0,
+      "provider_rate_limit_failures": 0,
+      "query_execution_success": 0,
+      "latency_seconds": {
+        "p50": null,
+        "p95": null
+      },
+      "llm_calls": {
+        "total": null,
+        "per_request": null,
+        "instrumented_requests": 0,
+        "failed_calls": 0
+      },
+      "reported_tokens": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "unmetered_calls": 0
+    }
+  },
+  "verified_live_6ed9a19": {
+    "cases": 30,
+    "expected_cases": 30,
+    "generation_pending": 0,
+    "metrics": {
+      "execution_accuracy": {
+        "mean": 0.5357142857142857,
+        "scored": 28,
+        "not_applicable": 2,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "sql_semantic_equivalence": {
+        "mean": 0.25,
+        "scored": 28,
+        "not_applicable": 2,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "numerical_accuracy": {
+        "mean": 0.5223646723646723,
+        "scored": 26,
+        "not_applicable": 4,
+        "evaluator_errors": 0,
+        "pending": 0
+      }
+    },
+    "outcomes": {
+      "executed_with_rows": 20,
+      "executed_empty": 1,
+      "clarification_required": 9
+    },
+    "supported_clarifications": 7,
+    "supported_cases": 28,
+    "validation_failures": 0,
+    "provider_rate_limit_failures": 0,
+    "query_execution_success": 21,
+    "latency_seconds": {
+      "p50": 2.2375,
+      "p95": 3.9515000000000002
+    },
+    "llm_calls": {
+      "total": 48,
+      "per_request": 1.6,
+      "instrumented_requests": 30,
+      "failed_calls": 0
+    },
+    "reported_tokens": {
+      "input_tokens": 72824,
+      "output_tokens": 5146,
+      "total_tokens": 77970
+    },
+    "unmetered_calls": 0
+  },
+  "quota_limited_95aa2b3": {
+    "cases": 5,
+    "expected_cases": 30,
+    "generation_pending": 25,
+    "metrics": {
+      "execution_accuracy": {
+        "mean": 0.2,
+        "scored": 5,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "sql_semantic_equivalence": {
+        "mean": 0.0,
+        "scored": 5,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "numerical_accuracy": {
+        "mean": 0.2,
+        "scored": 5,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      }
+    },
+    "outcomes": {
+      "executed_with_rows": 1,
+      "RateLimitError": 4
+    },
+    "supported_clarifications": 0,
+    "supported_cases": 5,
+    "validation_failures": 0,
+    "provider_rate_limit_failures": 4,
+    "query_execution_success": 1,
+    "latency_seconds": {
+      "p50": 1.15,
+      "p95": 3.9355999999999995
+    },
+    "llm_calls": {
+      "total": 4,
+      "per_request": 0.8,
+      "instrumented_requests": 5,
+      "failed_calls": 2
+    },
+    "reported_tokens": {
+      "input_tokens": 4079,
+      "output_tokens": 204,
+      "total_tokens": 4283
+    },
+    "unmetered_calls": 2
+  },
+  "focused_ablation": {
+    "baseline": {
+      "cases": 10,
+      "expected_cases": 10,
+      "generation_pending": 0,
+      "metrics": {
+        "execution_accuracy": {
+          "mean": 0.0,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "sql_semantic_equivalence": {
+          "mean": 0.0,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "numerical_accuracy": {
+          "mean": 0.0,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        }
+      },
+      "outcomes": {
+        "clarification_required": 8,
+        "MetricDefinitionError": 1,
+        "SQLValidationError": 1
+      },
+      "supported_clarifications": 8,
+      "supported_cases": 10,
+      "validation_failures": 2,
+      "provider_rate_limit_failures": 0,
+      "query_execution_success": 0,
+      "latency_seconds": {
+        "p50": 1.315,
+        "p95": 2.74735
+      },
+      "llm_calls": {
+        "total": 20,
+        "per_request": 2.0,
+        "instrumented_requests": 10,
+        "failed_calls": 0
+      },
+      "reported_tokens": {
+        "input_tokens": 33624,
+        "output_tokens": 2542,
+        "total_tokens": 36166
+      },
+      "unmetered_calls": 0
+    },
+    "temporal": {
+      "cases": 10,
+      "expected_cases": 10,
+      "generation_pending": 0,
+      "metrics": {
+        "execution_accuracy": {
+          "mean": 0.4,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "sql_semantic_equivalence": {
+          "mean": 0.0,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "numerical_accuracy": {
+          "mean": 0.405,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        }
+      },
+      "outcomes": {
+        "executed_with_rows": 5,
+        "SQLValidationError": 3,
+        "clarification_required": 2
+      },
+      "supported_clarifications": 2,
+      "supported_cases": 10,
+      "validation_failures": 3,
+      "provider_rate_limit_failures": 0,
+      "query_execution_success": 5,
+      "latency_seconds": {
+        "p50": 2.9815,
+        "p95": 4.55835
+      },
+      "llm_calls": {
+        "total": 22,
+        "per_request": 2.2,
+        "instrumented_requests": 10,
+        "failed_calls": 0
+      },
+      "reported_tokens": {
+        "input_tokens": 37182,
+        "output_tokens": 2973,
+        "total_tokens": 40155
+      },
+      "unmetered_calls": 0
+    },
+    "ontology": {
+      "cases": 10,
+      "expected_cases": 10,
+      "generation_pending": 0,
+      "metrics": {
+        "execution_accuracy": {
+          "mean": 0.0,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "sql_semantic_equivalence": {
+          "mean": 0.0,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "numerical_accuracy": {
+          "mean": 0.0,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        }
+      },
+      "outcomes": {
+        "clarification_required": 7,
+        "MetricDefinitionError": 1,
+        "SQLValidationError": 2
+      },
+      "supported_clarifications": 7,
+      "supported_cases": 10,
+      "validation_failures": 3,
+      "provider_rate_limit_failures": 0,
+      "query_execution_success": 0,
+      "latency_seconds": {
+        "p50": 15.0515,
+        "p95": 34.3942
+      },
+      "llm_calls": {
+        "total": 39,
+        "per_request": 3.9,
+        "instrumented_requests": 10,
+        "failed_calls": 19
+      },
+      "reported_tokens": {
+        "input_tokens": 33737,
+        "output_tokens": 2665,
+        "total_tokens": 36402
+      },
+      "unmetered_calls": 19
+    },
+    "schema": {
+      "cases": 10,
+      "expected_cases": 10,
+      "generation_pending": 0,
+      "metrics": {
+        "execution_accuracy": {
+          "mean": 0.0,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "sql_semantic_equivalence": {
+          "mean": 0.0,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "numerical_accuracy": {
+          "mean": 0.0,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        }
+      },
+      "outcomes": {
+        "clarification_required": 8,
+        "MetricDefinitionError": 1,
+        "SQLValidationError": 1
+      },
+      "supported_clarifications": 8,
+      "supported_cases": 10,
+      "validation_failures": 2,
+      "provider_rate_limit_failures": 0,
+      "query_execution_success": 0,
+      "latency_seconds": {
+        "p50": 12.463999999999999,
+        "p95": 40.7384
+      },
+      "llm_calls": {
+        "total": 38,
+        "per_request": 3.8,
+        "instrumented_requests": 10,
+        "failed_calls": 18
+      },
+      "reported_tokens": {
+        "input_tokens": 31786,
+        "output_tokens": 2567,
+        "total_tokens": 34353
+      },
+      "unmetered_calls": 18
+    },
+    "compiler": {
+      "cases": 10,
+      "expected_cases": 10,
+      "generation_pending": 0,
+      "metrics": {
+        "execution_accuracy": {
+          "mean": 0.0,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "sql_semantic_equivalence": {
+          "mean": 0.0,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "numerical_accuracy": {
+          "mean": 0.0,
+          "scored": 10,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        }
+      },
+      "outcomes": {
+        "clarification_required": 4,
+        "RateLimitError": 6
+      },
+      "supported_clarifications": 4,
+      "supported_cases": 10,
+      "validation_failures": 0,
+      "provider_rate_limit_failures": 6,
+      "query_execution_success": 0,
+      "latency_seconds": {
+        "p50": 0.398,
+        "p95": 4.0369
+      },
+      "llm_calls": {
+        "total": 8,
+        "per_request": 0.8,
+        "instrumented_requests": 10,
+        "failed_calls": 4
+      },
+      "reported_tokens": {
+        "input_tokens": 7831,
+        "output_tokens": 494,
+        "total_tokens": 8325
+      },
+      "unmetered_calls": 4
+    },
+    "combined": {
+      "cases": 0,
+      "expected_cases": 10,
+      "generation_pending": 10,
+      "metrics": {
+        "execution_accuracy": {
+          "mean": null,
+          "scored": 0,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "sql_semantic_equivalence": {
+          "mean": null,
+          "scored": 0,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        },
+        "numerical_accuracy": {
+          "mean": null,
+          "scored": 0,
+          "not_applicable": 0,
+          "evaluator_errors": 0,
+          "pending": 0
+        }
+      },
+      "outcomes": {},
+      "supported_clarifications": 0,
+      "supported_cases": 0,
+      "validation_failures": 0,
+      "provider_rate_limit_failures": 0,
+      "query_execution_success": 0,
+      "latency_seconds": {
+        "p50": null,
+        "p95": null
+      },
+      "llm_calls": {
+        "total": null,
+        "per_request": null,
+        "instrumented_requests": 0,
+        "failed_calls": 0
+      },
+      "reported_tokens": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "unmetered_calls": 0
+    }
+  },
+  "focused_combined_6ed9a19": {
+    "cases": 10,
+    "expected_cases": 10,
+    "generation_pending": 0,
+    "metrics": {
+      "execution_accuracy": {
+        "mean": 0.5,
+        "scored": 10,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "sql_semantic_equivalence": {
+        "mean": 0.2,
+        "scored": 10,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "numerical_accuracy": {
+        "mean": 0.45,
+        "scored": 9,
+        "not_applicable": 1,
+        "evaluator_errors": 0,
+        "pending": 0
+      }
+    },
+    "outcomes": {
+      "executed_with_rows": 7,
+      "clarification_required": 3
+    },
+    "supported_clarifications": 3,
+    "supported_cases": 10,
+    "validation_failures": 0,
+    "provider_rate_limit_failures": 0,
+    "query_execution_success": 7,
+    "latency_seconds": {
+      "p50": 2.2165,
+      "p95": 3.8282000000000007
+    },
+    "llm_calls": {
+      "total": 17,
+      "per_request": 1.7,
+      "instrumented_requests": 10,
+      "failed_calls": 0
+    },
+    "reported_tokens": {
+      "input_tokens": 25144,
+      "output_tokens": 1829,
+      "total_tokens": 26973
+    },
+    "unmetered_calls": 0
+  },
+  "fixed_numeric_applicability": {
+    "case_ids": [
+      "S02",
+      "S03",
+      "S04",
+      "S05",
+      "S06",
+      "S07",
+      "S08",
+      "S09",
+      "S10",
+      "S11",
+      "S12",
+      "S13",
+      "S15",
+      "S16",
+      "S17",
+      "S18",
+      "S19",
+      "S20",
+      "S21",
+      "S22",
+      "S23",
+      "S24",
+      "S27",
+      "S28"
+    ],
+    "baseline": {
+      "mean": 0.2924976258309592,
+      "scored": 24,
+      "not_applicable": 0,
+      "evaluator_errors": 0,
+      "pending": 0
+    },
+    "live_6ed9a19": {
+      "mean": 0.5658950617283951,
+      "scored": 24,
+      "not_applicable": 0,
+      "evaluator_errors": 0,
+      "pending": 0
+    }
+  },
+  "notes": [
+    "No source references, metric formulas, model or judge settings changed.",
+    "The 95aa2b3 run stopped after five cases (four daily-quota failures). The final code also adds a deterministic full-schema dimension guard; its full combined run remains pending. Do not compare a small available sample as a full cohort.",
+    "The most recent complete live combined cohort is application revision 6ed9a19, before standalone transaction routing and the explicit unreviewed-alias guard.",
+    "Supported clarifications are a proxy, not certified unnecessary-clarification labels.",
+    "The inherited scorer gives failed supported questions numerical zero before checking numerical applicability. S14 becomes N/A when it executes because its reference contains only identifiers/names. Raw metrics are retained; a supplementary fixed-eligibility numerical comparison excludes date/identifier-only cases in both cohorts.",
+    "Latency includes provider retries/cooldowns inside a request, excludes the same 10-second between-request pacing.",
+    "Sequential unrandomized runs are descriptive measurements, not a controlled live-performance guarantee.",
+    "Token totals include reported successful-call usage only; unavailable usage is counted separately.",
+    "Cross-domain aggregate joins remain restricted; do not interpret refusal as absent source data."
+  ]
+}

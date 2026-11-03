@@ -1,0 +1,33 @@
+{
+  "case": "S30",
+  "application_revision": "5ac3fc2a868d9bac15bc92b2df195b9e7f4017a6",
+  "kind": "direct-agent integration smoke, real least-privilege repository initialization; not a staging HTTP test",
+  "calls": {
+    "provider": 0,
+    "query": 0
+  },
+  "result": {
+    "answer": "The full approved schema does not support these requested dimensions: supplier. A supported alternative is inventory observations by product/category at an available historical snapshot.",
+    "agent": "sql_analytics",
+    "evidence": [],
+    "data": {
+      "ok": false,
+      "operation": "text_to_sql",
+      "rows": [],
+      "limitations": [
+        "The generated query did not pass planning or SQL validation."
+      ]
+    },
+    "metadata": {
+      "error_type": "MetricDefinitionError",
+      "metric_error_code": "unsupported_dimension",
+      "clarification_required": true,
+      "status": "clarification_required",
+      "execution_status": "clarification_required",
+      "ok": false,
+      "limitations": [
+        "The generated query did not pass planning or SQL validation."
+      ]
+    }
+  }
+}

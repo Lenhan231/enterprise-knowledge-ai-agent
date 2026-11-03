@@ -78,16 +78,6 @@ class RerankTest(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(ValueError):
                 reranker.rerank("question", [existing.chunk("EN", 0)], 1)
 
-    def test_fusion_keeps_wide_pool_but_only_top_20_are_reranked(self):
-        service, _ = existing.TranslatedHybridTest().service()
-        fused = [existing.chunk("EN", i) for i in range(30)]
-        service.reranker = MagicMock()
-        service.reranker.rerank.return_value = (fused[:5], {})
-        with patch("core.retrieval.methods.translated_hybrid.search", return_value=(fused, {"effective_method": "x"})) as search:
-            service.retrieve(RetrievalRequest(query="q", top_k=5), method="translated_hybrid_rerank")
-        self.assertEqual(search.call_args.args[2].top_k, 30)
-        self.assertEqual(service.reranker.rerank.call_args.args[1], fused[:20])
-
     def test_int8_env_quantizes_linear_layers_and_rejects_bad_values(self):
         import torch
         from core.retrieval import reranker

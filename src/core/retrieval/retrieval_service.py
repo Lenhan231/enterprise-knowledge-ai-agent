@@ -13,8 +13,6 @@ from core.retrieval.retrieval import (
     RankedChunk, RetrievalRequest, RetrievalResponse, SourceLocation, make_chunk_id,
 )
 
-RERANK_CANDIDATES = 20
-
 
 class RetrievalService:
     def __init__(
@@ -102,10 +100,7 @@ class RetrievalService:
                 from core.retrieval.reranker import BGEReranker
                 self.reranker = BGEReranker()
             retrieval_details["candidate_method"] = retrieval_details["effective_method"]
-            # VietStyle 80-case sim: reranking fused top-20 instead of 30 keeps top-5 evidence (int8 182 vs 183 components)
-            # and cuts BGE time by a third; fusion itself still sees the 30-wide request.
-            chunks, rerank_details = self.reranker.rerank(
-                request.query, chunks[:max(RERANK_CANDIDATES, request.top_k)], request.top_k)
+            chunks, rerank_details = self.reranker.rerank(request.query, chunks, request.top_k)
             retrieval_details.update(rerank_details)
             retrieval_details["effective_method"] = (
                 "dense_rerank" if retrieval_details.get("dense_fallback") else method

@@ -16,7 +16,7 @@ DocumentProcessor.process(file)
     │     └── DoclingProcessor
     │           ├── page OSD → rotate detector view, map boxes back to source coordinates
     │           ├── PP-DocLayoutV3 → native layout_detections + Docling clusters
-    │           ├── OCR-region OSD → RapidOCR line detection → VietOCR; TableFormer → {elements, tables}
+    │           ├── OCR-region OSD → RapidOCR line detection → printed/handwriting routing → VietOCR; TableFormer → {elements, tables}
     │           ├── chart + matched title → union crop at 3× → OpenParser/PaddleOCR-VL 1.6 table
     │           │     └── Groq + existing VietOCR lines → text-cell spelling corrections
     │           │           (direct Groq vision extraction if OpenParser key is unavailable)
@@ -76,10 +76,20 @@ OCR text elements assigned to the same raw PP-DocLayoutV3 `text` box are
 merged in reading order; text on separate lines stays on separate lines. Other
 layout labels, including tables, footer and number, are not merged this way.
 
+VietOCR classifies each detected line crop as printed or handwritten. Printed
+lines use the existing `vgg_seq2seq` recognizer; handwritten lines use the
+Vietnamese handwriting fine-tune `DungHugging/vietocr-handwritten-finetune`
+(`vgg_transformer`). The ResNet-18 style classifier is
+`VItaldob/text-type-classifier-resnet18`; both model revisions are pinned and
+cached under `HF_HOME`. If either download or model load fails, OCR falls back
+to the existing Seq2Seq recognizer. The classifier was trained on European
+language lines, so its Vietnamese routing quality still needs a held-out
+evaluation before the classifier itself can be considered production-validated.
+
 Before PP-DocLayoutV3 runs, PaddleOCR `PP-LCNet_x1_0_doc_ori` checks each
 rendered page and rotates it when needed. Page previews and detected boxes use
-the corrected page orientation. VietOCR uses the same classifier on each OCR
-region before RapidOCR line detection. A region is rotated only if confidence is
+the corrected page orientation. VietOCR also uses PP-LCNet's orientation
+classifier on each OCR region before RapidOCR line detection. A region is rotated only if confidence is
 at least 0.7; quarter-turn predictions are ignored for horizontal crops because
 they can be wrong even at high confidence. VietOCR uses
 detected layout boxes, falling back to full-page OCR if none are detected; text

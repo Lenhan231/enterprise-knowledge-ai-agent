@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import json
+import re
 from collections.abc import Mapping
 from typing import Any
 
@@ -109,9 +110,12 @@ class SQLAnalyticsAgent(BaseAgent):
             except MetricDefinitionError as error:
                 if error.code != 'snapshot_required':
                     raise
-            if (context is not None
+            tables = relevant_schema_tables(question, {name:get_metric_definition(name) for name in metric_names})
+            cross_domain = ('commerce.inventory' in tables and bool(tables & {'commerce.orders', 'commerce.order_items'})
+                            and bool(re.search(r'\borders\b|\bordered\b|\border(?!\s+by)\b|đơn hàng', question, re.I)))
+            if (not cross_domain and (context is not None
                     or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
-                    or (not metric_names and 'commerce.inventory' in relevant_schema_tables(question, {}))):
+                    or (not metric_names and 'commerce.inventory' in tables))):
                 with measure('metric_interpretation'):
                     mapped = await generate(self._provider(),build_metric_mapping_prompt(question,context=context),timeout=30)
                 if context is None:
@@ -122,7 +126,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 if interpretation.domain == 'inventory':
                     metric_names = set(interpretation.metrics)
             resolved_latest = False
-            if context is not None and interpretation.domain == 'inventory' and interpretation.time.mode == 'latest':
+            if context is not None and interpretation and interpretation.domain == 'inventory' and interpretation.time.mode == 'latest':
                 snapshot_sql = 'SELECT MAX(i.snapshot_date) AS snapshot_date FROM commerce.inventory AS i LIMIT 1'
                 try:
                     snapshots = await self.repository.execute_approved_query(snapshot_sql)
@@ -154,6 +158,8 @@ class SQLAnalyticsAgent(BaseAgent):
                         raw = await generate(self._provider(), prompt, timeout=60)
                     plan = decode_query_plan(raw)
                 if plan.sql:
+                    if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validate_commerce_sql(plan.sql).sources):
+                        raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
                     definitions = validate_metric_definitions(plan.sql, metric_names, plan.parameters, APPROVED_COLUMNS,
                                                               question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question)
                     if interpretation:
@@ -208,7 +214,14 @@ class SQLAnalyticsAgent(BaseAgent):
         if any(definition.get('domain') == 'inventory_management' for definition in definitions.values()):
             dates = sorted({str(row['snapshot_date']) for row in rows if row.get('snapshot_date') is not None})
             metadata.update(metric_catalog_version='1.0.0', historical_inventory=True, snapshot_dates=dates)
-            limitations.append('Inventory observations are historical; selected snapshot dates: ' + ', '.join(dates))
+            periods = [definition['calculation_scope'] for definition in definitions.values() if definition.get('calculation_scope')]
+            if periods:
+                metadata['inventory_period_scope'] = periods[0]
+                limitations.append('Recorded inventory movement observations are summed over the requested period: ' + str(periods[0]))
+            elif dates:
+                limitations.append('Inventory observations are historical; selected snapshot dates: ' + ', '.join(dates))
+            else:
+                limitations.append('No matching inventory observations were found for the requested scope; missing observations are not zero stock.')
         if not rows:
             return {
                 "ok": False, "operation": "text_to_sql", "rows": [],

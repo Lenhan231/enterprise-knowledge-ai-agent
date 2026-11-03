@@ -23,7 +23,7 @@ SQL = ('SELECT i.snapshot_date,p.product_name,i.stock_on_hand FROM commerce.inve
 
 
 class MetricMappingTest(unittest.TestCase):
-    def decode(self, payload=None, question='Which blue styles have the fewest pieces left at the latest recorded observation?'):
+    def decode(self, payload=None, question='Which top 10 blue styles have the fewest pieces left at the latest recorded observation?'):
         return decode_metric_mapping(json.dumps(payload or MAPPING),question)
 
     def test_unseen_wording_maps_to_catalog_ids_and_sql_constraints(self):

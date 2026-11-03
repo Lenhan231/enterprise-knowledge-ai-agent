@@ -362,8 +362,157 @@ def inventory_observation_query(sql, parameters=()):
     return True
 
 
+def _validate_source_period(scope, table, field, parameters, question):
+    period = inventory_time_scope(question)
+    if not period or len(set(re.findall(r'\b(?:19|20)\d{2}\b', question))) > 1:
+        raise MetricDefinitionError('Specify one explicit historical period for this cross-domain calculation.', clarification=True)
+    start = date.fromisoformat(period[1])
+    end = date.fromisoformat(period[2] or period[1]) + timedelta(days=1)
+    column = exp.column(field, table=table, db='commerce')
+    lower, upper = [], []
+    for predicate in _conjuncts(scope.expression.args.get('where')):
+        if not any(c.name == field and isinstance(scope.sources.get(c.table), exp.Table)
+                   and scope.sources[c.table].name == table for c in predicate.find_all(exp.Column)):
+            continue
+        value = _canonical(predicate, scope, parameters, {})
+        if not isinstance(value, (exp.EQ, exp.GTE, exp.GT, exp.LT, exp.LTE)):
+            continue
+        if isinstance(value.this, exp.Extract) and value.this.expression == column and value.this.this.name == 'YEAR':
+            if isinstance(value, exp.EQ) and start == date(start.year,1,1) and end == date(start.year+1,1,1) and str(value.expression.this) == str(start.year):
+                return
+        left, right = value.this, value.expression
+        operator = type(value)
+        if right == column:
+            left, right = right, left
+            operator = {exp.GTE:exp.LTE, exp.GT:exp.LT, exp.LT:exp.GT, exp.LTE:exp.GTE, exp.EQ:exp.EQ}[operator]
+        if left != column or not isinstance(right, exp.Literal):
+            continue
+        try:
+            bound = date.fromisoformat(str(right.this))
+        except ValueError:
+            continue
+        if operator in {exp.EQ, exp.GTE, exp.GT}:
+            lower.append(bound + timedelta(days=int(operator is exp.GT)))
+        if operator in {exp.EQ, exp.LT, exp.LTE}:
+            upper.append(bound + timedelta(days=int(operator in {exp.EQ,exp.LTE})))
+    if not lower or not upper or max(lower) != start or min(upper) != end:
+        raise MetricDefinitionError(f'{table}.{field} must independently cover the requested period.', code='invalid_date_scope')
+
+
+def _unit_ratio(scopes, parameters, question):
+    root = scopes[-1]
+    expected = parse_one('CAST(SUM(returns.return_quantity) AS NUMERIC) / NULLIF(SUM(order_items.quantity), 0)', read='postgres')
+    for column in expected.find_all(exp.Column):
+        column.set('db', exp.to_identifier('commerce'))
+    values = [_canonical(p, root, parameters, {}) for p in root.expression.selects]
+    if expected not in values:
+        raise MetricDefinitionError('Unit ratio requires independently summed returned units / NULLIF(ordered units,0), cast to NUMERIC.')
+    for table, field in [('returns','return_date'), ('orders','order_date')]:
+        selected = [s for s in scopes if any(isinstance(source, exp.Table) and source.name == table
+                    for _, source in s.selected_sources.values())]
+        if len(selected) != 1 or selected[0].expression.args.get('limit'):
+            raise MetricDefinitionError('Unit ratio operands require complete independent source aggregates.')
+        _validate_source_period(selected[0], table, field, parameters, question)
+    return {}
+
+
+def _cross_domain_inventory(sql, metric_names, parameters, table_columns, question):
+    """Two explicit contracts: recorded movement comparison, or stockout/order presence."""
+    scopes = list(traverse_scope(parse_one(sql, read='postgres')))
+    inventory_scopes = [s for s in scopes if any(isinstance(source, exp.Table)
+        and source.db == 'commerce' and source.name == 'inventory' for _, source in s.selected_sources.values())]
+    if len(inventory_scopes) != 1 or not question:
+        raise MetricDefinitionError('Cross-domain inventory requires one independently validated inventory scope.')
+    scope = inventory_scopes[0]
+    if any(not isinstance(source, exp.Table) or source.db != 'commerce' or source.name not in {'inventory','products'}
+           for _, source in scope.selected_sources.values()):
+        raise MetricDefinitionError('Aggregate inventory independently; use EXISTS for order presence, not a raw fact join.')
+    text = question.casefold().replace('_', ' ')
+    order_scopes = [s for s in scopes if any(isinstance(source, exp.Table) and source.name == 'orders'
+                    for _, source in s.selected_sources.values())]
+    if len(order_scopes) != 1:
+        raise MetricDefinitionError('Cross-domain orders require one independently filtered order scope.')
+    _validate_source_period(order_scopes[0], 'orders', 'order_date', parameters, question)
+    if metric_names == {'inventory_units_sold'} and re.search(r'compar|versus|\bvs\b|so sánh', text):
+        validate_metric_request(question, metric_names)
+        definition = get_metric_definition('inventory_units_sold')
+        category = exp.column('category', table='products', db='commerce')
+        formula = _formula(definition, table_columns)
+        projections = [_canonical(p, scope, parameters, {}) for p in scope.expression.selects]
+        group = scope.expression.args.get('group')
+        groups = [_canonical(p, scope, parameters, {}) for p in group.expressions] if group else []
+        if projections != [category, formula] or groups != [category] or scope.expression.args.get('limit'):
+            raise MetricDefinitionError('Movement comparison requires complete category SUM(units_sold) before limiting detail.')
+        _validate_inventory_time([scope], parameters, question)
+        order_scope = order_scopes[0]
+        order_values = [_canonical(p, order_scope, parameters, {}) for p in order_scope.expression.selects]
+        ordered_units = parse_one('SUM(commerce.order_items.quantity)', read='postgres')
+        order_group = order_scope.expression.args.get('group')
+        if order_values != [category, ordered_units] or not order_group or [
+                _canonical(p, order_scope, parameters, {}) for p in order_group.expressions] != [category]:
+            raise MetricDefinitionError('Order comparison requires an independent category SUM(order_items.quantity).')
+        root = scopes[-1]
+        output = [_canonical(p, root, parameters, {}) for p in root.expression.selects]
+        joins = root.expression.args.get('joins', [])
+        category_key = exp.Coalesce(this=category.copy(), expressions=[category.copy()])
+        if len(joins) != 1 or joins[0].side != 'FULL' or output != [category_key, formula, ordered_units]:
+            raise MetricDefinitionError('Compare both complete category aggregates with FULL JOIN and COALESCE of category keys; keep missing measures NULL.')
+        return {'inventory_units_sold': {**definition, 'representation':'period_observation_sum',
+            'limitations': [*definition.get('limitations', []),
+                'Explicit sum of recorded movement observations in the requested period; not a closing stock balance or order-derived sales.'],
+            'calculation_scope': inventory_time_scope(question)}}
+    if metric_names == {'stockout_indicator'} and scope.expression.find(exp.Exists):
+        isolated = scope.expression.copy()
+        isolated.set('with_', None)
+        predicates = list(_conjuncts(isolated.args.get('where')))
+        exists = [p for p in predicates if isinstance(p, exp.Exists)]
+        if len(exists) != 1:
+            raise MetricDefinitionError('Order presence must be one conjunctive EXISTS, not a multiplying join.')
+        isolated.set('where', exp.Where(this=exp.and_(*(p.copy() for p in predicates if not isinstance(p, exp.Exists)))))
+        flag = exp.column('stockout_flag', table='inventory', db='commerce')
+        canonical = [_canonical(p, scope, parameters, {}) for p in _conjuncts(scope.expression.args.get('where'))
+                     if not isinstance(p, exp.Exists)]
+        if re.search(r'stockout flag\s*=\s*true', text) and not any(
+                isinstance(p, exp.EQ) and p.this == flag and p.expression == exp.true() for p in canonical):
+            raise MetricDefinitionError('The requested stockout_flag=true predicate is missing.')
+        inventory_alias = next(alias for alias, (_, source) in scope.selected_sources.items()
+                               if source.name == 'inventory')
+        isolated.select(exp.alias_(exp.column('stockout_flag', table=inventory_alias), 'stockout_indicator'), copy=False)
+        return _validate_inventory_metrics(isolated.sql(dialect='postgres'), metric_names, parameters, table_columns, question)
+    raise MetricDefinitionError('This cross-domain inventory calculation has no verified contract. '
+                                'Use independent movement comparisons or stockout/order existence checks.',
+                                code='incompatible_grain', clarification=True)
+
+
 def validate_metric_definitions(sql, metric_names, parameters, table_columns, *, question=None):
     """Verify recognized metrics; generic queries retain the existing SQL safety path."""
+    tree = parse_one(sql, read='postgres')
+    tables = {t.name for t in tree.find_all(exp.Table) if t.db == 'commerce'}
+    if question and re.search(r'ratio|divided|tỷ lệ|tỉ lệ', question, re.I) and not metric_names and re.search(
+            r'returned units|số lượng trả', question, re.I) and re.search(r'ordered units|số lượng đặt', question, re.I):
+        if not {'returns','orders','order_items'} <= tables:
+            raise MetricDefinitionError('The requested unit ratio must retain both independently aggregated sources.')
+        return _unit_ratio(list(traverse_scope(tree)), parameters, question)
+    if question and 'duplicate' in question.casefold() and 'inventory' in tables and not re.search(
+            r'duplicate groups|participating|all rows|all participating', question, re.I):
+        root = list(traverse_scope(tree))[-1]
+        expected = parse_one('COALESCE(SUM(COUNT(*) - 1), 0)', read='postgres')
+        if len(root.expression.selects) != 1 or _canonical(root.expression.selects[0], root, parameters, {}) != expected:
+            raise MetricDefinitionError('Duplicate rows means excess rows beyond one per key: '
+                                        'COALESCE(SUM(group_count - 1),0), not number of duplicate groups.')
+        groups = [s for s in traverse_scope(tree) if s.expression.args.get('group')]
+        keys = {exp.column(name, table='inventory', db='commerce').sql() for name in ('snapshot_date','product_id')}
+        if len(groups) != 1 or {_canonical(p, groups[0], parameters, {}).sql()
+                for p in groups[0].expression.args['group'].expressions} != keys:
+            raise MetricDefinitionError('Duplicate inventory keys must group by both snapshot_date and product_id.')
+    if question and re.search(r'\b(?:which|\d+)\s+products\b|từng sản phẩm', question, re.I):
+        root = list(traverse_scope(tree))[-1]
+        projections = [_canonical(p, root, parameters, {}) for p in root.expression.selects]
+        if any(isinstance(p, exp.Column) and p.name == 'product_name' for p in projections) and not any(
+                isinstance(p, exp.Column) and p.name == 'product_id' for p in projections):
+            raise MetricDefinitionError('Product-level rows require product_id; product_name is not unique.')
+    if 'inventory' in tables and tables & {'orders', 'order_items'}:
+        return _cross_domain_inventory(sql, metric_names, parameters, table_columns, question)
     if not metric_names:
         tree = parse_one(sql, read='postgres')
         if (tree.find(exp.AggFunc) and any(table.name == 'inventory' and table.db == 'commerce' for table in tree.find_all(exp.Table))

@@ -12,7 +12,7 @@ from sqlglot import exp, parse
 from sqlglot.errors import ParseError, TokenError
 
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
-from core.analytics.join_validation import PRIMARY_KEYS, validate_join_aggregations
+from core.analytics.join_validation import PRIMARY_KEYS, validate_join_aggregations, approved_derived_join, column_origin
 from core.analytics.metric_validation import _single_snapshot
 from sqlglot.optimizer.scope import traverse_scope
 from core.prompts.sql import SQL_GENERATION_PROMPT, SQL_REPAIR_PROMPT, INVENTORY_SQL_INSTRUCTIONS
@@ -85,7 +85,7 @@ APPROVED_DATE_COLUMNS = frozenset({
 
 APPROVED_FUNCTIONS = frozenset({
     "ABS", "AND", "AVG", "CAST", "CEIL", "COALESCE", "COUNT", "DATE_PART", "DATE_TRUNC", "EXTRACT", "FLOOR", "GREATEST",
-    "LEAST", "LOWER", "MAX", "MIN", "NULLIF", "OR", "ROUND", "STRING_AGG", "SUM", "TIMESTAMP_TRUNC", "UPPER",
+    "LEAST", "LOWER", "MAX", "MIN", "NULLIF", "OR", "ROUND", "STRING_AGG", "SUM", "TIMESTAMP_TRUNC", "UPPER", "EXISTS",
 })
 FORBIDDEN_NODES = (exp.Command, exp.Into, exp.Lock, exp.Union, exp.Insert, exp.Update, exp.Delete, exp.Drop, exp.Create)
 
@@ -206,11 +206,37 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
         else:
             yield expression
 
+    scopes_by_select = {id(scope.expression): scope for scope in traverse_scope(tree)}
+    for exists in tree.find_all(exp.Exists):
+        scope = scopes_by_select.get(id(exists.this))
+        if not scope or not scope.external_columns:
+            raise SQLValidationError('EXISTS must express a correlated approved-key presence check.')
+        for column in scope.external_columns:
+            equality = column.parent
+            if not isinstance(equality, exp.EQ) or not isinstance(equality.this, exp.Column) or not isinstance(equality.expression, exp.Column):
+                raise SQLValidationError('EXISTS correlations must use approved equality keys.')
+            other = equality.expression if equality.this is column else equality.this
+            parent = scope.parent
+            while parent and column.table not in parent.sources:
+                parent = parent.parent
+            origins = (column_origin(parent, column) if parent else None, column_origin(scope, other))
+            if not all(origins) or frozenset(origins) not in APPROVED_JOINS or equality.find_ancestor(exp.Or):
+                raise SQLValidationError('EXISTS correlation does not match an approved relationship.')
     for join in tree.find_all(exp.Join):
         if (join.kind or "").casefold() == "cross" or not join.args.get("on"):
             raise SQLValidationError("CROSS JOIN and JOIN without ON are not allowed.")
         keys = 0
-        for predicate in join_predicates(join.args['on']):
+        predicates = list(join_predicates(join.args['on']))
+        scope = scopes_by_select[id(join.find_ancestor(exp.Select))]
+        if join.this.alias_or_name.casefold() not in {c.table.casefold() for p in predicates for c in p.find_all(exp.Column)}:
+            raise SQLValidationError('JOIN condition must connect the joined relation.')
+        if any(isinstance(p, exp.EQ) and any(
+                isinstance(c, exp.Column) and not relations[c.table.casefold()][0]
+                for c in (p.this, p.expression)) for p in predicates):
+            if not all(isinstance(p, exp.EQ) for p in predicates) or not approved_derived_join(scope, predicates, APPROVED_JOINS):
+                raise SQLValidationError('Derived joins require complete grouped keys and approved dimension lineage.')
+            continue
+        for predicate in predicates:
             # Snapshot filters belong in ON for an outer join to preserve missing observations.
             if isinstance(predicate, (exp.EQ, exp.GTE, exp.GT, exp.LTE, exp.LT)):
                 left, right = predicate.this, predicate.expression
@@ -296,7 +322,18 @@ def decode_query_plan(raw: str) -> QueryPlan:
                 parameters[index - 1] = date.fromisoformat(value)
             except ValueError as error:
                 raise SQLValidationError(f"Date parameter ${index} must use YYYY-MM-DD format.") from error
-    return QueryPlan(sql=validated.sql, parameters=tuple(parameters), explanation=explanation.strip())
+    tree = parse(sql, read='postgres')[0]
+    changed = False
+    for parameter in list(tree.find_all(exp.Parameter)):
+        index = int(parameter.this.this)
+        if index in date_indexes and isinstance(parameters[index-1], date) and parameter.find_ancestor(
+                exp.TimestampTrunc, exp.DateTrunc, exp.Extract):
+            parameter.replace(exp.Cast(this=parameter.copy(), to=exp.DataType.build('DATE')))
+            changed = True
+    if changed:
+        sql = tree.sql(dialect='postgres')
+        validate_commerce_sql(sql)
+    return QueryPlan(sql=sql, parameters=tuple(parameters), explanation=explanation.strip())
 
 
 def _date_parameter_indexes(sql: str) -> set[int]:
@@ -374,7 +411,8 @@ def build_sql_prompt(
     functions = ", ".join(sorted(APPROVED_FUNCTIONS - {"AND"}))
     return (
         SQL_GENERATION_PROMPT.format(
-            inventory_instructions=INVENTORY_SQL_INSTRUCTIONS if inventory else "",
+            inventory_instructions=INVENTORY_SQL_INSTRUCTIONS if inventory and not (
+                'commerce.inventory' in tables and tables & {'commerce.orders', 'commerce.order_items'}) else "",
             functions=functions,
             max_rows=MAX_RESULT_ROWS,
             metrics=json.dumps({'metrics': metrics}),
@@ -385,6 +423,26 @@ def build_sql_prompt(
         )
         + '\nPrimary keys (one row per key; inventory is product_snapshot grain): '+json.dumps(
             {table: sorted(PRIMARY_KEYS[table.split('.')[1]]) for table in sorted(tables)})
+        + '\nExplicit calculations with clear operands are supported without creating a canonical KPI. '
+          'For returned-unit / ordered-unit ratios, independently aggregate returns.return_quantity by return_date '
+          'and order_items.quantity by orders.order_date at the requested product grain and period, '
+          'then join their complete grouped product keys. Cast numerator AS NUMERIC and divide by NULLIF(denominator,0). '
+          'This is not the canonical order-based return_rate. Never join raw fact rows for this ratio. '
+          'For inventory/order presence use correlated EXISTS through approved product keys; do not multiply inventory rows. '
+          'Compare inventory and order measures using independent category aggregates, never an unaggregated fact join. '
+          'For an explicit inventory units_sold / ordered-quantity comparison, the inventory CTE selects only '
+          'products.category and SUM(inventory.units_sold), groups by category, filters the entire requested period, '
+          'and has no inner LIMIT. This explicit movement-observation sum is not a balance KPI. '
+          'FULL JOIN the complete category aggregates, select COALESCE of category keys, and keep absent measures NULL. '
+          'For stockout_flag=true plus order presence, select snapshot_date and product identity, filter the flag '
+          'and the requested inventory period, use EXISTS with order_items.product_id=products.product_id '
+          'and filter orders.order_date independently to the requested order period. '
+          'Do not treat missing observations as zero or infer that inventory units_sold equals ordered quantities. '
+          'For duplicate rows report excess rows SUM(group_count-1), COALESCE to zero; distinguish duplicate groups '
+          'and all participating rows when those are explicitly requested. '
+          'Use typed DATE range parameters for transaction periods; avoid EXTRACT on an untyped parameter.'
+          ' Product names are not unique: product-level results must include product_id, and product-level '
+          'aggregates must group by product_id as well as any displayed name.'
         + ('\nStored projection fields: '+json.dumps(stored_fields)+
            '. Select these directly from the inventory alias. Do not aggregate or GROUP BY in product representation. '
            'Product identity may use inventory.product_id or the joined products.product_id.\n' if stored_fields else '')

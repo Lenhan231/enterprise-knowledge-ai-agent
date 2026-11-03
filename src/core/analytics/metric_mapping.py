@@ -135,7 +135,7 @@ def decode_sql_turn(raw, question, context):
             if turn.mapping is None or turn.changes is not None:
                 _error('A new question needs a complete interpretation.','metric_ambiguous')
             payload = turn.mapping.model_dump()
-        mapping = decode_metric_mapping(json.dumps(payload),question)
+        mapping = decode_metric_mapping(json.dumps(payload),question, preserve_ranking_limit=action != 'new')
         if action != 'new' and mapping.domain != 'inventory':
             _error('Follow-up memory supports inventory metrics. Please restate other requests completely.','context_required')
         if pending:
@@ -177,6 +177,7 @@ def build_metric_mapping_prompt(question, *, context=None):
             'Unresolved IDs must remain unresolved; never substitute a different metric. '
             'For product-level rankings use representation=product and product_name/product_id dimensions. '
             'For category totals use aggregate and category. Stored fill rankings use stored_fill_rate; means use fill_rate. '
+            'Ranking without an explicit row count uses limit=200; never invent top 10. '
             'Filters apply to source rows, not computed aggregates. Date ranges are inclusive. '
             'A snapshot uses start=the ISO date and end=null. A named month, quarter or year uses its full inclusive range; '
             'keep separate snapshot_date groups, never reinterpret a period as its closing balance. '
@@ -213,7 +214,7 @@ def _field(name):
     _error('No approved source-row filter exists for '+name,'unsupported_dimension')
 
 
-def decode_metric_mapping(raw, question):
+def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
     from core.analytics.text_to_sql import parse_json_response
     try:
         mapping = MetricMapping.model_validate(parse_json_response(raw))
@@ -291,6 +292,14 @@ def decode_metric_mapping(raw, question):
             _error('The filter value or comparison is incompatible with '+item.field+'.','interpretation_invalid')
     if mapping.ranking and mapping.ranking.metric not in mapping.metrics:
         _error('Rank using one of the requested catalog metrics.')
+    if mapping.ranking and not preserve_ranking_limit:
+        words = dict(zip('one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty'.split(), range(1,21)))
+        count = re.search(r'\b(?:top|bottom|first|last|limit)\s+(\d+|'+'|'.join(words)+r')\b|\b(\d+)\s+(?:products?|categories|rows?|sản phẩm)\b', question, re.I)
+        value = next(value for value in count.groups() if value).casefold() if count else '200'
+        limit = words[value] if value in words else int(value)
+        if not 1 <= limit <= 200:
+            _error('Detail rankings support 1 to 200 rows.', 'interpretation_invalid')
+        mapping.ranking.limit = limit
     if mapping.representation == 'product':
         if not {'product_id','product_name'} & set(mapping.dimensions):
             _error('Product-level values require product identity.','incompatible_grain')

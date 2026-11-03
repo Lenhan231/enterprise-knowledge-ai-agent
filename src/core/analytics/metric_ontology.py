@@ -234,9 +234,10 @@ def resolve_metric_names(text: str) -> set[str]:
     normalized = _normalize(text)
     matches: list[tuple[int, int, str]] = []
     for metric_name, definition in METRIC_ONTOLOGY.items():
-        for alias in definition["aliases"]:
+        for alias in (*definition["aliases"], metric_name):
             phrase = _normalize(alias)
-            pattern = re.compile(rf"(?<!\w){re.escape(phrase)}(?!\w)")
+            spelling = re.escape(phrase).replace(r'\ ', '[ _]')
+            pattern = re.compile(rf"(?<!\w){spelling}(?!\w)")
             matches.extend((match.start(), match.end(), metric_name) for match in pattern.finditer(normalized))
 
     selected: list[tuple[int, int, str]] = []

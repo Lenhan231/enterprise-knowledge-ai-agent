@@ -1,5 +1,6 @@
 """Upload Test routes for isolated document-processing experiments."""
 
+import asyncio
 import base64
 import hashlib
 import logging
@@ -117,12 +118,18 @@ async def create_upload_test(
         processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
         if not processing_url:
             raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
-        parsed = post(processing_url, "/parse", {
-            "filename": filename,
-            "content": base64.b64encode(content).decode("ascii"),
-            "metadata": source_metadata,
-            "config": config,
-        }, timeout=600)
+        parsed = await asyncio.to_thread(
+            post,
+            processing_url,
+            "/parse",
+            {
+                "filename": filename,
+                "content": base64.b64encode(content).decode("ascii"),
+                "metadata": source_metadata,
+                "config": config,
+            },
+            timeout=600,
+        )
     except (ValueError, RuntimeError) as error:
         status_code = 503 if isinstance(error, RuntimeError) else 422
         raise HTTPException(status_code, f"Upload Test processing failed: {error}") from error

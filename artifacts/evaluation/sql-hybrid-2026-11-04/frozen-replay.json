@@ -1,0 +1,218 @@
+{
+  "application_revision": "cb9bfdc11a282585091cace9b70b7f8299ea3fa2",
+  "method": "Captured production responses replayed through hybrid and real read-only repository; no fresh LLM judgments, generation or end-to-end latency claim.",
+  "new_model_api_calls": 0,
+  "all_match": true,
+  "results": [
+    {
+      "id": "S01",
+      "matches": true,
+      "cached_responses": 2,
+      "status": "executed",
+      "elapsed_seconds": 1.180574300000444
+    },
+    {
+      "id": "S02",
+      "matches": true,
+      "cached_responses": 2,
+      "status": "executed",
+      "elapsed_seconds": 1.1318693999783136
+    },
+    {
+      "id": "S03",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.3268830999732018
+    },
+    {
+      "id": "S04",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.19841929996619
+    },
+    {
+      "id": "S05",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed_empty",
+      "elapsed_seconds": 1.184912600030657
+    },
+    {
+      "id": "S06",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.256250699982047
+    },
+    {
+      "id": "S07",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.2073187999776565
+    },
+    {
+      "id": "S08",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.2120561000192538
+    },
+    {
+      "id": "S09",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.203384799999185
+    },
+    {
+      "id": "S10",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.2614940999774262
+    },
+    {
+      "id": "S11",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.2165515000233427
+    },
+    {
+      "id": "S12",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.267809799988754
+    },
+    {
+      "id": "S13",
+      "matches": true,
+      "cached_responses": 0,
+      "status": "validation_failed",
+      "elapsed_seconds": 0.0061487999628297985
+    },
+    {
+      "id": "S14",
+      "matches": true,
+      "cached_responses": 2,
+      "status": "executed",
+      "elapsed_seconds": 1.1601616999832913
+    },
+    {
+      "id": "S15",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "clarification_required",
+      "elapsed_seconds": 0.018793699971865863
+    },
+    {
+      "id": "S16",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.2020788000081666
+    },
+    {
+      "id": "S17",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 4.4343058000085875
+    },
+    {
+      "id": "S18",
+      "matches": true,
+      "cached_responses": 2,
+      "status": "executed",
+      "elapsed_seconds": 1.3314939999836497
+    },
+    {
+      "id": "S19",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.2656214000307955
+    },
+    {
+      "id": "S20",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.2955641000298783
+    },
+    {
+      "id": "S21",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.3001257000141777
+    },
+    {
+      "id": "S22",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.1317478999844752
+    },
+    {
+      "id": "S23",
+      "matches": true,
+      "cached_responses": 2,
+      "status": "executed",
+      "elapsed_seconds": 1.452450399985537
+    },
+    {
+      "id": "S24",
+      "matches": true,
+      "cached_responses": 2,
+      "status": "executed",
+      "elapsed_seconds": 1.1696220000158064
+    },
+    {
+      "id": "S25",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed_empty",
+      "elapsed_seconds": 2.030314100033138
+    },
+    {
+      "id": "S26",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.3125943000195548
+    },
+    {
+      "id": "S27",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.2649415000341833
+    },
+    {
+      "id": "S28",
+      "matches": true,
+      "cached_responses": 3,
+      "status": "executed",
+      "elapsed_seconds": 1.3018374999519438
+    },
+    {
+      "id": "S29",
+      "matches": true,
+      "cached_responses": 0,
+      "status": "validation_failed",
+      "elapsed_seconds": 1.1209648000076413
+    },
+    {
+      "id": "S30",
+      "matches": true,
+      "cached_responses": 0,
+      "status": "clarification_required",
+      "elapsed_seconds": 0.0011838000500574708
+    }
+  ]
+}

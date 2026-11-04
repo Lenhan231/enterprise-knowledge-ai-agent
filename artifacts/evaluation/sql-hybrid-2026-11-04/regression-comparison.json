@@ -1,0 +1,18 @@
+{
+  "baseline_revision": "c5e879be580a26ee5b534c02c9cef64fc15deaa0",
+  "candidate_revision": "1c17bd03b8dadccdb1d0705b9ef71c2819a6621a",
+  "baseline_tests": 703,
+  "candidate_tests": 715,
+  "baseline_failures": 11,
+  "candidate_failures": 11,
+  "baseline_errors": 51,
+  "candidate_errors": 51,
+  "baseline_skips": 15,
+  "candidate_skips": 19,
+  "focused_contract_tests_passed": 5,
+  "focused_isolated_agent_tests_passed": 7,
+  "new_failures": [],
+  "resolved_failures": [],
+  "new_errors": [],
+  "resolved_errors": []
+}

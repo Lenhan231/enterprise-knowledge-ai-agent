@@ -43,6 +43,12 @@ class SemanticAuthorityTest(unittest.TestCase):
             self.assertIsNotNone(mapping.ranking)
             self.assertEqual(mapping.ranking.direction,'asc')
 
+    def test_most_recent_describes_time_not_ranking(self):
+        mapping=decode_metric_mapping(json.dumps(dict(metrics=['stock_on_hand'],
+            dimensions=['category'],time={'mode':'latest'})),
+            'Stock on hand by category at the most recent available observation')
+        self.assertIsNone(mapping.ranking)
+
     def test_filter_null_operator_rejects_a_value(self):
         with self.assertRaises(MetricDefinitionError):
             self.mapping(filters=[{'field':'days_of_supply','operator':'is_not_null','value':0}])

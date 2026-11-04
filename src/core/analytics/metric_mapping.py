@@ -331,7 +331,7 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
         if any(type(value) not in types for value in values) or (types in {(str,),(bool,)} and item.operator not in {'eq','in'}):
             _error('The filter value or comparison is incompatible with '+item.field+'.','interpretation_invalid')
     ascending = bool(re.search(r'lowest|fewest|smallest|\bbottom\b|thấp nhất|ít nhất',question,re.I))
-    descending = bool(re.search(r'highest|greatest|largest|\bmost\b|cao nhất|nhiều nhất',question,re.I))
+    descending = bool(re.search(r'highest|greatest|largest|\bmost\b(?!\s+recent)|cao nhất|nhiều nhất',question,re.I))
     if ascending != descending and len(mapping.metrics) == 1:
         mapping.ranking = MetricRanking(metric=mapping.metrics[0],direction='asc' if ascending else 'desc',
             limit=mapping.ranking.limit if mapping.ranking else None)

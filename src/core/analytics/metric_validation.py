@@ -425,7 +425,10 @@ def _validate_contract_population(scope, required_tables, date_column, parameter
     for predicate in _conjuncts(select.args.get('where')):
         columns = list(_canonical(predicate,scope,parameters,{}).find_all(exp.Column))
         if not columns or any(column != date_column for column in columns):
-            raise MetricDefinitionError('This explicit-period contract does not permit extra source filters.')
+            fields=', '.join(sorted({column.sql() for column in columns if column != date_column})) or 'constant predicate'
+            raise MetricDefinitionError('Remove the unrequested source filter on '+fields+'. '
+                'This contract requests all observations in the period, including every order status. '
+                'Do not exclude cancelled orders unless the user explicitly requests that population.')
     for join in select.args.get('joins',[]):
         if any(not isinstance(p,exp.EQ) or not isinstance(p.this,exp.Column) or not isinstance(p.expression,exp.Column)
                for p in _conjuncts(join.args.get('on'))):

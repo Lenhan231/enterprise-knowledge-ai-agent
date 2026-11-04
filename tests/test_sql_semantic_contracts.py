@@ -230,6 +230,14 @@ class CrossDomainInventoryTest(unittest.TestCase):
                 validate_metric_definitions(bad,{'inventory_units_sold'},(),APPROVED_COLUMNS,
                     question='Compare summed December 2022 inventory units_sold with ordered quantities by category')
 
+    def test_unrequested_order_status_filter_has_an_actionable_repair(self):
+        bad=self.comparison.replace('GROUP BY q.category)',
+            "AND LOWER(o.order_status) NOT IN ('cancelled','canceled') GROUP BY q.category)")
+        self.assertNotEqual(bad,self.comparison)
+        with self.assertRaisesRegex(MetricDefinitionError,'order_status'):
+            validate_metric_definitions(bad,{'inventory_units_sold'},(),APPROVED_COLUMNS,
+                question='Compare summed December 2022 inventory units_sold with ordered quantities by category')
+
     def test_comparison_cannot_roll_up_stock_balances_or_change_formula(self):
         for value in ['stock_on_hand', 'units_sold * 2']:
             sql = self.comparison.replace('SUM(i.units_sold)', 'SUM(i.'+value+')')

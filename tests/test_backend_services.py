@@ -147,6 +147,22 @@ class InternalRuntimeTest(unittest.TestCase):
         self.assertEqual([chunk.chunk_index for chunk in ranked], [1, 2])
         self.assertEqual(chunks[1].retrieval_score, 0.8)
         self.assertTrue(details["reranker_applied"])
+        self.assertEqual(details["reranker_model"], "remote-unreported")
+        reported = {"scores": [1.0, 2.0, 3.0], "model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+                    "revision": "r", "max_pair_tokens": 512, "quantize": ""}
+        with patch.dict(os.environ, {"RERANKER_URL": "http://reranker:8000"}), patch("core.services.client.post", return_value=reported):
+            _, details = BGEReranker().rerank("hello", chunks, 2)
+        self.assertEqual((details["reranker_model"], details["reranker_max_pair_tokens"]), (reported["model"], 512))
+
+    def test_reranker_service_reports_its_loaded_model(self):
+        import numpy as np
+        from core.retrieval.reranker import MODEL_ID
+        from core.services.runtime import app
+        app.state.encoder = type("Encoder", (), {"predict": lambda self, pairs, **_: np.array([0.5] * len(pairs))})()
+        with patch.dict(os.environ, {"SERVICE_KIND": "reranker"}):
+            response = self.client.post("/rerank", headers=self.headers, json={"query": "q", "texts": ["a", "b"]})
+        self.assertEqual(response.json()["scores"], [0.5, 0.5])
+        self.assertEqual(response.json()["model"], MODEL_ID)
 
 if __name__ == "__main__":
     unittest.main()

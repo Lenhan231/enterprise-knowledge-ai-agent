@@ -1,87 +1,46 @@
-# Document processing
+# Parser contract and callers
 
-This package owns document parsing, shared cleanup and provenance, and returns
-ordered elements plus structured tables. Chunking is a separate workstream in
-`src/core/chunking/`. The application owns upload handling and persistence.
+`DocumentProcessor.process(filename, content, metadata)` validates the input,
+selects a parser route, normalizes the result, and returns parser output. It
+does not create parser chunks, embeddings, or production database records.
 
-## Flow
+## Inputs and routes
+
+The authoritative extension list is `SUPPORTED_FORMATS` in
+[`document_processor.py`](../document_processor.py): PDF, DOCX, PPTX, XLSX,
+CSV, TXT, Markdown, PNG/JPEG, TIFF, SVG, and WebP. A caller can support fewer
+formats than the parser package.
+
+| Intent | Route | Main output |
+| --- | --- | --- |
+| `document` (default) | [`DoclingProcessor`](../docling_adapter/processor.py) | `elements`, `tables`, parser metadata, and optional page/layout data |
+| `invoice` | [`VinternProcessor`](../vintern_processor.py) | `invoice_extraction.pages` and searchable text elements; no structured tables |
+| `image_caption` | [`VinternProcessor`](../vintern_processor.py) | `image_caption_extraction.pages` and caption text elements; no structured tables |
+
+Invoice and image-caption are explicit intents selected in Upload Test; there
+is no automatic invoice classifier. The invoice route currently reads page
+images with Vintern instead of first running Docling. See the
+[Vintern guide](vintern-pipeline.md). The default document route is described
+in the [Docling guide](docling-pipeline.md).
+
+## Parser output boundary
+
+The common result has `elements`, `tables`, and `metadata`. Depending on the
+route it can also carry page previews/sizes, raw PP-DocLayoutV3
+`layout_detections`, orientation corrections, or an intent-specific extraction
+object. Element and table provenance is described in [metadata](metadata.md).
+
+The application decides what happens next:
 
 ```text
-upload bytes
-  → DocumentProcessor routes supported files to Docling
-  → parser returns ordered elements + tables
-  → shared cleanup and provenance normalization
-  → structured document output: ordered elements + tables
-  → separate core.chunking stage
-  → application persistence
+upload bytes → DocumentProcessor → normalized parser output
+                                  ├─ parser-handoff → persist output → chunking worker
+                                  └─ direct upload   → inline chunking / indexing
 ```
 
-Production upload and Upload Test use this processing package. Production
-persists its normalized output through
-`DocumentProcessingOutputsRepository` before chunking; Upload Test stores its
-review data in its isolated schema. Model-specific token splitting, embeddings,
-and retrieval indexing are outside this package.
+The parser-handoff API is implemented in `src/app/main.py` and chunked by
+`src/core/chunking/worker.py`. The direct upload API also lives in
+`src/app/main.py`; it calls the chunking processor inline. Upload Test is an
+inspection path in `src/app/upload_test.py`, with separate review storage.
 
-## Main modules
-
-| Path | Responsibility |
-| --- | --- |
-| `document_processor.py` | Route parsing, normalize provenance, clean ordered elements and tables. |
-| `docling/` | Docling parser and result mapper. |
-## Parser routing
-
-`DocumentProcessor` sends supported files, including TXT, to Docling and
-normalizes the output. Parser-specific details remain in
-metadata; `pipeline_id` records the configured parser engine and `parser`
-identifies the component that produced the element or table.
-
-Docling handles supported PDF, Office, CSV, TXT, Markdown, and image inputs.
-
-The production container uses CPU, 1.0 image scale, PaddleOCR 3.7.0 with
-PaddlePaddle 3.3.1 for PP-DocLayoutV3 layout detection at score threshold
-0.25. CPU oneDNN acceleration is disabled to avoid a PaddlePaddle 3.3.1 PIR
-runtime failure. The remaining stages are RapidOCR text-line detection, VietOCR
-`vgg_seq2seq` recognition (greedy, maximum width 512), and TableFormer Accurate
-with cell matching. PP-DocLayoutV3 supplies Docling's
-layout clusters; OCR and table structure continue through the existing Docling
-stages. PaddleOCR PP-LCNet checks page and VietOCR crop orientation; Tesseract OCR can be
-selected with `DOCUMENT_PROCESSING_OCR_ENGINE=tesseract`. Production defaults to
-two CPU threads; callers such as Upload Test may override the device, OCR
-engine, table stage, and thread count. The parser applies page-level rotation
-before layout, OCR, and table processing.
-
-OCR post-processing drops exact normalized duplicate lines from overlapping
-OCR regions at bbox IoU 0.60. It removes only clear non-table artifacts such as
-long separator strings, isolated symbols, low-quality OCR on repeated edge
-marks, or non-text OCR in likely seals/signatures. Suspicious text is reread
-with the alternate OCR engine and replaced only when the alternate is clearly
-better; uncertain text is retained and reported in parser metadata. For scanned
-tables, a source-image check can restore a dash in an otherwise empty 1×1 cell.
-These heuristics are conservative and based on the reviewed pilot pages; they
-are not a general handwriting or decoration classifier.
-
-All PDFs use full-page OCR and ignore native text cells, since character count
-alone does not detect broken legacy font encodings such as VNI. PDF images are
-covered by the same page OCR pass; there is no second embedded-image OCR pass.
-The OCR toggle applies to standalone images and embedded Office pictures.
-Office files keep their native text path.
-
-The authoritative supported extension list is `SUPPORTED_FORMATS` in
-`document_processor.py`.
-
-## Output boundary
-
-This package returns ordered `elements` and structured `tables`, retaining
-available provenance and source locations such as page, sheet, slide, section,
-or bounding box. It does not create parser chunks. See the separate
-[chunking module](../../core/chunking/README.md) for text/table chunking and
-[metadata](metadata.md) for shared parser output fields.
-
-## Call sites
-
-- Production upload: `/api/documents/upload` in `src/app/main.py`.
-- Isolated parser inspection: `/api/upload-tests` in `src/app/upload_test.py`.
-- Chunking stage: `src/core/chunking/processor.py`.
-- Normalized output persistence: `src/core/database/document_processing_outputs_repository.py`.
-- Chunked parser-output persistence: `src/core/database/parser_chunks_repository.py`.
-- Structured table persistence: `src/core/database/structured_store.py`.
+For the next stage, read the [chunking guide](../../core/chunking/README.md).

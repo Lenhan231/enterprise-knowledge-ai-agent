@@ -15,6 +15,7 @@ import random
 import re
 import statistics
 import sys
+import time
 import unicodedata
 from pathlib import Path
 
@@ -152,7 +153,17 @@ def judge_case(llm, case, row, pages):
                           abstain="decline / say the policy does not contain this" if case["should_abstain"] else "answer",
                           points=json.dumps(case["must_include"], ensure_ascii=False), gold=gold[:12000],
                           cited=cited[:12000], answer=row.get("answer") or "")
-    raw = llm.generate(prompt, max_output_tokens=600)
+    from openai import RateLimitError
+    for attempt in range(5):
+        try:
+            raw = llm.generate(prompt, max_output_tokens=600)
+            break
+        except RateLimitError as error:
+            # Per-minute token limits clear in seconds; a daily limit means stop and rerun later (cache resumes).
+            if "per day" in str(error) or attempt == 4:
+                raise SystemExit(f"Groq limit reached while judging {case['id']}; rerun later to resume") from error
+            llm._cooldowns = [0.0] * len(llm._cooldowns)
+            time.sleep(min(60.0, float(error.response.headers.get("retry-after") or 10)) + 1)
     verdict = json.loads(raw[raw.index("{"):raw.rindex("}") + 1])
     if verdict.get("correctness") not in {"correct", "partial", "incorrect"}:
         raise ValueError(f"Bad judge verdict for {case['id']}: {raw[:200]}")
@@ -179,6 +190,7 @@ def summarize(rows):
         "correct_abstention": rate([refused(r) for r in abstain]),
         "verifier_blocks": sum(r.get("refusal") == "verifier_block" for r in ok),
         "rbac_leaks": sum(bool(r.get("rbac_leak")) for r in ok),
+        "rbac_cases": sum("rbac_leak" in r for r in ok),
         "no_citation_ok": [r.get("no_citation_ok") for r in ok if "no_citation_ok" in r],
         "elapsed_ms_median": statistics.median([r["elapsed_ms"] for r in ok]) if ok else None,
     }
@@ -210,7 +222,7 @@ def score(args):
         from core.llm.groq_provider import GroqProvider
         llm, pages = GroqProvider(model=args.judge_model), policy_pages()
         for row, raw in zip(rows, run["results"]):
-            if row["status"] != "ok":
+            if row["status"] != "ok" or "rbac_leak" in row:  # RBAC is scored by rule: correct iff nothing leaked
                 continue
             digest = hashlib.sha256((raw.get("answer") or "").encode()).hexdigest()
             old = cache.get(row["id"], {})

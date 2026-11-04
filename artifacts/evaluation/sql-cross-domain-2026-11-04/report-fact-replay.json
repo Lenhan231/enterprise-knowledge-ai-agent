@@ -1,0 +1,27 @@
+{
+  "method": "Recorded fresh SQL evidence passed through Report fact conversion; no new provider calls or Report narrative score.",
+  "new_model_api_calls": 0,
+  "checks": [
+    {
+      "case": "S23",
+      "facts": 800,
+      "rows": 200,
+      "facts_from_recorded_real_sql": true,
+      "rollup_approval_not_inherited": false
+    },
+    {
+      "case": "S26",
+      "facts": 600,
+      "rows": 200,
+      "facts_from_recorded_real_sql": true,
+      "rollup_approval_not_inherited": false
+    },
+    {
+      "case": "S27",
+      "facts": 12,
+      "rows": 4,
+      "facts_from_recorded_real_sql": true,
+      "rollup_approval_not_inherited": true
+    }
+  ]
+}

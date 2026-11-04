@@ -78,6 +78,16 @@ def main():
     data=dict(method='Supplemental checks only; frozen scores untouched.',adversarial_rejection=dict(
         blocked=sum(r['blocked'] for r in results),total=len(results)),adversaries=results,
         fixture_sha256=hashlib.sha256((ROOT/'tests/test_sql_cross_domain_fidelity.py').read_bytes()).hexdigest())
+    extra=[]
+    for expression in ["EXTRACT(YEAR FROM r.return_date)=2022 AND r.return_date>=DATE '2022-12-01'",
+                       "EXTRACT(MONTH FROM r.return_date)=12 AND r.return_date>=DATE '2022-01-01'"]:
+        try:
+            fixtures.validate('S23',fixtures.SQL['S23'].replace("r.return_date>=DATE '2022-01-01'",expression))
+            blocked=False
+        except (fixtures.MetricDefinitionError,ValueError):blocked=True
+        extra.append(dict(expression=expression,blocked=blocked))
+    data['temporal_supplement']=dict(method='Two additional regression cases added after discovering the annual EXTRACT early-return gap; separate from the original 19.',
+        blocked=sum(r['blocked'] for r in extra),total=len(extra),cases=extra)
     if args.generations:
         observed={r['id']:r for r in map(json.loads,args.generations.read_text(encoding='utf-8').splitlines())}
         checks=[]

@@ -1,0 +1,281 @@
+{
+  "method": "Supplemental checks only; frozen scores untouched.",
+  "adversarial_rejection": {
+    "blocked": 19,
+    "total": 19
+  },
+  "adversaries": [
+    {
+      "case": "S23",
+      "mutation": "missing_product_identity",
+      "blocked": true,
+      "reason": "Product ratios must project product_id; names alone do not identify products."
+    },
+    {
+      "case": "S23",
+      "mutation": "wrong_denominator",
+      "blocked": true,
+      "reason": "Unit ratio requires independently summed returned units / NULLIF(ordered units,0), cast to NUMERIC."
+    },
+    {
+      "case": "S23",
+      "mutation": "zero_substitution",
+      "blocked": true,
+      "reason": "Unit ratio requires independently summed returned units / NULLIF(ordered units,0), cast to NUMERIC."
+    },
+    {
+      "case": "S23",
+      "mutation": "unstable_ratio_ties",
+      "blocked": true,
+      "reason": "Product ranking requires a stable product_id tie-break."
+    },
+    {
+      "case": "S23",
+      "mutation": "wrong_return_period",
+      "blocked": true,
+      "reason": "returns.return_date must independently cover the requested period."
+    },
+    {
+      "case": "S23",
+      "mutation": "raw_multi_fact_join",
+      "blocked": true,
+      "reason": "Aggregate input may be duplicated by a one-to-many join. Aggregate from its source without the multiplying join, or use COUNT(DISTINCT key) for entity counts. SUM(DISTINCT value) does not restore source grain."
+    },
+    {
+      "case": "S26",
+      "mutation": "uncorrelated_existence",
+      "blocked": true,
+      "reason": "EXISTS must express a correlated approved-key presence check."
+    },
+    {
+      "case": "S26",
+      "mutation": "wrong_product_existence",
+      "blocked": true,
+      "reason": "EXISTS must express a correlated approved-key presence check."
+    },
+    {
+      "case": "S26",
+      "mutation": "hidden_order_status",
+      "blocked": true,
+      "reason": "Remove the unrequested source filter on commerce.orders.order_status. This contract requests all observations in the period, including every order status. Do not exclude cancelled orders unless the user explicitly requests that population."
+    },
+    {
+      "case": "S26",
+      "mutation": "hidden_inventory_category",
+      "blocked": true,
+      "reason": "Remove the unrequested source filter on commerce.products.category. This contract requests all observations in the period, including every order status. Do not exclude cancelled orders unless the user explicitly requests that population."
+    },
+    {
+      "case": "S26",
+      "mutation": "wrong_flag",
+      "blocked": true,
+      "reason": "The requested stockout_flag=true predicate is missing."
+    },
+    {
+      "case": "S26",
+      "mutation": "unstable_observation_ties",
+      "blocked": true,
+      "reason": "Presence observations require product_id and stable snapshot_date/product_id ordering."
+    },
+    {
+      "case": "S26",
+      "mutation": "invented_top_n",
+      "blocked": true,
+      "reason": "This complete comparison/presence contract uses the 200-row safety ceiling, not an invented TOP-N."
+    },
+    {
+      "case": "S27",
+      "mutation": "same_side_category_key",
+      "blocked": true,
+      "reason": "Project and stably order the category key from BOTH aggregate sides, including order-only categories."
+    },
+    {
+      "case": "S27",
+      "mutation": "lost_one_sided_categories",
+      "blocked": true,
+      "reason": "Compare both complete category aggregates with FULL JOIN and COALESCE of category keys; keep missing measures NULL."
+    },
+    {
+      "case": "S27",
+      "mutation": "zero_substitution",
+      "blocked": true,
+      "reason": "Compare both complete category aggregates with FULL JOIN and COALESCE of category keys; keep missing measures NULL."
+    },
+    {
+      "case": "S27",
+      "mutation": "truncated_source_aggregate",
+      "blocked": true,
+      "reason": "Derived joins require complete grouped keys and approved dimension lineage."
+    },
+    {
+      "case": "S27",
+      "mutation": "unstable_category_order",
+      "blocked": true,
+      "reason": "Project and stably order the category key from BOTH aggregate sides, including order-only categories."
+    },
+    {
+      "case": "S27",
+      "mutation": "invented_top_n",
+      "blocked": true,
+      "reason": "This complete comparison/presence contract uses the 200-row safety ceiling, not an invented TOP-N."
+    }
+  ],
+  "fixture_sha256": "bf4974f9396c2b08d8334e0fecb0f2ba351b01c5c63a83e1f519ed5fa1c8a185",
+  "intent_and_business_checks": [
+    {
+      "case": "S23",
+      "fixture_calculation": "pass",
+      "intent_fidelity": "pass",
+      "business_rule_compliance": "pass",
+      "reason": "Explicit derived unit ratio, not canonical return_rate. Extra product-name enrichment is allowed.",
+      "actual": [
+        [
+          2,
+          2,
+          4,
+          0.5
+        ],
+        [
+          3,
+          1,
+          2,
+          0.5
+        ],
+        [
+          1,
+          3,
+          8,
+          0.375
+        ],
+        [
+          5,
+          1,
+          10,
+          0.1
+        ]
+      ],
+      "expected": [
+        [
+          2,
+          2,
+          4,
+          0.5
+        ],
+        [
+          3,
+          1,
+          2,
+          0.5
+        ],
+        [
+          1,
+          3,
+          8,
+          0.375
+        ],
+        [
+          5,
+          1,
+          10,
+          0.1
+        ]
+      ]
+    },
+    {
+      "case": "S26",
+      "fixture_calculation": "pass",
+      "intent_fidelity": "uncertain",
+      "business_rule_compliance": "pass",
+      "reason": "Per-snapshot observations match the contract; a unique-product roster versus observation rows remains an output-grain decision.",
+      "actual": [
+        [
+          "2022-12-15",
+          1
+        ],
+        [
+          "2022-12-31",
+          1
+        ],
+        [
+          "2022-12-31",
+          2
+        ]
+      ],
+      "expected": [
+        [
+          "2022-12-15",
+          1
+        ],
+        [
+          "2022-12-31",
+          1
+        ],
+        [
+          "2022-12-31",
+          2
+        ]
+      ]
+    },
+    {
+      "case": "S27",
+      "fixture_calculation": "pass",
+      "intent_fidelity": "pass",
+      "business_rule_compliance": "uncertain",
+      "reason": "Explicit observation sum is computed correctly; cross-snapshot business approval is not established by the per-snapshot catalog.",
+      "actual": [
+        [
+          "A",
+          13,
+          12
+        ],
+        [
+          "B",
+          2,
+          2
+        ],
+        [
+          "C",
+          7,
+          null
+        ],
+        [
+          "D",
+          null,
+          5
+        ],
+        [
+          "E",
+          0,
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "A",
+          13,
+          12
+        ],
+        [
+          "B",
+          2,
+          2
+        ],
+        [
+          "C",
+          7,
+          null
+        ],
+        [
+          "D",
+          null,
+          5
+        ],
+        [
+          "E",
+          0,
+          null
+        ]
+      ]
+    }
+  ]
+}

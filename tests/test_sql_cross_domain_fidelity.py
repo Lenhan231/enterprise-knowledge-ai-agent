@@ -78,6 +78,12 @@ def execute_fixture(db,sql):
 
 
 class CrossDomainFixtureTruthTest(unittest.TestCase):
+    def test_extra_november_return_exposes_annual_population_narrowing(self):
+        with fixture() as db:
+            db.execute("INSERT INTO commerce.returns VALUES(7,2,1,'2022-11-15',4)")
+            annual=execute_fixture(db,SQL['S23'])
+            narrowed=execute_fixture(db,SQL['S23'].replace("r.return_date>=DATE '2022-01-01'","r.return_date>=DATE '2022-12-01'"))
+            self.assertNotEqual(annual,narrowed)
     def test_independent_aggregates_and_missing_categories(self):
         with fixture() as db:
             rows=execute_fixture(db,SQL['S27'])
@@ -105,6 +111,12 @@ class CrossDomainFixtureTruthTest(unittest.TestCase):
 
 @unittest.skipUnless('SQL_CROSS_DOMAIN_ROOT' in os.environ,'Isolated cross-domain validation experiment')
 class CrossDomainContractGapTest(unittest.TestCase):
+    def test_annual_period_cannot_hide_narrowing_date_expressions(self):
+        for sql in [SQL['S23'].replace("r.return_date>=DATE '2022-01-01'", "EXTRACT(YEAR FROM r.return_date)=2022 AND r.return_date>=DATE '2022-12-01'"),
+                    SQL['S23'].replace("r.return_date>=DATE '2022-01-01'", "EXTRACT(MONTH FROM r.return_date)=12 AND r.return_date>=DATE '2022-01-01'")]:
+            with self.subTest(sql=sql),self.assertRaises(MetricDefinitionError):validate('S23',sql)
+        validate('S23',SQL['S23'].replace("r.return_date>=DATE '2022-01-01' AND r.return_date<DATE '2023-01-01'",
+                                        'EXTRACT(YEAR FROM r.return_date)=2022'))
     def test_order_alias_normalization_respects_quoted_names_and_ambiguity(self):
         plan=decode_query_plan(json.dumps({'sql':'SELECT -p.price AS "Price",p.product_id FROM commerce.products p ORDER BY price LIMIT 200'}))
         self.assertEqual(parse_one(plan.sql,read='postgres').args['order'].expressions[0].this.sql(),'p.price')

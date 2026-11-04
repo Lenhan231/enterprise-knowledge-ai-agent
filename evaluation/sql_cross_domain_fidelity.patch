@@ -1,8 +1,37 @@
 diff --git a/src/core/analytics/metric_validation.py b/src/core/analytics/metric_validation.py
-index aa05fdd..15cf948 100644
+index aa05fdd..9082704 100644
 --- a/src/core/analytics/metric_validation.py
 +++ b/src/core/analytics/metric_validation.py
-@@ -413,7 +413,7 @@ def _validate_source_period(scope, table, field, parameters, question):
+@@ -390,21 +390,23 @@ def _validate_source_period(scope, table, field, parameters, question):
+             continue
+         value = _canonical(predicate, scope, parameters, {})
+         if not isinstance(value, (exp.EQ, exp.GTE, exp.GT, exp.LT, exp.LTE)):
+-            continue
++            raise MetricDefinitionError('Use independently verifiable date-range predicates for this source.',code='invalid_date_scope')
+         if isinstance(value.this, exp.Extract) and value.this.expression == column and value.this.this.name == 'YEAR':
+             if isinstance(value, exp.EQ) and start == date(start.year,1,1) and end == date(start.year+1,1,1) and str(value.expression.this) == str(start.year):
+-                return
++                lower.append(start)
++                upper.append(end)
++                continue
+         left, right = value.this, value.expression
+         operator = type(value)
+         if right == column:
+             left, right = right, left
+             operator = {exp.GTE:exp.LTE, exp.GT:exp.LT, exp.LT:exp.GT, exp.LTE:exp.GTE, exp.EQ:exp.EQ}[operator]
+         if left != column or not isinstance(right, exp.Literal):
+-            continue
++            raise MetricDefinitionError('An additional date expression could narrow the requested source population.',code='invalid_date_scope')
+         try:
+             bound = date.fromisoformat(str(right.this))
+-        except ValueError:
+-            continue
++        except ValueError as error:
++            raise MetricDefinitionError('Use a valid date bound for this source.',code='invalid_date_scope') from error
+         if operator in {exp.EQ, exp.GTE, exp.GT}:
+             lower.append(bound + timedelta(days=int(operator is exp.GT)))
+         if operator in {exp.EQ, exp.LT, exp.LTE}:
+@@ -413,7 +415,7 @@ def _validate_source_period(scope, table, field, parameters, question):
          raise MetricDefinitionError(f'{table}.{field} must independently cover the requested period.', code='invalid_date_scope')
  
  
@@ -11,7 +40,7 @@ index aa05fdd..15cf948 100644
      """Narrow explicit-period contracts cannot acquire hidden source restrictions."""
      tables = [source.name for _,source in scope.selected_sources.values() if isinstance(source,exp.Table)]
      select = scope.expression
-@@ -423,7 +423,11 @@ def _validate_contract_population(scope, required_tables, date_column, parameter
+@@ -423,7 +425,11 @@ def _validate_contract_population(scope, required_tables, date_column, parameter
              or any(join.side or join.kind not in {'','INNER'} for join in select.args.get('joins',[]))):
          raise MetricDefinitionError('Source population must be complete, independently aggregated and free of unrequested restrictions.')
      for predicate in _conjuncts(select.args.get('where')):
@@ -24,7 +53,7 @@ index aa05fdd..15cf948 100644
          if not columns or any(column != date_column for column in columns):
              fields=', '.join(sorted({column.sql() for column in columns if column != date_column})) or 'constant predicate'
              raise MetricDefinitionError('Remove the unrequested source filter on '+fields+'. '
-@@ -435,6 +439,17 @@ def _validate_contract_population(scope, required_tables, date_column, parameter
+@@ -435,6 +441,17 @@ def _validate_contract_population(scope, required_tables, date_column, parameter
              raise MetricDefinitionError('Join predicates cannot add unrequested source filters.')
  
  
@@ -42,7 +71,7 @@ index aa05fdd..15cf948 100644
  def _validate_product_ranking(root, expected, parameters, question, identity_tables):
      from core.analytics.metric_mapping import MetricRanking, requested_ranking_limit
      select = root.expression
-@@ -442,10 +457,7 @@ def _validate_product_ranking(root, expected, parameters, question, identity_tab
+@@ -442,10 +459,7 @@ def _validate_product_ranking(root, expected, parameters, question, identity_tab
                              limit=requested_ranking_limit(question))
      orders = select.args.get('order')
      def order_value(order):
@@ -54,7 +83,7 @@ index aa05fdd..15cf948 100644
      if (not orders or order_value(orders.expressions[0]) != expected
              or bool(orders.expressions[0].args.get('desc')) != (ranking.direction == 'desc')
              or (isinstance(expected,exp.Div) and orders.expressions[0].args.get('nulls_first'))
-@@ -462,6 +474,9 @@ def _unit_ratio(scopes, parameters, question):
+@@ -462,6 +476,9 @@ def _unit_ratio(scopes, parameters, question):
      for column in expected.find_all(exp.Column):
          column.set('db', exp.to_identifier('commerce'))
      values = [_canonical(p, root, parameters, {}) for p in root.expression.selects]
@@ -64,7 +93,7 @@ index aa05fdd..15cf948 100644
      if expected not in values:
          raise MetricDefinitionError('Unit ratio requires independently summed returned units / NULLIF(ordered units,0), cast to NUMERIC.')
      operands = [expected.this.this, expected.expression.this]
-@@ -504,6 +519,9 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
+@@ -504,6 +521,9 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
      if len(order_scopes) != 1:
          raise MetricDefinitionError('Cross-domain orders require one independently filtered order scope.')
      _validate_source_period(order_scopes[0], 'orders', 'order_date', parameters, question)
@@ -74,7 +103,7 @@ index aa05fdd..15cf948 100644
      if metric_names == {'inventory_units_sold'} and re.search(r'compar|versus|\bvs\b|so sánh', text):
          validate_metric_request(question, metric_names)
          definition = get_metric_definition('inventory_units_sold')
-@@ -533,9 +551,22 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
+@@ -533,9 +553,22 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
          if (len(joins) != 1 or joins[0].side != 'FULL' or output != [category_key, formula, ordered_units]
                  or any(root.expression.args.get(key) for key in ('where','having','group','distinct','offset','qualify'))):
              raise MetricDefinitionError('Compare both complete category aggregates with FULL JOIN and COALESCE of category keys; keep missing measures NULL.')
@@ -98,7 +127,7 @@ index aa05fdd..15cf948 100644
              'calculation_scope': inventory_time_scope(question)}}
      if metric_names == {'stockout_indicator'} and scope.expression.find(exp.Exists):
          isolated = scope.expression.copy()
-@@ -544,6 +575,21 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
+@@ -544,6 +577,21 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
          exists = [p for p in predicates if isinstance(p, exp.Exists)]
          if len(exists) != 1:
              raise MetricDefinitionError('Order presence must be one conjunctive EXISTS, not a multiplying join.')
@@ -120,7 +149,7 @@ index aa05fdd..15cf948 100644
          isolated.set('where', exp.Where(this=exp.and_(*(p.copy() for p in predicates if not isinstance(p, exp.Exists)))))
          flag = exp.column('stockout_flag', table='inventory', db='commerce')
          canonical = [_canonical(p, scope, parameters, {}) for p in _conjuncts(scope.expression.args.get('where'))
-@@ -554,7 +600,16 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
+@@ -554,7 +602,16 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
          inventory_alias = next(alias for alias, (_, source) in scope.selected_sources.items()
                                 if source.name == 'inventory')
          isolated.select(exp.alias_(exp.column('stockout_flag', table=inventory_alias), 'stockout_indicator'), copy=False)

@@ -201,7 +201,7 @@ class CrossDomainInventoryTest(unittest.TestCase):
                   'JOIN commerce.orders o ON oi.order_id=o.order_id JOIN commerce.products q ON oi.product_id=q.product_id '
                   "WHERE o.order_date >= DATE '2022-12-01' AND o.order_date < DATE '2023-01-01' GROUP BY q.category) "
                   'SELECT COALESCE(inv.category,ord.category) AS category,inv.inventory_units_sold,ord.ordered_units '
-                  'FROM inv FULL JOIN ord ON inv.category=ord.category LIMIT 200')
+                  'FROM inv FULL JOIN ord ON inv.category=ord.category ORDER BY 1 LIMIT 200')
 
     def test_explicit_period_flow_comparison_keeps_sources_independent(self):
         validate_commerce_sql(self.comparison)
@@ -251,7 +251,7 @@ class CrossDomainInventoryTest(unittest.TestCase):
                "WHERE i.snapshot_date >= DATE '2022-12-01' AND i.snapshot_date < DATE '2023-01-01' "
                'AND i.stockout_flag=TRUE AND EXISTS (SELECT 1 FROM commerce.order_items oi '
                'JOIN commerce.orders o ON oi.order_id=o.order_id WHERE oi.product_id=p.product_id '
-               "AND o.order_date >= DATE '2022-12-01' AND o.order_date < DATE '2023-01-01') LIMIT 200")
+               "AND o.order_date >= DATE '2022-12-01' AND o.order_date < DATE '2023-01-01') ORDER BY i.snapshot_date,i.product_id LIMIT 200")
         validate_commerce_sql(sql)
         with self.assertRaises(SQLValidationError):
             validate_commerce_sql(sql.replace('oi.product_id=p.product_id', 'oi.quantity=p.product_id'))

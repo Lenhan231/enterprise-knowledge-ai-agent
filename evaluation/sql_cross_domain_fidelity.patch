@@ -1,0 +1,191 @@
+diff --git a/src/core/analytics/metric_validation.py b/src/core/analytics/metric_validation.py
+index aa05fdd..15cf948 100644
+--- a/src/core/analytics/metric_validation.py
++++ b/src/core/analytics/metric_validation.py
+@@ -413,7 +413,7 @@ def _validate_source_period(scope, table, field, parameters, question):
+         raise MetricDefinitionError(f'{table}.{field} must independently cover the requested period.', code='invalid_date_scope')
+ 
+ 
+-def _validate_contract_population(scope, required_tables, date_column, parameters):
++def _validate_contract_population(scope, required_tables, date_column, parameters, *, correlation=None):
+     """Narrow explicit-period contracts cannot acquire hidden source restrictions."""
+     tables = [source.name for _,source in scope.selected_sources.values() if isinstance(source,exp.Table)]
+     select = scope.expression
+@@ -423,7 +423,11 @@ def _validate_contract_population(scope, required_tables, date_column, parameter
+             or any(join.side or join.kind not in {'','INNER'} for join in select.args.get('joins',[]))):
+         raise MetricDefinitionError('Source population must be complete, independently aggregated and free of unrequested restrictions.')
+     for predicate in _conjuncts(select.args.get('where')):
+-        columns = list(_canonical(predicate,scope,parameters,{}).find_all(exp.Column))
++        value = _canonical(predicate,scope,parameters,{})
++        if (correlation is not None and isinstance(value,exp.EQ)
++                and {value.this.sql(),value.expression.sql()} == correlation):
++            continue
++        columns = list(value.find_all(exp.Column))
+         if not columns or any(column != date_column for column in columns):
+             fields=', '.join(sorted({column.sql() for column in columns if column != date_column})) or 'constant predicate'
+             raise MetricDefinitionError('Remove the unrequested source filter on '+fields+'. '
+@@ -435,6 +439,17 @@ def _validate_contract_population(scope, required_tables, date_column, parameter
+             raise MetricDefinitionError('Join predicates cannot add unrequested source filters.')
+ 
+ 
++def _order_expression(order, select):
++    value = order.this
++    if isinstance(value,exp.Literal) and value.is_int and 1 <= int(value.this) <= len(select.selects):
++        return select.selects[int(value.this)-1].unalias()
++    if isinstance(value,exp.Column) and not value.table:
++        matches = [p.unalias() for p in select.selects if p.alias_or_name.casefold() == value.name.casefold()]
++        if len(matches) == 1:
++            return matches[0]
++    return value
++
++
+ def _validate_product_ranking(root, expected, parameters, question, identity_tables):
+     from core.analytics.metric_mapping import MetricRanking, requested_ranking_limit
+     select = root.expression
+@@ -442,10 +457,7 @@ def _validate_product_ranking(root, expected, parameters, question, identity_tab
+                             limit=requested_ranking_limit(question))
+     orders = select.args.get('order')
+     def order_value(order):
+-        value=order.this
+-        if isinstance(value,exp.Literal) and value.is_int and 1 <= int(value.this) <= len(select.selects):
+-            value=select.selects[int(value.this)-1]
+-        return _canonical(value,root,parameters,{})
++        return _canonical(_order_expression(order,select),root,parameters,{})
+     if (not orders or order_value(orders.expressions[0]) != expected
+             or bool(orders.expressions[0].args.get('desc')) != (ranking.direction == 'desc')
+             or (isinstance(expected,exp.Div) and orders.expressions[0].args.get('nulls_first'))
+@@ -462,6 +474,9 @@ def _unit_ratio(scopes, parameters, question):
+     for column in expected.find_all(exp.Column):
+         column.set('db', exp.to_identifier('commerce'))
+     values = [_canonical(p, root, parameters, {}) for p in root.expression.selects]
++    if not any(isinstance(value,exp.Column) and value.name == 'product_id' and value.table in {'returns','order_items','products'}
++               for value in values):
++        raise MetricDefinitionError('Product ratios must project product_id; names alone do not identify products.')
+     if expected not in values:
+         raise MetricDefinitionError('Unit ratio requires independently summed returned units / NULLIF(ordered units,0), cast to NUMERIC.')
+     operands = [expected.this.this, expected.expression.this]
+@@ -504,6 +519,9 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
+     if len(order_scopes) != 1:
+         raise MetricDefinitionError('Cross-domain orders require one independently filtered order scope.')
+     _validate_source_period(order_scopes[0], 'orders', 'order_date', parameters, question)
++    root = scopes[-1]
++    if not root.expression.args.get('limit') or int(root.expression.args['limit'].expression.this) != 200:
++        raise MetricDefinitionError('This complete comparison/presence contract uses the 200-row safety ceiling, not an invented TOP-N.')
+     if metric_names == {'inventory_units_sold'} and re.search(r'compar|versus|\bvs\b|so sánh', text):
+         validate_metric_request(question, metric_names)
+         definition = get_metric_definition('inventory_units_sold')
+@@ -533,9 +551,22 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
+         if (len(joins) != 1 or joins[0].side != 'FULL' or output != [category_key, formula, ordered_units]
+                 or any(root.expression.args.get(key) for key in ('where','having','group','distinct','offset','qualify'))):
+             raise MetricDefinitionError('Compare both complete category aggregates with FULL JOIN and COALESCE of category keys; keep missing measures NULL.')
++        aliases = {alias for alias,(_,source) in root.selected_sources.items() if source is scope or source is order_scope}
++        def complete_category_key(value):
++            return (isinstance(value,exp.Coalesce) and len(value.expressions) == 1
++                    and all(isinstance(c,exp.Column) for c in [value.this,*value.expressions])
++                    and {c.table for c in [value.this,*value.expressions]} == aliases and len(aliases) == 2
++                    and _canonical(value,root,parameters,{}) == category_key)
++        order = root.expression.args.get('order')
++        if (not complete_category_key(root.expression.selects[0].unalias()) or not order
++                or not complete_category_key(_order_expression(order.expressions[0],root.expression))):
++            raise MetricDefinitionError('Project and stably order the category key from BOTH aggregate sides, including order-only categories.')
+         return {'inventory_units_sold': {**definition, 'representation':'period_observation_sum',
++            'calculation_approval':'not_established', 'output_grain':'category_period_observation_sum',
++            'calculation_formula':'SUM(commerce.inventory.units_sold) over filtered source observations',
+             'limitations': [*definition.get('limitations', []),
+-                'Explicit sum of recorded movement observations in the requested period; not a closing stock balance or order-derived sales.'],
++                'Explicit sum of recorded movement observations in the requested period; not a closing stock balance or order-derived sales.',
++                'The canonical metric is per snapshot. Business approval of a cross-snapshot observation rollup is not established.'],
+             'calculation_scope': inventory_time_scope(question)}}
+     if metric_names == {'stockout_indicator'} and scope.expression.find(exp.Exists):
+         isolated = scope.expression.copy()
+@@ -544,6 +575,21 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
+         exists = [p for p in predicates if isinstance(p, exp.Exists)]
+         if len(exists) != 1:
+             raise MetricDefinitionError('Order presence must be one conjunctive EXISTS, not a multiplying join.')
++        order_scope = order_scopes[0]
++        expected_links = {exp.column('product_id',table='order_items',db='commerce').sql(),
++                          exp.column('product_id',table='products',db='commerce').sql()}
++        links = [_canonical(p,order_scope,parameters,{}) for p in _conjuncts(order_scope.expression.args.get('where'))]
++        if not any(isinstance(p,exp.EQ) and {p.this.sql(),p.expression.sql()} == expected_links for p in links):
++            raise MetricDefinitionError('Order existence must be correlated to the outer product through the approved product key.')
++        _validate_contract_population(order_scope,{'orders','order_items'},exp.column('order_date',table='orders',db='commerce'),
++                                      parameters,correlation=expected_links)
++        projected = [_canonical(p,scope,parameters,{}) for p in scope.expression.selects]
++        identities = {exp.column('product_id',table=t,db='commerce').sql() for t in ('inventory','products')}
++        order = scope.expression.args.get('order')
++        ordering = {_canonical(_order_expression(o,scope.expression),scope,parameters,{}).sql() for o in order.expressions} if order else set()
++        snapshot = exp.column('snapshot_date',table='inventory',db='commerce').sql()
++        if (not identities.intersection(p.sql() for p in projected) or snapshot not in ordering or not identities.intersection(ordering)):
++            raise MetricDefinitionError('Presence observations require product_id and stable snapshot_date/product_id ordering.')
+         isolated.set('where', exp.Where(this=exp.and_(*(p.copy() for p in predicates if not isinstance(p, exp.Exists)))))
+         flag = exp.column('stockout_flag', table='inventory', db='commerce')
+         canonical = [_canonical(p, scope, parameters, {}) for p in _conjuncts(scope.expression.args.get('where'))
+@@ -554,7 +600,16 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
+         inventory_alias = next(alias for alias, (_, source) in scope.selected_sources.items()
+                                if source.name == 'inventory')
+         isolated.select(exp.alias_(exp.column('stockout_flag', table=inventory_alias), 'stockout_indicator'), copy=False)
+-        return _validate_inventory_metrics(isolated.sql(dialect='postgres'), metric_names, parameters, table_columns, question)
++        population = isolated.copy()
++        population.set('limit',None)
++        population.set('distinct',None) # Redundant for projected complete product/snapshot keys.
++        population_scope = list(traverse_scope(population))[-1]
++        _validate_contract_population(population_scope,{'inventory','products'},
++            exp.column('snapshot_date',table='inventory',db='commerce'),parameters,correlation={flag.sql(),exp.true().sql()})
++        definitions = _validate_inventory_metrics(isolated.sql(dialect='postgres'), metric_names, parameters, table_columns, question)
++        return {name:{**definition,'output_grain':'product_snapshot','limitations':[*definition.get('limitations',[]),
++            'Results are qualifying product/snapshot observations; a product may appear on multiple dates, not a deduplicated product roster.']}
++            for name,definition in definitions.items()}
+     raise MetricDefinitionError('This cross-domain inventory calculation has no verified contract. '
+                                 'Use independent movement comparisons or stockout/order existence checks.',
+                                 code='incompatible_grain', clarification=True)
+diff --git a/src/core/analytics/text_to_sql.py b/src/core/analytics/text_to_sql.py
+index a880ecd..58d6f55 100644
+--- a/src/core/analytics/text_to_sql.py
++++ b/src/core/analytics/text_to_sql.py
+@@ -297,6 +297,19 @@ def _normalize_unambiguous_sql(sql):
+         return sql
+     tree, changed = statements[0], False
+     for scope in traverse_scope(tree):
++        order = scope.expression.args.get('order')
++        for item in order.expressions if order else ():
++            if isinstance(item.this,exp.Column) and not item.this.table:
++                target = item.this.name if item.this.this.args.get('quoted') else item.this.name.casefold()
++                matches = []
++                for index,p in enumerate(scope.expression.selects,1):
++                    identifier = p.args.get('alias') or (p.this if isinstance(p,exp.Column) else None)
++                    if isinstance(identifier,exp.Identifier) and (
++                            identifier.name if identifier.args.get('quoted') else identifier.name.casefold()) == target:
++                        matches.append(index)
++                if len(matches) == 1:
++                    item.set('this',exp.Literal.number(matches[0]))
++                    changed = True
+         columns = {}
+         for alias, (_, source) in scope.selected_sources.items():
+             if isinstance(source, exp.Table):
+@@ -485,9 +498,12 @@ def build_sql_prompt(
+           'products.category and SUM(inventory.units_sold), groups by category, filters the entire requested period, '
+           'and has no inner LIMIT. This explicit movement-observation sum is not a balance KPI. '
+           'FULL JOIN the complete category aggregates, select COALESCE of category keys, and keep absent measures NULL. '
++          'COALESCE must reference BOTH aggregate aliases. Order the complete comparison by that combined key; use the safety LIMIT 200. '
+           'For stockout_flag=true plus order presence, select snapshot_date and product identity, filter the flag '
+           'and the requested inventory period, use EXISTS with order_items.product_id=products.product_id '
+           'and filter orders.order_date independently to the requested order period. '
++          'Keep all requested source populations, including every order status unless explicitly scoped. '
++          'Presence output is product/snapshot observations: order by snapshot_date and product_id with LIMIT 200, not an invented TOP-N. '
+           'Do not treat missing observations as zero or infer that inventory units_sold equals ordered quantities. '
+           'For duplicate rows report excess rows SUM(group_count-1), COALESCE to zero; distinguish duplicate groups '
+           'and all participating rows when those are explicitly requested. '
+diff --git a/src/core/reports/facts.py b/src/core/reports/facts.py
+index c3a771c..4084813 100644
+--- a/src/core/reports/facts.py
++++ b/src/core/reports/facts.py
+@@ -127,7 +127,8 @@ def facts_from_analytics(task, result, evidence_id, start=1):
+             facts.append(ReportFact(id=f'F{start+len(facts)}', evidence_id=evidence_id, task_id=task.id,
+                 metric=name, value=value if value is None or isinstance(value, bool) else str(value),
+                 unit=definition.get('unit', 'source_field'), dimensions=dimensions, filters=[scope],
+-                formula=definition.get('formula'), approval_status=definition.get('approval_status'), source_row=row_index))
++                formula=definition.get('calculation_formula',definition.get('formula')),
++                approval_status=definition.get('calculation_approval',definition.get('approval_status')), source_row=row_index))
+     return facts
+ 
+ 

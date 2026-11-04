@@ -53,7 +53,7 @@ def freeze():
 
 
 async def run(args):
-    work=ROOT if args.mode=='production' else ROOT/'artifacts/local/sql-hybrid-deterministic'
+    work=ROOT if args.mode=='production' else (args.worktree.resolve() if args.worktree else ROOT/'artifacts/local/sql-hybrid-deterministic')
     output=args.output.resolve() if args.output else OUT/args.mode
     os.chdir(work);sys.path[:0]=[str(work),str(work/'src')]
     from dotenv import load_dotenv
@@ -100,7 +100,9 @@ async def run(args):
         else:
             old=json.loads((OLD/'production/manifest.json').read_text(encoding='utf-8'))
             save(path,dict(application_revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=work,text=True).strip(),
-                application_source_sha256=sources,judge=old['judge'],sql_ids=spec['sql_ids'],report_ids=spec['report_ids'],
+                application_source_sha256=sources,judge=old['judge'],
+                sql_ids=args.ids if args.ids and args.group=='sql_analytics' else spec['sql_ids'],
+                report_ids=args.ids if args.ids and args.group=='report' else spec['report_ids'],
                 reference_sha256={group:hashlib.sha256((output/group/'references.json').read_bytes()).hexdigest() for group in ['sql_analytics','report']}))
         bench.OUT=output
     runner.prepare=prepare;runner.summary=lambda:None
@@ -116,5 +118,6 @@ if __name__=='__main__':
     parser.add_argument('--group',choices=['sql_analytics','report'],default='sql_analytics')
     parser.add_argument('--ids',nargs='+')
     parser.add_argument('--output',type=Path)
+    parser.add_argument('--worktree',type=Path,help='Isolated candidate checkout; production always uses the shared root')
     args=parser.parse_args()
     freeze() if args.stage=='freeze' else asyncio.run(run(args))

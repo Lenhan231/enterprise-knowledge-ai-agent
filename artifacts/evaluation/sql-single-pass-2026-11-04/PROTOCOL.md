@@ -12,4 +12,15 @@ Adversarial fixtures run against both paths, injecting the same SQL after produc
 
 Report compatibility uses the actual shared-SQL evidence path, validated facts, narrative claim validation and both Markdown/DOCX assembly, initially with deterministic providers/repository fixtures. A separate read-only integration replay may verify the same contract with captured SQL and real database rows. This is not a Report quality benchmark or evidence that its separate planner no longer uses mappings.
 
+The live integration replay uses S09 (two identified products), with a captured SQL response and deterministic fact-reference writer. It runs after SQL evaluation finishes; if S09 fails, report that failure rather than substitute a passing case. DOCX structure is inspected in memory; this is interface/data compatibility, not visual layout QA.
+
+## Measured revisions
+
+- Production: `624fc8c`, whose entire `src/` tree is unchanged from `f48bec5`.
+- Initial diagnostic variant: detached `4788487`, output `single-pass/`. Preserve its 30 generations; no accuracy scores are claimed for this adapter-debugging run.
+- Corrected full candidate: detached `fd44615`, output `single-pass-v2/`. It fixes false rejections of an unfiltered latest-date diagnostic, the latest-date predicate subquery, boolean fields used as filters, and irrelevant NULL ordering on schema-declared NOT NULL inventory values. A new full run was necessary because these defects invalidated the first candidate comparison. Its source and results remain frozen after generation.
+- Final NULL-syntax correction: detached `1ec5007`, output `null-fix/`, one fresh S08 request only. SQLGlot represents IS NOT NULL either as Not(Is(...)) or Is(..., negate=True). This correction accepts both true non-NULL predicates and rejects their double-negated/NULL alternatives. Its result is separate, not substituted into the 30-case aggregate. Report replay uses this latest variant with captured S09 SQL from the full candidate.
+
+All application patches affect only the isolated agent file; evaluation-only guards live outside production modules. Helper and runner source hashes are retained per cohort. The final candidate does not meet the adoption condition. Adapter defects and known evaluator ambiguity must not be misreported as proof that all direct SQL architectures are inferior.
+
 Adoption requires observed non-inferiority in each of execution, numerical and strict semantic accuracy, valid refusal rate, and no new safety/semantic fixture regression. Compare numerical means both with inherited applicability and the common applicable-case intersection. Latency or fewer LLM calls cannot offset correctness/security regressions. Thirty cases and finite adversarial tests cannot prove general non-inferiority. Keep production unchanged regardless of outcome; recommend adopt, modify or reject only from measured evidence.

@@ -7,13 +7,14 @@ import inspect
 import json
 import re
 from collections.abc import Mapping
+from datetime import date
 from typing import Any
 
 from core.agents.base import BaseAgent
 from core.analytics.commerce_decision_support import resolve_commerce_decision_domain, unavailable_commerce_dimensions
 from core.analytics.metric_ontology import resolve_metric_names, get_metric_definition
 from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
-from core.analytics.metric_validation import MetricDefinitionError, inventory_explicit_dates, validate_metric_definitions, validate_metric_request
+from core.analytics.metric_validation import MetricDefinitionError, inventory_explicit_dates, inventory_time_scope, validate_metric_definitions, validate_metric_request
 from core.analytics.text_to_sql import (
     APPROVED_COLUMNS,
     approved_join_path,
@@ -122,6 +123,26 @@ class SQLAnalyticsAgent(BaseAgent):
                 if error.code != 'snapshot_required':
                     raise
             tables = relevant_schema_tables(question, {name:get_metric_definition(name) for name in metric_names})
+            if ('commerce.inventory' in tables and metric_names and all(
+                    get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
+                    and re.search(r'\bcurrent\b|\btoday\b|hiện tại|hôm nay', question, re.I)):
+                period = inventory_time_scope(question)
+                if period:
+                    snapshot_sql = 'SELECT MAX(i.snapshot_date) AS snapshot_date FROM commerce.inventory AS i LIMIT 1'
+                    try:
+                        snapshots = await self.repository.execute_approved_query(snapshot_sql)
+                    except Exception as error:
+                        return self._database_error(error,snapshot_sql,())
+                    latest = snapshots[0].get('snapshot_date') if snapshots else None
+                    if latest is None or date.fromisoformat(str(latest)) < date.fromisoformat(period[1]):
+                        reason = ('No inventory observations are available in the requested current period. '
+                            + ('The latest available snapshot is '+str(latest)+'. ' if latest else 'No inventory snapshots are available. ')
+                            + 'Historical observations cannot establish current stock. Request an available historical snapshot instead.')
+                        result = self._generation_error(MetricDefinitionError(reason,code='requested_period_unavailable'))
+                        result['answer'] = reason
+                        result['metadata'].update(status='unsupported',latest_available_snapshot=str(latest) if latest else None,
+                            availability_source='MAX(commerce.inventory.snapshot_date)')
+                        return result
             cross_domain = ('commerce.inventory' in tables and bool(tables & {'commerce.orders', 'commerce.order_items'})
                             and bool(re.search(r'\borders\b|\bordered\b|\border(?!\s+by)\b|đơn hàng', question, re.I)))
             if (not cross_domain and (context is not None

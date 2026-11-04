@@ -103,7 +103,7 @@ class MetricMappingTest(unittest.TestCase):
              'WHERE i.snapshot_date >= $1 AND i.snapshot_date < $2 AND p.color IN ($3, $4) '
              'GROUP BY i.snapshot_date,p.category LIMIT 200')
         plan=decode_query_plan(json.dumps({'sql':sql,'parameters':['2022-01-01','2023-01-01','blue','black']}))
-        validate_mapped_sql(plan,self.decode(payload))
+        validate_mapped_sql(plan,self.decode(payload,question='Stock on hand by category during 2022 for blue or black products'))
 
     def test_sql_must_keep_filter_dimension_ranking_limit_and_time(self):
         mapping=self.decode()

@@ -237,7 +237,7 @@ async def generate_planned_report(agent, request, uploaded, *, source_mode, outp
             coverage[task.id] = {'requested': task.question, 'returned': 0, 'included': 0, 'omitted': 0, 'completeness': 'unavailable'}
             continue
         try:
-            limit = task.mapping.ranking.limit if task.mapping and task.mapping.ranking else 200
+            limit = (task.mapping.ranking.limit or 200) if task.mapping and task.mapping.ranking else 200
             if len(rows) > limit:
                 raise ValueError('Source exceeded validated row bound')
             identifier = f'S{len(evidence)+1}'
@@ -252,7 +252,7 @@ async def generate_planned_report(agent, request, uploaded, *, source_mode, outp
                                  content=json.dumps(rows, default=str, ensure_ascii=False), metadata={
                                      'task_id': task.id, 'sources': analytics_result.metadata.get('source', []) if analytics_result
                                      else (['commerce.inventory', 'commerce.products'] if task.mapping else ['commerce.products'])}))
-        uncertain = len(rows) == 200 and not (task.mapping and task.mapping.ranking)
+        uncertain = len(rows) == 200 and not (task.mapping and task.mapping.ranking and task.mapping.ranking.limit)
         coverage[task.id] = {'requested': task.question, 'returned': len(rows), 'included': len(rows), 'omitted': 0,
                              'completeness': 'unknown_at_row_limit' if uncertain else 'returned_query_scope',
                              'snapshots': sorted({f.snapshot_date for f in supplied if f.snapshot_date})}

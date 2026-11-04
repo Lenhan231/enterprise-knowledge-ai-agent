@@ -322,10 +322,13 @@ class InventoryReportTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_200_row_completeness_is_unknown(self):
         rows = [{'snapshot_date': '2022-01-31', 'category': str(i), 'stock_on_hand': i} for i in range(200)]
-        agent, _ = self.agent(rows)
-        result, _, _ = await agent.generate_from_template(request(), source_mode='analytics')
-        self.assertEqual(result.metadata['status'], 'partial')
-        self.assertEqual(result.metadata['coverage']['stock']['completeness'], 'unknown_at_row_limit')
+        for ranking in [None,{'metric':'stock_on_hand','direction':'desc','limit':None}]:
+            spec=plan()
+            spec['tasks'][0]['mapping']['ranking']=ranking
+            agent, _ = self.agent(rows,specification=spec)
+            result, _, _ = await agent.generate_from_template(request(), source_mode='analytics')
+            self.assertEqual(result.metadata['status'], 'partial')
+            self.assertEqual(result.metadata['coverage']['stock']['completeness'], 'unknown_at_row_limit')
 
     async def test_reused_task_does_not_repeat_query(self):
         spec = plan(); spec['sections'].append({'heading': 'Summary', 'tasks': ['stock']})

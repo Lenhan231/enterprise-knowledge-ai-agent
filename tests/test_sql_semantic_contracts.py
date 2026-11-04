@@ -15,6 +15,23 @@ from core.analytics.text_to_sql import APPROVED_COLUMNS
 
 
 class InterpretationRegressionTest(unittest.TestCase):
+    def test_unambiguous_scalar_sql_is_qualified_and_bounded_before_validation(self):
+        plan=decode_query_plan(json.dumps({'sql':
+            'SELECT COALESCE(SUM(d.n-1),0) AS duplicate_rows FROM '
+            '(SELECT COUNT(*) AS n FROM commerce.inventory GROUP BY snapshot_date,product_id HAVING COUNT(*)>1) d'}))
+        self.assertIn('inventory.snapshot_date',plan.sql)
+        self.assertIn('inventory.product_id',plan.sql)
+        self.assertIn('LIMIT 200',plan.sql)
+        validate_metric_definitions(plan.sql,set(),(),APPROVED_COLUMNS,
+            question='How many inventory rows have duplicate (snapshot_date,product_id) keys?')
+
+    def test_ambiguous_columns_and_unbounded_detail_remain_rejected(self):
+        for sql in ['SELECT product_id FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id LIMIT 200',
+                    'SELECT product_id FROM commerce.products',
+                    'SELECT SUM(p.price) OVER () AS n FROM commerce.products p']:
+            with self.subTest(sql=sql),self.assertRaises(SQLValidationError):
+                decode_query_plan(json.dumps({'sql':sql}))
+
     def test_named_snapshot_dates_are_not_replaced_with_a_whole_year(self):
         from core.analytics.metric_validation import inventory_time_scope
         self.assertEqual(inventory_time_scope('Between November 30 and December 31, 2022'),
@@ -82,7 +99,7 @@ class InterpretationRegressionTest(unittest.TestCase):
                    'representation':'product', 'time':{'mode':'range','start':'2022-12-01','end':'2022-12-31'},
                    'ranking':{'metric':'stockout_days','direction':'desc','limit':10}}
         mapping = decode_metric_mapping(json.dumps(payload), 'Products with highest stockout_days in December 2022')
-        self.assertEqual(mapping.ranking.limit, 200)
+        self.assertIsNone(mapping.ranking.limit)
         mapping = decode_metric_mapping(json.dumps(payload), 'Top 7 products by stockout_days in December 2022')
         self.assertEqual(mapping.ranking.limit, 7)
         mapping = decode_metric_mapping(json.dumps(payload), 'Top seven products by stockout_days in December 2022')
@@ -133,11 +150,15 @@ class DerivedJoinContractTest(unittest.TestCase):
                "AND o.order_date < DATE '2023-01-01' GROUP BY oi.product_id) "
                'SELECT ret.product_id,ret.returned_units,ord.ordered_units,'
                'CAST(ret.returned_units AS NUMERIC)/NULLIF(ord.ordered_units,0) AS ratio '
-               'FROM ret JOIN ord ON ret.product_id=ord.product_id LIMIT 200')
+               'FROM ret JOIN ord ON ret.product_id=ord.product_id ORDER BY 4 DESC NULLS LAST,ret.product_id LIMIT 200')
         validate_commerce_sql(sql)
         validate_metric_definitions(sql,set(),(),APPROVED_COLUMNS,
             question='Products with highest ratio of returned units in 2022 to ordered units in 2022')
         for bad in [sql.replace('NULLIF(ord.ordered_units,0)','NULLIF(ret.returned_units,0)'),
+                    sql.replace('ret.returned_units,ord.ordered_units,',''),
+                    sql.replace('ORDER BY 4 DESC NULLS LAST,ret.product_id','ORDER BY 4 ASC,ret.product_id'),
+                    sql.replace('NULLIF(ord.ordered_units,0)','NULLIF(COALESCE(ord.ordered_units,0),0)'),
+                    sql.replace('GROUP BY r.product_id)', 'AND r.return_quantity > 0 GROUP BY r.product_id)'),
                     sql.replace("o.order_date >= DATE '2022-01-01'", "o.order_date >= DATE '2021-01-01'")]:
             with self.subTest(sql=bad), self.assertRaises(MetricDefinitionError):
                 validate_metric_definitions(bad,set(),(),APPROVED_COLUMNS,
@@ -188,6 +209,27 @@ class CrossDomainInventoryTest(unittest.TestCase):
             question='For each category compare summed December 2022 inventory units_sold with ordered quantities')
         self.assertEqual(result['inventory_units_sold']['representation'], 'period_observation_sum')
 
+    def test_category_comparison_preserves_one_sided_categories_and_null_measures(self):
+        from sqlglot import parse_one
+        with sqlite3.connect(':memory:') as db:
+            db.execute("ATTACH DATABASE ':memory:' AS commerce")
+            db.executescript('CREATE TABLE commerce.products(product_id INT PRIMARY KEY,category TEXT);'
+                'CREATE TABLE commerce.inventory(product_id INT,snapshot_date TEXT,units_sold INT);'
+                'CREATE TABLE commerce.orders(order_id INT PRIMARY KEY,order_date TEXT);'
+                'CREATE TABLE commerce.order_items(order_id INT,product_id INT,quantity INT);'
+                "INSERT INTO commerce.products VALUES(1,'A'),(2,'B'),(3,'C');"
+                "INSERT INTO commerce.inventory VALUES(1,'2022-12-10',2),(1,'2022-12-31',3),(2,'2022-12-31',4);"
+                "INSERT INTO commerce.orders VALUES(1,'2022-12-15'),(2,'2022-12-25');"
+                'INSERT INTO commerce.order_items VALUES(1,2,4),(2,2,5),(1,3,7);')
+            result=db.execute(parse_one(self.comparison,read='postgres').sql(dialect='sqlite')).fetchall()
+        self.assertEqual(sorted(result),[('A',5,None),('B',4,9),('C',None,7)])
+        for bad in [self.comparison.replace('SUM(i.units_sold)', 'COALESCE(SUM(i.units_sold),0)'),
+                    self.comparison.replace('GROUP BY p.category)', 'AND i.units_sold>0 GROUP BY p.category)',1),
+                    self.comparison.replace('LIMIT 200', 'WHERE ord.ordered_units>0 LIMIT 200')]:
+            with self.subTest(sql=bad),self.assertRaises(MetricDefinitionError):
+                validate_metric_definitions(bad,{'inventory_units_sold'},(),APPROVED_COLUMNS,
+                    question='Compare summed December 2022 inventory units_sold with ordered quantities by category')
+
     def test_comparison_cannot_roll_up_stock_balances_or_change_formula(self):
         for value in ['stock_on_hand', 'units_sold * 2']:
             sql = self.comparison.replace('SUM(i.units_sold)', 'SUM(i.'+value+')')
@@ -216,6 +258,22 @@ class CrossDomainInventoryTest(unittest.TestCase):
 
 
 class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_current_period_unavailability_is_verified_without_a_provider(self):
+        from datetime import date
+        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.models.agents import AgentRequest, VerifiedIdentity
+        for latest in [date(2022,12,31),None]:
+            provider,repository=Mock(),AsyncMock()
+            repository.execute_approved_query.return_value=[{'snapshot_date':latest}]
+            result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
+                question='What is the current 2026 stock_on_hand of every product?',
+                identity=VerifiedIdentity(subject='analyst',permissions={'analytics:read'})))
+            self.assertFalse(result.metadata.get('clarification_required',False))
+            self.assertEqual(result.metadata.get('metric_error_code'),'requested_period_unavailable')
+            self.assertEqual(result.metadata.get('status'),'unsupported')
+            provider.generate.assert_not_called()
+            repository.execute_approved_query.assert_awaited_once()
+
     async def test_approved_bridge_replaces_an_unnecessary_join_clarification(self):
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity

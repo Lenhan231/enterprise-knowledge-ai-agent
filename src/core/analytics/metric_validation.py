@@ -413,6 +413,46 @@ def _validate_source_period(scope, table, field, parameters, question):
         raise MetricDefinitionError(f'{table}.{field} must independently cover the requested period.', code='invalid_date_scope')
 
 
+def _validate_contract_population(scope, required_tables, date_column, parameters):
+    """Narrow explicit-period contracts cannot acquire hidden source restrictions."""
+    tables = [source.name for _,source in scope.selected_sources.values() if isinstance(source,exp.Table)]
+    select = scope.expression
+    if (not required_tables <= set(tables) or not set(tables) <= required_tables | {'products'}
+            or len(tables) != len(set(tables)) or len(tables) != len(scope.selected_sources)
+            or any(select.args.get(key) for key in ('limit','offset','having','qualify','distinct'))
+            or any(join.side or join.kind not in {'','INNER'} for join in select.args.get('joins',[]))):
+        raise MetricDefinitionError('Source population must be complete, independently aggregated and free of unrequested restrictions.')
+    for predicate in _conjuncts(select.args.get('where')):
+        columns = list(_canonical(predicate,scope,parameters,{}).find_all(exp.Column))
+        if not columns or any(column != date_column for column in columns):
+            raise MetricDefinitionError('This explicit-period contract does not permit extra source filters.')
+    for join in select.args.get('joins',[]):
+        if any(not isinstance(p,exp.EQ) or not isinstance(p.this,exp.Column) or not isinstance(p.expression,exp.Column)
+               for p in _conjuncts(join.args.get('on'))):
+            raise MetricDefinitionError('Join predicates cannot add unrequested source filters.')
+
+
+def _validate_product_ranking(root, expected, parameters, question, identity_tables):
+    from core.analytics.metric_mapping import MetricRanking, requested_ranking_limit
+    select = root.expression
+    ranking = MetricRanking(metric='requested_measure',direction='asc' if re.search(r'lowest|smallest|bottom',question,re.I) else 'desc',
+                            limit=requested_ranking_limit(question))
+    orders = select.args.get('order')
+    def order_value(order):
+        value=order.this
+        if isinstance(value,exp.Literal) and value.is_int and 1 <= int(value.this) <= len(select.selects):
+            value=select.selects[int(value.this)-1]
+        return _canonical(value,root,parameters,{})
+    if (not orders or order_value(orders.expressions[0]) != expected
+            or bool(orders.expressions[0].args.get('desc')) != (ranking.direction == 'desc')
+            or (isinstance(expected,exp.Div) and orders.expressions[0].args.get('nulls_first'))
+            or not select.args.get('limit') or int(select.args['limit'].expression.this) != (ranking.limit or 200)):
+        raise MetricDefinitionError('Ranking, NULL order or TOP-N differs from the requested contract.')
+    identities = {exp.column('product_id',table=table,db='commerce').sql() for table in identity_tables}
+    if not any(order_value(order).sql() in identities for order in orders.expressions[1:]):
+        raise MetricDefinitionError('Product ranking requires a stable product_id tie-break.')
+
+
 def _unit_ratio(scopes, parameters, question):
     root = scopes[-1]
     expected = parse_one('CAST(SUM(returns.return_quantity) AS NUMERIC) / NULLIF(SUM(order_items.quantity), 0)', read='postgres')
@@ -421,12 +461,26 @@ def _unit_ratio(scopes, parameters, question):
     values = [_canonical(p, root, parameters, {}) for p in root.expression.selects]
     if expected not in values:
         raise MetricDefinitionError('Unit ratio requires independently summed returned units / NULLIF(ordered units,0), cast to NUMERIC.')
+    operands = [expected.this.this, expected.expression.this]
+    if any(value not in values for value in operands):
+        raise MetricDefinitionError('Project both independently aggregated unit operands alongside the ratio for traceability.')
     for table, field in [('returns','return_date'), ('orders','order_date')]:
         selected = [s for s in scopes if any(isinstance(source, exp.Table) and source.name == table
                     for _, source in s.selected_sources.values())]
         if len(selected) != 1 or selected[0].expression.args.get('limit'):
             raise MetricDefinitionError('Unit ratio operands require complete independent source aggregates.')
+        _validate_contract_population(selected[0],{'returns'} if table == 'returns' else {'orders','order_items'},
+            exp.column(field,table=table,db='commerce'),parameters)
         _validate_source_period(selected[0], table, field, parameters, question)
+        group = selected[0].expression.args.get('group')
+        groups = [_canonical(p,selected[0],parameters,{}) for p in group.expressions] if group else []
+        if len(groups) != 1 or not isinstance(groups[0],exp.Column) or groups[0].name != 'product_id':
+            raise MetricDefinitionError('Each unit ratio operand must be grouped at product grain only.')
+    select = root.expression
+    if (any(select.args.get(key) for key in ('where','having','group','distinct','offset','qualify'))
+            or any(join.side or join.kind not in {'','INNER'} for join in select.args.get('joins',[]))):
+        raise MetricDefinitionError('Unit ratios require both observed operands without extra output restrictions.')
+    _validate_product_ranking(root,expected,parameters,question,('returns','order_items','products'))
     return {}
 
 
@@ -458,7 +512,11 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
         if projections != [category, formula] or groups != [category] or scope.expression.args.get('limit'):
             raise MetricDefinitionError('Movement comparison requires complete category SUM(units_sold) before limiting detail.')
         _validate_inventory_time([scope], parameters, question)
+        _validate_contract_population(scope,{'inventory','products'},
+            exp.column('snapshot_date',table='inventory',db='commerce'),parameters)
         order_scope = order_scopes[0]
+        _validate_contract_population(order_scope,{'orders','order_items','products'},
+            exp.column('order_date',table='orders',db='commerce'),parameters)
         order_values = [_canonical(p, order_scope, parameters, {}) for p in order_scope.expression.selects]
         ordered_units = parse_one('SUM(commerce.order_items.quantity)', read='postgres')
         order_group = order_scope.expression.args.get('group')
@@ -469,7 +527,8 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
         output = [_canonical(p, root, parameters, {}) for p in root.expression.selects]
         joins = root.expression.args.get('joins', [])
         category_key = exp.Coalesce(this=category.copy(), expressions=[category.copy()])
-        if len(joins) != 1 or joins[0].side != 'FULL' or output != [category_key, formula, ordered_units]:
+        if (len(joins) != 1 or joins[0].side != 'FULL' or output != [category_key, formula, ordered_units]
+                or any(root.expression.args.get(key) for key in ('where','having','group','distinct','offset','qualify'))):
             raise MetricDefinitionError('Compare both complete category aggregates with FULL JOIN and COALESCE of category keys; keep missing measures NULL.')
         return {'inventory_units_sold': {**definition, 'representation':'period_observation_sum',
             'limitations': [*definition.get('limitations', []),
@@ -502,6 +561,25 @@ def validate_metric_definitions(sql, metric_names, parameters, table_columns, *,
     """Verify recognized metrics; generic queries retain the existing SQL safety path."""
     tree = parse_one(sql, read='postgres')
     tables = {t.name for t in tree.find_all(exp.Table) if t.db == 'commerce'}
+    if question and 'inventory' not in tables:
+        scopes = list(traverse_scope(tree))
+        text = question.casefold().replace('_',' ')
+        if re.search(r'exclud\w*\s+cancel[le]+d|excluding cancelled',text):
+            expected = parse_one("NOT LOWER(commerce.orders.order_status) IN ('cancelled','canceled')",read='postgres')
+            matches = []
+            for scope in scopes:
+                for predicate in _conjuncts(scope.expression.args.get('where')):
+                    value = _canonical(predicate,scope,parameters,{})
+                    if isinstance(value,exp.Not) and isinstance(value.this,exp.In) and value.this.this == expected.this.this:
+                        matches.append({v.this for v in value.this.expressions})
+            if {'cancelled','canceled'} not in matches:
+                raise MetricDefinitionError('Exclude both cancelled/canceled statuses with a case-insensitive source predicate.')
+        if re.search(r'highest|most units|lowest',text) and re.search(r'products?',text):
+            source = ('returns','return_quantity') if re.search(r'units returned',text) else (
+                ('order_items','quantity') if 'quantity' in text else None)
+            if source:
+                expected = exp.Sum(this=exp.column(source[1],table=source[0],db='commerce'))
+                _validate_product_ranking(scopes[-1],expected,parameters,question,(source[0],'products'))
     if question and re.search(r'ratio|divided|tỷ lệ|tỉ lệ', question, re.I) and not metric_names and re.search(
             r'returned units|số lượng trả', question, re.I) and re.search(r'ordered units|số lượng đặt', question, re.I):
         if not {'returns','orders','order_items'} <= tables:

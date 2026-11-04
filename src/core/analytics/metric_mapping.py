@@ -21,8 +21,8 @@ class _StrictModel(BaseModel):
 
 class MetricFilter(_StrictModel):
     field: str
-    operator: Literal['eq','lt','lte','gt','gte','in']
-    value: str | int | float | bool | list[str | int | float | bool]
+    operator: Literal['eq','lt','lte','gt','gte','in','is_not_null']
+    value: str | int | float | bool | list[str | int | float | bool] | None = None
 
 
 class MetricTime(_StrictModel):
@@ -34,7 +34,7 @@ class MetricTime(_StrictModel):
 class MetricRanking(_StrictModel):
     metric: str
     direction: Literal['asc','desc']
-    limit: int = Field(ge=1,le=200)
+    limit: int | None = Field(default=None,ge=1,le=200)
 
 
 class MetricMapping(_StrictModel):
@@ -179,7 +179,8 @@ def build_metric_mapping_prompt(question, *, context=None):
             'For category totals use aggregate and category. Stored fill rankings use stored_fill_rate; means use fill_rate. '
             'Counting flagged products uses observed_product_count with a boolean indicator filter; '
             'rank categories by observed_product_count, never aggregate or rank a boolean indicator as a count. '
-            'Ranking without an explicit row count uses limit=200; never invent top 10. '
+            'Ranking without an explicit row count uses limit=null; the independent safety ceiling is 200 rows. Never invent top 10. '
+            'Explicit non-null population uses an is_not_null filter with value=null. '
             'Filters apply to source rows, not computed aggregates. Date ranges are inclusive. '
             'A snapshot uses start=the ISO date and end=null. A named month, quarter or year uses its full inclusive range; '
             'keep separate snapshot_date groups, never reinterpret a period as its closing balance. '
@@ -214,6 +215,17 @@ def _field(name):
     if definition.get('domain') == 'inventory_management' and re.fullmatch(r'[a-z_]+',scalar):
         return exp.column(scalar,table='inventory',db='commerce')
     _error('No approved source-row filter exists for '+name,'unsupported_dimension')
+
+
+def requested_ranking_limit(question):
+    """A safety ceiling is not an inferred user request for top N."""
+    words = dict(zip('one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty'.split(), range(1,21)))
+    count = re.search(r'\b(?:top|bottom|first|last|limit)\s+(\d+|'+'|'.join(words)+r')\b|\b(\d+)\s+(?:products?|categories|rows?|sản phẩm)\b', question, re.I)
+    value = next(value for value in count.groups() if value).casefold() if count else None
+    limit = (words[value] if value in words else int(value)) if value else None
+    if limit is not None and not 1 <= limit <= 200:
+        _error('Detail rankings support 1 to 200 rows.', 'interpretation_invalid')
+    return limit
 
 
 def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
@@ -252,6 +264,13 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
                  or METRIC_ONTOLOGY[name].get('approval_status') == 'unreviewed'}
     if protected - set(mapping.metrics):
         _error('The interpretation omitted or changed a recognized metric. Please clarify which measures you need.','metric_ambiguous')
+    required = known - {item.field for item in mapping.filters}
+    for name in required - set(mapping.metrics):
+        # Scalar and mean variants share an approved source field, not a new formula.
+        definition = METRIC_ONTOLOGY[name]
+        if not any(definition.get('source_columns') == METRIC_ONTOLOGY[selected].get('source_columns')
+                   for selected in mapping.metrics):
+            _error('The interpretation omitted or substituted requested metric '+name+'.','interpretation_mismatch')
     if mapping.time is None:
         _error('The inventory records are historical. Which snapshot should I use?','snapshot_required')
     temporal = mapping.time
@@ -287,10 +306,18 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
     dimensions = set.intersection(*(set(METRIC_ONTOLOGY[name]['dimensions']) for name in mapping.metrics))
     if not set(mapping.dimensions) <= dimensions - {'year','month'}:
         _error('This metric does not support the requested grouping.','unsupported_dimension')
+    if re.search(r'non[ -]?null|not null|không (?:rỗng|null)', question, re.I) and len(mapping.metrics) == 1:
+        name = mapping.metrics[0]
+        if not any(item.field == name and item.operator == 'is_not_null' for item in mapping.filters):
+            mapping.filters.append(MetricFilter(field=name,operator='is_not_null'))
     for item in mapping.filters:
         if item.field == 'snapshot_date':
             _error('Use the temporal scope for snapshot dates.','invalid_date_scope')
         _field(item.field)
+        if item.operator == 'is_not_null':
+            if item.value is not None:
+                _error('IS NOT NULL does not take a filter value.')
+            continue
         if (item.operator == 'in') != isinstance(item.value,list) or (isinstance(item.value,list) and not item.value):
             _error('Specify a nonempty list for IN and a scalar for other filters.')
         unit = METRIC_ONTOLOGY.get(item.field,{}).get('unit')
@@ -303,16 +330,15 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
         values = item.value if isinstance(item.value,list) else [item.value]
         if any(type(value) not in types for value in values) or (types in {(str,),(bool,)} and item.operator not in {'eq','in'}):
             _error('The filter value or comparison is incompatible with '+item.field+'.','interpretation_invalid')
+    ascending = bool(re.search(r'lowest|fewest|smallest|\bbottom\b|thấp nhất|ít nhất',question,re.I))
+    descending = bool(re.search(r'highest|greatest|largest|\bmost\b|cao nhất|nhiều nhất',question,re.I))
+    if ascending != descending and len(mapping.metrics) == 1:
+        mapping.ranking = MetricRanking(metric=mapping.metrics[0],direction='asc' if ascending else 'desc',
+            limit=mapping.ranking.limit if mapping.ranking else None)
     if mapping.ranking and mapping.ranking.metric not in mapping.metrics:
         _error('Rank using one of the requested catalog metrics.')
     if mapping.ranking and not preserve_ranking_limit:
-        words = dict(zip('one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty'.split(), range(1,21)))
-        count = re.search(r'\b(?:top|bottom|first|last|limit)\s+(\d+|'+'|'.join(words)+r')\b|\b(\d+)\s+(?:products?|categories|rows?|sản phẩm)\b', question, re.I)
-        value = next(value for value in count.groups() if value).casefold() if count else '200'
-        limit = words[value] if value in words else int(value)
-        if not 1 <= limit <= 200:
-            _error('Detail rankings support 1 to 200 rows.', 'interpretation_invalid')
-        mapping.ranking.limit = limit
+        mapping.ranking.limit = requested_ranking_limit(question)
     if mapping.representation == 'product':
         if not {'product_id','product_name'} & set(mapping.dimensions):
             _error('Product-level values require product identity.','incompatible_grain')
@@ -325,6 +351,8 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
 
 def _filter_expression(item):
     field = _field(item.field)
+    if item.operator == 'is_not_null':
+        return exp.Not(this=exp.Is(this=field,expression=exp.Null()))
     if item.operator == 'in':
         return exp.In(this=field,expressions=[exp.convert(v) for v in item.value])
     operator = {'eq':exp.EQ,'lt':exp.LT,'lte':exp.LTE,'gt':exp.GT,'gte':exp.GTE}[item.operator]
@@ -343,10 +371,20 @@ def validate_mapped_sql(plan, mapping, *, question=None):
     # shortcut: mapped queries use one SELECT; support transparent CTE rewrites when needed.
     if tree.args.get('with_') or not isinstance(tree,exp.Select):
         _error('Use one direct SELECT for the validated inventory interpretation.')
+    sources = [source for _,source in root.selected_sources.values()]
+    joins = tree.args.get('joins',[])
+    if (len(sources) != 2 or any(not isinstance(s,exp.Table) for s in sources)
+            or {s.db+'.'+s.name for s in sources} != {'commerce.inventory','commerce.products'}
+            or len(joins) != 1 or joins[0].side or joins[0].kind not in {'','INNER'}
+            or tree.args['from_'].this.name != 'inventory'):
+        _error('SQL source population differs from the validated inventory/product relationship.','interpretation_mismatch')
     def canonical(node):
         value = _canonical(node,root,plan.parameters,{})
         # The approved FK join makes both product keys the same identity.
         return value.transform(lambda n: _field('product_id') if n == exp.column('product_id',table='products',db='commerce') else n)
+    key = _field('product_id')
+    if canonical(joins[0].args['on']) != exp.EQ(this=key.copy(),expression=key.copy()):
+        _error('SQL join changed the validated source population.','interpretation_mismatch')
     projections = [canonical(p) for p in tree.selects]
     for dimension in mapping.dimensions:
         if _field(dimension) not in projections:
@@ -382,12 +420,12 @@ def validate_mapped_sql(plan, mapping, *, question=None):
     allowed = {snapshot.sql(),*(_field(d).sql() for d in mapping.dimensions)}
     allowed.update((_field(name) if mapping.representation == 'product' else _formula(METRIC_ONTOLOGY[name],APPROVED_COLUMNS)).sql()
                    for name in mapping.metrics)
-    if {p.sql() for p in projections} != allowed:
+    if len(projections) != len(allowed) or {p.sql() for p in projections} != allowed:
         _error('SQL added an unrequested output or metric.','interpretation_mismatch')
     if question:
         _validate_inventory_time([root],plan.parameters,question)
     limit = int(tree.args['limit'].expression.this)
-    if limit != (mapping.ranking.limit if mapping.ranking else 200):
+    if limit != ((mapping.ranking.limit or 200) if mapping.ranking else 200):
         _error('SQL row limit differs from the validated interpretation.','interpretation_mismatch')
     if mapping.ranking:
         orders = tree.args.get('order')
@@ -443,7 +481,7 @@ def compile_inventory_query(mapping):
         value = _field(name) if mapping.representation == 'product' else _formula(METRIC_ONTOLOGY[name], APPROVED_COLUMNS)
         orders.append(exp.Ordered(this=value, desc=mapping.ranking.direction == 'desc'))
     orders.extend(_field(d) for d in dimensions)
-    query = query.order_by(*orders).limit(mapping.ranking.limit if mapping.ranking else 200)
+    query = query.order_by(*orders).limit((mapping.ranking.limit or 200) if mapping.ranking else 200)
     # Parameterize literals, including catalog filters, before crossing the database boundary.
     def bind(node):
         if isinstance(node, exp.Literal) and not isinstance(node.parent, exp.Limit):

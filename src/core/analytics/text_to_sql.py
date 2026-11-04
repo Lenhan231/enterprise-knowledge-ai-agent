@@ -14,7 +14,7 @@ from sqlglot.errors import ParseError, TokenError
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
 from core.analytics.join_validation import PRIMARY_KEYS, validate_join_aggregations, approved_derived_join, column_origin
 from core.analytics.metric_validation import _single_snapshot
-from sqlglot.optimizer.scope import traverse_scope
+from sqlglot.optimizer.scope import Scope, traverse_scope
 from core.prompts.sql import SQL_GENERATION_PROMPT, SQL_REPAIR_PROMPT, INVENTORY_SQL_INSTRUCTIONS
 
 
@@ -287,6 +287,39 @@ def parse_json_response(raw: str):
     return json.loads(raw)
 
 
+def _normalize_unambiguous_sql(sql):
+    """Normalize syntax only; ambiguous names and unbounded detail still fail validation."""
+    try:
+        statements = parse(sql, read='postgres')
+    except (ParseError,TokenError):
+        return sql
+    if len(statements)!=1 or not isinstance(statements[0],exp.Select):
+        return sql
+    tree, changed = statements[0], False
+    for scope in traverse_scope(tree):
+        columns = {}
+        for alias, (_, source) in scope.selected_sources.items():
+            if isinstance(source, exp.Table):
+                columns[alias] = APPROVED_COLUMNS.get(_source_name(source),frozenset())
+            elif isinstance(source, Scope):
+                columns[alias] = _output_columns(source.expression)
+        for column in scope.columns:
+            if column.table or column.find_ancestor(exp.Select) is not scope.expression:
+                continue
+            candidates = [alias for alias,names in columns.items() if column.name.casefold() in names]
+            if len(candidates)==1 and re.fullmatch(r'[A-Za-z_]\w*',candidates[0]):
+                column.set('table',exp.to_identifier(candidates[0]))
+                changed=True
+    aggregates = [a for a in tree.find_all(exp.AggFunc) if a.find_ancestor(exp.Select) is tree]
+    projected_columns = [c for p in tree.selects for c in p.find_all(exp.Column) if c.find_ancestor(exp.Select) is tree]
+    if (not tree.args.get('limit') and not tree.args.get('group') and aggregates
+            and not any(p.find(exp.Window) for p in tree.selects)
+            and all(c.find_ancestor(exp.AggFunc) in aggregates for c in projected_columns)):
+        tree.limit(MAX_RESULT_ROWS,copy=False)
+        changed=True
+    return tree.sql(dialect='postgres') if changed else sql
+
+
 def decode_query_plan(raw: str) -> QueryPlan:
     try:
         payload = parse_json_response(raw)
@@ -306,6 +339,7 @@ def decode_query_plan(raw: str) -> QueryPlan:
         raise SQLValidationError("The query plan must include SQL, a parameter list, and an explanation.")
     if len(parameters) > 32 or any(not isinstance(value, (str, int, float, bool, type(None))) for value in parameters):
         raise SQLValidationError("Query parameters must be at most 32 scalar JSON values.")
+    sql = _normalize_unambiguous_sql(sql)
     validated = validate_commerce_sql(sql)
     parameter_indexes = sorted({
         int(node.this.this)
@@ -438,9 +472,14 @@ def build_sql_prompt(
           'For returned-unit / ordered-unit ratios, independently aggregate returns.return_quantity by return_date '
           'and order_items.quantity by orders.order_date at the requested product grain and period, '
           'then join their complete grouped product keys. Cast numerator AS NUMERIC and divide by NULLIF(denominator,0). '
+          'Use INNER JOIN for paired observed operands; never COALESCE a missing operand to zero. '
+          'Rank the ratio with NULLS LAST and product_id as tie-break. '
+          'Project product_id, returned_units, ordered_units and the ratio so both operands are inspectable. '
           'This is not the canonical order-based return_rate. Never join raw fact rows for this ratio. '
           'For inventory/order presence use correlated EXISTS through approved product keys; do not multiply inventory rows. '
           'Compare inventory and order measures using independent category aggregates, never an unaggregated fact join. '
+          'When excluding cancelled orders, use LOWER(order_status) NOT IN (\'cancelled\',\'canceled\'). '
+          'Every product TOP-N ranking needs product_id as a deterministic tie-break after the requested measure. '
           'For an explicit inventory units_sold / ordered-quantity comparison, the inventory CTE selects only '
           'products.category and SUM(inventory.units_sold), groups by category, filters the entire requested period, '
           'and has no inner LIMIT. This explicit movement-observation sum is not a balance KPI. '

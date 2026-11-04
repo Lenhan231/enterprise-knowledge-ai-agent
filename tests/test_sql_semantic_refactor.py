@@ -165,7 +165,7 @@ class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
         provider, repo = Mock(), AsyncMock()
         provider.generate.return_value = json.dumps({'sql':
             'SELECT r.product_id,SUM(r.return_quantity) AS returned_units FROM commerce.returns r '
-            'WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY r.product_id ORDER BY 2 DESC LIMIT 10',
+            'WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY r.product_id ORDER BY 2 DESC,r.product_id LIMIT 10',
             'parameters':['2022-01-01','2023-01-01']})
         repo.execute_approved_query.return_value = [{'product_id':1,'returned_units':7}]
         result = await SQLAnalyticsAgent(repo,llm=provider).run(AgentRequest(

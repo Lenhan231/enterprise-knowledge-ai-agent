@@ -1002,4 +1002,26 @@ else:
                     file_name=selected_manifest["filename"],
                     mime="application/octet-stream",
                 )
-            st.json(selected_output.get("metadata", {}))
+            parser_metadata = selected_output.get("metadata", {})
+            routing_diagnostics = parser_metadata.get("ocr_routing_diagnostics", [])
+            orientation_diagnostics = parser_metadata.get("ocr_orientation_diagnostics", [])
+            if routing_diagnostics:
+                with st.expander(f"OCR diagnostics · {len(routing_diagnostics)} lines"):
+                    routing_log = "".join(
+                        json.dumps(item, ensure_ascii=False, separators=(",", ":")) + "\n"
+                        for item in routing_diagnostics
+                    )
+                    st.download_button(
+                        "Download OCR routing log (.jsonl)",
+                        routing_log,
+                        file_name=f'{Path(selected_manifest["filename"]).stem}.ocr-routing.jsonl',
+                        mime="application/x-ndjson",
+                        key=f"download-ocr-routing-{selected_id}",
+                    )
+                    st.dataframe(routing_diagnostics, use_container_width=True, hide_index=True)
+                    if orientation_diagnostics:
+                        st.caption("Layout-region orientation decisions")
+                        st.dataframe(
+                            orientation_diagnostics, use_container_width=True, hide_index=True
+                        )
+            st.json(parser_metadata)

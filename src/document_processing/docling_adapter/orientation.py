@@ -23,6 +23,15 @@ def _paddle_orientation_model():
     return DocImgOrientationClassification(model_name="PP-LCNet_x1_0_doc_ori", device="cpu")
 
 
+@lru_cache(maxsize=1)
+def _paddle_textline_orientation_model():
+    from paddleocr import TextLineOrientationClassification
+
+    return TextLineOrientationClassification(
+        model_name="PP-LCNet_x0_25_textline_ori", device="cpu"
+    )
+
+
 def detect_paddle_orientation(image: Image.Image) -> tuple[int, int, float]:
     """Return clockwise correction, predicted orientation, and confidence."""
     import numpy as np
@@ -38,6 +47,25 @@ def detect_paddle_orientation(image: Image.Image) -> tuple[int, int, float]:
     angle = int(result["label_names"][0])
     if angle not in (0, 90, 180, 270):
         raise ValueError(f"Unsupported orientation: {angle}")
+    return (-angle) % 360, angle, float(result["scores"][0])
+
+
+def detect_paddle_textline_orientation(image: Image.Image) -> tuple[int, int, float]:
+    """Return clockwise correction, predicted text-line orientation, and confidence."""
+    import numpy as np
+
+    image_bgr = np.asarray(image.convert("RGB"))[:, :, ::-1].copy()
+    with _orientation_lock:
+        result = next(iter(_paddle_textline_orientation_model().predict(image_bgr, batch_size=1)))
+    payload = result.json
+    if isinstance(payload, str):
+        import json
+        payload = json.loads(payload)
+    result = payload.get("res", payload)
+    label = result["label_names"][0]
+    angle = int(str(label).split("_", maxsplit=1)[0])
+    if angle not in (0, 180):
+        raise ValueError(f"Unsupported text-line orientation: {label}")
     return (-angle) % 360, angle, float(result["scores"][0])
 
 

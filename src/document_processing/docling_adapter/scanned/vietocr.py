@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+import json
 import logging
 import re
 import unicodedata
@@ -25,13 +26,21 @@ from docling.models.factories import get_ocr_factory
 from docling.models.stages.ocr.tesseract_utils import tesseract_box_to_bounding_rectangle
 from docling.utils.profiling import TimeRecorder
 from .line_detection import create_line_detector, crop_line, detect_line_boxes, merge_line_fragments
-from ..orientation import detect_paddle_orientation, rotate_for_reading
+from ..orientation import (
+    detect_paddle_orientation,
+    detect_paddle_textline_orientation,
+    rotate_for_reading,
+)
 
 _TEXT_TYPE_REPO = "VItaldob/text-type-classifier-resnet18"
 _TEXT_TYPE_REVISION = "5709c2519a11bcea9974975f988b69fa3a835139"
 _HANDWRITING_REPO = "DungHugging/vietocr-handwritten-finetune"
 _HANDWRITING_REVISION = "0827b42e17cb0e1c1bbda5aac11f7cc5c816e0ca"
 _LOGGER = logging.getLogger(__name__)
+_TEXT_LAYOUT_LABELS = {
+    "text", "title", "section_header", "caption", "footnote", "list_item",
+    "page_header", "page_footer", "code", "key_value_region",
+}
 
 
 class VietOcrOptions(OcrOptions):
@@ -83,7 +92,8 @@ class VietOcrModel(BaseOcrModel):
             )
         self.detector = create_line_detector()
         self.orientation_diagnostics: list[dict] = []
-        self._orientation_counts: dict[str | None, int] = {}
+        self.routing_diagnostics: list[dict] = []
+        self._orientation_counts: dict[int, int] = {}
         self.current_reference_id: str | None = None
 
     def _load_handwriting_router(self, torch, predictor_type, config_type, device: str) -> None:
@@ -144,8 +154,8 @@ class VietOcrModel(BaseOcrModel):
 
     @staticmethod
     def _detect_orientation(image: Image.Image) -> tuple[int, int | None, float | None]:
-        """Classify region orientation before RapidOCR line detection."""
-        return detect_paddle_orientation(image)
+        """Classify a layout crop with the text-line orientation model."""
+        return detect_paddle_textline_orientation(image)
 
     @staticmethod
     def _cell_bbox(cell: TextCell) -> tuple[float, float, float, float]:
@@ -203,46 +213,67 @@ class VietOcrModel(BaseOcrModel):
                 yield page
                 continue
 
+            page_number = int(page.page_no)
+
             with TimeRecorder(conv_res, "ocr"):
                 layout = page.predictions.layout
-                ocr_rects = (
-                    [cluster.bbox for cluster in layout.clusters]
-                    if layout is not None and layout.clusters
-                    else self.get_ocr_rects(page)
-                )
+                if layout is not None and layout.clusters:
+                    ocr_regions = [
+                        (
+                            cluster.bbox,
+                            str(getattr(cluster.label, "value", cluster.label)).lower(),
+                        )
+                        for cluster in layout.clusters
+                    ]
+                else:
+                    ocr_regions = [(rect, "page") for rect in self.get_ocr_rects(page)]
                 print(
                     "OCR regions before line detection:",
-                    self.current_reference_id,
+                    page_number,
                     [
                         [round(rect.l, 1), round(rect.t, 1), round(rect.r, 1), round(rect.b, 1)]
-                        for rect in ocr_rects
+                        for rect, _label in ocr_regions
                     ],
                     flush=True,
                 )
                 cells: list[TextCell] = []
                 cell_region_indices: list[int] = []
                 routing_counts = {"printed": 0, "handwritten": 0, "fallback": 0, "default": 0}
-                for ocr_rect in ocr_rects:
+                for ocr_rect, region_label in ocr_regions:
                     if ocr_rect.area() == 0:
                         continue
                     crop = page._backend.get_page_image(
                         scale=self.scale, cropbox=ocr_rect
                     )
-                    doc_orientation, osd_orientation, osd_confidence = self._detect_orientation(crop)
-                    # Quarter-turn predictions on horizontal crops can be wrong even at high confidence.
-                    if osd_confidence < 0.7 or (doc_orientation in (90, 270) and crop.width >= crop.height):
-                        doc_orientation = 0
-                    region_index = self._orientation_counts.get(self.current_reference_id, 0) + 1
-                    self._orientation_counts[self.current_reference_id] = region_index
-                    self.orientation_diagnostics.append({
-                        "reference_id": self.current_reference_id,
-                        "ocr_region_index_1based": region_index,
+                    is_text_region = region_label in _TEXT_LAYOUT_LABELS
+                    doc_orientation = 0
+                    orientation_diagnostic = {
+                        "scope": "layout_region",
+                        "page_number": page_number,
+                        "layout_label": region_label,
                         "bbox": [ocr_rect.l, ocr_rect.t, ocr_rect.r, ocr_rect.b],
                         "crop_size": list(crop.size),
-                        "osd_orientation_degrees": osd_orientation,
-                        "correction_clockwise": doc_orientation,
-                        "osd_confidence": osd_confidence,
-                    })
+                    }
+                    if not is_text_region or crop.height > crop.width:
+                        page_correction, page_orientation, page_confidence = detect_paddle_orientation(crop)
+                        apply_page_orientation = page_confidence >= 0.7 and (
+                            not is_text_region or page_orientation in (90, 270)
+                        )
+                        if apply_page_orientation:
+                            doc_orientation = page_correction
+                        orientation_diagnostic.update({
+                            "doc_orientation_degrees": page_orientation,
+                            "doc_orientation_confidence": page_confidence,
+                            "doc_orientation_model": "PP-LCNet_x1_0_doc_ori",
+                        })
+                    orientation_diagnostic["correction_clockwise"] = doc_orientation
+                    self.orientation_diagnostics.append(orientation_diagnostic)
+                    _LOGGER.info(
+                        "OCR_REGION_ORIENTATION %s",
+                        json.dumps(orientation_diagnostic, separators=(",", ":")),
+                    )
+                    region_index = self._orientation_counts.get(page_number, 0) + 1
+                    self._orientation_counts[page_number] = region_index
                     if doc_orientation:
                         crop = rotate_for_reading(crop, doc_orientation)
                     image_size = crop.size
@@ -273,10 +304,17 @@ class VietOcrModel(BaseOcrModel):
                             quad,
                             padding=2 if merged_fragments else 0,
                         )
+                        line_orientation_correction, line_orientation, line_confidence = (
+                            self._detect_orientation(
+                                Image.fromarray(cv2.cvtColor(line, cv2.COLOR_BGR2RGB))
+                            )
+                        )
+                        if line_confidence < 0.7:
+                            line_orientation_correction = 0
+                        if line_orientation_correction == 180:
+                            line = cv2.rotate(line, cv2.ROTATE_180)
                         text, route = self._recognize_line(line)
                         routing_counts[route] += 1
-                        if not text:
-                            continue
                         page_quad = quad.copy()
                         page_quad[:, 1] -= vertical_padding
                         page_quad[:, 0] = np.clip(page_quad[:, 0], 0, image_size[0] - 1)
@@ -287,6 +325,52 @@ class VietOcrModel(BaseOcrModel):
                             l=float(left), t=float(top), r=float(right), b=float(bottom),
                             coord_origin=CoordOrigin.TOPLEFT,
                         )
+                        rect = tesseract_box_to_bounding_rectangle(
+                            box,
+                            original_offset=ocr_rect,
+                            scale=self.scale,
+                            orientation=doc_orientation,
+                            im_size=image_size,
+                        )
+                        rect_x = [rect.r_x0, rect.r_x1, rect.r_x2, rect.r_x3]
+                        rect_y = [rect.r_y0, rect.r_y1, rect.r_y2, rect.r_y3]
+                        diagnostic = {
+                            "page_number": page_number,
+                            "ocr_region_index_1based": region_index,
+                            "line_index_1based": index + 1,
+                            "route": route,
+                            "recognized_text_present": bool(text),
+                            "merged_fragments": bool(merged_fragments),
+                            "bbox": [
+                                float(min(rect_x)), float(min(rect_y)),
+                                float(max(rect_x)), float(max(rect_y)),
+                            ],
+                            "bbox_coordinate_system": "docling_page_coordinate",
+                            "bbox_coordinate_origin": "TOPLEFT",
+                        }
+                        self.routing_diagnostics.append(diagnostic)
+                        _LOGGER.info("OCR_LINE_ROUTE %s", json.dumps(diagnostic, separators=(",", ":")))
+                        line_orientation_diagnostic = {
+                            "scope": "text_line",
+                            "page_number": page_number,
+                            "layout_label": region_label,
+                            "ocr_region_index_1based": region_index,
+                            "line_index_1based": index + 1,
+                            "textline_orientation_degrees": line_orientation,
+                            "textline_orientation_confidence": line_confidence,
+                            "textline_orientation_model": "PP-LCNet_x0_25_textline_ori",
+                            "correction_clockwise": line_orientation_correction,
+                            "bbox": diagnostic["bbox"],
+                            "bbox_coordinate_system": diagnostic["bbox_coordinate_system"],
+                            "bbox_coordinate_origin": diagnostic["bbox_coordinate_origin"],
+                        }
+                        self.orientation_diagnostics.append(line_orientation_diagnostic)
+                        _LOGGER.info(
+                            "OCR_LINE_ORIENTATION %s",
+                            json.dumps(line_orientation_diagnostic, separators=(",", ":")),
+                        )
+                        if not text:
+                            continue
                         cells.append(
                             TextCell(
                                 index=index,
@@ -294,19 +378,13 @@ class VietOcrModel(BaseOcrModel):
                                 orig=text,
                                 confidence=1.0,
                                 from_ocr=True,
-                                rect=tesseract_box_to_bounding_rectangle(
-                                    box,
-                                    original_offset=ocr_rect,
-                                    scale=self.scale,
-                                    orientation=doc_orientation,
-                                    im_size=image_size,
-                                ),
+                                rect=rect,
                             )
                         )
                         cell_region_indices.append(region_index)
                 if self.handwriting_classifier is not None:
                     print(
-                        "OCR line routing:", self.current_reference_id, routing_counts,
+                        "OCR line routing:", page_number, routing_counts,
                         flush=True,
                     )
                 cells = self._deduplicate_overlapping_cells(cells, cell_region_indices)

@@ -1189,7 +1189,21 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
   const parserLabel = intent === "document" ? "Docling" : `Vintern ${intent}`;
   $("#ocr-test-status").textContent = `Running ${parserLabel}…`;
   try {
-    const result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
+    let result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
+    if (result.status === "processing") {
+      const runId = result.run_id;
+      const startedAt = Date.now();
+      while (result.status === "processing") {
+        await new Promise((resolve) => window.setTimeout(resolve, 3000));
+        result = await api(`/api/upload-tests/${encodeURIComponent(runId)}`);
+        if (result.status === "processing") {
+          const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
+          $("#ocr-test-status").textContent = `Vintern ${intent} is still processing (${formatDuration(elapsedSeconds * 1000)})…`;
+        } else if (result.status === "failed") {
+          throw new Error(result.error || "Vintern processing failed");
+        }
+      }
+    }
     $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.element_count} parser elements, ${result.table_count} tables. No production document was created.`;
     await loadOcrTestRuns();
     await openOcrTestRun(result.run_id);

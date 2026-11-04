@@ -19,6 +19,98 @@ from app.security import _require_same_origin, require_permission
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+# ponytail: in-process job state fits the single Upload Test API replica; use a durable queue if it must survive restarts or scale-out.
+_UPLOAD_TEST_JOBS: dict[uuid.UUID, dict[str, str | float]] = {}
+_UPLOAD_TEST_TASKS: set[asyncio.Task] = set()
+
+
+def _process_and_save_upload_test(
+    *, run_id, filename, content, source_sha256, uploaded_by, config,
+    source_metadata, page_previews, preview_page_sizes, page_count, pymupdf_version,
+):
+    processing_started = time.perf_counter()
+    from core.services.client import post
+
+    processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
+    if not processing_url:
+        raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
+    try:
+        parsed = post(processing_url, "/parse", {
+            "filename": filename,
+            "content": base64.b64encode(content).decode("ascii"),
+            "metadata": source_metadata,
+            "config": config,
+        }, timeout=600)
+    except (ValueError, RuntimeError) as error:
+        status_code = 503 if isinstance(error, RuntimeError) else 422
+        raise HTTPException(status_code, f"Upload Test processing failed: {error}") from error
+
+    page_orientation_corrections = parsed.get("page_orientation_corrections") or {}
+    for page_number, raw_correction in page_orientation_corrections.items():
+        correction = int(raw_correction) % 360
+        index = int(page_number) - 1
+        if correction == 0 or not 0 <= index < len(page_previews):
+            continue
+        with Image.open(BytesIO(page_previews[index])) as source_preview:
+            oriented_preview = source_preview.rotate(-correction, expand=True)
+            buffer = BytesIO()
+            oriented_preview.save(buffer, format="PNG")
+            page_previews[index] = buffer.getvalue()
+        if correction in {90, 270}:
+            page_size = preview_page_sizes[str(page_number)]
+            preview_page_sizes[str(page_number)] = {
+                "width": page_size["height"],
+                "height": page_size["width"],
+            }
+
+    runtime_info = {
+        "pymupdf": pymupdf_version,
+        "pipeline_id": parsed["metadata"].get("pipeline_id"),
+        "preview_page_sizes": preview_page_sizes,
+        "parser_page_sizes": parsed.get("page_sizes") or preview_page_sizes,
+        "page_orientation_corrections": page_orientation_corrections,
+        "processing_time_ms": max(0, round((time.perf_counter() - processing_started) * 1000)),
+    }
+    if parsed["metadata"].get("docling_version"):
+        runtime_info["docling"] = parsed["metadata"]["docling_version"]
+
+    from core.database.upload_test_repository import UploadTestRepository
+
+    repository = UploadTestRepository()
+    try:
+        repository.save_run(
+            run_id, source_filename=filename, source_sha256=source_sha256,
+            uploaded_by=uploaded_by, processor_config=config, runtime_info=runtime_info,
+            page_previews=page_previews, elements=parsed["elements"], tables=parsed["tables"],
+        )
+    except Exception as error:
+        logger.exception("Could not persist upload test run %s", run_id)
+        raise HTTPException(503, "Upload processing completed, but its test output could not be saved") from error
+    finally:
+        repository.close()
+
+    return {
+        "run_id": str(run_id), "source_filename": filename,
+        "source_sha256": source_sha256, "page_count": page_count,
+        "element_count": len(parsed["elements"]), "table_count": len(parsed["tables"]),
+        "processor_config": config, "runtime_info": runtime_info,
+    }
+
+
+async def _run_upload_test_job(run_id: uuid.UUID, job_args: dict) -> None:
+    try:
+        await asyncio.to_thread(_process_and_save_upload_test, **job_args)
+    except HTTPException as error:
+        _UPLOAD_TEST_JOBS[run_id] = {
+            "status": "failed", "error": str(error.detail), "finished_at": time.monotonic(),
+        }
+    except Exception:
+        logger.exception("Upload Test background run %s failed", run_id)
+        _UPLOAD_TEST_JOBS[run_id] = {
+            "status": "failed", "error": "Upload Test processing failed", "finished_at": time.monotonic(),
+        }
+    else:
+        _UPLOAD_TEST_JOBS.pop(run_id, None)
 
 
 @router.post("/api/upload-tests")
@@ -111,80 +203,39 @@ async def create_upload_test(
     run_id = uuid.uuid4()
     source_sha256 = hashlib.sha256(content).hexdigest()
     source_metadata = {"source_type": "upload_test", "source_sha256": source_sha256}
-    processing_started = time.perf_counter()
-    try:
-        from core.services.client import post
+    job_args = {
+        "run_id": run_id,
+        "filename": filename,
+        "content": content,
+        "source_sha256": source_sha256,
+        "uploaded_by": user["sub"],
+        "config": config,
+        "source_metadata": source_metadata,
+        "page_previews": page_previews,
+        "preview_page_sizes": preview_page_sizes,
+        "page_count": page_count,
+        "pymupdf_version": fitz.VersionBind,
+    }
+    if intent != "document":
+        now = time.monotonic()
+        for old_id, state in list(_UPLOAD_TEST_JOBS.items()):
+            if state.get("status") == "failed" and now - state.get("finished_at", now) > 3600:
+                _UPLOAD_TEST_JOBS.pop(old_id, None)
+        if len(_UPLOAD_TEST_TASKS) >= 1:
+            raise HTTPException(429, "Another Vintern Upload Test is already running")
+        _UPLOAD_TEST_JOBS[run_id] = {"status": "processing"}
+        task = asyncio.create_task(_run_upload_test_job(run_id, job_args))
+        _UPLOAD_TEST_TASKS.add(task)
+        task.add_done_callback(_UPLOAD_TEST_TASKS.discard)
+        return {"run_id": str(run_id), "status": "processing"}
 
-        processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
-        if not processing_url:
-            raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
-        parsed = await asyncio.to_thread(
-            post,
-            processing_url,
-            "/parse",
-            {
-                "filename": filename,
-                "content": base64.b64encode(content).decode("ascii"),
-                "metadata": source_metadata,
-                "config": config,
-            },
-            timeout=600,
-        )
+    try:
+        return await asyncio.to_thread(_process_and_save_upload_test, **job_args)
+    except HTTPException:
+        raise
     except (ValueError, RuntimeError) as error:
         status_code = 503 if isinstance(error, RuntimeError) else 422
         raise HTTPException(status_code, f"Upload Test processing failed: {error}") from error
-    page_orientation_corrections = parsed.get("page_orientation_corrections") or {}
-    for page_number, raw_correction in page_orientation_corrections.items():
-        correction = int(raw_correction) % 360
-        if correction == 0:
-            continue
-        index = int(page_number) - 1
-        if not 0 <= index < len(page_previews):
-            continue
-        with Image.open(BytesIO(page_previews[index])) as source_preview:
-            oriented_preview = source_preview.rotate(-correction, expand=True)
-            buffer = BytesIO()
-            oriented_preview.save(buffer, format="PNG")
-            page_previews[index] = buffer.getvalue()
-        if correction in {90, 270}:
-            page_size = preview_page_sizes[str(page_number)]
-            preview_page_sizes[str(page_number)] = {
-                "width": page_size["height"],
-                "height": page_size["width"],
-            }
-    runtime_info = {
-        "pymupdf": fitz.VersionBind,
-        "pipeline_id": parsed["metadata"].get("pipeline_id"),
-        "preview_page_sizes": preview_page_sizes,
-        "parser_page_sizes": parsed.get("page_sizes") or preview_page_sizes,
-        "page_orientation_corrections": page_orientation_corrections,
-    }
-    if parsed["metadata"].get("docling_version"):
-        runtime_info["docling"] = parsed["metadata"]["docling_version"]
-    runtime_info["processing_time_ms"] = max(
-        0, round((time.perf_counter() - processing_started) * 1000),
-    )
-
-    from core.database.upload_test_repository import UploadTestRepository
-    repository = UploadTestRepository()
-    try:
-        repository.save_run(
-            run_id, source_filename=filename, source_sha256=source_sha256,
-            uploaded_by=user["sub"], processor_config=config, runtime_info=runtime_info,
-            page_previews=page_previews, elements=parsed["elements"], tables=parsed["tables"],
-        )
-    except Exception as error:
-        logger.exception("Could not persist upload test run %s", run_id)
-        raise HTTPException(503, "Upload processing completed, but its test output could not be saved") from error
-    finally:
-        repository.close()
-    return {
-        "run_id": str(run_id), "source_filename": filename,
-        "source_sha256": source_sha256, "page_count": page_count,
-        "element_count": len(parsed["elements"]),
-        "table_count": len(parsed["tables"]),
-        "processor_config": config, "runtime_info": runtime_info,
-    }
 
 
 @router.get("/api/upload-tests")
@@ -205,6 +256,12 @@ def inspect_upload_test(
     run_id: uuid.UUID,
     user: dict = Depends(require_permission("review_upload_tests")),
 ):
+    job = _UPLOAD_TEST_JOBS.get(run_id)
+    if job is not None:
+        if job.get("status") == "processing":
+            return {"run_id": str(run_id), "status": "processing"}
+        return {"run_id": str(run_id), "status": "failed", "error": job.get("error")}
+
     from core.database.upload_test_repository import UploadTestRepository
 
     repository = UploadTestRepository()

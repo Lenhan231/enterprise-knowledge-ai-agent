@@ -1,9 +1,15 @@
 {
  "dataset_id": "vietstyle-heldout-v1",
- "status": "reviewed-r1",
+ "status": "reviewed-r2",
  "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
  "evidence_convention": "Integers are TRANG CHÍNH SÁCH numbers (policy pages 1-50); 'cover', 'PL-A'..'PL-D' are the cover and appendices. Checked on the VN PDF (54 pages): physical page = policy page + 2; cover = 1; PL-A and PL-B = 53; PL-C = 53-54; PL-D = 54. Chunk metadata.page_number is the physical page. Production also holds the EN PDF; V5 cited EN p35 for policy page 33, consistent with the same +2 offset (EN layout not verified page by page).",
  "excluded_overlap": "Does not reuse V1-V6 (scripts/operations/measure_pipeline_latency.py) or the 15 manual questions (docs/notes/manual-qa-vietstyle-20261103.md), which were used for tuning.",
+ "must_include_convention": "Case-insensitive substring match; 'a|b' means either alternative counts. Answers are always Vietnamese (Knowledge prompt), so English questions E01-E06 are labelled in Vietnamese.",
+ "revision_history": [
+  "r1 (2026-11-04): 60 cases reviewed and locked.",
+  "r2 (2026-11-04, before any run): E01-E06 must_include/reference relabelled to Vietnamese because the knowledge prompt always answers in Vietnamese; added X01-X08 (code-mixed, no-diacritics, shorthand amounts); added F01-F03 (follow-up and topic switch), A01 (ambiguous), U01 (foreign currency), S01 (typos), G01 (question buried in a pasted email), H01 (chit-chat)."
+ ],
+ "multi_turn_convention": "Cases with 'history' are run through the router with one conversation_id: send each history question first, then 'question'; only the last turn is scored. Prior turns are never evidence (ConversationStore).",
  "cases": [
   {
    "id": "L01",
@@ -742,7 +748,7 @@
    "must_include": [
     "30"
    ],
-   "reference_answer": "Within 30 calendar days of the transaction or of returning from the approved trip, whichever is later.",
+   "reference_answer": "Trong 30 ngày lịch kể từ giao dịch hoặc ngày trở về chuyến công tác đã duyệt, lấy mốc muộn hơn.",
    "evidence": [
     11
    ],
@@ -754,10 +760,10 @@
    "section": "security",
    "question": "Within how long must a High-severity security incident be reported, and to whom?",
    "must_include": [
-    "one hour",
-    "Security"
+    "một giờ|1 giờ",
+    "Bảo mật"
    ],
-   "reference_answer": "Within one hour, to Security and the system owner.",
+   "reference_answer": "Trong một giờ, báo Bảo mật và chủ hệ thống.",
    "evidence": [
     42
    ],
@@ -769,9 +775,9 @@
    "section": "security",
    "question": "How often must privileged roles, service identities and external contractors' access be reviewed?",
    "must_include": [
-    "quarter"
+    "hằng quý|hàng quý"
    ],
-   "reference_answer": "Quarterly.",
+   "reference_answer": "Hằng quý.",
    "evidence": [
     38
    ],
@@ -783,9 +789,9 @@
    "section": "inventory",
    "question": "Can goods held for quality inspection be used to fulfil customer orders?",
    "must_include": [
-    "no"
+    "không"
    ],
-   "reference_answer": "No. Quarantined, damaged, recalled or otherwise restricted stock is not sellable and customer orders must not be fulfilled from it; release requires an authorised quality decision.",
+   "reference_answer": "Không. Hàng giữ kiểm định, hỏng, thu hồi hoặc hạn chế khác không được tính là hàng có thể bán và không thực hiện đơn khách từ hàng hạn chế; chỉ giải phóng khi có quyết định chất lượng có thẩm quyền.",
    "evidence": [
     34
    ],
@@ -797,10 +803,10 @@
    "section": "inventory",
    "question": "During a cycle count, what must happen before a discrepancy is recorded as a stock adjustment?",
    "must_include": [
-    "recount",
-    "independent"
+    "đếm lại",
+    "độc lập"
    ],
-   "reference_answer": "Material variances are recounted by an independent person, compared with the live inventory system and the cause recorded before adjustment; the count sheet is not itself an adjustment, and material adjustments need an independent approver.",
+   "reference_answer": "Sai lệch trọng yếu phải được người độc lập đếm lại, so với hệ thống tồn kho trực tiếp và ghi nguyên nhân trước khi điều chỉnh; phiếu đếm không phải là điều chỉnh, và điều chỉnh trọng yếu cần người duyệt độc lập.",
    "evidence": [
     31,
     32
@@ -813,10 +819,10 @@
    "section": "security",
    "question": "What should the AI agent do when the retrieved policy sources contradict each other?",
    "must_include": [
-    "not conclude",
-    "escalate"
+    "không kết luận",
+    "chuyển"
    ],
-   "reference_answer": "Do not conclude; escalate to the responsible human owner (conflicting sources are a blocking condition).",
+   "reference_answer": "Không kết luận; chuyển chủ trách nhiệm là con người (nguồn mâu thuẫn là điều kiện chặn).",
    "evidence": [
     44,
     49,
@@ -907,6 +913,259 @@
     42
    ],
    "should_abstain": true
+  },
+  {
+   "id": "X01",
+   "type": "mixed",
+   "section": "procurement",
+   "question": "PO 120 triệu cần ai approve và cần mấy quotation?",
+   "must_include": [
+    "Mua sắm",
+    "Tài chính",
+    "ba báo giá|3 báo giá"
+   ],
+   "reference_answer": "Trưởng bộ phận cùng Mua sắm và Tài chính duyệt; cần ít nhất ba báo giá bằng văn bản hoặc giải trình chỉ định nguồn được lập hồ sơ.",
+   "evidence": [
+    18,
+    19,
+    "PL-B"
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "X02",
+   "type": "mixed",
+   "section": "inventory",
+   "question": "Nếu product_name trong inventory khác với bảng products thì trust bên nào?",
+   "must_include": [
+    "products",
+    "đánh dấu"
+   ],
+   "reference_answer": "Lấy commerce.products làm metadata danh mục và đánh dấu chỗ lệch.",
+   "evidence": [
+    26
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "X03",
+   "type": "mixed",
+   "section": "security",
+   "question": "Security log có được lưu password hay token không?",
+   "must_include": [
+    "không",
+    "mật khẩu"
+   ],
+   "reference_answer": "Không. Không ghi mật khẩu, token, thông tin thanh toán đầy đủ hoặc dữ liệu cá nhân không cần.",
+   "evidence": [
+    41
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "X04",
+   "type": "mixed",
+   "section": "procurement",
+   "question": "Vendor quan trọng thì review performance bao lâu một lần?",
+   "must_include": [
+    "hằng năm|hàng năm"
+   ],
+   "reference_answer": "Ít nhất hằng năm và sau lỗi lặp về chất lượng, giao hàng, bảo mật hoặc hóa đơn.",
+   "evidence": [
+    24
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "X05",
+   "type": "mixed",
+   "section": "security",
+   "question": "Sau incident team có được ra public statement ngay không?",
+   "must_include": [
+    "không",
+    "phát ngôn|công khai"
+   ],
+   "reference_answer": "Không phát ngôn công khai hoặc hứa thời hạn thông báo khi chưa được phép.",
+   "evidence": [
+    43
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "X06",
+   "type": "no_diacritics",
+   "section": "inventory",
+   "question": "hang ton cham luan chuyen co duoc tu dong giam gia khong",
+   "must_include": [
+    "không",
+    "Kinh doanh",
+    "Tài chính"
+   ],
+   "reference_answer": "Không. overstock_flag hoặc days_of_supply cao chỉ kích hoạt rà soát, không tự cho phép thanh lý, ghi giảm hoặc khuyến mãi; cần cấp Kinh doanh và Tài chính duyệt trước khi đổi giá.",
+   "evidence": [
+    30
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "X07",
+   "type": "no_diacritics",
+   "section": "procurement",
+   "question": "huy PO thi can xac nhan nhung gi",
+   "must_include": [
+    "phí",
+    "đã gửi",
+    "nghĩa vụ"
+   ],
+   "reference_answer": "Xác nhận nhà cung cấp chấp nhận hủy, phí, hàng đã gửi và nghĩa vụ còn lại; yêu cầu hủy chưa hoàn tất cho đến khi đối chiếu điều kiện nhà cung cấp và hệ quả tài chính.",
+   "evidence": [
+    21
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "X08",
+   "type": "shorthand",
+   "section": "procurement",
+   "question": "Mua đồ 4tr5 có cần 2 báo giá ko?",
+   "must_include": [
+    "không",
+    "một báo giá|1 báo giá",
+    "quản lý trực tiếp"
+   ],
+   "reference_answer": "Không. 4.500.000 VND không vượt 5.000.000 VND nên dùng một báo giá được lập hồ sơ và quản lý trực tiếp duyệt.",
+   "evidence": [
+    18,
+    19,
+    "PL-B"
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "F01",
+   "type": "follow_up",
+   "section": "procurement",
+   "question": "Còn 300 triệu thì sao?",
+   "must_include": [
+    "Hội đồng Điều hành Vận hành",
+    "Tài chính"
+   ],
+   "reference_answer": "Trên 200.000.000 VND: Hội đồng Điều hành Vận hành cùng Tài chính duyệt; cần ít nhất ba báo giá bằng văn bản hoặc giải trình chỉ định nguồn được lập hồ sơ.",
+   "evidence": [
+    18,
+    19,
+    "PL-B"
+   ],
+   "should_abstain": false,
+   "history": [
+    "Mua laptop 20 triệu cần ai duyệt?"
+   ]
+  },
+  {
+   "id": "F02",
+   "type": "follow_up",
+   "section": "hr",
+   "question": "Thế ở chỗ khác thì sao?",
+   "must_include": [
+    "1.800.000|1,8 triệu"
+   ],
+   "reference_answer": "Ở địa điểm nội địa thông thường, lưu trú qua đêm tối đa 1.800.000 VND/phòng/đêm (trừ khi hợp đồng hoặc kế hoạch công tác đặt hạn thấp hơn).",
+   "evidence": [
+    12
+   ],
+   "should_abstain": false,
+   "history": [
+    "Hạn mức tiền khách sạn khi đi công tác ở thành phố lớn là bao nhiêu?"
+   ]
+  },
+  {
+   "id": "F03",
+   "type": "topic_switch",
+   "section": "security",
+   "question": "Sự cố bảo mật mức Thấp phải báo khi nào?",
+   "must_include": [
+    "cuối ngày"
+   ],
+   "reference_answer": "Trước cuối ngày làm việc (vấn đề nhỏ, chưa có bằng chứng lộ dữ liệu). Câu trả lời không được lẫn nội dung mua sắm của lượt trước.",
+   "evidence": [
+    42
+   ],
+   "should_abstain": false,
+   "history": [
+    "Khoản mua 150 triệu cần những ai duyệt?"
+   ]
+  },
+  {
+   "id": "A01",
+   "type": "ambiguous",
+   "section": "procurement",
+   "question": "Cần mấy báo giá?",
+   "must_include": [
+    "5.000.000|5 triệu",
+    "50.000.000|50 triệu"
+   ],
+   "reference_answer": "Tùy giá trị cam kết: đến 5.000.000 VND một báo giá được lập hồ sơ; 5.000.001–50.000.000 VND ít nhất hai báo giá tương đương nếu thị trường cho phép; trên 50.000.000 VND ít nhất ba báo giá bằng văn bản hoặc giải trình chỉ định nguồn. Không được tự giả định một số tiền rồi chỉ trả một mức.",
+   "evidence": [
+    18,
+    "PL-B"
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "U01",
+   "type": "currency",
+   "section": "procurement",
+   "question": "Mua thiết bị 3.000 USD thì cần ai duyệt?",
+   "must_include": [
+    "tỷ giá",
+    "Tài chính"
+   ],
+   "reference_answer": "Ngưỡng tính bằng VND; cam kết ngoại tệ phải quy đổi theo tỷ giá Tài chính duyệt tại ngày phê duyệt rồi mới áp bảng thẩm quyền. Tài liệu không cho tỷ giá, nên không chốt cấp duyệt như một sự thật; nếu minh hoạ bằng tỷ giá giả định thì phải nói rõ là giả định.",
+   "evidence": [
+    19,
+    "PL-B"
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "S01",
+   "type": "typo",
+   "section": "hr",
+   "question": "hạn mứt tiền khách sạn khi đi công tát ở thành phố lớn là bao nhiu",
+   "must_include": [
+    "2.500.000|2,5 triệu"
+   ],
+   "reference_answer": "Tối đa 2.500.000 VND/phòng/đêm tại thành phố lớn được chỉ định.",
+   "evidence": [
+    12
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "G01",
+   "type": "long_paste",
+   "section": "hr",
+   "question": "Chào anh/chị, em là Lan bên Kinh doanh. Tuần trước em đi công tác Đà Nẵng 3 đêm theo kế hoạch đã duyệt, đã gom đủ hóa đơn taxi, ăn uống và khách sạn, đang điền form hoàn chi trên hệ thống. Bên kế toán nhắc em nhớ ghi rõ mã dự án và đính kèm lịch trình. Phòng khách sạn là 2.200.000 VND/đêm, đặt qua kênh công ty. Em muốn hỏi: tiền khách sạn này có được hoàn đủ không ạ? Em cảm ơn, chúc anh/chị một ngày tốt lành.",
+   "must_include": [
+    "2.500.000|2,5 triệu",
+    "1.800.000|1,8 triệu"
+   ],
+   "reference_answer": "Chưa kết luận được: tài liệu không nêu Đà Nẵng có thuộc danh sách thành phố lớn hay không (Tài chính công bố danh sách). Nếu có thì 2.200.000 ≤ 2.500.000 nên được hoàn đủ; nếu không thì tối đa 1.800.000 VND/phòng/đêm, phần vượt không được hoàn trừ khi có ngoại lệ được duyệt.",
+   "evidence": [
+    12
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "H01",
+   "type": "chitchat",
+   "section": "scope",
+   "question": "cảm ơn nha, mà bạn giúp được những gì vậy?",
+   "must_include": [],
+   "reference_answer": "Trả lời lịch sự, giới thiệu ngắn phạm vi hỗ trợ; không bịa nội dung chính sách và không gắn trích dẫn nguồn.",
+   "evidence": [],
+   "should_abstain": false,
+   "expect_no_citations": true
   }
  ]
 }

@@ -96,6 +96,8 @@ def validate_field_sql(plan,expected):
         def normalize(n):
             if isinstance(n,exp.Literal) and not n.is_string:
                 number=Decimal(n.this)
+                if not number.is_finite() or abs(number.adjusted())>1000:
+                    _reject('Generated SQL has an out-of-bound numeric literal.',clarification=False)
                 return exp.Literal.number(format(number.normalize(Context(prec=max(28,len(number.as_tuple().digits)))),'f'))
             if isinstance(n,exp.Not) and isinstance(n.this,exp.Is):
                 result=n.this.copy();result.set('negate',not bool(result.args.get('negate')));return result

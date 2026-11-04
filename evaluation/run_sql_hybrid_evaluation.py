@@ -62,18 +62,19 @@ async def freeze(benchmark):
         sha256={name:hashlib.sha256((directory/name).read_bytes()).hexdigest() for name in ['cases.jsonl','oracles.json']}))
 
 
-async def replay(benchmark):
+async def replay(benchmark,field_requests=False):
     from core.agents.sql_analytics_agent import SQLAnalyticsAgent
     from core.models.agents import AgentRequest,VerifiedIdentity
     from core.database.commerce_repository import create_repository_from_env
     from evaluation.hybrid_field_contract import field_contract
     from evaluation.inventory_benchmark_metrics import compare_rows
-    rows=list({r['id']:r for r in benchmark.read_jsonl(BASELINE/'sql_analytics/generations.jsonl')}.values())
-    assert len(rows)==30
+    source=OUT/'hybrid' if field_requests else BASELINE
+    rows=list({r['id']:r for r in benchmark.read_jsonl(source/'sql_analytics/generations.jsonl')}.values())
+    assert len(rows)==(6 if field_requests else 30)
     repo=await create_repository_from_env();results=[]
     try:
         for old in rows:
-            assert field_contract(old['question']) is None,'A frozen case entered the new route'
+            assert (field_contract(old['question']) is not None)==field_requests,'Unexpected route change'
             responses=[c['response'] for c in old['llm_calls'] if c.get('response')]
             class Replay:
                 calls=0
@@ -93,8 +94,8 @@ async def replay(benchmark):
             print('replay',old['id'],same,flush=True)
     finally:
         await repo.close()
-    benchmark.save(OUT/'frozen-replay.json',dict(application_revision=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
-        method='Captured production responses replayed through hybrid and real read-only repository; no fresh LLM judgments, generation or end-to-end latency claim.',
+    benchmark.save(OUT/('field-replay.json' if field_requests else 'frozen-replay.json'),dict(application_revision=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
+        method='Captured responses replayed through hybrid and real read-only repository; no fresh LLM judgments, generation or end-to-end latency claim.',
         new_model_api_calls=0,all_match=all(r['matches'] for r in results),results=results))
     assert all(r['matches'] for r in results),'Do not reuse baseline metrics when replay differs'
 
@@ -102,7 +103,7 @@ async def replay(benchmark):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--mode',choices=['production','hybrid'],default='production')
-    parser.add_argument('--stage',choices=['freeze','replay','generate','score'],required=True)
+    parser.add_argument('--stage',choices=['freeze','replay','replay-fields','generate','score'],required=True)
     parser.add_argument('--ids',nargs='+')
     args=parser.parse_args()
     load_dotenv(ROOT/'.env')
@@ -117,8 +118,8 @@ def main():
         assert (work/'evaluation/hybrid_field_contract.py').read_bytes()==(ROOT/'evaluation/hybrid_field_contract.py').read_bytes()
     if args.stage=='freeze':
         asyncio.run(freeze(benchmark));return
-    if args.stage=='replay':
-        assert args.mode=='hybrid';asyncio.run(replay(benchmark));return
+    if args.stage in {'replay','replay-fields'}:
+        assert args.mode=='hybrid';asyncio.run(replay(benchmark,args.stage=='replay-fields'));return
     output=OUT/args.mode
     def prepare(**kwargs):
         fixtures=OUT/'direct-fields';frozen=json.loads((fixtures/'manifest.json').read_text(encoding='utf-8'))

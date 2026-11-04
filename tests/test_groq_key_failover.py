@@ -82,3 +82,32 @@ class GroqKeyFailoverTest(unittest.TestCase):
                     factory.assert_called_once()
                 finally:
                     provider.close()
+
+
+def server_error(status):
+    from openai import InternalServerError
+    response = httpx.Response(status, request=httpx.Request("POST", "https://example.invalid/responses"))
+    return InternalServerError("over capacity", response=response, body={"message": "over capacity"})
+
+
+class GroqOverCapacityRetryTest(unittest.TestCase):
+    def test_503_is_retried_once_then_succeeds_and_other_5xx_is_not(self):
+        only = client()
+        only.responses.create.side_effect = [server_error(503), SimpleNamespace(output_text="OK", usage=None)]
+        with patch("core.llm.groq_provider.OpenAI", return_value=only), \
+             patch("core.llm.groq_provider.time.sleep") as sleep:
+            provider = GroqProvider(api_keys=["fake"])
+            try:
+                self.assertEqual(provider.generate("q"), "OK")
+                self.assertEqual(only.responses.create.call_count, 2)
+                sleep.assert_called_once()
+                only.responses.create.side_effect = [server_error(503), server_error(503)]
+                with self.assertRaises(Exception):
+                    provider.generate("q")
+                only.responses.create.side_effect = [server_error(500)]
+                only.responses.create.reset_mock()
+                with self.assertRaises(Exception):
+                    provider.generate("q")
+                self.assertEqual(only.responses.create.call_count, 1)
+            finally:
+                provider.close()

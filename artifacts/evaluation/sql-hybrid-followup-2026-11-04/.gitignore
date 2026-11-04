@@ -1,0 +1,9 @@
+production/sql_analytics/questions.jsonl
+production/sql_analytics/references.json
+candidate/sql_analytics/questions.jsonl
+candidate/sql_analytics/references.json
+production/report/questions.jsonl
+production/report/references.json
+candidate/report/questions.jsonl
+candidate/report/references.json
+**/identity-counts.json

@@ -7,7 +7,47 @@ from sqlglot.optimizer.scope import traverse_scope
 
 from core.analytics.join_validation import PRIMARY_KEYS
 from core.analytics.metric_validation import MetricDefinitionError, _canonical, _conjuncts
-from core.analytics.text_to_sql import APPROVED_COLUMNS, MAX_RESULT_ROWS, validate_commerce_sql
+from core.analytics.text_to_sql import APPROVED_COLUMNS, MAX_RESULT_ROWS, validate_commerce_sql, decode_query_plan
+import json
+import unicodedata
+
+
+def _field_language(question):
+    # shortcut: complete bilingual field clauses, not arbitrary prose; unknown tails must clarify.
+    aliases = {
+        'liệt kê':'list', 'hiển thị':'show', 'truy xuất':'retrieve',
+        'từ sản phẩm':'from products', 'từ bảng sản phẩm':'from products',
+        'từ tồn kho':'from inventory', 'từ bảng tồn kho':'from inventory',
+        'for products':'from products', 'for inventory':'from inventory',
+        'mã sản phẩm':'product_id', 'product id':'product_id',
+        'tên sản phẩm':'product_name', 'product name':'product_name',
+        'ngày snapshot':'snapshot_date', 'snapshot date':'snapshot_date',
+        'danh mục':'category', 'màu sắc':'color', 'kích thước':'size',
+        'phân khúc':'segment', 'giá':'price', 'năm':'year', 'tháng':'month',
+        'sắp xếp theo':'order by', 'sorted by':'order by', 'sort by':'order by',
+        'giảm dần':'desc', 'descending':'desc', 'tăng dần':'asc', 'ascending':'asc',
+        'giới hạn':'limit', 'với':'where', 'with':'where', 'equal to':'=',
+        'greater than or equal to':'>=', 'less than or equal to':'<=',
+        'greater than':'>', 'less than':'<', 'và':'and',
+    }
+    pattern = re.compile(r'(?<![\w])('+'|'.join(re.escape(k) for k in sorted(aliases,key=len,reverse=True))+r')(?![\w])')
+    parts = re.split(r"('(?:[^']|'')*')", unicodedata.normalize('NFC',question))
+    return ''.join(part if i%2 else pattern.sub(lambda m:aliases[m[0]],part.casefold()) for i,part in enumerate(parts))
+
+
+def compile_field_query(tree):
+    """Render the complete request AST; shared decoding still validates SQL and date parameters."""
+    parameters = []
+    def bind(node):
+        if isinstance(node, exp.Literal) and not isinstance(node.parent,exp.Limit):
+            parameters.append(node.this if node.is_string else json.loads(node.this))
+            return exp.Parameter(this=exp.Var(this=str(len(parameters))))
+        return node
+    query = tree.transform(bind)
+    plan = decode_query_plan(json.dumps(dict(sql=query.sql(dialect='postgres'),parameters=parameters,
+        explanation='Deterministically rendered from the complete field request.')))
+    validate_field_sql(plan,tree)
+    return plan
 
 
 def _reject(message,*,clarification=True):
@@ -18,7 +58,7 @@ def field_contract(question):
     """Recognize a complete literal field request; all other requests retain production behavior."""
     # shortcut: explicit field names and SQL-style clauses only; broaden after independent intent tests.
     match=re.fullmatch(r'(?:list|show|retrieve)\s+(?:recorded\s+)?([a-z_]+(?:(?:\s*,\s*|\s+and\s+)[a-z_]+)*)'
-        r'\s+from\s+(?:commerce\.)?(inventory|products)(.*)',question.strip().removesuffix('.'),re.I|re.S)
+        r'\s+from\s+(?:commerce\.)?(inventory|products)(.*)',_field_language(question).strip().removesuffix('.'),re.I|re.S)
     if not match:
         return None
     fields=re.split(r'\s*,\s*|\s+and\s+',match[1].lower())

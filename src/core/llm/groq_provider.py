@@ -4,7 +4,7 @@ import threading
 import time
 
 from dotenv import load_dotenv
-from openai import OpenAI, RateLimitError
+from openai import InternalServerError, OpenAI, RateLimitError
 
 from core.llm.llm_interface import LLMInterface
 from core.agents.runtime import remaining
@@ -52,11 +52,7 @@ class GroqProvider(LLMInterface):
             if cooling:
                 continue
             try:
-                client = self._clients[index].with_options(timeout=remaining(60), max_retries=0)
-                response = client.responses.create(
-                    model=self.model_name, input=prompt, temperature=self.temperature,
-                    reasoning={"effort": self.reasoning_effort}, max_output_tokens=max_output_tokens,
-                )
+                response = self._create(index, prompt, max_output_tokens)
                 with self._lock:
                     self._active = index
                 break
@@ -85,6 +81,20 @@ class GroqProvider(LLMInterface):
                 f"incomplete={getattr(response, 'incomplete_details', None)})"
             )
         return answer
+
+    def _create(self, index, prompt, max_output_tokens):
+        for attempt in range(2):
+            client = self._clients[index].with_options(timeout=remaining(60), max_retries=0)
+            try:
+                return client.responses.create(
+                    model=self.model_name, input=prompt, temperature=self.temperature,
+                    reasoning={"effort": self.reasoning_effort}, max_output_tokens=max_output_tokens,
+                )
+            except InternalServerError as error:
+                # 503 "over capacity" is model-wide, so another key does not help; one short retry often does.
+                if attempt or error.status_code != 503:
+                    raise
+                time.sleep(min(1.0, remaining(60)))
 
     @staticmethod
     def _token_count(usage, field: str) -> int | None:

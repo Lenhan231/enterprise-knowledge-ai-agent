@@ -10,6 +10,14 @@ from core.reports.grounding import numeric_value
 _OPERATORS = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv}
 _NUMBER = re.compile(r"(?:\d+(?:[.,]\d+)*|[.,]\d+)")
 _RUN = re.compile(r"(?:(?!,\s)[0-9\s.,()+*/×÷=^%−-])+")
+_DOT_THOUSANDS = re.compile(r"(?<![\d.,])\d{1,3}(?:\.\d{3})+(?![\d.,])")
+
+
+def _dot_thousands(expression):
+    """Answers are Vietnamese, so '300.000' is 300000 unless any dotted number in the equality is not a thousands group."""
+    if any("." in token and not _DOT_THOUSANDS.fullmatch(token) for token in _NUMBER.findall(expression)):
+        return expression
+    return _DOT_THOUSANDS.sub(lambda match: match.group().replace(".", ""), expression)
 
 
 def _expression(text):
@@ -71,7 +79,7 @@ def check_equalities(text):
         line = text[line_start:line_end if line_end >= 0 else len(text)]
         if re.search(r"làm tròn|xấp xỉ|rounded|approximately", line, flags=re.IGNORECASE):
             return checked, "unverified_arithmetic"
-        parts = [_trim_unbalanced(part) for part in expression.split("=")]
+        parts = [_trim_unbalanced(part) for part in _dot_thousands(expression).split("=")]
         if any(not part.strip() for part in parts):
             return checked, "unsupported_arithmetic"
         try:

@@ -50,6 +50,16 @@ class ExactArithmeticTest(unittest.TestCase):
         self.assertEqual(check_equalities("2 ^ 3 = 8")[1], "unverified_arithmetic")
         self.assertEqual(check_equalities("Làm tròn: 1 / 3 = 0.33")[1], "unverified_arithmetic")
         self.assertEqual(check_equalities("1 / 0 = 0")[1], "invalid_arithmetic")
+        for mixed in ("1.5 × 300.000 = 450.000", ".5 × 2.000 = 1000", "1234.567 + 1.000 = 2234.567"):
+            with self.subTest(text=mixed):
+                self.assertEqual(check_equalities(mixed)[1], "unverified_arithmetic")
+
+    def test_vietnamese_dot_thousands_are_exact(self):
+        for text in ("4 × 300.000 = 1.200.000 VND [S1].", "2.000 × 25.000 = 50.000.000 VND [S1].",
+                     "(3 × 200.000 = 600.000)", "12 × 0,5 = 6"):
+            with self.subTest(text=text):
+                self.assertEqual(check_equalities(text), (1, None))
+        self.assertEqual(check_equalities("4 × 300.000 = 1.300.000")[1], "arithmetic_mismatch")
         self.assertEqual(check_equalities("1+" * 120 + "1 = 121")[1], "unverified_arithmetic")
 
 

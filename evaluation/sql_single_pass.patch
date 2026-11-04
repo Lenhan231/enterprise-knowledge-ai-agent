@@ -1,0 +1,146 @@
+diff --git a/src/core/agents/sql_analytics_agent.py b/src/core/agents/sql_analytics_agent.py
+index 7afa9aa..cd0548d 100644
+--- a/src/core/agents/sql_analytics_agent.py
++++ b/src/core/agents/sql_analytics_agent.py
+@@ -13,12 +13,10 @@ from typing import Any
+ from core.agents.base import BaseAgent
+ from core.analytics.commerce_decision_support import resolve_commerce_decision_domain, unavailable_commerce_dimensions
+ from core.analytics.metric_ontology import resolve_metric_names, get_metric_definition
+-from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
++from evaluation.sql_single_pass_contract import requested_metrics, validate_single_pass_plan
+ from core.analytics.metric_validation import MetricDefinitionError, inventory_explicit_dates, inventory_time_scope, validate_metric_definitions, validate_metric_request
+ from core.analytics.text_to_sql import (
+     APPROVED_COLUMNS,
+-    approved_join_path,
+-    QueryPlan,
+     relevant_schema_tables,
+     SQLValidationError,
+     build_sql_prompt,
+@@ -92,7 +90,7 @@ class SQLAnalyticsAgent(BaseAgent):
+         options = request.get('metadata',{}) if isinstance(request,Mapping) else getattr(request,'metadata',{})
+         context = options.get('_sql_context')
+         if context is not None:
+-            context_info.update(context_used=False,_sql_context_action='new')
++            return self._generation_error(MetricDefinitionError('The isolated single-pass experiment supports stateless requests only.', code='context_required', clarification=True))
+         unavailable = unavailable_commerce_dimensions(question, resolve_commerce_decision_domain(question) or '',
+                                                       set().union(*APPROVED_COLUMNS.values()))
+         if unavailable:
+@@ -100,7 +98,7 @@ class SQLAnalyticsAgent(BaseAgent):
+                 'The full approved schema does not support these requested dimensions: '+', '.join(unavailable)+'. '
+                 'A supported alternative is inventory observations by product/category at an available historical snapshot.',
+                 code='unsupported_dimension', clarification=True))
+-        metric_names = resolve_metric_names(question)
++        metric_names = requested_metrics(question)
+         if metric_names == {'stock_on_hand'} and re.search(r'\bchange\b|thay đổi', question, re.I):
+             try:
+                 comparison_dates = inventory_explicit_dates(question)
+@@ -113,7 +111,6 @@ class SQLAnalyticsAgent(BaseAgent):
+                     'A supported alternative is to request each dated snapshot separately.', code='comparison_contract_unavailable'))
+         definitions = {}
+         raw = None
+-        interpretation = None
+         try:
+             try:
+                 validate_metric_request(question, {name for name in metric_names
+@@ -145,78 +142,22 @@ class SQLAnalyticsAgent(BaseAgent):
+                         return result
+             cross_domain = ('commerce.inventory' in tables and bool(tables & {'commerce.orders', 'commerce.order_items'})
+                             and bool(re.search(r'\borders\b|\bordered\b|\border(?!\s+by)\b|đơn hàng', question, re.I)))
+-            if (not cross_domain and (context is not None
+-                    or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
+-                    or (not metric_names and 'commerce.inventory' in tables))):
+-                with measure('metric_interpretation'):
+-                    mapped = await generate(self._provider(),build_metric_mapping_prompt(question,context=context),timeout=30)
+-                if context is None:
+-                    interpretation = decode_metric_mapping(mapped,question)
+-                else:
+-                    interpretation, used = decode_sql_turn(mapped,question,context)
+-                    context_info.update(context_used=used,_sql_context_action='followup' if used else 'new')
+-                if interpretation.domain == 'inventory':
+-                    metric_names = set(interpretation.metrics)
+-            resolved_latest = False
+-            if context is not None and interpretation and interpretation.domain == 'inventory' and interpretation.time.mode == 'latest':
+-                snapshot_sql = 'SELECT MAX(i.snapshot_date) AS snapshot_date FROM commerce.inventory AS i LIMIT 1'
+-                try:
+-                    snapshots = await self.repository.execute_approved_query(snapshot_sql)
+-                except Exception as error:
+-                    return self._database_error(error,snapshot_sql,())
+-                snapshot = snapshots[0].get('snapshot_date') if snapshots else None
+-                if snapshot is None:
+-                    raise MetricDefinitionError('No inventory snapshots are available.',code='snapshot_unavailable',clarification=True)
+-                context_info['requested_time'] = interpretation.time.model_dump()
+-                interpretation = interpretation.model_copy(update={'time':MetricTime(mode='snapshot',start=str(snapshot))})
+-                interpretation = decode_metric_mapping(interpretation.model_dump_json(),interpretation.date_question())
+-                resolved_latest = True
+-            prompt = build_sql_prompt(question,metric_names=metric_names,
+-                                      interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None)
++            prompt = build_sql_prompt(question,metric_names=metric_names)
+         except MetricDefinitionError as error:
+-            if context is not None and hasattr(error,'context_action'):
+-                context_info['_sql_context_action'] = error.context_action
+             return self._generation_error(error)
+         except Exception as error:
+             return self._generation_error(error)
+-        for attempt in range(2):
+-            try:
+-                if interpretation and interpretation.domain == 'inventory':
+-                    sql, parameters = compile_inventory_query(interpretation)
+-                    plan = QueryPlan(sql=sql, parameters=parameters,
+-                                     explanation='Compiled from the validated inventory interpretation.')
+-                else:
+-                    with measure("sql_planning"):
+-                        raw = await generate(self._provider(), prompt, timeout=60)
+-                    plan = decode_query_plan(raw)
+-                    if plan.clarification and attempt == 0 and approved_join_path(tables) and re.search(
+-                            r'join|relationship', plan.clarification, re.I):
+-                        raise SQLValidationError('An approved bridge path exists in the supplied schema. '
+-                            'Use that path with independent aggregates or correlated EXISTS as appropriate; '
+-                            'do not introduce direct fact joins or ask the user to approve an existing relationship.')
+-                if plan.sql:
+-                    if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validate_commerce_sql(plan.sql).sources):
+-                        raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
+-                    definitions = validate_metric_definitions(plan.sql, metric_names, plan.parameters, APPROVED_COLUMNS,
+-                                                              question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question)
+-                    if interpretation:
+-                        validate_mapped_sql(plan,interpretation,question=interpretation.date_question() if resolved_latest else question)
+-                break
+-            except (SQLValidationError, MetricDefinitionError) as error:
+-                if attempt == 0 and not (interpretation and interpretation.domain == 'inventory'):
+-                    prompt = build_sql_prompt(
+-                        question, validation_error=str(error), previous_response=str(raw),
+-                        metric_names=metric_names,
+-                        interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None,
+-                    )
+-                    continue
+-                return self._generation_error(
+-                    error, self._attempted_sql(raw), self._attempted_parameters(raw),
+-                )
+-            except Exception as error:
+-                return self._generation_error(
+-                    error, self._attempted_sql(raw), self._attempted_parameters(raw),
+-                )
++        try:
++            with measure("sql_planning"):
++                raw = await generate(self._provider(), prompt, timeout=60)
++            plan = decode_query_plan(raw)
++            if plan.sql:
++                if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validate_commerce_sql(plan.sql).sources):
++                    raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
++                definitions = validate_metric_definitions(plan.sql, metric_names, plan.parameters, APPROVED_COLUMNS, question=question)
++                validate_single_pass_plan(plan,question,metric_names)
++        except Exception as error:
++            return self._generation_error(error,self._attempted_sql(raw),self._attempted_parameters(raw))
+         if plan.clarification:
+             return {
+                 "ok": False, "operation": "text_to_sql", "rows": [], "answer": plan.clarification,
+@@ -244,10 +185,6 @@ class SQLAnalyticsAgent(BaseAgent):
+         metadata = {"source": list(validated.sources), "explanation": plan.explanation, "metrics": definitions}
+         metadata['columns'] = [{'name': name, 'unit': definitions.get(name, {}).get('unit')}
+                                for name in (rows[0] if rows else ())]
+-        if interpretation and interpretation.domain == 'inventory':
+-            metadata['semantic_interpretation'] = interpretation.model_dump()
+-            metadata['filters'] = [item.model_dump() for item in interpretation.filters]
+-            metadata['time_scope'] = interpretation.time.model_dump()
+         if any(definition.get('domain') == 'inventory_management' for definition in definitions.values()):
+             dates = sorted({str(row['snapshot_date']) for row in rows if row.get('snapshot_date') is not None})
+             metadata.update(metric_catalog_version='1.0.0', historical_inventory=True, snapshot_dates=dates)

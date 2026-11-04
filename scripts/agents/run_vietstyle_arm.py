@@ -63,6 +63,16 @@ class InProcess:
         self.rag = rag_service.RAGService(llm=self.llm)
 
     def run(self, case, roles):
+        from core.latency import latency_events, snapshot
+        events = latency_events.set([])
+        try:
+            row = self._run(case, roles)
+            row["stages_ms"] = {k: round(v) for k, v in snapshot()["stages_ms"].items() if v is not None}
+            return row
+        finally:
+            latency_events.reset(events)
+
+    def _run(self, case, roles):
         from core.agents.runtime import deadline
         kind = self.arm.get("kind")
         token = deadline.set(time.monotonic() + 60)

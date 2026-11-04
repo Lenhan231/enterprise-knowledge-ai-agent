@@ -39,7 +39,9 @@ def main():
     else:
         assert (work/'evaluation/sql_single_pass_contract.py').read_bytes()==(root/'evaluation/sql_single_pass_contract.py').read_bytes(),'Variant contract differs'
         assert subprocess.check_output(['git','diff','f48bec5','--','src'],cwd=work)==(root/'evaluation/sql_single_pass.patch').read_bytes(),'Variant source differs from the reviewed patch'
-    sys.argv.extend(['--group','sql_analytics','--output',str(output),'--retry-provider-errors'])
+    sys.argv.extend(['--group','sql_analytics','--retry-provider-errors'])
+    if '--output' not in sys.argv:
+        sys.argv.extend(['--output',str(output)])
     asyncio.run(runner.main())
 
 

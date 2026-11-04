@@ -15,7 +15,8 @@ async def main():
     output=root/'artifacts/evaluation/sql-single-pass-2026-11-04'
     work=root/'artifacts/local/sql-single-pass-candidate'
     manifest=json.loads((output/'single-pass-v2/manifest.json').read_text(encoding='utf-8'))
-    assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=work,text=True).strip()==manifest['application_revision']
+    actual_revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=work,text=True).strip()
+    assert subprocess.run(['git','diff','--quiet',manifest['application_revision'],'--','src'],cwd=work).returncode==0
     assert subprocess.run(['git','diff','--quiet','HEAD','--','src'],cwd=work).returncode==0
     load_dotenv(root/'.env')
     os.chdir(work)
@@ -56,7 +57,7 @@ async def main():
                                 facts=len(result.metadata['facts']),coverage=result.metadata['coverage']))
     finally:
         await repo.close()
-    save(output/'report-compatibility.json',dict(application_revision=manifest['application_revision'],case='S09',
+    save(output/'report-compatibility.json',dict(application_revision=actual_revision,captured_sql_revision=manifest['application_revision'],case='S09',
         method='Captured single-pass SQL response replayed through the unchanged Report shared-SQL evidence path and real read-only repository; deterministic fact-reference writer.',
         new_model_api_calls=0,quality_benchmark=False,results=results))
     print(json.dumps(results,indent=2))

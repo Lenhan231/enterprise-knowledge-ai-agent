@@ -86,9 +86,12 @@ def validate_single_pass_plan(plan,question,metrics):
             if field and re.fullmatch(r'[a-z_]+',field):
                 null_fields.append(field)
     for field in null_fields:
-        if not any(isinstance(p,exp.Not) and isinstance(p.this,exp.Is)
-                   and isinstance(p.this.this,exp.Column) and p.this.this.name==field
-                   and isinstance(p.this.expression,exp.Null) for p in predicates):
+        def non_null(p):
+            value=p.this if isinstance(p,exp.Not) else p
+            return (isinstance(value,exp.Is) and isinstance(value.this,exp.Column) and value.this.name==field
+                    and isinstance(value.expression,exp.Null)
+                    and (isinstance(p,exp.Not) != bool(value.args.get('negate'))))
+        if not any(non_null(p) for p in predicates):
             raise MetricDefinitionError('The requested non-NULL population is missing.')
     requested=requested_ranking_limit(question)
     scalar=(not tree.args.get('group') and any(p.find(exp.AggFunc) for p in tree.selects)

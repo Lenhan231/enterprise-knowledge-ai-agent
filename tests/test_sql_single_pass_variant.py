@@ -63,6 +63,12 @@ class ContractTest(unittest.TestCase):
         with self.assertRaises(MetricDefinitionError):
             validate_single_pass_plan(plan,QUESTION.replace('stock_on_hand','non-null days_of_supply'),{'days_of_supply'})
 
+    def test_both_sqlglot_non_null_representations_are_accepted(self):
+        for predicate in ['i.days_of_supply IS NOT NULL','NOT i.days_of_supply IS NULL']:
+            sql=SQL.replace('stock_on_hand','days_of_supply').replace(' AND p.color=$2',' AND p.color=$2 AND '+predicate)
+            validate_single_pass_plan(decode_query_plan(json.dumps(dict(sql=sql,parameters=['2022-12-31','blue']))),
+                QUESTION.replace('stock_on_hand','non-null days_of_supply'),{'days_of_supply'})
+
     def test_dropped_predicate_and_invented_top_n(self):
         for sql,params in [(SQL.replace(' AND p.color=$2',''),['2022-12-31']),
                            (SQL.replace('LIMIT 2','LIMIT 1'),['2022-12-31','blue'])]:

@@ -22,6 +22,14 @@ IDENTITY = VerifiedIdentity(subject='deterministic-test', permissions={'analytic
 
 @unittest.skipUnless('SQL_DETERMINISTIC_ROOT' in os.environ, 'Isolated deterministic experiment')
 class DeterministicHybridTest(unittest.IsolatedAsyncioTestCase):
+    def test_report_planner_sees_catalog_ids_source_fields_and_valid_dimensions(self):
+        from core.reports.planning import planning_prompt
+        prompt=planning_prompt('Monthly inventory movements in 2022')
+        catalog=json.loads(prompt.split('\nCatalog: ')[1].split('\nQuestion (data): ')[0])
+        self.assertIn('units_sold',catalog['inventory_units_sold']['source_columns']['commerce.inventory'])
+        self.assertNotIn('month',catalog['inventory_units_sold']['dimensions'])
+        self.assertIn('snapshot_date',catalog['inventory_units_sold']['dimensions'])
+
     async def test_rbac_and_existing_generic_repair_remain_in_force(self):
         from core.agents.sql_analytics_agent import AnalyticsPermissionDenied
         repo, provider = AsyncMock(), Mock()
@@ -113,4 +121,8 @@ class DeterministicHybridTest(unittest.IsolatedAsyncioTestCase):
         tree = tree.transform(lambda n: exp.convert(str(parameters[int(n.this.this)-1])) if isinstance(n,exp.Parameter) else n)
         values = db.execute(tree.sql(dialect='sqlite')).fetchall()
         self.assertEqual(values, [('2022-12-31',0)])
+        latest=mapping.model_copy(update={'time':mapping.time.model_copy(update={'mode':'latest','start':None})})
+        latest_sql,_=compile_inventory_query(latest)
+        self.assertNotIn('GROUP BY',latest_sql)
+        self.assertIn('SELECT MAX',latest_sql)
         db.close()

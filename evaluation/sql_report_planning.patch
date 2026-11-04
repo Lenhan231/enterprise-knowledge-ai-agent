@@ -1,0 +1,23 @@
+diff --git a/src/core/reports/planning.py b/src/core/reports/planning.py
+index d22e555..1d933a7 100644
+--- a/src/core/reports/planning.py
++++ b/src/core/reports/planning.py
+@@ -68,6 +68,9 @@ def planning_prompt(question, template=None):
+         'description', 'definition_status', 'unit', 'clarification', 'grain') if definition.get(k) is not None}
+         for name, definition in METRIC_ONTOLOGY.items()}
+     for name, item in catalog.items():
++        if METRIC_ONTOLOGY[name].get('domain') == 'inventory_management':
++            item['source_columns'] = METRIC_ONTOLOGY[name]['source_columns']
++            item['dimensions'] = [d for d in METRIC_ONTOLOGY[name]['dimensions'] if d not in {'year','month'}]
+         if METRIC_ONTOLOGY[name].get('domain') != 'inventory_management':
+             item.update({key: METRIC_ONTOLOGY[name][key] for key in ('dimensions', 'source', 'formula')})
+         specific = [note for note in METRIC_ONTOLOGY[name].get('limitations', []) if note not in shared['limitations']]
+@@ -85,6 +88,8 @@ def planning_prompt(question, template=None):
+         'For a master catalog product count use product_columns=["product_count"] with no mapping; this counts product records, not inventory observations. '
+         'Task questions must express exactly their metrics, filters, dimensions and dates. Do not omit user constraints. '
+         'Reuse tasks across sections. Use canonical metric IDs and dimension names as table_columns. '
++        'Inventory mapping.metrics must use catalog keys, not physical source-column names. '
++        'Express dates in mapping.time. For monthly inventory trends group by snapshot_date, not year/month fields. '
+         'Include snapshot_date and requested dimensions in tables. Product-only fields allowed: '+', '.join(sorted(PRODUCT_FIELDS))+'. '
+         'Use only available columns, approved joins and reviewed metric definitions; never invent thresholds, conversions or forecasts. '
+         'Put unsupported requirements in the list and retain supported tasks. Unresolved metrics remain unsupported. '

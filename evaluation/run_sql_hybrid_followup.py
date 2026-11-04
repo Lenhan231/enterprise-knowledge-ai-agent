@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -53,11 +54,35 @@ def freeze():
 
 async def run(args):
     work=ROOT if args.mode=='production' else ROOT/'artifacts/local/sql-hybrid-deterministic'
+    output=args.output.resolve() if args.output else OUT/args.mode
     os.chdir(work);sys.path[:0]=[str(work),str(work/'src')]
     from dotenv import load_dotenv
     load_dotenv(ROOT/'.env')
     from evaluation import run_sql_contract_benchmark as runner
-    bench=runner.benchmark;output=OUT/args.mode
+    bench=runner.benchmark
+    from core.llm.groq_provider import GroqProvider
+    original_generate=GroqProvider.generate
+    def diagnostic_generate(provider,prompt,**kwargs):
+        try:
+            return original_generate(provider,prompt,**kwargs)
+        except Exception as error:
+            record=dict(error_type=type(error).__name__,status_code=getattr(error,'status_code',None))
+            body=getattr(error,'body',None)
+            if isinstance(body,dict):
+                details=body.get('error',body)
+                if isinstance(details,dict):
+                    record['provider_code']=details.get('code')
+                    record['token_budget_numbers']=re.findall(r'(?:Limit|Requested)\s+(\d+)',str(details.get('message','')))
+            output.mkdir(parents=True,exist_ok=True)
+            with (output/'provider-errors.jsonl').open('a',encoding='utf-8') as stream:
+                stream.write(json.dumps(record)+'\n')
+            raise
+    GroqProvider.generate=diagnostic_generate
+    original_provider_failed=bench.provider_failed
+    bench.provider_failed=lambda row: (original_provider_failed(row) or (
+        row.get('attempt',1)<2 and row.get('result',{}).get('metadata',{}).get('status')=='failed'
+        and any(c.get('error') in {'RateLimitError','APIStatusError','APIConnectionError','APITimeoutError'}
+                for c in row.get('llm_calls',[]))))
     def prepare(**kwargs):
         spec=json.loads((OUT/'fixtures/manifest.json').read_text(encoding='utf-8'))
         for name,digest in spec['hashes'].items():
@@ -90,5 +115,6 @@ if __name__=='__main__':
     parser.add_argument('--stage',choices=['freeze','generate','score'],required=True)
     parser.add_argument('--group',choices=['sql_analytics','report'],default='sql_analytics')
     parser.add_argument('--ids',nargs='+')
+    parser.add_argument('--output',type=Path)
     args=parser.parse_args()
     freeze() if args.stage=='freeze' else asyncio.run(run(args))

@@ -7,3 +7,7 @@ production/report/references.json
 candidate/report/questions.jsonl
 candidate/report/references.json
 **/identity-counts.json
+**/sql_analytics/questions.jsonl
+**/sql_analytics/references.json
+**/report/questions.jsonl
+**/report/references.json

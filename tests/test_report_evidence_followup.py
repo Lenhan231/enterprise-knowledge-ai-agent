@@ -9,7 +9,8 @@ WORK=Path(os.environ.get('SQL_DETERMINISTIC_ROOT',ROOT))
 sys.path[:0]=[str(WORK),str(WORK/'src')]
 from core.models.agents import AgentRequest,AgentResult,VerifiedIdentity
 from core.agents.analytics_agent import AnalyticsAgent
-from core.reports.sources import collect_sources,serialize_context,SQL_CONTEXT_CHARACTERS
+from core.reports.sources import collect_sources,serialize_context
+from core.reports import sources as report_sources
 
 
 @unittest.skipUnless('SQL_DETERMINISTIC_ROOT' in os.environ,'Isolated Report evidence experiment')
@@ -28,7 +29,7 @@ class ReportEvidenceFollowupTest(unittest.IsolatedAsyncioTestCase):
             permissions={'analytics:read','documents:read'},document_roles={'admin'}))
         sections,coverage,limits,_=await collect_sources(request,['Findings'],'orchestrated',None,None,source_router=router)
         self.assertTrue(sections['Findings'])
-        self.assertLessEqual(len(serialize_context(sections['Findings'])),SQL_CONTEXT_CHARACTERS)
+        self.assertLessEqual(len(serialize_context(sections['Findings'])),report_sources.SQL_CONTEXT_CHARACTERS)
         self.assertGreater(coverage['Findings']['omitted'],0)
         for item in sections['Findings']:
             self.assertIn('row_start',item.metadata)

@@ -106,8 +106,9 @@ class Http:
     def __init__(self, args):
         import httpx
         self.client = httpx.Client(base_url=args.base_url, timeout=180)
-        response = self.client.post("/api/auth/login", json={"username": os.environ["DEMO_ADMIN_USERNAME"],
-                                                              "password": os.environ["DEMO_ADMIN_PASSWORD"]})
+        account = {"employee": "VIEWER", "admin": "ADMIN"}[args.role]  # demo viewer maps to document role employee
+        response = self.client.post("/api/auth/login", json={"username": os.environ[f"DEMO_{account}_USERNAME"],
+                                                              "password": os.environ[f"DEMO_{account}_PASSWORD"]})
         response.raise_for_status()
         token = response.cookies.get("enterprise_session")
         if not token:
@@ -140,7 +141,10 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--method", default="translated_hybrid_rerank", help="retrieval method for arm A")
     parser.add_argument("--old-prompt", default=None, help="prompt_pre_875e424.txt for arms using the old prompt")
+    parser.add_argument("--role", default="employee", choices=("employee", "admin"),
+                        help="document role for normal cases; admin bypasses document ACLs and sees every upload")
     parser.add_argument("--rbac-role", default=None, help="document role without VietStyle access; R cases skipped if unset")
+    parser.add_argument("--note", default=None, help="state the script cannot see, e.g. 'VN PDF inactive'")
     parser.add_argument("--base-url", default="http://127.0.0.1:8000")
     parser.add_argument("--only", default=None, help="comma-separated case ids, for a smoke run")
     parser.add_argument("--resume", action="store_true", help="continue an interrupted output file")
@@ -156,7 +160,7 @@ def main():
         "dataset_id": dataset["dataset_id"], "dataset_status": dataset["status"],
         "dataset_sha256": hashlib.sha256(raw).hexdigest(), "arm": args.arm,
         "configuration": {**arm, **({"method": args.method} if args.arm == "A" else {}),
-                          "groq_model_env": os.getenv("GROQ_MODEL"), "rbac_role": args.rbac_role,
+                          "groq_model_env": os.getenv("GROQ_MODEL"), "role": args.role, "note": args.note, "rbac_role": args.rbac_role,
                           "old_prompt_sha256": hashlib.sha256(Path(args.old_prompt).read_bytes()).hexdigest()
                           if arm.get("prompt") == "old" else None},
         "created_at_utc": datetime.now(timezone.utc).isoformat(), "results": []}
@@ -176,7 +180,7 @@ def main():
             elif case.get("role") and (arm.get("kind") == "http" or not args.rbac_role):
                 row["skipped"] = "rbac_role_not_set" if arm.get("kind") != "http" else "rbac_not_run_as_admin"
             else:
-                roles = [args.rbac_role] if case.get("role") else ["admin"]
+                roles = [args.rbac_role] if case.get("role") else [args.role]
                 started = time.perf_counter()
                 try:
                     row.update(runner.run(case, roles))

@@ -48,14 +48,14 @@ class RunVietstyleArmTest(unittest.TestCase):
             rows = {row["id"]: row for row in json.loads(out.read_text())["results"]}
             self.assertEqual(rows["F01"]["skipped"], "multi_turn_needs_router")
             self.assertEqual(rows["R01"]["skipped"], "rbac_role_not_set")
-            self.assertEqual(FakeRunner.calls, [("L01", ["admin"])])
+            self.assertEqual(FakeRunner.calls, [("L01", ["employee"])])
             with self.assertRaises(SystemExit):
                 self.run_main("--arm", "B4", "--cases", str(path), "--output", str(out))
             self.run_main("--arm", "B4", "--cases", str(path), "--output", str(out), "--resume")
             rows = json.loads(out.read_text())["results"]
             self.assertEqual([row["id"] for row in rows], ["L01", "F01", "R01", "L02"])
             self.assertEqual(rows[-1]["error_type"], "ValueError")
-            self.assertEqual(FakeRunner.calls, [("L01", ["admin"]), ("L02", ["admin"])])
+            self.assertEqual(FakeRunner.calls, [("L01", ["employee"]), ("L02", ["employee"])])
             with self.assertRaises(SystemExit):
                 self.run_main("--arm", "B2", "--cases", str(path), "--output", str(out), "--resume")
 

@@ -30,7 +30,7 @@ ARMS = {
     "B5": {**PROD, "prompt": "old"},
     "B6": {**PROD, "model": "openai/gpt-oss-120b"},
     "B7": {**PROD, "model": "openai/gpt-oss-20b"},
-    "E2E": dict(kind="http"),  # production /api/chat in auto mode; the only arm that runs multi-turn cases
+    "E2E": dict(kind="http"),  # production /api/agents/chat in auto mode; the only arm that runs multi-turn cases
 }
 CLOSED_BOOK = ("Trả lời câu hỏi sau về chính sách vận hành doanh nghiệp VietStyle bằng tiếng Việt. "
                "Không có tài liệu nào được cung cấp; nếu không biết thì nói rõ là không biết.\n\nCâu hỏi:\n{question}")
@@ -120,8 +120,10 @@ class Http:
         conversation = f"vietstyle-{case['id']}-{uuid.uuid4().hex[:8]}"
         turns = []
         for question in [*case.get("history", []), case["question"]]:
-            response = self.client.post("/api/chat", json={"question": question, "agent_mode": "auto",
-                                                           "conversation_id": conversation})
+            # Same route and defaults as the web UI (static/app.js).
+            response = self.client.post("/api/agents/chat", json={
+                "question": question, "agent_mode": "auto", "retrieval_method": "translated_hybrid_rerank",
+                "conversation_id": conversation})
             if response.status_code == 429:
                 raise SystemExit("HTTP 429 rate limited; stopped")
             response.raise_for_status()

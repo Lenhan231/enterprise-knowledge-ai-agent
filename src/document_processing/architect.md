@@ -24,17 +24,19 @@ flowchart TD
     L --> M[Normalized elements + tables]
     M --> N[DocumentProcessor cleanup\nlabels, text, provenance]
 
-    D -->|invoice; explicit opt-in| O[invoice/processor.py]
+    D -->|invoice or image_caption; explicit opt-in| O[vintern_processor.py]
     O --> P[Render PDF pages at 2x\nor normalize image orientation]
-    P --> Q[Isolated Transformers Python worker]
-    Q --> R[Vintern vision-language model\nextracts JSON per page]
-    R --> S[Parse fields and preserve raw response]
-    S --> T[invoice_extraction + JSON text element\nreview_required = true; tables = empty]
+    P --> Q[One isolated Transformers worker]
+    Q --> R[Vintern with task-specific prompt]
+    R --> S{Intent}
+    S -->|invoice| T[invoice_extraction + JSON text element]
+    S -->|image_caption| V[image_caption_extraction + caption text element]
     N --> U[Parser output contract]
     T --> U
+    V --> U
 ```
 
-`document` is the default intent. The local owner-store UI lets a reviewer select `invoice`; the regular upload handler currently constructs `DocumentProcessor` without an invoice intent, so it follows the document path. The invoice branch is therefore an opt-in parser path, not an automatic invoice classifier.
+`document` is the default intent. Upload Test lets a reviewer select `invoice` or `image_caption`; the regular upload handler continues to use the document path. These are explicit visual tasks, not automatic file classification.
 
 ### Document path
 
@@ -45,13 +47,13 @@ flowchart TD
 
 The detector identifies table regions; TableFormer works on those regions. It is not a second full-page table detector, so a missed table region or omitted part of a region can limit the structure reconstructed downstream.
 
-### Invoice path
+### Vintern paths
 
-1. `invoice/processor.py` accepts PDF and image files, prepares page images, and calls `invoice/vintern_worker.py` through a separate Python executable.
-2. The worker loads the configured Vintern model and extracts each page independently using the invoice JSON prompt.
-3. The parser preserves the raw response, parses JSON when possible, returns `invoice_extraction.pages`, and creates a JSON text element for downstream search. It currently returns no structured tables and marks every extraction for human review.
+1. `vintern_processor.py` accepts PDF and image files, prepares page images, and calls the shared worker through a separate Python executable.
+2. `invoice` uses the compact Vietnamese JSON schema; `image_caption` asks for a concise Vietnamese description of the image, including chart/diagram relationships when visible.
+3. The parser preserves each raw response, returns `invoice_extraction.pages` or `image_caption_extraction.pages`, and creates searchable text elements. These intents return no structured tables and mark outputs for review.
 
-The worker defaults to `5CD-AI/Vintern-1B-v2`. The Kaggle fine-tuned checkpoint is not automatically selected by this default; configure `DOCUMENT_PROCESSING_VINTERN_MODEL` to a model directory/repository that the isolated runtime can access before evaluating it through this branch. The current invoice branch replaces the Docling path for that request; it does not combine Vintern fields with Docling OCR or TableFormer output.
+The shared worker defaults to `5CD-AI/Vintern-1B-v2`. Configure `DOCUMENT_PROCESSING_VINTERN_MODEL` to select another model. Each intent replaces the Docling path for that Upload Test request; it does not combine Vintern output with Docling OCR or TableFormer output.
 
 ## Application handoff
 
@@ -96,5 +98,5 @@ A model should enter that optional enrichment path only after evaluation on repr
 | `docling_adapter/layout_model.py` | Adapt PP-DocLayoutV3 detections into Docling layout clusters. |
 | `docling_adapter/scanned/` | RapidOCR line detection, VietOCR recognition, and scanned-result cleanup. |
 | `docling_adapter/result_mapper.py` | Map Docling output into normalized elements and tables. |
-| `invoice/processor.py` | Prepare invoice pages, call the isolated worker, and shape invoice output. |
-| `invoice/vintern_worker.py` | Load Vintern and infer invoice JSON per page. |
+| `vintern_processor.py` | Prepare page images, select a prompt, call the shared worker, and shape task output. |
+| `vintern_worker.py` | Load Vintern and infer once per page for either task. |

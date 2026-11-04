@@ -1,4 +1,4 @@
-"""Isolated Hugging Face Transformers worker for Vintern invoice extraction."""
+"""Isolated Hugging Face Transformers worker for Vintern page tasks."""
 
 from __future__ import annotations
 
@@ -177,5 +177,5 @@ def run(request_path: Path, response_path: Path) -> None:
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        raise SystemExit("usage: python -m document_processing.receipt.vintern_worker REQUEST.json RESPONSE.json")
+        raise SystemExit("usage: python -m document_processing.vintern_worker REQUEST.json RESPONSE.json")
     run(Path(sys.argv[1]), Path(sys.argv[2]))

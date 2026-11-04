@@ -22,9 +22,9 @@ DocumentProcessor.process(file)
     │           │           (direct Groq vision extraction if OpenParser key is unavailable)
     │           └── result_mapper → {elements, tables}
     ├── intent=invoice
-    │     └── Vintern in isolated Transformers runtime → invoice_extraction
-    └── intent=receipt
-          └── Vintern in isolated Transformers runtime → receipt_extraction
+    │     └── shared Vintern runtime → invoice_extraction
+    └── intent=image_caption
+          └── shared Vintern runtime → image_caption_extraction
     └── common cleanup + provenance
 
 application → core.chunking → persist chunks/tables
@@ -44,11 +44,9 @@ as PNG before parsing; corpus upload does not yet accept WebP.
 
 | Path | Responsibility |
 | --- | --- |
-| `document_processor.py` | Dispatch supported files to Docling, invoice extraction, or receipt extraction; normalize output and provenance. |
-| `invoice/processor.py` | Render invoice pages and dispatch them to the isolated Vintern runtime. |
-| `invoice/vintern_worker.py` | Load Vintern and extract invoice fields page by page. |
-| `receipt/processor.py` | Render receipt pages and dispatch them to the isolated Vintern runtime. |
-| `receipt/vintern_worker.py` | Load Vintern and extract receipt fields page by page. |
+| `document_processor.py` | Dispatch supported files to Docling or a Vintern task; normalize output and provenance. |
+| `vintern_processor.py` | Render pages, choose the invoice or image-caption prompt, and shape the result. |
+| `vintern_worker.py` | Load the shared Vintern model and run one prompt on each page. |
 | `docling_adapter/processor.py` | Configure Docling stages, chart recognition, and scanned embedded-image routing. |
 | `docling_adapter/layout_model.py` | Adapt PP-DocLayoutV3 detections into Docling layout clusters. |
 | `docling_adapter/chart_recognition.py` | Recognize chart blocks in chart boxes, including a matched or shared title. |
@@ -121,15 +119,16 @@ from the crop and OCR lines. This avoids loading PaddleOCR-VL locally in the
 document-processing container. Docker Compose forwards both API keys and the
 Groq model setting to that service.
 
-## Invoice and receipt intents
+## Invoice and image-caption intents
 
 The local owner-store UI defaults to **General document · current pipeline**.
-Choose **Invoice · Vintern extraction** for invoice fields, or **Receipt ·
-Vintern extraction** for retail receipt fields. Results are stored under
-`invoice_extraction.pages` or `receipt_extraction.pages`; a JSON summary is also
-written to `elements` for search and chunking. Every extraction is marked for
-human review because the model has not been validated on a held-out set. Both
-intents currently accept PDF and image files only.
+Choose **Invoice · Vintern extraction** for invoice fields or **Image caption ·
+Vintern** for a concise visual description. Both intents share one isolated
+Vintern runtime and accept PDF/image files. Caption intent also accepts safe,
+self-contained SVG rendered through the existing SVG renderer. Results are stored under
+`invoice_extraction.pages` or `image_caption_extraction.pages`; the JSON fields
+or caption text is also written to `elements` for search and chunking. Outputs
+are marked for review.
 
 The notebook pins Transformers 4.47, while the main app environment uses
 Transformers 5. Keep the model in a separate virtualenv:
@@ -147,9 +146,11 @@ PYTHONPATH=src .venv/bin/streamlit run \
   --server.address 127.0.0.1 --server.port 8502
 ```
 
-The app automatically uses `.venv-vintern/bin/python` when present. Set
-`DOCUMENT_PROCESSING_VINTERN_PYTHON` only when the isolated runtime is elsewhere.
-The default model is `5CD-AI/Vintern-1B-v2`. Set
+The app automatically uses `.venv-vintern/bin/python` when present. The
+document-processing Docker image installs the same isolated runtime at
+`/opt/vintern/bin/python` and sets `DOCUMENT_PROCESSING_VINTERN_PYTHON` for the
+service. Set that variable only when the runtime is elsewhere.
+The shared default model is `5CD-AI/Vintern-1B-v2`. Set
 `DOCUMENT_PROCESSING_VINTERN_MODEL` to a local fine-tuned model directory or a
 different Hugging Face model id. The default model's custom code is pinned to
 revision `5ec005391798968cd62f41cb71b22c1cee0b13d8`; the worker allows its
@@ -170,7 +171,8 @@ docker run --rm document-processing
 The image contains `document_processing`, Docling, PaddleOCR PP-DocLayoutV3,
 PaddleOCR-VL chart parsing,
 VietOCR, and Vietnamese/English Tesseract (available as an OCR engine). It
-does not install the full application's dependencies or include the FastAPI app,
+also installs an isolated `/opt/vintern` Python runtime for the invoice and
+image-caption intents. It does not install the full application's dependencies or include the FastAPI app,
 database credentials, or Streamlit. OCR defaults to VietOCR in this image;
 set `DOCUMENT_PROCESSING_OCR_ENGINE=tesseract` to select Tesseract instead.
 The default command checks imports; success prints

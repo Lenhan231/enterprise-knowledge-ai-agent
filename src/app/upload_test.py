@@ -40,10 +40,10 @@ async def create_upload_test(
     from document_processing.document_processor import SUPPORTED_FORMATS, render_svg, render_webp
     if suffix not in SUPPORTED_FORMATS:
         raise HTTPException(415, "Unsupported Upload Test file format")
-    if intent not in {"document", "invoice", "receipt"}:
-        raise HTTPException(422, "Choose document, invoice, or receipt processing")
-    if intent in {"invoice", "receipt"} and suffix not in {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp"}:
-        raise HTTPException(422, "Invoice and receipt extraction support PDF and image files only")
+    if intent not in {"document", "invoice", "image_caption"}:
+        raise HTTPException(422, "Choose document, invoice, or image caption processing")
+    if intent in {"invoice", "image_caption"} and suffix not in {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp", ".svg"}:
+        raise HTTPException(422, "Invoice extraction and image captioning support PDF and image files only")
     if docling_device not in {"cpu", "cuda"} or docling_ocr_language not in {"vie+eng", "eng"} or not 1 <= docling_num_threads <= 16:
         raise HTTPException(422, "Unsupported Docling device, OCR language, or thread count")
     content = await file.read(20 * 1024 * 1024 + 1)

@@ -266,7 +266,7 @@ async function loadOcrTestRuns() {
     const intent = config.intent || "document";
     const parserSettings = intent === "document"
       ? `Document · Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`
-      : `${intent === "invoice" ? "Invoice" : "Receipt"} · Vintern`;
+      : `${intent === "invoice" ? "Invoice extraction" : "Image caption"} · Vintern`;
     const settings = parserSettings;
     const previewSummary = run.page_count ? `${formatNumber(run.page_count)} page previews` : "no page previews";
     const processingSummary = `processing ${formatDuration(run.runtime_info?.processing_time_ms)}`;

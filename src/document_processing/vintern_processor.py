@@ -1,4 +1,4 @@
-"""Receipt image preparation and dispatch to the isolated Vintern runtime."""
+"""Run invoice extraction or image captioning through the isolated Vintern runtime."""
 
 from __future__ import annotations
 
@@ -15,17 +15,18 @@ from typing import Any
 from PIL import Image, ImageOps, ImageSequence
 
 
-_IMAGE_FORMATS = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp"}
+_IMAGE_FORMATS = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp", ".svg"}
 _MODEL_ID = "5CD-AI/Vintern-1B-v2"
 _MODEL_REVISION = "5ec005391798968cd62f41cb71b22c1cee0b13d8"
-_RECEIPT_PROMPT = """Trích xuất hóa đơn bán lẻ trong ảnh thành đúng một JSON object, không markdown.
-Giữ nguyên chuỗi số và cách viết số tiền trên ảnh; không tự suy đoán giá trị bị mờ.
-Dùng null nếu không đọc được. Dùng các khóa sau:
-{"ten_cua_hang":null,"dia_chi":null,"ma_so_thue":null,"so_hoa_don":null,
-"ngay":null,"gio":null,"nguoi_mua":null,"mat_hang":[],"tam_tinh":null,
-"giam_gia":null,"thue":null,"tong_cong":null,"tien_khach_tra":null,
-"tien_thua":null,"phuong_thuc_thanh_toan":null}
-Mỗi mat_hang là object có ten, so_luong, don_vi, don_gia, thanh_tien."""
+_INVOICE_PROMPT = """Trích xuất hóa đơn trong ảnh thành đúng một JSON object, không markdown.
+Giữ nguyên chuỗi số và cách viết trên ảnh; không suy đoán, dùng null nếu không đọc được.
+Dùng các khóa sau:
+{"loại":null,"số":null,"ngày":null,"người bán":null,"mã số thuế":null,
+"người mua":null,"mặt hàng":[{"hàng hóa":null,"số lượng":null,"đơn giá":null}],
+"thuế":null,"tổng tiền":null}
+Mỗi phần tử mặt hàng là một dòng hàng. Dùng đúng các khóa này; nếu không đọc được thì điền null."""
+_IMAGE_CAPTION_PROMPT = """Quan sát ảnh và viết một caption ngắn bằng tiếng Việt mô tả nội dung chính, đối tượng và bố cục nhìn thấy. Nếu ảnh có sơ đồ hoặc biểu đồ, nêu luồng/quan hệ và các nhãn dễ đọc. Không suy đoán chi tiết không nhìn rõ; chỉ trả về caption, không thêm lời dẫn."""
+
 
 def resolve_vintern_python(config: dict[str, Any] | None = None) -> Path | None:
     """Find an explicitly configured or project-local isolated Vintern Python."""
@@ -34,12 +35,12 @@ def resolve_vintern_python(config: dict[str, Any] | None = None) -> Path | None:
     )
     if configured:
         return Path(str(configured)).expanduser()
-    local_python = Path(__file__).resolve().parents[3] / ".venv-vintern" / "bin" / "python"
+    local_python = Path(__file__).resolve().parents[2] / ".venv-vintern" / "bin" / "python"
     return local_python if local_python.is_file() else None
 
 
-class VinternReceiptProcessor:
-    """Run the receipt pipeline in an isolated environment."""
+class VinternProcessor:
+    """Run one page-level Vintern task in an isolated environment."""
 
     def __init__(self, config: dict[str, Any]):
         self.config = config
@@ -48,14 +49,21 @@ class VinternReceiptProcessor:
         self, filename: str, content: bytes, metadata: dict[str, Any]
     ) -> dict[str, Any]:
         suffix = Path(filename).suffix.lower()
-        intent = "receipt"
+        intent = str(metadata.get("intent") or self.config.get("intent") or "invoice").lower()
+        if intent not in {"invoice", "image_caption"}:
+            raise ValueError(f"Unsupported Vintern intent: {intent}")
         if suffix != ".pdf" and suffix not in _IMAGE_FORMATS:
-            raise ValueError("Receipt intent currently supports PDF and image files only.")
+            raise ValueError("Vintern intents support PDF and image files only.")
+        if suffix == ".svg":
+            from document_processing.document_processor import render_svg
+
+            content = render_svg(content)
+            suffix = ".png"
 
         python_path = resolve_vintern_python(self.config)
         if python_path is None:
             raise RuntimeError(
-                "Receipt intent needs an isolated Vintern Python environment. Set "
+                "Vintern intent needs an isolated Python environment. Set "
                 "DOCUMENT_PROCESSING_VINTERN_PYTHON or create .venv-vintern; "
                 "see src/document_processing/README.md."
             )
@@ -76,7 +84,7 @@ class VinternReceiptProcessor:
             or "cpu"
         ).lower()
 
-        with tempfile.TemporaryDirectory(prefix="document-receipt-") as temp_dir:
+        with tempfile.TemporaryDirectory(prefix=f"document-{intent}-") as temp_dir:
             work_dir = Path(temp_dir)
             pages = self._prepare_pages(suffix, content, work_dir)
             request_path = work_dir / "request.json"
@@ -88,7 +96,7 @@ class VinternReceiptProcessor:
                         _MODEL_REVISION if model_id == _MODEL_ID else None
                     ),
                     "device": device,
-                    "prompt": _RECEIPT_PROMPT,
+                    "prompt": _INVOICE_PROMPT if intent == "invoice" else _IMAGE_CAPTION_PROMPT,
                     "pages": [
                         {"page_number": page["page_number"], "image_path": page["image_path"]}
                         for page in pages
@@ -97,7 +105,7 @@ class VinternReceiptProcessor:
                 encoding="utf-8",
             )
             env = os.environ.copy()
-            source_root = str(Path(__file__).resolve().parents[2])
+            source_root = str(Path(__file__).resolve().parents[1])
             env["PYTHONPATH"] = os.pathsep.join(filter(None, [source_root, env.get("PYTHONPATH", "")]))
             timeout = int(
                 self.config.get(
@@ -106,7 +114,7 @@ class VinternReceiptProcessor:
                 )
             )
             completed = subprocess.run(
-                [str(python_path), "-m", "document_processing.receipt.vintern_worker",
+                [str(python_path), "-m", "document_processing.vintern_worker",
                  str(request_path), str(response_path)],
                 capture_output=True,
                 text=True,
@@ -117,7 +125,7 @@ class VinternReceiptProcessor:
             if completed.returncode != 0:
                 details = (completed.stderr or completed.stdout).strip()[-3000:]
                 raise RuntimeError(
-                    "Vintern receipt extraction failed in its isolated runtime. "
+                    f"Vintern {intent} processing failed in its isolated runtime. "
                     f"{details or f'Worker exited with code {completed.returncode}.'}"
                 )
             try:
@@ -129,23 +137,24 @@ class VinternReceiptProcessor:
             elements = []
             for page in worker_result.get("pages", []):
                 raw_response = str(page.get("response", "")).strip()
-                fields = _parse_fields(raw_response)
                 page_number = int(page["page_number"])
-                extracted_page = {
-                    "page_number": page_number,
-                    "fields": fields,
-                    "raw_response": raw_response,
-                    "review_required": True,
-                }
+                if intent == "invoice":
+                    fields = _parse_fields(raw_response)
+                    extracted_page = {"page_number": page_number, "fields": fields, "raw_response": raw_response, "review_required": True}
+                    searchable_value = json.dumps(fields if fields is not None else {"raw_response": raw_response}, ensure_ascii=False)
+                    layout_type = "text"
+                else:
+                    extracted_page = {"page_number": page_number, "caption": raw_response, "raw_response": raw_response, "review_required": True}
+                    searchable_value = raw_response
+                    layout_type = "figure_caption"
                 extracted_pages.append(extracted_page)
-                searchable_value = fields if fields is not None else {"raw_response": raw_response}
                 elements.append({
-                    "text": json.dumps(searchable_value, ensure_ascii=False),
+                    "text": searchable_value,
                     "element_type": "text",
                     "metadata": {
                         "page_number": page_number,
                         "element_type": "text",
-                        "layout_type": "text",
+                        "layout_type": layout_type,
                         "parser": f"vintern_{intent}",
                         "text_extraction_method": f"vintern_{intent}_extraction",
                         "review_required": True,
@@ -153,7 +162,7 @@ class VinternReceiptProcessor:
                 })
 
             if not extracted_pages:
-                raise RuntimeError("Vintern returned no receipt page results.")
+                raise RuntimeError(f"Vintern returned no {intent} page results.")
 
             page_previews = {
                 str(page["page_number"]): page["preview_png"]

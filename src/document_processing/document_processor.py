@@ -82,7 +82,7 @@ class DocumentProcessor:
         if suffix not in self.SUPPORTED:
             raise ValueError(f"Unsupported document format: {suffix or 'unknown'}")
         intent = str(self.config.get("intent", "document")).strip().lower()
-        if intent not in {"document", "invoice", "receipt"}:
+        if intent not in {"document", "invoice", "image_caption"}:
             raise ValueError(f"Unsupported document intent: {intent}")
         common = {
             **metadata,
@@ -90,20 +90,11 @@ class DocumentProcessor:
             "format": suffix[1:].upper(),
             "intent": intent,
         }
-        if intent == "receipt":
-            from document_processing.receipt.processor import VinternReceiptProcessor
+        if intent in {"invoice", "image_caption"}:
+            from document_processing.vintern_processor import VinternProcessor
 
-            engine = "vintern_receipt"
-            result = VinternReceiptProcessor(self.config).process(
-                filename, content, common
-            )
-        elif intent == "invoice":
-            from document_processing.invoice.processor import VinternInvoiceProcessor
-
-            engine = "vintern_invoice"
-            result = VinternInvoiceProcessor(self.config).process(
-                filename, content, common
-            )
+            engine = f"vintern_{intent}"
+            result = VinternProcessor(self.config).process(filename, content, common)
         else:
             engine = str(self.config.get("parser_engine", "docling"))
             if engine != "docling":

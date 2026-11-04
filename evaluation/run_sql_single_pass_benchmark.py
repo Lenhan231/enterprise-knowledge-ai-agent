@@ -12,10 +12,10 @@ from dotenv import load_dotenv
 
 def main():
     root=Path(__file__).resolve().parents[1]
-    if len(sys.argv)<3 or sys.argv[1] not in {'production','single-pass'}:
-        raise SystemExit('Usage: python evaluation/run_sql_single_pass_benchmark.py production|single-pass --stage verify|generate|score')
+    if len(sys.argv)<3 or sys.argv[1] not in {'production','single-pass','single-pass-v2'}:
+        raise SystemExit('Usage: python evaluation/run_sql_single_pass_benchmark.py production|single-pass|single-pass-v2 --stage verify|generate|score')
     mode=sys.argv.pop(1)
-    work=root if mode=='production' else root/'artifacts/local/sql-single-pass-variant'
+    work=root if mode=='production' else root/('artifacts/local/sql-single-pass-variant' if mode=='single-pass' else 'artifacts/local/sql-single-pass-candidate')
     load_dotenv(root/'.env')
     os.chdir(work)
     sys.path[:0]=[str(work),str(work/'src')]

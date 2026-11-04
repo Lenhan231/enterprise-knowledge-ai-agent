@@ -15,6 +15,7 @@ from core.analytics.metric_validation import MetricDefinitionError
 from core.analytics.text_to_sql import decode_query_plan
 from core.models.agents import AgentRequest, VerifiedIdentity
 from evaluation.sql_single_pass_contract import validate_single_pass_plan
+from evaluation.sql_single_pass_contract import requested_metrics
 
 SINGLE=os.environ.get('SQL_VARIANT_MODE')=='single-pass'
 OBSERVATIONS=[]
@@ -30,8 +31,28 @@ MAPPING=dict(metrics=['stock_on_hand'],dimensions=['product_id'],representation=
 
 
 class ContractTest(unittest.TestCase):
+    def test_schema_not_null_values_do_not_require_an_irrelevant_null_order(self):
+        plan=decode_query_plan(json.dumps(dict(sql=SQL.replace('DESC NULLS LAST','DESC'),parameters=['2022-12-31','blue'])))
+        validate_single_pass_plan(plan,QUESTION,{'stock_on_hand'})
+
+    def test_latest_diagnostic_and_snapshot_subquery_are_not_metric_subqueries(self):
+        for sql,question,metrics in [
+            ('SELECT MAX(i.snapshot_date) AS latest_snapshot FROM commerce.inventory i','What is the latest available inventory snapshot?',set()),
+            (SQL.replace('i.snapshot_date=$1','i.snapshot_date=(SELECT MAX(j.snapshot_date) FROM commerce.inventory j)').replace(' AND p.color=$2','').replace('LIMIT 2','LIMIT 200'),
+             'Which products have the highest stock_on_hand at latest snapshot?',{'stock_on_hand'})]:
+            validate_single_pass_plan(decode_query_plan(json.dumps(dict(sql=sql,parameters=[]))),question,metrics)
+
+    def test_flag_filter_does_not_become_an_extra_requested_measure(self):
+        self.assertEqual(requested_metrics('List products with stockout_flag=true on 2022-12-31 including stockout_days.'),{'stockout_days'})
+
     def test_unmapped_raw_measure_cannot_substitute_zero_for_null(self):
         sql="SELECT i.snapshot_date,COALESCE(i.days_of_supply,0) AS raw_value FROM commerce.inventory i WHERE i.snapshot_date=$1 LIMIT 200"
+        with self.assertRaises(MetricDefinitionError):
+            validate_single_pass_plan(decode_query_plan(json.dumps(dict(sql=sql,parameters=['2022-12-31']))),
+                'List raw inventory observations on 2022-12-31.',set())
+
+    def test_unmapped_raw_measure_cannot_invent_arithmetic(self):
+        sql="SELECT i.snapshot_date,i.stock_on_hand*2 AS raw_value FROM commerce.inventory i WHERE i.snapshot_date=$1 LIMIT 200"
         with self.assertRaises(MetricDefinitionError):
             validate_single_pass_plan(decode_query_plan(json.dumps(dict(sql=sql,parameters=['2022-12-31']))),
                 'List raw inventory observations on 2022-12-31.',set())

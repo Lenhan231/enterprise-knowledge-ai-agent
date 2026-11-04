@@ -7,13 +7,19 @@ from sqlglot.optimizer.scope import traverse_scope
 from core.analytics.metric_mapping import requested_ranking_limit
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
 from core.analytics.metric_validation import (
-    MetricDefinitionError, _canonical, _conjuncts, _formula, _validate_inventory_time,
+    MetricDefinitionError, _canonical, _conjuncts, _formula, _latest_snapshot, _validate_inventory_time,
 )
 from core.analytics.text_to_sql import APPROVED_COLUMNS
 
 
 def requested_metrics(question):
     metrics=resolve_metric_names(question)
+    for name in list(metrics):
+        definition=get_metric_definition(name)
+        field=definition.get('formula','').split(' within ')[0]
+        if (len(metrics)>1 and definition.get('unit')=='boolean' and re.fullmatch(r'[a-z_]+',field)
+                and re.search(r'\b'+field+r'\s*=\s*(true|false)',question,re.I)):
+            metrics.remove(name)
     if (len(metrics)==1 and re.search(r'how many|\bcount\b|number of|most.*products|bao nhiêu',question,re.I)
             and get_metric_definition(next(iter(metrics))).get('unit')=='boolean'):
         return {'observed_product_count'}
@@ -26,17 +32,29 @@ def validate_single_pass_plan(plan,question,metrics):
     scopes=list(traverse_scope(tree))
     root=scopes[-1]
     measures=APPROVED_COLUMNS['commerce.inventory']-{'snapshot_date','product_id','year','month'}
+    if not metrics:
+        for projection in tree.selects:
+            value=_canonical(projection,root,plan.parameters,{})
+            if not isinstance(value,exp.Column) and any(
+                    c.table=='inventory' and c.name in measures for c in value.find_all(exp.Column)):
+                raise MetricDefinitionError('Ordinary inventory fields cannot acquire unreviewed calculations.')
     for scope in scopes:
         for value in scope.expression.find_all(exp.Coalesce):
             if value.find_ancestor(exp.Select) is scope.expression:
                 resolved=_canonical(value,scope,plan.parameters,{})
                 if any(c.table=='inventory' and c.name in measures for c in resolved.find_all(exp.Column)):
                     raise MetricDefinitionError('Stored inventory values cannot acquire unapproved NULL substitution.')
-    if any(t.db=='commerce' and t.name=='inventory' for t in tree.find_all(exp.Table)):
+    diagnostic=tree.copy()
+    diagnostic.set('limit',None)
+    if (any(t.db=='commerce' and t.name=='inventory' for t in tree.find_all(exp.Table))
+            and not _latest_snapshot(exp.Subquery(this=diagnostic))):
         _validate_inventory_time(scopes,plan.parameters,question)
     predicates=[]
     for scope in scopes:
         for predicate in _conjuncts(scope.expression.args.get('where')):
+            if (isinstance(predicate,exp.EQ) and isinstance(predicate.this,exp.Column)
+                    and predicate.this.name=='snapshot_date' and _latest_snapshot(predicate.expression)):
+                continue
             # EXISTS itself is validated by the existing approved-key and metric validators.
             if not predicate.find(exp.Exists):
                 predicates.append(_canonical(predicate,scope,plan.parameters,{}))
@@ -93,6 +111,10 @@ def validate_single_pass_plan(plan,question,metrics):
             if isinstance(value,exp.Literal) and value.is_int and 1<=int(value.this)<=len(tree.selects):
                 value=tree.selects[int(value.this)-1]
             descending=not bool(re.search(r'lowest|fewest',question,re.I))
+            # NOT NULL declarations in the approved commerce inventory schema migration.
+            not_null={'snapshot_date','product_id','year','month','stock_on_hand','units_received',
+                      'units_sold','stockout_days','stockout_flag','overstock_flag','reorder_flag'}
+            nullable=any(c.table=='inventory' and c.name not in not_null for c in expected.find_all(exp.Column))
             if (_canonical(value,root,plan.parameters,{})!=expected or bool(first.args.get('desc'))!=descending
-                    or first.args.get('nulls_first')):
+                    or (nullable and first.args.get('nulls_first'))):
                 raise MetricDefinitionError('Inventory ranking measure, direction or NULL order changed.')

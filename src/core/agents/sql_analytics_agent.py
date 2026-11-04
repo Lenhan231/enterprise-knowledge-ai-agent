@@ -11,10 +11,11 @@ from datetime import date
 from typing import Any
 
 from core.agents.base import BaseAgent
+from core.analytics.field_retrieval import field_contract, compile_field_query
 from core.analytics.commerce_decision_support import resolve_commerce_decision_domain, unavailable_commerce_dimensions
 from core.analytics.metric_ontology import resolve_metric_names, get_metric_definition
 from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
-from core.analytics.metric_validation import MetricDefinitionError, inventory_explicit_dates, inventory_time_scope, validate_metric_definitions, validate_metric_request
+from core.analytics.metric_validation import MetricDefinitionError, inventory_time_scope, validate_metric_definitions, validate_metric_request
 from core.analytics.text_to_sql import (
     APPROVED_COLUMNS,
     approved_join_path,
@@ -100,17 +101,19 @@ class SQLAnalyticsAgent(BaseAgent):
                 'The full approved schema does not support these requested dimensions: '+', '.join(unavailable)+'. '
                 'A supported alternative is inventory observations by product/category at an available historical snapshot.',
                 code='unsupported_dimension', clarification=True))
-        metric_names = resolve_metric_names(question)
-        if metric_names == {'stock_on_hand'} and re.search(r'\bchange\b|thay đổi', question, re.I):
-            try:
-                comparison_dates = inventory_explicit_dates(question)
-            except ValueError:
-                comparison_dates = []
-            if len(comparison_dates) == 2:
-                return self._generation_error(MetricDefinitionError(
-                    'The requested two-snapshot change and product-intersection calculation is clear, but this SQL planner '
-                    'does not yet have a verified comparison contract. This is a planner limitation. '
-                    'A supported alternative is to request each dated snapshot separately.', code='comparison_contract_unavailable'))
+        try:
+            direct = field_contract(question) if context is None else None
+        except MetricDefinitionError as error:
+            return self._generation_error(error)
+        metric_names = set() if direct is not None else resolve_metric_names(question)
+        if direct is None and any(get_metric_definition(name).get('domain') != 'inventory_management' for name in metric_names):
+            return self._generation_error(MetricDefinitionError(
+                'This deployment supports Inventory Management using commerce.inventory and commerce.products. '
+                'The requested business metric is outside that scope. Try stock_on_hand by category at a historical snapshot.',
+                code='outside_inventory_scope', clarification=True))
+        if direct is not None:
+            context_info['field_retrieval'] = {'source': direct.args['from_'].this.sql(),
+                'columns': [p.name for p in direct.selects], 'assurance': 'literal field contract'}
         definitions = {}
         raw = None
         interpretation = None
@@ -143,9 +146,7 @@ class SQLAnalyticsAgent(BaseAgent):
                         result['metadata'].update(status='unsupported',latest_available_snapshot=str(latest) if latest else None,
                             availability_source='MAX(commerce.inventory.snapshot_date)')
                         return result
-            cross_domain = ('commerce.inventory' in tables and bool(tables & {'commerce.orders', 'commerce.order_items'})
-                            and bool(re.search(r'\borders\b|\bordered\b|\border(?!\s+by)\b|đơn hàng', question, re.I)))
-            if (not cross_domain and (context is not None
+            if (direct is None and (context is not None
                     or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
                     or (not metric_names and 'commerce.inventory' in tables))):
                 with measure('metric_interpretation'):
@@ -181,7 +182,9 @@ class SQLAnalyticsAgent(BaseAgent):
             return self._generation_error(error)
         for attempt in range(2):
             try:
-                if interpretation and interpretation.domain == 'inventory':
+                if direct is not None:
+                    plan = compile_field_query(direct)
+                elif interpretation and interpretation.domain == 'inventory':
                     sql, parameters = compile_inventory_query(interpretation)
                     plan = QueryPlan(sql=sql, parameters=parameters,
                                      explanation='Compiled from the validated inventory interpretation.')
@@ -195,15 +198,13 @@ class SQLAnalyticsAgent(BaseAgent):
                             'Use that path with independent aggregates or correlated EXISTS as appropriate; '
                             'do not introduce direct fact joins or ask the user to approve an existing relationship.')
                 if plan.sql:
-                    if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validate_commerce_sql(plan.sql).sources):
-                        raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
                     definitions = validate_metric_definitions(plan.sql, metric_names, plan.parameters, APPROVED_COLUMNS,
                                                               question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question)
                     if interpretation:
                         validate_mapped_sql(plan,interpretation,question=interpretation.date_question() if resolved_latest else question)
                 break
             except (SQLValidationError, MetricDefinitionError) as error:
-                if attempt == 0 and not (interpretation and interpretation.domain == 'inventory'):
+                if attempt == 0 and direct is None and not (interpretation and interpretation.domain == 'inventory'):
                     prompt = build_sql_prompt(
                         question, validation_error=str(error), previous_response=str(raw),
                         metric_names=metric_names,
@@ -248,9 +249,16 @@ class SQLAnalyticsAgent(BaseAgent):
             metadata['semantic_interpretation'] = interpretation.model_dump()
             metadata['filters'] = [item.model_dump() for item in interpretation.filters]
             metadata['time_scope'] = interpretation.time.model_dump()
+        if interpretation and interpretation.time and interpretation.time.mode == 'comparison':
+            metadata['columns'] = [dict(name=name, unit='units' if name in {'stock_before','stock_after','stock_delta'} else None) for name in (rows[0] if rows else ())]
+            metadata['comparison'] = dict(before=interpretation.time.start, after=interpretation.time.end,
+                population='products observed on both dates', calculation='stock_after - stock_before', unit='units', null_policy='preserve')
+            limitations.append('Only products observed on both selected dates are included. NULL stock operands produce NULL deltas; missing observations are not zero stock.')
         if any(definition.get('domain') == 'inventory_management' for definition in definitions.values()):
-            dates = sorted({str(row['snapshot_date']) for row in rows if row.get('snapshot_date') is not None})
+            dates = sorted({str(row[name]) for row in rows for name in ('snapshot_date','before_date','after_date') if row.get(name) is not None})
             metadata.update(metric_catalog_version='1.0.0', historical_inventory=True, snapshot_dates=dates)
+            if interpretation and interpretation.time.mode == 'range':
+                limitations.append('Results retain separate exact snapshot observations. No combined period movement or balance total is established by the catalog.')
             periods = [definition['calculation_scope'] for definition in definitions.values() if definition.get('calculation_scope')]
             if periods:
                 metadata['inventory_period_scope'] = periods[0]

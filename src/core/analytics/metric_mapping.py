@@ -12,6 +12,7 @@ from core.analytics.metric_ontology import METRIC_ONTOLOGY, resolve_metric_names
 from core.analytics.metric_validation import (
     MetricDefinitionError, _canonical, _conjuncts, _formula, _latest_snapshot,
     validate_metric_request, _validate_inventory_time, inventory_time_scope, inventory_observation_query,
+    inventory_comparison_dates, validate_stock_comparison,
 )
 
 
@@ -26,7 +27,7 @@ class MetricFilter(_StrictModel):
 
 
 class MetricTime(_StrictModel):
-    mode: Literal['latest','snapshot','range','history']
+    mode: Literal['latest','snapshot','range','history','comparison']
     start: str | None = Field(default=None,pattern=r'^\d{4}-\d{2}-\d{2}$')
     end: str | None = Field(default=None,pattern=r'^\d{4}-\d{2}-\d{2}$')
 
@@ -48,6 +49,8 @@ class MetricMapping(_StrictModel):
     clarification: str | None = Field(default=None,max_length=1000)
 
     def date_question(self):
+        if self.time.mode == 'comparison':
+            return 'stock_on_hand change between '+self.time.start+' and '+self.time.end
         if self.time.mode == 'latest':
             return 'latest snapshot'
         if self.time.mode == 'history':
@@ -182,6 +185,9 @@ def build_metric_mapping_prompt(question, *, context=None):
             'Ranking without an explicit row count uses limit=null; the independent safety ceiling is 200 rows. Never invent top 10. '
             'Explicit non-null population uses an is_not_null filter with value=null. '
             'Filters apply to source rows, not computed aggregates. Date ranges are inclusive. '
+            'For stock_on_hand change between exactly two dates use time.mode=comparison, start=earlier date, end=later date, '
+            'representation=product and product_id dimensions. Return before/after observations and after-minus-before stock_delta '
+            'only for products observed on both dates; preserve NULL stock. Other comparison measures need clarification. '
             'A snapshot uses start=the ISO date and end=null. A named month, quarter or year uses its full inclusive range; '
             'keep separate snapshot_date groups, never reinterpret a period as its closing balance. '
             'Require a requested historical date/range/history or explicit latest AVAILABLE snapshot; do not silently turn today/current stock into historical latest. '
@@ -236,6 +242,15 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
         raise MetricDefinitionError('The question interpretation was invalid. Please specify the inventory measure, grouping and snapshot.',
                                     code='interpretation_invalid',clarification=True) from error
     known = resolve_metric_names(question)
+    # A unique catalog ID may be spelled as its recorded source column; formulas stay unchanged.
+    aliases = {definition['scalar_formula']: name for name, definition in METRIC_ONTOLOGY.items()
+               if definition.get('domain') == 'inventory_management' and definition.get('aggregation') == 'sum'
+               and definition.get('scalar_formula')}
+    mapping.metrics = [aliases.get(name, name) for name in mapping.metrics]
+    for item in mapping.filters:
+        item.field = aliases.get(item.field, item.field)
+    if mapping.ranking:
+        mapping.ranking.metric = aliases.get(mapping.ranking.metric, mapping.ranking.metric)
     if mapping.clarification:
         _error(mapping.clarification,'metric_ambiguous')
     if mapping.domain == 'other':
@@ -274,12 +289,25 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
     if mapping.time is None:
         _error('The inventory records are historical. Which snapshot should I use?','snapshot_required')
     temporal = mapping.time
+    comparison = inventory_comparison_dates(question)
+    if comparison and temporal.mode == 'range' and (temporal.start, temporal.end) == comparison:
+        temporal.mode = 'comparison'
+    if temporal.mode == 'comparison':
+        if (mapping.metrics != ['stock_on_hand'] or mapping.representation != 'product'
+                or 'product_id' not in mapping.dimensions or mapping.ranking
+                or any(f.field not in {'product_id','product_name','category','segment','size','color'} for f in mapping.filters)):
+            _error('Two-snapshot comparisons support product-level stock_on_hand with product-attribute filters; '
+                   'aggregate, threshold and change-ranking semantics require clarification.', 'incompatible_grain')
+        if comparison and (temporal.start, temporal.end) != comparison:
+            _error('The comparison changed the requested snapshot dates.', 'invalid_date_scope')
+        if not comparison:
+            _error('Specify a stock change between two exact snapshot dates.', 'invalid_date_scope')
     if temporal.mode == 'snapshot' and temporal.start and temporal.end == temporal.start:
         temporal.end = None
     try:
-        if temporal.mode in {'snapshot','range'}:
+        if temporal.mode in {'snapshot','range','comparison'}:
             start = date.fromisoformat(temporal.start or '')
-            if temporal.mode == 'range' and date.fromisoformat(temporal.end or '') < start:
+            if temporal.mode in {'range','comparison'} and date.fromisoformat(temporal.end or '') < start:
                 raise ValueError('reversed range')
         if temporal.mode in {'latest','history'} and (temporal.start or temporal.end):
             raise ValueError('unexpected bounds')
@@ -292,7 +320,7 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
         expected_time = inventory_time_scope(question)
     except ValueError as error:
         raise MetricDefinitionError('Specify a valid historical period.', code='invalid_date_scope', clarification=True) from error
-    if expected_time and (temporal.mode, temporal.start, temporal.end) != expected_time:
+    if expected_time and (('range' if temporal.mode == 'comparison' else temporal.mode), temporal.start, temporal.end) != expected_time:
         _error('The interpretation changed the requested historical period.', 'invalid_date_scope')
     if not expected_time and re.search(r'last month|last year|tháng trước|năm ngoái', _normalize(question)):
         _error('Specify the historical month or year explicitly.', 'snapshot_required')
@@ -306,6 +334,11 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
     dimensions = set.intersection(*(set(METRIC_ONTOLOGY[name]['dimensions']) for name in mapping.metrics))
     if not set(mapping.dimensions) <= dimensions - {'year','month'}:
         _error('This metric does not support the requested grouping.','unsupported_dimension')
+    if (mapping.representation == 'aggregate' and temporal.mode == 'range'
+            and re.search(r'\btotal\b|\btổng\b', question, re.I)
+            and not re.search(r'monthly|per snapshot|by snapshot|hàng tháng|từng snapshot',question,re.I)):
+        _error('The canonical inventory definitions permit one snapshot or separate snapshot groups, '
+               'not a combined total across dates. Choose a snapshot or request monthly observations.', 'incompatible_grain')
     if re.search(r'non[ -]?null|not null|không (?:rỗng|null)', question, re.I) and len(mapping.metrics) == 1:
         name = mapping.metrics[0]
         if not any(item.field == name and item.operator == 'is_not_null' for item in mapping.filters):
@@ -330,8 +363,9 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
         values = item.value if isinstance(item.value,list) else [item.value]
         if any(type(value) not in types for value in values) or (types in {(str,),(bool,)} and item.operator not in {'eq','in'}):
             _error('The filter value or comparison is incompatible with '+item.field+'.','interpretation_invalid')
+    _validate_explicit_slots(mapping, question)
     ascending = bool(re.search(r'lowest|fewest|smallest|\bbottom\b|thấp nhất|ít nhất',question,re.I))
-    descending = bool(re.search(r'highest|greatest|largest|\bmost\b(?!\s+recent)|cao nhất|nhiều nhất',question,re.I))
+    descending = bool(re.search(r'highest|greatest|largest|\btop\b|\bmost\b(?!\s+recent)|cao nhất|nhiều nhất',question,re.I))
     if ascending != descending and len(mapping.metrics) == 1:
         mapping.ranking = MetricRanking(metric=mapping.metrics[0],direction='asc' if ascending else 'desc',
             limit=mapping.ranking.limit if mapping.ranking else None)
@@ -349,6 +383,21 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
     return mapping
 
 
+def _validate_explicit_slots(mapping, question):
+    from core.analytics.field_retrieval import _field_language
+    text = _field_language(question)
+    operators = {'=':'eq', '<':'lt', '<=':'lte', '>':'gt', '>=':'gte'}
+    fields = r'product_id|product_name|category|segment|size|color|stock_on_hand|units_received|inventory_units_sold'
+    for match in re.finditer(r'\b('+fields+r")\s*(<=|>=|=|<|>)\s*('(?:[^']|'')*'|-?\d+(?:\.\d+)?)", text):
+        name, operator, literal = match.groups()
+        value = literal[1:-1].replace("''", "'") if literal.startswith("'") else json.loads(literal)
+        if not any(f.field == name and f.operator == operators[operator] and f.value == value for f in mapping.filters):
+            _error('The interpretation omitted or changed explicit filter '+name+'.', 'interpretation_mismatch')
+    for match in re.finditer(r'\b(?:by|theo)\s+(category|segment|size|color)\b', text):
+        if match[1] not in mapping.dimensions:
+            _error('The interpretation omitted requested dimension '+match[1]+'.', 'interpretation_mismatch')
+
+
 def _filter_expression(item):
     field = _field(item.field)
     if item.operator == 'is_not_null':
@@ -359,9 +408,28 @@ def _filter_expression(item):
     return operator(this=field,expression=exp.convert(item.value))
 
 
+def _scalar_count(mapping):
+    return (mapping.representation == 'aggregate' and not mapping.dimensions
+            and mapping.time.mode in {'snapshot','latest'}
+            and all(METRIC_ONTOLOGY[name]['aggregation'] == 'count_distinct' for name in mapping.metrics))
+
+
+def _count_snapshot(mapping):
+    return (parse_one('(SELECT MAX(inventory.snapshot_date) FROM commerce.inventory)',read='postgres')
+            if mapping.time.mode == 'latest' else exp.Cast(this=exp.convert(mapping.time.start),to=exp.DataType.build('DATE')))
+
+
 def validate_mapped_sql(plan, mapping, *, question=None):
     from core.analytics.text_to_sql import APPROVED_COLUMNS
     tree = parse_one(plan.sql,read='postgres')
+    if mapping.time and mapping.time.mode == 'comparison':
+        validate_stock_comparison(plan.sql, plan.parameters, (mapping.time.start, mapping.time.end))
+        expected = parse_one(_comparison_query(mapping).sql(dialect='postgres'), read='postgres')
+        scope = list(traverse_scope(tree))[-1]
+        normalized = _canonical(tree, scope, plan.parameters, {})
+        if normalized != _canonical(expected, list(traverse_scope(expected))[-1], (), {}):
+            _error('SQL comparison changed the validated columns, population, dates or ordering.', 'interpretation_mismatch')
+        return
     if mapping.domain == 'other':
         if (any(t.db.casefold() == 'commerce' and t.name.casefold() == 'inventory' for t in tree.find_all(exp.Table))
                 and not inventory_observation_query(plan.sql, plan.parameters)):
@@ -379,6 +447,10 @@ def validate_mapped_sql(plan, mapping, *, question=None):
             or tree.args['from_'].this.name != 'inventory'):
         _error('SQL source population differs from the validated inventory/product relationship.','interpretation_mismatch')
     def canonical(node):
+        if isinstance(node,exp.Alias):
+            node = node.this
+        if _latest_snapshot(node):
+            return node.copy()
         value = _canonical(node,root,plan.parameters,{})
         # The approved FK join makes both product keys the same identity.
         return value.transform(lambda n: _field('product_id') if n == exp.column('product_id',table='products',db='commerce') else n)
@@ -408,7 +480,7 @@ def validate_mapped_sql(plan, mapping, *, question=None):
     if tree.args.get('having') or tree.args.get('distinct') or tree.args.get('offset'):
         _error('SQL added an unrequested result restriction.','interpretation_mismatch')
     group = tree.args.get('group')
-    expected_group = {snapshot.sql(),*(_field(d).sql() for d in mapping.dimensions)}
+    expected_group = set() if _scalar_count(mapping) else {snapshot.sql(),*(_field(d).sql() for d in mapping.dimensions)}
     groups = {canonical(p).sql() for p in group.expressions} if group else set()
     if (mapping.representation == 'product' and groups) or (mapping.representation == 'aggregate' and groups != expected_group):
         _error('SQL grouping differs from the validated output grain.','incompatible_grain')
@@ -417,7 +489,8 @@ def validate_mapped_sql(plan, mapping, *, question=None):
         formula = _field(name) if mapping.representation == 'product' else _formula(definition,APPROVED_COLUMNS)
         if formula not in projections:
             _error('SQL omitted the requested metric representation.','interpretation_mismatch')
-    allowed = {snapshot.sql(),*(_field(d).sql() for d in mapping.dimensions)}
+    allowed = {(canonical(_count_snapshot(mapping)) if _scalar_count(mapping) else snapshot).sql(),
+               *(_field(d).sql() for d in mapping.dimensions)}
     allowed.update((_field(name) if mapping.representation == 'product' else _formula(METRIC_ONTOLOGY[name],APPROVED_COLUMNS)).sql()
                    for name in mapping.metrics)
     if len(projections) != len(allowed) or {p.sql() for p in projections} != allowed:
@@ -444,13 +517,32 @@ def validate_mapped_sql(plan, mapping, *, question=None):
             _error('SQL ranking differs from the validated interpretation.','interpretation_mismatch')
 
 
+def _comparison_query(mapping):
+    snapshot, stock = _field('snapshot_date'), _field('stock_on_hand')
+    dates = (mapping.time.start, mapping.time.end)
+    dimensions = list(dict.fromkeys(mapping.dimensions))
+    observations = [exp.Max(this=exp.Case(ifs=[exp.If(this=exp.EQ(this=snapshot.copy(), expression=exp.convert(d)),
+                         true=stock.copy())])) for d in dates]
+    return (exp.select(*[_field(d).as_(d) for d in dimensions],
+                exp.convert(dates[0]).as_('before_date'), exp.convert(dates[1]).as_('after_date'),
+                observations[0].copy().as_('stock_before'), observations[1].copy().as_('stock_after'),
+                exp.Sub(this=observations[1].copy(), expression=observations[0].copy()).as_('stock_delta'))
+            .from_('commerce.inventory').join('commerce.products', on='inventory.product_id = products.product_id')
+            .where(exp.In(this=snapshot.copy(), expressions=[exp.convert(d) for d in dates]),
+                   *[_filter_expression(f) for f in mapping.filters])
+            .group_by(*[_field(d) for d in dimensions])
+            .having(exp.EQ(this=exp.Count(this=exp.Distinct(expressions=[snapshot.copy()])), expression=exp.Literal.number(2)))
+            .order_by(_field('product_id')).limit(200))
+
+
 def compile_inventory_query(mapping):
     """Compile a validated inventory mapping; retain every existing SQL boundary."""
     from core.analytics.text_to_sql import APPROVED_COLUMNS, decode_query_plan, validate_commerce_sql
     from core.analytics.metric_validation import validate_metric_definitions
     parameters = []
     dimensions = list(dict.fromkeys(['snapshot_date', *mapping.dimensions]))
-    projections = [_field(d).as_(d) for d in dimensions]
+    projections = ([_count_snapshot(mapping).as_('snapshot_date')] if _scalar_count(mapping)
+                   else [_field(d).as_(d) for d in dimensions])
     for name in mapping.metrics:
         definition = METRIC_ONTOLOGY[name]
         if definition.get('definition_status') != 'executable':
@@ -473,15 +565,19 @@ def compile_inventory_query(mapping):
         query = query.where(exp.GTE(this=_field('snapshot_date'), expression=exp.convert(temporal.start)))
         end = (date.fromisoformat(temporal.end)+timedelta(days=1)).isoformat()
         query = query.where(exp.LT(this=_field('snapshot_date'), expression=exp.convert(end)))
-    if mapping.representation == 'aggregate':
+    if mapping.representation == 'aggregate' and not _scalar_count(mapping):
         query = query.group_by(*(_field(d) for d in dimensions))
     orders = []
     if mapping.ranking:
         name = mapping.ranking.metric
         value = _field(name) if mapping.representation == 'product' else _formula(METRIC_ONTOLOGY[name], APPROVED_COLUMNS)
         orders.append(exp.Ordered(this=value, desc=mapping.ranking.direction == 'desc'))
-    orders.extend(_field(d) for d in dimensions)
-    query = query.order_by(*orders).limit((mapping.ranking.limit or 200) if mapping.ranking else 200)
+    if not _scalar_count(mapping):
+        orders.extend(_field(d) for d in dimensions)
+    if orders:
+        query = query.order_by(*orders)
+    query = (_comparison_query(mapping) if mapping.time.mode == 'comparison'
+             else query.limit((mapping.ranking.limit or 200) if mapping.ranking else 200))
     # Parameterize literals, including catalog filters, before crossing the database boundary.
     def bind(node):
         if isinstance(node, exp.Literal) and not isinstance(node.parent, exp.Limit):

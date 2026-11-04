@@ -20,34 +20,12 @@ from core.prompts.sql import SQL_GENERATION_PROMPT, SQL_REPAIR_PROMPT, INVENTORY
 
 MAX_RESULT_ROWS = 200
 APPROVED_COLUMNS: dict[str, frozenset[str]] = {
-    "commerce.sales": frozenset({"date", "revenue", "cogs"}),
-    "commerce.orders": frozenset({
-        "order_id", "order_date", "customer_id", "zip", "order_status", "payment_method", "device_type", "order_source",
-    }),
-    "commerce.customers": frozenset({
-        "customer_id", "zip", "city", "signup_date", "gender", "age_group", "acquisition_channel",
-    }),
-    "commerce.payments": frozenset({"order_id", "payment_method", "payment_value", "installments"}),
-    "commerce.order_items": frozenset({
-        "order_item_id", "order_id", "product_id", "quantity", "unit_price", "discount_amount", "promo_id", "promo_id_2",
-    }),
-    "commerce.geography": frozenset({"zip", "city", "region", "district"}),
     "commerce.inventory": frozenset({
         "snapshot_date", "product_id", "stock_on_hand", "units_received", "units_sold", "stockout_days",
         "days_of_supply", "fill_rate", "stockout_flag", "overstock_flag", "reorder_flag", "sell_through_rate",
         "product_name", "category", "segment", "year", "month",
     }),
     "commerce.products": frozenset({"product_id", "product_name", "category", "segment", "size", "color", "price", "cogs"}),
-    "commerce.promotions": frozenset({
-        "promo_id", "promo_name", "promo_type", "discount_value", "start_date", "end_date", "applicable_category",
-        "promo_channel", "stackable_flag", "min_order_value",
-    }),
-    "commerce.returns": frozenset({"return_id", "order_id", "product_id", "return_date", "return_reason", "return_quantity", "refund_amount"}),
-    "commerce.reviews": frozenset({"review_id", "order_id", "product_id", "review_date", "rating", "review_title"}),
-    "commerce.shipments": frozenset({"order_id", "ship_date", "delivery_date", "shipping_fee"}),
-    "commerce.web_traffic": frozenset({
-        "date", "sessions", "unique_visitors", "page_views", "bounce_rate", "avg_session_duration_sec", "traffic_source",
-    }),
 }
 
 
@@ -56,35 +34,12 @@ def _edge(left_table: str, left_column: str, right_table: str, right_column: str
 
 
 APPROVED_JOINS = frozenset({
-    _edge("commerce.customers", "customer_id", "commerce.orders", "customer_id"),
-    _edge("commerce.customers", "zip", "commerce.geography", "zip"),
-    _edge("commerce.orders", "order_id", "commerce.payments", "order_id"),
-    _edge("commerce.orders", "order_id", "commerce.order_items", "order_id"),
-    _edge("commerce.orders", "zip", "commerce.geography", "zip"),
-    _edge("commerce.order_items", "product_id", "commerce.products", "product_id"),
-    _edge("commerce.order_items", "promo_id", "commerce.promotions", "promo_id"),
-    _edge("commerce.order_items", "promo_id_2", "commerce.promotions", "promo_id"),
     _edge("commerce.inventory", "product_id", "commerce.products", "product_id"),
-    _edge("commerce.returns", "order_id", "commerce.orders", "order_id"),
-    _edge("commerce.returns", "product_id", "commerce.products", "product_id"),
-    _edge("commerce.reviews", "order_id", "commerce.orders", "order_id"),
-    _edge("commerce.reviews", "product_id", "commerce.products", "product_id"),
-    _edge("commerce.shipments", "order_id", "commerce.orders", "order_id"),
 })
-APPROVED_DATE_COLUMNS = frozenset({
-    ("commerce.customers", "signup_date"),
-    ("commerce.inventory", "snapshot_date"),
-    ("commerce.orders", "order_date"),
-    ("commerce.promotions", "start_date"), ("commerce.promotions", "end_date"),
-    ("commerce.returns", "return_date"),
-    ("commerce.reviews", "review_date"),
-    ("commerce.sales", "date"),
-    ("commerce.shipments", "ship_date"), ("commerce.shipments", "delivery_date"),
-    ("commerce.web_traffic", "date"),
-})
+APPROVED_DATE_COLUMNS = frozenset({("commerce.inventory", "snapshot_date")})
 
 APPROVED_FUNCTIONS = frozenset({
-    "ABS", "AND", "AVG", "CAST", "CEIL", "COALESCE", "COUNT", "DATE_PART", "DATE_TRUNC", "EXTRACT", "FLOOR", "GREATEST",
+    "ABS", "AND", "AVG", "CASE", "IF", "CAST", "CEIL", "COALESCE", "COUNT", "DATE_PART", "DATE_TRUNC", "EXTRACT", "FLOOR", "GREATEST",
     "LEAST", "LOWER", "MAX", "MIN", "NULLIF", "OR", "ROUND", "STRING_AGG", "SUM", "TIMESTAMP_TRUNC", "UPPER", "EXISTS",
 })
 FORBIDDEN_NODES = (exp.Command, exp.Into, exp.Lock, exp.Union, exp.Insert, exp.Update, exp.Delete, exp.Drop, exp.Create)
@@ -420,7 +375,7 @@ def relevant_schema_tables(question, definitions):
         tables.add('commerce.order_items')
     if 'commerce.order_items' in tables:
         tables.add('commerce.orders')
-    return tables or set(APPROVED_COLUMNS)
+    return (tables & set(APPROVED_COLUMNS)) or set(APPROVED_COLUMNS)
 
 
 def approved_join_path(tables):

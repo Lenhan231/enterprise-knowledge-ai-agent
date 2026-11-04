@@ -118,7 +118,7 @@ class InventoryReportTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(agent.llm.generate.await_count, 1)
         self.assertEqual(result.metadata['narrative_coverage']['Category stock']['mode'], 'deterministic_listing')
 
-    async def test_return_rate_requests_use_shared_sql_business_clarification(self):
+    async def test_return_rate_requests_explain_outside_inventory_scope(self):
         questions = [
             'Tạo executive brief tổng hợp tỉ lệ trả hàng của từng category trong năm 2022.',
             'Tạo báo cáo tỷ lệ trả hàng theo category trong năm 2022.',
@@ -136,11 +136,11 @@ class InventoryReportTest(unittest.IsolatedAsyncioTestCase):
                         'clarification': 'Should the rate count orders with returns or returned units?'}))
                     result, payload, _ = await agent.generate_from_template(request(question), source_mode=mode,
                         accept_supported_scope=True, template_choice='uploaded')
-                    self.assertEqual(result.metadata['status'], 'clarification_required')
+                    self.assertEqual(result.metadata['status'], 'unsupported')
                     self.assertEqual(payload, b'')
                     repository.execute_approved_query.assert_not_awaited()
                     agent.llm.generate.assert_awaited_once()
-                    agent.analytics_agent.llm.generate.assert_awaited_once()
+                    agent.analytics_agent.llm.generate.assert_not_awaited()
                     self.assertNotIn('commerce.order_items', result.answer)
                     self.assertNotIn('join', result.answer.casefold())
 

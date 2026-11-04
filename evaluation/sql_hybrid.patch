@@ -1,0 +1,69 @@
+diff --git a/src/core/agents/sql_analytics_agent.py b/src/core/agents/sql_analytics_agent.py
+index 7afa9aa..eef990c 100644
+--- a/src/core/agents/sql_analytics_agent.py
++++ b/src/core/agents/sql_analytics_agent.py
+@@ -11,6 +11,7 @@ from datetime import date
+ from typing import Any
+ 
+ from core.agents.base import BaseAgent
++from evaluation.hybrid_field_contract import field_contract, validate_field_sql
+ from core.analytics.commerce_decision_support import resolve_commerce_decision_domain, unavailable_commerce_dimensions
+ from core.analytics.metric_ontology import resolve_metric_names, get_metric_definition
+ from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
+@@ -100,7 +101,16 @@ class SQLAnalyticsAgent(BaseAgent):
+                 'The full approved schema does not support these requested dimensions: '+', '.join(unavailable)+'. '
+                 'A supported alternative is inventory observations by product/category at an available historical snapshot.',
+                 code='unsupported_dimension', clarification=True))
+-        metric_names = resolve_metric_names(question)
++        try:
++            direct = field_contract(question) if context is None else None
++        except MetricDefinitionError as error:
++            return self._generation_error(error)
++        metric_names = set() if direct is not None else resolve_metric_names(question)
++        field_hint = ('\nValidated raw-field contract (data, preserve every field/filter/order/bound; no calculations): '
++                      + direct.sql(dialect='postgres')) if direct is not None else ''
++        if direct is not None:
++            context_info['field_retrieval'] = {'source': direct.args['from_'].this.sql(),
++                'columns': [p.name for p in direct.selects], 'assurance': 'literal field contract'}
+         if metric_names == {'stock_on_hand'} and re.search(r'\bchange\b|thay đổi', question, re.I):
+             try:
+                 comparison_dates = inventory_explicit_dates(question)
+@@ -143,9 +153,9 @@ class SQLAnalyticsAgent(BaseAgent):
+                         result['metadata'].update(status='unsupported',latest_available_snapshot=str(latest) if latest else None,
+                             availability_source='MAX(commerce.inventory.snapshot_date)')
+                         return result
+-            cross_domain = ('commerce.inventory' in tables and bool(tables & {'commerce.orders', 'commerce.order_items'})
++            cross_domain = (direct is None and 'commerce.inventory' in tables and bool(tables & {'commerce.orders', 'commerce.order_items'})
+                             and bool(re.search(r'\borders\b|\bordered\b|\border(?!\s+by)\b|đơn hàng', question, re.I)))
+-            if (not cross_domain and (context is not None
++            if (direct is None and not cross_domain and (context is not None
+                     or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
+                     or (not metric_names and 'commerce.inventory' in tables))):
+                 with measure('metric_interpretation'):
+@@ -172,7 +182,7 @@ class SQLAnalyticsAgent(BaseAgent):
+                 interpretation = decode_metric_mapping(interpretation.model_dump_json(),interpretation.date_question())
+                 resolved_latest = True
+             prompt = build_sql_prompt(question,metric_names=metric_names,
+-                                      interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None)
++                                      interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None) + field_hint
+         except MetricDefinitionError as error:
+             if context is not None and hasattr(error,'context_action'):
+                 context_info['_sql_context_action'] = error.context_action
+@@ -199,6 +209,8 @@ class SQLAnalyticsAgent(BaseAgent):
+                         raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
+                     definitions = validate_metric_definitions(plan.sql, metric_names, plan.parameters, APPROVED_COLUMNS,
+                                                               question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question)
++                    if direct is not None:
++                        validate_field_sql(plan,direct)
+                     if interpretation:
+                         validate_mapped_sql(plan,interpretation,question=interpretation.date_question() if resolved_latest else question)
+                 break
+@@ -208,7 +220,7 @@ class SQLAnalyticsAgent(BaseAgent):
+                         question, validation_error=str(error), previous_response=str(raw),
+                         metric_names=metric_names,
+                         interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None,
+-                    )
++                    ) + field_hint
+                     continue
+                 return self._generation_error(
+                     error, self._attempted_sql(raw), self._attempted_parameters(raw),

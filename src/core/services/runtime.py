@@ -81,7 +81,10 @@ def rerank(body: Texts):
         scores = app.state.encoder.predict(
             [(body.query, text) for text in body.texts], batch_size=4,
             show_progress_bar=False, convert_to_numpy=True, activation_fn=torch.nn.Identity())
-    return {"scores": [float(score) for score in scores]}
+    from core.retrieval.reranker import MAX_LENGTH, MODEL_ID, REVISION
+    # The caller's own env does not say which model this service loaded, so report it.
+    return {"scores": [float(score) for score in scores], "model": MODEL_ID, "revision": REVISION,
+            "max_pair_tokens": MAX_LENGTH, "quantize": os.getenv("RERANKER_QUANTIZE", "")}
 
 
 class Parse(BaseModel):

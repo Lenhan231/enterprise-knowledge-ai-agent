@@ -48,10 +48,15 @@ class BGEReranker:
         started = perf_counter()
         if self.model is None and os.getenv("RERANKER_URL"):
             from core.services.client import post
-            scores = post(os.environ["RERANKER_URL"], "/rerank", {
+            response = post(os.environ["RERANKER_URL"], "/rerank", {
                 "query": query, "texts": [chunk.content for chunk in chunks],
-            })["scores"]
+            })
+            scores = response["scores"]
+            # This process's RERANKER_MODEL is not the service's; never label remote scores with it.
+            details.update(reranker_model=response.get("model", "remote-unreported"), reranker_revision=response.get("revision"),
+                           reranker_max_pair_tokens=response.get("max_pair_tokens"), reranker_quantize=response.get("quantize"))
         else:
+            details["reranker_quantize"] = os.getenv("RERANKER_QUANTIZE", "")
             import torch
             with _INFERENCE_LOCK:
                 if self.model is None:

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import re
+import os
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
@@ -11,9 +13,9 @@ from sqlglot import exp, parse
 from sqlglot.errors import ParseError, TokenError
 
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
-from core.analytics.join_validation import validate_join_aggregations
+from core.analytics.join_validation import PRIMARY_KEYS, validate_join_aggregations, column_origin
 from core.analytics.metric_validation import _single_snapshot
-from sqlglot.optimizer.scope import traverse_scope
+from sqlglot.optimizer.scope import Scope, traverse_scope
 from core.prompts.sql import SQL_GENERATION_PROMPT, SQL_REPAIR_PROMPT, INVENTORY_SQL_INSTRUCTIONS
 
 
@@ -82,9 +84,18 @@ APPROVED_DATE_COLUMNS = frozenset({
     ("commerce.web_traffic", "date"),
 })
 
+INVENTORY_SOURCES = frozenset({'commerce.inventory', 'commerce.products'})
+
+
+def inventory_scope_enabled():
+    setting = os.getenv('SQL_INVENTORY_ONLY', 'false').strip().casefold()
+    if setting not in {'true', 'false'}:
+        raise ValueError('SQL_INVENTORY_ONLY must be true or false')
+    return setting == 'true'
+
 APPROVED_FUNCTIONS = frozenset({
-    "ABS", "AND", "AVG", "CAST", "CEIL", "COALESCE", "COUNT", "DATE_PART", "DATE_TRUNC", "EXTRACT", "FLOOR", "GREATEST",
-    "LEAST", "LOWER", "MAX", "MIN", "NULLIF", "OR", "ROUND", "STRING_AGG", "SUM", "TIMESTAMP_TRUNC", "UPPER",
+    "ABS", "AND", "AVG", "CASE", "IF", "CAST", "CEIL", "COALESCE", "COUNT", "DATE_PART", "DATE_TRUNC", "EXTRACT", "FLOOR", "GREATEST",
+    "LEAST", "LOWER", "MAX", "MIN", "NULLIF", "OR", "ROUND", "STRING_AGG", "SUM", "TIMESTAMP_TRUNC", "UPPER", "EXISTS",
 })
 FORBIDDEN_NODES = (exp.Command, exp.Into, exp.Lock, exp.Union, exp.Insert, exp.Update, exp.Delete, exp.Drop, exp.Create)
 
@@ -123,7 +134,7 @@ def _output_columns(select: exp.Select) -> frozenset[str]:
     return frozenset(names)
 
 
-def validate_commerce_sql(sql: str) -> ValidatedSQL:
+def validate_commerce_sql(sql: str, *, allowed_sources=None) -> ValidatedSQL:
     """Validate one bounded SELECT, including its nested SELECTs and CTEs."""
     try:
         statements = parse(sql, read="postgres")
@@ -198,10 +209,49 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
             raise SQLValidationError("JOIN does not match an approved relationship.")
         return (expression,)
 
+    def join_predicates(expression):
+        if isinstance(expression, exp.And):
+            yield from join_predicates(expression.this)
+            yield from join_predicates(expression.expression)
+        else:
+            yield expression
+
+    scopes_by_select = {id(scope.expression): scope for scope in traverse_scope(tree)}
+    for exists in tree.find_all(exp.Exists):
+        scope = scopes_by_select.get(id(exists.this))
+        if not scope or not scope.external_columns:
+            raise SQLValidationError('EXISTS must express a correlated approved-key presence check.')
+        for column in scope.external_columns:
+            equality = column.parent
+            if not isinstance(equality, exp.EQ) or not isinstance(equality.this, exp.Column) or not isinstance(equality.expression, exp.Column):
+                raise SQLValidationError('EXISTS correlations must use approved equality keys.')
+            other = equality.expression if equality.this is column else equality.this
+            parent = scope.parent
+            while parent and column.table not in parent.sources:
+                parent = parent.parent
+            origins = (column_origin(parent, column) if parent else None, column_origin(scope, other))
+            if not all(origins) or frozenset(origins) not in APPROVED_JOINS or equality.find_ancestor(exp.Or):
+                raise SQLValidationError('EXISTS correlation does not match an approved relationship.')
     for join in tree.find_all(exp.Join):
         if (join.kind or "").casefold() == "cross" or not join.args.get("on"):
             raise SQLValidationError("CROSS JOIN and JOIN without ON are not allowed.")
-        join_equalities(join.args["on"])
+        keys = 0
+        predicates = list(join_predicates(join.args['on']))
+        scope = scopes_by_select[id(join.find_ancestor(exp.Select))]
+        if join.this.alias_or_name.casefold() not in {c.table.casefold() for p in predicates for c in p.find_all(exp.Column)}:
+            raise SQLValidationError('JOIN condition must connect the joined relation.')
+        for predicate in predicates:
+            # Snapshot filters belong in ON for an outer join to preserve missing observations.
+            if isinstance(predicate, (exp.EQ, exp.GTE, exp.GT, exp.LTE, exp.LT)):
+                left, right = predicate.this, predicate.expression
+                column, value = (left, right) if isinstance(left, exp.Column) else (right, left)
+                if (isinstance(column, exp.Column)
+                        and (relations.get(column.table.casefold(), (None,))[0], column.name.casefold()) in APPROVED_DATE_COLUMNS
+                        and isinstance(value, (exp.Parameter, exp.Literal))):
+                    continue
+            keys += len(join_equalities(predicate))
+        if not keys:
+            raise SQLValidationError('JOIN requires an approved relationship in addition to any date filters.')
 
     validate_join_aggregations(tree, SQLValidationError)
 
@@ -230,6 +280,8 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
     if limit is None or not str(value).isdigit() or not 1 <= int(value) <= MAX_RESULT_ROWS:
         raise SQLValidationError(f"The final SELECT needs LIMIT 1..{MAX_RESULT_ROWS}.")
 
+    if allowed_sources is not None and not set(sources) <= set(allowed_sources):
+        raise SQLValidationError('SQL references sources outside the configured inventory scope.')
     return ValidatedSQL(sql=sql, sources=tuple(dict.fromkeys(sources)))
 
 
@@ -239,6 +291,39 @@ def parse_json_response(raw: str):
         if raw.startswith('```json') and raw.endswith('```'):
             raw = raw[7:-3].strip()
     return json.loads(raw)
+
+
+def _normalize_unambiguous_sql(sql):
+    """Normalize syntax only; ambiguous names and unbounded detail still fail validation."""
+    try:
+        statements = parse(sql, read='postgres')
+    except (ParseError,TokenError):
+        return sql
+    if len(statements)!=1 or not isinstance(statements[0],exp.Select):
+        return sql
+    tree, changed = statements[0], False
+    for scope in traverse_scope(tree):
+        columns = {}
+        for alias, (_, source) in scope.selected_sources.items():
+            if isinstance(source, exp.Table):
+                columns[alias] = APPROVED_COLUMNS.get(_source_name(source),frozenset())
+            elif isinstance(source, Scope):
+                columns[alias] = _output_columns(source.expression)
+        for column in scope.columns:
+            if column.table or column.find_ancestor(exp.Select) is not scope.expression:
+                continue
+            candidates = [alias for alias,names in columns.items() if column.name.casefold() in names]
+            if len(candidates)==1 and re.fullmatch(r'[A-Za-z_]\w*',candidates[0]):
+                column.set('table',exp.to_identifier(candidates[0]))
+                changed=True
+    aggregates = [a for a in tree.find_all(exp.AggFunc) if a.find_ancestor(exp.Select) is tree]
+    projected_columns = [c for p in tree.selects for c in p.find_all(exp.Column) if c.find_ancestor(exp.Select) is tree]
+    if (not tree.args.get('limit') and not tree.args.get('group') and aggregates
+            and not any(p.find(exp.Window) for p in tree.selects)
+            and all(c.find_ancestor(exp.AggFunc) in aggregates for c in projected_columns)):
+        tree.limit(MAX_RESULT_ROWS,copy=False)
+        changed=True
+    return tree.sql(dialect='postgres') if changed else sql
 
 
 def decode_query_plan(raw: str) -> QueryPlan:
@@ -260,6 +345,7 @@ def decode_query_plan(raw: str) -> QueryPlan:
         raise SQLValidationError("The query plan must include SQL, a parameter list, and an explanation.")
     if len(parameters) > 32 or any(not isinstance(value, (str, int, float, bool, type(None))) for value in parameters):
         raise SQLValidationError("Query parameters must be at most 32 scalar JSON values.")
+    sql = _normalize_unambiguous_sql(sql)
     validated = validate_commerce_sql(sql)
     parameter_indexes = sorted({
         int(node.this.this)
@@ -276,7 +362,18 @@ def decode_query_plan(raw: str) -> QueryPlan:
                 parameters[index - 1] = date.fromisoformat(value)
             except ValueError as error:
                 raise SQLValidationError(f"Date parameter ${index} must use YYYY-MM-DD format.") from error
-    return QueryPlan(sql=validated.sql, parameters=tuple(parameters), explanation=explanation.strip())
+    tree = parse(sql, read='postgres')[0]
+    changed = False
+    for parameter in list(tree.find_all(exp.Parameter)):
+        index = int(parameter.this.this)
+        if index in date_indexes and isinstance(parameters[index-1], date) and parameter.find_ancestor(
+                exp.TimestampTrunc, exp.DateTrunc, exp.Extract):
+            parameter.replace(exp.Cast(this=parameter.copy(), to=exp.DataType.build('DATE')))
+            changed = True
+    if changed:
+        sql = tree.sql(dialect='postgres')
+        validate_commerce_sql(sql)
+    return QueryPlan(sql=sql, parameters=tuple(parameters), explanation=explanation.strip())
 
 
 def _date_parameter_indexes(sql: str) -> set[int]:
@@ -286,6 +383,13 @@ def _date_parameter_indexes(sql: str) -> set[int]:
         for table in tree.find_all(exp.Table) if table.db
     }
     indexes = set()
+    for cast in tree.find_all(exp.Cast):
+        if cast.to.this == exp.DataType.Type.DATE and isinstance(cast.this, exp.Parameter):
+            indexes.add(int(cast.this.this.this))
+    for predicate in tree.find_all(exp.In):
+        if isinstance(predicate.this, exp.Column) and (
+                table_sources.get(predicate.this.table.casefold()), predicate.this.name.casefold()) in APPROVED_DATE_COLUMNS:
+            indexes.update(int(p.this.this) for value in predicate.expressions for p in value.find_all(exp.Parameter))
     comparisons = (exp.EQ, exp.NEQ, exp.GT, exp.GTE, exp.LT, exp.LTE)
     for comparison in tree.find_all(comparisons):
         for column_side, value_side in ((comparison.this, comparison.expression),
@@ -301,9 +405,50 @@ def _date_parameter_indexes(sql: str) -> set[int]:
     return indexes
 
 
+def relevant_schema_tables(question, definitions):
+    """Select prompt context only; authorization always uses the full backend allowlist."""
+    text = question.casefold().replace('_', ' ')
+    tables = {table for definition in definitions.values()
+              for table in re.findall(r'commerce\.\w+', definition['source'])}
+    cues = {
+        'inventory': r'inventory|stock|snapshot|tÃ¡Â»â€œn kho',
+        'products': r'product|category|catalog|sku|sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m|danh mÃ¡Â»Â¥c',
+        'returns': r'return|refund|trÃ¡ÂºÂ£ hÃƒÂ ng|hoÃƒÂ n hÃƒÂ ng',
+        'orders': r'order|ordered|Ã„â€˜Ã†Â¡n hÃƒÂ ng',
+        'order_items': r'quantity|quantities|ordered units|line value|order items|ordered quantities',
+        'customers': r'customer|khÃƒÂ¡ch hÃƒÂ ng',
+        'geography': r'region|district|city|khu vÃ¡Â»Â±c|thÃƒÂ nh phÃ¡Â»â€˜',
+        'payments': r'payment|installment|thanh toÃƒÂ¡n',
+        'promotions': r'promotion|promo|khuyÃ¡ÂºÂ¿n mÃƒÂ£i',
+        'reviews': r'review|rating|Ã„â€˜ÃƒÂ¡nh giÃƒÂ¡',
+        'shipments': r'shipment|shipping|delivery|giao hÃƒÂ ng',
+        'web_traffic': r'session|traffic|bounce|truy cÃ¡ÂºÂ­p',
+        'sales': r'revenue|cogs|gross profit|doanh thu|lÃ¡Â»Â£i nhuÃ¡ÂºÂ­n',
+    }
+    tables.update('commerce.'+name for name, pattern in cues.items() if re.search(pattern, text))
+    # Supply bridge tables for approved paths, without inventing direct fact-to-fact joins.
+    if tables & {'commerce.inventory', 'commerce.returns', 'commerce.reviews', 'commerce.order_items'}:
+        tables.add('commerce.products')
+    if 'commerce.orders' in tables and 'commerce.products' in tables:
+        tables.add('commerce.order_items')
+    if 'commerce.order_items' in tables:
+        tables.add('commerce.orders')
+    return tables or set(APPROVED_COLUMNS)
+
+
+def approved_join_path(tables):
+    reached = {min(tables)} if tables else set()
+    while True:
+        expanded = reached | {table for edge in APPROVED_JOINS for table, _ in edge
+                              if any(source in reached for source, _ in edge) and table in tables}
+        if expanded == reached:
+            return bool(tables) and reached == set(tables)
+        reached = expanded
+
+
 def build_sql_prompt(
     question: str, *, validation_error: str | None = None, previous_response: str | None = None,
-    metric_names: set[str] | None = None, interpretation: dict | None = None,
+    metric_names: set[str] | None = None, interpretation: dict | None = None, allowed_sources=None,
 ) -> str:
     metrics = sorted(resolve_metric_names(question) if metric_names is None else metric_names)
     definitions = {name: get_metric_definition(name) for name in metrics}
@@ -312,18 +457,21 @@ def build_sql_prompt(
         stored_fields = {name: d.get('scalar_formula') or d['formula'].split(' within ')[0] for name,d in definitions.items()}
         definitions = {name: {**d,'formula':stored_fields[name],'aggregation':'value'} for name,d in definitions.items()}
     inventory = any(definition.get('domain') == 'inventory_management' for definition in definitions.values())
-    tables = {'commerce.inventory', 'commerce.products'} if inventory else set(APPROVED_COLUMNS)
+    tables = relevant_schema_tables(question, definitions)
+    if allowed_sources is not None:
+        tables = (tables & set(allowed_sources)) or set(allowed_sources)
     prompt_columns = {table: set(columns) for table, columns in APPROVED_COLUMNS.items() if table in tables}
     if inventory:
         prompt_columns['commerce.inventory'] -= {'year', 'month', 'category', 'segment', 'product_name'}
         prompt_columns['commerce.products'] -= {'price', 'cogs'}
     schema = "\n".join(f"{table}: {', '.join(sorted(columns))}" for table, columns in prompt_columns.items())
-    joins = "\n".join(f"{left[0]}.{left[1]} = {right[0]}.{right[1]}" for join in APPROVED_JOINS
+    joins = "\n".join(f"{left[0]}.{left[1]} = {right[0]}.{right[1]}" for join in sorted(APPROVED_JOINS, key=lambda edge: sorted(edge))
                        for left, right in [sorted(join)] if left[0] in tables and right[0] in tables)
     functions = ", ".join(sorted(APPROVED_FUNCTIONS - {"AND"}))
     return (
         SQL_GENERATION_PROMPT.format(
-            inventory_instructions=INVENTORY_SQL_INSTRUCTIONS if inventory else "",
+            inventory_instructions=INVENTORY_SQL_INSTRUCTIONS if inventory and not (
+                'commerce.inventory' in tables and tables & {'commerce.orders', 'commerce.order_items'}) else "",
             functions=functions,
             max_rows=MAX_RESULT_ROWS,
             metrics=json.dumps({'metrics': metrics}),
@@ -332,6 +480,15 @@ def build_sql_prompt(
             joins=joins,
             question=question,
         )
+        + '\nPrimary keys (one row per key; inventory is product_snapshot grain): '+json.dumps(
+            {table: sorted(PRIMARY_KEYS[table.split('.')[1]]) for table in sorted(tables)})
+        + '\nExplicit calculations with clear operands are supported without creating a canonical KPI. '
+          'Aliases must be unique across the entire query, including base tables inside CTEs and outer CTE aliases. '
+          'For duplicate rows report excess rows SUM(group_count-1), COALESCE to zero; distinguish duplicate groups '
+          'and all participating rows when those are explicitly requested. '
+          'Use typed DATE range parameters for transaction periods; avoid EXTRACT on an untyped parameter.'
+          ' Product names are not unique: product-level results must include product_id, and product-level '
+          'aggregates must group by product_id as well as any displayed name.'
         + ('\nStored projection fields: '+json.dumps(stored_fields)+
            '. Select these directly from the inventory alias. Do not aggregate or GROUP BY in product representation. '
            'Product identity may use inventory.product_id or the joined products.product_id.\n' if stored_fields else '')

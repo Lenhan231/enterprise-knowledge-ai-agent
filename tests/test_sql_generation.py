@@ -307,11 +307,13 @@ class RepositoryBoundaryTest(unittest.IsolatedAsyncioTestCase):
             def transaction(self, *, readonly=False):
                 return Transaction(self, readonly)
 
-            async def execute(self, sql):
+            async def execute(self, sql, **options):
                 self.timeout_sql = sql
+                self.execute_options = options
 
-            async def fetch(self, sql, *parameters):
+            async def fetch(self, sql, *parameters, **options):
                 self.fetch_call = (sql, parameters)
+                self.fetch_options = options
                 return [{"product_id": 42}]
 
         class Acquire:
@@ -329,8 +331,9 @@ class RepositoryBoundaryTest(unittest.IsolatedAsyncioTestCase):
                 self.connection = Connection()
                 self.acquire_count = 0
 
-            def acquire(self):
+            def acquire(self, **options):
                 self.acquire_count += 1
+                self.acquire_options = options
                 return Acquire(self.connection)
 
         pool = Pool()
@@ -345,6 +348,17 @@ class RepositoryBoundaryTest(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(SQLValidationError):
             await repository.execute_approved_query("DELETE FROM commerce.products")
         self.assertEqual(pool.acquire_count, 1)
+        self.assertEqual(pool.acquire_options, {})
+        from core.agents.runtime import deadline
+        import time
+        token = deadline.set(time.monotonic()+2)
+        try:
+            await repository.execute_approved_query(sql, 42)
+        finally:
+            deadline.reset(token)
+        for options in (pool.acquire_options, pool.connection.execute_options, pool.connection.fetch_options):
+            self.assertGreater(options['timeout'], 0)
+            self.assertLessEqual(options['timeout'], 2)
 
 
 if __name__ == "__main__":

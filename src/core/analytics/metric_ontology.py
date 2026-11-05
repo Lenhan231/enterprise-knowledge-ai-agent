@@ -158,7 +158,7 @@ METRIC_ONTOLOGY = {
         "dimensions": ("order_date", "region"),
     },
     "return_rate": {
-        "aliases": ("return rate", "refund rate", "tỷ lệ trả hàng", "tỷ lệ hoàn hàng"),
+        "aliases": ("return rate", "refund rate", "tỷ lệ trả hàng", "tỷ lệ hoàn hàng", "tỉ lệ trả hàng", "tỉ lệ hoàn hàng"),
         "source": "commerce.returns + commerce.orders (+ commerce.geography khi lọc theo region)",
         "formula": "COUNT(DISTINCT returns.order_id)::numeric / NULLIF(COUNT(DISTINCT orders.order_id), 0)",
         "grain": "order",
@@ -234,9 +234,10 @@ def resolve_metric_names(text: str) -> set[str]:
     normalized = _normalize(text)
     matches: list[tuple[int, int, str]] = []
     for metric_name, definition in METRIC_ONTOLOGY.items():
-        for alias in definition["aliases"]:
+        for alias in (*definition["aliases"], metric_name):
             phrase = _normalize(alias)
-            pattern = re.compile(rf"(?<!\w){re.escape(phrase)}(?!\w)")
+            spelling = re.escape(phrase).replace(r'\ ', '[ _]')
+            pattern = re.compile(rf"(?<!\w){spelling}(?!\w)")
             matches.extend((match.start(), match.end(), metric_name) for match in pattern.finditer(normalized))
 
     selected: list[tuple[int, int, str]] = []

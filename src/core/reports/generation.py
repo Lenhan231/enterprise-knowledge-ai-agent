@@ -147,7 +147,10 @@ async def generate_planned_report(agent, request, uploaded, *, source_mode, outp
     started = time.monotonic()
     format = output_format or (uploaded.format if uploaded else 'markdown')
     media_type = 'text/markdown; charset=utf-8' if format == 'markdown' else 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    prompt = planning_prompt(request.question, uploaded)
+    analytics = agent.analytics_agent
+    sql_runtime = getattr(analytics, 'sql_agent', analytics)
+    inventory_only = getattr(sql_runtime, 'inventory_only', False) is True
+    prompt = planning_prompt(request.question, uploaded, inventory_only=inventory_only)
     for attempt in range(2):
         try:
             raw = await agent._generate(prompt)
@@ -173,7 +176,7 @@ async def generate_planned_report(agent, request, uploaded, *, source_mode, outp
                 code, message = 'provider_unavailable', 'Report planning provider is temporarily unavailable. Please retry.'
             return outcome('failed', message, failure_type='provider_unavailable', error_code=code), b'', media_type
         try:
-            plan = validate_plan(ReportPlan.model_validate(agent._decode_draft(raw)), request.question)
+            plan = validate_plan(ReportPlan.model_validate(agent._decode_draft(raw)), request.question, inventory_only=inventory_only)
             break
         except (ValueError, TypeError, KeyError) as error:
             from core.analytics.metric_validation import MetricDefinitionError

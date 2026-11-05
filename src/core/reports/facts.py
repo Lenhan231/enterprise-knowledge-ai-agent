@@ -102,6 +102,12 @@ def facts_from_analytics(task, result, evidence_id, start=1):
                                          'parameters': result.data.get('parameters', [])}, default=str))
     # The shared SQL agent validates metric definitions and resolved time scope before execution.
     definitions = result.metadata.get('metrics', {})
+    comparison = result.metadata.get('comparison')
+    if comparison:
+        source = definitions.get('stock_on_hand', {})
+        definitions = {**definitions, **{name: {'unit':'units', 'approval_status':source.get('approval_status'),
+            'formula':'stock_after - stock_before' if name == 'stock_delta' else 'stock_on_hand'}
+            for name in ('stock_before','stock_after','stock_delta')}}
     rows = result.data.get('rows', [])
     if not isinstance(rows, list) or len(rows) > 200:
         raise ValueError('Shared SQL result exceeds the report row bound')
@@ -111,6 +117,7 @@ def facts_from_analytics(task, result, evidence_id, start=1):
     facts = []
     scope = json.loads(json.dumps({'sql': query.sql, 'parameters': query.parameters}, default=str))
     for row_index, row in enumerate(rows):
+        row_facts = []
         if not isinstance(row, dict):
             raise ValueError('SQL rows must be field dictionaries')
         if set(row) != fields:
@@ -124,10 +131,18 @@ def facts_from_analytics(task, result, evidence_id, start=1):
                 number = Decimal(str(value))
                 if not number.is_finite() or abs(number.adjusted()) > 1000:
                     raise ValueError('Invalid quantitative observation')
+            snapshot = (comparison['before'] if name == 'stock_before' else comparison['after'] if name == 'stock_after'
+                        else comparison['before']+' through '+comparison['after'] if name == 'stock_delta' else None) if comparison else None
             facts.append(ReportFact(id=f'F{start+len(facts)}', evidence_id=evidence_id, task_id=task.id,
                 metric=name, value=value if value is None or isinstance(value, bool) else str(value),
-                unit=definition.get('unit', 'source_field'), dimensions=dimensions, filters=[scope],
+                unit=definition.get('unit', 'source_field'), dimensions=dimensions, filters=[scope], snapshot_date=snapshot,
                 formula=definition.get('formula'), approval_status=definition.get('approval_status'), source_row=row_index))
+            row_facts.append(facts[-1])
+        if comparison:
+            operands = {fact.metric:fact.id for fact in row_facts}
+            for fact in row_facts:
+                if fact.metric == 'stock_delta':
+                    fact.operands = [operands['stock_before'], operands['stock_after']]
     return facts
 
 

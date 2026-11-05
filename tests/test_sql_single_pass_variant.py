@@ -131,8 +131,8 @@ class AgentTest(unittest.IsolatedAsyncioTestCase):
         allowed=result.data.get('query_status')=='executed'
         OBSERVATIONS.append(dict(question='ordinary inventory year/month fields',expected_allowed=True,allowed=allowed,
             llm_calls=provider.generate.call_count,repository_calls=repo.execute_approved_query.await_count))
-        self.assertEqual(allowed,SINGLE or bool(os.environ.get('SQL_DETERMINISTIC_ROOT')),result.answer)
-        if os.environ.get('SQL_DETERMINISTIC_ROOT'):
+        self.assertTrue(allowed,result.answer)
+        if not SINGLE:
             provider.generate.assert_not_called()
 
     async def test_ordinary_product_query(self):

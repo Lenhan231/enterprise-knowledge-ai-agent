@@ -298,18 +298,19 @@ class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.metadata['execution_status'],'executed_empty',result.answer)
         self.assertEqual(provider.generate.call_count,2)
 
-    async def test_clear_unimplemented_change_is_not_a_user_clarification(self):
+    async def test_clear_two_snapshot_change_executes_verified_contract(self):
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repository = Mock(), AsyncMock()
+        provider.generate.return_value = json.dumps(dict(metrics=['stock_on_hand'],dimensions=['product_id'],representation='product',time=dict(mode='comparison',start='2022-11-30',end='2022-12-31')))
+        repository.execute_approved_query.return_value = []
         result = await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
             question='How did stock_on_hand change between November 30 and December 31, 2022, for products present on both dates?',
             identity=VerifiedIdentity(subject='analyst',permissions={'analytics:read'})))
         self.assertFalse(result.metadata.get('clarification_required',False))
-        self.assertEqual(result.metadata.get('metric_error_code'),'comparison_contract_unavailable')
-        self.assertIn('planner limitation',result.answer)
-        provider.generate.assert_not_called()
-        repository.execute_approved_query.assert_not_awaited()
+        self.assertEqual(result.data.get('query_status'),'executed',result.answer)
+        provider.generate.assert_called_once()
+        repository.execute_approved_query.assert_awaited_once()
 
     async def test_comparison_reaches_shared_sql_path_and_readonly_repository(self):
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent, AnalyticsPermissionDenied

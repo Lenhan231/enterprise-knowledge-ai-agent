@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import os
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
@@ -83,8 +84,17 @@ APPROVED_DATE_COLUMNS = frozenset({
     ("commerce.web_traffic", "date"),
 })
 
+INVENTORY_SOURCES = frozenset({'commerce.inventory', 'commerce.products'})
+
+
+def inventory_scope_enabled():
+    setting = os.getenv('SQL_INVENTORY_ONLY', 'false').strip().casefold()
+    if setting not in {'true', 'false'}:
+        raise ValueError('SQL_INVENTORY_ONLY must be true or false')
+    return setting == 'true'
+
 APPROVED_FUNCTIONS = frozenset({
-    "ABS", "AND", "AVG", "CAST", "CEIL", "COALESCE", "COUNT", "DATE_PART", "DATE_TRUNC", "EXTRACT", "FLOOR", "GREATEST",
+    "ABS", "AND", "AVG", "CASE", "IF", "CAST", "CEIL", "COALESCE", "COUNT", "DATE_PART", "DATE_TRUNC", "EXTRACT", "FLOOR", "GREATEST",
     "LEAST", "LOWER", "MAX", "MIN", "NULLIF", "OR", "ROUND", "STRING_AGG", "SUM", "TIMESTAMP_TRUNC", "UPPER", "EXISTS",
 })
 FORBIDDEN_NODES = (exp.Command, exp.Into, exp.Lock, exp.Union, exp.Insert, exp.Update, exp.Delete, exp.Drop, exp.Create)
@@ -124,7 +134,7 @@ def _output_columns(select: exp.Select) -> frozenset[str]:
     return frozenset(names)
 
 
-def validate_commerce_sql(sql: str) -> ValidatedSQL:
+def validate_commerce_sql(sql: str, *, allowed_sources=None) -> ValidatedSQL:
     """Validate one bounded SELECT, including its nested SELECTs and CTEs."""
     try:
         statements = parse(sql, read="postgres")
@@ -276,6 +286,8 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
     if limit is None or not str(value).isdigit() or not 1 <= int(value) <= MAX_RESULT_ROWS:
         raise SQLValidationError(f"The final SELECT needs LIMIT 1..{MAX_RESULT_ROWS}.")
 
+    if allowed_sources is not None and not set(sources) <= set(allowed_sources):
+        raise SQLValidationError('SQL references sources outside the configured inventory scope.')
     return ValidatedSQL(sql=sql, sources=tuple(dict.fromkeys(sources)))
 
 
@@ -377,6 +389,13 @@ def _date_parameter_indexes(sql: str) -> set[int]:
         for table in tree.find_all(exp.Table) if table.db
     }
     indexes = set()
+    for cast in tree.find_all(exp.Cast):
+        if cast.to.this == exp.DataType.Type.DATE and isinstance(cast.this, exp.Parameter):
+            indexes.add(int(cast.this.this.this))
+    for predicate in tree.find_all(exp.In):
+        if isinstance(predicate.this, exp.Column) and (
+                table_sources.get(predicate.this.table.casefold()), predicate.this.name.casefold()) in APPROVED_DATE_COLUMNS:
+            indexes.update(int(p.this.this) for value in predicate.expressions for p in value.find_all(exp.Parameter))
     comparisons = (exp.EQ, exp.NEQ, exp.GT, exp.GTE, exp.LT, exp.LTE)
     for comparison in tree.find_all(comparisons):
         for column_side, value_side in ((comparison.this, comparison.expression),
@@ -435,7 +454,7 @@ def approved_join_path(tables):
 
 def build_sql_prompt(
     question: str, *, validation_error: str | None = None, previous_response: str | None = None,
-    metric_names: set[str] | None = None, interpretation: dict | None = None,
+    metric_names: set[str] | None = None, interpretation: dict | None = None, allowed_sources=None,
 ) -> str:
     metrics = sorted(resolve_metric_names(question) if metric_names is None else metric_names)
     definitions = {name: get_metric_definition(name) for name in metrics}
@@ -445,6 +464,8 @@ def build_sql_prompt(
         definitions = {name: {**d,'formula':stored_fields[name],'aggregation':'value'} for name,d in definitions.items()}
     inventory = any(definition.get('domain') == 'inventory_management' for definition in definitions.values())
     tables = relevant_schema_tables(question, definitions)
+    if allowed_sources is not None:
+        tables = (tables & set(allowed_sources)) or set(allowed_sources)
     prompt_columns = {table: set(columns) for table, columns in APPROVED_COLUMNS.items() if table in tables}
     if inventory:
         prompt_columns['commerce.inventory'] -= {'year', 'month', 'category', 'segment', 'product_name'}

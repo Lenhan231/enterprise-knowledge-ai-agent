@@ -53,7 +53,8 @@ def freeze():
 
 
 async def run(args):
-    work=ROOT if args.mode=='production' else (args.worktree.resolve() if args.worktree else ROOT/'artifacts/local/sql-hybrid-deterministic')
+    work=(args.production_root.resolve() if args.production_root else ROOT) if args.mode=='production' else (args.worktree.resolve() if args.worktree else ROOT/'artifacts/local/sql-hybrid-deterministic')
+    fixtures=args.fixtures.resolve() if args.fixtures else OUT/'fixtures'
     output=args.output.resolve() if args.output else OUT/args.mode
     os.chdir(work);sys.path[:0]=[str(work),str(work/'src')]
     from dotenv import load_dotenv
@@ -84,13 +85,13 @@ async def run(args):
         and any(c.get('error') in {'RateLimitError','APIStatusError','APIConnectionError','APITimeoutError'}
                 for c in row.get('llm_calls',[]))))
     def prepare(**kwargs):
-        spec=json.loads((OUT/'fixtures/manifest.json').read_text(encoding='utf-8'))
+        spec=json.loads((fixtures/'manifest.json').read_text(encoding='utf-8'))
         for name,digest in spec['hashes'].items():
-            assert hashlib.sha256((OUT/'fixtures'/name).read_bytes()).hexdigest()==digest
+            assert hashlib.sha256((fixtures/name).read_bytes()).hexdigest()==digest
         output.mkdir(parents=True,exist_ok=True)
         (output/'sql_analytics').mkdir(exist_ok=True);(output/'report').mkdir(exist_ok=True)
         for name in ['questions.jsonl','references.json']:
-            shutil.copyfile(OUT/'fixtures'/name,output/'sql_analytics'/name)
+            shutil.copyfile(fixtures/name,output/'sql_analytics'/name)
             shutil.copyfile(FROZEN/'report'/name,output/'report'/name)
         sources={str(p.relative_to(work)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((work/'src').rglob('*.py'))}
         sources['evaluation/hybrid_field_contract.py']=hashlib.sha256((work/'evaluation/hybrid_field_contract.py').read_bytes()).hexdigest()
@@ -119,5 +120,7 @@ if __name__=='__main__':
     parser.add_argument('--ids',nargs='+')
     parser.add_argument('--output',type=Path)
     parser.add_argument('--worktree',type=Path,help='Isolated candidate checkout; production always uses the shared root')
+    parser.add_argument('--production-root',type=Path,help='Baseline checkout for paired integration evaluation')
+    parser.add_argument('--fixtures',type=Path,help='Pre-frozen independent questions/references')
     args=parser.parse_args()
     freeze() if args.stage=='freeze' else asyncio.run(run(args))

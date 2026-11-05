@@ -247,11 +247,12 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
                for name, definition in METRIC_ONTOLOGY.items()
                if definition.get('domain') == 'inventory_management' and definition.get('aggregation') in {'sum','value'}
                and definition.get('formula')}
-    mapping.metrics = [aliases.get(name, name) for name in mapping.metrics]
+    mapping.metrics = [name if name in METRIC_ONTOLOGY else aliases.get(name, name) for name in mapping.metrics]
     for item in mapping.filters:
-        item.field = aliases.get(item.field, item.field)
+        item.field = item.field if item.field in METRIC_ONTOLOGY else aliases.get(item.field, item.field)
     if mapping.ranking:
-        mapping.ranking.metric = aliases.get(mapping.ranking.metric, mapping.ranking.metric)
+        name = mapping.ranking.metric
+        mapping.ranking.metric = name if name in METRIC_ONTOLOGY else aliases.get(name, name)
     if mapping.clarification:
         _error(mapping.clarification,'metric_ambiguous')
     if mapping.domain == 'other':

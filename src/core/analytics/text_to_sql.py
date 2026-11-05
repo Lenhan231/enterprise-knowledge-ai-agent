@@ -332,6 +332,13 @@ def _date_parameter_indexes(sql: str) -> set[int]:
         for table in tree.find_all(exp.Table) if table.db
     }
     indexes = set()
+    for cast in tree.find_all(exp.Cast):
+        if cast.to.this == exp.DataType.Type.DATE and isinstance(cast.this, exp.Parameter):
+            indexes.add(int(cast.this.this.this))
+    for predicate in tree.find_all(exp.In):
+        if isinstance(predicate.this, exp.Column) and (
+                table_sources.get(predicate.this.table.casefold()), predicate.this.name.casefold()) in APPROVED_DATE_COLUMNS:
+            indexes.update(int(p.this.this) for value in predicate.expressions for p in value.find_all(exp.Parameter))
     comparisons = (exp.EQ, exp.NEQ, exp.GT, exp.GTE, exp.LT, exp.LTE)
     for comparison in tree.find_all(comparisons):
         for column_side, value_side in ((comparison.this, comparison.expression),

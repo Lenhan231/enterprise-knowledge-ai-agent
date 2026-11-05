@@ -338,7 +338,7 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
         _error('This metric does not support the requested grouping.','unsupported_dimension')
     if (mapping.representation == 'aggregate' and temporal.mode == 'range'
             and re.search(r'\btotal\b|\btổng\b', question, re.I)
-            and not re.search(r'monthly|per snapshot|by snapshot|hàng tháng|từng snapshot',question,re.I)):
+            and not re.search(r'monthly|(?:each|per|by|separate) (?:separate )?(?:exact )?snapshot|hàng tháng|từng snapshot|từng kỳ',question,re.I)):
         _error('The canonical inventory definitions permit one snapshot or separate snapshot groups, '
                'not a combined total across dates. Choose a snapshot or request monthly observations.', 'incompatible_grain')
     if re.search(r'non[ -]?null|not null|không (?:rỗng|null)', question, re.I) and len(mapping.metrics) == 1:
@@ -366,6 +366,13 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
         if any(type(value) not in types for value in values) or (types in {(str,),(bool,)} and item.operator not in {'eq','in'}):
             _error('The filter value or comparison is incompatible with '+item.field+'.','interpretation_invalid')
     _validate_explicit_slots(mapping, question)
+    if (mapping.representation == 'aggregate' and temporal.mode in {'snapshot','latest'}
+            and all(METRIC_ONTOLOGY[name]['aggregation'] == 'count_distinct' for name in mapping.metrics)
+            and not re.search(r'\b(?:by|per|each|include|including)\b|theo|mỗi|từng|kèm',
+                              re.sub(r"'(?:[^']|'')*'", '', question), re.I)):
+        constants = {'snapshot_date', *(f.field for f in mapping.filters if f.operator == 'eq')}
+        if set(mapping.dimensions) <= constants:
+            mapping.dimensions = []
     ascending = bool(re.search(r'lowest|fewest|smallest|\bbottom\b|thấp nhất|ít nhất',question,re.I))
     descending = bool(re.search(r'highest|greatest|largest|\btop\b|\bmost\b(?!\s+recent)|cao nhất|nhiều nhất',question,re.I))
     if ascending != descending and len(mapping.metrics) == 1:

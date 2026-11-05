@@ -75,6 +75,26 @@ class InventoryIntegrationTest(unittest.IsolatedAsyncioTestCase):
         sql, _ = compile_inventory_query(mapping)
         self.assertIn('SUM(commerce.inventory.units_sold)', sql)
 
+    def test_date_cast_and_in_parameters_use_native_dates_without_retyping_text(self):
+        from datetime import date
+        plan = decode_query_plan(json.dumps(dict(sql='SELECT CAST($1 AS DATE) AS requested_date, i.product_id '
+            'FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id '
+            'WHERE i.snapshot_date IN ($2, $3) AND p.color=$4 LIMIT 200',
+            parameters=['2022-12-31','2022-11-30','2022-12-31','2022-12-31'])))
+        self.assertEqual(plan.parameters, (date(2022,12,31),date(2022,11,30),date(2022,12,31),'2022-12-31'))
+
+    def test_scalar_count_does_not_group_by_an_unrequested_constant_filter(self):
+        payload = dict(metrics=['observed_product_count'], dimensions=['category'],
+                       filters=[dict(field='category',operator='eq',value='absent')],
+                       time=dict(mode='snapshot',start='2022-12-31'))
+        mapping = decode_metric_mapping(json.dumps(payload), "Count observed products at snapshot 2022-12-31 where category='absent'.")
+        self.assertEqual(mapping.dimensions, [])
+        sql, params = compile_inventory_query(mapping)
+        self.assertNotIn('GROUP BY',sql)
+        self.assertTrue(hasattr(params[0],'isoformat'))
+        grouped = decode_metric_mapping(json.dumps(payload), "Count observed products by category at snapshot 2022-12-31 where category='absent'.")
+        self.assertEqual(grouped.dimensions, ['category'])
+
     async def test_comparison_runs_through_agent_and_keeps_metadata(self):
         repo, provider = AsyncMock(), Mock()
         provider.generate.return_value = self.comparison().model_dump_json()
@@ -102,7 +122,7 @@ class InventoryIntegrationTest(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MetricDefinitionError):
             decode_metric_mapping(json.dumps(payload), 'What is the total units_received during 2022?')
         payload['dimensions'].append('snapshot_date')
-        mapping = decode_metric_mapping(json.dumps(payload), 'Show units_received by category for each exact snapshot in 2022.')
+        mapping = decode_metric_mapping(json.dumps(payload), 'Show total units_received by category for each separate exact snapshot in 2022.')
         sql, _ = compile_inventory_query(mapping)
         self.assertIn('GROUP BY commerce.inventory.snapshot_date', sql)
 

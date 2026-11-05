@@ -1,0 +1,39 @@
+{
+  "base_revision": "e297839",
+  "measured_candidate": "3564c0638d0c9654240d222638e02b1ea8b057c5",
+  "integration_runtime_revision": "8a58e06",
+  "replay": {
+    "cases": 60,
+    "identical_prompts": 60,
+    "identical_sql_parameters_rows_and_status": 60,
+    "fresh_ragas_rescoring": false,
+    "fresh_provider_generations": false,
+    "timings": "DB/replay only; not comparable with provider latency"
+  },
+  "focused": {
+    "run": 230,
+    "passed": 227,
+    "skipped": 3,
+    "failures": 0,
+    "errors": 0
+  },
+  "full_baseline": {
+    "run": 747,
+    "failures": 11,
+    "errors": 51,
+    "skipped": 39
+  },
+  "full_integration": {
+    "run": 769,
+    "failures": 11,
+    "errors": 51,
+    "skipped": 39
+  },
+  "added_failures_or_errors": 0,
+  "settings": "Frozen inputs, catalog formulas, original judge and scoring code unchanged. Replay uses the same Pydantic JSON serialization as the frozen generation harness.",
+  "report_benchmark": "Not run. HTTP smoke explicitly blocked Report generation.",
+  "frozen_hashes": {
+    "questions.jsonl": "3d1b140392072695b87d2d47fa3139b47098b0b5a99f5ba207ea994e376f74f2",
+    "references.json": "6eb1cc0c285dd565aedb468ef43de9d60eb27275ebdd493354f33d36db81a3d1"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "commit": "8cb61637393ebe5f7a9b4a2a11a4ed31b25afc76",
+  "runs": [
+    {
+      "id": 41984392265,
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/Lenhan231/enterprise-knowledge-ai-agent/actions/runs/41984392265"
+    }
+  ]
+}

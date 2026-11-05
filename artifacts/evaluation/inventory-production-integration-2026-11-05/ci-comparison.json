@@ -1,0 +1,16 @@
+{
+  "previous_candidate": {
+    "revision": "3564c0638d0c9654240d222638e02b1ea8b057c5",
+    "failures": 31,
+    "errors": 97
+  },
+  "integration": {
+    "run": 831,
+    "failures": 6,
+    "errors": 52,
+    "skipped": 45
+  },
+  "new_failure_identities": 0,
+  "removed_failure_instances": 70,
+  "conclusion": "70 added failures/errors removed. Remaining 58 CI failures/errors already existed; required CI still blocks merge."
+}

@@ -1,0 +1,82 @@
+{
+  "transport": "Real loopback HTTP, existing login/session auth and production app factory",
+  "database": "Real configured read-only PostgreSQL; inventory scope verified in agent and repository",
+  "telemetry": "Monitoring writes stubbed; authentication, authorization, router and SQL are real",
+  "report_generations": 0,
+  "cases": [
+    {
+      "case": "anonymous_sql",
+      "status": 401,
+      "passed": true
+    },
+    {
+      "case": "anonymous_report",
+      "status": 401,
+      "passed": true
+    },
+    {
+      "case": "viewer_login",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "case": "viewer_sql_denied",
+      "status": 403,
+      "passed": true
+    },
+    {
+      "case": "viewer_report_denied",
+      "status": 403,
+      "passed": true
+    },
+    {
+      "case": "analyst_login",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "case": "forged_identity_metadata",
+      "status": 422,
+      "passed": true
+    },
+    {
+      "case": "direct_fields",
+      "status": 200,
+      "passed": true,
+      "elapsed_seconds": 9.601,
+      "agent": "analytics"
+    },
+    {
+      "case": "canonical_sum",
+      "status": 200,
+      "passed": true,
+      "elapsed_seconds": 2.753,
+      "agent": "analytics"
+    },
+    {
+      "case": "snapshot_comparison",
+      "status": 200,
+      "passed": true,
+      "elapsed_seconds": 2.974,
+      "agent": "analytics"
+    },
+    {
+      "case": "auto_route",
+      "status": 200,
+      "passed": true,
+      "elapsed_seconds": 3.538,
+      "agent": "analytics"
+    },
+    {
+      "case": "outside_scope",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "case": "invalid_report_format_contract",
+      "status": 422,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

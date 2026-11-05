@@ -118,7 +118,12 @@ class Http:
         import httpx
         self.mode = mode
         self.client = httpx.Client(base_url=args.base_url, timeout=180)
-        account = {"employee": "VIEWER", "admin": "ADMIN"}[args.role]  # demo viewer maps to document role employee
+        self.account = {"employee": "VIEWER", "admin": "ADMIN"}[args.role]  # demo viewer maps to document role employee
+        self._login()
+
+    def _login(self):
+        account = self.account
+        self.client.headers.pop("Authorization", None)
         response = self.client.post("/api/auth/login", json={"username": os.environ[f"DEMO_{account}_USERNAME"],
                                                               "password": os.environ[f"DEMO_{account}_PASSWORD"]})
         response.raise_for_status()
@@ -146,9 +151,12 @@ class Http:
         turns = []
         for question in [*case.get("history", []), case["question"]]:
             # Same route and defaults as the web UI (static/app.js).
-            response = self.client.post("/api/agents/chat", json={
-                "question": question, "agent_mode": self.mode, "retrieval_method": "translated_hybrid_rerank",
-                "conversation_id": conversation})
+            payload = {"question": question, "agent_mode": self.mode, "retrieval_method": "translated_hybrid_rerank",
+                       "conversation_id": conversation}
+            response = self.client.post("/api/agents/chat", json=payload)
+            if response.status_code == 401:  # the session expires during long runs
+                self._login()
+                response = self.client.post("/api/agents/chat", json=payload)
             if response.status_code == 429:
                 raise SystemExit("HTTP 429 rate limited; stopped")
             response.raise_for_status()
@@ -196,6 +204,7 @@ def main():
         report["results"] = [row for row in report["results"] if not failed_row(row)]
     done = {row["id"] for row in report["results"]}
     only = set(args.only.split(",")) if args.only else None
+    streak = 0
     runner = Http(args, arm["mode"]) if arm.get("kind") == "http" else InProcess(arm, args)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -229,6 +238,9 @@ def main():
             report["results"].append(row)
             save(args.output, report)
             print(row["id"], row.get("skipped") or row.get("error_type") or f"{row['elapsed_ms']:.0f} ms", flush=True)
+            streak = streak + 1 if failed_row(row) else 0
+            if streak >= 5:  # e.g. Groq quota exhausted server-side: stop instead of filling the file with errors
+                raise SystemExit("5 failed cases in a row; stopped. Rerun later with --resume --retry-errors.")
     finally:
         runner.close()
     print(f"saved {len(report['results'])} rows to {args.output}")

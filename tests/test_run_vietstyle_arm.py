@@ -102,5 +102,52 @@ class RunVietstyleArmTest(unittest.TestCase):
         self.assertTrue(arm.failed_row({"error_type": "ValueError"}))
 
 
+    def test_five_failures_in_a_row_stop_the_arm_after_saving(self):
+        class AlwaysFails(FakeRunner):
+            def run(self, case, roles):
+                raise ValueError("503")
+
+        cases = {"dataset_id": "d", "status": "s", "cases": [{"id": f"L{i:02}", "type": "lookup", "question": "q"}
+                                                                for i in range(1, 9)]}
+        with tempfile.TemporaryDirectory() as folder:
+            path, out = Path(folder, "q.json"), Path(folder, "B4.json")
+            path.write_text(json.dumps(cases))
+            with mock.patch.object(arm, "InProcess", AlwaysFails), mock.patch.object(sys, "argv", ["x", "--arm", "B4", "--cases", str(path),
+                    "--output", str(out)]), mock.patch("builtins.print"), self.assertRaises(SystemExit):
+                arm.main()
+            self.assertEqual(len(json.loads(out.read_text())["results"]), 5)
+
+    def test_http_logs_in_again_when_the_session_expires(self):
+        class Response:
+            def __init__(self, status, body=None, token=None):
+                self.status_code, self._body, self.cookies = status, body or {}, {"enterprise_session": token} if token else {}
+
+            def raise_for_status(self):
+                if self.status_code >= 400:
+                    raise RuntimeError(self.status_code)
+
+            def json(self):
+                return self._body
+
+        class Client:
+            def __init__(self, **_):
+                self.headers, self.chat = {}, [Response(401), Response(200, {"answer": "ok", "metadata": {}})]
+                self.logins = 0
+
+            def post(self, url, json):
+                if url.endswith("login"):
+                    self.logins += 1
+                    return Response(200, token=f"t{self.logins}")
+                return self.chat.pop(0)
+
+        fake = type(sys)("httpx")
+        fake.Client = Client
+        env = {"DEMO_VIEWER_USERNAME": "u", "DEMO_VIEWER_PASSWORD": "p"}
+        with mock.patch.dict(sys.modules, {"httpx": fake}), mock.patch.dict(arm.os.environ, env):
+            runner = arm.Http(type("A", (), {"base_url": "http://x", "role": "employee"}), "knowledge")
+            self.assertEqual(runner.run({"id": "L01", "question": "q"}, ["employee"])["answer"], "ok")
+        self.assertEqual((runner.client.logins, runner.client.headers["Authorization"]), (2, "Bearer t2"))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -44,6 +44,10 @@ def save(path, report):
     Path(stream.name).replace(path)
 
 
+def failed_row(row):
+    return bool(row.get("error_type")) or (row.get("metadata") or {}).get("status") == "failed"
+
+
 def context_row(context, cited):
     meta = context.get("metadata") or {}
     return {"source_id": context.get("source_id"), "cited": context.get("source_id") in cited,
@@ -117,6 +121,20 @@ class Http:
         self.client.headers["Authorization"] = "Bearer " + token
 
     def run(self, case, roles):
+        for attempt in range(3):
+            turns = self._conversation(case)
+            failed = (turns[-1].get("metadata") or {}).get("status") == "failed"
+            if not failed:
+                break
+            # The router answers 200 "planning unavailable" in milliseconds while Groq is rate limited.
+            if attempt == 2:
+                raise RuntimeError(f"router_failed: {(turns[-1].get('metadata') or {}).get('error_type')}")
+            time.sleep(30)
+        last = turns[-1]
+        return {"answer": last.get("answer"), "evidence": last.get("evidence"), "metadata": last.get("metadata"),
+                "history_answers": [turn.get("answer") for turn in turns[:-1]]}
+
+    def _conversation(self, case):
         conversation = f"vietstyle-{case['id']}-{uuid.uuid4().hex[:8]}"
         turns = []
         for question in [*case.get("history", []), case["question"]]:
@@ -128,9 +146,7 @@ class Http:
                 raise SystemExit("HTTP 429 rate limited; stopped")
             response.raise_for_status()
             turns.append(response.json())
-        last = turns[-1]
-        return {"answer": last.get("answer"), "evidence": last.get("evidence"), "metadata": last.get("metadata"),
-                "history_answers": [turn.get("answer") for turn in turns[:-1]]}
+        return turns
 
     def close(self):
         self.client.close()
@@ -150,6 +166,7 @@ def main():
     parser.add_argument("--base-url", default="http://127.0.0.1:8000")
     parser.add_argument("--only", default=None, help="comma-separated case ids, for a smoke run")
     parser.add_argument("--resume", action="store_true", help="continue an interrupted output file")
+    parser.add_argument("--retry-errors", action="store_true", help="with --resume, also rerun error and router-failed rows")
     args = parser.parse_args()
     arm = ARMS[args.arm]
     if arm.get("prompt") == "old" and not args.old_prompt:
@@ -168,6 +185,8 @@ def main():
         "created_at_utc": datetime.now(timezone.utc).isoformat(), "results": []}
     if report["dataset_sha256"] != hashlib.sha256(raw).hexdigest() or report["arm"] != args.arm:
         parser.error("Resumed output belongs to another dataset or arm")
+    if args.retry_errors:
+        report["results"] = [row for row in report["results"] if not failed_row(row)]
     done = {row["id"] for row in report["results"]}
     only = set(args.only.split(",")) if args.only else None
     runner = Http(args) if arm.get("kind") == "http" else InProcess(arm, args)
@@ -180,18 +199,24 @@ def main():
             if case.get("history") and arm.get("kind") != "http":
                 row["skipped"] = "multi_turn_needs_router"
             elif case.get("role") and (arm.get("kind") == "http" or not args.rbac_role):
-                row["skipped"] = "rbac_role_not_set" if arm.get("kind") != "http" else "rbac_not_run_as_admin"
+                row["skipped"] = "rbac_role_not_set" if arm.get("kind") != "http" else "rbac_not_run_in_e2e"
             else:
                 roles = [args.rbac_role] if case.get("role") else [args.role]
-                started = time.perf_counter()
-                try:
-                    row.update(runner.run(case, roles))
-                except SystemExit:
-                    raise
-                except Exception as error:  # one failed case must not lose the arm; scored as an error
-                    if type(error).__name__ == "RateLimitError":
-                        raise SystemExit("Groq rate limit on every key; stopped. Rerun with --resume later.")
-                    row.update(error_type=type(error).__name__, error=str(error)[:500])
+                for attempt in range(6):
+                    started = time.perf_counter()
+                    try:
+                        row.update(runner.run(case, roles))
+                    except SystemExit:
+                        raise
+                    except Exception as error:  # one failed case must not lose the arm; scored as an error
+                        if type(error).__name__ == "RateLimitError":
+                            # Per-minute limits clear in seconds; a daily limit (or repeated limits) stops the arm.
+                            if "per day" in str(error) or attempt == 5:
+                                raise SystemExit("Groq rate limit; stopped. Rerun with --resume later.")
+                            time.sleep(min(60.0, float(error.response.headers.get("retry-after") or 10)) + 1)
+                            continue
+                        row.update(error_type=type(error).__name__, error=str(error)[:500])
+                    break
                 row["elapsed_ms"] = round((time.perf_counter() - started) * 1000, 1)
             report["results"].append(row)
             save(args.output, report)

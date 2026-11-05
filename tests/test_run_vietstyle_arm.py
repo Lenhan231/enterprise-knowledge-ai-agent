@@ -60,5 +60,41 @@ class RunVietstyleArmTest(unittest.TestCase):
                 self.run_main("--arm", "B2", "--cases", str(path), "--output", str(out), "--resume")
 
 
+    def test_minute_limit_waits_and_retries_day_limit_stops_and_retry_errors_reruns(self):
+        class RateLimitError(Exception):
+            def __init__(self, message):
+                super().__init__(message)
+                self.response = type("R", (), {"headers": {"retry-after": "2"}})()
+
+        class Limited(FakeRunner):
+            errors = []
+
+            def run(self, case, roles):
+                if Limited.errors:
+                    raise Limited.errors.pop(0)
+                return super().run(case, roles)
+
+        cases = {"dataset_id": "d", "status": "s", "cases": [{"id": "L01", "type": "lookup", "question": "q"},
+                                                                {"id": "L02", "type": "lookup", "question": "q"}]}
+        with tempfile.TemporaryDirectory() as folder:
+            path, out = Path(folder, "q.json"), Path(folder, "B0.json")
+            path.write_text(json.dumps(cases))
+            argv = ["x", "--arm", "B0", "--cases", str(path), "--output", str(out)]
+            Limited.errors, FakeRunner.calls = [RateLimitError("tokens per minute")], []
+            with mock.patch.object(arm, "InProcess", Limited), mock.patch.object(sys, "argv", argv), \
+                    mock.patch("builtins.print"), mock.patch.object(arm.time, "sleep") as slept:
+                arm.main()
+            self.assertEqual(slept.call_args[0][0], 3.0)
+            self.assertEqual([c[0] for c in FakeRunner.calls], ["L01", "L02"])
+            rows = json.loads(out.read_text())["results"]
+            self.assertEqual(rows[1]["error_type"], "ValueError")  # L02 fails in FakeRunner
+            Limited.errors, FakeRunner.calls = [RateLimitError("tokens per day")], []
+            with mock.patch.object(arm, "InProcess", Limited), mock.patch.object(sys, "argv", [*argv, "--resume", "--retry-errors"]), \
+                    mock.patch("builtins.print"), self.assertRaises(SystemExit):
+                arm.main()
+            self.assertEqual(Limited.errors, [])  # L02 (the error row) was attempted again, L01 was not
+            self.assertEqual(json.loads(out.read_text())["results"], rows)  # stopping never rewrites the file
+
+
 if __name__ == "__main__":
     unittest.main()

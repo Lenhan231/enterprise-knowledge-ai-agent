@@ -46,9 +46,16 @@ def save(path, report):
     Path(stream.name).replace(path)
 
 
+PROVIDER_ERRORS = {"RateLimitError", "APIConnectionError", "APITimeoutError", "InternalServerError"}
+
+
 def router_failed(metadata):
-    """The router's own failure (e.g. planning unavailable while Groq is limited), not a grounded refusal."""
-    return (metadata or {}).get("status") == "failed" and (metadata or {}).get("selected_route") == "unrouted"
+    """Infrastructure failure, not a grounded refusal: the router could not plan, or a task hit a provider error."""
+    metadata = metadata or {}
+    if metadata.get("status") == "failed" and metadata.get("selected_route") == "unrouted":
+        return True
+    # Under rate limits the router still answers 200 "No supported answer could be completed" for the failed task.
+    return any(task.get("error_type") in PROVIDER_ERRORS for task in metadata.get("task_trace") or [])
 
 
 def failed_row(row):

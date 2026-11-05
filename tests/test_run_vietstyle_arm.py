@@ -100,6 +100,11 @@ class RunVietstyleArmTest(unittest.TestCase):
         self.assertTrue(arm.failed_row({"metadata": {"status": "failed", "selected_route": "unrouted"}}))
         self.assertFalse(arm.failed_row({"metadata": {"status": "failed", "selected_route": "knowledge"}}))  # grounded refusal
         self.assertTrue(arm.failed_row({"error_type": "ValueError"}))
+        limited = {"status": "partial", "selected_route": "knowledge",
+                   "task_trace": [{"status": "failed", "error_type": "RateLimitError"}]}
+        self.assertTrue(arm.failed_row({"metadata": limited}))  # provider failure inside a planned task
+        refused = {"status": "failed", "selected_route": "knowledge", "task_trace": [{"status": "empty", "error_type": None}]}
+        self.assertFalse(arm.failed_row({"metadata": refused}))
 
 
     def test_five_failures_in_a_row_stop_the_arm_after_saving(self):

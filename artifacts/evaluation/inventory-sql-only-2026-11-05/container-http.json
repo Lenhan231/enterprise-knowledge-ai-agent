@@ -1,5 +1,5 @@
 {
-  "transport": "Docker Compose backend on loopback port 18000; real auth, router, provider and read-only Supabase; no mocks",
+  "transport": "Docker Compose backend through Nginx on loopback port 19080; real auth, router, provider and read-only Supabase; no mocks",
   "report_generations": 0,
   "checks": [
     {

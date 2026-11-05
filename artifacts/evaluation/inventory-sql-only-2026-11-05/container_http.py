@@ -25,6 +25,6 @@ with httpx.Client(base_url='http://127.0.0.1:19080',timeout=125) as client:
   checks[-1].update(passed=valid,seconds=round(time.perf_counter()-started,3),error_code=body.get('metadata',{}).get('metric_error_code'))
   print(name,valid,flush=True)
   if not valid: print(body.get('answer','')[:300],flush=True)
- result={'transport':'Docker Compose backend on loopback port 18000; real auth, router, provider and read-only Supabase; no mocks','report_generations':0,'checks':checks,'passed':all(x['passed'] for x in checks)}
+ result={'transport':'Docker Compose backend through Nginx on loopback port 19080; real auth, router, provider and read-only Supabase; no mocks','report_generations':0,'checks':checks,'passed':all(x['passed'] for x in checks)}
  (out/'container-http.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
  print('passed',result['passed'])

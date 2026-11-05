@@ -36,7 +36,9 @@ records. `GET /api/invoices/{invoice_id}` is limited to the uploader and admins.
 The web Upload form exposes “Invoice extraction” separately from “Knowledge
 document”; it hides the knowledge-base access-role controls for invoice mode
 and displays the returned JSON draft. The normal document upload remains on
-its existing parser/chunking/indexing route.
+its existing parser/chunking/indexing route. The isolated Upload Test stores
+the same extraction in its run metadata and renders it above the Docling
+elements/tables, so the OCR evidence and JSON draft can be inspected together.
 
 The first CPU inference may download model weights into `/models`; subsequent
 loads use the persistent model cache. CPU inference is synchronous and every

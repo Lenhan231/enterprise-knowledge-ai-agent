@@ -276,6 +276,14 @@ async function loadOcrTestRuns() {
 
 function renderOcrTestDetails(run) {
   const previewPages = run.pages || [];
+  const invoiceExtraction = run.runtime_info?.invoice_extraction;
+  const invoiceOutput = invoiceExtraction ? `<section class="ocr-test-invoice">
+    <div class="candidate-heading"><strong>Invoice JSON draft</strong><span>${escapeHtml(invoiceExtraction.model || "Text model")} · ${invoiceExtraction.review_required ? "review required" : "status unknown"}</span></div>
+    <p class="corpus-note">Schema ${escapeHtml(invoiceExtraction.schema_version || "invoice.v1")} · inference ${formatDuration((invoiceExtraction.metrics?.inference_seconds || 0) * 1000)} · this draft is separate from the parser elements and table output.</p>
+    <pre>${escapeHtml(JSON.stringify(invoiceExtraction.fields ?? null, null, 2))}</pre>
+    ${invoiceExtraction.parse_error ? `<p class="corpus-note" data-state="warning">${escapeHtml(invoiceExtraction.parse_error)}. Raw model response is available below.</p>` : ""}
+    ${invoiceExtraction.raw_response ? `<details class="candidate-source"><summary>Raw model response</summary><pre>${escapeHtml(invoiceExtraction.raw_response)}</pre></details>` : ""}
+  </section>` : "";
   const singlePreviewPage = previewPages.length === 1 ? Number(previewPages[0]) : null;
   const elementPage = (element) => element.metadata?.page_number;
   const tablePage = (table) => table.page_number ?? table.metadata?.page_number;
@@ -420,6 +428,7 @@ function renderOcrTestDetails(run) {
     <div class="candidate-heading"><strong>${escapeHtml(run.source_filename)}</strong><span>${processingSummary} · ${run.page_count ? `${formatNumber(run.page_count)} page previews` : "No page previews"} · ${formatNumber(run.elements.length)} parser elements · ${formatNumber(run.tables.length)} tables</span></div>
     <p class="corpus-note">SHA-256: <code>${escapeHtml(run.source_sha256)}</code></p>
     <details class="candidate-source"><summary>Parser configuration and versions</summary><pre>${escapeHtml(JSON.stringify({processor_config:run.processor_config,runtime_info:run.runtime_info},null,2))}</pre></details>
+    ${invoiceOutput}
     <div class="ocr-test-pages">${pageContent}${unpagedOutput}</div>
   </article>`;
 }
@@ -1186,7 +1195,7 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
   const button = $("#ocr-test-button");
   button.disabled = true;
   const intent = form.elements.namedItem("intent").value;
-  const parserLabel = intent === "document" ? "Docling" : `Vintern ${intent}`;
+  const parserLabel = intent === "document" ? "Docling" : intent === "invoice" ? "Docling OCR + Qwen invoice extraction" : "Vintern image caption";
   $("#ocr-test-status").textContent = `Running ${parserLabel}…`;
   try {
     let result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
@@ -1198,7 +1207,8 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
         result = await api(`/api/upload-tests/${encodeURIComponent(runId)}`);
         if (result.status === "processing") {
           const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
-          $("#ocr-test-status").textContent = `Vintern ${intent} is still processing (${formatDuration(elapsedSeconds * 1000)})…`;
+          const runningLabel = intent === "invoice" ? "Docling OCR + Qwen invoice extraction" : "Vintern image caption";
+          $("#ocr-test-status").textContent = `${runningLabel} is still processing (${formatDuration(elapsedSeconds * 1000)})…`;
         } else if (result.status === "failed") {
           throw new Error(result.error || "Vintern processing failed");
         }

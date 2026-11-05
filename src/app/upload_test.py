@@ -71,6 +71,8 @@ def _process_and_save_upload_test(
         "page_orientation_corrections": page_orientation_corrections,
         "processing_time_ms": max(0, round((time.perf_counter() - processing_started) * 1000)),
     }
+    if parsed.get("invoice_extraction") is not None:
+        runtime_info["invoice_extraction"] = parsed["invoice_extraction"]
     if parsed["metadata"].get("docling_version"):
         runtime_info["docling"] = parsed["metadata"]["docling_version"]
 
@@ -194,7 +196,7 @@ async def create_upload_test(
         "docling_num_threads": docling_num_threads,
     }
     config = {
-        "parser_engine": "docling" if intent == "document" else f"vintern_{intent}",
+        "parser_engine": "vintern_image_caption" if intent == "image_caption" else "docling",
         "intent": intent,
         "parser_settings": {"docling": docling_settings},
         **docling_settings,

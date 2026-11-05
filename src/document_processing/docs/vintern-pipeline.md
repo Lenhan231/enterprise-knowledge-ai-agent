@@ -13,13 +13,10 @@ and model inference is in [`vintern_worker.py`](../vintern_worker.py).
 PDF/image → render/normalize pages → request.json
   → start isolated Python worker → load tokenizer and Vintern
   → infer on each page in order → response.json
-  → parse invoice JSON or retain caption → elements + intent result
+  → retain caption → elements + image_caption_extraction
 ```
 
-The invoice route **replaces** Docling for that request. It does not run OCR
-first, does not consume Docling `elements` or `tables`, and does not return
-structured tables. The image-caption route uses the same runtime with a
-different prompt.
+This route is only for image captioning; it does not return structured tables.
 
 ## Runtime and performance
 

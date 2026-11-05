@@ -28,7 +28,7 @@ the [architecture](architecture.md), [Docling](docling-pipeline.md), and
 | --- | --- | --- |
 | `filename` | element/table metadata and run metadata | Original uploaded filename |
 | `format` | element/table metadata and run metadata | File format, such as `PDF`, `DOCX`, or `CSV` |
-| `pipeline_id` | element/table metadata and run metadata | Selected route, e.g. `docling`, `vintern_invoice`, or `vintern_image_caption` |
+| `pipeline_id` | element/table metadata and run metadata | Selected route, e.g. `docling`, `docling_qwen_invoice_text`, or `vintern_image_caption` |
 | `parser_engine` | element/table metadata and run metadata | Parser route selected by the caller |
 | `parser` | element/table metadata | Component that produced the content, commonly `docling` or `vintern_*` |
 | `text_extraction_method` | element/table metadata | Method used to produce text, such as `docling.native`, `docling.vietocr`, or `docling.tesseract` |
@@ -54,13 +54,20 @@ downstream chunking.
   recognition details. Tables can include `table_structure_model` and dash
   recovery metadata.
 
+### Invoice text extraction
+
+- Run metadata records `pipeline_id="docling_qwen_invoice_text"` and
+  `parser_engine="docling"`, plus the model/revision and review status.
+- `invoice_extraction.fields` is the schema-checked `invoice.v1` draft; raw
+  model output and inference metrics remain in extraction metadata.
+- Docling elements and structured tables retain their normal OCR/parser
+  provenance; the text model does not emit or alter those results.
+
 ### Vintern
 
-- Run metadata records `parser_engine`/`pipeline_id` as `vintern_invoice` or
-  `vintern_image_caption`, the model/revision, and review status.
-- `invoice_extraction.pages` and `image_caption_extraction.pages` keep the raw
-  page response and the extracted fields/caption. These are drafts and include
-  `review_required=true`.
+- Run metadata records `pipeline_id="vintern_image_caption"`, model/revision,
+  and review status.
+- `image_caption_extraction.pages` keeps raw page responses and captions.
 - Vintern currently emits text elements and no structured tables.
 
 ## Parser output versus chunk metadata

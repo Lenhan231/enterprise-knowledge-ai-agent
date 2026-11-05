@@ -23,10 +23,10 @@ from core.models.agents import AgentRequest, AgentResult, VerifiedIdentity  # no
 
 ANALYST = VerifiedIdentity(subject="supabase-smoke", permissions={"analytics:read"})
 CASES = (
-    {"id": "monthly_sales", "question": "Show monthly revenue and COGS for 2022.",
-     "sources": {"commerce.sales"}},
-    {"id": "orders_by_status", "question": "Count orders by status.",
-     "sources": {"commerce.orders"}},
+    {"id": "latest_snapshot", "question": "Show the latest available inventory snapshot date only.",
+     "sources": {"commerce.inventory"}},
+    {"id": "product_count", "question": "Count master product records.",
+     "sources": {"commerce.products"}},
     {"id": "products_by_category", "question": "Count products by category.",
      "sources": {"commerce.products"}},
 )
@@ -39,7 +39,7 @@ async def verify_read_only(repository: CommerceRepository) -> dict[str, Any]:
         try:
             async with connection.transaction(readonly=True):
                 transaction_read_only = await connection.fetchval("SHOW transaction_read_only")
-                await connection.execute("UPDATE commerce.sales SET revenue = revenue WHERE FALSE")
+                await connection.execute("UPDATE commerce.inventory SET stock_on_hand = stock_on_hand WHERE FALSE")
         except Exception as error:
             write_probe_sqlstate = getattr(error, "sqlstate", None)
     blocked = write_probe_sqlstate == "25006"

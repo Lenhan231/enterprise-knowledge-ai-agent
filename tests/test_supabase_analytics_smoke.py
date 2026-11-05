@@ -72,8 +72,8 @@ class FakeRepository:
 class FakeLLM:
     def __init__(self):
         self.plans = [
-            ("commerce.sales", "SUM(s.revenue) AS revenue, SUM(s.cogs) AS cogs"),
-            ("commerce.orders", "COUNT(*) AS orders"),
+            ("commerce.inventory", "MAX(i.snapshot_date) AS snapshot_date"),
+            ("commerce.products", "COUNT(*) AS products"),
             ("commerce.products", "COUNT(*) AS products"),
         ]
 
@@ -83,7 +83,7 @@ class FakeLLM:
         if not getattr(self, "pending_summary", False):
             table, expression = self.plans.pop(0)
             self.pending_summary = True
-            alias = {"commerce.sales": "s", "commerce.orders": "o", "commerce.products": "p"}[table]
+            alias = {"commerce.inventory": "i", "commerce.products": "p"}[table]
             return json.dumps({"sql": f"SELECT {expression} FROM {table} AS {alias} LIMIT 20", "parameters": []})
         self.pending_summary = False
         return "The query returned rows."

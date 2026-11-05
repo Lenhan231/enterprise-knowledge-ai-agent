@@ -1,6 +1,7 @@
 from pathlib import Path
 from contextlib import asynccontextmanager
 import hashlib
+import base64
 import json
 import logging
 import os
@@ -32,6 +33,7 @@ from app.upload_test import (
     create_upload_test, get_upload_test_preview, inspect_upload_test,
     list_upload_tests, router as upload_test_router,
 )
+from core.services.client import post as post_internal_service
 
 logger = logging.getLogger(__name__)
 @asynccontextmanager
@@ -597,6 +599,151 @@ async def upload_document(
     finally:
         if repository is not None:
             repository.close()
+
+
+@app.post("/api/invoices/upload")
+async def upload_invoice(
+    request: Request,
+    file: UploadFile = File(...),
+    user: dict = Depends(require_permission("upload_documents")),
+):
+    """OCR an invoice and save its reviewable JSON outside the document corpus."""
+    _require_same_origin(request)
+    filename = Path((file.filename or "").replace("\\", "/")).name
+    extension = Path(filename).suffix.lower()
+    supported = {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}
+    if not filename or extension not in supported:
+        raise HTTPException(415, "Invoice upload supports PDF, PNG, JPG and TIFF files")
+    content = await file.read(50 * 1024 * 1024 + 1)
+    if len(content) > 50 * 1024 * 1024:
+        raise HTTPException(413, "Maximum file size is 50 MiB")
+    signatures = {
+        ".pdf": content.startswith(b"%PDF-"),
+        ".png": content.startswith(b"\x89PNG\r\n\x1a\n"),
+        ".jpg": content.startswith(b"\xff\xd8\xff"),
+        ".jpeg": content.startswith(b"\xff\xd8\xff"),
+        ".tif": content.startswith((b"II*\x00", b"MM\x00*")),
+        ".tiff": content.startswith((b"II*\x00", b"MM\x00*")),
+    }
+    if not signatures[extension]:
+        raise HTTPException(415, "File content does not match its extension")
+
+    invoice_id = f"INV-{uuid.uuid4().hex}"
+    storage_path = f"invoices/{invoice_id}/{filename}"
+    source_sha256 = hashlib.sha256(content).hexdigest()
+    storage, bucket = _storage_client()
+    uploaded = False
+    repository = None
+    registered = False
+    try:
+        storage.storage.from_(bucket).upload(
+            storage_path, content,
+            {"content-type": {
+                ".pdf": "application/pdf", ".png": "image/png",
+                ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+                ".tif": "image/tiff", ".tiff": "image/tiff",
+            }[extension], "upsert": "false"},
+        )
+        uploaded = True
+        from core.database.invoice_repository import InvoiceRepository
+
+        repository = InvoiceRepository()
+        repository.create_upload({
+            "invoice_id": invoice_id,
+            "source_filename": filename,
+            "source_format": extension[1:].upper(),
+            "source_sha256": source_sha256,
+            "storage_path": storage_path,
+            "uploaded_by": user["sub"],
+        })
+        registered = True
+
+        processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
+        if not processing_url:
+            raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
+        parsed = post_internal_service(processing_url, "/parse", {
+            "filename": filename,
+            "content": base64.b64encode(content).decode("ascii"),
+            "metadata": {
+                "invoice_id": invoice_id,
+                "uploaded_by": user["sub"],
+                "source_sha256": source_sha256,
+                "intent": "invoice",
+            },
+            "config": {
+                "intent": "invoice",
+                "parser_engine": "docling",
+                "docling_ocr": True,
+                "docling_ocr_engine": os.getenv("DOCUMENT_PROCESSING_OCR_ENGINE", "vietocr"),
+                "docling_ocr_language": "vie+eng",
+                "docling_table_structure": True,
+            },
+        }, timeout=int(os.getenv("DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", "600")))
+        extraction = parsed.get("invoice_extraction") or {}
+        if extraction.get("status") != "review_required":
+            raise RuntimeError("Invoice parser returned no reviewable extraction")
+        invoice_data = extraction.get("fields")
+        repository.save_result(
+            invoice_id,
+            invoice_data=invoice_data if isinstance(invoice_data, dict) else {},
+            ocr_elements=parsed.get("elements") or [],
+            ocr_tables=parsed.get("tables") or [],
+            extraction_model=str(extraction.get("model") or ""),
+            extraction_metadata={
+                "revision": extraction.get("revision"),
+                "schema_version": extraction.get("schema_version", "invoice.v1"),
+                "metrics": extraction.get("metrics") or {},
+                "raw_response": extraction.get("raw_response", ""),
+            },
+            error_message=extraction.get("parse_error"),
+        )
+        return {
+            "invoice_id": invoice_id,
+            "processing_status": "review_required",
+            "review_required": True,
+            "schema_version": extraction.get("schema_version", "invoice.v1"),
+            "model": extraction.get("model"),
+            "metrics": extraction.get("metrics") or {},
+            "invoice_data": invoice_data,
+        }
+    except HTTPException:
+        raise
+    except Exception as error:
+        logger.exception("Invoice upload or extraction failed for %s", invoice_id)
+        if registered and repository is not None:
+            try:
+                repository.mark_failed(invoice_id, type(error).__name__)
+            except Exception:
+                logger.exception("Failed to record invoice failure %s", invoice_id)
+        elif uploaded:
+            try:
+                storage.storage.from_(bucket).remove([storage_path])
+            except Exception:
+                logger.exception("Failed cleaning unregistered invoice source %s", invoice_id)
+        raise HTTPException(503, f"Invoice processing failed for {invoice_id}") from error
+    finally:
+        if repository is not None:
+            repository.close()
+
+
+@app.get("/api/invoices/{invoice_id}")
+def get_invoice(
+    invoice_id: str,
+    user: dict = Depends(require_permission("upload_documents")),
+):
+    """Return the uploader's invoice draft; admins can review any invoice."""
+    from core.database.invoice_repository import InvoiceRepository
+
+    repository = InvoiceRepository()
+    try:
+        invoice = repository.get_invoice(invoice_id)
+        if invoice is None or (
+            user.get("role") != "admin" and invoice["uploaded_by"] != user.get("sub")
+        ):
+            raise HTTPException(404, "Invoice not found")
+        return invoice
+    finally:
+        repository.close()
 
 
 @app.post("/api/admin/processing/{document_id}/retry-embedding")

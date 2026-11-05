@@ -266,7 +266,7 @@ async function loadOcrTestRuns() {
     const intent = config.intent || "document";
     const parserSettings = intent === "document"
       ? `Document · Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`
-      : `${intent === "invoice" ? "Invoice extraction" : "Image caption"} · Vintern`;
+      : intent === "invoice" ? "Invoice extraction · Docling OCR + Qwen text model" : "Image caption · Vintern";
     const settings = parserSettings;
     const previewSummary = run.page_count ? `${formatNumber(run.page_count)} page previews` : "no page previews";
     const processingSummary = `processing ${formatDuration(run.runtime_info?.processing_time_ms)}`;
@@ -1446,14 +1446,37 @@ function updateUploadRoleSelection() {
 
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 const SUPPORTED_UPLOAD_EXTENSIONS = new Set([".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
+const INVOICE_UPLOAD_EXTENSIONS = new Set([".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
 
-function validateUploadFile(file) {
+function validateUploadFile(file, invoiceMode = false) {
   if (!file) return "Choose a document to upload.";
   const extension = "." + file.name.split(".").pop().toLocaleLowerCase();
-  if (!SUPPORTED_UPLOAD_EXTENSIONS.has(extension)) return "This file type is not supported. Choose PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF.";
+  const supported = invoiceMode ? INVOICE_UPLOAD_EXTENSIONS : SUPPORTED_UPLOAD_EXTENSIONS;
+  if (!supported.has(extension)) return invoiceMode
+    ? "Invoice extraction supports PDF, PNG, JPG and TIF files."
+    : "This file type is not supported. Choose PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF.";
   if (file.size > MAX_UPLOAD_BYTES) return "The file is larger than the 50 MiB upload limit.";
   return "";
 }
+
+function updateUploadKind() {
+  const invoiceMode = $("#upload-kind").value === "invoice";
+  $("#upload-access-step").hidden = invoiceMode;
+  $("#upload-title").required = !invoiceMode;
+  $("#upload-title").closest(".upload-field").hidden = invoiceMode;
+  $("#upload-file-label").textContent = invoiceMode ? "Invoice file" : "Document file";
+  $("#upload-file").accept = invoiceMode
+    ? ".pdf,.png,.jpg,.jpeg,.tif,.tiff"
+    : ".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff";
+  $("#upload-kind-help").textContent = invoiceMode
+    ? "OCR and a text model create a reviewable invoice JSON draft in a separate invoice table."
+    : "Knowledge documents are indexed for document Q&A.";
+  const file = $("#upload-file").files[0];
+  if (file) $("#upload-file-info").textContent = validateUploadFile(file, invoiceMode)
+    || `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MiB.`;
+}
+
+$("#upload-kind").addEventListener("change", updateUploadKind);
 
 $("#upload-file").addEventListener("change", (event) => {
   const file = event.currentTarget.files[0];
@@ -1461,8 +1484,10 @@ $("#upload-file").addEventListener("change", (event) => {
   if (file && title.dataset.userEdited !== "true") {
     title.value = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
   }
-  const error = validateUploadFile(file);
-  $("#upload-file-info").textContent = error || file.name + " · " + (file.size / 1024 / 1024).toFixed(1) + " MiB. The original stays private; review OCR output in Document Processing.";
+  const invoiceMode = $("#upload-kind").value === "invoice";
+  const error = validateUploadFile(file, invoiceMode);
+  $("#upload-file-info").textContent = error || file.name + " · " + (file.size / 1024 / 1024).toFixed(1) + " MiB. "
+    + (invoiceMode ? "The source stays private; the JSON draft is stored separately from documents." : "The original stays private; review OCR output in Document Processing.");
   $("#upload-file-info").setAttribute("role", error ? "alert" : "status");
 });
 
@@ -1502,10 +1527,11 @@ $("#upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
   const parserHandoff = event.submitter?.dataset.uploadMode === "parser-handoff";
+  const invoiceMode = $("#upload-kind").value === "invoice";
   const file = $("#upload-file").files[0];
   const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
-  const fileError = validateUploadFile(file);
-  if (fileError || !roles.length) {
+  const fileError = validateUploadFile(file, invoiceMode);
+  if (fileError || (!invoiceMode && !roles.length)) {
     const status = $("#upload-status");
     $("#upload-status-wrap").hidden = false;
     $("#upload-progress").hidden = true;
@@ -1515,18 +1541,22 @@ $("#upload-form").addEventListener("submit", async (event) => {
   }
   const body = new FormData();
   body.append("file", file);
-  for (const name of ["title"]) {
-    const value = form.elements[name].value.trim();
-    if (value) body.append(name, value);
+  if (!invoiceMode) {
+    for (const name of ["title"]) {
+      const value = form.elements[name].value.trim();
+      if (value) body.append(name, value);
+    }
+    body.append("document_type", "knowledge_document");
+    body.append("domain", "general_knowledge");
+    roles.forEach((role) => body.append("allowed_roles", role));
   }
-  body.append("document_type", "knowledge_document");
-  body.append("domain", "general_knowledge");
-  roles.forEach((role) => body.append("allowed_roles", role));
   const controls = [...form.querySelectorAll("input, select, textarea, button")];
   const controlsWereDisabled = controls.map((control) => control.disabled);
   controls.forEach((control) => { control.disabled = true; });
   form.setAttribute("aria-busy", "true");
   const status = $("#upload-status");
+  $("#upload-invoice-result").hidden = true;
+  $("#upload-invoice-result").textContent = "";
   const progress = $("#upload-progress");
   const elapsedLabel = $("#upload-elapsed");
   $("#upload-status-wrap").hidden = false;
@@ -1540,14 +1570,29 @@ $("#upload-form").addEventListener("submit", async (event) => {
       : `${Math.floor(elapsedSeconds / 60)}m ${String(elapsedSeconds % 60).padStart(2, "0")}s`);
   };
   status.dataset.state = "processing";
-  status.textContent = parserHandoff
+  status.textContent = invoiceMode
+    ? "Uploading invoice, running OCR and extracting a reviewable JSON draft. This is saved separately from the document corpus. Keep this tab open."
+    : parserHandoff
     ? "Uploading, extracting and saving parser output. Chunking and indexing run downstream. Keep this tab open."
     : "Uploading, extracting text/OCR, chunking and indexing. Keep this tab open.";
   updateProcessingTime();
   const processingTimer = window.setInterval(updateProcessingTime, 1000);
   let result;
   try {
-    result = await api(parserHandoff ? "/api/documents/parser-handoff" : "/api/documents/upload", { method: "POST", body, headers: {} });
+    result = await api(invoiceMode ? "/api/invoices/upload" : parserHandoff ? "/api/documents/parser-handoff" : "/api/documents/upload", { method: "POST", body, headers: {} });
+    if (invoiceMode) {
+      status.dataset.state = "success";
+      progress.hidden = true;
+      elapsedLabel.hidden = true;
+      status.textContent = `Invoice ${result.invoice_id} saved for review in the invoice table. Model: ${result.model || "unknown"}.`;
+      $("#upload-invoice-result").textContent = JSON.stringify(result.invoice_data, null, 2);
+      $("#upload-invoice-result").hidden = false;
+      form.reset();
+      updateUploadKind();
+      updateUploadRoleSelection();
+      $("#upload-file-info").textContent = "Choose an invoice. Its JSON draft is stored separately from the document corpus.";
+      return;
+    }
     const referenceStatus = parserHandoff
       ? " Parser output is saved in public for the chunking worker; this document is not searchable yet."
       : " Indexed for document Q&A.";

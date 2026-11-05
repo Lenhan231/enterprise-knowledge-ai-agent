@@ -99,5 +99,5 @@ and the caller before assuming a local run uses production settings.
 - Printed/handwritten classification is not yet validated on a representative
   Vietnamese test set.
 - OCR and chart extraction preserve parser evidence; they do not produce a
-  validated business schema such as invoice fields. See the
-  [Vintern guide](vintern-pipeline.md) for the separate current invoice route.
+  business schema themselves. Invoice JSON is a separate text-model step over
+  Docling output. See the [invoice guide](invoice-pipeline.md).

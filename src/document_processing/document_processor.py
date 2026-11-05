@@ -90,10 +90,33 @@ class DocumentProcessor:
             "format": suffix[1:].upper(),
             "intent": intent,
         }
-        if intent in {"invoice", "image_caption"}:
+        if intent == "invoice":
+            from document_processing.docling_adapter.processor import DoclingProcessor
+            from document_processing.invoice_text_processor import InvoiceTextProcessor
+
+            engine = "docling_qwen_invoice_text"
+            processor_config = {**self.config, "parser_engine": "docling", "intent": "document"}
+            parser_content = render_svg(content) if suffix == ".svg" else render_webp(content) if suffix == ".webp" else content
+            parser_metadata = {**common, "format": "PNG"} if suffix in {".svg", ".webp"} else common
+            result = DoclingProcessor(processor_config).process(
+                parser_content, None, {"content": parser_content, "metadata": parser_metadata}
+            )
+            extraction = InvoiceTextProcessor(self.config).process(
+                result.get("elements", []), result.get("tables", []),
+            )
+            result["invoice_extraction"] = extraction
+            result.setdefault("metadata", {}).update({
+                "pipeline_id": engine,
+                "parser_engine": "docling",
+                "invoice_model": extraction["model"],
+                "invoice_model_revision": extraction["revision"],
+                "invoice_schema_version": extraction["schema_version"],
+                "invoice_review_required": True,
+            })
+        elif intent == "image_caption":
             from document_processing.vintern_processor import VinternProcessor
 
-            engine = f"vintern_{intent}"
+            engine = "vintern_image_caption"
             result = VinternProcessor(self.config).process(filename, content, common)
         else:
             engine = str(self.config.get("parser_engine", "docling"))
@@ -126,7 +149,7 @@ class DocumentProcessor:
             if suffix in {".svg", ".webp"}:
                 table_metadata["format"] = suffix[1:].upper()
             table_metadata.update({key: value for key, value in common.items() if key not in table_metadata and key not in {"title", "uploaded_by"}})
-            table_metadata.update({"pipeline_id": engine, "parser_engine": engine})
+            table_metadata.update({"pipeline_id": engine, "parser_engine": "docling" if intent == "invoice" else engine})
             table_metadata.update({"element_type": "table", "layout_type": "table"})
             parser = table_metadata.get("parser") or table_metadata.get("table_extraction_method")
             parser = parser or "docling"
@@ -147,7 +170,7 @@ class DocumentProcessor:
                 if key not in element_metadata and key not in {"title", "uploaded_by"}
             })
             element_metadata["pipeline_id"] = engine
-            element_metadata["parser_engine"] = engine
+            element_metadata["parser_engine"] = "docling" if intent == "invoice" else engine
             parser = element_metadata.get("parser") or element_metadata.get("text_extraction_method")
             parser = parser or "docling"
             element_metadata["parser"] = parser
@@ -179,7 +202,7 @@ class DocumentProcessor:
             element["text"] = text
         result.setdefault("metadata", {}).update({
             "pipeline_id": engine,
-            "parser_engine": engine,
+            "parser_engine": "docling" if intent == "invoice" else engine,
             "filename": common["filename"],
             "format": common["format"],
             **{key: value for key, value in metadata.items() if key not in {"title", "uploaded_by"}},

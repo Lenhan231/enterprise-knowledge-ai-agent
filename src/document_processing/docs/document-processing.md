@@ -14,14 +14,16 @@ formats than the parser package.
 | Intent | Route | Main output |
 | --- | --- | --- |
 | `document` (default) | [`DoclingProcessor`](../docling_adapter/processor.py) | `elements`, `tables`, parser metadata, and optional page/layout data |
-| `invoice` | [`VinternProcessor`](../vintern_processor.py) | `invoice_extraction.pages` and searchable text elements; no structured tables |
+| `invoice` | [`DoclingProcessor`](../docling_adapter/processor.py) → [`InvoiceTextProcessor`](../invoice_text_processor.py) | Docling `elements`/`tables` plus validated `invoice_extraction.fields` |
 | `image_caption` | [`VinternProcessor`](../vintern_processor.py) | `image_caption_extraction.pages` and caption text elements; no structured tables |
 
-Invoice and image-caption are explicit intents selected in Upload Test; there
-is no automatic invoice classifier. The invoice route currently reads page
-images with Vintern instead of first running Docling. See the
-[Vintern guide](vintern-pipeline.md). The default document route is described
-in the [Docling guide](docling-pipeline.md).
+Invoice extraction is explicit; there is no automatic invoice classifier. It
+runs Docling OCR and table extraction first, then a text-only Qwen model over
+the resulting elements and cells. Production uploads save the source and
+review-required draft in `invoice_extractions`, separately from `documents`,
+parser chunks, and embeddings. See the [invoice guide](invoice-pipeline.md).
+Image captioning uses Vintern; see the [Vintern guide](vintern-pipeline.md).
+The default document route is described in the [Docling guide](docling-pipeline.md).
 
 ## Parser output boundary
 

@@ -14,23 +14,28 @@ flowchart TD
     D --> E[Layout, OCR, tables, charts, Office parsing]
     E --> F[Docling result mapper]
     F --> G[Normalize elements, tables, metadata]
-    C -->|invoice, explicit Upload Test| H[VinternProcessor]
-    C -->|image_caption, explicit Upload Test| H
-    H --> I[Render pages and start isolated worker]
-    I --> J[Vintern reads each page image]
-    J --> K[Invoice JSON draft or caption text]
+    C -->|invoice| H[Docling OCR + tables]
+    H --> I[InvoiceTextProcessor]
+    I --> J[Isolated Qwen text worker]
+    J --> K[Validated invoice JSON draft]
+    C -->|image_caption| V[VinternProcessor]
+    V --> W[Render pages and start isolated worker]
+    W --> X[Vintern caption]
     G --> L[Parser output]
     K --> L
+    X --> L
     L --> M{application handoff}
     M -->|parser-handoff route| N[Persist parser output]
     N --> O[Chunking worker]
     M -->|direct upload route| P[Inline chunking]
+    M -->|production invoice upload| Q[Separate invoice_extractions table]
 ```
 
-The `invoice` route does **not** run Docling first and then structure its OCR.
-It replaces the document route for that request and asks Vintern to read the
-source page image. This explains why a slow Vintern CPU run blocks invoice
-completion even though the regular Docling route works.
+Invoice parsing uses Docling for OCR/layout/table extraction and passes only
+those text results to the isolated Qwen worker. Production invoice uploads are
+stored in `public.invoice_extractions`; they do not create a `documents` row,
+parser chunks, or embeddings. Every draft is marked for review. Image caption
+continues through Vintern separately.
 
 ## Where to trace next
 
@@ -39,8 +44,8 @@ completion even though the regular Docling route works.
 | Intent validation and dispatch | [`document_processor.py`](../document_processor.py) |
 | Layout, OCR, TableFormer and chart stages | [`docling_adapter/processor.py`](../docling_adapter/processor.py) · [Docling guide](docling-pipeline.md) |
 | Element/table mapping and cleanup | [`docling_adapter/result_mapper.py`](../docling_adapter/result_mapper.py) |
-| Invoice/caption page preparation | [`vintern_processor.py`](../vintern_processor.py) · [Vintern guide](vintern-pipeline.md) |
-| Model load and per-page generation | [`vintern_worker.py`](../vintern_worker.py) |
+| Invoice OCR and text JSON extraction | [`invoice_text_processor.py`](../invoice_text_processor.py) · [Invoice guide](invoice-pipeline.md) |
+| Image-caption preparation and inference | [`vintern_processor.py`](../vintern_processor.py) · [`vintern_worker.py`](../vintern_worker.py) |
 | Upload Test API and async job status | [`src/app/upload_test.py`](../../app/upload_test.py) |
 | Production upload and parser handoff | [`src/app/main.py`](../../app/main.py) |
 | Parser output to parser chunks | [`src/core/chunking/README.md`](../../core/chunking/README.md) |

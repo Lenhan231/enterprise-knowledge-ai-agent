@@ -16,7 +16,8 @@ By default, local review data is under
 `src/document_processing/.owner_store/`. Set `DOCUMENT_PROCESSING_STORE` to
 use a different folder. Upload Test can select pages from a PDF before
 processing and can select the `document`, `invoice`, or `image_caption`
-intent. Invoice/caption require the separate Vintern environment below.
+intent. Invoice extraction uses Docling and a text-only Qwen worker; image
+captioning uses the separate Vintern environment below.
 
 ## Vintern environment
 

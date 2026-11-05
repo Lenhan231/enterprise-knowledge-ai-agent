@@ -30,9 +30,9 @@ ARMS = {
     "B5": {**PROD, "prompt": "old"},
     "B6": {**PROD, "model": "openai/gpt-oss-120b"},
     "B7": {**PROD, "model": "openai/gpt-oss-20b"},
-    "E2E": dict(kind="http", mode="auto"),
+    "E2E": dict(kind="http", mode="auto"),  # production /api/agents/chat in auto mode, with conversation history
     # The UI's Knowledge mode: KnowledgeAgent with the server's multiquery/verifier env; it keeps no conversation history.
-    "E2E-K": dict(kind="http", mode="knowledge"),  # production /api/agents/chat in auto mode; the only arm that runs multi-turn cases
+    "E2E-K": dict(kind="http", mode="knowledge"),
 }
 CLOSED_BOOK = ("Trả lời câu hỏi sau về chính sách vận hành doanh nghiệp VietStyle bằng tiếng Việt. "
                "Không có tài liệu nào được cung cấp; nếu không biết thì nói rõ là không biết.\n\nCâu hỏi:\n{question}")

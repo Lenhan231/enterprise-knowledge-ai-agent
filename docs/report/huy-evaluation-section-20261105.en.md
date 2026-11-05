@@ -60,7 +60,7 @@ Arms B3 (BGE reranker), B5 (old prompt only) and B6/B7 (GPT-OSS answer models) w
 - **Judge A.** `openai/gpt-oss-120b` on Groq. It read the policy text of the gold pages and the cited pages.
 - **Judge B.** A Codex agent. It graded from the question, reference answer and key points only. Its faithfulness labels are therefore discarded.
 - **Agreement.** The two judges agree on correct versus not correct in 90.5% of 348 shared verdicts (Cohen's κ = 0.81). The disagreements are mostly closed-book answers that give generic best practice: Judge A accepted them more often.
-- **Human check.** A stratified sample of 20 verdicts is being checked against human grades **[pending]**. One misgrade by Judge A is already known: E03 was marked wrong although "quarterly" is correct.
+- **Human check.** On a stratified sample of 20 verdicts, both judges agree with the human grade on correct versus not correct in 18/20 cases (κ = 0.80 each). Judge A's two errors were both over-strict on correct translations: "hàng quý" for "quarterly", and "Security lead" for "trưởng Bảo mật". Neither judge accepted a wrong answer in the sample.
 
 **Statistics.** Arms are compared on the same cases with an exact two-sided McNemar test on correct versus not correct. The 95% CI of the accuracy difference uses 10,000 paired bootstrap resamples. RBAC cases are scored by the leak rule, not by the judge.
 
@@ -172,7 +172,7 @@ Because the fixes were motivated by failures on this set, any after-fix gain par
 - **Size.** With 76 cases, overall accuracy has a CI of roughly ±11 points. Most groups have 1–8 cases and are reported as counts, not rates.
 - **Single document.** All questions come from one policy. A second corpus (an inventory set, 80 cases) exists from earlier work but was not re-run here.
 - **Corpus state.** Only the English PDF is active, so Vietnamese answers are translations. Strict key-point matching, which uses the Vietnamese wording, under-counts correct answers (48% strict vs 61% judged for B2). The effect of activating the Vietnamese PDF was not measured.
-- **LLM judges.** The judges are LLMs, and Judge B did not read the source pages. The human agreement check covers only 20 verdicts [pending].
+- **LLM judges.** The judges are LLMs, and Judge B did not read the source pages. The human agreement check covers only 20 verdicts.
 - **Provider quota.** Some API runs hit Groq rate limits; affected cases were re-run. Latency figures from these runs are not used. Clean latency after the fixes will be re-measured on V1–V6 and a 15-case Auto-mode subset [pending].
 - **Authorship.** The questions were drafted with an AI assistant and reviewed by one team member.
 

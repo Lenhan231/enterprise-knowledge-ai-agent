@@ -72,7 +72,7 @@ How to use this file:
 > - **Verifier blocks.** The number of answers the claim verifier withheld.
 > - **RBAC leakage.** Whether any policy chunk was returned to an unauthorised role.
 >
-> Correctness and coverage were graded by two independent LLM judges: gpt-oss-120b, which read the gold and cited policy pages, and a Codex agent, which read the reference answer and key points only. The judges agree on correct versus not correct in 90.5% of 348 shared verdicts (Cohen's κ = 0.81). A 20-verdict human check is [pending]. RBAC cases are scored by rule, not by a judge.
+> Correctness and coverage were graded by two independent LLM judges: gpt-oss-120b, which read the gold and cited policy pages, and a Codex agent, which read the reference answer and key points only. The judges agree on correct versus not correct in 90.5% of 348 shared verdicts (Cohen's κ = 0.81). On a stratified 20-verdict human check, each judge agreed with the human grade in 18/20 cases (κ = 0.80); the disagreements were over-strict gradings of correct translations. RBAC cases are scored by rule, not by a judge.
 >
 > Arms are compared on the same questions with an exact two-sided McNemar test. A paired bootstrap (10,000 resamples) gives the 95% interval of the accuracy difference.
 
@@ -297,7 +297,7 @@ Note: you may also replace "Architecture snapshot: current main beac2f3" with "f
 
 **VII.3: INSERT AFTER** the paragraph starting "Limitations include a small clustered retrieval set…"
 
-> For Knowledge AI, the held-out set has 76 questions from a single policy document, so overall accuracy carries roughly ±11 points of uncertainty, and subgroups are reported as counts. The questions were drafted with an AI assistant and reviewed by one team member. Answers were graded by LLM judges, with a small human check. Only the English policy PDF was active, so answers to Vietnamese questions were translated. Some API runs hit provider rate limits and the affected cases were re-run.
+> For Knowledge AI, the held-out set has 76 questions from a single policy document, so overall accuracy carries roughly ±11 points of uncertainty, and subgroups are reported as counts. The questions were drafted with an AI assistant and reviewed by one team member. Answers were graded by LLM judges, checked against human grades on 20 verdicts. Only the English policy PDF was active, so answers to Vietnamese questions were translated. Some API runs hit provider rate limits and the affected cases were re-run.
 >
 > Future work: a second held-out corpus; clean latency and concurrency measurements after the fixes; and an Auto-mode router that preserves the user's inputs and accepts verified calculations.
 

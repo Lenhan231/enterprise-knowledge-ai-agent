@@ -302,7 +302,7 @@ How to read Table 6.3:
 
 [Insert Figure 6.2: `docs/report/figures/fig6-2-accuracy-by-configuration.png`]
 
-**Figure 6.2.** Share of answers judged correct by each configuration under both judges, with 95% Wilson intervals.
+**Figure 6.2.** Share of answers judged correct by each configuration under both judges. Confidence intervals for the differences between configurations are given in Table 6.4.
 
 Retrieval quality differed sharply between the naive and the tuned configuration. Tuned RAG reached a Recall@5 of 0.72, Full evidence@5 of 0.61 and MRR of 0.73, against 0.32, 0.28 and 0.26 for dense-only retrieval.
 

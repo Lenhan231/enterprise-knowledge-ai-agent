@@ -6,7 +6,6 @@ Needs matplotlib, which is not a project dependency: run it with any Python that
   /tmp/figenv/bin/python scripts/agents/report_figures.py
 """
 import json
-import math
 from pathlib import Path
 
 import matplotlib
@@ -34,13 +33,6 @@ def rows(arm, judge):
     return [r for r in json.loads((RUNS / name).read_text())["rows"] if r.get("judge")]
 
 
-def wilson(k, n, z=1.96):
-    p = k / n
-    centre = (p + z * z / (2 * n)) / (1 + z * z / n)
-    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / (1 + z * z / n)
-    return centre - half, centre + half
-
-
 def recessive(ax, axis="x"):
     ax.grid(axis=axis, color=GRID, linewidth=0.8)
     ax.set_axisbelow(True)
@@ -55,14 +47,11 @@ def accuracy_figure():
         for yi, (arm, _) in zip(y, ARMS):
             data = rows(arm, judge)
             k, n = sum(r["judge"]["correctness"] == "correct" for r in data), len(data)
-            lo, hi = wilson(k, n)
             ax.barh(yi + offset, k / n * 100, height=0.32, color=colour, label=label if arm == "B0" else None)
-            ax.errorbar(k / n * 100, yi + offset, xerr=[[(k / n - lo) * 100], [(hi - k / n) * 100]],
-                        fmt="none", ecolor=MUTED, elinewidth=1, capsize=2)
-            ax.text(hi * 100 + 1.5, yi + offset, f"{k / n:.0%}", va="center", color=INK, fontsize=8)
+            ax.text(k / n * 100 + 1, yi + offset, f"{k / n:.0%}", va="center", color=INK, fontsize=8)
     ax.set_yticks(y, [name for _, name in ARMS], color=INK)
     ax.set_xlim(0, 100)
-    ax.set_xlabel("Answers judged correct (%), with 95% Wilson interval")
+    ax.set_xlabel("Answers judged correct (%)")
     recessive(ax)
     ax.legend(loc="lower right", frameon=False, fontsize=8)
     fig.tight_layout()

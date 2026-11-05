@@ -88,9 +88,9 @@ class RunVietstyleArmTest(unittest.TestCase):
             self.assertEqual([c[0] for c in FakeRunner.calls], ["L01", "L02"])
             rows = json.loads(out.read_text())["results"]
             self.assertEqual(rows[1]["error_type"], "ValueError")  # L02 fails in FakeRunner
-            Limited.errors, FakeRunner.calls = [RateLimitError("tokens per day")], []
+            Limited.errors, FakeRunner.calls = [RateLimitError("tokens per day") for _ in range(6)], []
             with mock.patch.object(arm, "InProcess", Limited), mock.patch.object(sys, "argv", [*argv, "--resume", "--retry-errors"]), \
-                    mock.patch("builtins.print"), self.assertRaises(SystemExit):
+                    mock.patch("builtins.print"), mock.patch.object(arm.time, "sleep"), self.assertRaises(SystemExit):
                 arm.main()
             self.assertEqual(Limited.errors, [])  # L02 (the error row) was attempted again, L01 was not
             self.assertEqual(json.loads(out.read_text())["results"], rows)  # stopping never rewrites the file

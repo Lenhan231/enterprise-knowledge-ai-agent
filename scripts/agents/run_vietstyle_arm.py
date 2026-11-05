@@ -214,8 +214,9 @@ def main():
                         raise
                     except Exception as error:  # one failed case must not lose the arm; scored as an error
                         if type(error).__name__ == "RateLimitError":
-                            # Per-minute limits clear in seconds; a daily limit (or repeated limits) stops the arm.
-                            if "per day" in str(error) or attempt == 5:
+                            # Other keys may still be free even when the reported key hit its daily limit;
+                            # stop only when no key frees up across the retries.
+                            if attempt == 5:
                                 raise SystemExit("Groq rate limit; stopped. Rerun with --resume later.")
                             time.sleep(min(60.0, float(error.response.headers.get("retry-after") or 10)) + 1)
                             continue

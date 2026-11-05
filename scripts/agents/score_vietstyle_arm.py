@@ -159,10 +159,10 @@ def judge_case(llm, case, row, pages):
             raw = llm.generate(prompt, max_output_tokens=600)
             break
         except RateLimitError as error:
-            # Per-minute token limits clear in seconds; a daily limit means stop and rerun later (cache resumes).
-            if "per day" in str(error) or attempt == 29:
+            # The provider keeps each limited key cooling (a daily-limited one for up to an hour) and raises only
+            # when none is free, so wait for any key; stop only when none frees up (cache resumes the run).
+            if attempt == 29:
                 raise SystemExit(f"Groq limit reached while judging {case['id']}; rerun later to resume") from error
-            llm._cooldowns = [0.0] * len(llm._cooldowns)
             time.sleep(min(60.0, float(error.response.headers.get("retry-after") or 10)) + 1)
     verdict = json.loads(raw[raw.index("{"):raw.rindex("}") + 1])
     if verdict.get("correctness") not in {"correct", "partial", "incorrect"}:

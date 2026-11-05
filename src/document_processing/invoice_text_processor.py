@@ -10,7 +10,7 @@ import subprocess
 import tempfile
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, StrictStr
+from pydantic import BaseModel, ConfigDict, StrictStr, field_validator
 
 
 MODEL_ID = "Qwen/Qwen2.5-0.5B-Instruct"
@@ -43,6 +43,11 @@ class InvoiceItem(BaseModel):
     unit_price: StrictStr | None = None
     amount: StrictStr | None = None
 
+    @field_validator("quantity", "unit_price", "amount", mode="before")
+    @classmethod
+    def numeric_values_to_text(cls, value: Any) -> Any:
+        return _numeric_text(value)
+
 
 class InvoiceFields(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -55,6 +60,136 @@ class InvoiceFields(BaseModel):
     subtotal: StrictStr | None = None
     tax_amount: StrictStr | None = None
     total_amount: StrictStr | None = None
+
+    @field_validator("subtotal", "tax_amount", "total_amount", mode="before")
+    @classmethod
+    def numeric_values_to_text(cls, value: Any) -> Any:
+        return _numeric_text(value)
+
+
+def _numeric_text(value: Any) -> Any:
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return str(value)
+    if isinstance(value, str) and re.search(r"[+=×*]", value):
+        return None
+    return value
+
+
+def _is_numbered_column_guide(row: dict[str, Any], columns: list[str]) -> bool:
+    """Drop invoice templates' separate 1..N column guide row, not invoice data."""
+    values = [str(row.get(column) or "").strip() for column in columns]
+    if len(values) < 3 or values[:1] != ["1"]:
+        return False
+    if any(value != str(index) for index, value in enumerate(values[:-1], start=1)):
+        return False
+    # The final cell commonly shows an OCR-corrupted formula, e.g. "6?4x5".
+    return bool(re.match(rf"{len(values)}.*[x×*]", values[-1], flags=re.IGNORECASE))
+
+
+def _prepare_extraction_input(
+    elements: list[dict[str, Any]], tables: list[dict[str, Any]],
+) -> dict[str, Any]:
+    prepared_tables = []
+    for table in tables:
+        columns = [str(column) for column in table.get("columns", [])]
+        description_column = _find_column(columns, ("tên hàng", "mô tả", "description"))
+        quantity_column = _find_column(columns, ("số lượng", "quantity"))
+        unit_column = _find_column(columns, ("đvt", "đơn vị", "unit"))
+        unit_price_column = _find_column(columns, ("đơn giá", "unit price"))
+        amount_column = _find_column(columns, ("thành tiền", "amount"))
+        item_rows = []
+        summary_rows = []
+        for row in table.get("rows", []):
+            if not isinstance(row, dict) or _is_numbered_column_guide(row, columns):
+                continue
+            values = [str(row.get(column) or "").strip() for column in columns]
+            row_text = " | ".join(value for value in values if value)
+            lowered = row_text.lower()
+            summary_kind = _summary_kind(lowered)
+            if summary_kind:
+                summary_rows.append({
+                    "kind": summary_kind,
+                    "label": row_text,
+                    "amount": str(row.get(amount_column) or "").strip() or None,
+                })
+                continue
+            description = str(row.get(description_column) or "").strip()
+            if not description:
+                continue
+            item_rows.append({
+                "description": description,
+                "quantity": _cell_text(row, quantity_column),
+                "unit": _cell_text(row, unit_column),
+                "unit_price": _cell_text(row, unit_price_column),
+                "amount": _cell_text(row, amount_column),
+            })
+        prepared_tables.append({"item_rows": item_rows, "summary_rows": summary_rows})
+    return {
+        "elements": [
+            {
+                "element_type": element.get("element_type") or element.get("type"),
+                "page_number": (element.get("metadata") or {}).get("page_number"),
+                "text": str(element.get("text") or "").strip(),
+            }
+            for element in elements
+            if str(element.get("text") or "").strip()
+        ],
+        "tables": prepared_tables,
+    }
+
+
+def _find_column(columns: list[str], hints: tuple[str, ...]) -> str | None:
+    return next((column for column in columns if any(hint in column.lower() for hint in hints)), None)
+
+
+def _cell_text(row: dict[str, Any], column: str | None) -> str | None:
+    value = str(row.get(column) or "").strip() if column else ""
+    return value or None
+
+
+def _summary_kind(text: str) -> str | None:
+    if "tổng tiền" in text or "total" in text:
+        return "total_amount"
+    if "tiền thuế" in text or "tax amount" in text:
+        return "tax_amount"
+    if "cộng tiền" in text or "subtotal" in text:
+        return "subtotal"
+    if "thuế suất" in text or "vat" in text:
+        return "tax_summary"
+    return None
+
+
+def _fields_from_tables(tables: list[dict[str, Any]]) -> dict[str, Any]:
+    fields: dict[str, Any] = {}
+    items = [item for table in tables for item in table["item_rows"]]
+    if items:
+        fields["items"] = items
+    for table in tables:
+        for row in table["summary_rows"]:
+            if row["kind"] in {"subtotal", "tax_amount", "total_amount"} and row["amount"]:
+                fields[row["kind"]] = row["amount"]
+    return fields
+
+
+def _fields_from_labeled_elements(elements: list[dict[str, Any]]) -> dict[str, Any]:
+    fields: dict[str, Any] = {}
+    for element in elements:
+        text = str(element.get("text") or "").strip()
+        if not text:
+            continue
+        buyer = re.search(
+            r"(?:tên\s+đơn\s+vị|tên\s+người\s+mua|người\s+mua\s+hàng)\s*:\s*(.+)",
+            text, flags=re.IGNORECASE,
+        )
+        if buyer and buyer.group(1).strip():
+            fields["buyer"] = buyer.group(1).strip()
+        seller = re.search(r"(?:tên\s+người\s+bán|người\s+bán\s+hàng)\s*:\s*(.+)", text, flags=re.IGNORECASE)
+        if seller and seller.group(1).strip():
+            fields["seller"] = seller.group(1).strip()
+        element_type = element.get("element_type") or element.get("type")
+        if element_type == "title" and "công ty" in text.lower():
+            fields["seller"] = text
+    return fields
 
 
 def _parse_json_response(response: str) -> dict[str, Any] | None:
@@ -80,21 +215,7 @@ class InvoiceTextProcessor:
     def process(
         self, elements: list[dict[str, Any]], tables: list[dict[str, Any]],
     ) -> dict[str, Any]:
-        ocr_input = {
-            "elements": [
-                {
-                    "element_type": element.get("element_type"),
-                    "page_number": (element.get("metadata") or {}).get("page_number"),
-                    "text": str(element.get("text") or "").strip(),
-                }
-                for element in elements
-                if str(element.get("text") or "").strip()
-            ],
-            "tables": [
-                {"columns": table.get("columns", []), "rows": table.get("rows", [])}
-                for table in tables
-            ],
-        }
+        ocr_input = _prepare_extraction_input(elements, tables)
         if not ocr_input["elements"] and not ocr_input["tables"]:
             raise ValueError("No OCR elements or tables were extracted from the invoice")
 
@@ -121,7 +242,10 @@ class InvoiceTextProcessor:
             "Trích xuất dữ liệu hóa đơn tiếng Việt từ các vùng OCR và bảng. "
             "Chỉ trả về một JSON object theo schema. Giữ nguyên chuỗi số và cách viết; "
             "không tự tính, không suy đoán trường thiếu, dùng null nếu không thấy. "
-            "Bỏ qua số thứ tự/chú thích mẫu dưới tiêu đề cột; mỗi hàng hóa thực tế là một item.\n"
+            "Các hàng chỉ đánh số cột hoặc ghi công thức mẫu không phải dữ liệu hóa đơn. "
+            "Chỉ lấy số lượng/đơn giá khi chúng nằm trong hàng hàng hóa thực tế; "
+            "không lấy số thứ tự cột làm dữ liệu và không tự tính bất kỳ số tiền nào. "
+            "Các hàng cộng tiền, tiền thuế và tổng thanh toán là số tổng hợp, không phải item.\n"
             f"SCHEMA:\n{json.dumps(SCHEMA, ensure_ascii=False)}\n"
             f"OCR ELEMENTS AND TABLES:\n{json.dumps(ocr_input, ensure_ascii=False)}"
         )
@@ -160,14 +284,16 @@ class InvoiceTextProcessor:
                 raise RuntimeError("Invoice text worker returned invalid output") from error
 
         raw_response = str(worker_result.get("response", ""))
-        fields = _parse_json_response(raw_response)
+        fields = _parse_json_response(raw_response) or InvoiceFields().model_dump(mode="json")
+        fields.update(_fields_from_tables(ocr_input["tables"]))
+        fields.update(_fields_from_labeled_elements(elements))
         return {
             "model": model_id,
             "revision": worker_result.get("revision", revision),
             "schema_version": SCHEMA_VERSION,
             "status": "review_required",
             "review_required": True,
-            "fields": fields or InvoiceFields().model_dump(mode="json"),
+            "fields": fields,
             "raw_response": raw_response,
             "parse_error": None if fields is not None else "Model response did not match invoice.v1",
             "metrics": worker_result.get("metrics", {}),

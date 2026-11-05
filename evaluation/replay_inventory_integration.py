@@ -41,7 +41,7 @@ async def run(args):
             identity=VerifiedIdentity(subject='inventory-integration-replay',permissions={'analytics:read'})
             started=time.perf_counter()
             result=await agent.run(AgentRequest(question=row['question'],identity=identity))
-            actual=json.loads(dumps(result.model_dump()))
+            actual=result.model_dump(mode='json')
             expected=row['result']
             checks={
                 'sql':sql(actual['data'].get('sql'))==sql(expected['data'].get('sql')),

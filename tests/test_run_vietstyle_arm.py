@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 spec = importlib.util.spec_from_file_location("run_vietstyle_arm", ROOT / "scripts/agents/run_vietstyle_arm.py")
 arm = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(arm)
@@ -29,6 +30,22 @@ class FakeRunner:
 
 
 class RunVietstyleArmTest(unittest.TestCase):
+    def test_generation_without_verifier_and_unsupported_verified_arm(self):
+        runner = arm.InProcess.__new__(arm.InProcess)
+        runner.arm = arm.ARMS["B4"]
+        result = type("Result", (), dict(answer="ok", contexts=[], source_ids=[],
+                                         insufficient_context=False, prompt_sha256="hash"))()
+
+        class Rag:
+            def generate_answer(self, question, roles, retrieval_method):
+                return result
+
+        runner.rag = Rag()
+        self.assertIsNone(runner._run({"question": "q"}, ["employee"])["verification"])
+        runner.arm = arm.ARMS["B2"]
+        with self.assertRaisesRegex(SystemExit, "does not support claim verification"):
+            runner._run({"question": "q"}, ["employee"])
+
     def run_main(self, *argv):
         with mock.patch.object(arm, "InProcess", FakeRunner), mock.patch.object(sys, "argv", ["x", *argv]), \
                 mock.patch("builtins.print"):

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import inspect
 import json
 import os
 import sys
@@ -84,15 +85,19 @@ class InProcess:
                                                       retrieval_method=self.args.method)
                 return {"contexts": [context_row(c, ()) for c in contexts],
                         "retrieval_details": contexts[0]["retrieval_details"] if contexts else {}}
-            result = self.rag.generate_answer(case["question"], roles=roles, retrieval_method=self.arm["method"],
-                                              verify_claims=self.arm["verify"])
+            options = {}
+            if "verify_claims" in inspect.signature(self.rag.generate_answer).parameters:
+                options["verify_claims"] = self.arm["verify"]
+            elif self.arm["verify"]:
+                raise SystemExit("This branch does not support claim verification; use B1/B4 or a verifier-enabled backend")
+            result = self.rag.generate_answer(case["question"], roles=roles, retrieval_method=self.arm["method"], **options)
             details = result.contexts[0]["retrieval_details"] if result.contexts else {}
             expected = self.arm.get("reranker")
             if expected and details.get("reranker_model") and expected not in details["reranker_model"]:
                 raise SystemExit(f"Reranker service runs {details['reranker_model']}, arm expects {expected}; stopped")
             return {"answer": result.answer, "insufficient_context": result.insufficient_context,
                     "source_ids": result.source_ids, "prompt_sha256": result.prompt_sha256,
-                    "verification": result.verification.model_dump() if result.verification else None,
+                    "verification": result.verification.model_dump() if getattr(result, "verification", None) else None,
                     "contexts": [context_row(c, set(result.source_ids)) for c in result.contexts],
                     "retrieval_details": details}
         finally:
@@ -158,7 +163,7 @@ def main():
         parser.error("Output exists; choose a new path or pass --resume")
     raw = args.cases.read_bytes()
     dataset = json.loads(raw)
-    report = json.loads(args.output.read_text()) if args.resume else {
+    report = json.loads(args.output.read_text(encoding="utf-8")) if args.resume else {
         "dataset_id": dataset["dataset_id"], "dataset_status": dataset["status"],
         "dataset_sha256": hashlib.sha256(raw).hexdigest(), "arm": args.arm,
         "configuration": {**arm, **({"method": args.method} if args.arm == "A" else {}),

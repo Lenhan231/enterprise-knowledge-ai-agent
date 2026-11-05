@@ -19,6 +19,28 @@ def ctx(page, cited=False, doc=DOC):
 
 
 class ScoreVietstyleArmTest(unittest.TestCase):
+    def test_judge_retries_minute_limit_and_stops_on_daily_limit(self):
+        import httpx
+        from openai import RateLimitError
+
+        case = {"id": "L01", "question": "q", "type": "lookup", "reference_answer": "a",
+                "should_abstain": False, "must_include": [], "evidence": []}
+        for message, daily in (("tokens per minute", False), ("tokens per day", True)):
+            response = httpx.Response(429, headers={"retry-after": "2"},
+                                      request=httpx.Request("POST", "https://example.test"))
+            error = RateLimitError(message, response=response, body=None)
+            llm = mock.Mock(_cooldowns=[100.0])
+            llm.generate.side_effect = [error, '{"correctness": "correct"}']
+            with mock.patch.object(score.time, "sleep") as sleep:
+                if daily:
+                    with self.assertRaises(SystemExit):
+                        score.judge_case(llm, case, {}, {})
+                    sleep.assert_not_called()
+                else:
+                    self.assertEqual(score.judge_case(llm, case, {}, {})["correctness"], "correct")
+                    sleep.assert_called_once_with(3)
+                    self.assertEqual(llm._cooldowns, [0.0])
+
     def test_key_points_numbers_alternatives_and_case(self):
         answer = "Khoản VND 50,000,001 cần Trưởng Bộ Phận duyệt trong 1 giờ."
         self.assertTrue(score.key_point_hit("50.000.001", answer))

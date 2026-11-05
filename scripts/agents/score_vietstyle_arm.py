@@ -30,7 +30,11 @@ APPENDIX_PAGES = {"cover": {1}, "PL-A": {53}, "PL-B": {53}, "PL-C": {53, 54}, "P
 
 def refusals():
     from core.prompts.Knowledge import INSUFFICIENT_ANSWER, NO_MATCHING_DOCUMENTS_ANSWER
-    from core.rag.claim_verification import VERIFICATION_UNAVAILABLE_ANSWER
+    # Historical verifier response: scoring saved runs does not require the verifier runtime.
+    VERIFICATION_UNAVAILABLE_ANSWER = (
+        "Chưa thể kiểm chứng đầy đủ câu trả lời với các nguồn được trích dẫn. "
+        "Vui lòng thử lại hoặc hỏi rõ hơn."
+    )
     return {INSUFFICIENT_ANSWER: "insufficient", NO_MATCHING_DOCUMENTS_ANSWER: "no_documents",
             VERIFICATION_UNAVAILABLE_ANSWER: "verifier_block"}
 
@@ -209,14 +213,14 @@ def summarize(rows):
 
 
 def score(args):
-    run = json.loads(args.run.read_text())
+    run = json.loads(args.run.read_text(encoding="utf-8"))
     questions = json.loads(QUESTIONS.read_bytes())
     if run["dataset_sha256"] != hashlib.sha256(QUESTIONS.read_bytes()).hexdigest():
         raise SystemExit("Run was made on another questions.json version")
     cases = {c["id"]: c for c in questions["cases"]}
     refusal = refusals()
     out_path = args.run.with_suffix(".scored.json")
-    cache = {r["id"]: r for r in json.loads(out_path.read_text())["rows"]} if out_path.exists() else {}
+    cache = {r["id"]: r for r in json.loads(out_path.read_text(encoding="utf-8"))["rows"]} if out_path.exists() else {}
     rows = [score_row(cases[row["id"]], row, refusal) for row in run["results"]]
     if args.judge:
         from core.llm.groq_provider import GroqProvider
@@ -236,15 +240,15 @@ def score(args):
                 row["judge_error"] = str(error)[:300]
             print(row["id"], row.get("judge", {}).get("correctness", row.get("judge_error")), flush=True)
             out_path.write_text(json.dumps({"run": str(args.run), "arm": run["arm"], "rows": rows},
-                                           ensure_ascii=False, indent=1) + "\n")
+                                           ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     report = {"run": str(args.run), "arm": run["arm"], "configuration": run["configuration"],
               "summary": summarize(rows), "rows": rows}
-    out_path.write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n")
+    out_path.write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(json.dumps(report["summary"], ensure_ascii=False, indent=1))
 
 
 def compare(args):
-    a, b = (json.loads(p.read_text()) for p in (args.a, args.b))
+    a, b = (json.loads(p.read_text(encoding="utf-8")) for p in (args.a, args.b))
     correct = lambda r: r.get("status") == "ok" and r.get("judge", {}).get("correctness") == "correct"
     rows_b = {r["id"]: r for r in b["rows"]}
     pairs = [(correct(r), correct(rows_b[r["id"]])) for r in a["rows"]

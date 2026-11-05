@@ -38,6 +38,8 @@ How to use this file:
 > - **Conversation and edge cases (8):** follow-ups, a topic switch, an ambiguous question, foreign currency, typos, a pasted e-mail and chit-chat.
 >
 > Every reference answer and evidence page was checked against the policy text and reviewed by a team member. The set was then locked (SHA-256 9980e803…7e84da) before any configuration was run. Questions used earlier for tuning (V1–V6 and fifteen manual questions) are excluded. The physical PDF page equals the policy page + 2; this was verified on the Vietnamese PDF and spot-checked on the English PDF.
+>
+> The 76-case set was held out for the ablation reported in VI.1.5, which was run before any change. Its failures were then analysed to design fixes, so from that point it served as a development set. A second set, vietstyle-test-v1 (30 new cases with the same type mix and no repeated facts), was written and locked afterwards. It is used only for the final confirmation of the chosen configuration. Accuracy is reported only on sets that were not used for tuning at the time they were run.
 
 **IV.3: REPLACE** the sentence "BGE reranking scores query–candidate pairs."
 
@@ -217,7 +219,22 @@ Note: you may also replace "Architecture snapshot: current main beac2f3" with "f
 > | Auto vs B2 (E2E vs B2) | −17 pts [−30, −3], p = 0.035 | −21 pts [−35, −8], p = 0.007 |
 > | Auto vs Knowledge mode (E2E vs E2E-K) | −12 pts [−26, +3], p = 0.17 | −16 pts [−29, −3], p = 0.043 |
 >
-> Both judges agree on the direction of every comparison. Results after the 5 November fixes are [pending].
+> Both judges agree on the direction of every comparison.
+>
+> Overall accuracy mixes two different failures: declining an answerable question, and answering it wrongly.
+>
+> | Arm | Answerable questions answered | Correct when answered | Correct or partial when answered | Confidently wrong (share of answerable) |
+> |---|---|---|---|---|
+> | Tuned pipeline (B2) | 39–42 of 60 | 76–77% | 90–92% | 5–7% |
+> | Knowledge mode (E2E-K) | 38–41 of 63 | 78–79% | 92–93% | 5% |
+>
+> Ranges cover the two judges; the rates rest on about 40 answered cases (roughly ±13 points). Most failures are refusals caused by retrieval misses. For an internal policy assistant this is the safer failure, because the user is told the information was not found instead of receiving an invented rule or figure.
+
+> **1.6 After the fixes (development set).**
+>
+> After commit f88613d, the tuned pipeline scored 57% under both judges, against 58–59% before. On the 69 paired cases, judge A changed its grade for one case and judge B for none (p = 1.0 under both). The crash (HTTP 503) disappeared, and mechanical verifier blocks fell from 3 to 1. The affected answers were not correct before the fix, so accuracy was not expected to change.
+>
+> The Auto-mode re-run was disrupted by provider rate limits and is being repeated [pending]. Results on the locked 30-case test set are [pending].
 
 **VI.2 Discussion: REPLACE** the sentence starting "Latest local selected checks reported 33 passes…" and **INSERT AFTER** that paragraph the following paragraphs.
 
@@ -267,7 +284,7 @@ Note: you may also replace "Architecture snapshot: current main beac2f3" with "f
 > - synthesis accepts results of exactly checked equalities whose operands are sourced;
 > - the planner is instructed to keep every number in task questions.
 >
-> Because these fixes were motivated by failures on this set, the after-fix scores [pending] confirm the defects are removed. They are not an unbiased estimate of improvement.
+> Because these fixes were motivated by failures on this set, after-fix results on it only confirm that the defects are removed (VI.1.6). An unbiased estimate needs the locked test set.
 
 **VI.3 Recommendations: REPLACE** the sentence "Profile representative CPU reranking before changing models or candidate counts." with:
 
@@ -275,7 +292,7 @@ Note: you may also replace "Architecture snapshot: current main beac2f3" with "f
 >
 > 1. Remove unrelated uploads from the employee scope. This is the cheapest retrieval gain.
 > 2. Default the chat UI to Knowledge mode for policy questions until Auto mode matches it on the held-out set.
-> 3. Improve recall for unaccented and partial-evidence questions (accent restoration before BM25, or more candidates before reranking). Validate such changes on new held-out questions, not on this set.
+> 3. Improve recall for unaccented and partial-evidence questions (accent restoration before BM25, or more candidates before reranking). Validate such changes on the locked test set, not on the development set.
 > 4. Keep the verifier but monitor its block reasons.
 > 5. Return a polite refusal instead of HTTP 403 when Auto mode plans a task the role may not run.
 > 6. Run a 3–5-user concurrency test.
@@ -289,9 +306,9 @@ Note: you may also replace "Architecture snapshot: current main beac2f3" with "f
 
 > On the frozen bilingual benchmark, translated hybrid retrieval with BGE reranking completed the required evidence in 69/80 cases, against 52/80 for dense E5. On the CPU deployment, an mMiniLM reranker kept the same top-5 evidence quality at a fraction of BGE's latency. Warm latency was 6.7 s (median, six questions).
 >
-> On a locked 76-question held-out set, the tuned Knowledge pipeline answered 58–59% of questions correctly, against 34–37% for naïve dense RAG and 11–24% without documents. It refused every out-of-scope and injection question, and leaked nothing to unauthorised roles.
+> On a locked 76-question held-out set, the tuned Knowledge pipeline answered 58–59% of questions correctly, against 34–37% for naïve dense RAG and 11–24% without documents. When it answered, 76–79% of answers were correct and only 5–7% of answerable questions received a confidently wrong answer; most failures were refusals caused by retrieval misses. It refused every out-of-scope and injection question, and leaked nothing to unauthorised roles.
 >
-> The claim verifier did not change accuracy. Auto mode was 17–21 points worse than calling the pipeline directly, because of its synthesis and task-rewriting steps, which were then fixed [after-fix result pending].
+> The claim verifier did not change accuracy. Auto mode was 17–21 points worse than calling the pipeline directly, because of its synthesis and task-rewriting steps. Fixes removed the crash and most mechanical blocks without changing the direct pipeline's accuracy; the Auto-mode and locked test-set results are [pending].
 >
 > A parsed-document chunking worker is on main. RBAC has a working foundation with known policy gaps.
 

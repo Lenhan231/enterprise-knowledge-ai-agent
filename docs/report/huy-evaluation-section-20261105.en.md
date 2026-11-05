@@ -6,7 +6,18 @@ Date: 5 November 2026. Draft section for *VI. Results and Discussion*. It comple
 
 Earlier measurements used six known procurement questions (V1–V6) and fifteen manual questions that were also used while tuning prompts. They show that known answers survive a change, but they cannot compare systems fairly. This section therefore evaluates every configuration on one fixed question set written before any of the configurations below were run.
 
-## 2. Test set: `vietstyle-heldout-v1`
+**Roles of the evaluation sets.**
+
+| Set | Cases | Role | Used for tuning? |
+|---|---|---|---|
+| V1–V6 | 6 | Latency and regression checks | Yes (latency work) |
+| Manual questions | 15 | Prompt checks | Yes |
+| `vietstyle-heldout-v1` | 76 | Ablation (Sections 5–6), run before any change; afterwards the development set for the fixes in Section 7 | Not for Sections 5–6 |
+| `vietstyle-test-v1` | 30 | Final confirmation of the chosen configuration; written and locked before the fixes are measured on it | No |
+
+Accuracy is reported only on sets that were not used for tuning at the time they were run.
+
+## 2. Evaluation set: `vietstyle-heldout-v1`
 
 - **Source.** *VietStyle Enterprise Operating Policy v1.0* (50 policy pages and four appendices). Every reference answer was checked against the policy text and the evidence page recorded.
 - **Review and lock.** All 76 cases were reviewed by a team member (`REVIEW.md`, status `reviewed-r2`, SHA-256 `9980e803…7e84da`). Revision r2 was made before any run; no label was changed after results were seen.
@@ -82,6 +93,7 @@ How to read the table:
 - **Denominators.** About 69–72 judged answers per arm, which excludes crashed or skipped cases.
 - **API arms.** The API arms have 9 should-decline cases because the RBAC cases run only in-process.
 - **RBAC.** No arm leaked policy content to the unauthorised role (0/3).
+- **Provider errors.** In the Auto-mode run (E2E), three cases (T01, P02, X04) hit a Groq rate limit inside the planned task and are counted as failures. They could not be re-run on the same code, so Auto-mode accuracy may be understated by up to about four points.
 
 ### 5.2 Retrieval (in-process arms)
 
@@ -104,6 +116,21 @@ B2 and B4 retrieve identically; they differ only after generation.
 | E2E vs E2E-K (Auto vs Knowledge) | −12 pts [−26, +3], p = 0.17 | −16 pts [−29, −3], p = 0.043 | Knowledge mode is better |
 
 Every conclusion has the same direction under both judges.
+
+### 5.4 How the system fails: refusal, not invention
+
+Overall accuracy mixes two very different failures: declining an answerable question, and giving a wrong answer. Separating them for the tuned pipeline and the production Knowledge mode:
+
+| Arm | Answerable questions answered | Correct when answered | Correct or partial when answered | Confidently wrong (share of answerable) |
+|---|---|---|---|---|
+| B2 tuned pipeline | 39–42 of 60 | 76–77% | 90–92% | 3–4 (5–7%) |
+| E2E-K (API, Knowledge) | 38–41 of 63 | 78–79% | 92–93% | 3 (5%) |
+
+Ranges span the two judges. A question counts as answered when the system neither refused nor was withheld by the verifier.
+
+- **When the system answers, it is usually right.** Only about one answerable question in twenty receives a confidently wrong answer.
+- **Most failures are refusals** caused by retrieval misses (Section 6.1). For an internal policy assistant this is the safer failure: the user is told the information was not found rather than given an invented rule or figure.
+- **Small denominators.** The answered subsets have about 40 cases, so these rates carry roughly ±13 points of uncertainty.
 
 ## 6. Error analysis
 
@@ -151,9 +178,11 @@ The three remaining Auto-mode failures (N01, N02, H01) were HTTP 403 for the emp
 
 Without documents, the model answered 11–24% correctly, depending on the judge. These are cases where generic good practice coincides with the policy, for example "verify a supplier's bank-account change independently" and "never log passwords or tokens". Every question that needed a policy-specific figure or approver failed. The value of retrieval is therefore the 35–46 point gain over this baseline, not the absolute accuracy.
 
-## 7. Fixes and re-measurement [pending]
+## 7. Fixes and re-measurement
 
-Commit `f88613d` (deployed 5 November) addresses the mechanical failures found above. It does not tune on the test answers.
+### 7.1 Fixes (development set)
+
+From this point, `vietstyle-heldout-v1` serves as the development set. Commit `f88613d` (deployed 5 November) addresses the mechanical failures found above. It changes failure handling and number checks; it does not encode any test answer.
 
 | Fix | Targets |
 |---|---|
@@ -163,9 +192,49 @@ Commit `f88613d` (deployed 5 November) addresses the mechanical failures found a
 | Final synthesis accepts numbers that are results of exactly checked equalities; operands must still be sourced | Evidence fallback on calculations (Auto mode) |
 | Planner instruction to keep every number, amount and quantity in task questions | Dropped inputs (C01) |
 
-The after-fix runs of B2, E2E and E2E-K are being collected and will be scored by both judges **[pending: table]**.
+**Tuned pipeline after the fixes (B2 → B2-fix, same 76 cases).**
 
-Because the fixes were motivated by failures on this set, any after-fix gain partly reflects fitting to these 76 cases. The before/after table should be read as confirmation that the identified defects are removed, not as an unbiased estimate of improvement.
+| | B2 | B2-fix |
+|---|---|---|
+| Correct, judge A / B | 59% / 58% | 57% / 57% |
+| Paired change (69 cases) | — | A: 1 discordant case, p = 1.0; B: none, p = 1.0 |
+| Requests failing with HTTP 503 | 1 (M03) | 0 |
+| Verifier blocks | 4 (3 mechanical) | 4 (1 mechanical) |
+
+What changed in the blocks:
+
+- **L02 is no longer blocked.** Its partial answer now passes the verifier, although the answer itself was still judged not correct.
+- **M06 is still withheld,** but now because the auditor judged a claim insufficiently supported, not because the answer could not be parsed.
+- **M03 is now withheld politely** ("cannot verify" instead of HTTP 503).
+- **M01 still fails**, because both audit attempts returned malformed JSON.
+
+Accuracy of the direct pipeline is unchanged, as expected: the fixes target failure handling, and the affected answers were not correct to begin with.
+
+The Auto-mode run after the fixes (E2E-fix) was disrupted by provider rate limits: 35 cases failed inside the planned task. It will be re-run before its results are reported **[pending]**. The same applies to E2E-K-fix.
+
+Because the fixes were motivated by failures on this set, after-fix results on it confirm that the identified defects are removed. They are not an unbiased estimate of improvement.
+
+### 7.2 Locked test set [pending]
+
+`vietstyle-test-v1` contains 30 new cases, written after the analysis above and before any further change. Its type mix mirrors the development set:
+
+| Group | Cases |
+|---|---|
+| Core policy questions | 14 |
+| Grounded refusal | 6 |
+| RBAC | 1 |
+| Language variants | 6 |
+| Conversation and edge cases | 3 |
+
+None of its questions asks a fact already asked in the development set, V1–V6 or the manual questions; threshold and calculation cases apply the same rules to new values.
+
+The final configuration is decided on the development set first:
+
+- corpus clean-up (unrelated uploads deactivated);
+- whether the Vietnamese PDF is active;
+- the after-fix code.
+
+The test set is then run once, both for the pre-change and the final configuration, on the same corpus **[pending: results]**.
 
 ## 8. Limitations
 
@@ -174,12 +243,13 @@ Because the fixes were motivated by failures on this set, any after-fix gain par
 - **Corpus state.** Only the English PDF is active, so Vietnamese answers are translations. Strict key-point matching, which uses the Vietnamese wording, under-counts correct answers (48% strict vs 61% judged for B2). The effect of activating the Vietnamese PDF was not measured.
 - **LLM judges.** The judges are LLMs, and Judge B did not read the source pages. The human agreement check covers only 20 verdicts.
 - **Provider quota.** Some API runs hit Groq rate limits; affected cases were re-run. Latency figures from these runs are not used. Clean latency after the fixes will be re-measured on V1–V6 and a 15-case Auto-mode subset [pending].
-- **Authorship.** The questions were drafted with an AI assistant and reviewed by one team member.
+- **Authorship.** Both question sets were drafted with an AI assistant and reviewed by one team member.
+- **Test-set size.** The 30-case test set can only detect large differences, roughly 15–20 points or more.
 
 ## 9. Recommendations
 
 1. **Remove unrelated uploads from the employee scope.** This is the cheapest retrieval improvement, and it fixes L01-type errors.
 2. **Default the chat UI to Knowledge mode** for policy questions until Auto mode matches it on this set. Re-check after `f88613d`.
-3. **Improve recall for no-diacritics and partial-evidence questions.** Options are accent restoration before BM25, or more candidates before reranking. Measure any such change on a new held-out set, not this one.
+3. **Improve recall for no-diacritics and partial-evidence questions.** Options are accent restoration before BM25, or more candidates before reranking. Measure any such change on the locked test set, not the development set.
 4. **Keep the verifier but monitor its block reasons.** It currently adds no measurable accuracy but blocks some unsupported claims. Its value depends on false blocks staying rare.
 5. **Return a polite refusal instead of HTTP 403** when Auto mode plans a SQL task for a role without analytics permission.

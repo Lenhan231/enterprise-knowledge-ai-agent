@@ -19,6 +19,15 @@ IDENTITY = VerifiedIdentity(subject='inventory-test', permissions={'analytics:re
 
 
 class InventoryIntegrationTest(unittest.IsolatedAsyncioTestCase):
+    def test_vietnamese_comparison_keeps_both_snapshot_dates(self):
+        question = ('Tồn kho thay đổi thế nào giữa 30/11/2022 và 31/12/2022 '
+                    'cho các sản phẩm có mặt ở cả hai ngày? Kèm product_id và product_name.')
+        mapping = decode_metric_mapping(json.dumps(dict(metrics=['stock_on_hand'],
+            dimensions=['product_id', 'product_name'], representation='product',
+            time=dict(mode='comparison', start='2022-11-30', end='2022-12-31'))), question)
+        self.assertEqual(mapping.time.mode, 'comparison')
+        self.assertEqual((mapping.time.start, mapping.time.end), ('2022-11-30', '2022-12-31'))
+
     def comparison(self):
         return decode_metric_mapping(json.dumps(dict(metrics=['stock_on_hand'], dimensions=['product_id', 'product_name'],
             representation='product', time=dict(mode='comparison', start='2022-11-30', end='2022-12-31'))),

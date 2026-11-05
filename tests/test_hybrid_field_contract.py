@@ -4,7 +4,7 @@ import sys
 import unittest
 
 sys.path[:0]=[str(Path(__file__).resolve().parents[1]),str(Path(__file__).resolve().parents[1]/'src')]
-from evaluation.hybrid_field_contract import field_contract,validate_field_sql
+from core.analytics.field_retrieval import field_contract,validate_field_sql
 from core.analytics.metric_validation import MetricDefinitionError
 from core.analytics.text_to_sql import decode_query_plan
 

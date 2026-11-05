@@ -136,8 +136,8 @@ class SQLAnalyticsAgent(BaseAgent):
             tables = relevant_schema_tables(question, {name:get_metric_definition(name) for name in metric_names})
             if (direct is None and 'commerce.inventory' in tables and all(
                     get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
-                    and re.search(r'\bcurrent\b|\btoday\b|hiá»‡n táº¡i|hÃ´m nay', re.sub(r"'(?:[^']|'')*'", '', question), re.I)
-                    and not re.search(r'latest available|má»›i nháº¥t hiá»‡n cÃ³', question, re.I)):
+                    and re.search(r'\bcurrent\b|\btoday\b|hiện tại|hôm nay', re.sub(r"'(?:[^']|'')*'", '', question), re.I)
+                    and not re.search(r'latest available|mới nhất hiện có', question, re.I)):
                 period = inventory_time_scope(question) or ('snapshot', date.today().isoformat(), None)
                 if period:
                     snapshot_sql = 'SELECT MAX(i.snapshot_date) AS snapshot_date FROM commerce.inventory AS i LIMIT 1'

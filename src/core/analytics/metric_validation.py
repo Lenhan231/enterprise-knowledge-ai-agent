@@ -44,8 +44,8 @@ def inventory_time_scope(question):
         return ('snapshot', dates[0].isoformat(), None) if len(dates) == 1 else (
             'range', dates[0].isoformat(), dates[-1].isoformat())
     month = re.search(r'\b('+'|'.join(calendar.month_name[1:]).lower()+r')\s+((?:19|20)\d{2})\b', question)
-    numeric = re.search(r'thÃ¡ng\s+(\d{1,2})\s+(?:nÄƒm\s+)?((?:19|20)\d{2})\b', question)
-    quarter = re.search(r'(?:\bq|quarter\s*|quÃ½\s*)([1-4])\s+(?:of\s+|nÄƒm\s+)?((?:19|20)\d{2})\b', question)
+    numeric = re.search(r'tháng\s+(\d{1,2})\s+(?:năm\s+)?((?:19|20)\d{2})\b', question)
+    quarter = re.search(r'(?:\bq|quarter\s*|quý\s*)([1-4])\s+(?:of\s+|năm\s+)?((?:19|20)\d{2})\b', question)
     years = set(re.findall(r'\b(?:19|20)\d{2}\b', question))
     if len(years) != 1:
         return None
@@ -62,7 +62,7 @@ def inventory_time_scope(question):
 
 
 def inventory_comparison_dates(question):
-    if re.search(r'\bchange\b|\bdelta\b|\bdifference\b|thay Ä‘á»•i|chÃªnh lá»‡ch', _normalize(question)):
+    if re.search(r'\bchange\b|\bdelta\b|\bdifference\b|thay đổi|chênh lệch', _normalize(question)):
         dates = inventory_explicit_dates(question)
         if len(dates) == 2:
             return tuple(d.isoformat() for d in dates)
@@ -140,7 +140,7 @@ def validate_metric_request(question, metric_names):
         if definition['approval_status'] not in {'team_accepted', 'business_approved'}:
             raise MetricDefinitionError('This inventory definition has not been accepted for use.',
                                         code='metric_unapproved', clarification=True)
-    if inventory and re.search(r'latest|má»›i nháº¥t|gáº§n nháº¥t', question, re.I) and re.search(r'\b(?:19|20)\d{2}\b', question):
+    if inventory and re.search(r'latest|mới nhất|gần nhất', question, re.I) and re.search(r'\b(?:19|20)\d{2}\b', question):
         raise MetricDefinitionError('Do you want the latest dataset snapshot or a snapshot within the specified period?',
                                     code='ambiguous_snapshot', clarification=True)
     if inventory:
@@ -150,14 +150,14 @@ def validate_metric_request(question, metric_names):
             except ValueError as error:
                 raise MetricDefinitionError('Use a valid snapshot date (YYYY-MM-DD).', code='invalid_date_scope', clarification=True) from error
         if not re.search(r'\b\d{4}-\d{2}-\d{2}\b', question) and re.search(
-                r'quarter|quÃ½|thÃ¡ng\s+\d+|\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+(?:19|20)\d{2}|last month|last year|thÃ¡ng trÆ°á»›c|nÄƒm ngoÃ¡i', question):
+                r'quarter|quý|tháng\s+\d+|\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+(?:19|20)\d{2}|last month|last year|tháng trước|năm ngoái', question):
             try:
                 scope = inventory_time_scope(question)
             except ValueError:
                 scope = None
             if scope is None:
                 raise MetricDefinitionError('Specify an exact historical snapshot date or ISO date range for that period.', code='snapshot_required', clarification=True)
-    if inventory and not re.search(r'\b(?:19|20)\d{2}\b|latest|histor|trend|snapshot_date|má»›i nháº¥t|gáº§n nháº¥t|lá»‹ch sá»­|xu hÆ°á»›ng', question, re.I):
+    if inventory and not re.search(r'\b(?:19|20)\d{2}\b|latest|histor|trend|snapshot_date|mới nhất|gần nhất|lịch sử|xu hướng', question, re.I):
         raise MetricDefinitionError('The available inventory records are historical. Which snapshot should I use?',
                                     code='snapshot_required', clarification=True)
 
@@ -281,7 +281,7 @@ def _validate_inventory_time(scopes, parameters, question):
     question = _inventory_question(question)
     predicates = list(_snapshot_predicates(scopes, parameters))
     latest = any(isinstance(p, exp.EQ) and _latest_snapshot(value) for p, value, _ in predicates)
-    if re.search(r'latest|má»›i nháº¥t|gáº§n nháº¥t', question, re.I):
+    if re.search(r'latest|mới nhất|gần nhất', question, re.I):
         if not latest:
             raise MetricDefinitionError('Use MAX(snapshot_date) from commerce.inventory for the requested latest snapshot.', code='invalid_date_scope')
         return
@@ -473,7 +473,7 @@ def validate_metric_definitions(sql, metric_names, parameters, table_columns, *,
         if len(groups) != 1 or {_canonical(p, groups[0], parameters, {}).sql()
                 for p in groups[0].expression.args['group'].expressions} != keys:
             raise MetricDefinitionError('Duplicate inventory keys must group by both snapshot_date and product_id.')
-    if 'inventory' in tables and question and re.search(r'\b(?:which|\d+)\s+products\b|tá»«ng sáº£n pháº©m', question, re.I):
+    if 'inventory' in tables and question and re.search(r'\b(?:which|\d+)\s+products\b|từng sản phẩm', question, re.I):
         root = list(traverse_scope(tree))[-1]
         projections = [_canonical(p, root, parameters, {}) for p in root.expression.selects]
         if any(isinstance(p, exp.Column) and p.name == 'product_name' for p in projections) and not any(

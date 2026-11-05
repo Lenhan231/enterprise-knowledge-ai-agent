@@ -411,19 +411,19 @@ def relevant_schema_tables(question, definitions):
     tables = {table for definition in definitions.values()
               for table in re.findall(r'commerce\.\w+', definition['source'])}
     cues = {
-        'inventory': r'inventory|stock|snapshot|tÃ¡Â»â€œn kho',
-        'products': r'product|category|catalog|sku|sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m|danh mÃ¡Â»Â¥c',
-        'returns': r'return|refund|trÃ¡ÂºÂ£ hÃƒÂ ng|hoÃƒÂ n hÃƒÂ ng',
-        'orders': r'order|ordered|Ã„â€˜Ã†Â¡n hÃƒÂ ng',
+        'inventory': r'inventory|stock|snapshot|tá»“n kho',
+        'products': r'product|category|catalog|sku|sáº£n pháº©m|danh má»¥c',
+        'returns': r'return|refund|tráº£ hÃ ng|hoÃ n hÃ ng',
+        'orders': r'order|ordered|Ä‘Æ¡n hÃ ng',
         'order_items': r'quantity|quantities|ordered units|line value|order items|ordered quantities',
-        'customers': r'customer|khÃƒÂ¡ch hÃƒÂ ng',
-        'geography': r'region|district|city|khu vÃ¡Â»Â±c|thÃƒÂ nh phÃ¡Â»â€˜',
-        'payments': r'payment|installment|thanh toÃƒÂ¡n',
-        'promotions': r'promotion|promo|khuyÃ¡ÂºÂ¿n mÃƒÂ£i',
-        'reviews': r'review|rating|Ã„â€˜ÃƒÂ¡nh giÃƒÂ¡',
-        'shipments': r'shipment|shipping|delivery|giao hÃƒÂ ng',
-        'web_traffic': r'session|traffic|bounce|truy cÃ¡ÂºÂ­p',
-        'sales': r'revenue|cogs|gross profit|doanh thu|lÃ¡Â»Â£i nhuÃ¡ÂºÂ­n',
+        'customers': r'customer|khÃ¡ch hÃ ng',
+        'geography': r'region|district|city|khu vá»±c|thÃ nh phá»‘',
+        'payments': r'payment|installment|thanh toÃ¡n',
+        'promotions': r'promotion|promo|khuyáº¿n mÃ£i',
+        'reviews': r'review|rating|Ä‘Ã¡nh giÃ¡',
+        'shipments': r'shipment|shipping|delivery|giao hÃ ng',
+        'web_traffic': r'session|traffic|bounce|truy cáº­p',
+        'sales': r'revenue|cogs|gross profit|doanh thu|lá»£i nhuáº­n',
     }
     tables.update('commerce.'+name for name, pattern in cues.items() if re.search(pattern, text))
     # Supply bridge tables for approved paths, without inventing direct fact-to-fact joins.

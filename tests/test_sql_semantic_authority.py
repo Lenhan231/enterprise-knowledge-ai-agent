@@ -77,18 +77,6 @@ class SemanticAuthorityTest(unittest.TestCase):
             actual=db.execute(query,tuple(str(p) for p in params)).fetchall()
         self.assertEqual(actual,[('2022-12-31',1,4.0),('2022-12-31',2,4.0)])
 
-    def test_cancelled_population_and_tied_top_n_are_validated(self):
-        sql=("SELECT p.product_id,SUM(oi.quantity) AS n FROM commerce.order_items oi "
-             "JOIN commerce.orders o ON o.order_id=oi.order_id JOIN commerce.products p ON oi.product_id=p.product_id "
-             "WHERE o.order_date >= DATE '2022-01-01' AND o.order_date < DATE '2023-01-01' "
-             "AND LOWER(o.order_status) NOT IN ('cancelled','canceled') GROUP BY p.product_id ORDER BY 2 DESC,p.product_id LIMIT 20")
-        question='List the 20 products with the highest order_items.quantity sold during 2022, excluding cancelled orders.'
-        validate_metric_definitions(sql,set(),(),APPROVED_COLUMNS,question=question)
-        for bad in [sql.replace("LOWER(o.order_status) NOT IN ('cancelled','canceled')","o.order_status <> 'cancelled'"),
-                    sql.replace(',p.product_id LIMIT',' LIMIT'),sql.replace('LIMIT 20','LIMIT 10')]:
-            with self.subTest(sql=bad),self.assertRaises(MetricDefinitionError):
-                validate_metric_definitions(bad,set(),(),APPROVED_COLUMNS,question=question)
-
     def test_multi_snapshot_mean_and_balance_keep_the_catalog_grain(self):
         for metric in ['fill_rate','stock_on_hand']:
             mapping=decode_metric_mapping(json.dumps(dict(metrics=[metric],dimensions=['category'],

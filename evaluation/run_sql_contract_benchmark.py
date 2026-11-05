@@ -58,7 +58,7 @@ def cohort(directory, group, ids=None):
     by_id = {r['id']:r for r in rows}
     scores = list({(r['id'],r['metric']):r for r in benchmark.read_jsonl(directory/group/'scores.jsonl')
               if r['id'] in by_id and benchmark.current_score(r,by_id[r['id']],group)}.values())
-    refs = json.loads((FROZEN/group/'references.json').read_text(encoding='utf-8'))
+    refs = json.loads((directory/group/'references.json').read_text(encoding='utf-8'))
     metrics = {}
     for name in benchmark.METRICS[group]:
         selected = [r for r in scores if r['metric']==name]
@@ -81,6 +81,9 @@ def cohort(directory, group, ids=None):
             'provider_failures':sum(benchmark.rate_limited(r) or r['result'].get('metadata',{}).get('error_code') in
                                     {'provider_timeout','provider_unavailable'} for r in rows),
             'unsupported_cases':len(unsupported), 'unsupported_clarifications':len(refused),
+            'supported_cases':sum(ref.get('supported',False) for key,ref in refs.items() if key in by_id),
+            'supported_clarifications':sum(refs[r['id']].get('supported',False) and bool(r['result'].get('metadata',{}).get('clarification_required')) for r in rows),
+            'llm_calls':sum(r.get('llm_call_count',0) for r in rows),
             'latency_seconds':{'p50':statistics.median(latency) if latency else None,
                 'p95':statistics.quantiles(latency,n=100,method='inclusive')[94] if len(latency)>1 else None}}
 

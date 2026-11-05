@@ -15,9 +15,9 @@ def completed(directory):
     generations={r['id']:r for r in attempts}
     scores={(r['id'],r['metric']):r for r in benchmark.read_jsonl(path/'scores.jsonl')
             if r['id'] in generations and benchmark.current_score(r,generations[r['id']],'sql_analytics')}
-    assert set(generations)=={f'S{i:02}' for i in range(1,31)}, 'Incomplete generation cohort'
-    assert len(scores)==90 and not any(r.get('error') for r in scores.values()), 'Incomplete/error evaluation'
     manifest=json.loads((directory/'manifest.json').read_text(encoding='utf-8'))
+    assert set(generations)==set(manifest['sql_ids']), 'Incomplete generation cohort'
+    assert len(scores)==3*len(generations) and not any(r.get('error') for r in scores.values()), 'Incomplete/error evaluation'
     summary=cohort(directory,'sql_analytics')
     summary.update(application_revision=manifest['application_revision'],total_attempts=len(attempts),
         provider_failures=sum(benchmark.provider_failed(r) for r in generations.values()),
@@ -40,6 +40,8 @@ def main():
     manifests=[json.loads((d/'manifest.json').read_text(encoding='utf-8')) for d in (args.before,args.after)]
     assert manifests[0]['judge']==manifests[1]['judge'], 'Judge changed'
     for name in ('questions.jsonl','references.json','identity-counts.json'):
+        if name == 'identity-counts.json' and not any((d/'sql_analytics'/name).exists() for d in (args.before,args.after)):
+            continue
         hashes=[hashlib.sha256((d/'sql_analytics'/name).read_bytes()).hexdigest() for d in (args.before,args.after)]
         assert hashes[0]==hashes[1], 'Frozen inputs changed: '+name
     cases=[]
@@ -58,10 +60,19 @@ def main():
         common_numerical_applicability=dict(cases=len(numeric),
             before_mean=sum(r['before'] for r in numeric)/len(numeric) if numeric else None,
             after_mean=sum(r['after'] for r in numeric)/len(numeric) if numeric else None),
-        notes=['Archived baseline vs new live run; identical frozen inputs and judge, not a simultaneous A/B run.',
+        by_category={category:dict(before=cohort(args.before,'sql_analytics',ids), after=cohort(args.after,'sql_analytics',ids))
+            for category,ids in _categories(args.before).items()},
+        notes=['Separate runs with identical frozen inputs and judge, not a simultaneous A/B run.',
                'Identical-SQL judge score changes are evaluator variability, not demonstrated code improvements.',
                'Numerical common applicability is a descriptive intersection; neither scorer nor references were changed.']))
     print(json.dumps(dict(before=b_summary,after=a_summary,identical_sql_semantic_score_changes=variability),indent=2))
+
+
+def _categories(directory):
+    result = {}
+    for case in benchmark.read_jsonl(directory/'sql_analytics/questions.jsonl'):
+        result.setdefault(case.get('category',case.get('task_type','unspecified')),[]).append(case['id'])
+    return result
 
 
 if __name__=='__main__':

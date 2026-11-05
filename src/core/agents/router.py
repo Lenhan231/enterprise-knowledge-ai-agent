@@ -34,6 +34,9 @@ class AgentRouter:
                  report_agent=None, *, llm=None, request_timeout=120):
         self.classifier = classifier
         self.knowledge_agent, self.analytics_agent = knowledge_agent, analytics_agent
+        sql_runtime = getattr(analytics_agent, 'sql_agent', analytics_agent)
+        schema = getattr(sql_runtime, 'table_columns', None)
+        self.sql_schema = schema if isinstance(schema, dict) else None
         self.dashboard_agent, self.report_agent = dashboard_agent, report_agent
         self.llm, self._owns_llm = llm, False
         self.request_timeout = min(120, request_timeout)
@@ -156,7 +159,7 @@ class AgentRouter:
     async def _plan(self, state):
         with measure('routing'):
             plan = await plan_request(state['request'], self._provider(), history=state['history'],
-                                      report_headings=state.get('report_headings'))
+                                      report_headings=state.get('report_headings'), sql_schema=self.sql_schema)
         state['execution'].plan = plan
         if plan.clarification:
             return {'plan': plan, 'result': AgentResult(answer=plan.clarification, agent='agentic', metadata={
@@ -179,7 +182,7 @@ class AgentRouter:
         execution = state['execution']
         try:
             plan = await plan_request(state['request'], self._provider(), history=state['history'],
-                previous=execution.revision_context(state['plan']), report_headings=state.get('report_headings'))
+                previous=execution.revision_context(state['plan']), report_headings=state.get('report_headings'), sql_schema=self.sql_schema)
             if plan.clarification:
                 return {'revisions': 1}
             completed = {key: o for key, o in execution.outcomes.items() if o.status == 'complete'}

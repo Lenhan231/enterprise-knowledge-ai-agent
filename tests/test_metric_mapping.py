@@ -3,7 +3,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 
@@ -23,7 +23,7 @@ SQL = ('SELECT i.snapshot_date,p.product_name,i.stock_on_hand FROM commerce.inve
 
 
 class MetricMappingTest(unittest.TestCase):
-    def decode(self, payload=None, question='Which blue styles have the fewest pieces left at the latest recorded observation?'):
+    def decode(self, payload=None, question='Which top 10 blue styles have the fewest pieces left at the latest recorded observation?'):
         return decode_metric_mapping(json.dumps(payload or MAPPING),question)
 
     def test_unseen_wording_maps_to_catalog_ids_and_sql_constraints(self):
@@ -103,7 +103,7 @@ class MetricMappingTest(unittest.TestCase):
              'WHERE i.snapshot_date >= $1 AND i.snapshot_date < $2 AND p.color IN ($3, $4) '
              'GROUP BY i.snapshot_date,p.category LIMIT 200')
         plan=decode_query_plan(json.dumps({'sql':sql,'parameters':['2022-01-01','2023-01-01','blue','black']}))
-        validate_mapped_sql(plan,self.decode(payload))
+        validate_mapped_sql(plan,self.decode(payload,question='Stock on hand by category during 2022 for blue or black products'))
 
     def test_sql_must_keep_filter_dimension_ranking_limit_and_time(self):
         mapping=self.decode()
@@ -126,32 +126,32 @@ class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
         provider.generate.assert_not_called()
         repository.execute_approved_query.assert_not_awaited()
 
-    async def test_repeated_contract_violation_never_reaches_repository(self):
+    async def test_compiler_contract_violation_never_reaches_repository(self):
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest,VerifiedIdentity
         provider,repository=Mock(),AsyncMock()
-        bad=json.dumps({'sql':SQL.replace('AND p.color=$1',''),'parameters':[]})
-        provider.generate.side_effect=[json.dumps(MAPPING),bad,bad]
-        result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
-            question='Which blue styles have the fewest pieces left at latest snapshot?',
-            identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
+        provider.generate.return_value=json.dumps(MAPPING)
+        with patch('core.agents.sql_analytics_agent.compile_inventory_query', return_value=(SQL.replace('AND p.color=$1',''), ())):
+            result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
+                question='Which blue styles have the fewest pieces left at latest snapshot?',
+                identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
         self.assertFalse(result.metadata['ok'])
         self.assertEqual(result.metadata['metric_error_code'],'interpretation_mismatch')
-        self.assertEqual(provider.generate.call_count,3)
+        self.assertEqual(provider.generate.call_count,1)
         repository.execute_approved_query.assert_not_awaited()
 
-    async def test_mapping_precedes_sql_for_mixed_language_request(self):
+    async def test_mapping_compiles_for_mixed_language_request(self):
         from core.agents.sql_analytics_agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest,VerifiedIdentity
         provider,repository=Mock(),AsyncMock()
-        provider.generate.side_effect=[json.dumps(MAPPING),json.dumps({'sql':SQL,'parameters':['blue']})]
+        provider.generate.return_value=json.dumps(MAPPING)
         repository.execute_approved_query.return_value=[{'snapshot_date':'2022-12-31','product_name':'A','stock_on_hand':3}]
         result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
             question='Top 10 styles màu blue còn ít pieces nhất ở kỳ ghi nhận mới nhất?',
             identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
         self.assertTrue(result.metadata['ok'],result.answer)
         self.assertIn('semantic_interpretation',result.metadata)
-        self.assertEqual(provider.generate.call_count,2)
+        self.assertEqual(provider.generate.call_count,1)
         repository.execute_approved_query.assert_awaited_once()
 
     async def test_bad_interpretation_stops_before_sql_and_execution(self):

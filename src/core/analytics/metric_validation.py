@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import calendar
 from datetime import date, timedelta
 
 from sqlglot import exp, parse_one
@@ -21,6 +22,108 @@ class MetricDefinitionError(ValueError):
 def _inventory_question(question):
     return re.sub(r'\b(\d{1,2})/(\d{1,2})/((?:19|20)\d{2})\b',
                   lambda match: f'{match[3]}-{int(match[2]):02}-{int(match[1]):02}', _normalize(question))
+
+
+def inventory_explicit_dates(question):
+    question = _inventory_question(question)
+    dates = [date.fromisoformat(value) for value in re.findall(r'\b\d{4}-\d{2}-\d{2}\b', question)]
+    years = set(re.findall(r'\b(?:19|20)\d{2}\b', question))
+    months = {name.casefold():index for index,name in enumerate(calendar.month_name) if name}
+    for month, day, year in re.findall(r'\b('+'|'.join(months)+r')\s+(\d{1,2})\b(?:,?\s+((?:19|20)\d{2})\b)?', question):
+        year = year or (next(iter(years)) if len(years)==1 else None)
+        if year:
+            dates.append(date(int(year), months[month], int(day)))
+    return sorted(set(dates))
+
+
+def inventory_time_scope(question):
+    """Resolve explicit historical periods; ranges retain separate snapshot observations."""
+    question = _inventory_question(question)
+    dates = inventory_explicit_dates(question)
+    if dates:
+        return ('snapshot', dates[0].isoformat(), None) if len(dates) == 1 else (
+            'range', dates[0].isoformat(), dates[-1].isoformat())
+    month = re.search(r'\b('+'|'.join(calendar.month_name[1:]).lower()+r')\s+((?:19|20)\d{2})\b', question)
+    numeric = re.search(r'tháng\s+(\d{1,2})\s+(?:năm\s+)?((?:19|20)\d{2})\b', question)
+    quarter = re.search(r'(?:\bq|quarter\s*|quý\s*)([1-4])\s+(?:of\s+|năm\s+)?((?:19|20)\d{2})\b', question)
+    years = set(re.findall(r'\b(?:19|20)\d{2}\b', question))
+    if len(years) != 1:
+        return None
+    year = int(next(iter(years)))
+    if month or numeric:
+        first = list(calendar.month_name).index(month[1].title()) if month else int(numeric[1])
+        last = first
+    elif quarter:
+        first = (int(quarter[1])-1)*3+1
+        last = first+2
+    else:
+        first, last = 1, 12
+    return 'range', date(year, first, 1).isoformat(), date(year, last, calendar.monthrange(year, last)[1]).isoformat()
+
+
+def inventory_comparison_dates(question):
+    if re.search(r'\bchange\b|\bdelta\b|\bdifference\b|thay đổi|chênh lệch', _normalize(question)):
+        dates = inventory_explicit_dates(question)
+        if len(dates) == 2:
+            return tuple(d.isoformat() for d in dates)
+    return None
+
+
+def validate_stock_comparison(sql, parameters, dates):
+    """Verify a two-observation identity calculation, never a period stock aggregate."""
+    tree = parse_one(sql, read='postgres')
+    scopes = list(traverse_scope(tree))
+    if len(scopes) != 1 or not isinstance(tree, exp.Select):
+        raise MetricDefinitionError('Stock comparison requires one checked product-grain SELECT.')
+    scope = scopes[0]
+    canonical = lambda node: _canonical(node, scope, parameters, {})
+    sources = [source for _, source in scope.selected_sources.values()]
+    joins = tree.args.get('joins', [])
+    if (len(sources) != 2 or any(not isinstance(s, exp.Table) for s in sources)
+            or {s.db+'.'+s.name for s in sources} != {'commerce.inventory','commerce.products'}
+            or len(joins) != 1 or joins[0].side or joins[0].kind not in {'','INNER'}):
+        raise MetricDefinitionError('Stock comparison requires the approved inventory/products relationship.')
+    expected_join = parse_one('commerce.inventory.product_id = commerce.products.product_id', read='postgres')
+    if canonical(joins[0].args['on']) != expected_join:
+        raise MetricDefinitionError('Stock comparison changed the product join.')
+    snapshot = exp.column('snapshot_date', table='inventory', db='commerce')
+    stock = exp.column('stock_on_hand', table='inventory', db='commerce')
+    observations = [exp.Max(this=exp.Case(ifs=[exp.If(this=exp.EQ(this=snapshot.copy(), expression=exp.convert(d)),
+                        true=stock.copy())])) for d in dates]
+    expected = dict(before_date=exp.convert(dates[0]), after_date=exp.convert(dates[1]),
+                    stock_before=observations[0], stock_after=observations[1],
+                    stock_delta=exp.Sub(this=observations[1].copy(), expression=observations[0].copy()))
+    projected = {p.alias_or_name: canonical(p) for p in tree.selects}
+    if len(projected) != len(tree.selects) or any(projected.get(k) != v for k,v in expected.items()):
+        raise MetricDefinitionError('Stock comparison changed dates, operands, subtraction direction or NULL semantics.')
+    dimensions = {k:v for k,v in projected.items() if k not in expected}
+    allowed = {'product_id','product_name','category','segment','size','color'}
+    if 'product_id' not in dimensions or any(k not in allowed or v != exp.column(k,
+            table='inventory' if k == 'product_id' else 'products', db='commerce') for k,v in dimensions.items()):
+        raise MetricDefinitionError('Stock comparison must preserve product identity and canonical attributes.')
+    group = tree.args.get('group')
+    if not group or {canonical(g).sql() for g in group.expressions} != {v.sql() for v in dimensions.values()}:
+        raise MetricDefinitionError('Stock comparison changed product grain.')
+    required_dates = exp.In(this=snapshot, expressions=[exp.convert(d) for d in dates])
+    filters = [canonical(p) for p in _conjuncts(tree.args.get('where'))]
+    if required_dates not in filters:
+        raise MetricDefinitionError('Stock comparison must restrict observations to both exact dates.')
+    for predicate in filters:
+        if predicate == required_dates:
+            continue
+        if (not isinstance(predicate, (exp.EQ,exp.LT,exp.LTE,exp.GT,exp.GTE,exp.In))
+                or not isinstance(predicate.this, exp.Column) or predicate.this.name not in allowed
+                or predicate.this.table != ('inventory' if predicate.this.name == 'product_id' else 'products')
+                or any(not isinstance(v, (exp.Literal,exp.Boolean)) for v in
+                       (predicate.expressions if isinstance(predicate,exp.In) else [predicate.expression]))):
+            raise MetricDefinitionError('Comparison population filters must use explicit product attributes.')
+    having = tree.args.get('having')
+    intersection = exp.EQ(this=exp.Count(this=exp.Distinct(expressions=[snapshot.copy()]), big_int=True), expression=exp.Literal.number(2))
+    if not having or canonical(having.this) != intersection:
+        raise MetricDefinitionError('Stock comparison requires observations on both dates; missing rows are not zero.')
+    if any(tree.args.get(k) for k in ('with_','distinct','qualify','offset')):
+        raise MetricDefinitionError('Stock comparison added an unverified result restriction.')
+    return {'stock_on_hand': {**get_metric_definition('stock_on_hand'), 'representation':'two_snapshot_comparison'}}
 
 
 def validate_metric_request(question, metric_names):
@@ -48,7 +151,12 @@ def validate_metric_request(question, metric_names):
                 raise MetricDefinitionError('Use a valid snapshot date (YYYY-MM-DD).', code='invalid_date_scope', clarification=True) from error
         if not re.search(r'\b\d{4}-\d{2}-\d{2}\b', question) and re.search(
                 r'quarter|quý|tháng\s+\d+|\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+(?:19|20)\d{2}|last month|last year|tháng trước|năm ngoái', question):
-            raise MetricDefinitionError('Specify an exact historical snapshot date or ISO date range for that period.', code='snapshot_required', clarification=True)
+            try:
+                scope = inventory_time_scope(question)
+            except ValueError:
+                scope = None
+            if scope is None:
+                raise MetricDefinitionError('Specify an exact historical snapshot date or ISO date range for that period.', code='snapshot_required', clarification=True)
     if inventory and not re.search(r'\b(?:19|20)\d{2}\b|latest|histor|trend|snapshot_date|mới nhất|gần nhất|lịch sử|xu hướng', question, re.I):
         raise MetricDefinitionError('The available inventory records are historical. Which snapshot should I use?',
                                     code='snapshot_required', clarification=True)
@@ -80,7 +188,10 @@ def _canonical(node, scope, parameters, used_scopes, path=()):
         value = parameters[int(node.this.name) - 1]
         return exp.convert(value.isoformat() if hasattr(value, "isoformat") else value)
     if isinstance(node, exp.Column):
-        source = {name.casefold(): value for name, value in scope.sources.items()}.get(node.table.casefold())
+        owner = scope
+        while owner is not None and node.table.casefold() not in {name.casefold() for name in owner.sources}:
+            owner = owner.parent
+        source = {name.casefold(): value for name, value in owner.sources.items()}.get(node.table.casefold()) if owner else None
         if isinstance(source, exp.Table):
             return exp.column(node.name.casefold(), table=source.name.casefold(), db=source.db.casefold())
         key = (id(source), node.name.casefold())
@@ -96,6 +207,11 @@ def _canonical(node, scope, parameters, used_scopes, path=()):
         elif isinstance(value, list):
             result.set(key, [_canonical(item, scope, parameters, used_scopes, path)
                              if isinstance(item, exp.Expression) else item for item in value])
+    if isinstance(result, exp.Cast) and result.to.this == exp.DataType.Type.DATE and isinstance(result.this, exp.Literal):
+        try:
+            return exp.convert(date.fromisoformat(result.this.this).isoformat())
+        except (ValueError, TypeError):
+            pass
     return result
 
 
@@ -189,6 +305,13 @@ def _validate_inventory_time(scopes, parameters, question):
             else:
                 upper.append(parsed + timedelta(days=int(operator is exp.LTE)))
     requested = re.findall(r'\b\d{4}-\d{2}-\d{2}\b', question)
+    period = inventory_time_scope(question)
+    if period and period[0] == 'range' and not requested:
+        start, end = date.fromisoformat(period[1]), date.fromisoformat(period[2])
+        if lower and upper and max(lower) == start and min(upper) == end + timedelta(days=1):
+            return
+        if start.month != 1 or start.day != 1 or end.month != 12 or end.day != 31:
+            raise MetricDefinitionError('The generated inventory date scope does not match the requested period.', code='invalid_date_scope')
     if requested:
         try:
             expected = [date.fromisoformat(value) for value in requested]
@@ -243,6 +366,9 @@ def _validate_inventory_metrics(sql, metric_names, parameters, table_columns, qu
     scalar = {name: _formula({**definition, 'formula': definition['scalar_formula']}, table_columns)
               for name, definition in active.items() if definition.get('scalar_formula')}
     has_aggregates = any(projection.find(exp.AggFunc) for projection in root.expression.selects)
+    scalar_count = (has_aggregates and not root.expression.args.get('group')
+                    and all(d['aggregation'] == 'count_distinct' for d in definitions.values())
+                    and _single_snapshot([root], parameters))
     if has_aggregates and any(definition['aggregation'] == 'value' for definition in definitions.values()):
         raise MetricDefinitionError('Stored product values and aggregate metrics have incompatible output grains. Request separate results or an explicit mean.', code='incompatible_grain', clarification=True)
     dimensions = set.intersection(*(set(definition['dimensions']) for definition in definitions.values()))
@@ -252,9 +378,19 @@ def _validate_inventory_metrics(sql, metric_names, parameters, table_columns, qu
     matched, used_scopes, representations = set(), {}, {}
     projected_snapshot = False
     for projection in root.expression.selects:
+        if scalar_count and projection.alias_or_name.casefold() == 'snapshot_date' and _latest_snapshot(projection.this) and any(
+                isinstance(predicate,exp.EQ) and _latest_snapshot(value)
+                for predicate,value,_ in _snapshot_predicates([root],parameters)):
+            projected_snapshot = True
+            continue
         expression = _canonical(projection, root, parameters, used_scopes)
         if expression == exp.column('snapshot_date', table='inventory', db='commerce') and projection.alias_or_name.casefold() == 'snapshot_date':
             projected_snapshot = True
+        if scalar_count and projection.alias_or_name.casefold() == 'snapshot_date' and any(
+                isinstance(predicate,exp.EQ) and expression == _canonical(value,root,parameters,{})
+                for predicate,value,_ in _snapshot_predicates([root],parameters)):
+            projected_snapshot = True
+            continue
         matches = {name for name, formula in formulas.items() if expression == formula}
         if not has_aggregates and not root.expression.args.get('group') and not root.expression.args.get('distinct'):
             matches |= {name for name, formula in scalar.items() if expression == formula}
@@ -273,7 +409,7 @@ def _validate_inventory_metrics(sql, metric_names, parameters, table_columns, qu
             raise MetricDefinitionError('Inventory aggregate does not match an accepted catalog formula.')
         if any(column.name not in dimensions or column.sql() not in dimension_sources for column in expression.find_all(exp.Column)):
             raise MetricDefinitionError('This inventory metric does not support the requested output dimension.', code='unsupported_dimension', clarification=True)
-    if not _single_snapshot(list(used_scopes.values()), parameters):
+    if has_aggregates and not _single_snapshot(list(used_scopes.values()), parameters):
         raise MetricDefinitionError('Inventory metrics require one snapshot or separate exact snapshot_date groups.', code='invalid_date_scope')
     if set(metric_names) - matched:
         raise MetricDefinitionError('Missing canonical inventory formula: ' + ', '.join(sorted(set(metric_names)-matched)))
@@ -285,11 +421,68 @@ def _validate_inventory_metrics(sql, metric_names, parameters, table_columns, qu
     return {name: {**active[name], 'representation': representations[name]} for name in sorted(matched)}
 
 
+def inventory_observation_query(sql, parameters=()):
+    """Recognize key/presence diagnostics without approving any business measure."""
+    scopes = list(traverse_scope(parse_one(sql, read='postgres')))
+    for scope in scopes:
+        for column in scope.columns:
+            try:
+                value = _canonical(column, scope, parameters, {})
+            except MetricDefinitionError:
+                return False
+            if any(c.db == 'commerce' and c.table == 'inventory' and c.name not in {'product_id','snapshot_date'}
+                   for c in value.find_all(exp.Column)):
+                return False
+        for projection in scope.expression.selects:
+            try:
+                value = _canonical(projection, scope, parameters, {})
+            except (MetricDefinitionError, IndexError):
+                return False
+            if any(c.db == 'commerce' and c.table == 'inventory' and c.name not in {'product_id','snapshot_date'}
+                   for c in value.find_all(exp.Column)):
+                return False
+            for aggregate in value.find_all(exp.AggFunc):
+                if isinstance(aggregate, exp.Count):
+                    continue
+                if isinstance(aggregate, (exp.Min, exp.Max)) and aggregate.this == exp.column(
+                        'snapshot_date', table='inventory', db='commerce'):
+                    continue
+                # Duplicate-row diagnostics sum counts, never source measures or identifier values.
+                if isinstance(aggregate, exp.Sum) and aggregate.find(exp.Count) and not list(value.find_all(exp.Column)):
+                    continue
+                return False
+    return True
+
+
 def validate_metric_definitions(sql, metric_names, parameters, table_columns, *, question=None):
     """Verify recognized metrics; generic queries retain the existing SQL safety path."""
+    tree = parse_one(sql, read='postgres')
+    comparison = inventory_comparison_dates(question) if question else None
+    if comparison and metric_names == {'stock_on_hand'}:
+        return validate_stock_comparison(sql, parameters, comparison)
+    tables = {t.name for t in tree.find_all(exp.Table) if t.db == 'commerce'}
+    if question and 'duplicate' in question.casefold() and 'inventory' in tables and not re.search(
+            r'\bgroups?\b|participating|all rows|all participating', question, re.I):
+        root = list(traverse_scope(tree))[-1]
+        expected = parse_one('COALESCE(SUM(COUNT(*) - 1), 0)', read='postgres')
+        if len(root.expression.selects) != 1 or _canonical(root.expression.selects[0], root, parameters, {}) != expected:
+            raise MetricDefinitionError('Duplicate rows means excess rows beyond one per key: '
+                                        'COALESCE(SUM(group_count - 1),0), not number of duplicate groups.')
+        groups = [s for s in traverse_scope(tree) if s.expression.args.get('group')]
+        keys = {exp.column(name, table='inventory', db='commerce').sql() for name in ('snapshot_date','product_id')}
+        if len(groups) != 1 or {_canonical(p, groups[0], parameters, {}).sql()
+                for p in groups[0].expression.args['group'].expressions} != keys:
+            raise MetricDefinitionError('Duplicate inventory keys must group by both snapshot_date and product_id.')
+    if 'inventory' in tables and question and re.search(r'\b(?:which|\d+)\s+products\b|từng sản phẩm', question, re.I):
+        root = list(traverse_scope(tree))[-1]
+        projections = [_canonical(p, root, parameters, {}) for p in root.expression.selects]
+        if any(isinstance(p, exp.Column) and p.name == 'product_name' for p in projections) and not any(
+                isinstance(p, exp.Column) and p.name == 'product_id' for p in projections):
+            raise MetricDefinitionError('Product-level rows require product_id; product_name is not unique.')
     if not metric_names:
         tree = parse_one(sql, read='postgres')
-        if tree.find(exp.AggFunc) and any(table.name == 'inventory' and table.db == 'commerce' for table in tree.find_all(exp.Table)):
+        if (tree.find(exp.AggFunc) and any(table.name == 'inventory' and table.db == 'commerce' for table in tree.find_all(exp.Table))
+                and not inventory_observation_query(sql, parameters)):
             raise MetricDefinitionError('The dataset does not contain a reviewed definition for this inventory aggregate.', code='metric_unsupported', clarification=True)
         return {}
     if any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names):

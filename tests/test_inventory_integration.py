@@ -138,6 +138,13 @@ class InventoryIntegrationTest(unittest.IsolatedAsyncioTestCase):
         provider.generate.assert_not_called()
         self.assertEqual(repo.execute_approved_query.await_count, 1)
 
+    def test_direct_paraphrases_preserve_contract_and_quoted_values(self):
+        from core.analytics.field_retrieval import field_contract
+        base = field_contract("Show product_id, color from products where color='Blue' order by product_id limit 3")
+        for verb in ('Get', 'Display', 'Please show', 'Can you show', 'Hãy hiển thị', 'Vui lòng liệt kê'):
+            actual = field_contract(verb+" product_id, color from products where color='Blue' order by product_id limit 3")
+            self.assertEqual(actual, base, verb)
+
     def test_report_sees_only_inventory_catalog_and_same_schema(self):
         from core.reports.planning import planning_prompt
         prompt = planning_prompt('Inventory summary at snapshot 2022-12-31')

@@ -15,6 +15,7 @@ import unicodedata
 def _field_language(question):
     # shortcut: complete bilingual field clauses, not arbitrary prose; unknown tails must clarify.
     aliases = {
+        'get':'retrieve', 'display':'show', 'ordered by':'order by',
         'liệt kê':'list', 'hiển thị':'show', 'truy xuất':'retrieve',
         'từ sản phẩm':'from products', 'từ bảng sản phẩm':'from products',
         'từ tồn kho':'from inventory', 'từ bảng tồn kho':'from inventory',
@@ -31,7 +32,7 @@ def _field_language(question):
         'greater than':'>', 'less than':'<', 'và':'and',
     }
     pattern = re.compile(r'(?<![\w])('+'|'.join(re.escape(k) for k in sorted(aliases,key=len,reverse=True))+r')(?![\w])')
-    question = re.sub(r'^(?:please\s+|can you\s+|could you\s+|vui l?ng\s+|h?y\s+)', '', question.strip(), flags=re.I)
+    question = re.sub(r'^(?:please\s+|can you\s+|could you\s+|vui lòng\s+|hãy\s+)', '', question.strip(), flags=re.I)
     parts = re.split(r"('(?:[^']|'')*')", unicodedata.normalize('NFC',question))
     return ''.join(part if i%2 else pattern.sub(lambda m:aliases[m[0]],part.casefold()) for i,part in enumerate(parts))
 

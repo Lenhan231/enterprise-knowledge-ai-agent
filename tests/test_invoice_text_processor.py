@@ -42,11 +42,12 @@ class InvoiceTextProcessorTest(unittest.TestCase):
     def test_invoice_input_separates_guide_items_and_totals(self):
         columns = ["STT", "Tên hàng hóa, dịch vụ", "ĐVT", "Số lượng", "Đơn giá", "Thành tiền"]
         guide = dict(zip(columns, ["1", "2", "3", "4", "5", "6?4x5"]))
+        noisy_guide = dict(zip(columns, ["1", "tư.", "ở.", "40 đ.", "5.", "6 - 45."]))
         actual = dict(zip(columns, ["", "Sửa chữa văn phòng", "", "", "", "118.000.000"]))
         subtotal = dict(zip(columns, ["", "", "Cộng tiền hàng hóa, dịch vụ:", "", "", "118.000.000"]))
         tax = dict(zip(columns, ["", "Thuế suất GTGT: 8%", "Tiền thuế GTGT:", "", "", "9.440.000"]))
         total = dict(zip(columns, ["", "", "Tổng tiền thanh toán:", "", "", "127.440.000"]))
-        source_rows = [guide, actual, subtotal, tax, total]
+        source_rows = [guide, noisy_guide, actual, subtotal, tax, total]
         prepared = _prepare_extraction_input([], [{"columns": columns, "rows": source_rows}])
         table = prepared["tables"][0]
         self.assertEqual(table["item_rows"], [{
@@ -57,7 +58,7 @@ class InvoiceTextProcessorTest(unittest.TestCase):
             "items": table["item_rows"], "subtotal": "118.000.000",
             "tax_amount": "9.440.000", "total_amount": "127.440.000",
         })
-        self.assertEqual(source_rows, [guide, actual, subtotal, tax, total])
+        self.assertEqual(source_rows, [guide, noisy_guide, actual, subtotal, tax, total])
 
     def test_invoice_names_use_explicit_ocr_labels(self):
         fields = _fields_from_labeled_elements([

@@ -80,10 +80,17 @@ def _is_numbered_column_guide(row: dict[str, Any], columns: list[str]) -> bool:
     values = [str(row.get(column) or "").strip() for column in columns]
     if len(values) < 3 or values[:1] != ["1"]:
         return False
+    last_value = values[-1]
+    formula_like_amount = bool(
+        re.fullmatch(rf"{len(values)}[\d\s=?:x×*\-]+\.?", last_value, flags=re.IGNORECASE)
+        and re.search(r"[=?:x×*\-]", last_value, flags=re.IGNORECASE)
+    )
+    short_cells = all(len(re.sub(r"[^\w]", "", value)) <= 4 for value in values[:-1])
+    if formula_like_amount and short_cells:
+        return True
     if any(value != str(index) for index, value in enumerate(values[:-1], start=1)):
         return False
-    # The final cell commonly shows an OCR-corrupted formula, e.g. "6?4x5".
-    return bool(re.match(rf"{len(values)}.*[x×*]", values[-1], flags=re.IGNORECASE))
+    return bool(re.match(rf"{len(values)}.*[x×*]", last_value, flags=re.IGNORECASE))
 
 
 def _prepare_extraction_input(
@@ -243,6 +250,7 @@ class InvoiceTextProcessor:
             "Chỉ trả về một JSON object theo schema. Giữ nguyên chuỗi số và cách viết; "
             "không tự tính, không suy đoán trường thiếu, dùng null nếu không thấy. "
             "Các hàng chỉ đánh số cột hoặc ghi công thức mẫu không phải dữ liệu hóa đơn. "
+            "Hàng hướng dẫn có thể bị OCR sai, ví dụ 1, tư., ở., 40 đ., 5., 6 - 45.; "
             "Chỉ lấy số lượng/đơn giá khi chúng nằm trong hàng hàng hóa thực tế; "
             "không lấy số thứ tự cột làm dữ liệu và không tự tính bất kỳ số tiền nào. "
             "Các hàng cộng tiền, tiền thuế và tổng thanh toán là số tổng hợp, không phải item.\n"

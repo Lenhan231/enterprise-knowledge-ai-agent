@@ -11,7 +11,9 @@ const start = source.indexOf('$("#ask-form").addEventListener("submit"');
 const end = source.indexOf('function updateReportFormatVisibility', start);
 let handler, resolve, rendered = 0;
 const nodes = {};
-const context = {agentConversationId:'old', console,
+const context = {agentConversationId:'old', sessionGeneration:1, sessionSubject:'analyst', sessionTurns:[],
+  crypto:require('crypto'), AbortSignal, console,
+  renderSessionTranscript(){if(context.sessionTurns.some(turn=>turn.result)) rendered++;},
   $: selector => nodes[selector] ||= {value:selector === '#question' ? 'Count products' : 'auto',
     classList:{add(){}}, addEventListener(event, callback){handler=callback;}},
   api: () => new Promise(done => resolve=done), renderSkeletonAnswer(){},
@@ -20,6 +22,7 @@ vm.runInNewContext(source.slice(start,end),context);
 (async()=>{
   const pending=handler({preventDefault(){}});
   context.agentConversationId='new';
+  context.sessionTurns=[];
   resolve({answer:'Old conversation answer',metadata:{status:'complete'}});
   await pending;
   assert.equal(rendered,0,'An old answer was rendered in a new conversation');
@@ -36,7 +39,7 @@ const start=source.indexOf('function renderAgentRows('),end=source.indexOf('func
 const context={escapeHtml:value=>String(value).replaceAll('<','&lt;')};
 vm.runInNewContext(source.slice(start,end),context);
 const html=context.renderAgentRows({sql:{rows:[{count:3}]},'task:s2':{rows:[{category:'<Outdoor>'}]}});
-assert(html.includes('task:s2'));assert(html.includes('&lt;Outdoor>'));
+assert(html.includes('Task s2'));assert(html.includes('&lt;Outdoor>'));
 assert.equal((html.match(/<table>/g)||[]).length,2);
 '''
         result = subprocess.run(['node', '-'], input=script, text=True, capture_output=True)

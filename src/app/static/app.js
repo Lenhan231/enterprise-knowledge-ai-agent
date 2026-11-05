@@ -2,6 +2,11 @@ const $ = (selector) => document.querySelector(selector);
 let activeTab = "knowledge";
 let currentUser = null;
 let knowledgeDocuments = [];
+let agentConversationId = crypto.randomUUID();
+let reportConversationId = crypto.randomUUID();
+let sessionTurns = [];
+let sessionGeneration = 0;
+let sessionSubject = null;
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
 }[char]));
@@ -258,7 +263,10 @@ async function loadOcrTestRuns() {
     const config = run.processor_config || {};
     const engine = config.parser_engine;
     const selected = config.parser_settings?.[engine] || config;
-    const parserSettings = `Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`;
+    const intent = config.intent || "document";
+    const parserSettings = intent === "document"
+      ? `Document · Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`
+      : intent === "invoice" ? "Invoice extraction · Docling OCR + Qwen text model" : "Image caption · Vintern";
     const settings = parserSettings;
     const previewSummary = run.page_count ? `${formatNumber(run.page_count)} page previews` : "no page previews";
     const processingSummary = `processing ${formatDuration(run.runtime_info?.processing_time_ms)}`;
@@ -267,15 +275,74 @@ async function loadOcrTestRuns() {
 }
 
 function renderOcrTestDetails(run) {
+  const previewPages = run.pages || [];
+  const invoiceExtraction = run.runtime_info?.invoice_extraction;
+  const invoiceOutput = invoiceExtraction ? `<section class="ocr-test-invoice">
+    <div class="candidate-heading"><strong>Invoice JSON draft</strong><span>${escapeHtml(invoiceExtraction.model || "Text model")} · ${invoiceExtraction.review_required ? "review required" : "status unknown"}</span></div>
+    <p class="corpus-note">Schema ${escapeHtml(invoiceExtraction.schema_version || "invoice.v1")} · inference ${formatDuration((invoiceExtraction.metrics?.inference_seconds || 0) * 1000)} · this draft is separate from the parser elements and table output.</p>
+    <pre>${escapeHtml(JSON.stringify(invoiceExtraction.fields ?? null, null, 2))}</pre>
+    ${invoiceExtraction.parse_error ? `<p class="corpus-note" data-state="warning">${escapeHtml(invoiceExtraction.parse_error)}. Raw model response is available below.</p>` : ""}
+    ${invoiceExtraction.raw_response ? `<details class="candidate-source"><summary>Raw model response</summary><pre>${escapeHtml(invoiceExtraction.raw_response)}</pre></details>` : ""}
+  </section>` : "";
+  const singlePreviewPage = previewPages.length === 1 ? Number(previewPages[0]) : null;
+  const elementPage = (element) => element.metadata?.page_number;
+  const tablePage = (table) => table.page_number ?? table.metadata?.page_number;
+  const inferredPageAssignment = singlePreviewPage != null && (
+    run.elements.some((element) => elementPage(element) == null)
+    || run.tables.some((table) => tablePage(table) == null)
+  );
   const allPages = [...new Set([
-    ...run.pages,
-    ...run.elements.map((element) => element.metadata?.page_number == null ? NaN : Number(element.metadata.page_number)).filter(Number.isFinite),
-    ...run.tables.map((table) => table.page_number == null ? NaN : Number(table.page_number)).filter(Number.isFinite),
+    ...previewPages,
+    ...run.elements.map((element) => elementPage(element) == null ? NaN : Number(elementPage(element))).filter(Number.isFinite),
+    ...run.tables.map((table) => tablePage(table) == null ? NaN : Number(tablePage(table))).filter(Number.isFinite),
   ])].sort((a, b) => a - b);
   const pageContent = allPages.map((pageNumber, pageIndex) => {
-    const pagePreview = `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
-    const elements = run.elements.filter((element) => Number(element.metadata?.page_number) === pageNumber);
-    const tables = run.tables.filter((table) => Number(table.page_number) === pageNumber);
+    const elements = run.elements.filter((element) => {
+      const value = elementPage(element);
+      return value == null ? singlePreviewPage === pageNumber : Number(value) === pageNumber;
+    });
+    const tables = run.tables.filter((table) => {
+      const value = tablePage(table);
+      return value == null ? singlePreviewPage === pageNumber : Number(value) === pageNumber;
+    });
+    const pageSize = run.runtime_info?.parser_page_sizes?.[String(pageNumber)]
+      || run.runtime_info?.preview_page_sizes?.[String(pageNumber)];
+    const pageWidth = Number(pageSize?.width);
+    const pageHeight = Number(pageSize?.height);
+    const hasOutOfBoundsBox = elements.some((element) => {
+      const metadata = element.metadata || {};
+      const bbox = metadata.bbox;
+      if (metadata.bbox_coordinate_system !== "docling_page_coordinate" || !Array.isArray(bbox) || bbox.length !== 4) return false;
+      const [left, top, right, bottom] = bbox.map(Number);
+      return [left, top, right, bottom].every(Number.isFinite)
+        && (left < -1 || top < -1 || right > pageWidth + 1 || bottom > pageHeight + 1);
+    });
+    const boxes = hasOutOfBoundsBox ? "" : elements.flatMap((element) => {
+      const metadata = element.metadata || {};
+      const bbox = metadata.bbox;
+      if (
+        metadata.bbox_coordinate_system !== "docling_page_coordinate"
+        || !Array.isArray(bbox) || bbox.length !== 4
+        || !Number.isFinite(pageWidth) || !Number.isFinite(pageHeight)
+        || pageWidth <= 0 || pageHeight <= 0
+      ) return [];
+      const [left, top, right, bottom] = bbox.map(Number);
+      if (![left, top, right, bottom].every(Number.isFinite)) return [];
+      const x = Math.max(0, Math.min(pageWidth, left));
+      const y = Math.max(0, Math.min(pageHeight, top));
+      const width = Math.max(0, Math.min(pageWidth, right) - x);
+      const height = Math.max(0, Math.min(pageHeight, bottom) - y);
+      if (!width || !height) return [];
+      const label = String(metadata.element_type || "text").toLowerCase().replace(/[^a-z0-9_-]/g, "");
+      const snippet = String(element.content || "").replace(/\s+/g, " ").slice(0, 100);
+      const linkId = `${pageNumber}:${element.element_index}`;
+      return [`<g class="layout-region layout-region-${escapeHtml(label)}" data-bbox-link="${escapeHtml(linkId)}"><title>Element ${formatNumber(element.element_index + 1)} · ${escapeHtml(label)}${snippet ? `: ${escapeHtml(snippet)}` : ""}</title><rect x="${x}" y="${y}" width="${width}" height="${height}" /></g>`];
+    }).join("");
+    const pagePreviewImage = `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
+    const pagePreview = boxes && pageSize
+      ? `<div class="ocr-layout-preview">${pagePreviewImage}<svg viewBox="0 0 ${pageWidth} ${pageHeight}" preserveAspectRatio="none" aria-label="Parser element bounding boxes">${boxes}</svg></div>`
+      : pagePreviewImage;
+    const missingBoxScale = !pageSize && elements.some((element) => Array.isArray(element.metadata?.bbox));
     const ocrDiagnostics = elements.flatMap((element) => element.metadata?.ocr_diagnostics || []);
     const tablesHtml = tables.map((table) => {
       const data = table.structured_data || {};
@@ -283,6 +350,7 @@ function renderOcrTestDetails(run) {
       const columns = Array.isArray(data.columns) ? data.columns : [];
       const rows = Array.isArray(data.rows) ? data.rows : [];
       const headers = columns.length ? columns : [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
+      const tableMinWidth = Math.max(460, headers.length * 115);
       const metadata = table.metadata || {};
       const parserMetadata = metadata.parser_details || {};
       const ocr = { ...(metadata.ocr || parserMetadata.ocr || {}) };
@@ -306,7 +374,7 @@ function renderOcrTestDetails(run) {
         ...(continuation ? [["Continuation", continuation]] : []),
       ];
       return `<article class="ocr-test-table"><h5>Table ${formatNumber(table.table_index + 1)} <span>${formatNumber(rows.length)} rows</span></h5>
-        ${headers.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table"><thead><tr>${headers.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${headers.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
+        ${headers.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table" style="min-width:${tableMinWidth}px"><thead><tr>${headers.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${headers.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
         <details class="candidate-source"><summary>Table context</summary><dl class="ocr-context-list">
           <dt>Source</dt><dd>${escapeHtml(context.source_filename || run.source_filename)}</dd>
           <dt>Section</dt><dd>${escapeHtml(context.section_title || "Not extracted")}</dd>
@@ -322,16 +390,19 @@ function renderOcrTestDetails(run) {
       <div class="ocr-test-page-content">
       <section class="ocr-test-raw"><h4>Raw page</h4>${pagePreview}</section>
       <section class="ocr-test-extracted"><h4>Extracted output</h4>
+        ${missingBoxScale ? '<p class="corpus-note">This run has element boxes but no saved page dimensions. Re-run Upload Test to overlay them on the page.</p>' : ""}
+        ${hasOutOfBoundsBox ? '<p class="corpus-note">Saved element boxes do not fit the page dimensions for this older run, so the overlay is hidden. Re-run Upload Test to save matching parser coordinates.</p>' : ""}
+        ${inferredPageAssignment ? '<p class="corpus-note">Page assignment inferred from the only preview; parser metadata has no page number.</p>' : ""}
         ${renderOcrDiagnostics(ocrDiagnostics)}
-        <details class="ocr-test-elements"><summary>Document elements · ${formatNumber(elements.length)} elements</summary>${elements.map((element) => `<article class="ocr-test-element"><div class="candidate-heading"><strong>Element ${formatNumber(element.element_index + 1)}</strong><span>${formatNumber(element.content.length)} chars · ${escapeHtml(element.metadata?.element_type || "text")} · ${escapeHtml(element.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(element.content)}</pre><details class="candidate-source"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(element.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser elements on this page.</p>'}</details>
+        <details class="ocr-test-elements"><summary>Document elements · ${formatNumber(elements.length)} elements</summary>${elements.map((element) => `<article class="ocr-test-element" data-bbox-link="${escapeHtml(`${pageNumber}:${element.element_index}`)}" tabindex="0" aria-label="Element ${formatNumber(element.element_index + 1)} on page ${formatNumber(pageNumber)}"><div class="candidate-heading"><strong>Element ${formatNumber(element.element_index + 1)}</strong><span>${formatNumber(element.content.length)} chars · ${escapeHtml(element.metadata?.element_type || "text")} · ${escapeHtml(element.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(element.content)}</pre><details class="candidate-source"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(element.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser elements on this page.</p>'}</details>
         <h4 class="ocr-test-table-heading">Extracted tables</h4>
         ${tablesHtml || '<p class="ocr-test-empty">No structured table detected on this page.</p>'}
       </section>
       </div>
     </details>`;
   }).join("");
-  const unpagedElements = run.elements.filter((element) => element.metadata?.page_number == null);
-  const unpagedTables = run.tables.filter((table) => table.page_number == null);
+  const unpagedElements = run.elements.filter((element) => elementPage(element) == null && singlePreviewPage == null);
+  const unpagedTables = run.tables.filter((table) => tablePage(table) == null && singlePreviewPage == null);
   const unpagedOutput = unpagedElements.length || unpagedTables.length
     ? `<section class="ocr-test-page">
         <h3>Document content · no page previews</h3>
@@ -343,9 +414,10 @@ function renderOcrTestDetails(run) {
             const rows = Array.isArray(data.rows) ? data.rows : [];
             const columns = Array.isArray(data.columns) && data.columns.length
               ? data.columns : [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
+            const tableMinWidth = Math.max(460, columns.length * 115);
             const location = table.metadata?.sheet_name ? ` · ${escapeHtml(table.metadata.sheet_name)}` : "";
             return `<article class="ocr-test-table"><h5>Table ${formatNumber(table.table_index + 1)}${location} <span>${formatNumber(rows.length)} rows</span></h5>
-              ${columns.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table"><thead><tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
+              ${columns.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table" style="min-width:${tableMinWidth}px"><thead><tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
               <details class="candidate-source"><summary>Table metadata</summary><pre>${escapeHtml(JSON.stringify(table.metadata, null, 2))}</pre></details></article>`;
           }).join("") || '<p class="ocr-test-empty">No unpaged structured tables.</p>'}
         </section>
@@ -356,9 +428,57 @@ function renderOcrTestDetails(run) {
     <div class="candidate-heading"><strong>${escapeHtml(run.source_filename)}</strong><span>${processingSummary} · ${run.page_count ? `${formatNumber(run.page_count)} page previews` : "No page previews"} · ${formatNumber(run.elements.length)} parser elements · ${formatNumber(run.tables.length)} tables</span></div>
     <p class="corpus-note">SHA-256: <code>${escapeHtml(run.source_sha256)}</code></p>
     <details class="candidate-source"><summary>Parser configuration and versions</summary><pre>${escapeHtml(JSON.stringify({processor_config:run.processor_config,runtime_info:run.runtime_info},null,2))}</pre></details>
+    ${invoiceOutput}
     <div class="ocr-test-pages">${pageContent}${unpagedOutput}</div>
   </article>`;
 }
+
+function setUploadTestHighlight(item) {
+  const page = item.closest(".ocr-test-page-content");
+  if (!page) return;
+  page.querySelectorAll("[data-bbox-link]").forEach((linkedItem) => {
+    linkedItem.classList.toggle("is-highlighted", linkedItem.dataset.bboxLink === item.dataset.bboxLink);
+  });
+}
+
+function clearUploadTestHighlight(item) {
+  item.closest(".ocr-test-page-content")?.querySelectorAll(".is-highlighted").forEach((linkedItem) => {
+    linkedItem.classList.remove("is-highlighted");
+  });
+}
+
+document.addEventListener("pointerover", (event) => {
+  const item = event.target.closest?.("[data-bbox-link]");
+  if (!item || (event.relatedTarget instanceof Element && item.contains(event.relatedTarget))) return;
+  setUploadTestHighlight(item);
+});
+
+document.addEventListener("pointerout", (event) => {
+  const item = event.target.closest?.("[data-bbox-link]");
+  if (!item || (event.relatedTarget instanceof Node && item.contains(event.relatedTarget))) return;
+  const nextItem = event.relatedTarget instanceof Element ? event.relatedTarget.closest("[data-bbox-link]") : null;
+  if (nextItem && nextItem.closest(".ocr-test-page-content") === item.closest(".ocr-test-page-content")) {
+    setUploadTestHighlight(nextItem);
+  } else {
+    clearUploadTestHighlight(item);
+  }
+});
+
+document.addEventListener("focusin", (event) => {
+  const item = event.target.closest?.("[data-bbox-link]");
+  if (item) setUploadTestHighlight(item);
+});
+
+document.addEventListener("focusout", (event) => {
+  const item = event.target.closest?.("[data-bbox-link]");
+  if (!item) return;
+  const nextItem = event.relatedTarget instanceof Element ? event.relatedTarget.closest("[data-bbox-link]") : null;
+  if (nextItem && nextItem.closest(".ocr-test-page-content") === item.closest(".ocr-test-page-content")) {
+    setUploadTestHighlight(nextItem);
+  } else {
+    clearUploadTestHighlight(item);
+  }
+});
 
 async function openOcrTestRun(runId) {
   $("#ocr-test-results").innerHTML = '<p class="loading-card">Loading test pages and parser output…</p>';
@@ -370,14 +490,17 @@ async function openOcrTestRun(runId) {
 }
 
 function updateUploadTestParserSettings() {
-  const engine = $("#ocr-test-parser").value;
+  const intent = $("#ocr-test-parser").value;
   document.querySelectorAll("#ocr-test-form [data-parser-settings]").forEach((fieldset) => {
-    const active = fieldset.dataset.parserSettings === engine;
+    const active = fieldset.dataset.parserSettings === intent;
     fieldset.hidden = !active;
     fieldset.querySelectorAll("input, select, textarea").forEach((control) => {
       control.disabled = !active;
     });
   });
+  $("#ocr-test-file").accept = intent === "document"
+    ? ".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.svg,.webp"
+    : ".pdf,.png,.jpg,.jpeg,.tif,.tiff,.webp";
 }
 
 $("#ocr-test-parser").addEventListener("change", updateUploadTestParserSettings);
@@ -521,12 +644,12 @@ function renderAnswerBody(answer) {
   return blocks.join("");
 }
 
-function renderAnswer(data, panel = $("#answer-panel")) {
+function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   panel.hidden = false;
   const citations = Array.isArray(data.citations) ? data.citations : [];
   const usedEvidenceFallback = Boolean(data.answer_fallback_reason || data.fallback);
   const responseTitle = ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Answer unavailable"})[data.status]
-    || (usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer");
+    || (data.ok === false ? "Answer unavailable" : usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer");
   const domainLabels = {
     inventory_allocation: "Inventory allocation",
     promotion_planning: "Promotion planning",
@@ -579,6 +702,22 @@ function renderAnswer(data, panel = $("#answer-panel")) {
   const limitations = Array.isArray(data.limitations) && data.limitations.length
     ? `<p class="analysis-caveat answer-provenance-note"><strong>Limits:</strong> ${data.limitations.map(escapeHtml).join(" · ")}</p>`
     : "";
+  const fallbackNotice = usedEvidenceFallback && !data.limitations?.length
+    ? '<p class="analysis-caveat answer-provenance-note" role="note"><strong>Evidence fallback.</strong> This is not successful model synthesis.</p>'
+    : "";
+  const sqlScope = data.context_used
+    ? (() => {
+      const scope = data.semantic_interpretation || {};
+      const time = scope.time || {};
+      const snapshot = time.start || (data.snapshot_dates || []).join(", ") || time.mode || "not reported";
+      const filters = (scope.filters || []).map((item) => `${item.field} ${item.operator} ${Array.isArray(item.value) ? item.value.join(", ") : item.value}`);
+      const snapshotLabel = data.historical_inventory ? "Historical snapshot" : "Snapshot";
+      return `<p class="analysis-caveat answer-provenance-note" role="status"><strong>Continuing the previous SQL scope.</strong> ${snapshotLabel}: ${escapeHtml(snapshot)}${filters.length ? ` · Filters: ${filters.map(escapeHtml).join("; ")}` : ""}</p>`;
+    })()
+    : "";
+  const routeDetails = data.selected_route || data.task_trace?.length
+    ? `<details class="agent-diagnostics"><summary>Run details</summary><p>Route: ${escapeHtml(data.selected_route || "not reported")}</p>${Array.isArray(data.task_trace) ? `<ul>${data.task_trace.map((task) => `<li>${escapeHtml(task.agent)} · ${escapeHtml(task.status)} · ${formatNumber(task.elapsed_ms)} ms${task.error_type ? ` · ${escapeHtml(task.error_type)}` : ""}</li>`).join("")}</ul>` : ""}</details>`
+    : "";
   panel.innerHTML = `
     <div class="answer-header-wrap">
       <div class="answer-heading">
@@ -586,7 +725,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
         <div><span class="eyebrow">${escapeHtml(({knowledge:"KNOWLEDGE AGENT",analytics:"ANALYTICS AGENT",sql_analytics:"ANALYTICS AGENT",dashboard:"INVENTORY AGENT",report:"REPORT AGENT",agentic:"AUTOMATIC ROUTER",hybrid:"KNOWLEDGE + ANALYTICS"})[data.agent] || "AGENT RESPONSE")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
       </div>
       <div class="answer-actions-bar">
-        <button type="button" class="action-btn" id="copy-answer-btn" title="Copy response text">Copy</button>
+        <button type="button" class="action-btn copy-answer-btn" title="Copy response text">Copy</button>
       </div>
     </div>
     ${domainNote}
@@ -594,6 +733,9 @@ function renderAnswer(data, panel = $("#answer-panel")) {
     ${referenceRetrievalNote}
     ${questionSqlFallbackNote}
     ${limitations}
+    ${fallbackNotice}
+    ${sqlScope}
+    ${routeDetails}
     ${tokenUsage}
     <div class="answer-text">${renderAnswerBody(data.answer)}</div>
     ${renderAgentInventoryDashboard(data.data?.dashboard)}
@@ -662,7 +804,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
         }).join("")}
       </div>` : ""}`;
 
-  const copyBtn = panel.querySelector("#copy-answer-btn");
+  const copyBtn = panel.querySelector(".copy-answer-btn");
   if (copyBtn) {
     copyBtn.addEventListener("click", async () => {
       try {
@@ -679,7 +821,7 @@ function renderAnswer(data, panel = $("#answer-panel")) {
     });
   }
 
-  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (shouldScroll) panel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderAgentInventoryDashboard(dashboard) {
@@ -717,22 +859,39 @@ async function loadInventorySnapshot() {
 }
 
 function renderAgentRows(data) {
-  const groups = [["Results", data], ...Object.entries(data || {}).filter(([, value]) => value && !Array.isArray(value) && typeof value === "object")];
+  const groups = Object.entries(data || {}).filter(([, value]) => value && !Array.isArray(value) && typeof value === "object");
+  if (Array.isArray(data?.rows)) groups.unshift(["Results", data]);
   return groups.map(([label, value]) => {
     const rows = value?.rows;
-    if (!Array.isArray(rows) || !rows.length || !rows.every((row) => row && typeof row === "object" && !Array.isArray(row))) return "";
-    const columns = Object.keys(rows[0]).slice(0, 12);
-    return `<section class="agent-data-result"><h4>${escapeHtml(label)}</h4><div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${rows.slice(0, 50).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`;
+    if (!Array.isArray(rows) && !value?.attempted_sql) return "";
+    const validRows = (rows || []).filter((row) => row && typeof row === "object" && !Array.isArray(row));
+    const columns = validRows.length ? Object.keys(validRows[0]).slice(0, 12) : [];
+    const executed = value.query_status === "executed";
+    const queryStatus = value.query_status
+      ? `<span class="query-status ${executed ? "is-executed" : "is-not-executed"}">${executed ? "Executed" : "Not executed · " + escapeHtml(value.query_status)}</span>`
+      : "";
+    const canShowRows = value.query_status == null || executed;
+    const table = canShowRows && validRows.length
+      ? `<div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${validRows.slice(0, 50).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`
+      : executed && Array.isArray(rows) ? '<p class="no-citations">The query ran and returned no rows.</p>' : "";
+    const diagnosticSql = value.attempted_sql || value.sql;
+    const parameters = Array.isArray(value.parameters) && value.parameters.length
+      ? `<p>Parameters: <code>${escapeHtml(JSON.stringify(value.parameters))}</code></p>`
+      : "";
+    const diagnostics = diagnosticSql || parameters
+      ? `<details><summary>${value.attempted_sql ? "Rejected query diagnostic" : executed ? "Executed query" : "Query details"}</summary>${diagnosticSql ? `<pre>${escapeHtml(diagnosticSql)}</pre>` : ""}${parameters}</details>`
+      : "";
+    return `<section class="agent-data-result"><h4>${escapeHtml(label.replace(/^task:/, "Task "))} ${queryStatus}</h4>${table}${diagnostics}</section>`;
   }).join("");
 }
 
-function renderAgentResult(result) {
+function renderAgentResult(result, panel = $("#answer-panel"), shouldScroll = true) {
   const citations = (result.evidence || []).map((item) => {
     const metadata = item.metadata || {};
     return { ...metadata, id: item.citation_id, title: item.source, source_type: item.source_type,
-      content: item.content, score: metadata.similarity_score };
+      excerpt: item.content || "", content: item.content, score: metadata.similarity_score };
   });
-  renderAnswer({ ...result.metadata, ...result, citations });
+  renderAnswer({ ...result, ...result.metadata, metadata: result.metadata, citations }, panel, shouldScroll);
 }
 
 function renderAgentMonitoring(data) {
@@ -772,9 +931,7 @@ async function api(path, options = {}) {
   headers["ngrok-skip-browser-warning"] = "1";
   const response = await fetch(path, { credentials: "same-origin", ...options, headers });
   if (response.status === 401 && path !== "/api/auth/login") {
-    $("#login-view").hidden = false;
-    $("#workspace").hidden = true;
-    $("#login-brand-sidebar").hidden = false;
+    clearExpiredSession();
     throw new Error("Sign in to continue");
   }
   let data;
@@ -794,7 +951,38 @@ async function api(path, options = {}) {
   return data;
 }
 
+function resetConversationState() {
+  agentConversationId = crypto.randomUUID();
+  reportConversationId = crypto.randomUUID();
+  sessionTurns = [];
+  $("#answer-panel").replaceChildren();
+  $("#answer-panel").hidden = true;
+  $("#report-agent-question").value = "";
+  $("#report-agent-template").value = "";
+  updateReportFormatVisibility();
+  $("#report-agent-status").textContent = "";
+  delete $("#report-agent-status").dataset.state;
+  $("#question").value = "";
+}
+
+function clearExpiredSession() {
+  sessionGeneration += 1;
+  sessionSubject = null;
+  currentUser = null;
+  resetConversationState();
+  $("#login-view").hidden = false;
+  $("#workspace").hidden = true;
+  $("#login-brand-sidebar").hidden = false;
+  $("#user-badge").hidden = true;
+  $("#logout-button").hidden = true;
+}
+
 async function loadWorkspace(user) {
+  if (sessionSubject !== user.username) {
+    sessionGeneration += 1;
+    sessionSubject = user.username;
+    resetConversationState();
+  }
   currentUser = user;
   $("#login-view").hidden = true;
   $("#login-brand-sidebar").hidden = true;
@@ -1006,11 +1194,26 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
   const form = event.currentTarget;
   const button = $("#ocr-test-button");
   button.disabled = true;
-  const parserEngine = form.elements.namedItem("parser_engine").value;
-  const parserLabel = "Docling";
-  $("#ocr-test-status").textContent = `Running ${parserLabel} with shared output cleanup…`;
+  const intent = form.elements.namedItem("intent").value;
+  const parserLabel = intent === "document" ? "Docling" : intent === "invoice" ? "Docling OCR + Qwen invoice extraction" : "Vintern image caption";
+  $("#ocr-test-status").textContent = `Running ${parserLabel}…`;
   try {
-    const result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
+    let result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
+    if (result.status === "processing") {
+      const runId = result.run_id;
+      const startedAt = Date.now();
+      while (result.status === "processing") {
+        await new Promise((resolve) => window.setTimeout(resolve, 3000));
+        result = await api(`/api/upload-tests/${encodeURIComponent(runId)}`);
+        if (result.status === "processing") {
+          const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
+          const runningLabel = intent === "invoice" ? "Docling OCR + Qwen invoice extraction" : "Vintern image caption";
+          $("#ocr-test-status").textContent = `${runningLabel} is still processing (${formatDuration(elapsedSeconds * 1000)})…`;
+        } else if (result.status === "failed") {
+          throw new Error(result.error || "Vintern processing failed");
+        }
+      }
+    }
     $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.element_count} parser elements, ${result.table_count} tables. No production document was created.`;
     await loadOcrTestRuns();
     await openOcrTestRun(result.run_id);
@@ -1041,11 +1244,8 @@ $("#login-form").addEventListener("submit", async (event) => {
 });
 
 $("#logout-button").addEventListener("click", async () => {
-  agentConversationId = crypto.randomUUID();
-  reportConversationId = crypto.randomUUID();
-  $("#answer-panel").hidden = true;
-  $("#answer-panel").textContent = "";
-  await api("/api/auth/logout", { method: "POST" });
+  clearExpiredSession();
+  await api("/api/auth/logout", { method: "POST" }).catch(() => {});
   $("#workspace").hidden = true;
   $("#login-view").hidden = false;
   $("#login-brand-sidebar").hidden = false;
@@ -1110,40 +1310,63 @@ $(".agent-grid").addEventListener("click", (event) => {
   }
 });
 
-let agentConversationId = crypto.randomUUID();
-let reportConversationId = crypto.randomUUID();
+function renderSessionTranscript(shouldScroll = false) {
+  const root = $("#answer-panel");
+  root.replaceChildren();
+  root.hidden = sessionTurns.length === 0;
+  for (const turn of sessionTurns) {
+    const entry = document.createElement("article");
+    entry.className = "chat-turn";
+    entry.dataset.turnId = turn.id;
+    entry.innerHTML = `<div class="chat-turn-question"><span>${escapeHtml(({auto:"AUTO",knowledge:"KNOWLEDGE",sql:"ANALYTICS"})[turn.mode] || turn.mode.toUpperCase())}</span><p>${escapeHtml(turn.question)}</p></div>`;
+    const response = document.createElement("div");
+    response.className = "answer-panel chat-turn-response";
+    entry.append(response);
+    root.append(entry);
+    if (turn.state === "pending") renderSkeletonAnswer(response, "Routing your request to the right agent...");
+    else if (turn.state === "error") response.innerHTML = `<p class="error-message">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
+    else if (turn.result) renderAgentResult(turn.result, response, false);
+  }
+  if (shouldScroll) root.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 $("#new-conversation").addEventListener("click", () => {
-  agentConversationId = crypto.randomUUID();
-  $("#answer-panel").hidden = true;
-  $("#answer-panel").textContent = "";
+  resetConversationState();
   $("#question").value = "";
 });
 
 $("#ask-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const requestConversationId = agentConversationId;
+  const requestGeneration = sessionGeneration;
+  const requestSubject = sessionSubject;
   const button = $("#ask-button");
   const question = $("#question").value.trim();
   if (!question) return;
+  const turn = { id: crypto.randomUUID(), mode: $("#agent-mode").value, question, state: "pending" };
+  sessionTurns.push(turn);
+  sessionTurns = sessionTurns.slice(-20);
+  renderSessionTranscript(true);
   button.disabled = true;
   button.innerHTML = "<span>Working...</span>";
-  const panel = $("#answer-panel");
-  renderSkeletonAnswer(panel, "Routing your request to the right agent...");
   try {
     const data = await api("/api/agents/chat", { method: "POST", body: JSON.stringify({
       question, agent_mode: $("#agent-mode").value, retrieval_method: "translated_hybrid_rerank",
       conversation_id: requestConversationId,
-    }) });
-    if (agentConversationId !== requestConversationId) return;
+    }), signal: AbortSignal.timeout(135_000) });
+    if (agentConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     $("#connection-status").textContent = "Agent services connected";
     $(".status-dot").classList.add("connected");
-    renderAgentResult(data);
+    turn.result = data;
+    turn.state = "complete";
   } catch (error) {
-    if (agentConversationId !== requestConversationId) return;
-    panel.innerHTML = '<p class="error-message">' + escapeHtml(error.message) + '. Please check service configuration or connection.</p>';
+    if (agentConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
+    turn.error = error.name === "TimeoutError" ? "The request timed out. No answer was received; try again or choose a specialist" : error.message;
+    turn.state = "error";
   } finally {
     button.disabled = false;
     button.innerHTML = "<span>Ask agent</span>";
+    if (sessionTurns.includes(turn)) renderSessionTranscript(false);
   }
 });
 
@@ -1199,6 +1422,8 @@ function confirmReportPlan(detail) {
 $("#report-agent-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const requestConversationId = reportConversationId;
+  const requestGeneration = sessionGeneration;
+  const requestSubject = sessionSubject;
   const button = $("#report-agent-submit");
   const status = $("#report-agent-status");
   const template = $("#report-agent-template").files[0];
@@ -1218,18 +1443,22 @@ $("#report-agent-form").addEventListener("submit", async (event) => {
         method: "POST", body: formData, credentials: "same-origin",
         headers: { "ngrok-skip-browser-warning": "1" },
       });
-      if (reportConversationId !== requestConversationId) return;
+      if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
+      if (response.status === 401) {
+        clearExpiredSession();
+        throw new Error("Sign in to continue");
+      }
       if (response.status !== 409) break;
       const payload = await response.json();
       if (!payload.detail?.confirmation_required) throw new Error("Unexpected report confirmation response.");
       const choice = await confirmReportPlan(payload.detail);
-      if (reportConversationId !== requestConversationId) return;
+      if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
       if (!choice) { status.textContent = "Report generation cancelled."; return; }
       if (choice.templateChoice) formData.set("template_choice", choice.templateChoice);
       if (choice.acceptSupportedScope) formData.set("accept_supported_scope", "true");
       if (attempt === 2) throw new Error("The report plan changed repeatedly. Refine the request and try again.");
     }
-    if (reportConversationId !== requestConversationId) return;
+    if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     if (!response.ok) {
       let detail = "Report request failed (HTTP " + response.status + ")";
       try {
@@ -1275,7 +1504,7 @@ $("#report-agent-form").addEventListener("submit", async (event) => {
       }
     } catch {}
   } catch (error) {
-    if (reportConversationId !== requestConversationId) return;
+    if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     status.dataset.state = "error";
     status.textContent = error.message;
   } finally {
@@ -1294,14 +1523,37 @@ function updateUploadRoleSelection() {
 
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 const SUPPORTED_UPLOAD_EXTENSIONS = new Set([".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
+const INVOICE_UPLOAD_EXTENSIONS = new Set([".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
 
-function validateUploadFile(file) {
+function validateUploadFile(file, invoiceMode = false) {
   if (!file) return "Choose a document to upload.";
   const extension = "." + file.name.split(".").pop().toLocaleLowerCase();
-  if (!SUPPORTED_UPLOAD_EXTENSIONS.has(extension)) return "This file type is not supported. Choose PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF.";
+  const supported = invoiceMode ? INVOICE_UPLOAD_EXTENSIONS : SUPPORTED_UPLOAD_EXTENSIONS;
+  if (!supported.has(extension)) return invoiceMode
+    ? "Invoice extraction supports PDF, PNG, JPG and TIF files."
+    : "This file type is not supported. Choose PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF.";
   if (file.size > MAX_UPLOAD_BYTES) return "The file is larger than the 50 MiB upload limit.";
   return "";
 }
+
+function updateUploadKind() {
+  const invoiceMode = $("#upload-kind").value === "invoice";
+  $("#upload-access-step").hidden = invoiceMode;
+  $("#upload-title").required = !invoiceMode;
+  $("#upload-title").closest(".upload-field").hidden = invoiceMode;
+  $("#upload-file-label").textContent = invoiceMode ? "Invoice file" : "Document file";
+  $("#upload-file").accept = invoiceMode
+    ? ".pdf,.png,.jpg,.jpeg,.tif,.tiff"
+    : ".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff";
+  $("#upload-kind-help").textContent = invoiceMode
+    ? "OCR and a text model create a reviewable invoice JSON draft in a separate invoice table."
+    : "Knowledge documents are indexed for document Q&A.";
+  const file = $("#upload-file").files[0];
+  if (file) $("#upload-file-info").textContent = validateUploadFile(file, invoiceMode)
+    || `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MiB.`;
+}
+
+$("#upload-kind").addEventListener("change", updateUploadKind);
 
 $("#upload-file").addEventListener("change", (event) => {
   const file = event.currentTarget.files[0];
@@ -1309,8 +1561,10 @@ $("#upload-file").addEventListener("change", (event) => {
   if (file && title.dataset.userEdited !== "true") {
     title.value = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
   }
-  const error = validateUploadFile(file);
-  $("#upload-file-info").textContent = error || file.name + " · " + (file.size / 1024 / 1024).toFixed(1) + " MiB. The original stays private; review OCR output in Document Processing.";
+  const invoiceMode = $("#upload-kind").value === "invoice";
+  const error = validateUploadFile(file, invoiceMode);
+  $("#upload-file-info").textContent = error || file.name + " · " + (file.size / 1024 / 1024).toFixed(1) + " MiB. "
+    + (invoiceMode ? "The source stays private; the JSON draft is stored separately from documents." : "The original stays private; review OCR output in Document Processing.");
   $("#upload-file-info").setAttribute("role", error ? "alert" : "status");
 });
 
@@ -1350,10 +1604,11 @@ $("#upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
   const parserHandoff = event.submitter?.dataset.uploadMode === "parser-handoff";
+  const invoiceMode = $("#upload-kind").value === "invoice";
   const file = $("#upload-file").files[0];
   const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
-  const fileError = validateUploadFile(file);
-  if (fileError || !roles.length) {
+  const fileError = validateUploadFile(file, invoiceMode);
+  if (fileError || (!invoiceMode && !roles.length)) {
     const status = $("#upload-status");
     $("#upload-status-wrap").hidden = false;
     $("#upload-progress").hidden = true;
@@ -1363,18 +1618,22 @@ $("#upload-form").addEventListener("submit", async (event) => {
   }
   const body = new FormData();
   body.append("file", file);
-  for (const name of ["title"]) {
-    const value = form.elements[name].value.trim();
-    if (value) body.append(name, value);
+  if (!invoiceMode) {
+    for (const name of ["title"]) {
+      const value = form.elements[name].value.trim();
+      if (value) body.append(name, value);
+    }
+    body.append("document_type", "knowledge_document");
+    body.append("domain", "general_knowledge");
+    roles.forEach((role) => body.append("allowed_roles", role));
   }
-  body.append("document_type", "knowledge_document");
-  body.append("domain", "general_knowledge");
-  roles.forEach((role) => body.append("allowed_roles", role));
   const controls = [...form.querySelectorAll("input, select, textarea, button")];
   const controlsWereDisabled = controls.map((control) => control.disabled);
   controls.forEach((control) => { control.disabled = true; });
   form.setAttribute("aria-busy", "true");
   const status = $("#upload-status");
+  $("#upload-invoice-result").hidden = true;
+  $("#upload-invoice-result").textContent = "";
   const progress = $("#upload-progress");
   const elapsedLabel = $("#upload-elapsed");
   $("#upload-status-wrap").hidden = false;
@@ -1388,14 +1647,29 @@ $("#upload-form").addEventListener("submit", async (event) => {
       : `${Math.floor(elapsedSeconds / 60)}m ${String(elapsedSeconds % 60).padStart(2, "0")}s`);
   };
   status.dataset.state = "processing";
-  status.textContent = parserHandoff
+  status.textContent = invoiceMode
+    ? "Uploading invoice, running OCR and extracting a reviewable JSON draft. This is saved separately from the document corpus. Keep this tab open."
+    : parserHandoff
     ? "Uploading, extracting and saving parser output. Chunking and indexing run downstream. Keep this tab open."
     : "Uploading, extracting text/OCR, chunking and indexing. Keep this tab open.";
   updateProcessingTime();
   const processingTimer = window.setInterval(updateProcessingTime, 1000);
   let result;
   try {
-    result = await api(parserHandoff ? "/api/documents/parser-handoff" : "/api/documents/upload", { method: "POST", body, headers: {} });
+    result = await api(invoiceMode ? "/api/invoices/upload" : parserHandoff ? "/api/documents/parser-handoff" : "/api/documents/upload", { method: "POST", body, headers: {} });
+    if (invoiceMode) {
+      status.dataset.state = "success";
+      progress.hidden = true;
+      elapsedLabel.hidden = true;
+      status.textContent = `Invoice ${result.invoice_id} saved for review in the invoice table. Model: ${result.model || "unknown"}.`;
+      $("#upload-invoice-result").textContent = JSON.stringify(result.invoice_data, null, 2);
+      $("#upload-invoice-result").hidden = false;
+      form.reset();
+      updateUploadKind();
+      updateUploadRoleSelection();
+      $("#upload-file-info").textContent = "Choose an invoice. Its JSON draft is stored separately from the document corpus.";
+      return;
+    }
     const referenceStatus = parserHandoff
       ? " Parser output is saved in public for the chunking worker; this document is not searchable yet."
       : " Indexed for document Q&A.";

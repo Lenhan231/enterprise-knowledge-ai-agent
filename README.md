@@ -87,6 +87,11 @@ request rather than silently changing retrieval or parser behavior.
 See [deployment instructions](docs/deployment-guide.md#docker) for Vercel,
 HTTPS ingress, checks and safe retirement of old containers.
 
+Production invoice uploads use Docling OCR/table extraction followed by a
+text-only Qwen JSON extractor. Their source and review-required draft are saved
+in `public.invoice_extractions`, separately from `documents` and the searchable
+corpus. See the [invoice pipeline guide](src/document_processing/docs/invoice-pipeline.md).
+
 Chat responses include request-local stage timings under `metadata.latency`;
 the backend also writes `agent_latency` JSON records to Docker logs. Values are
 milliseconds, and `null` means the stage was skipped. Retrieval totals include

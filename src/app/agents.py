@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import threading
 from pathlib import Path
 from time import perf_counter
 from typing import Literal
@@ -87,21 +88,34 @@ def _agent_request(user: dict, question: str, **values):
     return AgentRequest(question=question, user_id=user["sub"], identity=identity, **values)
 
 
+_telemetry_repository = None
+_telemetry_lock = threading.Lock()
+
+
 def _record_agent_run(**event):
+    """Insert on one reused connection; a failed connection is dropped and reopened on the next event."""
+    global _telemetry_repository
     from core.database.agent_run_repository import AgentRunRepository
 
-    repository = None
-    try:
-        repository = AgentRunRepository()
-        repository.record_event(**event)
-    except Exception:
-        logger.exception("Could not record agent run telemetry")
-    finally:
-        if repository is not None:
-            try:
-                repository.close()
-            except Exception:
-                logger.exception("Could not close agent telemetry connection")
+    with _telemetry_lock:
+        try:
+            if _telemetry_repository is None:
+                _telemetry_repository = AgentRunRepository()
+            _telemetry_repository.record_event(**event)
+        except Exception:
+            logger.exception("Could not record agent run telemetry")
+            if _telemetry_repository is not None:
+                try:
+                    _telemetry_repository.close()
+                except Exception:
+                    logger.exception("Could not close agent telemetry connection")
+                _telemetry_repository = None
+
+
+def _record_in_background(**event):
+    # Supabase is ~0.4 s per round trip from the VPS; the user should not wait for the insert.
+    # The loop's default executor is joined on shutdown, so a clean stop still writes the row.
+    asyncio.get_running_loop().run_in_executor(None, lambda: _record_agent_run(**event))
 
 
 @router.post("/chat")
@@ -135,6 +149,8 @@ async def agent_chat(
         prefix = 'Report' if result.agent == 'report' else 'Agent'
         error_type = {"partial": prefix + "Partial", "failed": prefix + "Failed",
                       "clarification_required": prefix + "ClarificationRequired"}.get(report_status)
+        if status == "failed" and error_type is None:
+            error_type = "InsufficientContext" if result.metadata.get("insufficient_context") else prefix + "Failed"
         citation_count = len(result.evidence)
         return result
     except PermissionError as error:
@@ -145,19 +161,22 @@ async def agent_chat(
         logger.exception("Agent request failed")
         raise HTTPException(503, "The agent service is unavailable") from error
     finally:
-        timing = snapshot()
-        timing["request_total_ms"] = (perf_counter() - started) * 1000
-        latency_events.reset(timing_token)
-        if result is not None:
-            result.metadata["latency"] = timing
-        logger.warning("agent_latency %s", json.dumps({"agent": agent_name, "status": status, **timing}))
-        await asyncio.to_thread(
-            _record_agent_run,
-            actor_role=user["role"], agent_name=agent_name,
-            retrieval_method=retrieval_method, status=status,
-            elapsed_ms=max(0, int((perf_counter() - started) * 1000)),
-            citation_count=citation_count, error_type=error_type,
-        )
+        handler_ms = (perf_counter() - started) * 1000
+        try:
+            _record_in_background(
+                actor_role=user["role"], agent_name=agent_name,
+                retrieval_method=retrieval_method, status=status,
+                elapsed_ms=max(0, int(handler_ms)),
+                citation_count=citation_count, error_type=error_type,
+            )
+        finally:
+            timing = snapshot()
+            timing["request_total_ms"] = handler_ms
+            timing["response_ready_ms"] = (perf_counter() - started) * 1000
+            latency_events.reset(timing_token)
+            if result is not None:
+                result.metadata["latency"] = timing
+            logger.warning("agent_latency %s", json.dumps({"agent": agent_name, "status": status, **timing}))
 
 
 @router.post("/report")
@@ -206,8 +225,7 @@ async def generate_agent_report(
         logger.exception("Report agent request failed")
         raise HTTPException(503, "The report service is unavailable") from error
     finally:
-        await asyncio.to_thread(
-            _record_agent_run,
+        _record_in_background(
             actor_role=user["role"], agent_name="report", retrieval_method="hybrid",
             status="completed" if status == "complete" else "failed",
             elapsed_ms=max(0, int((perf_counter() - started) * 1000)),

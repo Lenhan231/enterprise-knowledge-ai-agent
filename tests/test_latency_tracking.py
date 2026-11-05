@@ -40,6 +40,41 @@ class LatencyTrackingTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.evidence, [])
         self.assertIsNone(latency_events.get())
 
+    async def test_response_does_not_wait_for_slow_telemetry_on_success_or_failure(self):
+        import json
+        import time
+        from fastapi import HTTPException
+        from app.agents import AgentChatRequest, agent_chat
+        from core.models.agents import AgentResult
+
+        def slow_record(**event):
+            time.sleep(0.5)
+
+        for failure in (False, True):
+            runtime = Mock()
+            runtime.run_mode = AsyncMock(
+                side_effect=TimeoutError("deadline") if failure else None,
+                return_value=AgentResult(answer="OK", agent="knowledge"))
+            with self.subTest(failure=failure), \
+                 patch("app.agents._get_runtime", new=AsyncMock(return_value=runtime)), \
+                 patch("app.agents._record_agent_run", side_effect=slow_record) as record, \
+                 patch("app.agents.logger") as logger:
+                if failure:
+                    with self.assertRaises(HTTPException) as raised:
+                        await agent_chat(AgentChatRequest(question="policy", agent_mode="knowledge"),
+                                         Mock(), user={"role": "admin", "sub": "test"})
+                    self.assertEqual(raised.exception.status_code, 503)
+                    timing = json.loads(logger.warning.call_args.args[1])
+                else:
+                    result = await agent_chat(AgentChatRequest(question="policy", agent_mode="knowledge"),
+                                              Mock(), user={"role": "admin", "sub": "test"})
+                    timing = result.metadata["latency"]
+                self.assertLess(timing["response_ready_ms"], 400)
+                self.assertIsNone(timing["stages_ms"]["telemetry_persistence"])
+                self.assertIsNone(latency_events.get())
+                await asyncio.sleep(0.6)
+                self.assertEqual(record.call_count, 1)
+
     async def test_parallel_requests_and_thread_workers_keep_separate_timings(self):
         @measure("embedding")
         def embed():

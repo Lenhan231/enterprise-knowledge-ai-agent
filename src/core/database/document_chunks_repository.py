@@ -1,4 +1,7 @@
 import os
+import queue
+import threading
+from types import SimpleNamespace
 from core.latency import measure
 from typing import Literal
 from psycopg.types.json import Jsonb
@@ -15,7 +18,13 @@ from core.retrieval.methods.common import (
 
 load_dotenv()
 
+# translated_hybrid runs 1 dense + 2 BM25 searches at once; Supabase is ~0.4 s per round trip from the VPS.
+EXTRA_SEARCH_CONNECTIONS = 2
+
+
 class DocumentChunkRepository:
+    _search_lock = None  # no extra search connections unless __init__ opened the real database
+
     def __init__(self):
         DATABASE_URL = os.getenv("DATABASE_URL")
         if DATABASE_URL is None:
@@ -27,6 +36,9 @@ class DocumentChunkRepository:
         except BaseException:
             close_database_connection(self.conn)
             raise
+        self._idle_search = queue.SimpleQueue()
+        self._search_connections = []
+        self._search_lock = threading.Lock()
         
 
     def insert_chunk(
@@ -115,7 +127,59 @@ class DocumentChunkRepository:
                     for row in cursor.fetchall()]
 
     def close(self) -> None:
-        close_database_connection(self.conn)
+        if self._search_lock is None:
+            close_database_connection(self.conn)
+            return
+        try:
+            with self._search_lock:
+                extras, self._search_connections = self._search_connections, []
+            for connection in extras:
+                if connection is not None:
+                    close_database_connection(connection)
+        finally:
+            close_database_connection(self.conn)
+
+    def _borrow_search_connection(self):
+        if self._search_lock is None:
+            return self.conn
+        try:
+            return self._idle_search.get_nowait()
+        except queue.Empty:
+            pass
+        with self._search_lock:
+            if len(self._search_connections) >= EXTRA_SEARCH_CONNECTIONS:
+                return self.conn  # psycopg serializes queries that share a connection
+            self._search_connections.append(None)  # reserve the slot while connecting
+        try:
+            connection = connect_database(self.DATABASE_URL)
+            try:
+                register_vector(connection)
+            except BaseException:
+                close_database_connection(connection)
+                raise
+        except BaseException:
+            with self._search_lock:
+                self._search_connections.remove(None)
+            raise
+        with self._search_lock:
+            self._search_connections[self._search_connections.index(None)] = connection
+        return connection
+
+    def _return_search_connection(self, connection) -> None:
+        if connection is self.conn:
+            return
+        if not (connection.closed or connection.broken):
+            try:
+                if connection.info.transaction_status == psycopg.pq.TransactionStatus.INERROR:
+                    connection.rollback()
+                self._idle_search.put(connection)
+                return
+            except psycopg.Error:
+                pass
+        with self._search_lock:
+            if connection in self._search_connections:
+                self._search_connections.remove(connection)
+        close_database_connection(connection)
 
     def expand_parent_contexts(
         self,
@@ -221,11 +285,16 @@ class DocumentChunkRepository:
 
         options = {"query": query, "company": company, "roles": roles,
                    "document_ids": document_ids, "metadata_filter": metadata_filter}
-        if method == "dense":
-            return dense.search(self, query_embedding, limit, **options)
-        if method == "bm25":
-            return bm25.search(self, limit, **options)
-        return hybrid.search(
-            self, query_embedding, limit, dense_weight=dense_weight,
-            bm25_weight=bm25_weight, rrf_k=rrf_k, **options,
-        )
+        connection = self._borrow_search_connection()
+        try:
+            view = SimpleNamespace(conn=connection)  # the search modules only read .conn
+            if method == "dense":
+                return dense.search(view, query_embedding, limit, **options)
+            if method == "bm25":
+                return bm25.search(view, limit, **options)
+            return hybrid.search(
+                view, query_embedding, limit, dense_weight=dense_weight,
+                bm25_weight=bm25_weight, rrf_k=rrf_k, **options,
+            )
+        finally:
+            self._return_search_connection(connection)

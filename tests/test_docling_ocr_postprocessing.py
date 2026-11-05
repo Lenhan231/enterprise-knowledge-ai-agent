@@ -8,7 +8,8 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from document_processing.docling_adapter.result_mapper import _get_page_image
+from document_processing.docling_adapter.result_mapper import _get_page_image, _merge_text_layout_elements
+from document_processing.docling_adapter.orientation import detect_paddle_orientation
 from document_processing.docling_adapter.scanned.postprocessing import (
     clean_ocr_elements,
     recover_empty_cell_dashes,
@@ -17,6 +18,42 @@ from document_processing.docling_adapter.scanned.vietocr import VietOcrModel
 
 
 class VietOcrPostprocessingTest(unittest.TestCase):
+    def test_merges_only_ocr_fragments_inside_raw_text_region(self):
+        def element(text, bbox, page=1):
+            return {"text": text, "metadata": {"page_number": page, "bbox": bbox,
+                    "element_type": "text", "text_extraction_method": "docling.vietocr"}}
+
+        elements = [element("MAR", [22, 2, 48, 12]), element("31", [2, 3, 18, 13]),
+                    element("2009", [52, 2, 88, 12]), element("footer", [2, 22, 30, 30]),
+                    element("other page", [2, 3, 18, 13], page=2)]
+        detections = [{"page_number": 1, "label": "text", "bbox": [0, 0, 100, 16]},
+                      {"page_number": 1, "label": "footer", "bbox": [0, 20, 100, 35]}]
+        merged = _merge_text_layout_elements(elements, detections)
+        self.assertEqual([item["text"] for item in merged], ["31 MAR 2009", "footer", "other page"])
+        self.assertEqual(merged[0]["metadata"]["bbox"], [0, 0, 100, 16])
+
+    def test_non_text_region_wins_when_more_specific_and_lines_remain_separate(self):
+        def element(text, bbox):
+            return {"text": text, "metadata": {"page_number": 1, "bbox": bbox,
+                    "element_type": "text", "text_extraction_method": "docling.tesseract"}}
+
+        elements = [element("first", [1, 1, 20, 9]), element("line", [23, 2, 40, 10]),
+                    element("second", [1, 15, 22, 23]), element("footer", [1, 30, 20, 38])]
+        detections = [{"page_number": 1, "label": "text", "bbox": [0, 0, 100, 40]},
+                      {"page_number": 1, "label": "footer", "bbox": [0, 28, 30, 40]}]
+        merged = _merge_text_layout_elements(elements, detections)
+        self.assertEqual([item["text"] for item in merged], ["first line\nsecond", "footer"])
+
+    def test_paddle_orientation_maps_prediction_to_clockwise_correction(self):
+        from PIL import Image
+
+        for angle, correction in ((0, 0), (90, 270), (180, 180), (270, 90)):
+            with self.subTest(angle=angle):
+                prediction = SimpleNamespace(json={"res": {"label_names": [str(angle)], "scores": [0.9]}})
+                model = SimpleNamespace(predict=lambda *_args, **_kwargs: iter([prediction]))
+                with patch("document_processing.docling_adapter.orientation._paddle_orientation_model", return_value=model):
+                    self.assertEqual(detect_paddle_orientation(Image.new("RGB", (4, 4))), (correction, angle, 0.9))
+
     @staticmethod
     def _cell(text, box):
         left, top, right, bottom = box

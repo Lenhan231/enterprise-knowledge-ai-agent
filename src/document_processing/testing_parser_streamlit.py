@@ -85,6 +85,11 @@ def _remap_selected_page_numbers(output: dict[str, Any], selected_pages: list[in
         metadata = table.get("metadata") or {}
         if metadata.get("page_number") is not None:
             metadata["page_number"] = original_page_number(metadata["page_number"])
+    for extraction_name in ("invoice_extraction", "image_caption_extraction"):
+        for page in (output.get(extraction_name) or {}).get("pages", []):
+            page["page_number"] = original_page_number(page.get("page_number"))
+    for detection in output.get("layout_detections", []):
+        detection["page_number"] = original_page_number(detection.get("page_number"))
     for key in ("page_previews", "page_sizes"):
         if key in output:
             output[key] = {
@@ -95,7 +100,7 @@ def _remap_selected_page_numbers(output: dict[str, Any], selected_pages: list[in
 
 
 def _normalize_saved_output(output: dict[str, Any]) -> dict[str, Any]:
-    """Present older saved parser results with the shared element labels."""
+    """Normalize saved output and derive title links from stored layout boxes."""
     for element in output.get("elements", []):
         metadata = element.setdefault("metadata", {})
         metadata.pop("word_style", None)
@@ -112,6 +117,65 @@ def _normalize_saved_output(output: dict[str, Any]) -> dict[str, Any]:
         metadata.pop("word_style", None)
         metadata.pop("word_style_id", None)
         metadata.update({"element_type": "table", "layout_type": "table"})
+
+    # Older saved runs already contain detector boxes, but predate title links.
+    # Derive those links at load time so users can inspect the heuristic without
+    # rerunning OCR/layout inference or rewriting the stored result.
+    page_sizes = output.get("page_sizes") or {}
+    detections = output.get("layout_detections") or []
+    if detections and page_sizes:
+        from document_processing.docling_adapter.result_mapper import (
+            _associate_layout_titles,
+            associate_chart_title_regions,
+        )
+
+        normalized_sizes = {
+            int(page_number): (float(size["width"]), float(size["height"]))
+            for page_number, size in page_sizes.items()
+            if size.get("width") is not None and size.get("height") is not None
+        }
+        _associate_layout_titles(
+            detections,
+            output.get("elements", []),
+            output.get("tables", []),
+            normalized_sizes,
+        )
+        chart_elements = []
+        chart_regions = []
+        for element in output.get("elements", []):
+            metadata = element.get("metadata") or {}
+            if (
+                normalize_element_label(metadata.get("element_type")) == "chart"
+                and metadata.get("bbox")
+                and metadata.get("page_number") is not None
+            ):
+                chart_elements.append(element)
+                chart_regions.append({
+                    "page_no": metadata["page_number"],
+                    "bbox": metadata["bbox"],
+                })
+        associate_chart_title_regions(chart_regions, detections, normalized_sizes)
+        seen_chart_groups = set()
+        for element, chart in zip(chart_elements, chart_regions):
+            if not chart.get("title_bbox"):
+                continue
+            metadata = element.setdefault("metadata", {})
+            if "chart_recognition_bbox" not in metadata:
+                planned_metadata = {
+                    "chart_recognition_bbox": chart["recognition_bbox"],
+                    "chart_title_bbox": chart["title_bbox"],
+                    "chart_title_match_score": chart["title_match_score"],
+                    "chart_recognition_input": "planned_chart_and_title_union_crop",
+                }
+                group_id = chart.get("recognition_group_id")
+                if group_id:
+                    planned_metadata.update({
+                        "chart_recognition_group_id": group_id,
+                        "chart_member_bboxes": chart["recognition_group_member_bboxes"],
+                        "chart_recognition_group_lead": group_id not in seen_chart_groups,
+                    })
+                    seen_chart_groups.add(group_id)
+                metadata.update(planned_metadata)
     return output
 
 
@@ -145,6 +209,8 @@ def _parser_output_row_preview(
         "tables": output.get("tables", []),
         "document_metadata": {
             **parser_metadata,
+            **({"invoice_extraction": output["invoice_extraction"]} if output.get("invoice_extraction") else {}),
+            **({"image_caption_extraction": output["image_caption_extraction"]} if output.get("image_caption_extraction") else {}),
             "filename": filename,
             "source_sha256": source_sha256,
             "local_parser_run_id": selected_id,
@@ -190,6 +256,7 @@ def _page_preview_with_boxes(
     page_size: dict[str, float] | None,
     *,
     default_origin: str,
+    layout_detections: list[dict[str, Any]] | None = None,
 ) -> bytes:
     image = Image.open(BytesIO(preview)).convert("RGB")
     draw = ImageDraw.Draw(image)
@@ -228,20 +295,54 @@ def _page_preview_with_boxes(
         color = {
             "title": "#ff9b69",
             "title_table": "#e879f9",
-            "section_header": "#38bdf8",
             "text": "#58aeff",
             "footnote": "#f472b6",
             "document_index": "#fbbf24",
             "formula": "#c084fc",
             "figure": "#ffcf5c",
+            "chart": "#fb923c",
             "seal": "#fb7185",
             "page_header": "#a78bfa",
             "page_footer": "#f472b6",
             "table": "#65d99b",
         }[kind]
         draw_bbox(metadata, color, kind)
+        if (
+            metadata.get("chart_title_bbox")
+            and metadata.get("chart_recognition_bbox")
+            and metadata.get("chart_recognition_bbox") != metadata.get("bbox")
+            and metadata.get("chart_recognition_group_lead", True)
+        ):
+            crop_label = (
+                "VL crop"
+                if metadata.get("chart_recognition_input") == "chart_and_matched_title_union_crop"
+                else "VL crop (planned)"
+            )
+            draw_bbox(
+                {**metadata, "bbox": metadata["chart_recognition_bbox"]},
+                "#facc15",
+                crop_label,
+            )
     for table in tables:
         draw_bbox(table.get("metadata") or {}, "#65d99b", "table")
+    layout_colors = {
+        "paragraph_title": "#f97316", "image": "#facc15", "text": "#38bdf8",
+        "number": "#a78bfa", "abstract": "#22c55e", "content": "#06b6d4",
+        "figure_title": "#e879f9", "formula": "#c084fc", "table": "#34d399",
+        "reference": "#fb7185", "doc_title": "#fb923c", "footnote": "#f472b6",
+        "header": "#818cf8", "algorithm": "#2dd4bf", "footer": "#f43f5e",
+        "seal": "#ef4444", "chart": "#f97316", "formula_number": "#d946ef",
+        "aside_text": "#84cc16", "reference_content": "#14b8a6",
+    }
+    for detection in layout_detections or []:
+        label = str(detection.get("label", "unknown"))
+        color = layout_colors.get(label, "#f8fafc")
+        target = detection.get("associated_target") or {}
+        matched = (
+            f" -> {target.get('target_type')}#{target.get('target_index')}"
+            if target else ""
+        )
+        draw_bbox(detection, color, f"{label} {float(detection.get('score', 0.0)):.2f}{matched}")
 
     output = BytesIO()
     image.save(output, format="PNG")
@@ -252,11 +353,13 @@ def _process_upload(
     filename: str,
     content: bytes,
     *,
+    intent: str,
     ocr_engine: str,
     language: str,
     device: str,
     ocr_enabled: bool,
     table_structure: bool,
+    chart_recognition: bool,
     num_threads: int,
     selected_pages: list[int] | None = None,
 ) -> dict[str, Any]:
@@ -271,11 +374,13 @@ def _process_upload(
         source_path.chmod(0o600)
         config = {
             "parser_engine": "docling",
+            "intent": intent,
             "docling_device": device,
             "docling_ocr": ocr_enabled,
             "docling_ocr_engine": ocr_engine,
             "docling_ocr_language": language,
             "docling_table_structure": table_structure,
+            "docling_chart_recognition": chart_recognition,
             "docling_num_threads": num_threads,
             "docling_page_images": True,
             "selected_source_pages": selected_pages,
@@ -347,60 +452,114 @@ st.markdown(
 
 st.caption("PRIVATE DOCUMENT WORKSPACE")
 st.title("Document store")
-st.markdown("Upload a file, review Docling’s extracted content, and keep the results on this machine.")
+st.markdown("Upload a file, review extracted content, and keep the results on this machine.")
+
+intent = st.radio(
+    "Processing intent",
+    ["document", "invoice", "image_caption"],
+    index=0,
+    horizontal=True,
+    format_func={
+        "document": "General document · current pipeline",
+        "invoice": "Invoice · Vintern extraction",
+        "image_caption": "Image caption · Vintern",
+    }.__getitem__,
+    key="processing_intent",
+)
 
 upload_column, settings_column = st.columns([1.7, 1], gap="large")
 with settings_column:
     with st.container(border=True):
         st.subheader("Processing settings")
-        ocr_engine = st.selectbox(
-            "OCR engine",
-            ["vietocr", "tesseract"],
-            format_func={
-                "vietocr": "VietOCR · benchmark best",
-                "tesseract": "Tesseract",
-            }.__getitem__,
-            index=0,
-        )
+        ocr_engine = "vietocr"
         language = "vie+eng"
-        if ocr_engine == "tesseract":
-            language = st.selectbox(
-                "OCR languages",
-                ["vie+eng", "vie", "eng"],
+        ocr_enabled = True
+        table_structure = True
+        chart_recognition = False
+        num_threads = 4
+        if intent == "document":
+            ocr_engine = st.selectbox(
+                "OCR engine",
+                ["vietocr", "tesseract"],
                 format_func={
-                    "vie+eng": "Vietnamese + English",
-                    "vie": "Vietnamese only",
-                    "eng": "English only",
+                    "vietocr": "VietOCR · benchmark best",
+                    "tesseract": "Tesseract",
                 }.__getitem__,
+                index=0,
             )
+            if ocr_engine == "tesseract":
+                language = st.selectbox(
+                    "OCR languages",
+                    ["vie+eng", "vie", "eng"],
+                    format_func={
+                        "vie+eng": "Vietnamese + English",
+                        "vie": "Vietnamese only",
+                        "eng": "English only",
+                    }.__getitem__,
+                )
         device = st.selectbox("Device", ["cpu", "cuda"], format_func={
             "cpu": "CPU",
             "cuda": "NVIDIA CUDA",
         }.__getitem__)
-        ocr_enabled = st.selectbox("OCR", [True, False], format_func={
-            True: "On · scanned pages",
-            False: "Off · digital text only",
-        }.__getitem__)
-        table_structure = st.selectbox("Table structure recognition", [True, False], format_func={
-            True: "On",
-            False: "Off",
-        }.__getitem__)
-        num_threads = st.number_input("CPU threads", min_value=1, max_value=16, value=4)
-        st.caption("Tables: Accurate mode")
-        st.caption(
-            "VietOCR uses RapidOCR line detection + vgg_seq2seq greedy recognition (512 px), "
-            "matching the 58-page OCR benchmark."
-            if ocr_engine == "vietocr"
-            else "Tesseract PSM 6 with the selected languages."
-        )
+        if intent == "document":
+            ocr_enabled = st.selectbox("OCR for images and Office pictures", [True, False], format_func={
+                True: "On",
+                False: "Off",
+            }.__getitem__)
+            table_structure = st.selectbox("Table structure recognition", [True, False], format_func={
+                True: "On",
+                False: "Off",
+            }.__getitem__)
+            chart_recognition = st.checkbox(
+                "Extract chart text with PaddleOCR-VL",
+                value=False,
+                help="Loads an additional vision-language model and can use several GiB of RAM. Leave off to keep chart regions without generated chart text.",
+            )
+            num_threads = st.number_input("CPU threads", min_value=1, max_value=16, value=4)
+            st.caption("Tables: Accurate mode")
+            st.caption("PDF native text is ignored; VietOCR uses detected layout regions and Tesseract uses full-page OCR.")
+            st.caption(
+                "VietOCR uses RapidOCR line detection + vgg_seq2seq greedy recognition (512 px), "
+                "matching the 58-page OCR benchmark."
+                if ocr_engine == "vietocr"
+                else "Tesseract PSM 6 with the selected languages."
+            )
+        else:
+            st.caption(
+                "Vintern reads each page directly and returns invoice fields or a short image caption. "
+                "OCR and TableFormer settings do not apply in this mode."
+            )
 
 with upload_column:
     with st.container(border=True):
         st.subheader("Add a document")
-        st.caption("PDF, Office, CSV, TXT, Markdown, or image · maximum 50 MiB")
+        st.caption(
+            "Intent: invoice extraction · Vintern" if intent == "invoice"
+            else "Intent: image caption · Vintern" if intent == "image_caption"
+            else "Intent: general document · current Docling pipeline"
+        )
+        allowed_suffixes = (
+            {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp"}
+            if intent in {"invoice", "image_caption"}
+            else SUPPORTED_FORMATS
+        )
+        st.caption(
+            "PDF or image · maximum 50 MiB"
+            if intent in {"invoice", "image_caption"}
+            else "PDF, Office, CSV, TXT, Markdown, or image · maximum 50 MiB"
+        )
+        if intent in {"invoice", "image_caption"}:
+            from document_processing.vintern_processor import resolve_vintern_python
+
+            if resolve_vintern_python() is None:
+                st.warning(
+                    "Vintern runtime is not configured. Create .venv-vintern or set "
+                    "DOCUMENT_PROCESSING_VINTERN_PYTHON; setup steps are in "
+                    "src/document_processing/README.md."
+                )
         uploaded = st.file_uploader(
             "Choose a file",
-            type=sorted(suffix.lstrip(".") for suffix in SUPPORTED_FORMATS),
+            type=sorted(suffix.lstrip(".") for suffix in allowed_suffixes),
             label_visibility="collapsed",
         )
         if uploaded is not None:
@@ -431,16 +590,25 @@ with upload_column:
                 elif page_selection_error is not None:
                     st.error(page_selection_error)
                 else:
-                    with st.spinner("Processing document with Docling…"):
+                    spinner = (
+                        "Extracting invoice fields with Vintern…"
+                        if intent == "invoice"
+                        else "Writing an image caption with Vintern…"
+                        if intent == "image_caption"
+                        else "Processing document with Docling…"
+                    )
+                    with st.spinner(spinner):
                         try:
                             st.session_state["latest_run"] = _process_upload(
                                 Path(uploaded.name).name,
                                 content,
+                                intent=intent,
                                 ocr_engine=ocr_engine,
                                 language=language,
                                 device=device,
                                 ocr_enabled=ocr_enabled,
                                 table_structure=table_structure,
+                                chart_recognition=chart_recognition,
                                 num_threads=int(num_threads),
                                 selected_pages=selected_pages,
                             )
@@ -541,8 +709,8 @@ else:
 
         run_dir = STORE_DIR / selected_id
         source_path = run_dir / "source"
-        page_tab, raw_tab, tables_tab, handoff_tab, details_tab, supabase_tab = st.tabs(
-            ["Page review", "Raw text", "Tables", "Text elements", "Run details", "Supabase row preview"]
+        page_tab, extraction_tab, raw_tab, tables_tab, handoff_tab, details_tab, supabase_tab = st.tabs(
+            ["Page review", "Invoice / caption", "Raw text", "Tables", "Text elements", "Run details", "Supabase row preview"]
         )
         with page_tab:
             page_numbers = _page_numbers(run_dir) if source_path.is_file() else []
@@ -579,18 +747,23 @@ else:
                         preview = _page_preview(run_dir, page_number)
                         if preview is not None:
                             show_boxes = st.checkbox("Show bounding boxes", value=True)
-                            if show_boxes:
+                            show_raw_layout = st.checkbox("Show raw PP-DocLayoutV3 labels", value=False)
+                            if show_boxes or show_raw_layout:
                                 page_sizes = selected_output.get("page_sizes") or {}
                                 preview = _page_preview_with_boxes(
                                     preview,
-                                    page_elements,
-                                    page_tables,
+                                    page_elements if show_boxes else [],
+                                    page_tables if show_boxes else [],
                                     page_sizes.get(str(page_number)),
                                     default_origin=(
                                         "BOTTOMLEFT"
                                         if Path(selected_manifest["filename"]).suffix.lower() == ".pdf"
                                         else "TOPLEFT"
                                     ),
+                                    layout_detections=[
+                                        detection for detection in selected_output.get("layout_detections", [])
+                                        if int(detection.get("page_number", -1)) == page_number
+                                    ] if show_raw_layout else [],
                                 )
                             st.image(preview, use_container_width=True)
                         else:
@@ -599,6 +772,42 @@ else:
                     with st.container(border=True):
                         st.subheader("Extracted output")
                         st.caption(f"{len(page_elements):,} elements · {len(page_tables):,} tables")
+                        page_layout_detections = [
+                            detection for detection in selected_output.get("layout_detections", [])
+                            if int(detection.get("page_number", -1)) == page_number
+                        ]
+                        title_links = [
+                            {
+                                "title text": item.get("associated_title_text") or "(no OCR text in title box)",
+                                "matched region": (
+                                    f"{item['associated_target']['target_type']} "
+                                    f"#{item['associated_target']['target_index']}"
+                                ),
+                                "layout label": item.get("label"),
+                                "distance": item["associated_target"].get("distance_score"),
+                            }
+                            for item in page_layout_detections
+                            if item.get("associated_target")
+                        ]
+                        if title_links:
+                            st.markdown("**Title ↔ table/chart matches** · geometric heuristic")
+                            st.dataframe(title_links, hide_index=True, use_container_width=True)
+                        if page_layout_detections:
+                            from collections import Counter
+
+                            with st.expander(f"Raw PP-DocLayoutV3 labels · {len(page_layout_detections)} detections"):
+                                counts = Counter(item["label"] for item in page_layout_detections)
+                                st.write(dict(sorted(counts.items())))
+                                st.dataframe([
+                                    {
+                                        "source_label": item["label"],
+                                        "score": item["score"],
+                                        "bbox": item["bbox"],
+                                        "matched_object": item.get("associated_target"),
+                                        "matched_title_text": item.get("associated_title_text"),
+                                    }
+                                    for item in page_layout_detections
+                                ], hide_index=True, use_container_width=True)
                         if not page_elements:
                             st.info("No document elements were extracted from this page.")
                         for index, element in enumerate(page_elements, 1):
@@ -624,6 +833,29 @@ else:
                         )
                         st.markdown(f"**Element {index} · {element_type}**")
                         st.text(element.get("text") or "[Table reference]")
+        with extraction_tab:
+            extraction = selected_output.get("invoice_extraction")
+            caption = selected_output.get("image_caption_extraction")
+            if caption:
+                st.caption(f"Model: {caption.get('model', 'unknown')} · status: {caption.get('status', 'unknown')}")
+                for page in caption.get("pages", []):
+                    st.subheader(f"Page {page.get('page_number', '?')}")
+                    st.write(page.get("caption") or "No caption was generated.")
+                    with st.expander("Raw model response"):
+                        st.code(page.get("raw_response", ""), language="text", wrap_lines=True)
+            elif not extraction:
+                st.info("This run used the general document pipeline, not invoice extraction.")
+            else:
+                st.warning("Draft extraction: verify every field against the source invoice before use.")
+                st.caption(f"Model: {extraction.get('model', 'unknown')} · status: {extraction.get('status', 'unknown')}")
+                for page in extraction.get("pages", []):
+                    st.subheader(f"Page {page.get('page_number', '?')}")
+                    if page.get("fields") is not None:
+                        st.json(page["fields"])
+                    else:
+                        st.error("The model response could not be parsed as an object; inspect the raw response.")
+                    with st.expander("Raw model response"):
+                        st.code(page.get("raw_response", ""), language="text", wrap_lines=True)
         with raw_tab:
             if raw_text:
                 st.caption("Extracted text, in document reading order.")
@@ -707,6 +939,11 @@ else:
         with details_tab:
             run_config = selected_manifest.get("config") or {}
             output_metadata = selected_output.get("metadata") or {}
+            if run_config.get("intent", "document") in {"invoice", "image_caption"}:
+                intent_label = "Invoice extraction" if run_config["intent"] == "invoice" else "Image caption"
+                pipeline_id = output_metadata.get("pipeline_id") or f"vintern_{run_config['intent']}"
+                st.write(f"**Intent:** {intent_label}")
+                st.write(f"**Pipeline:** {pipeline_id}")
             source_suffix = Path(selected_manifest["filename"]).suffix.lower()
             uses_pdf_pipeline = source_suffix in {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}
             effective_ocr = output_metadata.get("ocr_enabled", run_config.get("docling_ocr", True))
@@ -718,7 +955,13 @@ else:
                 else f"Tesseract (language: {run_config.get('docling_ocr_language', 'vie')}, PSM 6)"
             )
             if uses_pdf_pipeline:
-                layout_model = "Docling Heron (`docling-project/docling-layout-heron`)"
+                layout_model = output_metadata.get(
+                    "layout_model",
+                    run_config.get(
+                        "docling_layout_model",
+                        "Docling Heron (`docling-project/docling-layout-heron`)",
+                    ),
+                )
                 table_recognition_model = (
                     "Docling TableFormer (Accurate, cell matching)"
                     if run_config.get("docling_table_structure", True)
@@ -727,7 +970,7 @@ else:
                 if embedded_image_ocr and not effective_ocr:
                     text_recognition_model = f"{ocr_model_name} (embedded images only)"
                 elif not effective_ocr:
-                    text_recognition_model = "OCR disabled (Docling native text)"
+                    text_recognition_model = "OCR disabled"
                 else:
                     text_recognition_model = ocr_model_name
             else:
@@ -759,4 +1002,26 @@ else:
                     file_name=selected_manifest["filename"],
                     mime="application/octet-stream",
                 )
-            st.json(selected_output.get("metadata", {}))
+            parser_metadata = selected_output.get("metadata", {})
+            routing_diagnostics = parser_metadata.get("ocr_routing_diagnostics", [])
+            orientation_diagnostics = parser_metadata.get("ocr_orientation_diagnostics", [])
+            if routing_diagnostics:
+                with st.expander(f"OCR diagnostics · {len(routing_diagnostics)} lines"):
+                    routing_log = "".join(
+                        json.dumps(item, ensure_ascii=False, separators=(",", ":")) + "\n"
+                        for item in routing_diagnostics
+                    )
+                    st.download_button(
+                        "Download OCR routing log (.jsonl)",
+                        routing_log,
+                        file_name=f'{Path(selected_manifest["filename"]).stem}.ocr-routing.jsonl',
+                        mime="application/x-ndjson",
+                        key=f"download-ocr-routing-{selected_id}",
+                    )
+                    st.dataframe(routing_diagnostics, use_container_width=True, hide_index=True)
+                    if orientation_diagnostics:
+                        st.caption("Layout-region orientation decisions")
+                        st.dataframe(
+                            orientation_diagnostics, use_container_width=True, hide_index=True
+                        )
+            st.json(parser_metadata)

@@ -52,6 +52,7 @@ class KnowledgeOutcomeTest(unittest.IsolatedAsyncioTestCase):
                 self.rag.generate_from_contexts("policy?", self.contexts)
 
     async def test_knowledge_propagates_both_empty_outcomes(self):
+        self.enterContext(patch.dict(os.environ, {"KNOWLEDGE_MULTIQUERY_ENABLED": "1"}))
         identity = VerifiedIdentity(subject="viewer", permissions={"documents:read"}, document_roles={"employee"})
         for contexts in ([], self.contexts):
             with self.subTest(has_context=bool(contexts)):
@@ -64,8 +65,21 @@ class KnowledgeOutcomeTest(unittest.IsolatedAsyncioTestCase):
                 self.assertTrue(result.metadata["insufficient_context"])
                 self.assertEqual(result.evidence, [])
                 service.generate_answer.assert_called_once_with(
-                    "policy?", roles=["employee"], retrieval_method="translated_hybrid_rerank",
+                    "policy?", decompose=True, verify_claims=False, roles=["employee"], retrieval_method="translated_hybrid_rerank",
                 )
+
+    async def test_multiquery_switch_defaults_off_and_requires_explicit_one(self):
+        identity = VerifiedIdentity(subject="viewer", permissions={"documents:read"}, document_roles={"employee"})
+        for value in (None, "0", "1", "invalid"):
+            with self.subTest(value=value), patch.dict(os.environ):
+                os.environ.pop("KNOWLEDGE_MULTIQUERY_ENABLED", None)
+                if value is not None:
+                    os.environ["KNOWLEDGE_MULTIQUERY_ENABLED"] = value
+                service = Mock()
+                service.generate_answer.return_value = self.rag.generate_from_contexts("policy?", [])
+                await KnowledgeAgent(service).run(AgentRequest(question="policy?", identity=identity))
+                self.assertEqual(service.generate_answer.call_args.kwargs["decompose"], value == "1")
+                self.assertEqual(service.generate_answer.call_args.kwargs["roles"], ["employee"])
 
 
 class KnowledgeAccessMessageTest(unittest.TestCase):

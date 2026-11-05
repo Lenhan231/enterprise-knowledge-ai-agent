@@ -44,8 +44,10 @@ class TranslatedHybridTest(unittest.IsolatedAsyncioTestCase):
                     question, limit=1, company="Company", roles=["employee"],
                     retrieval_method="translated_hybrid", document_ids=["EN", "VN"],
                     document_languages={"EN": "en", "VN": "vn"})
-                calls = service.repository.similarity_search.call_args_list
-                self.assertEqual([c.kwargs["method"] for c in calls], ["dense", "bm25", "bm25"])
+                calls = sorted(service.repository.similarity_search.call_args_list,
+                               key=lambda c: (c.kwargs["method"], c.kwargs["document_ids"]))
+                self.assertEqual([c.kwargs["method"] for c in calls], ["bm25", "bm25", "dense"])
+                calls = [calls[2], calls[0], calls[1]]  # dense, EN, VN
                 self.assertEqual([c.kwargs["document_ids"] for c in calls], [["EN", "VN"], ["EN"], ["VN"]])
                 for call in calls:
                     self.assertEqual(call.kwargs["company"], "Company")
@@ -80,7 +82,8 @@ class TranslatedHybridTest(unittest.IsolatedAsyncioTestCase):
     def test_two_stage_rrf_matches_expected_scores_and_deduplicates(self):
         service, llm = self.service()
         a, b = chunk("EN", 1), chunk("VN", 2)
-        service.repository.similarity_search.side_effect = [[a, b], [b, b], [a]]
+        service.repository.similarity_search.side_effect = lambda vector, limit, **kw: (
+            [a, b] if kw["method"] == "dense" else [b, b] if kw["query"] == "translated" else [a])
         result = service.retrieve(RetrievalRequest(query="question", top_k=2),
                                   method="translated_hybrid", document_ids=["EN", "VN"])
         self.assertEqual([x.document_id for x in result.results], ["EN", "VN"])
@@ -131,8 +134,10 @@ class TranslatedHybridTest(unittest.IsolatedAsyncioTestCase):
                          company="Company", roles=["employee"], document_ids=["EN", "VN"],
                          metadata_filter={"domain": "finance"}, document_languages={"EN": "en", "VN": "vn"})
         self.assertEqual(cursor.execute.call_count, 3)
-        for call, scope in zip(cursor.execute.call_args_list, [["EN", "VN"], ["EN"], ["VN"]]):
+        scopes = [["EN", "VN"], ["EN"], ["VN"]]
+        for call in cursor.execute.call_args_list:
             sql, params = call.args
+            scope = next(s for s in scopes if s in [x for x in params if isinstance(x, list)])
             for clause in ["d.document_id = ANY(%s::text[])", "d.allowed_roles && %s::text[]",
                            "d.company = %s::text", "c.metadata @> %s::jsonb", "coalesce(d.processing_status, 'ready') = 'ready'"]:
                 self.assertIn(clause, sql)

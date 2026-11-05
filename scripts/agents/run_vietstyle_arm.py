@@ -30,7 +30,9 @@ ARMS = {
     "B5": {**PROD, "prompt": "old"},
     "B6": {**PROD, "model": "openai/gpt-oss-120b"},
     "B7": {**PROD, "model": "openai/gpt-oss-20b"},
-    "E2E": dict(kind="http"),  # production /api/agents/chat in auto mode; the only arm that runs multi-turn cases
+    "E2E": dict(kind="http", mode="auto"),
+    # The UI's Knowledge mode: KnowledgeAgent with the server's multiquery/verifier env; it keeps no conversation history.
+    "E2E-K": dict(kind="http", mode="knowledge"),  # production /api/agents/chat in auto mode; the only arm that runs multi-turn cases
 }
 CLOSED_BOOK = ("Trả lời câu hỏi sau về chính sách vận hành doanh nghiệp VietStyle bằng tiếng Việt. "
                "Không có tài liệu nào được cung cấp; nếu không biết thì nói rõ là không biết.\n\nCâu hỏi:\n{question}")
@@ -112,8 +114,9 @@ class InProcess:
 
 
 class Http:
-    def __init__(self, args):
+    def __init__(self, args, mode):
         import httpx
+        self.mode = mode
         self.client = httpx.Client(base_url=args.base_url, timeout=180)
         account = {"employee": "VIEWER", "admin": "ADMIN"}[args.role]  # demo viewer maps to document role employee
         response = self.client.post("/api/auth/login", json={"username": os.environ[f"DEMO_{account}_USERNAME"],
@@ -144,7 +147,7 @@ class Http:
         for question in [*case.get("history", []), case["question"]]:
             # Same route and defaults as the web UI (static/app.js).
             response = self.client.post("/api/agents/chat", json={
-                "question": question, "agent_mode": "auto", "retrieval_method": "translated_hybrid_rerank",
+                "question": question, "agent_mode": self.mode, "retrieval_method": "translated_hybrid_rerank",
                 "conversation_id": conversation})
             if response.status_code == 429:
                 raise SystemExit("HTTP 429 rate limited; stopped")
@@ -193,7 +196,7 @@ def main():
         report["results"] = [row for row in report["results"] if not failed_row(row)]
     done = {row["id"] for row in report["results"]}
     only = set(args.only.split(",")) if args.only else None
-    runner = Http(args) if arm.get("kind") == "http" else InProcess(arm, args)
+    runner = Http(args, arm["mode"]) if arm.get("kind") == "http" else InProcess(arm, args)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     try:
         for case in dataset["cases"]:

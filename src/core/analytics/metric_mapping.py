@@ -243,9 +243,10 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
                                     code='interpretation_invalid',clarification=True) from error
     known = resolve_metric_names(question)
     # A unique catalog ID may be spelled as its recorded source column; formulas stay unchanged.
-    aliases = {definition['scalar_formula']: name for name, definition in METRIC_ONTOLOGY.items()
-               if definition.get('domain') == 'inventory_management' and definition.get('aggregation') == 'sum'
-               and definition.get('scalar_formula')}
+    aliases = {definition.get('scalar_formula') or definition['formula'].split(' within ')[0]: name
+               for name, definition in METRIC_ONTOLOGY.items()
+               if definition.get('domain') == 'inventory_management' and definition.get('aggregation') in {'sum','value'}
+               and definition.get('formula')}
     mapping.metrics = [aliases.get(name, name) for name in mapping.metrics]
     for item in mapping.filters:
         item.field = aliases.get(item.field, item.field)
@@ -387,15 +388,26 @@ def _validate_explicit_slots(mapping, question):
     from core.analytics.field_retrieval import _field_language
     text = _field_language(question)
     operators = {'=':'eq', '<':'lt', '<=':'lte', '>':'gt', '>=':'gte'}
-    fields = r'product_id|product_name|category|segment|size|color|stock_on_hand|units_received|inventory_units_sold'
-    for match in re.finditer(r'\b('+fields+r")\s*(<=|>=|=|<|>)\s*('(?:[^']|'')*'|-?\d+(?:\.\d+)?)", text):
+    fields = r'product_id|product_name|category|segment|size|color|stock_on_hand|units_received|units_sold|inventory_units_sold|stockout_flag|overstock_flag|reorder_flag'
+    aliases = {d.get('scalar_formula') or d.get('formula','').split(' within ')[0]:name
+               for name,d in METRIC_ONTOLOGY.items() if d.get('aggregation') in {'sum','value'} and d.get('domain') == 'inventory_management'}
+    for match in re.finditer(r'\b('+fields+r")\s*(<=|>=|=|<|>)\s*('(?:[^']|'')*'|true\b|false\b|-?\d+(?:\.\d+)?)", text):
         name, operator, literal = match.groups()
+        name = aliases.get(name, name)
         value = literal[1:-1].replace("''", "'") if literal.startswith("'") else json.loads(literal)
         if not any(f.field == name and f.operator == operators[operator] and f.value == value for f in mapping.filters):
             _error('The interpretation omitted or changed explicit filter '+name+'.', 'interpretation_mismatch')
-    for match in re.finditer(r'\b(?:by|theo)\s+(category|segment|size|color)\b', text):
-        if match[1] not in mapping.dimensions:
-            _error('The interpretation omitted requested dimension '+match[1]+'.', 'interpretation_mismatch')
+    for match in re.finditer(r'\b(?:by|theo)\s+((?:category|segment|size|color)(?:(?:\s*,\s*|\s+and\s+)(?:category|segment|size|color))*)\b', text):
+        for dimension in re.findall(r'category|segment|size|color', match[1]):
+            if dimension not in mapping.dimensions:
+                _error('The interpretation omitted requested dimension '+dimension+'.', 'interpretation_mismatch')
+    requested_columns = re.search(r'\b(?:include|including|kèm|with)\s+((?:product_id|product_name|category|segment|size|color)'
+        r'(?:(?:\s*,\s*|\s+and\s+)(?:product_id|product_name|category|segment|size|color))*)\b', text)
+    if requested_columns:
+        for dimension in re.findall(r'product_id|product_name|category|segment|size|color', requested_columns[1]):
+            tail = text[requested_columns.end():].lstrip()
+            if not tail.startswith(('=', '<', '>')) and dimension not in mapping.dimensions:
+                _error('The interpretation omitted requested column '+dimension+'.', 'interpretation_mismatch')
 
 
 def _filter_expression(item):

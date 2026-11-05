@@ -62,7 +62,9 @@ class InventoryIntegrationTest(unittest.IsolatedAsyncioTestCase):
         payload = dict(metrics=['stock_on_hand'], dimensions=['category'],
                        time=dict(mode='snapshot',start='2022-12-31'))
         for question in ["Show stock_on_hand by category at snapshot 2022-12-31 where color='blue'.",
-                         'Show stock_on_hand by segment at snapshot 2022-12-31.']:
+                         'Show stock_on_hand by segment at snapshot 2022-12-31.',
+                         'Show stock_on_hand by category and segment at snapshot 2022-12-31.',
+                         'Show stock_on_hand by category at snapshot 2022-12-31 where stockout_flag=true.']:
             with self.subTest(question=question), self.assertRaises(MetricDefinitionError):
                 decode_metric_mapping(json.dumps(payload), question)
 
@@ -83,6 +85,15 @@ class InventoryIntegrationTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.data.get('query_status'), 'executed', result.answer)
         self.assertEqual(result.metadata['comparison']['null_policy'], 'preserve')
         self.assertEqual(provider.generate.call_count, 1)
+        from core.reports.planning import ReportTask
+        from core.reports.facts import facts_from_analytics
+        facts = facts_from_analytics(ReportTask(id='delta',question='Stock change'),result,'S1')
+        by_metric = {fact.metric:fact for fact in facts}
+        self.assertEqual(by_metric['stock_before'].snapshot_date, '2022-11-30')
+        self.assertEqual(by_metric['stock_after'].snapshot_date, '2022-12-31')
+        self.assertEqual(by_metric['stock_delta'].unit, 'units')
+        self.assertIsNone(by_metric['stock_delta'].value)
+        self.assertEqual(by_metric['stock_delta'].operands, [by_metric['stock_before'].id,by_metric['stock_after'].id])
 
     def test_period_total_remains_ambiguous_but_exact_snapshot_groups_work(self):
         from core.analytics.metric_validation import MetricDefinitionError

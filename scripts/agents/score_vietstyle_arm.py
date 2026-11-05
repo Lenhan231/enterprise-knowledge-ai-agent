@@ -154,13 +154,13 @@ def judge_case(llm, case, row, pages):
                           points=json.dumps(case["must_include"], ensure_ascii=False), gold=gold[:12000],
                           cited=cited[:12000], answer=row.get("answer") or "")
     from openai import RateLimitError
-    for attempt in range(5):
+    for attempt in range(30):  # per-minute limits on every key can repeat many times in one run
         try:
             raw = llm.generate(prompt, max_output_tokens=600)
             break
         except RateLimitError as error:
             # Per-minute token limits clear in seconds; a daily limit means stop and rerun later (cache resumes).
-            if "per day" in str(error) or attempt == 4:
+            if "per day" in str(error) or attempt == 29:
                 raise SystemExit(f"Groq limit reached while judging {case['id']}; rerun later to resume") from error
             llm._cooldowns = [0.0] * len(llm._cooldowns)
             time.sleep(min(60.0, float(error.response.headers.get("retry-after") or 10)) + 1)

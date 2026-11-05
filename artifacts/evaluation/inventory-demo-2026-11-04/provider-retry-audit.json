@@ -1,0 +1,46 @@
+{
+  "cohorts": {
+    "production": {
+      "generations": 60,
+      "score_records": 180,
+      "provider_failure_requests": 0,
+      "evaluator_errors": 0,
+      "active_key_indices_observed": [
+        1,
+        2,
+        3
+      ]
+    },
+    "final": {
+      "generations": 60,
+      "score_records": 180,
+      "provider_failure_requests": 0,
+      "evaluator_errors": 0,
+      "active_key_indices_observed": [
+        1,
+        2,
+        3
+      ]
+    },
+    "legacy-production": {
+      "generations": 3,
+      "score_records": 9,
+      "provider_failure_requests": 0,
+      "evaluator_errors": 0,
+      "active_key_indices_observed": [
+        1
+      ]
+    },
+    "legacy-final": {
+      "generations": 3,
+      "score_records": 9,
+      "provider_failure_requests": 0,
+      "evaluator_errors": 0,
+      "active_key_indices_observed": [
+        1
+      ]
+    }
+  },
+  "pending_sql_provider_retries": 0,
+  "report_benchmark": "Stopped and deferred by user; its checkpoints are excluded from SQL counts."
+}

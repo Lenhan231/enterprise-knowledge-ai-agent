@@ -138,6 +138,16 @@ class InventoryIntegrationTest(unittest.IsolatedAsyncioTestCase):
         provider.generate.assert_not_called()
         self.assertEqual(repo.execute_approved_query.await_count, 1)
 
+    async def test_today_cannot_silently_become_a_historical_latest_snapshot(self):
+        from datetime import date
+        repo, provider = AsyncMock(), Mock()
+        repo.execute_approved_query.return_value = [{'snapshot_date':date(2022,12,31)}]
+        result = await SQLAnalyticsAgent(repo,llm=provider).run(AgentRequest(
+            question='Show current stock_on_hand today.', identity=IDENTITY))
+        self.assertEqual(result.metadata.get('status'), 'unsupported')
+        self.assertIn('2022-12-31', result.answer)
+        provider.generate.assert_not_called()
+
     def test_direct_paraphrases_preserve_contract_and_quoted_values(self):
         from core.analytics.field_retrieval import field_contract
         base = field_contract("Show product_id, color from products where color='Blue' order by product_id limit 3")

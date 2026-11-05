@@ -1,0 +1,5906 @@
+{
+  "I01": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT product_id,product_name FROM commerce.products ORDER BY product_id LIMIT 10",
+      "rows": [
+        {
+          "product_id": 1,
+          "product_name": "DragonWear MA-01"
+        },
+        {
+          "product_id": 2,
+          "product_name": "DragonWear MA-02"
+        },
+        {
+          "product_id": 3,
+          "product_name": "DragonWear MA-03"
+        },
+        {
+          "product_id": 4,
+          "product_name": "DragonWear MA-04"
+        },
+        {
+          "product_id": 5,
+          "product_name": "DragonWear MA-05"
+        },
+        {
+          "product_id": 6,
+          "product_name": "DragonWear MA-06"
+        },
+        {
+          "product_id": 7,
+          "product_name": "DragonWear MA-07"
+        },
+        {
+          "product_id": 8,
+          "product_name": "DragonWear MA-08"
+        },
+        {
+          "product_id": 9,
+          "product_name": "DragonWear MA-09"
+        },
+        {
+          "product_id": 10,
+          "product_name": "DragonWear MA-10"
+        }
+      ],
+      "returned_rows": 10,
+      "detail_ceiling": null
+    }
+  },
+  "I02": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT product_id,color,price FROM commerce.products WHERE color='blue' ORDER BY price DESC,product_id LIMIT 5",
+      "rows": [
+        {
+          "product_id": 503,
+          "color": "blue",
+          "price": 21108.804545454543
+        },
+        {
+          "product_id": 353,
+          "color": "blue",
+          "price": 20786.85
+        },
+        {
+          "product_id": 483,
+          "color": "blue",
+          "price": 19535.011791044777
+        },
+        {
+          "product_id": 473,
+          "color": "blue",
+          "price": 18458.3
+        },
+        {
+          "product_id": 623,
+          "color": "blue",
+          "price": 17011.958108108105
+        }
+      ],
+      "returned_rows": 5,
+      "detail_ceiling": null
+    }
+  },
+  "I03": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT product_id,size FROM commerce.products WHERE size IS NULL ORDER BY product_id LIMIT 20",
+      "rows": [],
+      "returned_rows": 0,
+      "detail_ceiling": null
+    }
+  },
+  "I04": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT product_id,category FROM commerce.products WHERE category IN ('Streetwear','Activewear') ORDER BY product_id LIMIT 12",
+      "rows": [
+        {
+          "product_id": 74,
+          "category": "Streetwear"
+        },
+        {
+          "product_id": 75,
+          "category": "Streetwear"
+        },
+        {
+          "product_id": 76,
+          "category": "Streetwear"
+        },
+        {
+          "product_id": 77,
+          "category": "Streetwear"
+        },
+        {
+          "product_id": 78,
+          "category": "Streetwear"
+        },
+        {
+          "product_id": 79,
+          "category": "Streetwear"
+        },
+        {
+          "product_id": 80,
+          "category": "Streetwear"
+        },
+        {
+          "product_id": 81,
+          "category": "Streetwear"
+        },
+        {
+          "product_id": 82,
+          "category": "Streetwear"
+        },
+        {
+          "product_id": 83,
+          "category": "Streetwear"
+        },
+        {
+          "product_id": 84,
+          "category": "Streetwear"
+        },
+        {
+          "product_id": 85,
+          "category": "Streetwear"
+        }
+      ],
+      "returned_rows": 12,
+      "detail_ceiling": null
+    }
+  },
+  "I05": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT product_id,cogs FROM commerce.products WHERE cogs>100000 ORDER BY cogs ASC,product_id LIMIT 7",
+      "rows": [],
+      "returned_rows": 0,
+      "detail_ceiling": null
+    }
+  },
+  "I06": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT product_id,price FROM commerce.products WHERE price>=200000 AND price<500000 ORDER BY price DESC,product_id LIMIT 8",
+      "rows": [],
+      "returned_rows": 0,
+      "detail_ceiling": null
+    }
+  },
+  "I07": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT snapshot_date,product_id FROM commerce.inventory WHERE snapshot_date=DATE '2022-12-31' AND product_id IN (1,3,5) ORDER BY product_id,snapshot_date LIMIT 10",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 3
+        }
+      ],
+      "returned_rows": 2,
+      "detail_ceiling": null
+    }
+  },
+  "I08": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT product_id,segment FROM commerce.products WHERE segment IS NOT NULL ORDER BY segment ASC,product_id LIMIT 9",
+      "rows": [
+        {
+          "product_id": 46,
+          "segment": "Activewear"
+        },
+        {
+          "product_id": 47,
+          "segment": "Activewear"
+        },
+        {
+          "product_id": 48,
+          "segment": "Activewear"
+        },
+        {
+          "product_id": 49,
+          "segment": "Activewear"
+        },
+        {
+          "product_id": 50,
+          "segment": "Activewear"
+        },
+        {
+          "product_id": 51,
+          "segment": "Activewear"
+        },
+        {
+          "product_id": 52,
+          "segment": "Activewear"
+        },
+        {
+          "product_id": 53,
+          "segment": "Activewear"
+        },
+        {
+          "product_id": 54,
+          "segment": "Activewear"
+        }
+      ],
+      "returned_rows": 9,
+      "detail_ceiling": null
+    }
+  },
+  "I09": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT product_id,product_name FROM commerce.products WHERE product_id>400 ORDER BY product_id DESC LIMIT 6",
+      "rows": [
+        {
+          "product_id": 2412,
+          "product_name": "VietMotion YY-21"
+        },
+        {
+          "product_id": 2411,
+          "product_name": "VietMotion YY-20"
+        },
+        {
+          "product_id": 2410,
+          "product_name": "VietMotion YY-19"
+        },
+        {
+          "product_id": 2409,
+          "product_name": "VietMotion YY-18"
+        },
+        {
+          "product_id": 2408,
+          "product_name": "VietMotion YY-17"
+        },
+        {
+          "product_id": 2407,
+          "product_name": "VietMotion YY-16"
+        }
+      ],
+      "returned_rows": 6,
+      "detail_ceiling": null
+    }
+  },
+  "I10": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT snapshot_date,product_id,year,month FROM commerce.inventory WHERE snapshot_date=DATE '2022-11-30' ORDER BY product_id,snapshot_date LIMIT 15",
+      "rows": [
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 1,
+          "year": 2022,
+          "month": 11
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 3,
+          "year": 2022,
+          "month": 11
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 8,
+          "year": 2022,
+          "month": 11
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 9,
+          "year": 2022,
+          "month": 11
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 13,
+          "year": 2022,
+          "month": 11
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 17,
+          "year": 2022,
+          "month": 11
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 19,
+          "year": 2022,
+          "month": 11
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 26,
+          "year": 2022,
+          "month": 11
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 29,
+          "year": 2022,
+          "month": 11
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 45,
+          "year": 2022,
+          "month": 11
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 62,
+          "year": 2022,
+          "month": 11
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 63,
+          "year": 2022,
+          "month": 11
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 66,
+          "year": 2022,
+          "month": 11
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 67,
+          "year": 2022,
+          "month": 11
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 74,
+          "year": 2022,
+          "month": 11
+        }
+      ],
+      "returned_rows": 15,
+      "detail_ceiling": null
+    }
+  },
+  "I11": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT MAX(snapshot_date) AS snapshot_date FROM commerce.inventory",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31"
+        }
+      ],
+      "returned_rows": 1,
+      "detail_ceiling": null
+    }
+  },
+  "I12": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT COUNT(*) AS product_count FROM commerce.products",
+      "rows": [
+        {
+          "product_count": 2412
+        }
+      ],
+      "returned_rows": 1,
+      "detail_ceiling": null
+    }
+  },
+  "I13": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT category,COUNT(*) AS product_count FROM commerce.products GROUP BY category ORDER BY category LIMIT 200",
+      "rows": [
+        {
+          "category": "Casual",
+          "product_count": 201
+        },
+        {
+          "category": "GenZ",
+          "product_count": 148
+        },
+        {
+          "category": "Outdoor",
+          "product_count": 743
+        },
+        {
+          "category": "Streetwear",
+          "product_count": 1320
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": 200
+    }
+  },
+  "I14": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT DISTINCT snapshot_date FROM commerce.inventory WHERE snapshot_date>=DATE '2022-12-01' AND snapshot_date<DATE '2023-01-01' ORDER BY snapshot_date LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31"
+        }
+      ],
+      "returned_rows": 1,
+      "detail_ceiling": 200
+    }
+  },
+  "I15": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "WITH d AS (SELECT snapshot_date,product_id,COUNT(*) AS n FROM commerce.inventory GROUP BY snapshot_date,product_id) SELECT COALESCE(SUM(n-1),0) AS duplicate_rows FROM d",
+      "rows": [
+        {
+          "duplicate_rows": 0.0
+        }
+      ],
+      "returned_rows": 1,
+      "detail_ceiling": null
+    }
+  },
+  "I16": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT snapshot_date,SUM(stock_on_hand) AS stock_on_hand FROM commerce.inventory WHERE snapshot_date=DATE '2022-12-31' GROUP BY snapshot_date",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "stock_on_hand": 104235
+        }
+      ],
+      "returned_rows": 1,
+      "detail_ceiling": null
+    }
+  },
+  "I17": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.category,SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-12-31' GROUP BY i.snapshot_date,p.category ORDER BY i.snapshot_date,p.category LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Casual",
+          "stock_on_hand": 4095
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "GenZ",
+          "stock_on_hand": 5126
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Outdoor",
+          "stock_on_hand": 49929
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Streetwear",
+          "stock_on_hand": 45085
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": 200
+    }
+  },
+  "I18": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.segment,SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-11-30' GROUP BY i.snapshot_date,p.segment ORDER BY i.snapshot_date,p.segment LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-11-30",
+          "segment": "Activewear",
+          "stock_on_hand": 36259
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "segment": "All-weather",
+          "stock_on_hand": 3930
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "segment": "Balanced",
+          "stock_on_hand": 10902
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "segment": "Everyday",
+          "stock_on_hand": 14202
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "segment": "Performance",
+          "stock_on_hand": 17608
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "segment": "Premium",
+          "stock_on_hand": 6558
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "segment": "Standard",
+          "stock_on_hand": 615
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "segment": "Trendy",
+          "stock_on_hand": 4929
+        }
+      ],
+      "returned_rows": 8,
+      "detail_ceiling": 200
+    }
+  },
+  "I19": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,i.product_id,p.product_name,i.stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-12-31' ORDER BY i.stock_on_hand ASC,i.product_id LIMIT 10",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1,
+          "product_name": "DragonWear MA-01",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 18,
+          "product_name": "DragonWear MA-18",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 58,
+          "product_name": "DragonWear RP-13",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 66,
+          "product_name": "DragonWear RP-21",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 67,
+          "product_name": "DragonWear RP-22",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 71,
+          "product_name": "DragonWear RS-04",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 73,
+          "product_name": "DragonWear RS-06",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 205,
+          "product_name": "IndigoViet UM-07",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 210,
+          "product_name": "IndigoViet UM-12",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 296,
+          "product_name": "LotusWear UE-17",
+          "stock_on_hand": 3
+        }
+      ],
+      "returned_rows": 10,
+      "detail_ceiling": null
+    }
+  },
+  "I20": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,i.product_id,p.category,i.stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-11-30' ORDER BY i.stock_on_hand DESC,i.product_id LIMIT 7",
+      "rows": [
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 791,
+          "category": "Outdoor",
+          "stock_on_hand": 2657
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 792,
+          "category": "Outdoor",
+          "stock_on_hand": 2591
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 604,
+          "category": "Streetwear",
+          "stock_on_hand": 2370
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 2045,
+          "category": "Streetwear",
+          "stock_on_hand": 2339
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 826,
+          "category": "Streetwear",
+          "stock_on_hand": 1958
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 2332,
+          "category": "Streetwear",
+          "stock_on_hand": 1937
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 1182,
+          "category": "Streetwear",
+          "stock_on_hand": 1912
+        }
+      ],
+      "returned_rows": 7,
+      "detail_ceiling": null
+    }
+  },
+  "I21": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.category,SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-12-31' AND p.color='blue' GROUP BY i.snapshot_date,p.category ORDER BY i.snapshot_date,p.category LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Casual",
+          "stock_on_hand": 1223
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "GenZ",
+          "stock_on_hand": 306
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Outdoor",
+          "stock_on_hand": 5508
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Streetwear",
+          "stock_on_hand": 3020
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": 200
+    }
+  },
+  "I22": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.category,AVG(i.fill_rate) AS fill_rate FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-12-31' GROUP BY i.snapshot_date,p.category ORDER BY i.snapshot_date,p.category LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Casual",
+          "fill_rate": 0.9608325
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "GenZ",
+          "fill_rate": 0.9719704545454545
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Outdoor",
+          "fill_rate": 0.9567152777777778
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Streetwear",
+          "fill_rate": 0.9622474489795918
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": 200
+    }
+  },
+  "I23": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.category,AVG(i.days_of_supply) AS days_of_supply FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-11-30' GROUP BY i.snapshot_date,p.category ORDER BY i.snapshot_date,p.category LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "Casual",
+          "days_of_supply": 1268.9857142857143
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "GenZ",
+          "days_of_supply": 1877.892857142857
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "Outdoor",
+          "days_of_supply": 2310.4483333333333
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "Streetwear",
+          "days_of_supply": 1803.6759776536312
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": 200
+    }
+  },
+  "I24": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.category,SUM(i.units_received) AS units_received FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-12-31' GROUP BY i.snapshot_date,p.category ORDER BY i.snapshot_date,p.category LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Casual",
+          "units_received": 213
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "GenZ",
+          "units_received": 222
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Outdoor",
+          "units_received": 2076
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Streetwear",
+          "units_received": 1570
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": 200
+    }
+  },
+  "I25": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.category,SUM(i.units_sold) AS inventory_units_sold FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-11-30' GROUP BY i.snapshot_date,p.category ORDER BY i.snapshot_date,p.category LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "Casual",
+          "inventory_units_sold": 141
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "GenZ",
+          "inventory_units_sold": 155
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "Outdoor",
+          "inventory_units_sold": 738
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "Streetwear",
+          "inventory_units_sold": 1298
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": 200
+    }
+  },
+  "I26": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT COUNT(DISTINCT product_id) AS observed_product_count FROM commerce.inventory WHERE snapshot_date=DATE '2022-12-31'",
+      "rows": [
+        {
+          "observed_product_count": 424
+        }
+      ],
+      "returned_rows": 1,
+      "detail_ceiling": null
+    }
+  },
+  "I27": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT COUNT(DISTINCT i.product_id) AS observed_product_count FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-12-31' AND p.category='__absent_category__'",
+      "rows": [
+        {
+          "observed_product_count": 0
+        }
+      ],
+      "returned_rows": 1,
+      "detail_ceiling": null
+    }
+  },
+  "I28": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.category,COUNT(DISTINCT i.product_id) AS observed_product_count FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-12-31' AND i.stockout_flag=TRUE GROUP BY i.snapshot_date,p.category ORDER BY i.snapshot_date,p.category LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Casual",
+          "observed_product_count": 31
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "GenZ",
+          "observed_product_count": 25
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Outdoor",
+          "observed_product_count": 95
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Streetwear",
+          "observed_product_count": 134
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": 200
+    }
+  },
+  "I29": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT snapshot_date,product_id,reorder_flag FROM commerce.inventory WHERE snapshot_date=DATE '2022-12-31' ORDER BY snapshot_date,product_id LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 3,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 8,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 9,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 17,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 18,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 19,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 26,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 29,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 45,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 54,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 55,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 58,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 59,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 66,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 67,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 70,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 71,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 73,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 74,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 106,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 107,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 109,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 115,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 150,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 165,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 173,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 180,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 183,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 197,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 198,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 200,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 201,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 202,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 204,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 205,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 207,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 210,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 231,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 236,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 252,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 292,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 295,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 296,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 308,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 324,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 336,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 338,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 342,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 362,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 366,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 369,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 387,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 389,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 398,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 402,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 403,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 407,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 408,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 415,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 421,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 428,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 431,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 444,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 449,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 451,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 452,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 458,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 461,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 462,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 470,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 471,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 476,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 483,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 489,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 505,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 506,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 511,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 537,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 545,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 547,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 548,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 549,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 555,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 563,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 567,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 570,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 585,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 589,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 604,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 614,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 615,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 640,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 649,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 651,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 653,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 654,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 656,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 667,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 668,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 674,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 688,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 690,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 702,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 711,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 719,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 720,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 725,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 726,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 733,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 734,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 735,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 736,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 759,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 760,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 761,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 762,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 763,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 764,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 777,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 778,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 779,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 780,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 781,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 782,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 791,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 792,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 793,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 794,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 807,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 808,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 809,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 816,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 819,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 822,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 826,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 839,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 896,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 899,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 907,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 908,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 909,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 927,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 939,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 942,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 945,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 963,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 965,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 973,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 974,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 976,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 981,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 993,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1007,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1009,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1012,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1013,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1026,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1043,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1049,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1050,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1053,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1059,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1060,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1061,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1062,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1077,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1078,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1085,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1086,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1103,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1104,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1113,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1114,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1115,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1118,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1120,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1125,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1129,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1134,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1137,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1140,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1141,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1145,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1171,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1175,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1176,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1177,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1179,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1180,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1182,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1183,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1194,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1212,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1217,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1220,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1223,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1249,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1250,
+          "reorder_flag": false
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1272,
+          "reorder_flag": false
+        }
+      ],
+      "returned_rows": 200,
+      "detail_ceiling": 200
+    }
+  },
+  "I30": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT snapshot_date,product_id,stock_on_hand FROM commerce.inventory WHERE product_id=1 AND snapshot_date>=DATE '2022-01-01' AND snapshot_date<DATE '2023-01-01' ORDER BY snapshot_date,product_id LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-10-31",
+          "product_id": 1,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 1,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1,
+          "stock_on_hand": 3
+        }
+      ],
+      "returned_rows": 3,
+      "detail_ceiling": 200
+    }
+  },
+  "I31": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.category,SUM(i.units_sold) AS inventory_units_sold FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date>=DATE '2022-12-01' AND i.snapshot_date<DATE '2023-01-01' GROUP BY i.snapshot_date,p.category ORDER BY i.snapshot_date,p.category LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Casual",
+          "inventory_units_sold": 190
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "GenZ",
+          "inventory_units_sold": 199
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Outdoor",
+          "inventory_units_sold": 1797
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Streetwear",
+          "inventory_units_sold": 1379
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": 200
+    }
+  },
+  "I32": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.color,p.size,SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-12-31' GROUP BY i.snapshot_date,p.color,p.size ORDER BY i.snapshot_date,p.color,p.size LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "black",
+          "size": "M",
+          "stock_on_hand": 4096
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "black",
+          "size": "XL",
+          "stock_on_hand": 5970
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "blue",
+          "size": "M",
+          "stock_on_hand": 6863
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "blue",
+          "size": "XL",
+          "stock_on_hand": 3194
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "green",
+          "size": "L",
+          "stock_on_hand": 6725
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "green",
+          "size": "S",
+          "stock_on_hand": 5369
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "orange",
+          "size": "L",
+          "stock_on_hand": 6240
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "orange",
+          "size": "S",
+          "stock_on_hand": 7223
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "pink",
+          "size": "L",
+          "stock_on_hand": 2803
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "pink",
+          "size": "S",
+          "stock_on_hand": 3359
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "purple",
+          "size": "M",
+          "stock_on_hand": 5074
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "purple",
+          "size": "XL",
+          "stock_on_hand": 7421
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "red",
+          "size": "L",
+          "stock_on_hand": 1786
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "red",
+          "size": "S",
+          "stock_on_hand": 4436
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "silver",
+          "size": "M",
+          "stock_on_hand": 2742
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "silver",
+          "size": "XL",
+          "stock_on_hand": 4500
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "white",
+          "size": "L",
+          "stock_on_hand": 8039
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "white",
+          "size": "S",
+          "stock_on_hand": 6640
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "yellow",
+          "size": "M",
+          "stock_on_hand": 5783
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "color": "yellow",
+          "size": "XL",
+          "stock_on_hand": 5972
+        }
+      ],
+      "returned_rows": 20,
+      "detail_ceiling": 200
+    }
+  },
+  "I33": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT snapshot_date,SUM(stock_on_hand) AS stock_on_hand FROM commerce.inventory WHERE snapshot_date=DATE '1900-01-01' GROUP BY snapshot_date",
+      "rows": [],
+      "returned_rows": 0,
+      "detail_ceiling": null
+    }
+  },
+  "I34": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT snapshot_date,product_id,stock_on_hand FROM commerce.inventory WHERE snapshot_date=DATE '2022-12-31' AND stock_on_hand<10 ORDER BY snapshot_date,product_id LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 18,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 19,
+          "stock_on_hand": 9
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 29,
+          "stock_on_hand": 9
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 45,
+          "stock_on_hand": 9
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 54,
+          "stock_on_hand": 4
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 55,
+          "stock_on_hand": 4
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 58,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 59,
+          "stock_on_hand": 5
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 66,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 67,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 70,
+          "stock_on_hand": 6
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 71,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 73,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 197,
+          "stock_on_hand": 9
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 205,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 210,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 231,
+          "stock_on_hand": 9
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 296,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 336,
+          "stock_on_hand": 9
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 366,
+          "stock_on_hand": 4
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 369,
+          "stock_on_hand": 4
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 387,
+          "stock_on_hand": 6
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 896,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1176,
+          "stock_on_hand": 4
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1194,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1220,
+          "stock_on_hand": 6
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1249,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1250,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1280,
+          "stock_on_hand": 6
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1289,
+          "stock_on_hand": 6
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1299,
+          "stock_on_hand": 7
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1301,
+          "stock_on_hand": 4
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1304,
+          "stock_on_hand": 6
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1305,
+          "stock_on_hand": 7
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1315,
+          "stock_on_hand": 6
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1316,
+          "stock_on_hand": 6
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1415,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1416,
+          "stock_on_hand": 4
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1469,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1470,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1487,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1488,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1559,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1560,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1561,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1562,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1567,
+          "stock_on_hand": 6
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1568,
+          "stock_on_hand": 8
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1592,
+          "stock_on_hand": 9
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1602,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1605,
+          "stock_on_hand": 9
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1608,
+          "stock_on_hand": 4
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1615,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1645,
+          "stock_on_hand": 9
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1646,
+          "stock_on_hand": 5
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1651,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1662,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1667,
+          "stock_on_hand": 6
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1673,
+          "stock_on_hand": 5
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1687,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1696,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1700,
+          "stock_on_hand": 9
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1701,
+          "stock_on_hand": 6
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1706,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1711,
+          "stock_on_hand": 5
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1720,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1757,
+          "stock_on_hand": 8
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1759,
+          "stock_on_hand": 6
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1774,
+          "stock_on_hand": 7
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1821,
+          "stock_on_hand": 6
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1828,
+          "stock_on_hand": 5
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1843,
+          "stock_on_hand": 9
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1857,
+          "stock_on_hand": 6
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1864,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1869,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1871,
+          "stock_on_hand": 5
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1883,
+          "stock_on_hand": 7
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1901,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 2124,
+          "stock_on_hand": 5
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 2154,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 2165,
+          "stock_on_hand": 4
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 2377,
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 2378,
+          "stock_on_hand": 6
+        }
+      ],
+      "returned_rows": 84,
+      "detail_ceiling": 200
+    }
+  },
+  "I35": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.category,AVG(i.sell_through_rate) AS sell_through_rate FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-12-31' GROUP BY i.snapshot_date,p.category ORDER BY i.snapshot_date,p.category LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Casual",
+          "sell_through_rate": 0.139195
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "GenZ",
+          "sell_through_rate": 0.11745
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Outdoor",
+          "sell_through_rate": 0.11831458333333333
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Streetwear",
+          "sell_through_rate": 0.11431224489795919
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": 200
+    }
+  },
+  "I36": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.category,SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=(SELECT MAX(snapshot_date) FROM commerce.inventory) GROUP BY i.snapshot_date,p.category ORDER BY i.snapshot_date,p.category LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Casual",
+          "stock_on_hand": 4095
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "GenZ",
+          "stock_on_hand": 5126
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Outdoor",
+          "stock_on_hand": 49929
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Streetwear",
+          "stock_on_hand": 45085
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": 200
+    }
+  },
+  "I37": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT snapshot_date,SUM(units_received) AS units_received FROM commerce.inventory WHERE snapshot_date>=DATE '2022-01-01' AND snapshot_date<DATE '2023-01-01' GROUP BY snapshot_date ORDER BY snapshot_date LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-01-31",
+          "units_received": 2607
+        },
+        {
+          "snapshot_date": "2022-02-28",
+          "units_received": 3713
+        },
+        {
+          "snapshot_date": "2022-03-31",
+          "units_received": 5911
+        },
+        {
+          "snapshot_date": "2022-04-30",
+          "units_received": 7443
+        },
+        {
+          "snapshot_date": "2022-05-31",
+          "units_received": 6401
+        },
+        {
+          "snapshot_date": "2022-06-30",
+          "units_received": 6693
+        },
+        {
+          "snapshot_date": "2022-07-31",
+          "units_received": 4746
+        },
+        {
+          "snapshot_date": "2022-08-31",
+          "units_received": 5499
+        },
+        {
+          "snapshot_date": "2022-09-30",
+          "units_received": 3868
+        },
+        {
+          "snapshot_date": "2022-10-31",
+          "units_received": 3309
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "units_received": 2649
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "units_received": 4081
+        }
+      ],
+      "returned_rows": 12,
+      "detail_ceiling": 200
+    }
+  },
+  "I38": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.category,p.segment,COUNT(DISTINCT i.product_id) AS observed_product_count FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-11-30' GROUP BY i.snapshot_date,p.category,p.segment ORDER BY i.snapshot_date,p.category,p.segment LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "Casual",
+          "segment": "Activewear",
+          "observed_product_count": 4
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "Casual",
+          "segment": "All-weather",
+          "observed_product_count": 31
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "GenZ",
+          "segment": "Trendy",
+          "observed_product_count": 42
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "Outdoor",
+          "segment": "Activewear",
+          "observed_product_count": 82
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "Outdoor",
+          "segment": "Premium",
+          "observed_product_count": 38
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "Streetwear",
+          "segment": "Balanced",
+          "observed_product_count": 61
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "Streetwear",
+          "segment": "Everyday",
+          "observed_product_count": 65
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "Streetwear",
+          "segment": "Performance",
+          "observed_product_count": 37
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "category": "Streetwear",
+          "segment": "Standard",
+          "observed_product_count": 16
+        }
+      ],
+      "returned_rows": 9,
+      "detail_ceiling": 200
+    }
+  },
+  "I39": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT snapshot_date,product_id,stockout_days FROM commerce.inventory WHERE snapshot_date=DATE '2022-12-31' ORDER BY snapshot_date,product_id LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 3,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 8,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 9,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 17,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 18,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 19,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 26,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 29,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 45,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 54,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 55,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 58,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 59,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 66,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 67,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 70,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 71,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 73,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 74,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 106,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 107,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 109,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 115,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 150,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 165,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 173,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 180,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 183,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 197,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 198,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 200,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 201,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 202,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 204,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 205,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 207,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 210,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 231,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 236,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 252,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 292,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 295,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 296,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 308,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 324,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 336,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 338,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 342,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 362,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 366,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 369,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 387,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 389,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 398,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 402,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 403,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 407,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 408,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 415,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 421,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 428,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 431,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 444,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 449,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 451,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 452,
+          "stockout_days": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 458,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 461,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 462,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 470,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 471,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 476,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 483,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 489,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 505,
+          "stockout_days": 4
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 506,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 511,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 537,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 545,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 547,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 548,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 549,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 555,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 563,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 567,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 570,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 585,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 589,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 604,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 614,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 615,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 640,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 649,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 651,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 653,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 654,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 656,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 667,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 668,
+          "stockout_days": 11
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 674,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 688,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 690,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 702,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 711,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 719,
+          "stockout_days": 24
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 720,
+          "stockout_days": 25
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 725,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 726,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 733,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 734,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 735,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 736,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 759,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 760,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 761,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 762,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 763,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 764,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 777,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 778,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 779,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 780,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 781,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 782,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 791,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 792,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 793,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 794,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 807,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 808,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 809,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 816,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 819,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 822,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 826,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 839,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 896,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 899,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 907,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 908,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 909,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 927,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 939,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 942,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 945,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 963,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 965,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 973,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 974,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 976,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 981,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 993,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1007,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1009,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1012,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1013,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1026,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1043,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1049,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1050,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1053,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1059,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1060,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1061,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1062,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1077,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1078,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1085,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1086,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1103,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1104,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1113,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1114,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1115,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1118,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1120,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1125,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1129,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1134,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1137,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1140,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1141,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1145,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1171,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1175,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1176,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1177,
+          "stockout_days": 17
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1179,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1180,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1182,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1183,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1194,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1212,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1217,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1220,
+          "stockout_days": 0
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1223,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1249,
+          "stockout_days": 2
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1250,
+          "stockout_days": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1272,
+          "stockout_days": 2
+        }
+      ],
+      "returned_rows": 200,
+      "detail_ceiling": 200
+    }
+  },
+  "I40": {
+    "supported": false,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": null
+  },
+  "I41": {
+    "supported": false,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": null
+  },
+  "I42": {
+    "supported": false,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": null
+  },
+  "I43": {
+    "supported": false,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": null
+  },
+  "I44": {
+    "supported": false,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": null
+  },
+  "I45": {
+    "supported": false,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": null
+  },
+  "I46": {
+    "supported": false,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": null
+  },
+  "I47": {
+    "supported": false,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": null
+  },
+  "I48": {
+    "supported": false,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": null
+  },
+  "I49": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT a.product_id,p.product_name,DATE '2022-11-30' AS before_date,DATE '2022-12-31' AS after_date,\n a.stock_on_hand AS stock_before,b.stock_on_hand AS stock_after,b.stock_on_hand-a.stock_on_hand AS stock_delta\n FROM commerce.inventory a JOIN commerce.inventory b ON a.product_id=b.product_id\n JOIN commerce.products p ON p.product_id=a.product_id\n WHERE a.snapshot_date=DATE '2022-11-30' AND b.snapshot_date=DATE '2022-12-31'\n ORDER BY a.product_id LIMIT 200",
+      "rows": [
+        {
+          "product_id": 1,
+          "product_name": "DragonWear MA-01",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 3,
+          "stock_after": 3,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 3,
+          "product_name": "DragonWear MA-03",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 151,
+          "stock_after": 151,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 8,
+          "product_name": "DragonWear MA-08",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 101,
+          "stock_after": 101,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 9,
+          "product_name": "DragonWear MA-09",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 82,
+          "stock_after": 83,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 17,
+          "product_name": "DragonWear MA-17",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 28,
+          "stock_after": 28,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 19,
+          "product_name": "DragonWear MA-19",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 9,
+          "stock_after": 9,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 26,
+          "product_name": "DragonWear MA-26",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 239,
+          "stock_after": 240,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 29,
+          "product_name": "DragonWear MA-29",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 9,
+          "stock_after": 9,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 45,
+          "product_name": "DragonWear MA-45",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 9,
+          "stock_after": 9,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 66,
+          "product_name": "DragonWear RP-21",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 3,
+          "stock_after": 3,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 67,
+          "product_name": "DragonWear RP-22",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 3,
+          "stock_after": 3,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 74,
+          "product_name": "DragonWear UM-01",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 11,
+          "stock_after": 11,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 109,
+          "product_name": "DragonWear UM-36",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 47,
+          "stock_after": 48,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 115,
+          "product_name": "DragonWear UM-42",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 284,
+          "stock_after": 284,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 150,
+          "product_name": "DragonWear UR-21",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 11,
+          "stock_after": 11,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 165,
+          "product_name": "DragonWear UR-36",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 20,
+          "stock_after": 21,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 183,
+          "product_name": "DragonWear UE-11",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 81,
+          "stock_after": 82,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 197,
+          "product_name": "DragonWear YY-01",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 9,
+          "stock_after": 9,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 198,
+          "product_name": "DragonWear YY-02",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 15,
+          "stock_after": 16,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 200,
+          "product_name": "IndigoViet UM-02",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 49,
+          "stock_after": 49,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 201,
+          "product_name": "IndigoViet UM-03",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 56,
+          "stock_after": 56,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 202,
+          "product_name": "IndigoViet UM-04",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 132,
+          "stock_after": 133,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 204,
+          "product_name": "IndigoViet UM-06",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 24,
+          "stock_after": 24,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 207,
+          "product_name": "IndigoViet UM-09",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 35,
+          "stock_after": 35,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 231,
+          "product_name": "LotusWear UR-03",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 9,
+          "stock_after": 9,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 236,
+          "product_name": "LotusWear UR-08",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 21,
+          "stock_after": 21,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 252,
+          "product_name": "LotusWear UR-24",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 34,
+          "stock_after": 34,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 292,
+          "product_name": "LotusWear UE-13",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 30,
+          "stock_after": 30,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 295,
+          "product_name": "LotusWear UE-16",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 23,
+          "stock_after": 24,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 336,
+          "product_name": "LotusWear UE-57",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 9,
+          "stock_after": 9,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 362,
+          "product_name": "LotusWear UE-83",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 50,
+          "stock_after": 50,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 387,
+          "product_name": "LotusWear UC-01",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 6,
+          "stock_after": 6,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 398,
+          "product_name": "SaigonFlex UM-03",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 10,
+          "stock_after": 10,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 402,
+          "product_name": "SaigonFlex UM-07",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 71,
+          "stock_after": 75,
+          "stock_delta": 4
+        },
+        {
+          "product_id": 403,
+          "product_name": "SaigonFlex UM-08",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 16,
+          "stock_after": 17,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 407,
+          "product_name": "SaigonFlex UM-12",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 384,
+          "stock_after": 391,
+          "stock_delta": 7
+        },
+        {
+          "product_id": 408,
+          "product_name": "SaigonFlex UM-13",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 39,
+          "stock_after": 43,
+          "stock_delta": 4
+        },
+        {
+          "product_id": 415,
+          "product_name": "SaigonFlex UM-20",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 180,
+          "stock_after": 180,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 421,
+          "product_name": "SaigonFlex UM-26",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 11,
+          "stock_after": 12,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 428,
+          "product_name": "SaigonFlex UM-33",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 117,
+          "stock_after": 121,
+          "stock_delta": 4
+        },
+        {
+          "product_id": 431,
+          "product_name": "SaigonFlex UM-36",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 90,
+          "stock_after": 92,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 444,
+          "product_name": "SaigonFlex UM-49",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 29,
+          "stock_after": 30,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 449,
+          "product_name": "SaigonFlex UM-54",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1089,
+          "stock_after": 1115,
+          "stock_delta": 26
+        },
+        {
+          "product_id": 451,
+          "product_name": "SaigonFlex UM-56",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 215,
+          "stock_after": 221,
+          "stock_delta": 6
+        },
+        {
+          "product_id": 452,
+          "product_name": "SaigonFlex UM-57",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 19,
+          "stock_after": 22,
+          "stock_delta": 3
+        },
+        {
+          "product_id": 458,
+          "product_name": "SaigonFlex UM-63",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 23,
+          "stock_after": 24,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 461,
+          "product_name": "SaigonFlex UM-66",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 216,
+          "stock_after": 220,
+          "stock_delta": 4
+        },
+        {
+          "product_id": 462,
+          "product_name": "SaigonFlex UM-67",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 29,
+          "stock_after": 29,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 470,
+          "product_name": "SaigonFlex UM-75",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 218,
+          "stock_after": 229,
+          "stock_delta": 11
+        },
+        {
+          "product_id": 471,
+          "product_name": "SaigonFlex UM-76",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 110,
+          "stock_after": 112,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 476,
+          "product_name": "SaigonFlex UM-81",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 47,
+          "stock_after": 47,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 483,
+          "product_name": "SaigonFlex UM-88",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 11,
+          "stock_after": 12,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 489,
+          "product_name": "SaigonFlex UM-94",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 130,
+          "stock_after": 130,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 505,
+          "product_name": "SaigonFlex UM-10",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 14,
+          "stock_after": 16,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 506,
+          "product_name": "SaigonFlex UM-11",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1119,
+          "stock_after": 1128,
+          "stock_delta": 9
+        },
+        {
+          "product_id": 511,
+          "product_name": "SaigonFlex UM-16",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 86,
+          "stock_after": 87,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 537,
+          "product_name": "SaigonFlex UC-02",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 25,
+          "stock_after": 25,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 545,
+          "product_name": "SaigonFlex UC-10",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 136,
+          "stock_after": 139,
+          "stock_delta": 3
+        },
+        {
+          "product_id": 549,
+          "product_name": "SaigonFlex UC-14",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 228,
+          "stock_after": 229,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 555,
+          "product_name": "SaigonFlex UC-20",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 110,
+          "stock_after": 111,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 563,
+          "product_name": "SaigonFlex UC-28",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 92,
+          "stock_after": 95,
+          "stock_delta": 3
+        },
+        {
+          "product_id": 567,
+          "product_name": "SaigonFlex UC-32",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 207,
+          "stock_after": 207,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 570,
+          "product_name": "SaigonFlex UC-35",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 48,
+          "stock_after": 49,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 585,
+          "product_name": "SaigonFlex UC-50",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 341,
+          "stock_after": 344,
+          "stock_delta": 3
+        },
+        {
+          "product_id": 589,
+          "product_name": "SaigonFlex UC-54",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 143,
+          "stock_after": 145,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 604,
+          "product_name": "SaigonFlex UC-69",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 2370,
+          "stock_after": 2370,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 614,
+          "product_name": "SaigonFlex UC-79",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 47,
+          "stock_after": 49,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 615,
+          "product_name": "SaigonFlex UC-80",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 529,
+          "stock_after": 529,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 640,
+          "product_name": "SaigonFlex UC-05",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 56,
+          "stock_after": 56,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 649,
+          "product_name": "SaigonFlex UC-14",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 11,
+          "stock_after": 11,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 651,
+          "product_name": "SaigonFlex UC-16",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 149,
+          "stock_after": 153,
+          "stock_delta": 4
+        },
+        {
+          "product_id": 653,
+          "product_name": "SaigonFlex UC-18",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 86,
+          "stock_after": 88,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 654,
+          "product_name": "SaigonFlex UC-19",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 11,
+          "stock_after": 11,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 656,
+          "product_name": "SaigonFlex UC-21",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 135,
+          "stock_after": 136,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 667,
+          "product_name": "SaigonFlex UC-32",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 37,
+          "stock_after": 37,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 668,
+          "product_name": "SaigonFlex UC-33",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 7,
+          "stock_after": 11,
+          "stock_delta": 4
+        },
+        {
+          "product_id": 674,
+          "product_name": "SaigonFlex UC-39",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 653,
+          "stock_after": 653,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 688,
+          "product_name": "SaigonFlex UC-53",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 109,
+          "stock_after": 111,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 690,
+          "product_name": "SaigonFlex UC-55",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 668,
+          "stock_after": 670,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 702,
+          "product_name": "HanoiStreet MA-09",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 356,
+          "stock_after": 356,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 711,
+          "product_name": "HanoiStreet MA-18",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 122,
+          "stock_after": 129,
+          "stock_delta": 7
+        },
+        {
+          "product_id": 719,
+          "product_name": "HanoiStreet RP-07",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 15,
+          "stock_after": 38,
+          "stock_delta": 23
+        },
+        {
+          "product_id": 720,
+          "product_name": "HanoiStreet RP-08",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 14,
+          "stock_after": 36,
+          "stock_delta": 22
+        },
+        {
+          "product_id": 733,
+          "product_name": "HanoiStreet RP-21",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1346,
+          "stock_after": 1346,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 734,
+          "product_name": "HanoiStreet RP-22",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1402,
+          "stock_after": 1402,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 735,
+          "product_name": "HanoiStreet RP-23",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 728,
+          "stock_after": 729,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 736,
+          "product_name": "HanoiStreet RP-24",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 732,
+          "stock_after": 734,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 759,
+          "product_name": "HanoiStreet RP-47",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1312,
+          "stock_after": 1313,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 760,
+          "product_name": "HanoiStreet RP-48",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1339,
+          "stock_after": 1340,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 761,
+          "product_name": "HanoiStreet RP-49",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1195,
+          "stock_after": 1196,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 762,
+          "product_name": "HanoiStreet RP-50",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1218,
+          "stock_after": 1221,
+          "stock_delta": 3
+        },
+        {
+          "product_id": 763,
+          "product_name": "HanoiStreet RP-51",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 739,
+          "stock_after": 739,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 764,
+          "product_name": "HanoiStreet RP-52",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 690,
+          "stock_after": 690,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 777,
+          "product_name": "HanoiStreet RP-65",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 774,
+          "stock_after": 780,
+          "stock_delta": 6
+        },
+        {
+          "product_id": 778,
+          "product_name": "HanoiStreet RP-66",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 821,
+          "stock_after": 826,
+          "stock_delta": 5
+        },
+        {
+          "product_id": 779,
+          "product_name": "HanoiStreet RP-67",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 688,
+          "stock_after": 688,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 780,
+          "product_name": "HanoiStreet RP-68",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 697,
+          "stock_after": 698,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 781,
+          "product_name": "HanoiStreet RP-69",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 738,
+          "stock_after": 743,
+          "stock_delta": 5
+        },
+        {
+          "product_id": 782,
+          "product_name": "HanoiStreet RP-70",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 720,
+          "stock_after": 724,
+          "stock_delta": 4
+        },
+        {
+          "product_id": 791,
+          "product_name": "HanoiStreet RP-79",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 2657,
+          "stock_after": 2673,
+          "stock_delta": 16
+        },
+        {
+          "product_id": 792,
+          "product_name": "HanoiStreet RP-80",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 2591,
+          "stock_after": 2617,
+          "stock_delta": 26
+        },
+        {
+          "product_id": 793,
+          "product_name": "HanoiStreet RP-81",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1127,
+          "stock_after": 1133,
+          "stock_delta": 6
+        },
+        {
+          "product_id": 794,
+          "product_name": "HanoiStreet RP-82",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1164,
+          "stock_after": 1169,
+          "stock_delta": 5
+        },
+        {
+          "product_id": 807,
+          "product_name": "HanoiStreet RS-11",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 97,
+          "stock_after": 98,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 808,
+          "product_name": "HanoiStreet RS-12",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 507,
+          "stock_after": 511,
+          "stock_delta": 4
+        },
+        {
+          "product_id": 809,
+          "product_name": "HanoiStreet RS-13",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 206,
+          "stock_after": 209,
+          "stock_delta": 3
+        },
+        {
+          "product_id": 816,
+          "product_name": "HanoiStreet RS-20",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 316,
+          "stock_after": 319,
+          "stock_delta": 3
+        },
+        {
+          "product_id": 819,
+          "product_name": "HanoiStreet UM-03",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 453,
+          "stock_after": 453,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 822,
+          "product_name": "HanoiStreet UM-06",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 41,
+          "stock_after": 43,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 826,
+          "product_name": "HanoiStreet UM-10",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1958,
+          "stock_after": 1960,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 839,
+          "product_name": "HanoiStreet UM-23",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 53,
+          "stock_after": 53,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 899,
+          "product_name": "HanoiStreet UE-08",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 13,
+          "stock_after": 13,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 907,
+          "product_name": "HanoiStreet UE-16",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1146,
+          "stock_after": 1146,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 908,
+          "product_name": "HanoiStreet UE-17",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 194,
+          "stock_after": 200,
+          "stock_delta": 6
+        },
+        {
+          "product_id": 927,
+          "product_name": "HanoiStreet UE-36",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1897,
+          "stock_after": 1897,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 939,
+          "product_name": "HanoiStreet UC-02",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 454,
+          "stock_after": 454,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 942,
+          "product_name": "HanoiStreet UC-05",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 23,
+          "stock_after": 23,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 945,
+          "product_name": "HanoiStreet UC-08",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 181,
+          "stock_after": 181,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 963,
+          "product_name": "HanoiStreet UC-26",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 85,
+          "stock_after": 86,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 974,
+          "product_name": "HanoiStreet UC-37",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 39,
+          "stock_after": 39,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 981,
+          "product_name": "HanoiStreet UC-44",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1109,
+          "stock_after": 1110,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 993,
+          "product_name": "HanoiStreet UC-56",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1393,
+          "stock_after": 1394,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 1007,
+          "product_name": "HanoiStreet YY-08",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 16,
+          "stock_after": 16,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1009,
+          "product_name": "HanoiStreet YY-10",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 862,
+          "stock_after": 865,
+          "stock_delta": 3
+        },
+        {
+          "product_id": 1013,
+          "product_name": "HanoiStreet YY-14",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 163,
+          "stock_after": 165,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 1026,
+          "product_name": "HanoiStreet YY-27",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 132,
+          "stock_after": 135,
+          "stock_delta": 3
+        },
+        {
+          "product_id": 1043,
+          "product_name": "MekongFit MA-01",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 116,
+          "stock_after": 116,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1049,
+          "product_name": "MekongFit MA-07",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 115,
+          "stock_after": 116,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 1053,
+          "product_name": "MekongFit MA-11",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 888,
+          "stock_after": 891,
+          "stock_delta": 3
+        },
+        {
+          "product_id": 1059,
+          "product_name": "MekongFit RP-05",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 145,
+          "stock_after": 147,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 1060,
+          "product_name": "MekongFit RP-06",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 153,
+          "stock_after": 155,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 1085,
+          "product_name": "MekongFit RP-31",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1379,
+          "stock_after": 1390,
+          "stock_delta": 11
+        },
+        {
+          "product_id": 1086,
+          "product_name": "MekongFit RP-32",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1366,
+          "stock_after": 1373,
+          "stock_delta": 7
+        },
+        {
+          "product_id": 1103,
+          "product_name": "MekongFit RP-49",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 97,
+          "stock_after": 99,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 1104,
+          "product_name": "MekongFit RP-50",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 91,
+          "stock_after": 94,
+          "stock_delta": 3
+        },
+        {
+          "product_id": 1113,
+          "product_name": "MekongFit RS-01",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 69,
+          "stock_after": 69,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1114,
+          "product_name": "MekongFit RS-02",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 275,
+          "stock_after": 275,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1115,
+          "product_name": "MekongFit RS-03",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 450,
+          "stock_after": 457,
+          "stock_delta": 7
+        },
+        {
+          "product_id": 1118,
+          "product_name": "MekongFit RS-06",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 67,
+          "stock_after": 70,
+          "stock_delta": 3
+        },
+        {
+          "product_id": 1120,
+          "product_name": "MekongFit RS-08",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 150,
+          "stock_after": 151,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 1125,
+          "product_name": "MekongFit UM-02",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 16,
+          "stock_after": 16,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1129,
+          "product_name": "MekongFit UM-06",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 431,
+          "stock_after": 431,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1134,
+          "product_name": "MekongFit UM-11",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 42,
+          "stock_after": 42,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1137,
+          "product_name": "MekongFit UM-14",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 124,
+          "stock_after": 125,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 1140,
+          "product_name": "MekongFit UM-17",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 64,
+          "stock_after": 64,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1141,
+          "product_name": "MekongFit UM-18",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 36,
+          "stock_after": 36,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1171,
+          "product_name": "MekongFit UE-07",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 542,
+          "stock_after": 543,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 1175,
+          "product_name": "MekongFit UE-11",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 363,
+          "stock_after": 365,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 1176,
+          "product_name": "MekongFit UE-12",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 3,
+          "stock_after": 4,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 1177,
+          "product_name": "MekongFit UE-13",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 27,
+          "stock_after": 41,
+          "stock_delta": 14
+        },
+        {
+          "product_id": 1179,
+          "product_name": "MekongFit UE-15",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 47,
+          "stock_after": 47,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1180,
+          "product_name": "MekongFit UE-16",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 211,
+          "stock_after": 213,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 1182,
+          "product_name": "MekongFit UE-18",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 1912,
+          "stock_after": 1913,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 1183,
+          "product_name": "MekongFit UE-19",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 204,
+          "stock_after": 204,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1194,
+          "product_name": "MekongFit UE-30",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 3,
+          "stock_after": 3,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1212,
+          "product_name": "MekongFit UC-14",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 332,
+          "stock_after": 334,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 1223,
+          "product_name": "MekongFit UC-25",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 450,
+          "stock_after": 450,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1272,
+          "product_name": "VietMode MA-08",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 17,
+          "stock_after": 20,
+          "stock_delta": 3
+        },
+        {
+          "product_id": 1280,
+          "product_name": "VietMode MA-16",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 6,
+          "stock_after": 6,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1301,
+          "product_name": "VietMode MA-37",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 4,
+          "stock_after": 4,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1305,
+          "product_name": "VietMode MA-41",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 7,
+          "stock_after": 7,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1357,
+          "product_name": "VietMode RP-49",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 13,
+          "stock_after": 13,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1358,
+          "product_name": "VietMode RP-50",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 13,
+          "stock_after": 13,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1375,
+          "product_name": "VietMode RP-67",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 20,
+          "stock_after": 21,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 1376,
+          "product_name": "VietMode RP-68",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 15,
+          "stock_after": 15,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1391,
+          "product_name": "VietMode RP-83",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 129,
+          "stock_after": 129,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1392,
+          "product_name": "VietMode RP-84",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 140,
+          "stock_after": 140,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1433,
+          "product_name": "VietMode RP-25",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 125,
+          "stock_after": 125,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1434,
+          "product_name": "VietMode RP-26",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 123,
+          "stock_after": 123,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1441,
+          "product_name": "VietMode RP-33",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 20,
+          "stock_after": 21,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 1442,
+          "product_name": "VietMode RP-34",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 18,
+          "stock_after": 19,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 1493,
+          "product_name": "VietMode RP-85",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 44,
+          "stock_after": 44,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1494,
+          "product_name": "VietMode RP-86",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 48,
+          "stock_after": 48,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1497,
+          "product_name": "VietMode RP-89",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 17,
+          "stock_after": 17,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1498,
+          "product_name": "VietMode RP-90",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 17,
+          "stock_after": 17,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1523,
+          "product_name": "VietMode RP-15",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 25,
+          "stock_after": 25,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1524,
+          "product_name": "VietMode RP-16",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 20,
+          "stock_after": 20,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1531,
+          "product_name": "VietMode RP-23",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 107,
+          "stock_after": 107,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1532,
+          "product_name": "VietMode RP-24",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 107,
+          "stock_after": 107,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1559,
+          "product_name": "VietMode RP-51",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 3,
+          "stock_after": 3,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1560,
+          "product_name": "VietMode RP-52",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 3,
+          "stock_after": 3,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1561,
+          "product_name": "VietMode RP-53",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 3,
+          "stock_after": 3,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1562,
+          "product_name": "VietMode RP-54",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 3,
+          "stock_after": 3,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1566,
+          "product_name": "VietMode RS-04",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 16,
+          "stock_after": 16,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1567,
+          "product_name": "VietMode RS-05",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 4,
+          "stock_after": 6,
+          "stock_delta": 2
+        },
+        {
+          "product_id": 1576,
+          "product_name": "VietMode RS-14",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 27,
+          "stock_after": 28,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 1588,
+          "product_name": "VietMode RS-26",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 14,
+          "stock_after": 14,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1590,
+          "product_name": "VietMode RS-28",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 9,
+          "stock_after": 10,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 1592,
+          "product_name": "VietMode RS-30",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 9,
+          "stock_after": 9,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1597,
+          "product_name": "VietMode RS-35",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 59,
+          "stock_after": 60,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 1601,
+          "product_name": "VietMode RS-39",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 16,
+          "stock_after": 16,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1605,
+          "product_name": "VietMode RS-43",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 8,
+          "stock_after": 9,
+          "stock_delta": 1
+        },
+        {
+          "product_id": 1607,
+          "product_name": "VietMode RS-45",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 18,
+          "stock_after": 18,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1608,
+          "product_name": "VietMode RS-46",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 4,
+          "stock_after": 4,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1615,
+          "product_name": "VietMode RS-53",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 3,
+          "stock_after": 3,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1646,
+          "product_name": "VietMode RS-84",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 5,
+          "stock_after": 5,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1650,
+          "product_name": "VietMode RS-88",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 69,
+          "stock_after": 69,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1651,
+          "product_name": "VietMode RS-89",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 3,
+          "stock_after": 3,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1657,
+          "product_name": "VietMode RS-95",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 12,
+          "stock_after": 12,
+          "stock_delta": 0
+        },
+        {
+          "product_id": 1662,
+          "product_name": "VietMode RS-00",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 3,
+          "stock_after": 3,
+          "stock_delta": 0
+        }
+      ],
+      "returned_rows": 200,
+      "detail_ceiling": 200
+    }
+  },
+  "I50": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT a.product_id,p.product_name,DATE '2022-11-30' AS before_date,DATE '2022-12-31' AS after_date,\n a.stock_on_hand AS stock_before,b.stock_on_hand AS stock_after,b.stock_on_hand-a.stock_on_hand AS stock_delta\n FROM commerce.inventory a JOIN commerce.inventory b ON a.product_id=b.product_id\n JOIN commerce.products p ON p.product_id=a.product_id\n WHERE a.snapshot_date=DATE '2022-11-30' AND b.snapshot_date=DATE '2022-12-31'\n AND a.product_id=1 ORDER BY a.product_id LIMIT 200",
+      "rows": [
+        {
+          "product_id": 1,
+          "product_name": "DragonWear MA-01",
+          "before_date": "2022-11-30",
+          "after_date": "2022-12-31",
+          "stock_before": 3,
+          "stock_after": 3,
+          "stock_delta": 0
+        }
+      ],
+      "returned_rows": 1,
+      "detail_ceiling": 200
+    }
+  },
+  "P01": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT product_id,product_name FROM commerce.products ORDER BY product_id LIMIT 10",
+      "rows": [
+        {
+          "product_id": 1,
+          "product_name": "DragonWear MA-01"
+        },
+        {
+          "product_id": 2,
+          "product_name": "DragonWear MA-02"
+        },
+        {
+          "product_id": 3,
+          "product_name": "DragonWear MA-03"
+        },
+        {
+          "product_id": 4,
+          "product_name": "DragonWear MA-04"
+        },
+        {
+          "product_id": 5,
+          "product_name": "DragonWear MA-05"
+        },
+        {
+          "product_id": 6,
+          "product_name": "DragonWear MA-06"
+        },
+        {
+          "product_id": 7,
+          "product_name": "DragonWear MA-07"
+        },
+        {
+          "product_id": 8,
+          "product_name": "DragonWear MA-08"
+        },
+        {
+          "product_id": 9,
+          "product_name": "DragonWear MA-09"
+        },
+        {
+          "product_id": 10,
+          "product_name": "DragonWear MA-10"
+        }
+      ],
+      "returned_rows": 10,
+      "detail_ceiling": null
+    }
+  },
+  "P02": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT product_id,color,price FROM commerce.products WHERE color='blue' ORDER BY price DESC,product_id LIMIT 5",
+      "rows": [
+        {
+          "product_id": 503,
+          "color": "blue",
+          "price": 21108.804545454543
+        },
+        {
+          "product_id": 353,
+          "color": "blue",
+          "price": 20786.85
+        },
+        {
+          "product_id": 483,
+          "color": "blue",
+          "price": 19535.011791044777
+        },
+        {
+          "product_id": 473,
+          "color": "blue",
+          "price": 18458.3
+        },
+        {
+          "product_id": 623,
+          "color": "blue",
+          "price": 17011.958108108105
+        }
+      ],
+      "returned_rows": 5,
+      "detail_ceiling": null
+    }
+  },
+  "P06": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT product_id,price FROM commerce.products WHERE price>=200000 AND price<500000 ORDER BY price DESC,product_id LIMIT 8",
+      "rows": [],
+      "returned_rows": 0,
+      "detail_ceiling": null
+    }
+  },
+  "P16": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT snapshot_date,SUM(stock_on_hand) AS stock_on_hand FROM commerce.inventory WHERE snapshot_date=DATE '2022-12-31' GROUP BY snapshot_date",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "stock_on_hand": 104235
+        }
+      ],
+      "returned_rows": 1,
+      "detail_ceiling": null
+    }
+  },
+  "P17": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.category,SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-12-31' GROUP BY i.snapshot_date,p.category ORDER BY i.snapshot_date,p.category LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Casual",
+          "stock_on_hand": 4095
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "GenZ",
+          "stock_on_hand": 5126
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Outdoor",
+          "stock_on_hand": 49929
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Streetwear",
+          "stock_on_hand": 45085
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": 200
+    }
+  },
+  "P19": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,i.product_id,p.product_name,i.stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-12-31' ORDER BY i.stock_on_hand ASC,i.product_id LIMIT 10",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1,
+          "product_name": "DragonWear MA-01",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 18,
+          "product_name": "DragonWear MA-18",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 58,
+          "product_name": "DragonWear RP-13",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 66,
+          "product_name": "DragonWear RP-21",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 67,
+          "product_name": "DragonWear RP-22",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 71,
+          "product_name": "DragonWear RS-04",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 73,
+          "product_name": "DragonWear RS-06",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 205,
+          "product_name": "IndigoViet UM-07",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 210,
+          "product_name": "IndigoViet UM-12",
+          "stock_on_hand": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 296,
+          "product_name": "LotusWear UE-17",
+          "stock_on_hand": 3
+        }
+      ],
+      "returned_rows": 10,
+      "detail_ceiling": null
+    }
+  },
+  "P22": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.category,AVG(i.fill_rate) AS fill_rate FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-12-31' GROUP BY i.snapshot_date,p.category ORDER BY i.snapshot_date,p.category LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Casual",
+          "fill_rate": 0.9608325
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "GenZ",
+          "fill_rate": 0.9719704545454545
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Outdoor",
+          "fill_rate": 0.9567152777777778
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Streetwear",
+          "fill_rate": 0.9622474489795918
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": 200
+    }
+  },
+  "P24": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,p.category,SUM(i.units_received) AS units_received FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-12-31' GROUP BY i.snapshot_date,p.category ORDER BY i.snapshot_date,p.category LIMIT 200",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Casual",
+          "units_received": 213
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "GenZ",
+          "units_received": 222
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Outdoor",
+          "units_received": 2076
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "category": "Streetwear",
+          "units_received": 1570
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": 200
+    }
+  },
+  "P27": {
+    "supported": true,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": {
+      "sql": "SELECT COUNT(DISTINCT i.product_id) AS observed_product_count FROM commerce.inventory i JOIN commerce.products p ON p.product_id=i.product_id WHERE i.snapshot_date=DATE '2022-12-31' AND p.category='__absent_category__'",
+      "rows": [
+        {
+          "observed_product_count": 0
+        }
+      ],
+      "returned_rows": 1,
+      "detail_ceiling": null
+    }
+  },
+  "P47": {
+    "supported": false,
+    "expected_behavior": "Answer with approved inventory/product observations and preserve all explicit constraints; clarify ambiguous or unavailable definitions.",
+    "reference": null
+  }
+}

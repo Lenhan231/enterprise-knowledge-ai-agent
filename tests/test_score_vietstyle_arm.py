@@ -72,5 +72,29 @@ class ScoreVietstyleArmTest(unittest.TestCase):
         self.assertGreater(result["b_minus_a_95ci"][0], 0)
 
 
+    def test_export_and_external_verdicts_round_trip_only_for_the_same_answer(self):
+        import hashlib
+        sha = hashlib.sha256(score.QUESTIONS.read_bytes()).hexdigest()
+        run = {"dataset_sha256": sha, "arm": "B9", "configuration": {}, "results": [
+            {"id": "L01", "type": "lookup", "answer": "Mã VSC-OPS-POL-001 [S1].", "contexts": [ctx(1, cited=True)]},
+            {"id": "C01", "type": "calculation", "answer": "1.200.000 VND [S1].", "contexts": [ctx(14, cited=True)]},
+            {"id": "R01", "type": "rbac", "answer": "x", "contexts": []}]}
+        with tempfile.TemporaryDirectory() as folder:
+            path, prompts, verdicts = Path(folder, "B9.json"), Path(folder, "p.jsonl"), Path(folder, "v.jsonl")
+            path.write_text(json.dumps(run))
+            score.export(type("A", (), {"runs": [path], "output": prompts}))
+            items = [json.loads(line) for line in prompts.read_text().splitlines()]
+            self.assertEqual([i["id"] for i in items], ["L01", "C01"])  # RBAC is never sent to a judge
+            self.assertIn("VSC-OPS-POL-001", items[0]["prompt"])
+            verdict = {"correctness": "correct", "key_points_covered": [True], "abstained": False, "faithful": True, "reason": "ok"}
+            verdicts.write_text("\n".join(json.dumps({**items[0], "verdict": verdict}) for _ in [0]) + "\n" +
+                                json.dumps({**items[1], "answer_sha256": "stale", "verdict": verdict}) + "\n")
+            with mock.patch("builtins.print"):
+                score.score(type("A", (), {"run": path, "judge": False, "verdicts": verdicts, "judge_model": "codex"}))
+            rows = {r["id"]: r for r in json.loads(Path(folder, "B9.scored.codex.json").read_text())["rows"]}
+        self.assertEqual(rows["L01"]["judge"]["correctness"], "correct")
+        self.assertEqual(rows["C01"]["judge_error"], "no verdict for this answer")
+
+
 if __name__ == "__main__":
     unittest.main()

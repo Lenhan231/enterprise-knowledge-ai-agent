@@ -25,6 +25,7 @@ QUESTIONS = ROOT / "artifacts/evaluation/vietstyle-heldout-v1/questions.json"
 POLICY_MD = ROOT / "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md"
 VIETSTYLE = "VietStyle_Enterprise_Operating_Policy"
 # Physical PDF pages, per the dataset's evidence_convention (checked on the VN PDF; EN spot-checked at p14/p35/p53).
+DEFAULT_JUDGE = "openai/gpt-oss-120b"
 APPENDIX_PAGES = {"cover": {1}, "PL-A": {53}, "PL-B": {53}, "PL-C": {53, 54}, "PL-D": {54}}
 
 
@@ -146,13 +147,25 @@ Return {{"correctness": "correct"|"partial"|"incorrect", "key_points_covered": [
 "correct" = conveys the reference's substance with no wrong or invented facts; for abstain cases, "correct" = declines or states the policy has no such information without inventing figures."""
 
 
-def judge_case(llm, case, row, pages):
+def judge_prompt(case, row, pages):
     gold = "\n---\n".join(pages.get(p, "") for item in case["evidence"] for p in sorted(evidence_pages(item)))
     cited = "\n---\n".join(dict.fromkeys(pages.get(page, "") for page, vs, c in contexts_of(row) if c and vs and page))
     prompt = JUDGE.format(question=case["question"], type=case["type"], reference=case["reference_answer"],
                           abstain="decline / say the policy does not contain this" if case["should_abstain"] else "answer",
                           points=json.dumps(case["must_include"], ensure_ascii=False), gold=gold[:12000],
                           cited=cited[:12000], answer=row.get("answer") or "")
+    return prompt
+
+
+def parse_verdict(raw, case_id):
+    verdict = json.loads(raw[raw.index("{"):raw.rindex("}") + 1])
+    if verdict.get("correctness") not in {"correct", "partial", "incorrect"}:
+        raise ValueError(f"Bad judge verdict for {case_id}: {raw[:200]}")
+    return verdict
+
+
+def judge_case(llm, case, row, pages):
+    prompt = judge_prompt(case, row, pages)
     from openai import RateLimitError
     for attempt in range(30):  # per-minute limits on every key can repeat many times in one run
         try:
@@ -164,10 +177,34 @@ def judge_case(llm, case, row, pages):
             if attempt == 29:
                 raise SystemExit(f"Groq limit reached while judging {case['id']}; rerun later to resume") from error
             time.sleep(min(60.0, float(error.response.headers.get("retry-after") or 10)) + 1)
-    verdict = json.loads(raw[raw.index("{"):raw.rindex("}") + 1])
-    if verdict.get("correctness") not in {"correct", "partial", "incorrect"}:
-        raise ValueError(f"Bad judge verdict for {case['id']}: {raw[:200]}")
-    return verdict
+    return parse_verdict(raw, case["id"])
+
+
+def judged(row):
+    return row["status"] == "ok" and "rbac_leak" not in row  # RBAC is scored by rule: correct iff nothing leaked
+
+
+def digest(answer):
+    return hashlib.sha256((answer or "").encode()).hexdigest()
+
+
+def load(path):
+    run = json.loads(path.read_text())
+    if run["dataset_sha256"] != hashlib.sha256(QUESTIONS.read_bytes()).hexdigest():
+        raise SystemExit(f"{path} was made on another questions.json version")
+    return run, {c["id"]: c for c in json.loads(QUESTIONS.read_bytes())["cases"]}
+
+
+def export(args):
+    """One judge prompt per judged row, for an external judge (e.g. a Codex worker) to answer offline."""
+    pages, refusal = policy_pages(), refusals()
+    with args.output.open("w", encoding="utf-8") as stream:
+        for path in args.runs:
+            run, cases = load(path)
+            for raw in run["results"]:
+                if judged(score_row(cases[raw["id"]], raw, refusal)):
+                    stream.write(json.dumps({"arm": run["arm"], "id": raw["id"], "answer_sha256": digest(raw.get("answer")),
+                                             "prompt": judge_prompt(cases[raw["id"]], raw, pages)}, ensure_ascii=False) + "\n")
 
 
 def rate(values):
@@ -192,7 +229,7 @@ def summarize(rows):
         "rbac_leaks": sum(bool(r.get("rbac_leak")) for r in ok),
         "rbac_cases": sum("rbac_leak" in r for r in ok),
         "no_citation_ok": [r.get("no_citation_ok") for r in ok if "no_citation_ok" in r],
-        "elapsed_ms_median": statistics.median([r["elapsed_ms"] for r in ok]) if ok else None,
+        "elapsed_ms_median": statistics.median(times) if (times := [r["elapsed_ms"] for r in ok if r.get("elapsed_ms") is not None]) else None,
     }
     if judged:
         verdicts = [r["judge"] for r in judged]
@@ -209,28 +246,44 @@ def summarize(rows):
 
 
 def score(args):
-    run = json.loads(args.run.read_text())
-    questions = json.loads(QUESTIONS.read_bytes())
-    if run["dataset_sha256"] != hashlib.sha256(QUESTIONS.read_bytes()).hexdigest():
-        raise SystemExit("Run was made on another questions.json version")
-    cases = {c["id"]: c for c in questions["cases"]}
+    run, cases = load(args.run)
     refusal = refusals()
-    out_path = args.run.with_suffix(".scored.json")
+    # Each judge gets its own scored file so arms are only ever compared under the same judge.
+    out_path = args.run.with_suffix(".scored.json" if args.judge_model == DEFAULT_JUDGE else
+                                    f".scored.{re.sub(r'[^a-z0-9]+', '-', args.judge_model.lower())}.json")
     cache = {r["id"]: r for r in json.loads(out_path.read_text())["rows"]} if out_path.exists() else {}
     rows = [score_row(cases[row["id"]], row, refusal) for row in run["results"]]
-    if args.judge:
+    if args.verdicts:
+        verdicts = {}
+        for line in args.verdicts.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                item = json.loads(line)
+                verdicts[(item["arm"], item["id"])] = item
+        for row, raw in zip(rows, run["results"]):
+            item = verdicts.get((run["arm"], row["id"]))
+            if not judged(row):
+                continue
+            if not item or item["answer_sha256"] != digest(raw.get("answer")):
+                row["judge_error"] = "no verdict for this answer"
+                continue
+            try:
+                row.update(judge=parse_verdict(json.dumps(item["verdict"]), row["id"]),
+                           answer_sha256=item["answer_sha256"], judge_model=args.judge_model)
+            except ValueError as error:
+                row["judge_error"] = str(error)[:300]
+    elif args.judge:
         from core.llm.groq_provider import GroqProvider
         llm, pages = GroqProvider(model=args.judge_model), policy_pages()
         for row, raw in zip(rows, run["results"]):
-            if row["status"] != "ok" or "rbac_leak" in row:  # RBAC is scored by rule: correct iff nothing leaked
+            if not judged(row):
                 continue
-            digest = hashlib.sha256((raw.get("answer") or "").encode()).hexdigest()
+            answer_sha256 = digest(raw.get("answer"))
             old = cache.get(row["id"], {})
-            if old.get("judge") and old.get("answer_sha256") == digest and old.get("judge_model") == args.judge_model:
-                row.update(judge=old["judge"], answer_sha256=digest, judge_model=args.judge_model)
+            if old.get("judge") and old.get("answer_sha256") == answer_sha256 and old.get("judge_model") == args.judge_model:
+                row.update(judge=old["judge"], answer_sha256=answer_sha256, judge_model=args.judge_model)
                 continue
             try:
-                row.update(judge=judge_case(llm, cases[row["id"]], raw, pages), answer_sha256=digest,
+                row.update(judge=judge_case(llm, cases[row["id"]], raw, pages), answer_sha256=answer_sha256,
                            judge_model=args.judge_model)
             except ValueError as error:  # a malformed verdict is reported, not guessed
                 row["judge_error"] = str(error)[:300]
@@ -273,12 +326,16 @@ def main():
     s = sub.add_parser("score")
     s.add_argument("run", type=Path)
     s.add_argument("--judge", action="store_true")
-    s.add_argument("--judge-model", default="openai/gpt-oss-120b")
+    s.add_argument("--judge-model", default=DEFAULT_JUDGE, help="with --verdicts, the external judge's name, e.g. codex")
+    s.add_argument("--verdicts", type=Path, help="JSONL verdicts from an external judge for prompts made by 'export'")
+    e = sub.add_parser("export")
+    e.add_argument("runs", type=Path, nargs="+")
+    e.add_argument("--output", type=Path, required=True)
     c = sub.add_parser("compare")
     c.add_argument("a", type=Path)
     c.add_argument("b", type=Path)
     args = parser.parse_args()
-    score(args) if args.command == "score" else compare(args)
+    {"score": score, "compare": compare, "export": export}[args.command](args)
 
 
 if __name__ == "__main__":

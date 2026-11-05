@@ -1,0 +1,67 @@
+{
+  "transport": "Docker Compose backend on loopback port 18000; real auth, router, provider and read-only Supabase; no mocks",
+  "report_generations": 0,
+  "checks": [
+    {
+      "case": "health",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "case": "anonymous",
+      "status": 401,
+      "passed": true
+    },
+    {
+      "case": "VIEWER_login",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "case": "viewer_denied",
+      "status": 403,
+      "passed": true
+    },
+    {
+      "case": "ANALYST_login",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "case": "fields",
+      "status": 200,
+      "passed": false,
+      "seconds": 11.251,
+      "error_code": null
+    },
+    {
+      "case": "sum",
+      "status": 200,
+      "passed": false,
+      "seconds": 5.34,
+      "error_code": null
+    },
+    {
+      "case": "comparison",
+      "status": 200,
+      "passed": false,
+      "seconds": 4.924,
+      "error_code": null
+    },
+    {
+      "case": "router",
+      "status": 200,
+      "passed": true,
+      "seconds": 4.953,
+      "error_code": null
+    },
+    {
+      "case": "outside",
+      "status": 200,
+      "passed": false,
+      "seconds": 2.512,
+      "error_code": null
+    }
+  ],
+  "passed": false
+}

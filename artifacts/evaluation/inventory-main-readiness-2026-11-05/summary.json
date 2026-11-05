@@ -1,0 +1,24 @@
+{
+  "revision": "9642d32",
+  "main": "d40162b",
+  "replay_passed": 60,
+  "prompt_and_row_hashes_unchanged": true,
+  "focused": {
+    "run": 230,
+    "failures": [],
+    "errors": [],
+    "skipped": 3
+  },
+  "final_local_suite": [
+    "Ran 853 tests in 71.423s",
+    "FAILED (failures=17, errors=51, skipped=39)"
+  ],
+  "provider_report_benchmarks": 0,
+  "ci": {
+    "run": 905,
+    "failures": 9,
+    "errors": 56,
+    "skipped": 45
+  },
+  "recommendation": "HOLD"
+}

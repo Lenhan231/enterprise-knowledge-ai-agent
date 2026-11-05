@@ -1,0 +1,234 @@
+[
+  {
+    "test": "ERROR: test_agent_benchmarks (unittest.loader._FailedTest.test_agent_benchmarks)",
+    "cause": "ModuleNotFoundError: No module named 'ragas'"
+  },
+  {
+    "test": "ERROR: test_agents (unittest.loader._FailedTest.test_agents)",
+    "cause": "ImportError: cannot import name '_financial_retrieval_query' from 'core.agents.knowledge_agent' (/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/src/core/agents/knowledge_agent.py)"
+  },
+  {
+    "test": "ERROR: test_app_request_models (unittest.loader._FailedTest.test_app_request_models)",
+    "cause": "ImportError: cannot import name 'AskRequest' from 'app.main' (/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/src/app/main.py)"
+  },
+  {
+    "test": "ERROR: test_chunking_retrieval_evaluation (unittest.loader._FailedTest.test_chunking_retrieval_evaluation)",
+    "cause": "ModuleNotFoundError: No module named 'core.document_processing'"
+  },
+  {
+    "test": "ERROR: test_commerce_knowledge_manifest (unittest.loader._FailedTest.test_commerce_knowledge_manifest)",
+    "cause": "ModuleNotFoundError: No module named 'tools.ingestion.generate_commerce_demo_policies'"
+  },
+  {
+    "test": "ERROR: test_docling_ocr_postprocessing (unittest.loader._FailedTest.test_docling_ocr_postprocessing)",
+    "cause": "ModuleNotFoundError: No module named 'cv2'"
+  },
+  {
+    "test": "ERROR: test_docling_table_sections (unittest.loader._FailedTest.test_docling_table_sections)",
+    "cause": "ModuleNotFoundError: No module named 'docling_core'"
+  },
+  {
+    "test": "ERROR: test_document_dashboard (unittest.loader._FailedTest.test_document_dashboard)",
+    "cause": "ImportError: cannot import name 'DashboardAgent' from 'core.agents.dashboard_agent' (/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/src/core/agents/dashboard_agent.py)"
+  },
+  {
+    "test": "ERROR: test_document_extraction_evaluation (unittest.loader._FailedTest.test_document_extraction_evaluation)",
+    "cause": "ModuleNotFoundError: No module named 'core.document_processing'"
+  },
+  {
+    "test": "ERROR: test_document_processing_chunk_context (unittest.loader._FailedTest.test_document_processing_chunk_context)",
+    "cause": "ModuleNotFoundError: No module named 'document_processing.pipelines'"
+  },
+  {
+    "test": "ERROR: test_get_document_output_reconstructs_chunker_input (test_document_processing_outputs_repository.DocumentProcessingOutputsRepositoryTest.test_get_document_output_reconstructs_chunker_input)",
+    "cause": "KeyError: 'text_elements'"
+  },
+  {
+    "test": "ERROR: test_document_processor (unittest.loader._FailedTest.test_document_processor)",
+    "cause": "ModuleNotFoundError: No module named 'document_processing.pipelines'"
+  },
+  {
+    "test": "ERROR: test_candidate_requires_exact_page_quote_and_uses_page_evidence (test_financial_extraction.FinancialPageSelectionTests.test_candidate_requires_exact_page_quote_and_uses_page_evidence)",
+    "cause": "KeyError: 'source_labels'"
+  },
+  {
+    "test": "ERROR: test_candidate_with_quote_not_found_on_page_is_discarded (test_financial_extraction.FinancialPageSelectionTests.test_candidate_with_quote_not_found_on_page_is_discarded)",
+    "cause": "KeyError: 'source_labels'"
+  },
+  {
+    "test": "ERROR: test_llm_cannot_publish_a_comparative_year_as_the_report_year_candidate (test_financial_extraction.FinancialPageSelectionTests.test_llm_cannot_publish_a_comparative_year_as_the_report_year_candidate)",
+    "cause": "KeyError: 'source_labels'"
+  },
+  {
+    "test": "ERROR: test_ocr_near_match_label_is_reviewable_but_native_and_ungrounded_values_fail (test_financial_extraction.FinancialPageSelectionTests.test_ocr_near_match_label_is_reviewable_but_native_and_ungrounded_values_fail)",
+    "cause": "KeyError: 'source_labels'"
+  },
+  {
+    "test": "ERROR: test_selects_ranked_financial_pages_and_caps_llm_work (test_financial_extraction.FinancialPageSelectionTests.test_selects_ranked_financial_pages_and_caps_llm_work)",
+    "cause": "KeyError: 'source_labels'"
+  },
+  {
+    "test": "ERROR: test_table_layout_alone_does_not_select_nonfinancial_pages (test_financial_extraction.FinancialPageSelectionTests.test_table_layout_alone_does_not_select_nonfinancial_pages)",
+    "cause": "KeyError: 'source_labels'"
+  },
+  {
+    "test": "ERROR: test_table_row_quote_can_use_year_from_column_header (test_financial_extraction.FinancialPageSelectionTests.test_table_row_quote_can_use_year_from_column_header)",
+    "cause": "KeyError: 'source_labels'"
+  },
+  {
+    "test": "ERROR: test_unexpected_json_shape_fails_closed_and_records_error (test_financial_extraction.FinancialPageSelectionTests.test_unexpected_json_shape_fails_closed_and_records_error)",
+    "cause": "KeyError: 'source_labels'"
+  },
+  {
+    "test": "ERROR: test_replay_and_reject_changed_scores (test_fresh_reviewed_reranker.FreshReplayTest.test_replay_and_reject_changed_scores)",
+    "cause": "FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/artifacts/evaluation/fresh-reviewed-v1/manifest.json'"
+  },
+  {
+    "test": "ERROR: test_caption_image_rejects_payloads_over_provider_request_budget (test_llm_provider.GroqProviderTest.test_caption_image_rejects_payloads_over_provider_request_budget)",
+    "cause": "AttributeError: 'GroqProvider' object has no attribute 'caption_image'"
+  },
+  {
+    "test": "ERROR: test_caption_image_sends_bounded_base64_input_to_configured_vision_model (test_llm_provider.GroqProviderTest.test_caption_image_sends_bounded_base64_input_to_configured_vision_model)",
+    "cause": "AttributeError: 'GroqProvider' object has no attribute 'caption_image'"
+  },
+  {
+    "test": "ERROR: test_manual_metric_workflow (unittest.loader._FailedTest.test_manual_metric_workflow)",
+    "cause": "ImportError: cannot import name 'ManualMetricRequest' from 'app.main' (/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/src/app/main.py)"
+  },
+  {
+    "test": "ERROR: test_metric_candidates (unittest.loader._FailedTest.test_metric_candidates)",
+    "cause": "KeyError: 'source_labels'"
+  },
+  {
+    "test": "ERROR: test_parser_preload (unittest.loader._FailedTest.test_parser_preload)",
+    "cause": "ModuleNotFoundError: No module named 'cv2'"
+  },
+  {
+    "test": "ERROR: test_pdf_upload_processing (unittest.loader._FailedTest.test_pdf_upload_processing)",
+    "cause": "ModuleNotFoundError: No module named 'document_processing.pipelines'"
+  },
+  {
+    "test": "ERROR: test_rag (unittest.loader._FailedTest.test_rag)",
+    "cause": "ImportError: cannot import name '_RESPONSE_CACHE' from 'core.rag.rag_service' (/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/src/core/rag/rag_service.py)"
+  },
+  {
+    "test": "ERROR: test_ragas_judge (unittest.loader._FailedTest.test_ragas_judge)",
+    "cause": "ModuleNotFoundError: No module named 'ragas'"
+  },
+  {
+    "test": "ERROR: test_retrieval_callers (unittest.loader._FailedTest.test_retrieval_callers)",
+    "cause": "ImportError: cannot import name '_RESPONSE_CACHE' from 'core.rag.rag_service' (/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/src/core/rag/rag_service.py)"
+  },
+  {
+    "test": "ERROR: test_full_text_metadata_location_and_tie_order_are_preserved (test_retrieval_service.RetrievalServiceTest.test_full_text_metadata_location_and_tie_order_are_preserved)",
+    "cause": "RuntimeError: BGE reranker is not cached. Provision the pinned model first or explicitly set RERANKER_ALLOW_DOWNLOAD=1 on the compute host."
+  },
+  {
+    "test": "ERROR: test_latency_includes_embedding_search_and_mapping (test_retrieval_service.RetrievalServiceTest.test_latency_includes_embedding_search_and_mapping)",
+    "cause": "RuntimeError: BGE reranker is not cached. Provision the pinned model first or explicitly set RERANKER_ALLOW_DOWNLOAD=1 on the compute host."
+  },
+  {
+    "test": "ERROR: test_real_repository_boundary_with_fake_cursor (test_retrieval_service.RetrievalServiceTest.test_real_repository_boundary_with_fake_cursor)",
+    "cause": "RuntimeError: BGE reranker is not cached. Provision the pinned model first or explicitly set RERANKER_ALLOW_DOWNLOAD=1 on the compute host."
+  },
+  {
+    "test": "ERROR: test_retrieve_embeds_question_and_maps_repository_results (test_retrieval_service.RetrievalServiceTest.test_retrieve_embeds_question_and_maps_repository_results)",
+    "cause": "RuntimeError: BGE reranker is not cached. Provision the pinned model first or explicitly set RERANKER_ALLOW_DOWNLOAD=1 on the compute host."
+  },
+  {
+    "test": "ERROR: test_commerce_scan_upload_path_scores_ocr_text_and_structured_table_separately (test_scan_document_processing_evaluation.ScanDocumentProcessingEvaluationTest.test_commerce_scan_upload_path_scores_ocr_text_and_structured_table_separately)",
+    "cause": "FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/data/evaluation/ocr/commerce_scan_ground_truth.json'"
+  },
+  {
+    "test": "ERROR: test_degraded_image_only_scan_is_not_rasterized_a_second_time (test_scan_document_processing_evaluation.ScanDocumentProcessingEvaluationTest.test_degraded_image_only_scan_is_not_rasterized_a_second_time)",
+    "cause": "FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/data/evaluation/ocr/commerce_degraded_scan_ground_truth.json'"
+  },
+  {
+    "test": "ERROR: test_shopee_inventory_grid_labels_match_the_registered_source_hash (test_scan_document_processing_evaluation.ScanDocumentProcessingEvaluationTest.test_shopee_inventory_grid_labels_match_the_registered_source_hash)",
+    "cause": "FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/data/evaluation/ocr/commerce_shopee_inventory_grid_anchors.json'"
+  },
+  {
+    "test": "ERROR: test_section_title_backfill (unittest.loader._FailedTest.test_section_title_backfill)",
+    "cause": "ModuleNotFoundError: No module named 'core.document_processing'"
+  },
+  {
+    "test": "ERROR: test_seed_ingestion (unittest.loader._FailedTest.test_seed_ingestion)",
+    "cause": "ModuleNotFoundError: No module named 'core.chunking.text.strategies.semantic'"
+  },
+  {
+    "test": "ERROR: test_seed_ingestion_pipeline (unittest.loader._FailedTest.test_seed_ingestion_pipeline)",
+    "cause": "ModuleNotFoundError: No module named 'core.document_processing'"
+  },
+  {
+    "test": "ERROR: test_session_chat (unittest.loader._FailedTest.test_session_chat)",
+    "cause": "ModuleNotFoundError: No module named 'streamlit'"
+  },
+  {
+    "test": "ERROR: test_accepts_aggregate_select_and_caps_limit (test_sql_analytics.AnalyticsSqlSafetyTest.test_accepts_aggregate_select_and_caps_limit)",
+    "cause": "  File \"/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/src/core/analytics/sql_safety.py\", line 34, in validate_analytics_sql     raise UnsafeAnalyticsQuery(\"Query must read one authorized analytics source\") core.analytics.sql_safety.UnsafeAnalyticsQuery: Query must read one authorized analytics source"
+  },
+  {
+    "test": "ERROR: test_accepts_case_expressions_inside_allowlisted_aggregates (test_sql_analytics.AnalyticsSqlSafetyTest.test_accepts_case_expressions_inside_allowlisted_aggregates)",
+    "cause": "  File \"/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/src/core/analytics/sql_safety.py\", line 34, in validate_analytics_sql     raise UnsafeAnalyticsQuery(\"Query must read one authorized analytics source\") core.analytics.sql_safety.UnsafeAnalyticsQuery: Query must read one authorized analytics source"
+  },
+  {
+    "test": "ERROR: test_agent_generates_sql_executes_it_and_returns_provenance (test_sql_analytics.AnalyticsSqlSafetyTest.test_agent_generates_sql_executes_it_and_returns_provenance)",
+    "cause": "TypeError: SQLAnalyticsAgent.__init__() takes 2 positional arguments but 3 were given"
+  },
+  {
+    "test": "ERROR: test_document_analytics_cites_visible_documents_not_unrelated_metric_rows (test_sql_analytics.AnalyticsSqlSafetyTest.test_document_analytics_cites_visible_documents_not_unrelated_metric_rows)",
+    "cause": "TypeError: SQLAnalyticsAgent.__init__() takes 2 positional arguments but 3 were given"
+  },
+  {
+    "test": "ERROR: test_empty_aggregate_result_with_null_evidence_is_reported_as_no_verified_data (test_sql_analytics.AnalyticsSqlSafetyTest.test_empty_aggregate_result_with_null_evidence_is_reported_as_no_verified_data)",
+    "cause": "TypeError: SQLAnalyticsAgent.__init__() takes 2 positional arguments but 3 were given"
+  },
+  {
+    "test": "ERROR: test_metric_result_cites_only_matching_metric_and_year_within_same_document (test_sql_analytics.AnalyticsSqlSafetyTest.test_metric_result_cites_only_matching_metric_and_year_within_same_document)",
+    "cause": "TypeError: SQLAnalyticsAgent.__init__() takes 2 positional arguments but 3 were given"
+  },
+  {
+    "test": "ERROR: test_repository_executes_inside_read_only_timeout_and_role_filtered_ctes (test_sql_analytics.AnalyticsSqlSafetyTest.test_repository_executes_inside_read_only_timeout_and_role_filtered_ctes)",
+    "cause": "StopIteration"
+  },
+  {
+    "test": "ERROR: test_failed_translation_falls_back_and_filters_hold (test_translated_fresh_reranker.TranslatedReplayTest.test_failed_translation_falls_back_and_filters_hold)",
+    "cause": "FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/artifacts/evaluation/fresh-reviewed-v1/manifest.json'"
+  },
+  {
+    "test": "ERROR: test_full_saved_replay_rejects_wrong_rank (test_translated_fresh_reranker.TranslatedReplayTest.test_full_saved_replay_rejects_wrong_rank)",
+    "cause": "FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/artifacts/evaluation/fresh-reviewed-v1/manifest.json'"
+  },
+  {
+    "test": "ERROR: test_upload_processing_flow (unittest.loader._FailedTest.test_upload_processing_flow)",
+    "cause": "ModuleNotFoundError: No module named 'document_processing.pipelines'"
+  },
+  {
+    "test": "ERROR: test_websocket_qa (unittest.loader._FailedTest.test_websocket_qa)",
+    "cause": "ImportError: cannot import name 'AskRequest' from 'app.main' (/home/runner/work/enterprise-knowledge-ai-agent/enterprise-knowledge-ai-agent/src/app/main.py)"
+  },
+  {
+    "test": "FAIL: test_replace_document_stores_normalized_output_separately (test_document_processing_outputs_repository.DocumentProcessingOutputsRepositoryTest.test_replace_document_stores_normalized_output_separately)",
+    "cause": "AssertionError: Lists differ: [{'te[32 chars]ge_number': 1, 'element_type': 'text', 'layout_type': 'text'}}] != [{'te[32 chars]ge_number': 1}}]"
+  },
+  {
+    "test": "FAIL: test_expands_vietnamese_financial_metric_to_canonical_english_labels (test_query_rewriting_evaluation.QueryRewritingEvaluationTest.test_expands_vietnamese_financial_metric_to_canonical_english_labels)",
+    "cause": "AssertionError: 'Doan[24 chars] sau thuế năm 2024 là bao nhiêu?' != 'Doan[24 chars] sau thuế năm 2024 là bao nhiêu? Net revenue; Profit after tax'"
+  },
+  {
+    "test": "FAIL: test_fixture_round_trip_preserves_all_fields (test_retrieval_models.RetrievalModelsTest.test_fixture_round_trip_preserves_all_fields)",
+    "cause": "AssertionError: {'que[1610 chars] True}, 'retrieval_method': 'dense'}], 'retrieval_details': {}} != {'que[1610 chars] True}, 'retrieval_method': 'dense'}]}"
+  },
+  {
+    "test": "FAIL: test_response_supports_no_results (test_retrieval_models.RetrievalModelsTest.test_response_supports_no_results)",
+    "cause": "AssertionError: 'translated_hybrid_rerank' != 'hybrid'"
+  },
+  {
+    "test": "FAIL: test_financial_analytics_must_keep_metric_and_year_dimensions (test_sql_analytics.AnalyticsSqlSafetyTest.test_financial_analytics_must_keep_metric_and_year_dimensions)",
+    "cause": "AssertionError: \"metric_name and fiscal_year\" does not match \"Query must read one authorized analytics source\""
+  },
+  {
+    "test": "FAIL: test_sql_filters_are_present_in_all_three_searches (test_translated_hybrid.TranslatedHybridTest.test_sql_filters_are_present_in_all_three_searches)",
+    "cause": "AssertionError: 'd.company = %s::text' not found in \"WITH \\n        eligible AS MATERIALIZED (\\n            SELECT c.id, c.document_name, c.chunk_index, c.content,\\n                   c.metadata || jsonb_build_object('document_type', d.document_type) AS metadata,\\n                   \\n            1 - (c.embedding <=> %s) AS similarity_score,\\n            c.embedding <=> %s AS vector_distance,\\n        \\n                   coalesce(%s::text IS NOT NULL AND c.metadata->>'fiscal_year' = %s, false) AS year_match\\n                   \\n            FROM document_chunks AS c\\n            JOIN documents AS d ON d.document_id = c.metadata->>'document_id'\\n            WHERE d.processing_status = 'ready'\\n              AND d.knowledge_base_active IS TRUE  AND c.metadata->>'company' = %s::text AND (d.allowed_roles && %s::text[] OR 'admin' = ANY(%s::text[])) AND d.document_id = ANY(%s::text[]) AND c.metadata @> %s::jsonb\\n        )\\n    ,\\n        vector_candidates AS (\\n            SELECT id, similarity_score, vector_distance, year_match,\\n                   row_number() OVER (ORDER BY year_match DESC, vector_distance, id) AS candidate_rank\\n            FROM eligible\\n            ORDER BY year_match DESC, vector_distance, id\\n            LIMIT %s\\n        )\\n        SELECT e.document_name, e.chunk_index, e.content, e.metadata,\\n               v.similarity_score AS retrieval_score\\n        FROM vector_candidates AS v JOIN eligible AS e ON e.id = v.id\\n        ORDER BY v.candidate_rank\\n        LIMIT %s\\n    \""
+  }
+]

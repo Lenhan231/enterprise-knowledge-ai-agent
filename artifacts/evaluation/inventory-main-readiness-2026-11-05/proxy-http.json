@@ -1,0 +1,7 @@
+{
+  "health": true,
+  "anonymous_denied": true,
+  "login": true,
+  "session": true,
+  "viewer_sql_denied": true
+}

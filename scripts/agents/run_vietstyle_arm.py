@@ -44,8 +44,13 @@ def save(path, report):
     Path(stream.name).replace(path)
 
 
+def router_failed(metadata):
+    """The router's own failure (e.g. planning unavailable while Groq is limited), not a grounded refusal."""
+    return (metadata or {}).get("status") == "failed" and (metadata or {}).get("selected_route") == "unrouted"
+
+
 def failed_row(row):
-    return bool(row.get("error_type")) or (row.get("metadata") or {}).get("status") == "failed"
+    return bool(row.get("error_type")) or router_failed(row.get("metadata"))
 
 
 def context_row(context, cited):
@@ -123,8 +128,7 @@ class Http:
     def run(self, case, roles):
         for attempt in range(3):
             turns = self._conversation(case)
-            failed = (turns[-1].get("metadata") or {}).get("status") == "failed"
-            if not failed:
+            if not router_failed(turns[-1].get("metadata")):
                 break
             # The router answers 200 "planning unavailable" in milliseconds while Groq is rate limited.
             if attempt == 2:

@@ -96,5 +96,11 @@ class RunVietstyleArmTest(unittest.TestCase):
             self.assertEqual(json.loads(out.read_text())["results"], rows)  # stopping never rewrites the file
 
 
+    def test_only_unrouted_router_failures_are_retried(self):
+        self.assertTrue(arm.failed_row({"metadata": {"status": "failed", "selected_route": "unrouted"}}))
+        self.assertFalse(arm.failed_row({"metadata": {"status": "failed", "selected_route": "knowledge"}}))  # grounded refusal
+        self.assertTrue(arm.failed_row({"error_type": "ValueError"}))
+
+
 if __name__ == "__main__":
     unittest.main()

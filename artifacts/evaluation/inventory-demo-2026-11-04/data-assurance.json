@@ -1,0 +1,22 @@
+{
+  "constraints": [
+    {
+      "table_name": "inventory",
+      "type": "f",
+      "definition": "FOREIGN KEY (product_id) REFERENCES commerce.products(product_id)"
+    },
+    {
+      "table_name": "inventory",
+      "type": "p",
+      "definition": "PRIMARY KEY (snapshot_date, product_id)"
+    },
+    {
+      "table_name": "products",
+      "type": "p",
+      "definition": "PRIMARY KEY (product_id)"
+    }
+  ],
+  "duplicate_inventory_keys": 0,
+  "orphan_inventory_products": 0,
+  "method": "Authorized reader, read-only transaction; no schema/permission mutations."
+}

@@ -1,0 +1,157 @@
+{
+  "cases": [
+    {
+      "cohort": "production",
+      "id": "I05",
+      "classification": "unnecessary",
+      "reason": "Answerable raw product field / inventory metadata / product-filtered snapshot comparison; no additional business definition was needed.",
+      "code": null,
+      "answer": "The requested metric 'cogs' is defined at the company level (source: commerce.sales, grain: day) and does not support the 'product_id' dimension. Please clarify if you want the company-level COGS (which cannot be broken down by product) or if you are looking for the product-level cost field from the products table (which is not the canonical COGS metric)."
+    },
+    {
+      "cohort": "production",
+      "id": "I10",
+      "classification": "unnecessary",
+      "reason": "Answerable raw product field / inventory metadata / product-filtered snapshot comparison; no additional business definition was needed.",
+      "code": "interpretation_invalid",
+      "answer": "Inventory queries require an inventory interpretation."
+    },
+    {
+      "cohort": "production",
+      "id": "I40",
+      "classification": "necessary",
+      "reason": "No threshold or top/bottom count defines low stock.",
+      "code": "metric_ambiguous",
+      "answer": "What numeric threshold or ranking (e.g., bottom 10) defines 'low stock'?"
+    },
+    {
+      "cohort": "production",
+      "id": "I41",
+      "classification": "necessary",
+      "reason": "Operational reorder quantities require unavailable demand, lead time, open POs and approved business rules.",
+      "code": "metric_unresolved",
+      "answer": "Operational reorder quantities need approved demand, lead time, safety stock, open POs, backorders and ordering constraints. Stored historical flags do not define a safe quantity."
+    },
+    {
+      "cohort": "production",
+      "id": "I42",
+      "classification": "necessary",
+      "reason": "No approved safety-stock model or required demand/lead-time evidence.",
+      "code": "metric_unresolved",
+      "answer": "Safety stock requires a reviewed demand/lead-time model and service target; these are missing."
+    },
+    {
+      "cohort": "production",
+      "id": "I43",
+      "classification": "necessary",
+      "reason": "No warehouse/location field exists in the approved inventory/products schema.",
+      "code": "unsupported_dimension",
+      "answer": "The full approved schema does not support these requested dimensions: warehouse/location. A supported alternative is inventory observations by product/category at an available historical snapshot."
+    },
+    {
+      "cohort": "production",
+      "id": "I47",
+      "classification": "necessary",
+      "reason": "Turnover lacks approved cost valuation and time-weighted inventory definitions.",
+      "code": "metric_unresolved",
+      "answer": "Turnover needs a reviewed compatible COGS/cost-valuation basis and time-weighted inventory convention; these are not approved in the inventory catalog."
+    },
+    {
+      "cohort": "production",
+      "id": "I48",
+      "classification": "necessary",
+      "reason": "2022-02-30 is not a calendar date.",
+      "code": "invalid_date_scope",
+      "answer": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+    },
+    {
+      "cohort": "production",
+      "id": "I50",
+      "classification": "unnecessary",
+      "reason": "Answerable raw product field / inventory metadata / product-filtered snapshot comparison; no additional business definition was needed.",
+      "code": "interpretation_invalid",
+      "answer": "The filter value or comparison is incompatible with product_id."
+    },
+    {
+      "cohort": "final",
+      "id": "I40",
+      "classification": "necessary",
+      "reason": "No threshold or top/bottom count defines low stock.",
+      "code": "metric_ambiguous",
+      "answer": "Please specify a numeric threshold for 'low stock' (e.g., stock_on_hand < 10) or clarify if you want to rank products by stock_on_hand in ascending order."
+    },
+    {
+      "cohort": "final",
+      "id": "I41",
+      "classification": "necessary",
+      "reason": "Operational reorder quantities require unavailable demand, lead time, open POs and approved business rules.",
+      "code": "metric_unresolved",
+      "answer": "Operational reorder quantities need approved demand, lead time, safety stock, open POs, backorders and ordering constraints. Stored historical flags do not define a safe quantity."
+    },
+    {
+      "cohort": "final",
+      "id": "I42",
+      "classification": "necessary",
+      "reason": "No approved safety-stock model or required demand/lead-time evidence.",
+      "code": "metric_unresolved",
+      "answer": "Safety stock requires a reviewed demand/lead-time model and service target; these are missing."
+    },
+    {
+      "cohort": "final",
+      "id": "I43",
+      "classification": "necessary",
+      "reason": "No warehouse/location field exists in the approved inventory/products schema.",
+      "code": "unsupported_dimension",
+      "answer": "The full approved schema does not support these requested dimensions: warehouse/location. A supported alternative is inventory observations by product/category at an available historical snapshot."
+    },
+    {
+      "cohort": "final",
+      "id": "I44",
+      "classification": "necessary",
+      "reason": "Current-period stock is unavailable; the database latest snapshot is 2022-12-31.",
+      "code": "requested_period_unavailable",
+      "answer": "No inventory observations are available in the requested current period. The latest available snapshot is 2022-12-31. Historical observations cannot establish current stock. Request an available historical snapshot instead."
+    },
+    {
+      "cohort": "final",
+      "id": "I45",
+      "classification": "necessary",
+      "reason": "The catalog forbids combining stock balances across snapshot dates.",
+      "code": "incompatible_grain",
+      "answer": "The canonical inventory definitions permit one snapshot or separate snapshot groups, not a combined total across dates. Choose a snapshot or request monthly observations."
+    },
+    {
+      "cohort": "final",
+      "id": "I46",
+      "classification": "necessary",
+      "reason": "The catalog defines receipt units within one snapshot; an annual rollup convention is not approved.",
+      "code": "incompatible_grain",
+      "answer": "The canonical inventory definitions permit one snapshot or separate snapshot groups, not a combined total across dates. Choose a snapshot or request monthly observations."
+    },
+    {
+      "cohort": "final",
+      "id": "I47",
+      "classification": "necessary",
+      "reason": "Turnover lacks approved cost valuation and time-weighted inventory definitions.",
+      "code": "metric_unresolved",
+      "answer": "Turnover needs a reviewed compatible COGS/cost-valuation basis and time-weighted inventory convention; these are not approved in the inventory catalog."
+    },
+    {
+      "cohort": "final",
+      "id": "I48",
+      "classification": "necessary",
+      "reason": "2022-02-30 is not a calendar date.",
+      "code": "invalid_date_scope",
+      "answer": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+    }
+  ],
+  "valid_refusal_review": {
+    "before": "6/9",
+    "after": "9/9",
+    "excluded": "P47 has an erroneous unsupported reference; see fixture-errata.json"
+  },
+  "supported_unnecessary_clarifications": {
+    "before": "3/50",
+    "after": "0/50"
+  }
+}

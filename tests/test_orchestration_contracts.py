@@ -24,6 +24,14 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(_supported_numbers('1.32 products [S1]', inputs, 'Count products'))
         self.assertFalse(_supported_numbers('1320e6 products [S1]', inputs, 'Count products'))
 
+    def test_numeric_grounding_accepts_exactly_checked_results_with_sourced_operands(self):
+        inputs = [{'data': {}, 'evidence': [{'content': 'Mỗi bữa tối đa 300.000 VND.'}]}]
+        question = '4 nhân viên ăn một bữa, tối đa bao nhiêu?'
+        self.assertTrue(_supported_numbers('4 × 300.000 = 1.200.000 VND [S1].', inputs, question))
+        self.assertFalse(_supported_numbers('4 × 300.000 = 1.300.000 VND [S1].', inputs, question))  # wrong result
+        self.assertFalse(_supported_numbers('5 × 300.000 = 1.500.000 VND [S1].', inputs, question))  # unsourced operand
+        self.assertFalse(_supported_numbers('Tổng 1.200.000 VND [S1].', inputs, question))  # no checked equality
+
     async def test_knowledge_fails_closed_for_missing_or_empty_document_scope(self):
         rag = Mock()
         agent = KnowledgeAgent(rag)

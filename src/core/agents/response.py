@@ -6,6 +6,7 @@ from decimal import Decimal, InvalidOperation
 from core.agents.runtime import generate
 from core.models.agents import AgentResult
 from core.prompts.agents import SYNTHESIS_PROMPT
+from core.rag.arithmetic import verified_results
 
 
 def _number_options(text):
@@ -31,7 +32,8 @@ def _supported_numbers(answer, inputs, question):
     facts = [{'rows': item['data'].get('rows', []),
               'content': [e.get('content') for e in item['evidence']]} for item in inputs]
     source = json.dumps(facts, ensure_ascii=False, default=str) + question
-    source_numbers = _number_options(source)
+    # Results of equalities that check exactly are derived, not invented; their operands must still be sourced.
+    source_numbers = _number_options(source + ' ' + ' '.join(verified_results(answer)))
     allowed = set().union(*source_numbers) if source_numbers else set()
     return all(options & allowed for options in _number_options(re.sub(r'\[S\d+\]', '', answer)))
 

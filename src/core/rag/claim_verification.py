@@ -51,10 +51,24 @@ def claim_blocks(answer):
                        "source_ids": list(dict.fromkeys(re.findall(r"\[(S\d+)\]", text)))})
         start = match.end()
     tail = answer[start:]
-    if tail.strip(" \t\r\n|*_`)]}") or not blocks or len(blocks) > 16:
+    gap = _is_source_gap_note(tail)
+    if (tail.strip(" \t\r\n|*_`)]}") and not gap) or not blocks or len(blocks) > 16:
         raise ValueError("uncited_or_oversized_draft")
-    blocks[-1]["text"] += tail
+    if not gap:
+        blocks[-1]["text"] += tail
     return blocks
+
+
+# Prompt rule 4 lets a partial answer close by saying what the sources do not cover; that is not a policy claim.
+_SOURCE_GAP = re.compile(r"(?:tài liệu|nguồn)[^.!?\n]*(?:chưa đủ|chưa (?:nêu|đề cập|có)|không (?:nêu|đề cập|có thông tin|quy định))",
+                         re.IGNORECASE)
+
+
+def _is_source_gap_note(tail):
+    """Every sentence must be a number-free 'the sources do not cover ...' note, so no claim escapes the audit."""
+    sentences = [s.strip(" \t\r\n|*_`)]}.,;:") for s in re.split(r"(?<=[.!?])\s+|\n+", tail)]
+    sentences = [s for s in sentences if s]
+    return bool(sentences) and not re.search(r"\d", tail) and all(_SOURCE_GAP.search(s) for s in sentences)
 
 
 def evidence_units(content):
@@ -111,8 +125,15 @@ def verify_answer(llm, question: str, answer: str, contexts: list[dict]) -> Veri
     token = None
     try:
         token = deadline.set(time.monotonic() + remaining(15))
-        raw = llm.generate(CLAIM_VERIFICATION_PROMPT + payload, max_output_tokens=AUDIT_MAX_OUTPUT_TOKENS)
-        outcome = validate_review(answer, contexts, parse_review(raw))
+        for attempt in range(2):
+            raw = llm.generate(CLAIM_VERIFICATION_PROMPT + payload, max_output_tokens=AUDIT_MAX_OUTPUT_TOKENS)
+            try:
+                outcome = validate_review(answer, contexts, parse_review(raw))
+                break
+            except ValueError:
+                # A malformed or incomplete audit gets one more try; a second failure still fails closed below.
+                if attempt or remaining(15) < 5:
+                    raise
         return outcome.model_copy(update={"arithmetic_checked": checked})
     except (APIError, ValueError, RuntimeError, TimeoutError) as error:
         return VerificationOutcome(status="unavailable", reason=type(error).__name__, arithmetic_checked=checked)

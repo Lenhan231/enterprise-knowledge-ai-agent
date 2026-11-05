@@ -258,16 +258,13 @@ class RAGService:
             )
 
         source_ids = extract_source_ids(answer)
-        if not source_ids:
-            raise ValueError(f"Generated answer contains no source citations. Answer: {answer}")
-
-        allowed_source_ids = {context["source_id"] for context in contexts}
-        unknown_source_ids = set(source_ids) - allowed_source_ids
-        if unknown_source_ids:
-            raise ValueError(
-                "Generated answer contains unknown citations: "
-                f"{sorted(unknown_source_ids)}"
-            )
+        unknown_source_ids = set(source_ids) - {context["source_id"] for context in contexts}
+        if not source_ids or unknown_source_ids:
+            # Still fail closed, but with the verifier's user-facing message instead of a 503.
+            reason = "unknown_citation" if unknown_source_ids else "uncited_answer"
+            _log.warning("Knowledge answer withheld: %s %s", reason, sorted(unknown_source_ids))
+            return RAGResult(answer=VERIFICATION_UNAVAILABLE_ANSWER, contexts=contexts, prompt_sha256=prompt_sha256,
+                             verification=VerificationOutcome(status="unavailable", reason=reason))
 
         verification = None
         if verify_claims:

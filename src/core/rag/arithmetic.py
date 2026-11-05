@@ -95,3 +95,13 @@ def check_equalities(text):
         if any(value != values[0] for value in values[1:]):
             return checked, "arithmetic_mismatch"
     return checked, None
+
+
+def verified_results(text):
+    """Values right of '=' in literal equalities that check exactly, e.g. ['54.000.000'] for '3 × 18.000.000 = 54.000.000'."""
+    results = []
+    for match in _RUN.finditer(text):
+        checked, issue = check_equalities(match.group())
+        if checked and issue is None:
+            results.extend(part.strip(" .,()") for part in match.group().split("=")[1:])
+    return results

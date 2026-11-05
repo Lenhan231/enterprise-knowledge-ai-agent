@@ -1,5 +1,5 @@
 import unittest
-from core.rag.arithmetic import check_equalities
+from core.rag.arithmetic import check_equalities, verified_results
 
 
 class ExactArithmeticTest(unittest.TestCase):
@@ -61,6 +61,13 @@ class ExactArithmeticTest(unittest.TestCase):
                 self.assertEqual(check_equalities(text), (1, None))
         self.assertEqual(check_equalities("4 × 300.000 = 1.300.000")[1], "arithmetic_mismatch")
         self.assertEqual(check_equalities("1+" * 120 + "1 = 121")[1], "unverified_arithmetic")
+
+
+class VerifiedResultsTest(unittest.TestCase):
+    def test_only_exactly_checked_results_are_returned(self):
+        self.assertEqual(verified_results("Tổng là 3 × 18.000.000 = 54.000.000 VND [S1]."), ["54.000.000"])
+        self.assertEqual(verified_results("3 × 18.000.000 = 55.000.000"), [])
+        self.assertEqual(verified_results("Ngưỡng 50.000.001 = 50.000.001"), [])
 
 
 class DevelopmentProbeArithmeticTest(unittest.TestCase):

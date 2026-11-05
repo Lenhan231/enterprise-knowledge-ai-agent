@@ -222,6 +222,21 @@ class ClaimVerificationTest(unittest.TestCase):
                 self.assertEqual(call.kwargs["roles"], ["employee"])
 
 
+class PartialAnswerAndRetryTest(unittest.TestCase):
+    def test_closing_source_gap_note_is_not_a_claim_but_cannot_smuggle_one(self):
+        gap = "\n\nThông tin trong các tài liệu được phép truy cập chưa đủ để trả lời phần còn lại."
+        self.assertEqual(claim_blocks(ANSWER + gap), [{"claim_id": "C1", "text": ANSWER, "source_ids": ["S1"]}])
+        for tail in (gap + " Nhân viên không được tự duyệt.", gap + " Hạn là 30 ngày.", "\nLưu ý: nhân viên không có quyền tự duyệt."):
+            with self.subTest(tail=tail), self.assertRaisesRegex(ValueError, "uncited_or_oversized_draft"):
+                claim_blocks(ANSWER + tail)
+
+    def test_malformed_audit_is_retried_once(self):
+        llm = Mock()
+        llm.generate.side_effect = ["invalid JSON", json.dumps(review())]
+        self.assertEqual(verify_answer(llm, "Revenue?", ANSWER, [SOURCE]).status, "supported")
+        self.assertEqual(llm.generate.call_count, 2)
+
+
 class KnowledgeVerificationIntegrationTest(unittest.IsolatedAsyncioTestCase):
     async def test_switch_is_server_owned_and_only_explicit_one_enables_it(self):
         identity = VerifiedIdentity(subject="test", permissions={"documents:read"}, document_roles={"employee"})
@@ -245,7 +260,7 @@ class KnowledgeVerificationIntegrationTest(unittest.IsolatedAsyncioTestCase):
             rag = RAGService.__new__(RAGService)
             rag.retrieve_contexts = Mock(return_value=[SOURCE])
             rag.llm = Mock()
-            rag.llm.generate.side_effect = [draft, response]
+            rag.llm.generate.side_effect = [draft, response, response]  # a malformed audit is retried once
             identity = VerifiedIdentity(subject="test", permissions={"documents:read"}, document_roles={"employee"})
             with patch.dict(os.environ, {"KNOWLEDGE_MULTIQUERY_ENABLED": "0", "KNOWLEDGE_CLAIM_VERIFICATION_ENABLED": "1"}):
                 result = await KnowledgeAgent(rag).run(AgentRequest(question="Profit?", identity=identity))

@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import sys
 import unittest
+from core.rag.claim_verification import VERIFICATION_UNAVAILABLE_ANSWER
 from unittest.mock import AsyncMock, Mock, patch
 
 import jwt
@@ -46,10 +47,13 @@ class KnowledgeOutcomeTest(unittest.IsolatedAsyncioTestCase):
         result = self.rag.generate_from_contexts("policy?", self.contexts)
         self.assertFalse(result.insufficient_context)
         self.assertEqual(result.source_ids, ["S1"])
-        for answer in ("Unsupported answer", "Unknown source [S99]"):
-            with self.subTest(answer=answer), self.assertRaises(ValueError):
+        for answer, reason in (("Unsupported answer", "uncited_answer"), ("Unknown source [S99]", "unknown_citation")):
+            with self.subTest(answer=answer):
                 self.rag.llm.generate.return_value = answer
-                self.rag.generate_from_contexts("policy?", self.contexts)
+                withheld = self.rag.generate_from_contexts("policy?", self.contexts)
+                self.assertEqual(withheld.answer, VERIFICATION_UNAVAILABLE_ANSWER)  # fail closed, no 503
+                self.assertEqual((withheld.verification.status, withheld.verification.reason), ("unavailable", reason))
+                self.assertEqual(withheld.source_ids, [])
 
     async def test_knowledge_propagates_both_empty_outcomes(self):
         self.enterContext(patch.dict(os.environ, {"KNOWLEDGE_MULTIQUERY_ENABLED": "1"}))

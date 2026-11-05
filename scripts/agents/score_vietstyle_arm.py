@@ -321,20 +321,24 @@ def compare(args):
 
 
 def main():
+    global QUESTIONS
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="command", required=True)
     s = sub.add_parser("score")
     s.add_argument("run", type=Path)
     s.add_argument("--judge", action="store_true")
     s.add_argument("--judge-model", default=DEFAULT_JUDGE, help="with --verdicts, the external judge's name, e.g. codex")
+    s.add_argument("--questions", type=Path, default=QUESTIONS, help="dataset the run used (default: dev set)")
     s.add_argument("--verdicts", type=Path, help="JSONL verdicts from an external judge for prompts made by 'export'")
     e = sub.add_parser("export")
     e.add_argument("runs", type=Path, nargs="+")
     e.add_argument("--output", type=Path, required=True)
+    e.add_argument("--questions", type=Path, default=QUESTIONS)
     c = sub.add_parser("compare")
     c.add_argument("a", type=Path)
     c.add_argument("b", type=Path)
     args = parser.parse_args()
+    QUESTIONS = getattr(args, "questions", QUESTIONS)
     {"score": score, "compare": compare, "export": export}[args.command](args)
 
 

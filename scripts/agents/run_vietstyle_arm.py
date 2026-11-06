@@ -61,7 +61,9 @@ def router_failed(metadata):
 
 
 def failed_row(row):
-    return bool(row.get("error_type")) or router_failed(row.get("metadata"))
+    # In-process arms report the verifier outcome as row["verification"], API arms inside the metadata.
+    return (bool(row.get("error_type")) or router_failed(row.get("metadata"))
+            or (row.get("verification") or {}).get("reason") in PROVIDER_ERRORS)
 
 
 def context_row(context, cited):

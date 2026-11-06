@@ -110,6 +110,8 @@ class RunVietstyleArmTest(unittest.TestCase):
         self.assertTrue(arm.failed_row({"metadata": verifier_limited}))
         verifier_rejected = {"claim_verification": {"status": "rejected", "reason": "insufficient"}}
         self.assertFalse(arm.failed_row({"metadata": verifier_rejected}))  # a real verifier verdict is a result
+        self.assertTrue(arm.failed_row({"verification": {"status": "unavailable", "reason": "RateLimitError"}}))
+        self.assertFalse(arm.failed_row({"verification": {"status": "rejected", "reason": "contradicted"}}))
 
 
     def test_five_failures_in_a_row_stop_the_arm_after_saving(self):

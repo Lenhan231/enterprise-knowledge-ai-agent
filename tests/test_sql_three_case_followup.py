@@ -60,6 +60,13 @@ class SnapshotContractsTest(unittest.TestCase):
         self.assertIn(8, params)
         self.assertNotIn('GROUP BY', sql)
 
+    def test_snapshot_bundle_still_rejects_wrong_filter_types(self):
+        for field, value in [('product_id', '8'), ('stockout_indicator', 'true')]:
+            with self.subTest(field=field), self.assertRaises(MetricDefinitionError):
+                decode_metric_mapping(json.dumps(dict(metrics=['stock_on_hand'], dimensions=['product_id'],
+                    representation='product', time=dict(mode='snapshot', start='2022-12-31'),
+                    filters=[dict(field=field, operator='eq', value=value)])), SNAPSHOT)
+
 
 class ComparisonAgentTest(unittest.IsolatedAsyncioTestCase):
     async def test_comparison_runs_through_shared_agent(self):

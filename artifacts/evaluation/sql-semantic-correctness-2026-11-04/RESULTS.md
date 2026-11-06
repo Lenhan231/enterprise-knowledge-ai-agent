@@ -1,5 +1,7 @@
 # SQL semantic correctness results
 
+Current benchmark update (2026-11-06): [S13/S15/S17 incremental results](../sql-three-case-followup-2026-11-06/README.md), [updated 30-case aggregate](../sql-three-case-followup-2026-11-06/merged/paired-summary.json). Only those three cases were rerun; the other 27 records are retained. The original full-run results below remain unchanged.
+
 The full 30-question comparison measures archived application `153e5d5` against live application `f53c56f`. It includes earlier fixes already present on QuocAn as well as this work. Frozen questions/references and the Ragas judge (`gpt-5.6-luna`, medium) and scorers are unchanged.
 
 | Measure | Before: 153e5d5 | After: f53c56f |

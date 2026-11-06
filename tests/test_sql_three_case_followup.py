@@ -95,7 +95,8 @@ class IncrementalBenchmarkTest(unittest.TestCase):
             replacements = ['S13','S15','S17']
             for directory, selected, revision in ((base,ids,'before'),(updates,replacements,'after')):
                 (directory/'sql_analytics').mkdir(parents=True)
-                benchmark.save(directory/'manifest.json', dict(sql_ids=selected, application_revision=revision, judge='unchanged'))
+                benchmark.save(directory/'manifest.json', dict(sql_ids=selected, application_revision=revision, judge='unchanged',
+                    application_source_sha256={'source.py': 'hash'}, reproduction_source_verified_commit=revision, runner_commit=revision))
                 for name, contents in (('references.json',json.dumps({key:{'supported':True} for key in ids})),
                                        ('questions.jsonl','frozen'), ('identity-counts.json','{}')):
                     (directory/'sql_analytics'/name).write_text(contents, encoding='utf-8')
@@ -117,5 +118,7 @@ class IncrementalBenchmarkTest(unittest.TestCase):
             manifest = json.loads((merged/'manifest.json').read_text())
             self.assertEqual(manifest['case_provenance']['S13']['application_revision'],'after')
             self.assertEqual(manifest['case_provenance']['S14']['application_revision'],'before')
+            for name in ('application_source_sha256','reproduction_source_verified_commit','runner_commit'):
+                self.assertNotIn(name,manifest)
             with self.assertRaisesRegex(AssertionError,'new directory'):
                 merge_incremental(base,updates,merged)

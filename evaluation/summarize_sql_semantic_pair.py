@@ -55,10 +55,11 @@ def merge_incremental(base, updates, output):
                   for key in sorted(old_rows)}
     manifest = dict(old_manifest, application_revision='mixed; see case_provenance',
                     benchmark_type='incremental', retained_count=len(old_rows)-len(ids), rerun_count=len(ids),
-                    replaced_ids=ids, case_provenance=provenance, sql_ids=sorted(old_rows))
+                    status='sql_complete_report_not_run', replaced_ids=ids, case_provenance=provenance, sql_ids=sorted(old_rows))
     # A composite result has no single application snapshot and cannot resume generation.
-    manifest.pop('application_source_sha256', None)
-    manifest.pop('reproduction_source_sha256', None)
+    for name in list(manifest):
+        if name.startswith('reproduction_') or name in {'application_source_sha256','runner_commit'}:
+            manifest.pop(name)
     benchmark.save(output/'manifest.json', manifest)
     completed(output)
 
@@ -99,7 +100,9 @@ def main():
         common_numerical_applicability=dict(cases=len(numeric),
             before_mean=sum(r['before'] for r in numeric)/len(numeric) if numeric else None,
             after_mean=sum(r['after'] for r in numeric)/len(numeric) if numeric else None),
-        notes=['Archived baseline vs new live run; identical frozen inputs and judge, not a simultaneous A/B run.',
+        notes=[('Incremental benchmark: only replaced_ids were rerun; other cases retain historical results. See case_provenance.'
+                if manifests[1].get('benchmark_type')=='incremental' else
+                'Archived baseline vs new live run; identical frozen inputs and judge, not a simultaneous A/B run.'),
                'Identical-SQL judge score changes are evaluator variability, not demonstrated code improvements.',
                'Numerical common applicability is a descriptive intersection; neither scorer nor references were changed.']))
     print(json.dumps(dict(before=b_summary,after=a_summary,identical_sql_semantic_score_changes=variability),indent=2))

@@ -32,10 +32,6 @@ from ..orientation import (
     rotate_for_reading,
 )
 
-_TEXT_TYPE_REPO = "VItaldob/text-type-classifier-resnet18"
-_TEXT_TYPE_REVISION = "5709c2519a11bcea9974975f988b69fa3a835139"
-_HANDWRITING_REPO = "DungHugging/vietocr-handwritten-finetune"
-_HANDWRITING_REVISION = "0827b42e17cb0e1c1bbda5aac11f7cc5c816e0ca"
 _LOGGER = logging.getLogger(__name__)
 _TEXT_LAYOUT_LABELS = {
     "text", "title", "section_header", "caption", "footnote", "list_item",
@@ -80,77 +76,15 @@ class VietOcrModel(BaseOcrModel):
         config["dataset"]["image_max_width"] = 512
         config["predictor"]["beamsearch"] = False
         self.recognizer = Predictor(config)
-        self._torch = torch
-        self.handwriting_classifier = None
-        self.handwriting_recognizer = None
-        self.classifier_transform = None
-        try:
-            self._load_handwriting_router(torch, Predictor, Cfg, config["device"])
-        except Exception:
-            _LOGGER.exception(
-                "Could not load handwriting routing models; using the default VietOCR recognizer"
-            )
         self.detector = create_line_detector()
         self.orientation_diagnostics: list[dict] = []
         self.routing_diagnostics: list[dict] = []
         self._orientation_counts: dict[int, int] = {}
         self.current_reference_id: str | None = None
 
-    def _load_handwriting_router(self, torch, predictor_type, config_type, device: str) -> None:
-        from huggingface_hub import hf_hub_download
-        from torchvision import models, transforms
-
-        classifier_path = hf_hub_download(
-            _TEXT_TYPE_REPO,
-            "resnet18_text_classifier_final.pth",
-            revision=_TEXT_TYPE_REVISION,
-        )
-        handwriting_path = hf_hub_download(
-            _HANDWRITING_REPO,
-            "transformerocr.pth",
-            revision=_HANDWRITING_REVISION,
-        )
-
-        classifier = models.resnet18(weights=None)
-        classifier.fc = torch.nn.Linear(classifier.fc.in_features, 2)
-        classifier.load_state_dict(
-            torch.load(classifier_path, map_location="cpu", weights_only=True)
-        )
-        classifier.to(device).eval()
-        self.handwriting_classifier = classifier
-        self.classifier_transform = transforms.Compose([
-            transforms.Resize((128, 512)),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        ])
-
-        handwriting_config = config_type.load_config_from_name("vgg_transformer")
-        handwriting_config["weights"] = handwriting_path
-        handwriting_config["device"] = device
-        handwriting_config["cnn"]["pretrained"] = False
-        handwriting_config["dataset"]["image_max_width"] = 512
-        handwriting_config["predictor"]["beamsearch"] = False
-        self.handwriting_recognizer = predictor_type(handwriting_config)
-
     def _recognize_line(self, line: np.ndarray) -> tuple[str, str]:
         image = Image.fromarray(cv2.cvtColor(line, cv2.COLOR_BGR2RGB))
-        if self.handwriting_classifier is None or self.handwriting_recognizer is None:
-            return str(self.recognizer.predict(image) or "").strip(), "default"
-
-        try:
-            tensor = self.classifier_transform(image).unsqueeze(0).to(
-                next(self.handwriting_classifier.parameters()).device
-            )
-            with self._torch.inference_mode():
-                prediction = int(self.handwriting_classifier(tensor).argmax(dim=1).item())
-            if prediction == 0:
-                recognizer, route = self.handwriting_recognizer, "handwritten"
-            else:
-                recognizer, route = self.recognizer, "printed"
-            return str(recognizer.predict(image) or "").strip(), route
-        except Exception:
-            _LOGGER.exception("Handwriting routing failed; falling back to default VietOCR")
-            return str(self.recognizer.predict(image) or "").strip(), "fallback"
+        return str(self.recognizer.predict(image) or "").strip(), "default"
 
     @staticmethod
     def _detect_orientation(image: Image.Image) -> tuple[int, int | None, float | None]:
@@ -238,7 +172,6 @@ class VietOcrModel(BaseOcrModel):
                 )
                 cells: list[TextCell] = []
                 cell_region_indices: list[int] = []
-                routing_counts = {"printed": 0, "handwritten": 0, "fallback": 0, "default": 0}
                 for ocr_rect, region_label in ocr_regions:
                     if ocr_rect.area() == 0:
                         continue
@@ -314,7 +247,6 @@ class VietOcrModel(BaseOcrModel):
                         if line_orientation_correction == 180:
                             line = cv2.rotate(line, cv2.ROTATE_180)
                         text, route = self._recognize_line(line)
-                        routing_counts[route] += 1
                         page_quad = quad.copy()
                         page_quad[:, 1] -= vertical_padding
                         page_quad[:, 0] = np.clip(page_quad[:, 0], 0, image_size[0] - 1)
@@ -382,11 +314,6 @@ class VietOcrModel(BaseOcrModel):
                             )
                         )
                         cell_region_indices.append(region_index)
-                if self.handwriting_classifier is not None:
-                    print(
-                        "OCR line routing:", page_number, routing_counts,
-                        flush=True,
-                    )
                 cells = self._deduplicate_overlapping_cells(cells, cell_region_indices)
                 self.post_process_cells(cells, page, conv_res)
             yield page

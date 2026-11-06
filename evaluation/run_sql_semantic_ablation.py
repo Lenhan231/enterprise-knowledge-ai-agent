@@ -128,7 +128,7 @@ def prepare(variant):
     return destination
 
 
-async def verify_snapshot():
+async def verify_snapshot(ids=None):
     from core.database.commerce_repository import create_repository_from_env
     from evaluation.inventory_benchmark_metrics import compare_rows
     repo = await create_repository_from_env()
@@ -139,6 +139,8 @@ async def verify_snapshot():
                 await connection.execute("SET LOCAL statement_timeout='5000ms'")
                 refs = json.loads((FROZEN/'sql_analytics/references.json').read_text())
                 for identifier, reference in refs.items():
+                    if ids is not None and identifier not in ids:
+                        continue
                     if not reference['supported']:
                         continue
                     actual = json.loads(benchmark.dumps([dict(r) for r in await connection.fetch(reference['reference']['sql'])]))

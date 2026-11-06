@@ -115,7 +115,7 @@ async def main():
     if args.stage=='verify':
         from evaluation import run_sql_semantic_ablation as ablation
         ablation.OUTPUT = OUTPUT
-        await ablation.verify_snapshot()
+        await ablation.verify_snapshot(ids)
     elif args.stage=='summary':
         summary()
     elif args.stage=='score':

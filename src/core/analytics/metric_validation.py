@@ -61,6 +61,70 @@ def inventory_time_scope(question):
     return 'range', date(year, first, 1).isoformat(), date(year, last, calendar.monthrange(year, last)[1]).isoformat()
 
 
+def inventory_comparison_dates(question):
+    if re.search(r'\bchange\b|\bdelta\b|\bdifference\b|thay đổi|chênh lệch', _normalize(question)):
+        dates = inventory_explicit_dates(question)
+        if len(dates) == 2:
+            return tuple(d.isoformat() for d in dates)
+    return None
+
+
+def validate_stock_comparison(sql, parameters, dates):
+    """Verify a two-observation identity calculation, never a period stock aggregate."""
+    tree = parse_one(sql, read='postgres')
+    scopes = list(traverse_scope(tree))
+    if len(scopes) != 1 or not isinstance(tree, exp.Select):
+        raise MetricDefinitionError('Stock comparison requires one checked product-grain SELECT.')
+    scope = scopes[0]
+    canonical = lambda node: _canonical(node, scope, parameters, {})
+    sources = [source for _, source in scope.selected_sources.values()]
+    joins = tree.args.get('joins', [])
+    if (len(sources) != 2 or any(not isinstance(s, exp.Table) for s in sources)
+            or {s.db+'.'+s.name for s in sources} != {'commerce.inventory','commerce.products'}
+            or len(joins) != 1 or joins[0].side or joins[0].kind not in {'','INNER'}):
+        raise MetricDefinitionError('Stock comparison requires the approved inventory/products relationship.')
+    expected_join = parse_one('commerce.inventory.product_id = commerce.products.product_id', read='postgres')
+    if canonical(joins[0].args['on']) != expected_join:
+        raise MetricDefinitionError('Stock comparison changed the product join.')
+    snapshot = exp.column('snapshot_date', table='inventory', db='commerce')
+    stock = exp.column('stock_on_hand', table='inventory', db='commerce')
+    observations = [exp.Max(this=exp.Case(ifs=[exp.If(this=exp.EQ(this=snapshot.copy(), expression=exp.convert(d)),
+                        true=stock.copy())])) for d in dates]
+    expected = dict(stock_before=observations[0], stock_after=observations[1],
+                    stock_delta=exp.Sub(this=observations[1].copy(), expression=observations[0].copy()))
+    projected = {p.alias_or_name: canonical(p) for p in tree.selects}
+    if len(projected) != len(tree.selects) or any(projected.get(k) != v for k,v in expected.items()):
+        raise MetricDefinitionError('Stock comparison changed dates, operands, subtraction direction or NULL semantics.')
+    dimensions = {k:v for k,v in projected.items() if k not in expected}
+    allowed = {'product_id','product_name','category','segment','size','color'}
+    if 'product_id' not in dimensions or any(k not in allowed or v != exp.column(k,
+            table='inventory' if k == 'product_id' else 'products', db='commerce') for k,v in dimensions.items()):
+        raise MetricDefinitionError('Stock comparison must preserve product identity and canonical attributes.')
+    group = tree.args.get('group')
+    if not group or {canonical(g).sql() for g in group.expressions} != {v.sql() for v in dimensions.values()}:
+        raise MetricDefinitionError('Stock comparison changed product grain.')
+    required_dates = exp.In(this=snapshot, expressions=[exp.convert(d) for d in dates])
+    filters = [canonical(p) for p in _conjuncts(tree.args.get('where'))]
+    if required_dates not in filters:
+        raise MetricDefinitionError('Stock comparison must restrict observations to both exact dates.')
+    for predicate in filters:
+        if predicate == required_dates:
+            continue
+        if (not isinstance(predicate, (exp.EQ,exp.LT,exp.LTE,exp.GT,exp.GTE,exp.In))
+                or not isinstance(predicate.this, exp.Column) or predicate.this.name not in allowed
+                or predicate.this.table != ('inventory' if predicate.this.name == 'product_id' else 'products')
+                or any(not isinstance(v, (exp.Literal,exp.Boolean)) for v in
+                       (predicate.expressions if isinstance(predicate,exp.In) else [predicate.expression]))):
+            raise MetricDefinitionError('Comparison population filters must use explicit product attributes.')
+    having = tree.args.get('having')
+    intersection = exp.EQ(this=exp.Count(this=exp.Distinct(expressions=[snapshot.copy()]), big_int=True), expression=exp.Literal.number(2))
+    if not having or canonical(having.this) != intersection:
+        raise MetricDefinitionError('Stock comparison requires observations on both dates; missing rows are not zero.')
+    if any(tree.args.get(k) for k in ('with_','distinct','qualify','offset')):
+        raise MetricDefinitionError('Stock comparison added an unverified result restriction.')
+    return {'stock_on_hand': {**get_metric_definition('stock_on_hand'), 'representation':'two_snapshot_comparison'}}
+
+
 def validate_metric_request(question, metric_names):
     question = _inventory_question(question)
     inventory = [get_metric_definition(name) for name in metric_names
@@ -563,6 +627,11 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
 def validate_metric_definitions(sql, metric_names, parameters, table_columns, *, question=None):
     """Verify recognized metrics; generic queries retain the existing SQL safety path."""
     tree = parse_one(sql, read='postgres')
+    if question and metric_names == {'stock_on_hand'}:
+        dates = inventory_comparison_dates(question)
+        if dates:
+            validate_metric_request(question, metric_names)
+            return validate_stock_comparison(sql, parameters, dates)
     tables = {t.name for t in tree.find_all(exp.Table) if t.db == 'commerce'}
     if question and 'inventory' not in tables:
         scopes = list(traverse_scope(tree))

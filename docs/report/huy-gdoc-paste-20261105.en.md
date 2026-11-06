@@ -354,7 +354,30 @@ The two service modes were then re-run after the fixes, and their results are gi
 
 Two kinds of answers were still rejected by the synthesis guard: amounts written in shorthand in the question (for example "18 triệu" for 18,000,000), and equalities with a currency unit between the operands (for example "4.000.000 VND + 1.500.000 VND = 5.500.000 VND").
 
-Results for the final configuration on the locked 30-question test set are [pending].
+**1.8 Knowledge-base configuration (development set)**
+
+Two configuration changes were then tested on the development set (Table 6.7). They change the knowledge base, not the code or the prompts:
+
+1. **Clean-up.** Four unrelated test uploads (a receipt image, a report template and two unrelated documents) were deactivated.
+2. **Vietnamese policy.** The Vietnamese version of the policy was activated alongside the English one.
+
+**Table 6.7.** Effect of the knowledge-base configuration on Tuned RAG (development set, after the corrective fixes).
+
+| Configuration | Recall@5 | MRR | Citation precision | Strict key points | False abstentions | Correct (A / B) |
+|---|---|---|---|---|---|---|
+| Original knowledge base | 0.71 | 0.73 | 87% | 46% | 36% | 57% / 57% |
+| Unrelated uploads deactivated | 0.72 | 0.71 | 88% | 45% | 34% | 59% / 57% |
+| … and Vietnamese policy active | 0.81 | 0.82 | 95% | 61% | 30% | 61% / 60% |
+
+**Clean-up.** Deactivating the unrelated uploads removed them from every result list but did not change accuracy (p = 1.00 under both judges). The question answered from the other company's policy remained wrong, because that policy is legitimate content and stays in the knowledge base.
+
+**Vietnamese policy.** Activating the Vietnamese policy improved every retrieval measure: Recall@5 rose from 0.72 to 0.81, MRR from 0.71 to 0.82, and citation precision from 88% to 95%. Answers also used the policy's own Vietnamese terms more often, with strict key-point matches rising from 45% to 61%, and false abstentions fell. Accuracy rose by about three points, but this gain is not significant on 70 paired questions (p = .69–.79).
+
+The final configuration therefore keeps the unrelated uploads deactivated and the Vietnamese policy active.
+
+**1.9 Locked test set**
+
+The final configuration was run once on the locked 30-question test set [pending: results, three judges and majority vote].
 
 — end of block —
 
@@ -377,7 +400,7 @@ None of these failures was introduced by the fixes. They are maintenance debt to
 
 **Relation to prior work.** These findings are consistent with prior work. Fusing lexical and dense rankings improves over either alone (Cormack et al., 2009), and cross-encoder reranking improves the ordering of a fixed candidate pool (Nogueira & Cho, 2019). Retrieval augmentation also grounds answers in documents that the model has not memorised (Lewis et al., 2020). The level of agreement observed here between the LLM judges and the human grader is similar to that reported for strong LLM judges (Zheng et al., 2023).
 
-**Main limitation: retrieval.** In Tuned RAG, 18 of 60 answerable questions were declined or withheld. The causes are listed in Table 6.5. Unrelated test uploads visible to the employee role competed for the top five positions, and in one case caused the system to report the document code of a different policy. Both unaccented questions failed at retrieval.
+**Main limitation: retrieval.** In Tuned RAG, 18 of 60 answerable questions were declined or withheld. The causes are listed in Table 6.5. The knowledge base also holds another company's inventory policy (the frozen benchmark corpus), and one generic question about the document code, version and effective date was answered from that policy instead of VietStyle's. Both unaccented questions failed at retrieval.
 
 **Table 6.5.** Causes of declined or withheld answers in Tuned RAG.
 
@@ -422,7 +445,7 @@ Because these fixes were designed from failures on the development set, results 
 
 For Knowledge AI, the results support seven recommendations:
 
-1. Remove unrelated test uploads from the employee scope, which is the least costly retrieval improvement.
+1. Keep both language versions of each policy active, since this improved every retrieval measure, and add company- or document-level scoping so that a question about one company is not answered from another company's policy.
 2. Default the chat interface to Knowledge mode for policy questions until Auto mode matches it on the evaluation set; to close the gap, the Auto-mode synthesis guard should accept shorthand amounts from the question and equalities with units between operands.
 3. Improve recall for unaccented and partially retrieved questions, for example by restoring diacritics before lexical search or passing more candidates to the reranker, and validate such changes only on the locked test set.
 4. Keep the claim verifier, but monitor the reasons for its blocks.

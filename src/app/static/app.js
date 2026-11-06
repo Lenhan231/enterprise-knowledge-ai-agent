@@ -1591,10 +1591,19 @@ $("#upload-form").addEventListener("submit", async (event) => {
   try {
     result = await api(invoiceMode ? "/api/invoices/upload" : parserHandoff ? "/api/documents/parser-handoff" : "/api/documents/upload", { method: "POST", body, headers: {} });
     if (invoiceMode) {
+      while (result.processing_status === "processing") {
+        const elapsedSeconds = Math.floor((Date.now() - processingStartedAt) / 1000);
+        status.textContent = `Invoice ${result.invoice_id} is running OCR and extraction (${formatDuration(elapsedSeconds * 1000)}). You can leave this tab open; the saved invoice remains available if you return later.`;
+        await new Promise((resolve) => window.setTimeout(resolve, 3000));
+        result = await api(`/api/invoices/${encodeURIComponent(result.invoice_id)}`);
+      }
+      if (result.processing_status === "failed") {
+        throw new Error(`Invoice ${result.invoice_id} was saved, but extraction failed: ${result.error_message || "check backend logs"}`);
+      }
       status.dataset.state = "success";
       progress.hidden = true;
       elapsedLabel.hidden = true;
-      status.textContent = `Invoice ${result.invoice_id} saved for review in the invoice table. Model: ${result.model || "unknown"}.`;
+      status.textContent = `Invoice ${result.invoice_id} saved for review in the invoice table. Model: ${result.extraction_model || "unknown"}.`;
       $("#upload-invoice-result").textContent = JSON.stringify(result.invoice_data, null, 2);
       $("#upload-invoice-result").hidden = false;
       form.reset();

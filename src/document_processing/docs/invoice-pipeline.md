@@ -27,9 +27,12 @@ reconcile totals or fill unreadable values.
 ## Production persistence
 
 `POST /api/invoices/upload` stores the private source under the `invoices/`
-prefix in the existing private storage bucket, then writes the JSON, source
-hash, OCR elements/tables, model revision, and runtime metadata to
-`public.invoice_extractions`. This table has no foreign key to `documents`.
+prefix in the existing private storage bucket and creates a `processing` row in
+`public.invoice_extractions`. It returns the invoice ID immediately; OCR and
+extraction continue in a backend background task. The Admin client polls
+`GET /api/invoices/{invoice_id}` until the row is `review_required` or `failed`.
+The completed row contains the JSON, source hash, OCR elements/tables, model
+revision, and runtime metadata. This table has no foreign key to `documents`.
 Invoice uploads do not create knowledge documents, parser chunks, or embedding
 records. `GET /api/invoices/{invoice_id}` is limited to the uploader and admins.
 

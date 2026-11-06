@@ -12,7 +12,7 @@ import uuid
 from typing import Annotated, Literal
 import jwt
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -601,9 +601,71 @@ async def upload_document(
             repository.close()
 
 
+def _process_invoice_upload(
+    invoice_id: str,
+    filename: str,
+    content: bytes,
+    uploaded_by: str,
+    source_sha256: str,
+) -> None:
+    """Run invoice OCR after the upload response has been sent."""
+    from core.database.invoice_repository import InvoiceRepository
+
+    repository = InvoiceRepository()
+    try:
+        processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
+        if not processing_url:
+            raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
+        parsed = post_internal_service(processing_url, "/parse", {
+            "filename": filename,
+            "content": base64.b64encode(content).decode("ascii"),
+            "metadata": {
+                "invoice_id": invoice_id,
+                "uploaded_by": uploaded_by,
+                "source_sha256": source_sha256,
+                "intent": "invoice",
+            },
+            "config": {
+                "intent": "invoice",
+                "parser_engine": "docling",
+                "docling_ocr": True,
+                "docling_ocr_engine": os.getenv("DOCUMENT_PROCESSING_OCR_ENGINE", "vietocr"),
+                "docling_ocr_language": "vie+eng",
+                "docling_table_structure": True,
+            },
+        }, timeout=int(os.getenv("DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", "600")))
+        extraction = parsed.get("invoice_extraction") or {}
+        if extraction.get("status") != "review_required":
+            raise RuntimeError("Invoice parser returned no reviewable extraction")
+        invoice_data = extraction.get("fields")
+        repository.save_result(
+            invoice_id,
+            invoice_data=invoice_data if isinstance(invoice_data, dict) else {},
+            ocr_elements=parsed.get("elements") or [],
+            ocr_tables=parsed.get("tables") or [],
+            extraction_model=str(extraction.get("model") or ""),
+            extraction_metadata={
+                "revision": extraction.get("revision"),
+                "schema_version": extraction.get("schema_version", "invoice.v1"),
+                "metrics": extraction.get("metrics") or {},
+                "raw_response": extraction.get("raw_response", ""),
+            },
+            error_message=extraction.get("parse_error"),
+        )
+    except Exception as error:
+        logger.exception("Invoice extraction failed for %s", invoice_id)
+        try:
+            repository.mark_failed(invoice_id, type(error).__name__)
+        except Exception:
+            logger.exception("Failed to record invoice failure %s", invoice_id)
+    finally:
+        repository.close()
+
+
 @app.post("/api/invoices/upload")
 async def upload_invoice(
     request: Request,
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     user: dict = Depends(require_permission("upload_documents")),
 ):
@@ -658,53 +720,17 @@ async def upload_invoice(
         })
         registered = True
 
-        processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
-        if not processing_url:
-            raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
-        parsed = post_internal_service(processing_url, "/parse", {
-            "filename": filename,
-            "content": base64.b64encode(content).decode("ascii"),
-            "metadata": {
-                "invoice_id": invoice_id,
-                "uploaded_by": user["sub"],
-                "source_sha256": source_sha256,
-                "intent": "invoice",
-            },
-            "config": {
-                "intent": "invoice",
-                "parser_engine": "docling",
-                "docling_ocr": True,
-                "docling_ocr_engine": os.getenv("DOCUMENT_PROCESSING_OCR_ENGINE", "vietocr"),
-                "docling_ocr_language": "vie+eng",
-                "docling_table_structure": True,
-            },
-        }, timeout=int(os.getenv("DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", "600")))
-        extraction = parsed.get("invoice_extraction") or {}
-        if extraction.get("status") != "review_required":
-            raise RuntimeError("Invoice parser returned no reviewable extraction")
-        invoice_data = extraction.get("fields")
-        repository.save_result(
+        background_tasks.add_task(
+            _process_invoice_upload,
             invoice_id,
-            invoice_data=invoice_data if isinstance(invoice_data, dict) else {},
-            ocr_elements=parsed.get("elements") or [],
-            ocr_tables=parsed.get("tables") or [],
-            extraction_model=str(extraction.get("model") or ""),
-            extraction_metadata={
-                "revision": extraction.get("revision"),
-                "schema_version": extraction.get("schema_version", "invoice.v1"),
-                "metrics": extraction.get("metrics") or {},
-                "raw_response": extraction.get("raw_response", ""),
-            },
-            error_message=extraction.get("parse_error"),
+            filename,
+            content,
+            user["sub"],
+            source_sha256,
         )
         return {
             "invoice_id": invoice_id,
-            "processing_status": "review_required",
-            "review_required": True,
-            "schema_version": extraction.get("schema_version", "invoice.v1"),
-            "model": extraction.get("model"),
-            "metrics": extraction.get("metrics") or {},
-            "invoice_data": invoice_data,
+            "processing_status": "processing",
         }
     except HTTPException:
         raise

@@ -1,0 +1,612 @@
+{
+ "dataset_id": "vietstyle-test-v2",
+ "status": "draft-r1",
+ "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
+ "purpose": "Second held-out TEST set, written and locked before the retrieval/prompt changes of 2026-11 (top-k 8, parent expansion, completeness prompt, accent normalisation). Run once with the configuration before and once after the changes; pooled with vietstyle-test-v1 for a paired comparison.",
+ "evidence_convention": "Same as vietstyle-heldout-v1: integers are TRANG CHÍNH SÁCH numbers; physical PDF page = policy page + 2; 'PL-A'/'PL-B' = Phụ lục A/B.",
+ "must_include_convention": "Case-insensitive substring match; 'a|b' means either alternative counts. Answers are always Vietnamese.",
+ "multi_turn_convention": "Cases with 'history' run through the router with one conversation_id; only the last turn is scored.",
+ "excluded_overlap": "No question reuses a fact asked in vietstyle-heldout-v1, vietstyle-test-v1, V1-V6 or the 15 manual tuning questions. Threshold/calculation cases reuse the approval and expense rules with new values (new values; tax and known renewals in the total; a quote is not an approval; distinct approvers). RBAC cases ask VietStyle schema facts that do not occur in the DragonWear documents.",
+ "revision_history": [
+  "r1 (2026-11-06): 40 cases drafted."
+ ],
+ "cases": [
+  {
+   "id": "Q01",
+   "type": "lookup",
+   "section": "scope",
+   "question": "Nếu phần mềm hiện tại chưa hỗ trợ một quy trình nghiệp vụ thì nhân viên phải ghi nhận giao dịch đó bằng cách nào?",
+   "must_include": [
+    "biểu mẫu",
+    "mã tham chiếu"
+   ],
+   "reference_answer": "Dùng biểu mẫu được kiểm soát đã được phê duyệt và lưu mã tham chiếu trong kho được phép; vẫn phải dùng hệ thống ghi nhận chính thức được chỉ định cho sự kiện nghiệp vụ.",
+   "evidence": [
+    1
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q02",
+   "type": "lookup",
+   "section": "scope",
+   "question": "Bộ phận quá ít người nên không thể tách người đề nghị và người thực hiện. Khi đó chính sách yêu cầu kiểm soát bù gì?",
+   "must_include": [
+    "độc lập",
+    "đóng"
+   ],
+   "reference_answer": "Phải có rà soát độc lập sau thực hiện, được lập hồ sơ trước khi đóng vụ việc; lưu cả mọi rà soát bù đắp làm bằng chứng.",
+   "evidence": [
+    3
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q03",
+   "type": "lookup",
+   "section": "hr",
+   "question": "Nghỉ phép đã được duyệt rồi nhưng tôi muốn đổi sang ngày khác thì làm thế nào?",
+   "must_include": [
+    "sửa đổi|hủy",
+    "lịch sử"
+   ],
+   "reference_answer": "Đổi ngày được xử lý bằng sửa đổi, hoặc hủy rồi nộp yêu cầu mới, và phải bảo toàn lịch sử quyết định ban đầu (ngày sửa, tham chiếu bản trước).",
+   "evidence": [
+    7
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q04",
+   "type": "lookup",
+   "section": "procurement",
+   "question": "Nếu một giao dịch không khớp với hàng nào trong ma trận phê duyệt thì phải xử lý thế nào?",
+   "must_include": [
+    "dừng",
+    "chuyển cấp"
+   ],
+   "reference_answer": "Dừng và chuyển cấp thay vì chọn hàng thuận tiện; hàng thiếu hoặc hết hạn là điều kiện chặn, không phải cho phép ngầm.",
+   "evidence": [
+    47
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q05",
+   "type": "lookup",
+   "section": "procurement",
+   "question": "Nhà cung cấp chỉ báo giá qua điện thoại thì báo giá đó có được dùng không?",
+   "must_include": [
+    "bản ghi|ghi lại|tóm tắt",
+    "xác nhận"
+   ],
+   "reference_answer": "Được dùng nếu báo giá miệng được tóm tắt trong bản ghi có ngày và được xác nhận trước khi cam kết.",
+   "evidence": [
+    15
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q06",
+   "type": "lookup",
+   "section": "inventory",
+   "question": "Khi chuẩn bị kiểm kê chu kỳ, người đếm có được biết trước số lượng dự kiến không, và hàng xuất nhập trong lúc đếm xử lý ra sao?",
+   "must_include": [
+    "dự kiến",
+    "đóng băng|ghi nhận luân chuyển"
+   ],
+   "reference_answer": "Không cho người đếm biết số dự kiến nếu quy trình duyệt cho phép; trong cửa sổ đếm phải đóng băng hoặc ghi nhận luân chuyển hàng.",
+   "evidence": [
+    31
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q07",
+   "type": "lookup",
+   "section": "security",
+   "question": "Sau sự cố, nếu chưa xác lập được toàn vẹn dữ liệu thì quy trình bị ảnh hưởng phải vận hành thế nào?",
+   "must_include": [
+    "chỉ đọc",
+    "tạm ngừng"
+   ],
+   "reference_answer": "Giữ quy trình ở chế độ chỉ đọc hoặc tạm ngừng cho đến khi xác lập được toàn vẹn.",
+   "evidence": [
+    43
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q08",
+   "type": "threshold",
+   "section": "procurement",
+   "question": "Một khoản mua tổng cam kết 4.800.000 VND, nhà cung cấp đã gửi một báo giá. Vậy tôi đã có thể đặt mua luôn chưa?",
+   "must_include": [
+    "quản lý trực tiếp"
+   ],
+   "reference_answer": "Chưa: một báo giá có hồ sơ là đủ cho mức đến 5.000.000 VND, nhưng báo giá không phải phê duyệt mua; vẫn cần quản lý trực tiếp duyệt (ngân sách xác nhận) trước khi cam kết.",
+   "evidence": [
+    18,
+    19,
+    "PL-B"
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q09",
+   "type": "threshold",
+   "section": "procurement",
+   "question": "Khoản mua 90 triệu đồng: trưởng bộ phận đồng thời phụ trách Mua sắm có thể một mình ký duyệt cho cả hai vai trò không?",
+   "must_include": [
+    "khác nhau",
+    "Tài chính"
+   ],
+   "reference_answer": "Không: mức 50.000.001–200.000.000 VND cần trưởng bộ phận cùng Mua sắm và Tài chính; khi ma trận chỉ định nhiều phê duyệt thì phải có những người duyệt khác nhau (và ít nhất ba báo giá hoặc lý do chỉ định nguồn đã duyệt).",
+   "evidence": [
+    19,
+    "PL-B"
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q10",
+   "type": "threshold",
+   "section": "expense",
+   "question": "Kế hoạch công tác đã duyệt đặt hạn ăn uống 250.000 VND/người/bữa. Một bữa ăn công việc trong chuyến đó hết 300.000 VND/người thì được hoàn bao nhiêu?",
+   "must_include": [
+    "250.000"
+   ],
+   "reference_answer": "Tối đa 250.000 VND/người: hạn chung 300.000 VND/người/bữa chỉ áp dụng khi hợp đồng hoặc kế hoạch công tác đã duyệt không đặt hạn thấp hơn; phần vượt cần ngoại lệ bằng văn bản được duyệt trước.",
+   "evidence": [
+    12
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q11",
+   "type": "threshold",
+   "section": "expense",
+   "question": "Khách sạn 2.300.000 VND/đêm tại một thành phố lớn được chỉ định thì có được hoàn đủ không?",
+   "must_include": [
+    "2.500.000"
+   ],
+   "reference_answer": "Có: dưới hạn 2.500.000 VND/phòng/đêm tại thành phố lớn được chỉ định, trừ khi hợp đồng hoặc kế hoạch công tác đã duyệt đặt hạn thấp hơn.",
+   "evidence": [
+    12
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q12",
+   "type": "calculation",
+   "section": "expense",
+   "question": "3 người ăn một bữa công việc tại địa phương, hóa đơn tổng 1.050.000 VND. Được hoàn tối đa bao nhiêu và phần vượt xử lý thế nào?",
+   "must_include": [
+    "900.000",
+    "ngoại lệ"
+   ],
+   "reference_answer": "Tối đa 3 × 300.000 = 900.000 VND; phần vượt 150.000 VND không được hoàn trừ khi có ngoại lệ bằng văn bản được duyệt trước; không được chia nhỏ đề nghị.",
+   "evidence": [
+    12
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q13",
+   "type": "calculation",
+   "section": "expense",
+   "question": "Công tác 2 đêm ở địa điểm nội địa thông thường với giá phòng 1.600.000 VND/đêm và 1 đêm ở thành phố lớn được chỉ định với giá 2.800.000 VND. Tổng tiền phòng được hoàn tối đa bao nhiêu?",
+   "must_include": [
+    "5.700.000"
+   ],
+   "reference_answer": "2 × 1.600.000 (dưới hạn 1.800.000) + 2.500.000 (hạn thành phố lớn, phần vượt 300.000 không được hoàn nếu không có ngoại lệ) = 5.700.000 VND.",
+   "evidence": [
+    12
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q14",
+   "type": "calculation",
+   "section": "procurement",
+   "question": "Mua 12 màn hình, mỗi cái 3.500.000 VND, cộng phí vận chuyển 800.000 VND trong cùng một cam kết. Ai duyệt và cần mấy báo giá?",
+   "must_include": [
+    "42.800.000",
+    "trưởng bộ phận",
+    "hai báo giá|2 báo giá"
+   ],
+   "reference_answer": "Tổng cam kết = 12 × 3.500.000 + 800.000 = 42.800.000 VND (tính cả vận chuyển): trưởng bộ phận duyệt; cần tìm ít nhất hai báo giá tương đương nếu thị trường cho phép.",
+   "evidence": [
+    18,
+    19,
+    "PL-B"
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q15",
+   "type": "calculation",
+   "section": "procurement",
+   "question": "Hợp đồng phần mềm 24 triệu đồng mỗi năm, ký 3 năm với gia hạn đã biết. Cam kết này cần ai duyệt?",
+   "must_include": [
+    "72.000.000|72 triệu",
+    "Mua sắm",
+    "Tài chính"
+   ],
+   "reference_answer": "Tổng cam kết dự kiến gồm gia hạn đã biết = 3 × 24.000.000 = 72.000.000 VND: trưởng bộ phận cùng Mua sắm và Tài chính duyệt (và cần ít nhất ba báo giá hoặc giải trình chỉ định nguồn).",
+   "evidence": [
+    19,
+    "PL-B"
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q16",
+   "type": "calculation",
+   "section": "procurement",
+   "question": "Báo giá 45.000.000 VND chưa gồm thuế VAT 10%. Cam kết này cần ai duyệt?",
+   "must_include": [
+    "49.500.000",
+    "trưởng bộ phận"
+   ],
+   "reference_answer": "Tổng cam kết phải gồm thuế: 45.000.000 + 4.500.000 = 49.500.000 VND, thuộc khoảng 5.000.001–50.000.000: trưởng bộ phận duyệt.",
+   "evidence": [
+    19,
+    "PL-B"
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q17",
+   "type": "multi_part",
+   "section": "hr",
+   "question": "Khi xử lý đơn xin nghỉ, có những kiểm tra bắt buộc nào về ngày nghỉ, và nếu đơn thiếu thông tin thì sao?",
+   "must_include": [
+    "kết thúc",
+    "trùng",
+    "thiếu"
+   ],
+   "reference_answer": "Ngày kết thúc không được trước ngày bắt đầu; không có các đợt nghỉ đã duyệt trùng cùng thời gian, trừ khi có điều chỉnh được ghi rõ; đơn chưa đủ bị trả lại và phải nêu thông tin còn thiếu.",
+   "evidence": [
+    6
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q18",
+   "type": "multi_part",
+   "section": "procurement",
+   "question": "Muốn mua một mặt hàng chưa có trong danh mục sản phẩm: yêu cầu mua phải giải thích gì, và tôi có được tự tạo mã sản phẩm mới không?",
+   "must_include": [
+    "tồn sẵn|tồn kho sẵn",
+    "thay thế",
+    "bổ sung danh mục"
+   ],
+   "reference_answer": "Phải tìm hàng tương đương trong danh mục, giải thích vì sao không thể dùng tồn sẵn, thay thế hoặc trì hoãn; không tự tạo ID mà tạo yêu cầu bổ sung danh mục có kiểm soát.",
+   "evidence": [
+    16,
+    26
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q19",
+   "type": "multi_part",
+   "section": "security",
+   "question": "Xin quyền truy cập một hệ thống thì yêu cầu phải nêu những gì, ai duyệt và ai thực hiện cấp quyền?",
+   "must_include": [
+    "mục đích",
+    "chủ dữ liệu",
+    "chủ hệ thống"
+   ],
+   "reference_answer": "Yêu cầu qua bàn hỗ trợ/luồng quản lý danh tính, nêu mục đích, tài nguyên, mức quyền và ngày kết thúc nếu tạm; chủ dữ liệu duyệt, chủ hệ thống thực hiện; dùng tài khoản cá nhân và xác thực đa yếu tố.",
+   "evidence": [
+    37
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q20",
+   "type": "out_of_scope",
+   "section": "hr",
+   "question": "Nhân viên VietStyle được làm việc từ xa mấy ngày mỗi tuần?",
+   "must_include": [],
+   "reference_answer": "Tài liệu không có thông tin này.",
+   "evidence": [],
+   "should_abstain": true
+  },
+  {
+   "id": "Q21",
+   "type": "out_of_scope",
+   "section": "hr",
+   "question": "Đi làm muộn bao nhiêu phút thì bị trừ lương?",
+   "must_include": [],
+   "reference_answer": "Tài liệu không có thông tin này.",
+   "evidence": [],
+   "should_abstain": true
+  },
+  {
+   "id": "Q22",
+   "type": "out_of_scope",
+   "section": "hr",
+   "question": "VietStyle có chương trình cho nhân viên mua cổ phần ưu đãi không?",
+   "must_include": [],
+   "reference_answer": "Tài liệu không có thông tin này.",
+   "evidence": [],
+   "should_abstain": true
+  },
+  {
+   "id": "Q23",
+   "type": "out_of_scope",
+   "section": "expense",
+   "question": "Hạn mức tiền taxi khi đi công tác là bao nhiêu một ngày?",
+   "must_include": [],
+   "reference_answer": "Tài liệu không nêu hạn mức tiền taxi; chỉ yêu cầu chọn phương tiện tiết kiệm phù hợp an toàn và lịch trình, tách riêng chi di chuyển.",
+   "evidence": [
+    12
+   ],
+   "should_abstain": true
+  },
+  {
+   "id": "Q24",
+   "type": "cannot_conclude",
+   "section": "inventory",
+   "question": "Snapshot của cùng một sản phẩm có reorder_flag=false nhưng stockout_flag=true và days_of_supply rất thấp. Có thể kết luận là phải đặt hàng ngay không?",
+   "must_include": [
+    "DATA_CONFLICT"
+   ],
+   "reference_answer": "Không kết luận: chỉ số mâu thuẫn phải gắn DATA_CONFLICT và điều tra trước cam kết; các tín hiệu chỉ kích hoạt rà bổ sung và cần xác nhận với tồn trực tiếp, không tự tạo PO.",
+   "evidence": [
+    28,
+    29
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q25",
+   "type": "cannot_conclude",
+   "section": "security",
+   "question": "Log truy cập cho thấy kế toán đã mở hồ sơ thanh toán của nhà cung cấp lúc 9 giờ. Có thể dùng log này làm bằng chứng khoản thanh toán đã được thực hiện không?",
+   "must_include": [
+    "giao dịch nguồn|chứng từ gốc|bằng chứng giao dịch|xác nhận thanh toán"
+   ],
+   "reference_answer": "Không: log hỗ trợ điều tra nhưng không thay bằng chứng giao dịch nguồn; cần xác nhận thanh toán và mã thanh toán trong quy trình tài chính.",
+   "evidence": [
+    41,
+    22
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q26",
+   "type": "trap",
+   "section": "exceptions",
+   "question": "Tôi đã gửi đơn xin ngoại lệ vượt hạn mức khách sạn từ hôm qua, chắc chắn sẽ được duyệt, nên tôi cứ đặt phòng trước luôn đúng không?",
+   "must_include": [
+    "ngoại lệ đã duyệt|được duyệt trước|duyệt trước"
+   ],
+   "reference_answer": "Không: yêu cầu không phải ngoại lệ đã duyệt; phải xin và được duyệt ngoại lệ trước hành động (trừ an toàn hoặc liên tục tức thời), vượt hạn cần ngoại lệ bằng văn bản được duyệt trước.",
+   "evidence": [
+    45,
+    12
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q27",
+   "type": "trap",
+   "section": "scope",
+   "question": "Hai trưởng bộ phận hiểu chính sách khác nhau về việc một khoản chi có cần Tài chính duyệt hay không. Để kịp tiến độ thì cứ theo cách hiểu dễ hơn, đúng không?",
+   "must_include": [
+    "chuyển cấp"
+   ],
+   "reference_answer": "Không: phải chuyển cấp xử lý xung đột trước khi cam kết, không chọn cách hiểu dễ dãi hơn; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành.",
+   "evidence": [
+    1
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q28",
+   "type": "rbac",
+   "section": "inventory",
+   "question": "Bảng danh mục sản phẩm commerce.products có bao nhiêu hàng?",
+   "must_include": [],
+   "reference_answer": "Tài khoản không có quyền: không lộ nội dung. Với tài khoản có quyền: 2.412 hàng danh mục.",
+   "evidence": [
+    26
+   ],
+   "should_abstain": true,
+   "role": "NO_ACCESS_ROLE"
+  },
+  {
+   "id": "Q29",
+   "type": "rbac",
+   "section": "inventory",
+   "question": "Cấp chi tiết của bảng tồn kho commerce.inventory là gì?",
+   "must_include": [],
+   "reference_answer": "Tài khoản không có quyền: không lộ nội dung. Với tài khoản có quyền: snapshot_date + product_id.",
+   "evidence": [
+    36,
+    "PL-A"
+   ],
+   "should_abstain": true,
+   "role": "NO_ACCESS_ROLE"
+  },
+  {
+   "id": "Q30",
+   "type": "english",
+   "section": "hr",
+   "question": "When an employee returns from approved leave, what must be reviewed?",
+   "must_include": [
+    "tồn|chưa giải quyết",
+    "gia hạn"
+   ],
+   "reference_answer": "Khi trở lại, rà công việc còn tồn và mọi gia hạn nghỉ (rà soát mục chưa giải quyết).",
+   "evidence": [
+    8
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q31",
+   "type": "english",
+   "section": "ai",
+   "question": "Can a recommendation drafted by the AI agent be presented as a completed transaction?",
+   "must_include": [
+    "khuyến nghị"
+   ],
+   "reference_answer": "Không: khuyến nghị phải ghi là khuyến nghị đến khi hệ thống có thẩm quyền ghi giao dịch; tác tử không tạo phê duyệt hay giao dịch đã xong.",
+   "evidence": [
+    49,
+    1
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q32",
+   "type": "mixed",
+   "section": "inventory",
+   "question": "Item bị stockout nhiều lần thì escalate cho ai?",
+   "must_include": [
+    "Tồn kho",
+    "Kinh doanh"
+   ],
+   "reference_answer": "Thiếu hàng ảnh hưởng lớn hoặc lặp lại chuyển đến chủ Tồn kho và Kinh doanh; ghi nguyên nhân, xác nhận với tồn trực tiếp.",
+   "evidence": [
+    29
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q33",
+   "type": "mixed",
+   "section": "procurement",
+   "question": "Invoice của supplier bị trùng số với một invoice cũ thì xử lý sao?",
+   "must_include": [
+    "giữ",
+    "rà soát"
+   ],
+   "reference_answer": "Số hóa đơn trùng (hoặc số tiền/ngày lặp) phải giữ lại để rà soát, không thanh toán; chuyển Mua sắm, Vận hành hoặc Tài chính tùy nguyên nhân.",
+   "evidence": [
+    22,
+    13
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q34",
+   "type": "mixed",
+   "section": "inventory",
+   "question": "Có được join bảng payments với order_items để tính revenue theo từng dòng sản phẩm không?",
+   "must_include": [
+    "trùng"
+   ],
+   "reference_answer": "Cần thận trọng: payments ở cấp đơn (order_id), order_items ở cấp dòng; tránh nối payments cấp đơn vào order_items cấp dòng mà không kiểm soát trùng.",
+   "evidence": [
+    36,
+    "PL-A"
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q35",
+   "type": "no_diacritics",
+   "section": "procurement",
+   "question": "mua khan thi chi duoc dung trong truong hop nao",
+   "must_include": [
+    "an toàn",
+    "liên tục",
+    "tổn thất"
+   ],
+   "reference_answer": "Mua khẩn giới hạn cho tình huống an toàn tức thời, liên tục dịch vụ hoặc tổn thất kinh doanh trọng yếu khi không thể theo thời gian thông thường.",
+   "evidence": [
+    23
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q36",
+   "type": "typo",
+   "section": "inventory",
+   "question": "nếu ko xác đinh đươc sản phẫm khách hỏi là product_id nào thì làm sao",
+   "must_include": [
+    "chưa xác định",
+    "làm rõ"
+   ],
+   "reference_answer": "Trả trạng thái chưa xác định sản phẩm và yêu cầu làm rõ; so kích thước, màu, phân khúc nếu có vẻ trùng; không tạo product_id giả.",
+   "evidence": [
+    26
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q37",
+   "type": "follow_up",
+   "section": "procurement",
+   "question": "Nếu rà soát xong phát hiện có vi phạm kiểm soát thì coi như đã khắc phục chưa? Và nếu một nhóm cứ mua khẩn liên tục thì sao?",
+   "must_include": [
+    "không xóa",
+    "nguyên nhân gốc"
+   ],
+   "reference_answer": "Rà sau không xóa vi phạm kiểm soát; cùng nhóm dùng mua khẩn lặp lại phải rà nguyên nhân gốc.",
+   "evidence": [
+    23
+   ],
+   "should_abstain": false,
+   "history": [
+    "Rà soát sau một khoản mua khẩn phải hoàn tất trong bao lâu?"
+   ]
+  },
+  {
+   "id": "Q38",
+   "type": "follow_up",
+   "section": "hr",
+   "question": "Nếu người đó từ chối thì việc từ chối phải đáp ứng điều kiện gì?",
+   "must_include": [
+    "lý do",
+    "công việc"
+   ],
+   "reference_answer": "Từ chối phải nêu lý do liên quan công việc và không vi phạm quyền nghỉ được bảo vệ; người duyệt ghi kết quả cùng lý do.",
+   "evidence": [
+    7
+   ],
+   "should_abstain": false,
+   "history": [
+    "Ai có quyền quyết định một yêu cầu nghỉ phép?"
+   ]
+  },
+  {
+   "id": "Q39",
+   "type": "ambiguous",
+   "section": "scope",
+   "question": "Phải rà soát bao lâu một lần?",
+   "must_include": [],
+   "reference_answer": "Câu hỏi thiếu đối tượng: phải hỏi lại muốn rà soát gì (chính sách hoặc ma trận phê duyệt: hằng năm; nhà cung cấp trọng yếu: ít nhất hằng năm; quyền hệ thống nhạy cảm: ít nhất mỗi quý; vai trò đặc quyền/danh tính dịch vụ: hằng quý), hoặc liệt kê theo từng loại; không tự chọn một loại.",
+   "evidence": [
+    50,
+    24,
+    37,
+    38
+   ],
+   "should_abstain": false
+  },
+  {
+   "id": "Q40",
+   "type": "long_paste",
+   "section": "hr",
+   "question": "Chào chị, em là Hà bên chăm sóc khách hàng. Tuần sau em nghỉ phép 4 ngày, đơn đã được duyệt rồi. Em định đưa mật khẩu tài khoản của em cho bạn Nam cùng nhóm để bạn ấy đăng nhập vào xử lý mấy yêu cầu hoàn tiền đang mở, và duyệt luôn các yêu cầu đổi hàng thay em cho nhanh. Em cũng định ghi lý do nghỉ là đi khám thai lên lịch chung của nhóm cho mọi người biết. Làm như vậy có ổn không ạ? Em cảm ơn chị.",
+   "must_include": [
+    "tài khoản",
+    "ủy quyền",
+    "loại nghỉ|y tế"
+   ],
+   "reference_answer": "Không ổn: danh sách bàn giao không cho phép người khác dùng tài khoản người vắng mặt (cấm dùng chung tài khoản); nhận bàn giao không chuyển thẩm quyền duyệt nếu chưa ghi nhận ủy quyền riêng; lịch chỉ hiển thị loại nghỉ và khả năng làm việc, không đưa hồ sơ y tế lên lịch nhóm. Quản lý bố trí người thay và ghi rõ người thay, hạn.",
+   "evidence": [
+    8,
+    37
+   ],
+   "should_abstain": false
+  }
+ ]
+}

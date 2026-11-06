@@ -1,6 +1,6 @@
 {
  "dataset_id": "vietstyle-test-v2",
- "status": "draft-r2",
+ "status": "reviewed-r2",
  "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
  "purpose": "Second held-out TEST set, written and locked before the retrieval/prompt changes of 2026-11 (top-k 8, parent expansion, completeness prompt, accent normalisation). Run once with the configuration before and once after the changes; pooled with vietstyle-test-v1 for a paired comparison.",
  "evidence_convention": "Same as vietstyle-heldout-v1: integers are TRANG CHÍNH SÁCH numbers; physical PDF page = policy page + 2; 'PL-A'/'PL-B' = Phụ lục A/B.",
@@ -625,5 +625,6 @@
    ],
    "should_abstain": false
   }
- ]
+ ],
+ "review": "All 40 cases cross-reviewed against the policy by an independent agent (CODEX_REVIEW.md); the eight items with substantive changes (Q09, Q24, Q26, Q27, Q37, Q39, Q40 and the Q10-Q16 arithmetic) checked by a team member against verbatim policy quotes (REVIEW-GUIDE.md); must_include-only changes accepted on that cross-review. Locked 2026-11-06 before any run and before the retrieval/prompt changes."
 }

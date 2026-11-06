@@ -1,6 +1,6 @@
 {
  "dataset_id": "vietstyle-test-v1",
- "status": "draft-r2",
+ "status": "reviewed-r2",
  "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
  "purpose": "Held-out TEST set. vietstyle-heldout-v1 (76 cases) became the development set after its failures were analysed and fixes designed on it; this set is written before any further change and is run once per final configuration.",
  "evidence_convention": "Same as vietstyle-heldout-v1: integers are TRANG CHÍNH SÁCH numbers; physical PDF page = policy page + 2; 'PL-B' = Phụ lục B (physical page 53).",
@@ -11,6 +11,7 @@
   "r1 (2026-11-05): 30 cases drafted.",
   "r2 (2026-11-06, before any run): applied Codex cross-review (CODEX_REVIEW.md): content fixes Q07–Q12, Q14, Q20; stronger must_include Q02, Q05, Q11, Q19, Q22–Q27; replaced Q21 (overlapped manual question 2) and Q29 (overlapped dev M05/E03/X04 and conflicted with clarification-only scoring)."
  ],
+ "review": "Q01 and the ten revised/replaced cases (Q07–Q12, Q14, Q20, Q21, Q29) checked by a team member against verbatim policy quotes (REVIEW-GUIDE.md); all 30 cases cross-reviewed against the policy by an independent agent (CODEX_REVIEW.md); remaining cases accepted on that cross-review (Q02, Q05, Q19, Q22–Q27 changed only must_include). Locked 2026-11-06 before any run.",
  "cases": [
   {
    "id": "Q01",

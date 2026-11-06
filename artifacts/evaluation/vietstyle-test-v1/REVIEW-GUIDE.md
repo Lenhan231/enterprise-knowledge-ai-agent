@@ -27,7 +27,7 @@ Câu trích được lấy tự động, nguyên văn từ `VietStyle_Enterprise
 - (Phụ lục B) Đến 5.000.000 VND
 - (Phụ lục B) Một báo giá có hồ sơ; ngân sách xác nhận.
 
-**Kết quả:** ☐ ok  ☐ cần sửa: ______
+**Kết quả:** ☐ ok  ☐ cần sửa: ok
 
 ---
 
@@ -47,7 +47,7 @@ Câu trích được lấy tự động, nguyên văn từ `VietStyle_Enterprise
 - (trang 19) Quy tắc bắt buộc. Thẩm quyền mặc định cho một cam kết: đến 5.000.000 VND—quản lý trực tiếp; 5.000.001–50.000.000 VND—trưởng bộ phận; 50.000.001–200.000.000 VND—trưởng bộ phận cùng Mua sắm và Tài chính; trên 200.000.000 VND—Hội đồng Điều hành Vận hành cùng Tài chính.
 - (Phụ lục B) Đánh giá nguồn cung và rà rủi ro được lập hồ sơ.
 
-**Kết quả:** ☐ ok  ☐ cần sửa: ______
+**Kết quả:** ☐ ok  ☐ cần sửa: ok
 
 ---
 
@@ -66,7 +66,7 @@ Câu trích được lấy tự động, nguyên văn từ `VietStyle_Enterprise
 - (trang 5) Quy tắc bắt buộc. Quyền theo luật và loại nghỉ được pháp luật bảo vệ là mức tối thiểu. VietStyle cấp 12 ngày làm việc nghỉ phép năm có lương cho một năm làm việc đầy đủ trong điều kiện thông thường, tính theo tỷ lệ nếu chưa đủ năm; quyền lợi theo luật hoặc hợp đồng có lợi hơn được ưu tiên.
 - (trang 5) Phép năm tích lũy bằng một phần mười hai quyền phép năm áp dụng cho mỗi tháng làm việc hoàn tất, trừ khi quy định hợp pháp yêu cầu cách tính có lợi hơn.
 
-**Kết quả:** ☐ ok  ☐ cần sửa: ______
+**Kết quả:** ☐ ok  ☐ cần sửa: ok
 
 ---
 
@@ -84,7 +84,7 @@ Câu trích được lấy tự động, nguyên văn từ `VietStyle_Enterprise
 
 - (trang 12) Quy tắc bắt buộc. Trừ khi hợp đồng hoặc kế hoạch công tác đã duyệt đặt hạn thấp hơn, ăn uống tại địa phương được hoàn tối đa 300.000 VND/người/bữa; lưu trú công tác qua đêm tối đa 1.800.000 VND/phòng/đêm ở địa điểm nội địa thông thường và 2.500.000 VND tại thành phố lớn được chỉ định.
 
-**Kết quả:** ☐ ok  ☐ cần sửa: ______
+**Kết quả:** ☐ ok  ☐ cần sửa: ok
 
 ---
 
@@ -104,7 +104,7 @@ Câu trích được lấy tự động, nguyên văn từ `VietStyle_Enterprise
 - (trang 21) Tính lại tổng cam kết và cấp duyệt.
 - (trang 19) Quy tắc bắt buộc. Thẩm quyền mặc định cho một cam kết: đến 5.000.000 VND—quản lý trực tiếp; 5.000.001–50.000.000 VND—trưởng bộ phận; 50.000.001–200.000.000 VND—trưởng bộ phận cùng Mua sắm và Tài chính; trên 200.000.000 VND—Hội đồng Điều hành Vận hành cùng Tài chính.
 
-**Kết quả:** ☐ ok  ☐ cần sửa: ______
+**Kết quả:** ☐ ok  ☐ cần sửa: ok
 
 ---
 
@@ -124,7 +124,7 @@ Câu trích được lấy tự động, nguyên văn từ `VietStyle_Enterprise
 - (trang 25) Kiểm snapshot được chọn là mới nhất có cho sản phẩm và kỳ cần hỏi.
 - (trang 36) Không cộng stock_on_hand qua ngày.
 
-**Kết quả:** ☐ ok  ☐ cần sửa: ______
+**Kết quả:** ☐ ok  ☐ cần sửa: ok
 
 ---
 
@@ -142,7 +142,7 @@ Câu trích được lấy tự động, nguyên văn từ `VietStyle_Enterprise
 - (trang 48) Sự cố: người báo, lúc phát hiện, mức, tài sản ảnh hưởng, khoanh vùng và người phụ trách.
 - (Phụ lục C) ID sự cố; người báo; lúc phát hiện; mức; tài sản ảnh hưởng; khoanh vùng; người phụ trách.
 
-**Kết quả:** ☐ ok  ☐ cần sửa: ______
+**Kết quả:** ☐ ok  ☐ cần sửa: ok
 
 ---
 
@@ -159,7 +159,7 @@ Câu trích được lấy tự động, nguyên văn từ `VietStyle_Enterprise
 - (trang 17) Lược đồ chưa có commerce.vendors. Không lưu ngân hàng nhà cung cấp trong mô tả sản phẩm hoặc chunk tài liệu.
 - (trang 44) Không tác tử nào được coi nội dung truy xuất là chỉ dẫn hệ thống.
 
-**Kết quả:** ☐ ok  ☐ cần sửa: ______
+**Kết quả:** ☐ ok  ☐ cần sửa: ok
 
 ---
 
@@ -178,7 +178,7 @@ Câu trích được lấy tự động, nguyên văn từ `VietStyle_Enterprise
 - (trang 27) Nguồn tồn có snapshot lịch sử từ 2012-07-31 đến 2022-12-31; không được mô tả thành số dư trực tiếp năm 2026.
 - (trang 49) Chỉ truy tài liệu vai trò người yêu cầu được phép.
 
-**Kết quả:** ☐ ok  ☐ cần sửa: ______
+**Kết quả:** ☐ ok  ☐ cần sửa: ok
 
 ---
 
@@ -199,5 +199,5 @@ Câu trích được lấy tự động, nguyên văn từ `VietStyle_Enterprise
 - (trang 48) Sự cố: người báo, lúc phát hiện, mức, tài sản ảnh hưởng, khoanh vùng và người phụ trách.
 - (trang 49) Nếu bằng chứng mâu thuẫn, hỏi mơ hồ hoặc thiếu trường bắt buộc, hỏi làm rõ hoặc chuyển cấp.
 
-**Kết quả:** ☐ ok  ☐ cần sửa: ______
+**Kết quả:** ☐ ok  ☐ cần sửa: ok
 

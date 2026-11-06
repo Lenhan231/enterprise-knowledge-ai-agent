@@ -231,7 +231,7 @@ Results are reported per experiment, because the experiments use different quest
 
 - Section 1.1 reports the frozen bilingual retrieval comparison.
 - Sections 1.2–1.4 report reranker selection, claim verification and latency for the deployed pipeline.
-- Sections 1.5–1.7 report the answer-level evaluation.
+- Sections 1.5–1.9 report the answer-level evaluation.
 
 Parser and SQL/report results are reported by their owners.
 
@@ -497,7 +497,7 @@ The answer-level evaluation has six limitations:
 1. **Size.** It uses 76 questions from a single policy document, so overall accuracy carries about ±11 points of uncertainty, and subgroups are reported as counts.
 2. **Authorship.** The questions were drafted with an AI assistant and reviewed by one team member.
 3. **Grading.** Answers were graded by LLM judges, checked against human grades on only 20 verdicts.
-4. **Corpus state.** Only the English policy was active, so answers to Vietnamese questions were translated.
+4. **Corpus state.** During the ablation only the English policy was active, so answers to Vietnamese questions were translated; the final configuration activates the Vietnamese version (Section 1.8).
 5. **Rate limits.** Some service runs hit provider rate limits, and the affected questions were re-run. In Auto mode, a rate-limited verifier is not visible in the response, so a small number of affected answers may remain undetected.
 6. **Test-set power.** The 30-question test set can detect only large differences.
 
@@ -552,7 +552,7 @@ Zheng, L., Chiang, W.-L., Sheng, Y., Zhuang, S., Wu, Z., Zhuang, Y., Lin, Z., Li
 - **Code version:** the corrective fixes are in commit f88613d on the main branch.
 - **Human check:** the 20-verdict human grades are in artifacts/evaluation/vietstyle-heldout-v1/judge-review-20261105.md and its .human.json file.
 
-[pending: path of the committed run outputs, scored files and judge verdicts]
+- **Run outputs and verdicts:** artifacts/evaluation/vietstyle-heldout-v1/runs/ (development set) and artifacts/evaluation/vietstyle-test-v1/runs/ (locked test set) hold every configuration's raw answers, the scored files of each judge and the raw judge verdicts; each folder's README maps file names to the configurations in Table 4.2.
 
 — end of block —
 

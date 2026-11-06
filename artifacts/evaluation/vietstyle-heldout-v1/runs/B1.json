@@ -1,0 +1,4791 @@
+{
+ "dataset_id": "vietstyle-heldout-v1",
+ "dataset_status": "reviewed-r2",
+ "dataset_sha256": "9980e80366aad2b4083538fec19c04dfd8ab62f46116cdc19de3105d3d7e84da",
+ "arm": "B1",
+ "configuration": {
+  "method": "dense",
+  "verify": false,
+  "prompt": "old",
+  "reranker": null,
+  "groq_model_env": "qwen/qwen3.8-27b",
+  "role": "employee",
+  "note": "VN PDF inactive",
+  "rbac_role": "finance_analyst",
+  "old_prompt_sha256": "9a103f494c1661b962caf9e309fb34185320810a14cbc0a38bdab148ca6fb5d7"
+ },
+ "created_at_utc": "2026-11-04T17:37:42.029220+00:00",
+ "results": [
+  {
+   "id": "L01",
+   "type": "lookup",
+   "answer": "Mã tài liệu của Bộ chính sách quản lý tồn kho là INV-MAN-001, phiên bản là v1.0 và ngày hiệu lực là 16/10/2026 [S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2"
+   ],
+   "prompt_sha256": "370dca7cc90a1321bd99e8283fdd99893dd90a94aaf2cfe0eec1dd80b4d8732e",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.866138116581671
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.861342004617574
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 10,
+     "score": 0.853942513465881
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.847934025772336
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.847346851387809
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 67,
+    "database_retrieval": 7656,
+    "answer_generation": 1139,
+    "retrieval_total": 7722
+   },
+   "elapsed_ms": 8861.6
+  },
+  {
+   "id": "L02",
+   "type": "lookup",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "65875540d9f878aa74b0f3a6bbb5c2f3f855d28f4fe73f3f17394e142e9ee335",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.820967972278618
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.817019584330858
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.815484978614453
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 1,
+     "score": 0.814222099516112
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 10,
+     "score": 0.813362933798192
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 58,
+    "database_retrieval": 422,
+    "answer_generation": 455,
+    "retrieval_total": 481
+   },
+   "elapsed_ms": 936.1
+  },
+  {
+   "id": "L03",
+   "type": "lookup",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "62f36d4c257d6d022156fd2c2d0442f19bb2d70941500ad04240b126b3ad8b50",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": 0.804622673437282
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 15,
+     "score": 0.804295944783463
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 13,
+     "score": 0.800771081355687
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 1,
+     "score": 0.798680210270862
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.797940123265383
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 68,
+    "database_retrieval": 421,
+    "answer_generation": 448,
+    "retrieval_total": 489
+   },
+   "elapsed_ms": 938.1
+  },
+  {
+   "id": "L04",
+   "type": "lookup",
+   "answer": "Nhân viên phải cung cấp đủ thông tin để quản lý và bộ phận nhân sự có thể xác định tính đủ điều kiện, phạm vi bảo hiểm và cách xử lý tiền lương [S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2"
+   ],
+   "prompt_sha256": "ca3e2d5dc383f6b67cfa93b5c5dc301c0fc0ef4fb51b8e9064c176e9f936ef4e",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.803255224324927
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 8,
+     "chunk_index": 93,
+     "score": 0.798709011116359
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.791668869554604
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.790804815840435
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 10,
+     "score": 0.790563893880613
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 56,
+    "database_retrieval": 422,
+    "answer_generation": 741,
+    "retrieval_total": 478
+   },
+   "elapsed_ms": 1219.1
+  },
+  {
+   "id": "L05",
+   "type": "lookup",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "6695416ddf7bd1214172007bc9f0e1784e5783bc94dc92a3a0a7b40a72caab21",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 4,
+     "score": 0.825478434562683
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 1,
+     "chunk_index": 6,
+     "score": 0.812569759777819
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.809526801109314
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.808778524398804
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 4,
+     "score": 0.808641385517039
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 77,
+    "database_retrieval": 423,
+    "answer_generation": 634,
+    "retrieval_total": 500
+   },
+   "elapsed_ms": 1133.7
+  },
+  {
+   "id": "L06",
+   "type": "lookup",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "a625f3ddf1c9691873e598a1243b363dc06a3c233fc111e0ff6f5d4d750182c5",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.817259869902155
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 4,
+     "score": 0.810840044467443
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.810798630524008
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.808966480616756
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.808361839749716
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 62,
+    "database_retrieval": 1174,
+    "answer_generation": 929,
+    "retrieval_total": 1236
+   },
+   "elapsed_ms": 2165.4
+  },
+  {
+   "id": "L07",
+   "type": "lookup",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "77d89afbe8d14a0d4b75ac0172ef659a6bad1ca99d348d59ab90070c2262dad3",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.805747032165527
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 4,
+     "score": 0.798102796077728
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 2,
+     "score": 0.795314431190491
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.79362239913674
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 4,
+     "score": 0.792733145193272
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 61,
+    "database_retrieval": 425,
+    "answer_generation": 453,
+    "retrieval_total": 487
+   },
+   "elapsed_ms": 939.9
+  },
+  {
+   "id": "L08",
+   "type": "lookup",
+   "answer": "Một yêu cầu mua đầy đủ phải bao gồm các thông tin sau: người yêu cầu, phòng ban, nhu cầu, thông số kỹ thuật của mặt hàng, số lượng, ngày yêu cầu, địa điểm giao hàng, loại tiền tệ, ước tính và chủ ngân sách [S3].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S3"
+   ],
+   "prompt_sha256": "8f2dea5000317a84ff2b3cc19fbcd2d532af2c046bc7e35f37511821b5e1a80b",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 15,
+     "score": 0.817432666344424
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 10,
+     "score": 0.816344380378723
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 18,
+     "chunk_index": 240,
+     "score": 0.816154431333875
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.814119875431061
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 1,
+     "score": 0.812810802841509
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 59,
+    "database_retrieval": 421,
+    "answer_generation": 512,
+    "retrieval_total": 480
+   },
+   "elapsed_ms": 992.4
+  },
+  {
+   "id": "L09",
+   "type": "lookup",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "d7a964e4c716018b7046650027544a620b09a45aba4cb4060ee1f640251cb67f",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 2,
+     "score": 0.824707935767894
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.824672053773878
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 1,
+     "score": 0.821201180779902
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.821042394010953
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 7,
+     "score": 0.820503782003894
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 57,
+    "database_retrieval": 424,
+    "answer_generation": 483,
+    "retrieval_total": 481
+   },
+   "elapsed_ms": 964.7
+  },
+  {
+   "id": "L10",
+   "type": "lookup",
+   "answer": "Dựa trên các nguồn được cung cấp, chính sách phân loại dữ liệu bao gồm các mức: Công khai (Public), Nội bộ (Internal), Mật (Confidential) và Hạn chế (Restricted) [S4].\n\nTuy nhiên, thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": false,
+   "source_ids": [
+    "S4"
+   ],
+   "prompt_sha256": "5f6268a57b0a875844e78ce932ddad60c2db880140209a57cd82acb1f359a65e",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": 0.817217073772308
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 13,
+     "score": 0.816417775581154
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 1,
+     "score": 0.815780423190549
+    },
+    {
+     "source_id": "S4",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 42,
+     "chunk_index": 606,
+     "score": 0.814624163873645
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.813297603136731
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 58,
+    "database_retrieval": 424,
+    "answer_generation": 822,
+    "retrieval_total": 482
+   },
+   "elapsed_ms": 1305.1
+  },
+  {
+   "id": "L11",
+   "type": "lookup",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "19e9f2329430a05050bf4c4daa55a2c650ede58dc4e01e3c34a6dc953b12f2dc",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.798986637562124
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.797115457229886
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 4,
+     "score": 0.795535874632844
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.793963290340313
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 4,
+     "score": 0.793883050217265
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 149,
+    "database_retrieval": 420,
+    "answer_generation": 426,
+    "retrieval_total": 569
+   },
+   "elapsed_ms": 996.2
+  },
+  {
+   "id": "L12",
+   "type": "lookup",
+   "answer": "Hàng đang bị giữ kiểm định chất lượng (trạng thái QUARANTINE hoặc HOLD) không được tính là hàng có thể bán (available-to-promise) [S1][S3].\n\nHàng chỉ được giải phóng và cộng vào tồn khả dụng sau khi QA xác nhận tình trạng và cập nhật disposition (phân loại) [S2]. Cụ thể, hàng sẽ được xử lý theo các mức độ sau:\n*   A-grade: đưa về bán [S1][S4].\n*   B-grade: sửa hoặc đóng gói lại nếu được duyệt [S1][S4].\n*   C-grade: giữ riêng để trả nhà cung cấp, scrap hoặc ghi giảm (cần phê duyệt cho scrap/ghi giảm) [S1][S4].\n\nQuyết định disposition (xử lý) do QA/Operations thực hiện [S3].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1",
+    "S3",
+    "S2",
+    "S4"
+   ],
+   "prompt_sha256": "932b2fda37d9b1f8bb126a36d50c4efa240ff6def83917e8aca90a89d1e629f2",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.827629397652783
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.826681753792554
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 9,
+     "score": 0.812084648832445
+    },
+    {
+     "source_id": "S4",
+     "cited": true,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.811418507441551
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 10,
+     "score": 0.809861537855418
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 56,
+    "database_retrieval": 421,
+    "answer_generation": 764,
+    "retrieval_total": 478
+   },
+   "elapsed_ms": 1241.6
+  },
+  {
+   "id": "L13",
+   "type": "lookup",
+   "answer": "Để thực hiện điều chỉnh tồn kho, hệ thống yêu cầu phải có biên bản, mã nguyên nhân và bằng chứng; đồng thời bắt buộc phải phân tách người đếm và người duyệt [S1]. Quy trình chuẩn bao gồm các bước: chuẩn bị, đếm độc lập, đối chiếu, điều tra, phê duyệt và cập nhật, trong đó bước phê duyệt yêu cầu người duyệt phải độc lập với người đếm hoặc người nhập điều chỉnh [S2] [S4]. Mỗi điều chỉnh cụ thể phải bao gồm mã phiếu, policy ID, SKU, số lượng trước/sau, mã nguyên nhân, bằng chứng, người nhập và người duyệt [S5].\n\nNgười đếm không được tự duyệt điều chỉnh vì nguyên tắc kiểm soát quy định người đếm không được là người nhập điều chỉnh và cũng không được là người duyệt [S3].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1",
+    "S2",
+    "S4",
+    "S5",
+    "S3"
+   ],
+   "prompt_sha256": "d76c078c791624c025e1f4e8aa50a576485d97534035d7f0db422ae5c4c0a632",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 4,
+     "score": 0.852886131577871
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 1,
+     "chunk_index": 6,
+     "score": 0.847273111343408
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": 0.843282401561761
+    },
+    {
+     "source_id": "S4",
+     "cited": true,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 1,
+     "chunk_index": 0,
+     "score": 0.84178883459998
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.841460328276203
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 54,
+    "database_retrieval": 420,
+    "answer_generation": 761,
+    "retrieval_total": 474
+   },
+   "elapsed_ms": 1235.5
+  },
+  {
+   "id": "L14",
+   "type": "lookup",
+   "answer": "Chỉ có trưởng sự cố hoặc chủ hệ thống được ủy quyền mới được phép phê duyệt khôi phục một dịch vụ bị ảnh hưởng trọng yếu sau khi hoàn thành các kiểm tra cần thiết [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1"
+   ],
+   "prompt_sha256": "1e4ce930eecdd8eeb1d24eb449f26d7c0f08a6d6156abe0017d449251b22a276",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 45,
+     "chunk_index": 653,
+     "score": 0.807690288011483
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 4,
+     "score": 0.789749037302948
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "ipi-en.pdf",
+     "document_id": "UPLOAD-7bf63a9a1e194c01bee05f3c7be47f5d",
+     "page_number": 7,
+     "chunk_index": 147,
+     "score": 0.789228365558343
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "ipi-en.pdf",
+     "document_id": "UPLOAD-7bf63a9a1e194c01bee05f3c7be47f5d",
+     "page_number": 7,
+     "chunk_index": 159,
+     "score": 0.787811611629918
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.786754107870056
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 60,
+    "database_retrieval": 423,
+    "answer_generation": 759,
+    "retrieval_total": 483
+   },
+   "elapsed_ms": 1242.4
+  },
+  {
+   "id": "T01",
+   "type": "threshold",
+   "answer": "Theo các tài liệu được cung cấp, mức cam kết mua hàng 200.000.000 VND và 200.000.001 VND có sự khác biệt về người phê duyệt như sau:\n\n*   Đối với mức cam kết từ 50.000.001 đến 200.000.000 VND (bao gồm đúng 200.000.000 VND), người phê duyệt yêu cầu là Trưởng phòng (Department head) cùng với bộ phận Mua hàng (Procurement) và Tài chính (Finance) [S3][S4].\n*   Đối với mức cam kết trên 200.000.000 VND (bao gồm 200.000.001 VND), người phê duyệt yêu cầu là Hội đồng Điều hành Vận hành (Executive Operations Council) cùng với bộ phận Tài chính (Finance) [S3][S4].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S3",
+    "S4"
+   ],
+   "prompt_sha256": "c592d43e124897f14b34ea9dc4db2bcc5e2cf24e0007877327642b19e2debc44",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 13,
+     "score": 0.81785774230957
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 1,
+     "chunk_index": 0,
+     "score": 0.816772127651338
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 53,
+     "chunk_index": 781,
+     "score": 0.812028013226036
+    },
+    {
+     "source_id": "S4",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 21,
+     "chunk_index": 286,
+     "score": 0.809657478620335
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 2,
+     "score": 0.807516694068909
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 47,
+    "database_retrieval": 420,
+    "answer_generation": 1115,
+    "retrieval_total": 467
+   },
+   "elapsed_ms": 1582.9
+  },
+  {
+   "id": "T02",
+   "type": "threshold",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "616753617649f409a4fbd47f27ac4a04ccd201c3a9262abdeab3c2d78738f0d4",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 7,
+     "score": 0.81085479259491
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.809083461761475
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.808472585173097
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 13,
+     "score": 0.805618643760681
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 10,
+     "score": 0.80352795124054
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 3152,
+    "database_retrieval": 9068,
+    "answer_generation": 1647,
+    "retrieval_total": 12220
+   },
+   "elapsed_ms": 13867.6
+  },
+  {
+   "id": "T03",
+   "type": "threshold",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "bfa2d75246d0a91776ffd768d6b5f6baf4f4940a138adb3527faaf8ccd59aa62",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.803925740952847
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.802535057067894
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.801545834725604
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": 0.800182437918483
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 1,
+     "score": 0.799528038445483
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 401,
+    "database_retrieval": 432,
+    "answer_generation": 416,
+    "retrieval_total": 833
+   },
+   "elapsed_ms": 1249.2
+  },
+  {
+   "id": "T04",
+   "type": "threshold",
+   "answer": "Không, một bữa ăn công việc tại địa phương hết 350.000 VND/người sẽ không được hoàn đủ vì mức chi trả tối đa cho bữa ăn tại địa phương là 300.000 VND/người/bữa [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1"
+   ],
+   "prompt_sha256": "e17a8df8ae5dd91cf9b3263bf2b302975ad6d1b086c6da63fcb7676f19959aae",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 14,
+     "chunk_index": 182,
+     "score": 0.833747292570689
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.808565091576274
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.802593850780272
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 2,
+     "score": 0.80098819732666
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 4,
+     "score": 0.798030686495861
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 445,
+    "database_retrieval": 440,
+    "answer_generation": 528,
+    "retrieval_total": 885
+   },
+   "elapsed_ms": 1418.0
+  },
+  {
+   "id": "T05",
+   "type": "threshold",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "716e2e37dc65a4e1437366b54a4d730e04b4c46e1763e874c7b09fa1afa94b4c",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 17,
+     "score": 0.811167143444169
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.805536925792694
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.80145602234936
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 14,
+     "score": 0.79877057090157
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": 0.796136498451233
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 655,
+    "database_retrieval": 820,
+    "answer_generation": 476,
+    "retrieval_total": 1475
+   },
+   "elapsed_ms": 1951.7
+  },
+  {
+   "id": "T06",
+   "type": "threshold",
+   "answer": "Dựa trên các tài liệu được cung cấp, không có nguồn nào sử dụng thuật ngữ \"sự cố mức Nghiêm trọng\" để phân loại các tình huống. Tuy nhiên, các tài liệu liệt kê các tình huống có mức độ rủi ro cao nhất (như nghi ngờ gian lận, mất mát, hàng giả hoặc chênh lệch lặp lại/giá trị lớn) và các hành động tương ứng như sau:\n\n*   **Tình huống:** Nghi ngờ gian lận / mất mát / hàng giả.\n    *   **Hành động tối thiểu:** Cách ly SKU, bảo toàn bằng chứng, thông báo Compliance / Operations.\n    *   **Người duyệt:** Operations / Compliance [S1].\n*   **Tình huống:** Chênh lệch lặp lại, giá trị lớn hoặc vượt ngưỡng nội bộ.\n    *   **Hành động tối thiểu:** Giữ giao dịch liên quan; điều tra nguyên nhân gốc.\n    *   **Người duyệt:** Inventory Manager + Finance [S1].\n*   **Tình huống:** Có chênh lệch giữa đếm thực tế và hệ thống (với điều kiện sai lệch lớn).\n    *   **Hành động tối thiểu:** Không điều chỉnh khi chưa có biên bản, mã nguyên nhân và bằng chứng; phân tách người đếm và người duyệt.\n    *   **Phê duyệt:** Sai lệch lớn cần Finance/Operations [S4].\n\nLưu ý: Các tài liệu không gán nhãn \"Nghiêm trọng\" cho các tình huống trên, mà chỉ mô tả các tình huống cụ thể và quy trình xử lý tương ứng [S1][S4].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1",
+    "S4"
+   ],
+   "prompt_sha256": "eee4a8a3164028a0782f9e034f8a4f888631fc9dd5cfa56ea6db238ba27b2b14",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 7,
+     "score": 0.82757619948104
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.816043712621184
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.814560868091692
+    },
+    {
+     "source_id": "S4",
+     "cited": true,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 4,
+     "score": 0.810824621368935
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.807446420192741
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 136,
+    "database_retrieval": 818,
+    "answer_generation": 1356,
+    "retrieval_total": 954
+   },
+   "elapsed_ms": 2310.7
+  },
+  {
+   "id": "T07",
+   "type": "threshold",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "d172a35993eb7adced877bc7224ede7542fe7fb5693765e88873123d8007e465",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.824256072982785
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.823693058050512
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.817390859127045
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.817077327792487
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 10,
+     "score": 0.816429078578949
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 298,
+    "database_retrieval": 821,
+    "answer_generation": 437,
+    "retrieval_total": 1119
+   },
+   "elapsed_ms": 1556.3
+  },
+  {
+   "id": "T08",
+   "type": "threshold",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "d9a97221b1a193d0fb5d2b3fe56cd4c4d758b06a9d2ddc6e66c83c5c0b4872bb",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.797298765665515
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.797291732318689
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.797213220928523
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 10,
+     "score": 0.796194446313714
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.795383405960597
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 289,
+    "database_retrieval": 431,
+    "answer_generation": 433,
+    "retrieval_total": 721
+   },
+   "elapsed_ms": 1154.3
+  },
+  {
+   "id": "C01",
+   "type": "calculation",
+   "answer": "Tổng số tiền tối đa được hoàn là 1.200.000 VND [S3].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S3"
+   ],
+   "prompt_sha256": "057abd819682d1384716fcd185112555499b3b6552a96ac2c2e18bd411ac94d8",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 2,
+     "score": 0.794529938534795
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 7,
+     "score": 0.785685026219041
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 14,
+     "chunk_index": 182,
+     "score": 0.781856106630332
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.778427676886535
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 4,
+     "score": 0.777936266537682
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 384,
+    "database_retrieval": 432,
+    "answer_generation": 462,
+    "retrieval_total": 817
+   },
+   "elapsed_ms": 1278.8
+  },
+  {
+   "id": "C02",
+   "type": "calculation",
+   "answer": "Theo chính sách chi phí, tiền phòng cho lưu trú qua đêm tại các địa điểm nội địa thông thường được hoàn tối đa là VND 1.800.000 mỗi phòng mỗi đêm [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1"
+   ],
+   "prompt_sha256": "c8cd4eecbb3f1d9204756c2fe357dd8c97274f054ac83c2f7ee3c468811c8a37",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 14,
+     "chunk_index": 182,
+     "score": 0.81019875972871
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 2,
+     "score": 0.784105492585571
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.782669761895581
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.779840594577625
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.778935266796634
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 425,
+    "database_retrieval": 434,
+    "answer_generation": 791,
+    "retrieval_total": 859
+   },
+   "elapsed_ms": 1650.3
+  },
+  {
+   "id": "C03",
+   "type": "calculation",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "8ca19625c251f15b2a8a9418e3438daf47a98c2fcf966b7cb5f7a9c7fea8e75f",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.821035051972719
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 7,
+     "score": 0.815174877643585
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 1,
+     "chunk_index": 0,
+     "score": 0.815069103690061
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 1,
+     "score": 0.814569855170544
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.813839148650222
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 228,
+    "database_retrieval": 435,
+    "answer_generation": 471,
+    "retrieval_total": 664
+   },
+   "elapsed_ms": 1135.7
+  },
+  {
+   "id": "C04",
+   "type": "calculation",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "0595cd6c69d5c48e487f1ea26064206361a6b7e5fdbaa0cc734d1ef72c518bcc",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 2,
+     "score": 0.8384878827944
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.828518182900278
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 1,
+     "chunk_index": 0,
+     "score": 0.828074083202423
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.82480563821726
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 4,
+     "score": 0.824787066150877
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 480,
+    "database_retrieval": 444,
+    "answer_generation": 478,
+    "retrieval_total": 924
+   },
+   "elapsed_ms": 1402.2
+  },
+  {
+   "id": "C05",
+   "type": "calculation",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "84c5e29629614e23e10c78d8126555440ba4097a14bab0faf9d5667699065825",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 1,
+     "chunk_index": 0,
+     "score": 0.82096264299862
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.81954731708201
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.816902648395143
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 17,
+     "score": 0.8150896760661
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.815013620552967
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 738,
+    "database_retrieval": 445,
+    "answer_generation": 511,
+    "retrieval_total": 1183
+   },
+   "elapsed_ms": 1697.5
+  },
+  {
+   "id": "C06",
+   "type": "calculation",
+   "answer": "Dựa trên các nguồn được cung cấp, câu trả lời như sau:\n\n*   **Phải báo cho ai:** Phải thông báo cho giám đốc được chỉ định (designated executive) và bộ phận Tài chính (Finance) [S2].\n*   **Muộn nhất vào ngày nào:** Vì khoản mua được cam kết vào thứ Hai, thời hạn thông báo muộn nhất là trong vòng một ngày làm việc sau khi cam kết, tức là vào thứ Ba [S2].\n*   **Rà soát sau mua phải xong trong bao lâu:** Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2"
+   ],
+   "prompt_sha256": "bf76712ac256b9135017d3e01aee892e89753d4c6bc7f8e3c7579d8f8dcc1463",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.834613342927302
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 25,
+     "chunk_index": 349,
+     "score": 0.832303524017334
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.8309406042099
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.828000674962959
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.825445055961609
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 377,
+    "database_retrieval": 430,
+    "answer_generation": 943,
+    "retrieval_total": 808
+   },
+   "elapsed_ms": 1750.8
+  },
+  {
+   "id": "C07",
+   "type": "calculation",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "22d98e7b58b325e7743fbd21c2082f16fdf80e832460a9e843bd640e0a65b3ec",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 2,
+     "score": 0.832648525676221
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.824636410198427
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 7,
+     "score": 0.822871993608953
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 4,
+     "score": 0.819118236925658
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 1,
+     "chunk_index": 0,
+     "score": 0.818603610438004
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 413,
+    "database_retrieval": 430,
+    "answer_generation": 467,
+    "retrieval_total": 843
+   },
+   "elapsed_ms": 1309.8
+  },
+  {
+   "id": "C08",
+   "type": "calculation",
+   "answer": "Dựa trên các nguồn được cung cấp, thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.\n\n**Giải thích:**\nCác nguồn [S1] và [S2] quy định giới hạn phê duyệt và số lượng báo giá dựa trên \"Total commitment\" (tổng cam kết) hoặc \"estimated commitments\" (cam kết ước tính) được tính bằng đơn vị tiền tệ **VND** (Ví dụ: \"Up to VND 5,000,000\", \"VND 5,000,001-50,000,000\") [S1][S2].\nTuy nhiên, nguồn [S3] và [S5] nêu rõ rằng \"Dataset không xác định rõ đơn vị tiền tệ\" và là \"Tài liệu mô phỏng\" [S3][S5].\nCác nguồn không cung cấp quy tắc quy đổi từ USD sang VND, cũng không xác nhận rằng tỷ giá 25.000 VND/USD do Tài chính duyệt là cơ sở chính thức để chuyển đổi giá trị cam kết sang VND nhằm áp dụng vào bảng phê duyệt [S1][S2]. Do đó, không thể xác định chính xác mức cam kết bằng VND để đối chiếu với các ngưỡng phê duyệt (Line manager, Department head, v.v.) và yêu cầu báo giá tương ứng [S1][S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1",
+    "S2",
+    "S3",
+    "S5"
+   ],
+   "prompt_sha256": "f03809f409a2d86fd68f97b55ab5804b6f478e4f1f96e998e827e2cb970aa14d",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 53,
+     "chunk_index": 781,
+     "score": 0.828770141894783
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 20,
+     "chunk_index": 272,
+     "score": 0.827038392987404
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": 0.827038189525826
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.823507817356382
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 1,
+     "chunk_index": 0,
+     "score": 0.821970508518481
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 706,
+    "database_retrieval": 432,
+    "answer_generation": 1005,
+    "retrieval_total": 1139
+   },
+   "elapsed_ms": 2143.9
+  },
+  {
+   "id": "M01",
+   "type": "multi_part",
+   "answer": "Dựa trên các nguồn được cung cấp, mức hoàn tối đa cho chi phí lưu trú qua đêm tại các địa điểm nội địa thông thường là VND 1.800.000 mỗi phòng mỗi đêm [S1].\n\nThông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1"
+   ],
+   "prompt_sha256": "08f75ee83cfc743c2671350c94dd89bf28350d169362ac0b11444f8e13da74cb",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 14,
+     "chunk_index": 182,
+     "score": 0.831769252770223
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 1,
+     "chunk_index": 0,
+     "score": 0.812269115813647
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 3,
+     "chunk_index": 5,
+     "score": 0.812149666291521
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.81051242351532
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.806039285299822
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 473,
+    "database_retrieval": 429,
+    "answer_generation": 792,
+    "retrieval_total": 901
+   },
+   "elapsed_ms": 1693.7
+  },
+  {
+   "id": "M02",
+   "type": "multi_part",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "37be22ee91da72218a1addb2354799b96185c774015309f2b4a81e5ec2b4719f",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 4,
+     "score": 0.818395733833313
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "ipi-en.pdf",
+     "document_id": "UPLOAD-7bf63a9a1e194c01bee05f3c7be47f5d",
+     "page_number": 1,
+     "chunk_index": 12,
+     "score": 0.81423940488823
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.812108516693115
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 7,
+     "score": 0.81209522485733
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 9,
+     "score": 0.80762388615324
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 360,
+    "database_retrieval": 434,
+    "answer_generation": 739,
+    "retrieval_total": 794
+   },
+   "elapsed_ms": 1534.5
+  },
+  {
+   "id": "M03",
+   "type": "multi_part",
+   "answer": "Dựa trên các tài liệu được cung cấp, câu trả lời cho các phần của câu hỏi như sau:\n\n1.  **Kho cần ghi nhận những gì:**\n    *   Khi nhận hàng trả về, kho phải đối chiếu PO, SKU, size, màu, số lượng, tình trạng bao bì và chứng từ giao hàng [S2].\n    *   Kho cần ghi nhận các trường hợp thiếu, thừa hoặc hư hỏng trước khi xác nhận nhận hàng, đồng thời bắt buộc phải có ảnh chụp và biên bản cho các ngoại lệ [S2].\n    *   Kho phải gắn mã nguyên nhân trả hàng (ví dụ: sai size, lỗi sản phẩm, giao trễ) để phản hồi cho các bộ phận Merchandising, QA và Logistics [S2].\n\n2.  **Ai quyết định số tiền hoàn:**\n    *   Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.\n\n3.  **Sản phẩm có được đưa lại lên kệ bán ngay không:**\n    *   Không, sản phẩm trả về phải vào trạng thái QUARANTINE (cách ly) cho đến khi QA kiểm tra và không được cộng vào lượng tồn khả dụng (available-to-promise) trước khi đạt điều kiện [S2].\n    *   Sản phẩm chỉ được đưa về bán (A-grade) sau khi QA phân loại; các mức B-grade và C-grade sẽ được sửa/đóng gói lại hoặc xử lý riêng (trả nhà cung cấp, scrap, ghi giảm) [S2].\n    *   Quy trình xử lý hàng trả về bao gồm cách ly, kiểm tra QA và phân loại (A-grade bán lại, B-grade sửa/đóng gói, C-grade xử lý riêng) với thời hạn xử lý trong 2 ngày làm việc [S3].\n    *   Hàng trả về chỉ được cộng vào tồn khả dụng sau khi QA xác nhận tình trạng và cập nhật disposition [S5].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2",
+    "S3",
+    "S5"
+   ],
+   "prompt_sha256": "7f5cfd906dcdb7a131c0aed59aed4e6fd03b679a1906de954cc32f70c2b1f2ae",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 2,
+     "score": 0.837766607073956
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.834794779444369
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.830562095508076
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 1,
+     "score": 0.82805184649185
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.825675578294592
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 232,
+    "database_retrieval": 434,
+    "answer_generation": 1279,
+    "retrieval_total": 667
+   },
+   "elapsed_ms": 1946.4
+  },
+  {
+   "id": "M04",
+   "type": "multi_part",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "27d0def43a02477142bb988637a68e580dc3f951069b2ffaca5bac4ed03e8e3c",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.827428936958313
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.82194771505026
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.820448588106122
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.820260475858423
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 14,
+     "score": 0.82001867055671
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 285,
+    "database_retrieval": 435,
+    "answer_generation": 740,
+    "retrieval_total": 721
+   },
+   "elapsed_ms": 1461.0
+  },
+  {
+   "id": "M05",
+   "type": "multi_part",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "7e8e47fcd20733ec45d31aec371c8b3cc27b0ac7a49e45b1f39426260dbebf36",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.829061170928345
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 7,
+     "score": 0.825476825237274
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.825281093997892
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 2,
+     "score": 0.824257910251617
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.819954991340637
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 392,
+    "database_retrieval": 431,
+    "answer_generation": 756,
+    "retrieval_total": 824
+   },
+   "elapsed_ms": 1581.9
+  },
+  {
+   "id": "M06",
+   "type": "multi_part",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "75d1bdeec12978ff70cee59ae58768155f5d4b9607dad9f4b8a6c623c71e428e",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.827787469161305
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 15,
+     "score": 0.825303936758755
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.821759939193726
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.820914447307587
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.819619319484321
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 652,
+    "database_retrieval": 437,
+    "answer_generation": 583,
+    "retrieval_total": 1091
+   },
+   "elapsed_ms": 1674.7
+  },
+  {
+   "id": "N01",
+   "type": "cannot_conclude",
+   "answer": "Không thể hứa với khách ngày giao hàng dựa trên con số fill_rate 98% vì tài liệu chỉ xác định đây là \"mục tiêu mô phỏng\" và \"ngưỡng giả lập\", không phải cam kết dịch vụ thực tế [S1]. Các KPI như fill rate được ghi nhận là \"ngưỡng mô phỏng, cần hiệu chỉnh theo margin và mức dịch vụ\" [S5]. Ngoài ra, chính sách quản lý tồn kho yêu cầu kiểm tra nhiều yếu tố khác như tồn kho khả dụng, PO đang mở, lead time và lịch giao trước khi phát hành đơn hàng, thay vì dựa duy nhất vào một chỉ số lịch sử [S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1",
+    "S5",
+    "S2"
+   ],
+   "prompt_sha256": "ae81babe135b6bd28f334eea57c9d950b51c873f75e06460bb82a601a7dadb37",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.842494707404942
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.840386064121617
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.837751965254785
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.835142975321859
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.835047006607079
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 352,
+    "database_retrieval": 816,
+    "answer_generation": 1327,
+    "retrieval_total": 1168
+   },
+   "elapsed_ms": 2495.7
+  },
+  {
+   "id": "N02",
+   "type": "cannot_conclude",
+   "answer": "Không thể kết luận nhà cung cấp làm việc tốt chỉ dựa trên việc hầu hết đơn được giao đúng hạn, vì chính sách kiểm soát nhà cung cấp yêu cầu phải duy trì và cập nhật nhiều chỉ số khác bao gồm lead time thực tế, MOQ, lịch giao và tỷ lệ giao đủ/đúng hạn [S1]. Ngoài ra, quy trình kiểm soát nhà cung cấp được kích hoạt khi tạo PO hoặc đánh giá nhà cung cấp, đòi hỏi việc cập nhật các thông tin này sau mỗi lần nhận hàng [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1"
+   ],
+   "prompt_sha256": "10801ec1f5ffa5c836442c6dffa2f1233a975b6910e5fe61d89237edc9816064",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.855824257606991
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.847057163715363
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.844229111419375
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.843748647719789
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.840748608112335
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 1097,
+    "database_retrieval": 441,
+    "answer_generation": 1217,
+    "retrieval_total": 1543
+   },
+   "elapsed_ms": 2763.3
+  },
+  {
+   "id": "N03",
+   "type": "cannot_conclude",
+   "answer": "Không thể kết luận chắc chắn rằng sản phẩm đó bị hỏng chỉ dựa trên lý do trả hàng là \"sản phẩm lỗi\", vì các tài liệu quy định rằng hàng trả về phải được cách ly và chờ bộ phận QA phân loại cụ thể trước khi xác định tình trạng [S1].\n\nTheo quy trình, hàng trả về phải vào trạng thái QUARANTINE cho đến khi QA kiểm tra và không được cộng vào available-to-promise trước khi đạt điều kiện [S2]. Sau khi kiểm tra, sản phẩm sẽ được phân loại thành A-grade (bán lại), B-grade (sửa/đóng gói lại) hoặc C-grade (hỏng/thiếu phụ kiện xử lý riêng) [S1]. Do đó, \"sản phẩm lỗi\" là lý do ban đầu để kích hoạt quy trình cách ly và kiểm tra, nhưng tình trạng cuối cùng (có bị hỏng hay không) chỉ được xác định sau khi QA phân loại [S1][S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1",
+    "S2"
+   ],
+   "prompt_sha256": "49af4dfe1436eecc7e0490c400a58a2887de3fefe4a761621bb94fd0cd369ffa",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.838267430221975
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.836922670511087
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 9,
+     "score": 0.828861996931264
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.825212503230945
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 4,
+     "score": 0.822278355888181
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 325,
+    "database_retrieval": 431,
+    "answer_generation": 1140,
+    "retrieval_total": 756
+   },
+   "elapsed_ms": 1896.7
+  },
+  {
+   "id": "N04",
+   "type": "cannot_conclude",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "df381435b83733e7ca80ec70c809b9d908ae75c96b187b2bbdeef6c3238c6089",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 4,
+     "score": 0.818729568644153
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 1,
+     "score": 0.815946689594592
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.815522480936211
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 10,
+     "score": 0.815396108078498
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.814875282630364
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 290,
+    "database_retrieval": 447,
+    "answer_generation": 1097,
+    "retrieval_total": 738
+   },
+   "elapsed_ms": 1835.7
+  },
+  {
+   "id": "O01",
+   "type": "out_of_scope",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "ead5288c52ffca8675df112078073a4deb4383f22edfca0bb199e92dd4f0c912",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 7,
+     "chunk_index": 79,
+     "score": 0.826728810473015
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.823023757574116
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.820901989936829
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.818952045565606
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 1,
+     "score": 0.817527375516018
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 335,
+    "database_retrieval": 454,
+    "answer_generation": 810,
+    "retrieval_total": 789
+   },
+   "elapsed_ms": 1600.0
+  },
+  {
+   "id": "O02",
+   "type": "out_of_scope",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "64b0f1e462de5a4d9bc08fc5d4086a8518fae9271ec58fa4c07cc07fcdc624df",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.790371250245388
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.790196097189321
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.7885474579711
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.785154055221745
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.785063528569455
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 486,
+    "database_retrieval": 435,
+    "answer_generation": 532,
+    "retrieval_total": 922
+   },
+   "elapsed_ms": 1454.1
+  },
+  {
+   "id": "O03",
+   "type": "out_of_scope",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "d81e01e0f90612793c698eacf7317b3dfed1f9ae2f413d599e08b195dfe91af7",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.829335948307997
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.829292893409735
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.826630444533151
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 10,
+     "score": 0.825119785928803
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.820002149343364
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 959,
+    "database_retrieval": 432,
+    "answer_generation": 755,
+    "retrieval_total": 1392
+   },
+   "elapsed_ms": 2146.8
+  },
+  {
+   "id": "O04",
+   "type": "out_of_scope",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "2eed94a2635578ed8a9af0e4fe31f33f7815c8d936a8ad83a034e2d5c1a512b3",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.822319588384683
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.809886861436777
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 1,
+     "score": 0.809290670241043
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.80571157898238
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 1,
+     "chunk_index": 0,
+     "score": 0.802932643977781
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 244,
+    "database_retrieval": 429,
+    "answer_generation": 725,
+    "retrieval_total": 673
+   },
+   "elapsed_ms": 1398.4
+  },
+  {
+   "id": "O05",
+   "type": "out_of_scope",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "4c9f91f7bc6cd5736439b1820d79d9910c6343287c8d1c3817e05aa873d80409",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 14,
+     "chunk_index": 182,
+     "score": 0.802043652473582
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.785174110202652
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.784399522280723
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.780265129200666
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.779298941022348
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 419,
+    "database_retrieval": 441,
+    "answer_generation": 751,
+    "retrieval_total": 860
+   },
+   "elapsed_ms": 1614.0
+  },
+  {
+   "id": "O06",
+   "type": "out_of_scope",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "b6d20b457a1bb6ec645c5c4385f972ea7b50229133ea654597208be33800a3bf",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.825894345396422
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.815377615049175
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 1,
+     "chunk_index": 1,
+     "score": 0.813474606664504
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "report(1).md",
+     "document_id": "UPLOAD-d2f5fa6321e2485484beb420256957f4",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.798256778924855
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 1,
+     "chunk_index": 0,
+     "score": 0.793867647647858
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 674,
+    "database_retrieval": 432,
+    "answer_generation": 397,
+    "retrieval_total": 1110
+   },
+   "elapsed_ms": 1508.8
+  },
+  {
+   "id": "O07",
+   "type": "out_of_scope",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "e89b3daebd217f76a8eb07c04a35d5e43c988b04efab9d5f67aa5f6764462c59",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.831401775395778
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.815770431573288
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 3,
+     "chunk_index": 5,
+     "score": 0.811588928320663
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 1,
+     "chunk_index": 0,
+     "score": 0.809725307258933
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 1,
+     "chunk_index": 1,
+     "score": 0.807386730780591
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 208,
+    "database_retrieval": 437,
+    "answer_generation": 439,
+    "retrieval_total": 645
+   },
+   "elapsed_ms": 1084.7
+  },
+  {
+   "id": "O08",
+   "type": "out_of_scope",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "32741b827cc2ed1869ff95f5b941ef5801a38a0ad6ceb6b872762f02f3d68681",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 7,
+     "chunk_index": 79,
+     "score": 0.815223552611298
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.803552663749774
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.801217150615636
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 1,
+     "score": 0.798970830501877
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.795243620872503
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 1028,
+    "database_retrieval": 448,
+    "answer_generation": 763,
+    "retrieval_total": 1477
+   },
+   "elapsed_ms": 2241.4
+  },
+  {
+   "id": "E01",
+   "type": "english",
+   "answer": "Hạn chót để nộp yêu cầu hoàn chi phí là trong vòng 30 ngày lịch kể từ ngày giao dịch hoặc ngày trở về từ chuyến công tác được phê duyệt, tùy theo thời điểm nào muộn hơn [S5].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S5"
+   ],
+   "prompt_sha256": "a4a12c9eec2b18c716a96c33a8d17d85b4f7b7a0853f498a10499ad87e823909",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 13,
+     "chunk_index": 167,
+     "score": 0.839312384169557
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 15,
+     "chunk_index": 196,
+     "score": 0.838549752408296
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 15,
+     "chunk_index": 199,
+     "score": 0.837553093579229
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 15,
+     "chunk_index": 197,
+     "score": 0.832173481479915
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 13,
+     "chunk_index": 168,
+     "score": 0.826091857059267
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 1418,
+    "database_retrieval": 439,
+    "answer_generation": 493,
+    "retrieval_total": 1858
+   },
+   "elapsed_ms": 2350.6
+  },
+  {
+   "id": "E02",
+   "type": "english",
+   "answer": "Một sự cố bảo mật có mức độ nghiêm trọng cao (High) phải được báo cáo trong vòng một giờ và cần liên hệ với bộ phận An ninh (Security) cùng chủ sở hữu hệ thống (system owner) [S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2"
+   ],
+   "prompt_sha256": "f3cd65a7f3ed23c80cbbdeb4682f94986ff3ea7a9e1ef33766713f3c2f835800",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 44,
+     "chunk_index": 636,
+     "score": 0.834897180211886
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 44,
+     "chunk_index": 639,
+     "score": 0.829580783843994
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 44,
+     "chunk_index": 640,
+     "score": 0.819896484014287
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 50,
+     "chunk_index": 735,
+     "score": 0.815818916808433
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 16,
+     "chunk_index": 218,
+     "score": 0.810662269592285
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 623,
+    "database_retrieval": 439,
+    "answer_generation": 743,
+    "retrieval_total": 1062
+   },
+   "elapsed_ms": 1805.4
+  },
+  {
+   "id": "E03",
+   "type": "english",
+   "answer": "Quyền hạn đặc biệt, các danh tính dịch vụ và các cộng tác viên bên ngoài phải được xem xét hàng quý [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1"
+   ],
+   "prompt_sha256": "1a043450e12b66a24ee1e9aac09652868853334f830a165fbadcf5af993cbb80",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 40,
+     "chunk_index": 579,
+     "score": 0.872093413111767
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 39,
+     "chunk_index": 565,
+     "score": 0.8292838436792
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 16,
+     "chunk_index": 215,
+     "score": 0.819361518659503
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 43,
+     "chunk_index": 623,
+     "score": 0.81695892861364
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 40,
+     "chunk_index": 574,
+     "score": 0.813223576151625
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 354,
+    "database_retrieval": 428,
+    "answer_generation": 428,
+    "retrieval_total": 782
+   },
+   "elapsed_ms": 1211.3
+  },
+  {
+   "id": "E04",
+   "type": "english",
+   "answer": "Không, hàng hóa bị giữ để kiểm tra chất lượng không được sử dụng để thực hiện các đơn hàng của khách hàng [S2]. Cụ thể, quy trình yêu cầu đặt các hàng hóa không chắc chắn hoặc không phù hợp vào khu vực giữ chất lượng được xác định rõ ràng [S2], và các yêu cầu kiểm soát nghiêm cấm việc thực hiện đơn hàng khách hàng từ kho hàng bị hạn chế [S4].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2",
+    "S4"
+   ],
+   "prompt_sha256": "58b022291e0537aaa5d130f6b17c68457f684c5d8275d2de7c379c60c07c91bf",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 35,
+     "chunk_index": 498,
+     "score": 0.841059753831641
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 35,
+     "chunk_index": 503,
+     "score": 0.835567593574524
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 26,
+     "chunk_index": 365,
+     "score": 0.832756757736206
+    },
+    {
+     "source_id": "S4",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 36,
+     "chunk_index": 521,
+     "score": 0.829311549663544
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 31,
+     "chunk_index": 443,
+     "score": 0.826693177223206
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 339,
+    "database_retrieval": 432,
+    "answer_generation": 911,
+    "retrieval_total": 771
+   },
+   "elapsed_ms": 1683.0
+  },
+  {
+   "id": "E05",
+   "type": "english",
+   "answer": "Trước khi một sai lệch được ghi nhận là điều chỉnh tồn kho, quy trình bắt buộc phải so sánh số lượng kiểm kê thực tế với hệ thống tồn kho trực tiếp và ghi lại các nguyên nhân trước khi thực hiện điều chỉnh [S2]. Ngoài ra, mọi điều chỉnh vật tư bắt buộc phải có bằng chứng về tình trạng vật lý hoặc giao dịch, mã lý do, người phê duyệt độc lập và hồ sơ trước/sau được lưu giữ [S3].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2",
+    "S3"
+   ],
+   "prompt_sha256": "9380d286c96e3fc4138bf6164118224b0a4fd2591353c92f266ae23315a4806e",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 33,
+     "chunk_index": 466,
+     "score": 0.861149549484253
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 33,
+     "chunk_index": 472,
+     "score": 0.836166570415107
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 34,
+     "chunk_index": 483,
+     "score": 0.82125242695184
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 33,
+     "chunk_index": 477,
+     "score": 0.820435906065581
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 33,
+     "chunk_index": 471,
+     "score": 0.820295810699463
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 441,
+    "database_retrieval": 431,
+    "answer_generation": 554,
+    "retrieval_total": 872
+   },
+   "elapsed_ms": 1427.0
+  },
+  {
+   "id": "E06",
+   "type": "english",
+   "answer": "Khi các nguồn chính sách được truy xuất mâu thuẫn với nhau, tác nhân AI phải từ chối đưa ra câu trả lời và chuyển hướng xử lý cho người phụ trách con người [S2]. Trong trường hợp này, tác nhân cũng cần từ chối và leo thang sự cố [S5].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2",
+    "S5"
+   ],
+   "prompt_sha256": "db1a9c3c352a7b4beb555d60b313363fe68a913b28a3cff469a6d665202111fb",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 51,
+     "chunk_index": 744,
+     "score": 0.843881158134732
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 46,
+     "chunk_index": 677,
+     "score": 0.8116336577157
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 46,
+     "chunk_index": 675,
+     "score": 0.809839105312854
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 46,
+     "chunk_index": 669,
+     "score": 0.80673071065775
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 53,
+     "chunk_index": 787,
+     "score": 0.803427529130727
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 499,
+    "database_retrieval": 428,
+    "answer_generation": 780,
+    "retrieval_total": 928
+   },
+   "elapsed_ms": 1708.4
+  },
+  {
+   "id": "P01",
+   "type": "trap",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "9f6c2db1ad22b4b76da5c71961eef71e36a1dfc484dfc200e37ef1cf793dbbc3",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 15,
+     "score": 0.823277210495558
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.823267004100441
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 13,
+     "score": 0.822397183036974
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.82197758758469
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": 0.821004959165165
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 324,
+    "database_retrieval": 429,
+    "answer_generation": 748,
+    "retrieval_total": 753
+   },
+   "elapsed_ms": 1501.8
+  },
+  {
+   "id": "P02",
+   "type": "trap",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "9f2a909844f6955f5df5198675a7a00f53df6a5f9f488cade1067265e575dedc",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.833519294874608
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.830375527430328
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 10,
+     "score": 0.829402561574837
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.82832739690869
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.828103139528916
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 193,
+    "database_retrieval": 433,
+    "answer_generation": 487,
+    "retrieval_total": 626
+   },
+   "elapsed_ms": 1112.9
+  },
+  {
+   "id": "P03",
+   "type": "trap",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "76e22fbd3a884246b26ccfcf8c32e9800c92426bdfea9ff6115fc2594946cc13",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 53,
+     "chunk_index": 779,
+     "score": 0.840810666035972
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.8344612914966
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 4,
+     "score": 0.833811610851597
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 434,
+     "score": 0.83230557056599
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": 0.830597470367107
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 474,
+    "database_retrieval": 430,
+    "answer_generation": 719,
+    "retrieval_total": 904
+   },
+   "elapsed_ms": 1623.9
+  },
+  {
+   "id": "R01",
+   "type": "rbac",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "95e7a4d124c4ae1e080556855fd0a56e6ffcccb0f996b2ccc00b96e1aacc95b4",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": 0.807320952415466
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 13,
+     "score": 0.805608868598938
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 1,
+     "score": 0.802483797073364
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 15,
+     "score": 0.800112152102952
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 17,
+     "score": 0.790272856918238
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 262,
+    "database_retrieval": 411,
+    "answer_generation": 746,
+    "retrieval_total": 674
+   },
+   "elapsed_ms": 1420.4
+  },
+  {
+   "id": "R02",
+   "type": "rbac",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "fef02dd6e9659aa6b6d52dd990d335d482febe64367380984f2549827c60aeb2",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "vietnamese-receipt.png",
+     "document_id": "UPLOAD-bd49ce5c223d4e659f9082226b36646d",
+     "page_number": null,
+     "chunk_index": 1,
+     "score": 0.798435032367706
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.784635411777224
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.784510544655216
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "vietnamese-receipt.png",
+     "document_id": "UPLOAD-bd49ce5c223d4e659f9082226b36646d",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": 0.784505082100328
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "vietnamese-receipt.png",
+     "document_id": "UPLOAD-bd49ce5c223d4e659f9082226b36646d",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.776630772553042
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 502,
+    "database_retrieval": 403,
+    "answer_generation": 440,
+    "retrieval_total": 905
+   },
+   "elapsed_ms": 1346.3
+  },
+  {
+   "id": "R03",
+   "type": "rbac",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "ae4c11cfabaa0d875e4431e784f315ed379b4a90b5e6fcf0c25717bee125f2dc",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.802672672431034
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 14,
+     "score": 0.80147082796868
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.797448730164615
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.796635138787935
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 17,
+     "score": 0.795757007851792
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 174,
+    "database_retrieval": 408,
+    "answer_generation": 766,
+    "retrieval_total": 582
+   },
+   "elapsed_ms": 1349.7
+  },
+  {
+   "id": "X01",
+   "type": "mixed",
+   "answer": "PO có tổng cam kết 120 triệu VND (nằm trong khoảng từ VND 50,000,001 đến VND 200,000,000) cần được phê duyệt bởi Trưởng phòng (Department head) + Mua hàng (Procurement) + Tài chính (Finance) [S3].\nĐối với mức cam kết này, điều kiện bổ sung yêu cầu phải có ít nhất ba báo giá bằng văn bản (three written quotes) hoặc lý do duy nhất nguồn cung cấp đã được phê duyệt (approved sole-source rationale) [S3].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S3"
+   ],
+   "prompt_sha256": "779ed97e22778f38456f39a151ce716baaf47ab5ea48ede20b966e5b69803807",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.840483759627248
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 1,
+     "score": 0.839852138770935
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 53,
+     "chunk_index": 781,
+     "score": 0.838874378472715
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.837935730403457
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 13,
+     "score": 0.833179553368151
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 361,
+    "database_retrieval": 428,
+    "answer_generation": 949,
+    "retrieval_total": 789
+   },
+   "elapsed_ms": 1738.9
+  },
+  {
+   "id": "X02",
+   "type": "mixed",
+   "answer": "Nếu product_name trong inventory khác với bảng products, cần coi bảng products là metadata của catalog và đánh dấu sự khác biệt đó [S5].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S5"
+   ],
+   "prompt_sha256": "3c617eec3305a0950230dbaf00af5e01476571340a03d524326da08c5e875d5f",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.847288200420846
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.845069229602814
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": 0.844062983989716
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 1,
+     "score": 0.843818093652073
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 28,
+     "chunk_index": 397,
+     "score": 0.842028912729114
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 374,
+    "database_retrieval": 431,
+    "answer_generation": 465,
+    "retrieval_total": 805
+   },
+   "elapsed_ms": 1270.6
+  },
+  {
+   "id": "X03",
+   "type": "mixed",
+   "answer": "Không được lưu mật khẩu (password) hoặc token truy cập (access token) trong nhật ký bảo mật [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1"
+   ],
+   "prompt_sha256": "ae8b35217612174a6cb161496dd6bf7e2c831e5176f81ed09fc145793a24e164",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 43,
+     "chunk_index": 627,
+     "score": 0.822295928665875
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 16,
+     "score": 0.816789339972179
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.810708105564117
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.81033707949553
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.808769822120667
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 77,
+    "database_retrieval": 428,
+    "answer_generation": 925,
+    "retrieval_total": 506
+   },
+   "elapsed_ms": 1430.7
+  },
+  {
+   "id": "X04",
+   "type": "mixed",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "af52e19de5bf5b894f148f6afc3903675e6bd2c8789de8038c04426ed9d3285c",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.832215810782189
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.826789757396018
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.826529671342951
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.824903130531311
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.823240409896351
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 335,
+    "database_retrieval": 431,
+    "answer_generation": 508,
+    "retrieval_total": 766
+   },
+   "elapsed_ms": 1274.5
+  },
+  {
+   "id": "X05",
+   "type": "mixed",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "3b14ab055ce80e26888eb9de7a3ac64952ce9b089bed9eb28d42c7e0e44b8521",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.806763375007024
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 9,
+     "score": 0.805599783849756
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.804286491615387
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 7,
+     "score": 0.801350068965551
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.798020267722575
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 588,
+    "database_retrieval": 429,
+    "answer_generation": 751,
+    "retrieval_total": 1018
+   },
+   "elapsed_ms": 1769.5
+  },
+  {
+   "id": "X06",
+   "type": "no_diacritics",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "920b5eb97f22b8c9a39d78632383d2977f150f98f12ec4ba7f2e1f49c0b2f609",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "ipi-en.pdf",
+     "document_id": "UPLOAD-7bf63a9a1e194c01bee05f3c7be47f5d",
+     "page_number": 7,
+     "chunk_index": 163,
+     "score": 0.822763825141315
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "ipi-en.pdf",
+     "document_id": "UPLOAD-7bf63a9a1e194c01bee05f3c7be47f5d",
+     "page_number": 7,
+     "chunk_index": 162,
+     "score": 0.822376391604377
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "annual-report-template.md",
+     "document_id": "UPLOAD-eb1d86dda1da40029d0a0f8323410e93",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.809944629669195
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "ipi-en.pdf",
+     "document_id": "UPLOAD-7bf63a9a1e194c01bee05f3c7be47f5d",
+     "page_number": 1,
+     "chunk_index": 12,
+     "score": 0.809048925212219
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "ipi-en.pdf",
+     "document_id": "UPLOAD-7bf63a9a1e194c01bee05f3c7be47f5d",
+     "page_number": 4,
+     "chunk_index": 89,
+     "score": 0.804924559299676
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 208,
+    "database_retrieval": 431,
+    "answer_generation": 673,
+    "retrieval_total": 640
+   },
+   "elapsed_ms": 1313.3
+  },
+  {
+   "id": "X07",
+   "type": "no_diacritics",
+   "answer": "Dựa trên các tài liệu được cung cấp, khi phát hành PO (Purchase Order), cần xác nhận và tuân thủ các yêu cầu sau:\n\n*   **Quyền phê duyệt:** Việc phát hành PO cần có sự phê duyệt ngân sách và ủy quyền PO từ nhà cung cấp (Budget / supplier PO authorization) [S1].\n*   **Kiểm soát quyền hạn:** Người thực hiện thao tác nhập liệu phải tách biệt với người ra quyết định; cụ thể, người đếm không được là người nhập điều chỉnh và cũng không được là người duyệt [S1].\n*   **Hạn chế của AI:** AI Agent chỉ được đọc dữ liệu được phân quyền và đưa ra đề xuất, không được tự phát hành PO [S1].\n*   **Yêu cầu đối với AI/Báo cáo tự động:** Nếu AI Agent tạo đề xuất PO, hệ thống chỉ được dùng dữ liệu được phân quyền, phải trích dẫn nguồn và ngày chụp (snapshot date), không tự ghi PO và bắt buộc phải có sự phê duyệt của con người (Human approval) [S4].\n*   **Xử lý mâu thuẫn:** Nếu có tín hiệu mâu thuẫn tồn kho (ví dụ: stockout và overstock cùng bật), cần tạm khóa PO tự động và kiểm tra các giao dịch, snapshot, đơn hàng treo trước khi tiếp tục [S3].\n\nLưu ý: Các tài liệu trên là bản mô phỏng (SIMULATION_DRAFT) của VietStyle Commerce cho Datathon 2026 [S1][S3][S4].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1",
+    "S4",
+    "S3"
+   ],
+   "prompt_sha256": "19e7a129d0e9d8af7fed867da7efabac4ef45827d3dd81cd9dde6899cd538d57",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": 0.82567438620191
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "ipi-en.pdf",
+     "document_id": "UPLOAD-7bf63a9a1e194c01bee05f3c7be47f5d",
+     "page_number": 7,
+     "chunk_index": 163,
+     "score": 0.820942307142693
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": 0.818850528070301
+    },
+    {
+     "source_id": "S4",
+     "cited": true,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": 0.818258131094528
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 3,
+     "chunk_index": 5,
+     "score": 0.817708465270676
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 289,
+    "database_retrieval": 430,
+    "answer_generation": 1358,
+    "retrieval_total": 719
+   },
+   "elapsed_ms": 2077.8
+  },
+  {
+   "id": "X08",
+   "type": "shorthand",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "85f3f00433eb6080e99c93b493e8e139e00c62f6668e4c1d77ab26760515bebb",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.829124947890651
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.828801155090332
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.828182995319366
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.827947665926676
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 1,
+     "score": 0.82651444357462
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 426,
+    "database_retrieval": 430,
+    "answer_generation": 526,
+    "retrieval_total": 856
+   },
+   "elapsed_ms": 1382.0
+  },
+  {
+   "id": "F01",
+   "type": "follow_up",
+   "skipped": "multi_turn_needs_router"
+  },
+  {
+   "id": "F02",
+   "type": "follow_up",
+   "skipped": "multi_turn_needs_router"
+  },
+  {
+   "id": "F03",
+   "type": "topic_switch",
+   "skipped": "multi_turn_needs_router"
+  },
+  {
+   "id": "A01",
+   "type": "ambiguous",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "673280cef51087a6f4bcebde5459907a52450eb506fc337ef71bd8371741e874",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.819346351779377
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 14,
+     "score": 0.816607578609567
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.814355753140962
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "ipi-en.pdf",
+     "document_id": "UPLOAD-7bf63a9a1e194c01bee05f3c7be47f5d",
+     "page_number": 1,
+     "chunk_index": 3,
+     "score": 0.813722546779352
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 17,
+     "score": 0.813057884440926
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 215,
+    "database_retrieval": 435,
+    "answer_generation": 790,
+    "retrieval_total": 650
+   },
+   "elapsed_ms": 1440.0
+  },
+  {
+   "id": "U01",
+   "type": "currency",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "d41128095324dc215bc675892b45938c49a65e017b291a5c54b9463b3ec6261f",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": 0.81062844960009
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": 0.809747958473801
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 7,
+     "score": 0.805150294457385
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.804955888089889
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.804906594314591
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 120,
+    "database_retrieval": 432,
+    "answer_generation": 748,
+    "retrieval_total": 553
+   },
+   "elapsed_ms": 1301.1
+  },
+  {
+   "id": "S01",
+   "type": "typo",
+   "answer": "Hạn mức tiền khách sạn khi đi công tác ở các thành phố lớn được chỉ định là 2.500.000 VND cho mỗi phòng mỗi đêm [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1"
+   ],
+   "prompt_sha256": "0525d025693e582948e00a23759afcde80ce18866d047734b447c002ccdb9e7e",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 14,
+     "chunk_index": 182,
+     "score": 0.822242186465077
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.804154359799109
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": 0.80410079858284
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.803403424405235
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.795555639664333
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 106,
+    "database_retrieval": 438,
+    "answer_generation": 886,
+    "retrieval_total": 545
+   },
+   "elapsed_ms": 1431.5
+  },
+  {
+   "id": "G01",
+   "type": "long_paste",
+   "answer": "Theo chính sách chi phí doanh nghiệp, chi phí lưu trú qua đêm tại các địa điểm nội địa thông thường được hoàn chi với mức tối đa là 1.800.000 VND mỗi phòng mỗi đêm [S2].\n\nVì mức chi phí khách sạn mà bạn nêu là 2.200.000 VND/đêm, vượt quá mức trần 1.800.000 VND/đêm cho địa điểm nội địa thông thường, nên phần chi phí này sẽ không được hoàn đủ toàn bộ mà chỉ được hoàn trong phạm vi mức trần quy định (trừ khi Đà Nẵng được phân loại là \"địa điểm thành phố lớn được chỉ định\" với mức trần 2.500.000 VND, tuy nhiên tài liệu không cung cấp danh sách cụ thể các thành phố nào thuộc nhóm này) [S2].\n\nBạn cần lưu ý rằng quy định này áp dụng trừ khi hợp đồng hoặc kế hoạch đi công tác đã được phê duyệt thiết lập mức giới hạn chặt chẽ hơn [S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2"
+   ],
+   "prompt_sha256": "155e2d43f32f847c4d056aee7cf8f9a9afed8dc2cb2e2ca84cbca5aaa04749f2",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 1,
+     "chunk_index": 0,
+     "score": 0.806946491988111
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 14,
+     "chunk_index": 182,
+     "score": 0.806770837105193
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "ipi-en.pdf",
+     "document_id": "UPLOAD-7bf63a9a1e194c01bee05f3c7be47f5d",
+     "page_number": 4,
+     "chunk_index": 89,
+     "score": 0.804895472234759
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 1,
+     "score": 0.801743578806904
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "ipi-en.pdf",
+     "document_id": "UPLOAD-7bf63a9a1e194c01bee05f3c7be47f5d",
+     "page_number": 7,
+     "chunk_index": 157,
+     "score": 0.801519727435162
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 369,
+    "database_retrieval": 432,
+    "answer_generation": 840,
+    "retrieval_total": 802
+   },
+   "elapsed_ms": 1643.0
+  },
+  {
+   "id": "H01",
+   "type": "chitchat",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "4152e33299fb7813fe35fd43668055062286c1aa0d001fe8672215122ea8e9b2",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": 0.807333717107641
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.804168188075049
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 0.80415024707911
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "ipi-en.pdf",
+     "document_id": "UPLOAD-7bf63a9a1e194c01bee05f3c7be47f5d",
+     "page_number": 1,
+     "chunk_index": 3,
+     "score": 0.804003297089549
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 8,
+     "score": 0.803393506599252
+    }
+   ],
+   "retrieval_details": {},
+   "stages_ms": {
+    "embedding": 372,
+    "database_retrieval": 431,
+    "answer_generation": 720,
+    "retrieval_total": 803
+   },
+   "elapsed_ms": 1522.9
+  }
+ ]
+}

@@ -1,0 +1,715 @@
+{
+ "dataset_id": "vietstyle-test-v1",
+ "dataset_status": "reviewed-r2",
+ "dataset_sha256": "94bcc0c9579c9de4c18a806e8ccbcb3ba77025e4328e956eb8c57c24681f1974",
+ "arm": "E2E-K",
+ "configuration": {
+  "kind": "http",
+  "mode": "knowledge",
+  "groq_model_env": "qwen/qwen3.8-27b",
+  "role": "employee",
+  "note": "TEST SET; junk docs off; VN PDF active; fix f88613d",
+  "rbac_role": "finance_analyst",
+  "old_prompt_sha256": null
+ },
+ "created_at_utc": "2026-11-06T11:55:32.614660+00:00",
+ "results": [
+  {
+   "id": "Q01",
+   "type": "lookup",
+   "answer": "Phiên bản cũ của chính sách sau khi bị thay thế không bị xóa hẳn mà vẫn được giữ lại để phục vụ cho mục đích kiểm toán, tuy nhiên chúng sẽ bị loại khỏi hệ thống truy xuất hoạt động [S1] [S5].",
+   "evidence": [
+    {
+     "citation_id": "S1",
+     "source_type": "document",
+     "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "content": "Section: Control requirements\n Superseded versions remain available for audit but are removed from active retrieval.",
+     "metadata": {
+      "bbox": [
+       57.7,
+       253.318763779528,
+       447.4459999999999,
+       265.558763779528
+      ],
+      "domain": "general_knowledge",
+      "format": "PDF",
+      "parser": "docling",
+      "company": "Commerce Demo",
+      "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+      "source_url": null,
+      "chunk_index": 769,
+      "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+      "fiscal_year": null,
+      "layout_type": "text",
+      "page_number": 52,
+      "pipeline_id": "docling",
+      "source_type": "user_upload",
+      "token_count": 23,
+      "element_type": "text",
+      "section_path": [
+       "Control requirements"
+      ],
+      "allowed_roles": [
+       "employee"
+      ],
+      "docling_label": "list_item",
+      "document_type": "knowledge_document",
+      "heading_level": 1,
+      "parser_engine": "docling",
+      "section_title": "Control requirements",
+      "chunk_strategy": "sentence",
+      "evidence_class": null,
+      "docling_version": "2.129.0",
+      "embedding_model": "intfloat/multilingual-e5-base",
+      "chunk_size_chars": 1100,
+      "source_publisher": null,
+      "actual_char_count": 117,
+      "knowledge_domains": [],
+      "chunk_overlap_chars": 0,
+      "bbox_coordinate_origin": "TOPLEFT",
+      "bbox_coordinate_system": "docling_page_coordinate",
+      "text_extraction_method": "docling.native",
+      "external_reference_type": null,
+      "reference_applicability": null,
+      "synthetic_company_policy": false,
+      "commerce_reference_active": false,
+      "external_policy_reference": false,
+      "external_business_reference": false,
+      "embedding_max_sequence_length": 508,
+      "similarity_score": 1.451131820678711,
+      "retrieval_method": "translated_hybrid_rerank",
+      "retrieval_details": {
+       "language_aware": false,
+       "document_ids": null,
+       "candidate_k": 300,
+       "dense_weight": 1.0,
+       "bm25_weight": 2.0,
+       "rrf_k": 60,
+       "lexical_queries": {
+        "vn": "Phiên bản cũ của một chính sách sau khi bị thay thế có được xóa hẳn không?",
+        "en": "Are old versions of a policy completely deleted after being replaced?"
+       },
+       "dense_fallback": false,
+       "translation_error": null,
+       "effective_method": "translated_hybrid_rerank",
+       "translation_model": "qwen/qwen3.8-27b",
+       "translation_latency_ms": 384.04721999540925,
+       "lexical_document_scopes": {
+        "en": null,
+        "vn": null
+       },
+       "candidate_method": "translated_hybrid",
+       "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+       "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+       "reranker_candidate_count": 30,
+       "reranker_max_pair_tokens": 512,
+       "reranker_score_type": "raw_logit",
+       "reranker_applied": true,
+       "reranker_quantize": "",
+       "reranker_latency_ms": 1642.6425409736112,
+       "embedding_model": "intfloat/multilingual-e5-base"
+      }
+     }
+    },
+    {
+     "citation_id": "S5",
+     "source_type": "document",
+     "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "content": "Section: Yêu cầu kiểm soát\nBản bị thay thế vẫn sẵn cho kiểm toán nhưng loại khỏi truy xuất hoạt động.",
+     "metadata": {
+      "bbox": [
+       57.624,
+       233.03899999999987,
+       428.785,
+       244.0279999999999
+      ],
+      "domain": "general_knowledge",
+      "format": "PDF",
+      "parser": "docling",
+      "company": "Commerce Demo",
+      "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+      "source_url": null,
+      "chunk_index": 718,
+      "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+      "fiscal_year": null,
+      "layout_type": "text",
+      "page_number": 52,
+      "pipeline_id": "docling",
+      "source_type": "user_upload",
+      "token_count": 23,
+      "element_type": "text",
+      "section_path": [
+       "Yêu cầu kiểm soát"
+      ],
+      "allowed_roles": [
+       "employee"
+      ],
+      "docling_label": "list_item",
+      "document_type": "knowledge_document",
+      "heading_level": 1,
+      "parser_engine": "docling",
+      "section_title": "Yêu cầu kiểm soát",
+      "chunk_strategy": "sentence",
+      "evidence_class": null,
+      "docling_version": "2.129.0",
+      "embedding_model": "intfloat/multilingual-e5-base",
+      "chunk_size_chars": 1100,
+      "source_publisher": null,
+      "actual_char_count": 101,
+      "knowledge_domains": [],
+      "chunk_overlap_chars": 0,
+      "bbox_coordinate_origin": "TOPLEFT",
+      "bbox_coordinate_system": "docling_page_coordinate",
+      "text_extraction_method": "docling.native",
+      "external_reference_type": null,
+      "reference_applicability": null,
+      "synthetic_company_policy": false,
+      "commerce_reference_active": false,
+      "external_policy_reference": false,
+      "external_business_reference": false,
+      "embedding_max_sequence_length": 508,
+      "similarity_score": -1.7668803930282593,
+      "retrieval_method": "translated_hybrid_rerank",
+      "retrieval_details": {
+       "language_aware": false,
+       "document_ids": null,
+       "candidate_k": 300,
+       "dense_weight": 1.0,
+       "bm25_weight": 2.0,
+       "rrf_k": 60,
+       "lexical_queries": {
+        "vn": "Phiên bản cũ của một chính sách sau khi bị thay thế có được xóa hẳn không?",
+        "en": "Are old versions of a policy completely deleted after being replaced?"
+       },
+       "dense_fallback": false,
+       "translation_error": null,
+       "effective_method": "translated_hybrid_rerank",
+       "translation_model": "qwen/qwen3.8-27b",
+       "translation_latency_ms": 384.04721999540925,
+       "lexical_document_scopes": {
+        "en": null,
+        "vn": null
+       },
+       "candidate_method": "translated_hybrid",
+       "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+       "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+       "reranker_candidate_count": 30,
+       "reranker_max_pair_tokens": 512,
+       "reranker_score_type": "raw_logit",
+       "reranker_applied": true,
+       "reranker_quantize": "",
+       "reranker_latency_ms": 1642.6425409736112,
+       "embedding_model": "intfloat/multilingual-e5-base"
+      }
+     }
+    }
+   ],
+   "metadata": {
+    "ok": true,
+    "insufficient_context": false,
+    "claim_verification": {
+     "status": "supported",
+     "reason": "all_claims_supported",
+     "claim_count": 1,
+     "arithmetic_checked": 0
+    },
+    "selected_route": "knowledge",
+    "latency": {
+     "stages_ms": {
+      "routing": null,
+      "knowledge_search_planning": 1618.977747973986,
+      "embedding": 123.99641308002174,
+      "database_retrieval": 6968.0165980244055,
+      "retrieval_fusion": 1.2709859292954206,
+      "query_translation": 384.03790607117116,
+      "reranking": 1642.7432110067457,
+      "answer_generation": 1054.8682259395719,
+      "sql_planning": null,
+      "sql_execution": null,
+      "answer_synthesis": null,
+      "retrieval_total": 9131.215689936653,
+      "agent_workflow": 17205.776819959283,
+      "telemetry_persistence": null,
+      "claim_verification": 486.3462339853868
+     },
+     "events": [
+      {
+       "stage": "knowledge_search_planning",
+       "elapsed_ms": 1618.977747973986,
+       "status": "completed"
+      },
+      {
+       "stage": "embedding",
+       "elapsed_ms": 123.99641308002174,
+       "status": "completed"
+      },
+      {
+       "stage": "query_translation",
+       "elapsed_ms": 384.03790607117116,
+       "status": "completed"
+      },
+      {
+       "stage": "database_retrieval",
+       "elapsed_ms": 6968.0165980244055,
+       "status": "completed"
+      },
+      {
+       "stage": "retrieval_fusion",
+       "elapsed_ms": 0.7394709391519427,
+       "status": "completed"
+      },
+      {
+       "stage": "retrieval_fusion",
+       "elapsed_ms": 0.5315149901434779,
+       "status": "completed"
+      },
+      {
+       "stage": "reranking",
+       "elapsed_ms": 1642.7432110067457,
+       "status": "completed"
+      },
+      {
+       "stage": "retrieval_total",
+       "elapsed_ms": 9131.215689936653,
+       "status": "completed"
+      },
+      {
+       "stage": "answer_generation",
+       "elapsed_ms": 1054.8682259395719,
+       "status": "completed"
+      },
+      {
+       "stage": "claim_verification",
+       "elapsed_ms": 486.3462339853868,
+       "status": "completed"
+      },
+      {
+       "stage": "agent_workflow",
+       "elapsed_ms": 17205.776819959283,
+       "status": "completed"
+      }
+     ],
+     "request_total_ms": 17205.92535508331,
+     "response_ready_ms": 17206.04323304724
+    }
+   },
+   "history_answers": [],
+   "elapsed_ms": 17217.4
+  },
+  {
+   "id": "Q02",
+   "type": "lookup",
+   "answer": "Khi phát hành đơn mua hàng (PO), tài liệu quy định phải ghi các thông tin sau: nhà cung cấp, ngày phát hành, địa chỉ giao, tiền tệ, điều kiện thanh toán, mô tả dòng, mã sản phẩm, số lượng và đơn giá [S1].",
+   "evidence": [
+    {
+     "citation_id": "S1",
+     "source_type": "document",
+     "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "content": "Section: Quy trình bắt buộc\nCấp số PO duy nhất trong hệ thống mua sắm.\n\nGhi nhà cung cấp, ngày phát hành, địa chỉ giao, tiền tệ, điều kiện thanh toán, mô tả dòng, mã sản phẩm, số lượng và đơn giá.",
+     "metadata": {
+      "bbox": [
+       57.624,
+       137.1289999999999,
+       240.584,
+       148.11799999999994
+      ],
+      "domain": "general_knowledge",
+      "format": "PDF",
+      "parser": "docling",
+      "company": "Commerce Demo",
+      "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+      "source_url": null,
+      "chunk_index": 289,
+      "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+      "fiscal_year": null,
+      "layout_type": "text",
+      "page_number": 22,
+      "pipeline_id": "docling",
+      "source_type": "user_upload",
+      "token_count": 54,
+      "element_type": "text",
+      "section_path": [
+       "Quy trình bắt buộc"
+      ],
+      "allowed_roles": [
+       "employee"
+      ],
+      "docling_label": "list_item",
+      "document_type": "knowledge_document",
+      "heading_level": 1,
+      "parser_engine": "docling",
+      "section_title": "Quy trình bắt buộc",
+      "chunk_strategy": "sentence",
+      "evidence_class": null,
+      "docling_version": "2.129.0",
+      "embedding_model": "intfloat/multilingual-e5-base",
+      "chunk_size_chars": 1100,
+      "source_publisher": null,
+      "actual_char_count": 196,
+      "knowledge_domains": [],
+      "chunk_overlap_chars": 0,
+      "bbox_coordinate_origin": "TOPLEFT",
+      "bbox_coordinate_system": "docling_page_coordinate",
+      "text_extraction_method": "docling.native",
+      "external_reference_type": null,
+      "reference_applicability": null,
+      "synthetic_company_policy": false,
+      "commerce_reference_active": false,
+      "external_policy_reference": false,
+      "external_business_reference": false,
+      "embedding_max_sequence_length": 508,
+      "similarity_score": 3.622560739517212,
+      "retrieval_method": "translated_hybrid_rerank",
+      "retrieval_details": {
+       "language_aware": false,
+       "document_ids": null,
+       "candidate_k": 300,
+       "dense_weight": 1.0,
+       "bm25_weight": 2.0,
+       "rrf_k": 60,
+       "lexical_queries": {
+        "vn": "Khi phát hành một đơn mua hàng (PO), PO phải ghi những thông tin gì?",
+        "en": "When issuing a purchase order (PO), what information must the PO include?"
+       },
+       "dense_fallback": false,
+       "translation_error": null,
+       "effective_method": "translated_hybrid_rerank",
+       "translation_model": "qwen/qwen3.8-27b",
+       "translation_latency_ms": 856.7151710158214,
+       "lexical_document_scopes": {
+        "en": null,
+        "vn": null
+       },
+       "candidate_method": "translated_hybrid",
+       "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+       "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+       "reranker_candidate_count": 30,
+       "reranker_max_pair_tokens": 512,
+       "reranker_score_type": "raw_logit",
+       "reranker_applied": true,
+       "reranker_quantize": "",
+       "reranker_latency_ms": 2909.514947910793,
+       "embedding_model": "intfloat/multilingual-e5-base"
+      }
+     }
+    }
+   ],
+   "metadata": {
+    "ok": true,
+    "insufficient_context": false,
+    "claim_verification": {
+     "status": "supported",
+     "reason": "all_claims_supported",
+     "claim_count": 1,
+     "arithmetic_checked": 0
+    },
+    "selected_route": "knowledge",
+    "latency": {
+     "stages_ms": {
+      "routing": null,
+      "knowledge_search_planning": 335.72637499310076,
+      "embedding": 147.2677430137992,
+      "database_retrieval": 1931.1965489760041,
+      "retrieval_fusion": 0.761884031817317,
+      "query_translation": 856.6975139547139,
+      "reranking": 2909.6328270388767,
+      "answer_generation": 534.5143150771037,
+      "sql_planning": null,
+      "sql_execution": null,
+      "answer_synthesis": null,
+      "retrieval_total": 5853.541917982511,
+      "agent_workflow": 7179.980525979772,
+      "telemetry_persistence": null,
+      "claim_verification": 454.9073859816417
+     },
+     "events": [
+      {
+       "stage": "knowledge_search_planning",
+       "elapsed_ms": 335.72637499310076,
+       "status": "completed"
+      },
+      {
+       "stage": "embedding",
+       "elapsed_ms": 147.2677430137992,
+       "status": "completed"
+      },
+      {
+       "stage": "query_translation",
+       "elapsed_ms": 856.6975139547139,
+       "status": "completed"
+      },
+      {
+       "stage": "database_retrieval",
+       "elapsed_ms": 1931.1965489760041,
+       "status": "completed"
+      },
+      {
+       "stage": "retrieval_fusion",
+       "elapsed_ms": 0.3492990508675575,
+       "status": "completed"
+      },
+      {
+       "stage": "retrieval_fusion",
+       "elapsed_ms": 0.4125849809497595,
+       "status": "completed"
+      },
+      {
+       "stage": "reranking",
+       "elapsed_ms": 2909.6328270388767,
+       "status": "completed"
+      },
+      {
+       "stage": "retrieval_total",
+       "elapsed_ms": 5853.541917982511,
+       "status": "completed"
+      },
+      {
+       "stage": "answer_generation",
+       "elapsed_ms": 534.5143150771037,
+       "status": "completed"
+      },
+      {
+       "stage": "claim_verification",
+       "elapsed_ms": 454.9073859816417,
+       "status": "completed"
+      },
+      {
+       "stage": "agent_workflow",
+       "elapsed_ms": 7179.980525979772,
+       "status": "completed"
+      }
+     ],
+     "request_total_ms": 7180.10104901623,
+     "response_ready_ms": 7180.201351060532
+    }
+   },
+   "history_answers": [],
+   "elapsed_ms": 7186.6
+  },
+  {
+   "id": "Q03",
+   "type": "lookup",
+   "answer": "Chứng từ chi phí chỉ cho phép người đề nghị, quản lý được phép và người rà soát Tài chính xem [S1].",
+   "evidence": [
+    {
+     "citation_id": "S1",
+     "source_type": "document",
+     "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "content": "Section: Quy trình bắt buộc\nBằng chứng chi phí chỉ cho người đề nghị, quản lý được phép và người rà Tài chính.",
+     "metadata": {
+      "bbox": [
+       57.624,
+       148.6489999999999,
+       451.714,
+       159.63799999999992
+      ],
+      "domain": "general_knowledge",
+      "format": "PDF",
+      "parser": "docling",
+      "company": "Commerce Demo",
+      "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+      "source_url": null,
+      "chunk_index": 208,
+      "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+      "fiscal_year": null,
+      "layout_type": "text",
+      "page_number": 16,
+      "pipeline_id": "docling",
+      "source_type": "user_upload",
+      "token_count": 27,
+      "element_type": "text",
+      "section_path": [
+       "Quy trình bắt buộc"
+      ],
+      "allowed_roles": [
+       "employee"
+      ],
+      "docling_label": "list_item",
+      "document_type": "knowledge_document",
+      "heading_level": 1,
+      "parser_engine": "docling",
+      "section_title": "Quy trình bắt buộc",
+      "chunk_strategy": "sentence",
+      "evidence_class": null,
+      "docling_version": "2.129.0",
+      "embedding_model": "intfloat/multilingual-e5-base",
+      "chunk_size_chars": 1100,
+      "source_publisher": null,
+      "actual_char_count": 110,
+      "knowledge_domains": [],
+      "chunk_overlap_chars": 0,
+      "bbox_coordinate_origin": "TOPLEFT",
+      "bbox_coordinate_system": "docling_page_coordinate",
+      "text_extraction_method": "docling.native",
+      "external_reference_type": null,
+      "reference_applicability": null,
+      "synthetic_company_policy": false,
+      "commerce_reference_active": false,
+      "external_policy_reference": false,
+      "external_business_reference": false,
+      "embedding_max_sequence_length": 508,
+      "similarity_score": 0.49399930238723755,
+      "retrieval_method": "translated_hybrid_rerank",
+      "retrieval_details": {
+       "language_aware": false,
+       "document_ids": null,
+       "candidate_k": 300,
+       "dense_weight": 1.0,
+       "bm25_weight": 2.0,
+       "rrf_k": 60,
+       "lexical_queries": {
+        "vn": "Chứng từ chi phí của một nhân viên thì những ai được phép xem?",
+        "en": "Who is allowed to view an employee's expense documents?"
+       },
+       "dense_fallback": false,
+       "translation_error": null,
+       "effective_method": "translated_hybrid_rerank",
+       "translation_model": "qwen/qwen3.8-27b",
+       "translation_latency_ms": 650.37162497174,
+       "lexical_document_scopes": {
+        "en": null,
+        "vn": null
+       },
+       "candidate_method": "translated_hybrid",
+       "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+       "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+       "reranker_candidate_count": 30,
+       "reranker_max_pair_tokens": 512,
+       "reranker_score_type": "raw_logit",
+       "reranker_applied": true,
+       "reranker_quantize": "",
+       "reranker_latency_ms": 2573.99597694166,
+       "embedding_model": "intfloat/multilingual-e5-base"
+      }
+     }
+    }
+   ],
+   "metadata": {
+    "ok": true,
+    "insufficient_context": false,
+    "claim_verification": {
+     "status": "supported",
+     "reason": "all_claims_supported",
+     "claim_count": 1,
+     "arithmetic_checked": 0
+    },
+    "selected_route": "knowledge",
+    "latency": {
+     "stages_ms": {
+      "routing": null,
+      "knowledge_search_planning": 595.7091059535742,
+      "embedding": 105.61662493273616,
+      "database_retrieval": 1913.5793049354106,
+      "retrieval_fusion": 0.8094150107353926,
+      "query_translation": 650.3484901040792,
+      "reranking": 2574.122798978351,
+      "answer_generation": 450.9594220435247,
+      "sql_planning": null,
+      "sql_execution": null,
+      "answer_synthesis": null,
+      "retrieval_total": 5254.79825399816,
+      "agent_workflow": 6759.4422289403155,
+      "telemetry_persistence": null,
+      "claim_verification": 456.71953598503023
+     },
+     "events": [
+      {
+       "stage": "knowledge_search_planning",
+       "elapsed_ms": 595.7091059535742,
+       "status": "completed"
+      },
+      {
+       "stage": "embedding",
+       "elapsed_ms": 105.61662493273616,
+       "status": "completed"
+      },
+      {
+       "stage": "query_translation",
+       "elapsed_ms": 650.3484901040792,
+       "status": "completed"
+      },
+      {
+       "stage": "database_retrieval",
+       "elapsed_ms": 1913.5793049354106,
+       "status": "completed"
+      },
+      {
+       "stage": "retrieval_fusion",
+       "elapsed_ms": 0.5207380745559931,
+       "status": "completed"
+      },
+      {
+       "stage": "retrieval_fusion",
+       "elapsed_ms": 0.2886769361793995,
+       "status": "completed"
+      },
+      {
+       "stage": "reranking",
+       "elapsed_ms": 2574.122798978351,
+       "status": "completed"
+      },
+      {
+       "stage": "retrieval_total",
+       "elapsed_ms": 5254.79825399816,
+       "status": "completed"
+      },
+      {
+       "stage": "answer_generation",
+       "elapsed_ms": 450.9594220435247,
+       "status": "completed"
+      },
+      {
+       "stage": "claim_verification",
+       "elapsed_ms": 456.71953598503023,
+       "status": "completed"
+      },
+      {
+       "stage": "agent_workflow",
+       "elapsed_ms": 6759.4422289403155,
+       "status": "completed"
+      }
+     ],
+     "request_total_ms": 6759.57453798037,
+     "response_ready_ms": 6759.732728009112
+    }
+   },
+   "history_answers": [],
+   "elapsed_ms": 6770.5
+  },
+  {
+   "id": "Q04",
+   "type": "lookup",
+   "error_type": "HTTPStatusError",
+   "error": "Server error '503 Service Unavailable' for url 'http://127.0.0.1:8000/api/agents/chat'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503",
+   "elapsed_ms": 5489.7
+  },
+  {
+   "id": "Q05",
+   "type": "lookup",
+   "error_type": "HTTPStatusError",
+   "error": "Server error '503 Service Unavailable' for url 'http://127.0.0.1:8000/api/agents/chat'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503",
+   "elapsed_ms": 3482.2
+  },
+  {
+   "id": "Q06",
+   "type": "threshold",
+   "error_type": "HTTPStatusError",
+   "error": "Server error '503 Service Unavailable' for url 'http://127.0.0.1:8000/api/agents/chat'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503",
+   "elapsed_ms": 4638.6
+  },
+  {
+   "id": "Q07",
+   "type": "threshold",
+   "error_type": "HTTPStatusError",
+   "error": "Server error '503 Service Unavailable' for url 'http://127.0.0.1:8000/api/agents/chat'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503",
+   "elapsed_ms": 4729.2
+  },
+  {
+   "id": "Q08",
+   "type": "threshold",
+   "error_type": "HTTPStatusError",
+   "error": "Server error '503 Service Unavailable' for url 'http://127.0.0.1:8000/api/agents/chat'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503",
+   "elapsed_ms": 4275.0
+  }
+ ]
+}

@@ -1,0 +1,2009 @@
+{
+ "run": "artifacts/local/vietstyle-runs/B2-fix.json",
+ "arm": "B2",
+ "configuration": {
+  "method": "translated_hybrid_rerank",
+  "verify": true,
+  "reranker": "mmarco-mMiniLM",
+  "groq_model_env": "qwen/qwen3.8-27b",
+  "role": "employee",
+  "note": "VN PDF inactive; fix f88613d",
+  "rbac_role": "finance_analyst",
+  "old_prompt_sha256": null
+ },
+ "summary": {
+  "cases": 76,
+  "scored": 73,
+  "errors": 0,
+  "skipped": 3,
+  "recall@5": {
+   "n": 60,
+   "mean": 0.711
+  },
+  "full@5": {
+   "n": 60,
+   "mean": 0.6
+  },
+  "mrr": {
+   "n": 60,
+   "mean": 0.731
+  },
+  "ndcg@10": {
+   "n": 60,
+   "mean": 0.663
+  },
+  "citation_precision": {
+   "n": 43,
+   "mean": 0.87
+  },
+  "citation_any_correct": {
+   "n": 43,
+   "mean": 0.93
+  },
+  "strict_key_points": {
+   "n": 60,
+   "mean": 0.464
+  },
+  "false_abstention": {
+   "n": 61,
+   "mean": 0.361
+  },
+  "correct_abstention": {
+   "n": 12,
+   "mean": 1.0
+  },
+  "verifier_blocks": 4,
+  "rbac_leaks": 0,
+  "rbac_cases": 3,
+  "no_citation_ok": [
+   true
+  ],
+  "elapsed_ms_median": 9604.7,
+  "judge": {
+   "n": 70,
+   "correct": {
+    "n": 70,
+    "mean": 0.571
+   },
+   "correct_or_partial": {
+    "n": 70,
+    "mean": 0.671
+   },
+   "key_point_coverage": {
+    "n": 60,
+    "mean": 0.617
+   },
+   "faithful": {
+    "n": 0
+   },
+   "by_type": {
+    "ambiguous": {
+     "n": 1,
+     "mean": 1.0
+    },
+    "calculation": {
+     "n": 8,
+     "mean": 0.625
+    },
+    "cannot_conclude": {
+     "n": 4,
+     "mean": 0.75
+    },
+    "chitchat": {
+     "n": 1,
+     "mean": 0.0
+    },
+    "currency": {
+     "n": 1,
+     "mean": 0.0
+    },
+    "english": {
+     "n": 6,
+     "mean": 0.667
+    },
+    "long_paste": {
+     "n": 1,
+     "mean": 0.0
+    },
+    "lookup": {
+     "n": 14,
+     "mean": 0.571
+    },
+    "mixed": {
+     "n": 5,
+     "mean": 0.6
+    },
+    "multi_part": {
+     "n": 6,
+     "mean": 0.0
+    },
+    "no_diacritics": {
+     "n": 2,
+     "mean": 0.0
+    },
+    "out_of_scope": {
+     "n": 8,
+     "mean": 1.0
+    },
+    "shorthand": {
+     "n": 1,
+     "mean": 0.0
+    },
+    "threshold": {
+     "n": 8,
+     "mean": 0.75
+    },
+    "trap": {
+     "n": 3,
+     "mean": 0.333
+    },
+    "typo": {
+     "n": 1,
+     "mean": 1.0
+    }
+   }
+  }
+ },
+ "rows": [
+  {
+   "id": "L01",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 16095.7,
+   "strict_key_points": 0.3333333333333333,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "citation_precision": 0.0,
+   "citation_any_correct": false,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     true,
+     false
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It gives the inventory manual identifier and date instead of the enterprise policy."
+   },
+   "answer_sha256": "0092008969ccf9fac2da6aadfbdcc7ef8f421c3f5fe545f8b6f004ded4d76b30",
+   "judge_model": "codex"
+  },
+  {
+   "id": "L02",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 10308.9,
+   "strict_key_points": 0.2,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 0.6666666666666666,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false,
+     false,
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It denies the transaction states explicitly listed in the cited page."
+   },
+   "answer_sha256": "29115bbc2f69a16c18beced97bb9d86701c2026eec9d8d5caf4c488e13dcf0b2",
+   "judge_model": "codex"
+  },
+  {
+   "id": "L03",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 11333.5,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 0.5,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "83b08884a4f65d8a89f1288d6ae6363c3deb6bd9f969798129900dad1d7dc93c",
+   "judge_model": "codex"
+  },
+  {
+   "id": "L04",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 7168.8,
+   "strict_key_points": 0.0,
+   "recall@5": 0.5,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.6131471927654584,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false,
+     false
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It gives a general information requirement without any requested application fields."
+   },
+   "answer_sha256": "f92cc36262e93537927f756aee946fcd565957a62fd3805579e121d233dd719d",
+   "judge_model": "codex"
+  },
+  {
+   "id": "L05",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 8517.7,
+   "strict_key_points": 0.6666666666666666,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "02dca17ab30490f31a52b34e642b67bb7d8ea372ffd75a799363732abdb52461",
+   "judge_model": "codex"
+  },
+  {
+   "id": "L06",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 8882.6,
+   "strict_key_points": 0.6666666666666666,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "40c806a590b630a7f3e033882c2fff0fac00fb01329685dedb0dbf5414403903",
+   "judge_model": "codex"
+  },
+  {
+   "id": "L07",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 7593.5,
+   "strict_key_points": 0.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "5809df7c05f369d6029a7e5968bc607e420bb727bd57ad7c7aeff983d6aeb62e",
+   "judge_model": "codex"
+  },
+  {
+   "id": "L08",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 9252.9,
+   "strict_key_points": 0.5,
+   "recall@5": 0.5,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.6131471927654584,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "3fe258015b8c91435ca1535a466a370abc6cbfbe2c109671df80d425b5165403",
+   "judge_model": "codex"
+  },
+  {
+   "id": "L09",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 6245.5,
+   "strict_key_points": 0.0,
+   "recall@5": 0.5,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.6131471927654584,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "L10",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 8058.6,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "da04f35aebeafc7489a999c2d8976475c64f76d8fd1ef84c98f7175d3241a0ea",
+   "judge_model": "codex"
+  },
+  {
+   "id": "L11",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 8607.3,
+   "strict_key_points": 0.0,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "L12",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 9821.1,
+   "strict_key_points": 0.5,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 0.5,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It excludes held stock and requires quality release although the disposition update lacks cited support."
+   },
+   "answer_sha256": "37c9c9e88b19bd954b3f479cf58dad68f23ae89a619ea013403ebb6a98f73f14",
+   "judge_model": "codex"
+  },
+  {
+   "id": "L13",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 9381.4,
+   "strict_key_points": 0.3333333333333333,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "citation_precision": 0.0,
+   "citation_any_correct": false,
+   "judge": {
+    "correctness": "partial",
+    "key_points_covered": [
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It provides evidence and independent approval but omits before-and-after records."
+   },
+   "answer_sha256": "c6c67f9fb221956688a4e3cdbfab1ad3b12a8c4ad8865f40d1b47d2bdc021bbf",
+   "judge_model": "codex"
+  },
+  {
+   "id": "L14",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 7605.3,
+   "strict_key_points": 0.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "f37d0ea1adc2f81171fb1384c3081519d1da4de10f18e83a34c6c8d63fe4f4c9",
+   "judge_model": "codex"
+  },
+  {
+   "id": "T01",
+   "type": "threshold",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 11452.8,
+   "strict_key_points": 0.5,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "4f8bc8a7539fff7255dacab2a8205b52578921b2fa84720a034c1fc58affa45e",
+   "judge_model": "codex"
+  },
+  {
+   "id": "T02",
+   "type": "threshold",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 13599.3,
+   "strict_key_points": 0.5,
+   "recall@5": 0.6666666666666666,
+   "full@5": false,
+   "mrr": 0.3333333333333333,
+   "ndcg@10": 0.4367467095119258,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "e47169dea80e59b080eddd2b9ec6afda32b00a8f6bb383cfef148b92c9032ce1",
+   "judge_model": "codex"
+  },
+  {
+   "id": "T03",
+   "type": "threshold",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 8851.1,
+   "strict_key_points": 0.5,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "45cc376ee0fc54d88dd03449d989ca07c04488c25151c615505068b2550a04c1",
+   "judge_model": "codex"
+  },
+  {
+   "id": "T04",
+   "type": "threshold",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 8398.0,
+   "strict_key_points": 0.5,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "partial",
+    "key_points_covered": [
+     true,
+     false
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It gives the normal cap but omits the prior written exception route."
+   },
+   "answer_sha256": "70725e93f3978962b128d2dc1e783841bce92f166639abed981bfd2e2a213ba6",
+   "judge_model": "codex"
+  },
+  {
+   "id": "T05",
+   "type": "threshold",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 8358.9,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "895544a2d75928deab1840853e0c7f0d6c9a64da8c501e72c19529073fa47b29",
+   "judge_model": "codex"
+  },
+  {
+   "id": "T06",
+   "type": "threshold",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 8681.0,
+   "strict_key_points": 0.3333333333333333,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "968dd29dba083c777d768b00d63d82014b97dab2dd680bc7577d136650a7bc2f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "T07",
+   "type": "threshold",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 9120.0,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 0.5,
+   "ndcg@10": 0.6309297535714575,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "0efe589b2175d7cfeed2e78391aa59f0ca7c9df1126d5a56ae120954d45e5c6c",
+   "judge_model": "codex"
+  },
+  {
+   "id": "T08",
+   "type": "threshold",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 9436.3,
+   "strict_key_points": 0.0,
+   "recall@5": 0.6666666666666666,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.6508205185601091,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "partial",
+    "key_points_covered": [
+     true,
+     false
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It allows documented sole sourcing but omits the permitted grounds and approvers."
+   },
+   "answer_sha256": "5cc0b2c31fffc076fa4bb2b03f61a8ff6f66ff1ffebf41e9cee365c112b99722",
+   "judge_model": "codex"
+  },
+  {
+   "id": "C01",
+   "type": "calculation",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 11263.9,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "61bb1736026f7caa3d91b32485721d9cacbbe2892f9d2cee156eaf4a517052be",
+   "judge_model": "codex"
+  },
+  {
+   "id": "C02",
+   "type": "calculation",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 10785.2,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "bf64e4f37c3ef628db519f2b5d61ae6d086c494813b57e438b7edac4d67cf401",
+   "judge_model": "codex"
+  },
+  {
+   "id": "C03",
+   "type": "calculation",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 12049.7,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 0.9197207891481876,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "f81661fa9390ca6c91028a3017cfb179d4d111476d0f2529e15fd623643f9641",
+   "judge_model": "codex"
+  },
+  {
+   "id": "C04",
+   "type": "calculation",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 11903.5,
+   "strict_key_points": 0.5,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 0.8772153153380493,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "d3c58226b03c03c84f468f3433c2019ab074864a3c183894877f9df8fc8ff917",
+   "judge_model": "codex"
+  },
+  {
+   "id": "C05",
+   "type": "calculation",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 7674.6,
+   "strict_key_points": 0.0,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "C06",
+   "type": "calculation",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 10847.7,
+   "strict_key_points": 0.0,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "C07",
+   "type": "calculation",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 14065.0,
+   "strict_key_points": 0.5,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "citation_precision": 0.0,
+   "citation_any_correct": false,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It assumes the unmatched units were rejected although the question does not establish that."
+   },
+   "answer_sha256": "e1d2c7a9963cfc608dc79b105e1ae6b41abdcde6733a7aa942caa2e00e851867",
+   "judge_model": "codex"
+  },
+  {
+   "id": "C08",
+   "type": "calculation",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 13987.7,
+   "strict_key_points": 0.6666666666666666,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 0.75,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "d3e3c544b0126e2ada4c86ee515c14920776b064022854d001cfdc8fa1c4d36f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "M01",
+   "type": "multi_part",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "verifier_block",
+   "elapsed_ms": 17416.7,
+   "strict_key_points": 0.0,
+   "recall@5": 0.3333333333333333,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.46927872602275644,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "eaa5f18ab10516bb583e9a38ce76e298abc63c13f79a5b13283c9585e1ca4878",
+   "judge_model": "codex"
+  },
+  {
+   "id": "M02",
+   "type": "multi_part",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 11775.0,
+   "strict_key_points": 0.5,
+   "recall@5": 0.5,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.6131471927654584,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "partial",
+    "key_points_covered": [
+     true,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It gives immediate incident-channel reporting but omits account and key containment."
+   },
+   "answer_sha256": "d8943a737a2732e97222b297fa3347f10f6b2d34ba5f2b224719f7b320e8d40a",
+   "judge_model": "codex"
+  },
+  {
+   "id": "M03",
+   "type": "multi_part",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "verifier_block",
+   "elapsed_ms": 16829.3,
+   "strict_key_points": 0.0,
+   "recall@5": 0.5,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.6131471927654584,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "eaa5f18ab10516bb583e9a38ce76e298abc63c13f79a5b13283c9585e1ca4878",
+   "judge_model": "codex"
+  },
+  {
+   "id": "M04",
+   "type": "multi_part",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 9228.2,
+   "strict_key_points": 0.0,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "M05",
+   "type": "multi_part",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 9746.4,
+   "strict_key_points": 0.0,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "M06",
+   "type": "multi_part",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "verifier_block",
+   "elapsed_ms": 13754.6,
+   "strict_key_points": 0.0,
+   "recall@5": 0.6666666666666666,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.7039180890341347,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "eaa5f18ab10516bb583e9a38ce76e298abc63c13f79a5b13283c9585e1ca4878",
+   "judge_model": "codex"
+  },
+  {
+   "id": "N01",
+   "type": "cannot_conclude",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 11994.4,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 0.5,
+   "ndcg@10": 0.6309297535714575,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "301b57a8854d5408de6dce5d2bddc9a86bdeeec60e382d769976ab047cca0f56",
+   "judge_model": "codex"
+  },
+  {
+   "id": "N02",
+   "type": "cannot_conclude",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 13076.2,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 0.3333333333333333,
+   "ndcg@10": 0.5,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "c8177296a54089000e4358fc40f82fdc5595bd6d1ee87d27b53c2c46df943ee2",
+   "judge_model": "codex"
+  },
+  {
+   "id": "N03",
+   "type": "cannot_conclude",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 13416.3,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "0f55797b0b4dd062f9fa89b8c3627292db017ac213c9f05b67bcccdff7b4cbdb",
+   "judge_model": "codex"
+  },
+  {
+   "id": "N04",
+   "type": "cannot_conclude",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 11548.5,
+   "strict_key_points": 0.5,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "partial",
+    "key_points_covered": [
+     true,
+     false
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It rejects marking the claim paid but omits actual payment confirmation."
+   },
+   "answer_sha256": "3c03f8e010a28c02a2be5c4bdfafcabb05a92e0629d08a19c48bc604963c07cf",
+   "judge_model": "codex"
+  },
+  {
+   "id": "O01",
+   "type": "out_of_scope",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 8580.5,
+   "strict_key_points": null,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It appropriately declines without inventing the requested information."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "O02",
+   "type": "out_of_scope",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 11900.4,
+   "strict_key_points": null,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It appropriately declines without inventing the requested information."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "O03",
+   "type": "out_of_scope",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 11528.0,
+   "strict_key_points": null,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It appropriately declines without inventing the requested information."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "O04",
+   "type": "out_of_scope",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 8458.0,
+   "strict_key_points": null,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It appropriately declines without inventing the requested information."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "O05",
+   "type": "out_of_scope",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 11863.8,
+   "strict_key_points": null,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It appropriately declines without inventing the requested information."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "O06",
+   "type": "out_of_scope",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 7450.1,
+   "strict_key_points": null,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It appropriately declines without inventing the requested information."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "O07",
+   "type": "out_of_scope",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 5817.7,
+   "strict_key_points": null,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It appropriately declines without inventing the requested information."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "O08",
+   "type": "out_of_scope",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 8536.2,
+   "strict_key_points": null,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It appropriately declines without inventing the requested information."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "E01",
+   "type": "english",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 8246.7,
+   "strict_key_points": 0.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 0.25,
+   "ndcg@10": 0.43067655807339306,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "E02",
+   "type": "english",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 8679.2,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "ddfacf30e25252c73a9728883b1c8c4bc6246632239986655812082be3e59f7f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "E03",
+   "type": "english",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 10099.6,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "d0d3b7d54e6177292f925ac13c7719c7ca521c7518dcfe068e515356dfbf5e32",
+   "judge_model": "codex"
+  },
+  {
+   "id": "E04",
+   "type": "english",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 8578.6,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 0.2,
+   "ndcg@10": 0.38685280723454163,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "502e1544cb8f232c079f4d70f1ab6a0b3a1fb0cfa4f9afa1c91ecad799a8980c",
+   "judge_model": "codex"
+  },
+  {
+   "id": "E05",
+   "type": "english",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 8413.6,
+   "strict_key_points": 0.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 0.9197207891481876,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "partial",
+    "key_points_covered": [
+     false,
+     false
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It requires reconciliation and a reason but omits independent recounting."
+   },
+   "answer_sha256": "7b1de7649462487e2e716a1052f3d3078f3b0da5fae618ac294b46132219b7d7",
+   "judge_model": "codex"
+  },
+  {
+   "id": "E06",
+   "type": "english",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 9094.9,
+   "strict_key_points": 0.5,
+   "recall@5": 0.6666666666666666,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.6713860725233041,
+   "citation_precision": 0.5,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "a6daf042d9450541394920cb76dd7660d518236be7b27cb8d7ee4fb27b64493d",
+   "judge_model": "codex"
+  },
+  {
+   "id": "P01",
+   "type": "trap",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 9010.5,
+   "strict_key_points": 0.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 0.8503449055347546,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "P02",
+   "type": "trap",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 9007.0,
+   "strict_key_points": 0.0,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "P03",
+   "type": "trap",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 8349.4,
+   "strict_key_points": null,
+   "recall@5": 0.5,
+   "full@5": false,
+   "mrr": 0.2,
+   "ndcg@10": 0.23719771276929622,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It appropriately declines without inventing the requested information."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "R01",
+   "type": "rbac",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 12023.2,
+   "strict_key_points": null,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "rbac_leak": false
+  },
+  {
+   "id": "R02",
+   "type": "rbac",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 13321.7,
+   "strict_key_points": null,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "rbac_leak": false
+  },
+  {
+   "id": "R03",
+   "type": "rbac",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 8529.7,
+   "strict_key_points": null,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "rbac_leak": false
+  },
+  {
+   "id": "X01",
+   "type": "mixed",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 8341.6,
+   "strict_key_points": 1.0,
+   "recall@5": 0.3333333333333333,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.46927872602275644,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "8a554d94b79bd026851f1d9ef856fd9d5b02a33a387e80db23c4c8a78bd2141f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "X02",
+   "type": "mixed",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 13562.6,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 0.5,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "515aa132814786ee8597d74836b8bf0544944d0619703712d935baa3cfb67f80",
+   "judge_model": "codex"
+  },
+  {
+   "id": "X03",
+   "type": "mixed",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 9928.5,
+   "strict_key_points": 0.5,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "54bdd18c009d42319c5ad97113298ece7bb36e18bace2b98e6051abdad434c9f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "X04",
+   "type": "mixed",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 9604.7,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It assigns the review requirement to material suppliers instead of critical suppliers."
+   },
+   "answer_sha256": "2e9b9e09e40b24922fb016d5b0e2b6d83554d19c3013414971808813ef598e96",
+   "judge_model": "codex"
+  },
+  {
+   "id": "X05",
+   "type": "mixed",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 8443.4,
+   "strict_key_points": 0.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 0.25,
+   "ndcg@10": 0.43067655807339306,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "X06",
+   "type": "no_diacritics",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 10646.9,
+   "strict_key_points": 0.0,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "X07",
+   "type": "no_diacritics",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "verifier_block",
+   "elapsed_ms": 11443.0,
+   "strict_key_points": 0.0,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "eaa5f18ab10516bb583e9a38ce76e298abc63c13f79a5b13283c9585e1ca4878",
+   "judge_model": "codex"
+  },
+  {
+   "id": "X08",
+   "type": "shorthand",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 12039.6,
+   "strict_key_points": 0.6666666666666666,
+   "recall@5": 0.3333333333333333,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.46927872602275644,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "partial",
+    "key_points_covered": [
+     true,
+     true,
+     false
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It gives the one-quote rule but omits the line-manager approver."
+   },
+   "answer_sha256": "69bdaa22c0c61464bea034a832b3c312f25ee2ce45f487e24320fa3ae24a4447",
+   "judge_model": "codex"
+  },
+  {
+   "id": "F01",
+   "type": "follow_up",
+   "should_abstain": false,
+   "status": "multi_turn_needs_router"
+  },
+  {
+   "id": "F02",
+   "type": "follow_up",
+   "should_abstain": false,
+   "status": "multi_turn_needs_router"
+  },
+  {
+   "id": "F03",
+   "type": "topic_switch",
+   "should_abstain": false,
+   "status": "multi_turn_needs_router"
+  },
+  {
+   "id": "A01",
+   "type": "ambiguous",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 11650.2,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "fee3a04018a7aad10c6ba8c48f0f592eb2e3c70ed74bfbca01979dad38403c60",
+   "judge_model": "codex"
+  },
+  {
+   "id": "U01",
+   "type": "currency",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 6623.8,
+   "strict_key_points": 0.0,
+   "recall@5": 0.5,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.6131471927654584,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "S01",
+   "type": "typo",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 11440.2,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "It conveys the requested policy rule accurately."
+   },
+   "answer_sha256": "2af5ee9c31c70181a250489aaefc902de870b84a1d540831c8b94ddabafb8907",
+   "judge_model": "codex"
+  },
+  {
+   "id": "G01",
+   "type": "long_paste",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 15409.1,
+   "strict_key_points": 0.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 0.5,
+   "ndcg@10": 0.6309297535714575,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  },
+  {
+   "id": "H01",
+   "type": "chitchat",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 6420.6,
+   "strict_key_points": null,
+   "no_citation_ok": true,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [],
+    "abstained": true,
+    "faithful": null,
+    "reason": "It declines an answerable policy question without the required facts."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "codex"
+  }
+ ]
+}

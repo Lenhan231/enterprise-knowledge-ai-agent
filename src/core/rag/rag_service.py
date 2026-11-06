@@ -17,7 +17,7 @@ from core.rag.claim_verification import VerificationOutcome, VERIFICATION_UNAVAI
 from core.latency import measure
 from core.agents.runtime import deadline, remaining
 from core.prompts.knowledge_search import SEARCH_PLAN_PROMPT
-from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT, INSUFFICIENT_ANSWER, NO_MATCHING_DOCUMENTS_ANSWER
+from core.prompts.Knowledge import COMPLETENESS_RULE, ENTERPRISE_ASSISTANT_PROMPT, INSUFFICIENT_ANSWER, NO_MATCHING_DOCUMENTS_ANSWER
 from core.retrieval.retrieval import RetrievalRequest
 from core.retrieval.retrieval_service import RetrievalService
 
@@ -244,7 +244,10 @@ class RAGService:
         if not contexts:
             return RAGResult(answer=NO_MATCHING_DOCUMENTS_ANSWER, insufficient_context=True)
 
-        prompt = ENTERPRISE_ASSISTANT_PROMPT.format(
+        template = ENTERPRISE_ASSISTANT_PROMPT
+        if os.getenv("KNOWLEDGE_COMPLETENESS_RULE", "0") == "1":
+            template = template.replace("\n\nNguồn:\n", "\n" + COMPLETENESS_RULE + "\nNguồn:\n", 1)
+        prompt = template.format(
             context=_format_contexts(contexts)[:MAX_CONTEXT_CHARS],
             question=question,
         )

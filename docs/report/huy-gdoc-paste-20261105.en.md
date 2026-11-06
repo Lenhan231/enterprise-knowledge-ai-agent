@@ -273,7 +273,7 @@ On six known-correct live answers, the verifier initially withheld one answer be
 
 On six fixed policy questions, run in Knowledge mode with verification enabled, the median warm latency fell from 12.6 s to 6.7 s (maximum 9.1 s). Two changes caused the reduction: the telemetry write was moved off the response path, and the dense and BM25 queries were run concurrently on pooled connections.
 
-Figure 6.1 shows the remaining time per stage. Database access dominates, mostly because of network round trips of about 0.4 s each to the hosted database. Latency after the November fixes is [pending].
+Figure 6.1 shows the remaining time per stage. Database access dominates, mostly because of network round trips of about 0.4 s each to the hosted database. After the November fixes, the warm median was 7.1 s (database wait 1.9 s, reranking 3.3 s). The fixes did not change retrieval, and reranking time varied from 1.7 s to 5.3 s between requests, so the difference from 6.7 s lies within run-to-run variation on the shared server.
 
 [Insert Figure 6.1: `docs/report/figures/fig6-1-latency-stages.png`]
 
@@ -343,7 +343,18 @@ The fixes did remove the defects they targeted:
 
 The affected answers had not been correct before the fixes, so accuracy was not expected to change.
 
-Results for Auto mode after the fixes, and for the final configuration on the locked 30-question test set, are [pending].
+The two service modes were then re-run after the fixes, and their results are given in Table 6.6. Neither mode changed significantly. After the fixes, Auto mode remained about 12 points below Knowledge mode under both judges (p = .12–.15). It also remained 15–17 points below Tuned RAG (p = .019–.064).
+
+**Table 6.6.** Accuracy of the service modes before and after the corrective fixes (paired questions).
+
+| Mode | Judge A: before → after, p | Judge B: before → after, p |
+|---|---|---|
+| Knowledge mode | 57% → 56%, p = 1.00 | 56% → 54%, p = 1.00 |
+| Auto mode | 45% → 42%, p = .77 | 39% → 41%, p = 1.00 |
+
+Two kinds of answers were still rejected by the synthesis guard: amounts written in shorthand in the question (for example "18 triệu" for 18,000,000), and equalities with a currency unit between the operands (for example "4.000.000 VND + 1.500.000 VND = 5.500.000 VND").
+
+Results for the final configuration on the locked 30-question test set are [pending].
 
 — end of block —
 
@@ -385,6 +396,8 @@ None of these failures was introduced by the fixes. They are maintenance debt to
 
 Separately, an answer citing a non-existent source caused a server error.
 
+The verifier also affects availability. It makes a further model call after the answer is written, and it fails closed. When the provider's rate limit was reached during one run, eight otherwise complete answers were withheld with the "cannot verify" message; these cases were re-run for the results reported here. Enabling the verifier therefore trades some availability under load for a lower risk of unsupported answers.
+
 **Auto mode.** Auto mode lost 17–21 points against the same pipeline called directly, because of two steps that only Auto mode performs.
 
 1. **Synthesis number guard.** The guard rejects every number not found literally in the sources, including correct computed results such as 3 × 18,000,000 = 54,000,000. In seven questions, it replaced the answer with raw source excerpts. Auto mode answered one of eight calculation questions correctly, against five of eight for Tuned RAG.
@@ -410,7 +423,7 @@ Because these fixes were designed from failures on the development set, results 
 For Knowledge AI, the results support seven recommendations:
 
 1. Remove unrelated test uploads from the employee scope, which is the least costly retrieval improvement.
-2. Default the chat interface to Knowledge mode for policy questions until Auto mode matches it on the evaluation set.
+2. Default the chat interface to Knowledge mode for policy questions until Auto mode matches it on the evaluation set; to close the gap, the Auto-mode synthesis guard should accept shorthand amounts from the question and equalities with units between operands.
 3. Improve recall for unaccented and partially retrieved questions, for example by restoring diacritics before lexical search or passing more candidates to the reranker, and validate such changes only on the locked test set.
 4. Keep the claim verifier, but monitor the reasons for its blocks.
 5. Return a polite refusal instead of an HTTP 403 error when Auto mode plans a task the user's role may not run.
@@ -429,7 +442,7 @@ For Knowledge AI, the results support seven recommendations:
 
 **Answer quality.** On a locked 76-question evaluation set, the tuned Knowledge pipeline answered 58–59% of questions correctly, against 34–37% for naive dense retrieval and 11–24% without documents. When it answered, 76–79% of its answers were correct, and only about one answerable question in twenty received a confidently wrong answer. Most failures were refusals caused by retrieval misses. The system declined every out-of-scope and injection question and leaked nothing to unauthorised roles.
 
-**Verifier and Auto mode.** The claim verifier did not change accuracy. Auto mode was 17–21 points less accurate than the pipeline called directly, because of its synthesis and task-rewriting steps. Corrective fixes removed the server error and most mechanical blocks without changing the direct pipeline's accuracy. Results for Auto mode after the fixes and for the locked test set are [pending].
+**Verifier and Auto mode.** The claim verifier did not change accuracy. Auto mode was 17–21 points less accurate than the pipeline called directly, because of its synthesis and task-rewriting steps. Corrective fixes removed the server error and most mechanical blocks without changing accuracy in either the direct pipeline or the two service modes. Auto mode remained about 12 points below Knowledge mode, because its synthesis guard still rejects shorthand amounts and equalities with units between operands. Results for the locked test set are [pending].
 
 **Other components.** A parsed-document chunking worker is in place. Access control has a working foundation with known policy gaps.
 
@@ -443,7 +456,7 @@ The answer-level evaluation has six limitations:
 2. **Authorship.** The questions were drafted with an AI assistant and reviewed by one team member.
 3. **Grading.** Answers were graded by LLM judges, checked against human grades on only 20 verdicts.
 4. **Corpus state.** Only the English policy was active, so answers to Vietnamese questions were translated.
-5. **Rate limits.** Some service runs hit provider rate limits, and the affected questions were re-run.
+5. **Rate limits.** Some service runs hit provider rate limits, and the affected questions were re-run. In Auto mode, a rate-limited verifier is not visible in the response, so a small number of affected answers may remain undetected.
 6. **Test-set power.** The 30-question test set can detect only large differences.
 
 Future work should add a second evaluation corpus, measure latency and throughput under concurrent load after the fixes, and redesign the Auto-mode synthesis so that it preserves the user's inputs and accepts verified calculations.

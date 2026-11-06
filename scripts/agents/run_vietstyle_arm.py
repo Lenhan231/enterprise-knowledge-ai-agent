@@ -54,8 +54,10 @@ def router_failed(metadata):
     metadata = metadata or {}
     if metadata.get("status") == "failed" and metadata.get("selected_route") == "unrouted":
         return True
-    # Under rate limits the router still answers 200 "No supported answer could be completed" for the failed task.
-    return any(task.get("error_type") in PROVIDER_ERRORS for task in metadata.get("task_trace") or [])
+    # Under rate limits the router still answers 200 "No supported answer could be completed" for the failed task,
+    # and Knowledge mode withholds the answer when the claim verifier itself is rate limited.
+    return (any(task.get("error_type") in PROVIDER_ERRORS for task in metadata.get("task_trace") or [])
+            or (metadata.get("claim_verification") or {}).get("reason") in PROVIDER_ERRORS)
 
 
 def failed_row(row):

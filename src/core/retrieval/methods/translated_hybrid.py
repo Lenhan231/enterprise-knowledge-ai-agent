@@ -62,6 +62,8 @@ def search(repository, vector, request, get_translator, *, company=None, roles=N
         finally:
             details["translation_latency_ms"] = (perf_counter() - started) * 1000
         details["lexical_queries"] = queries
+        if request.query not in queries.values():
+            details["normalized_query"] = queries["vn"]  # diacritics restored by the translator
         scopes, lexical_futures = {}, []
         for lang in ("en", "vn"):
             scope = document_ids

@@ -2,6 +2,7 @@ import hashlib
 import inspect
 import json
 import logging
+import os
 import re
 import time
 import unicodedata
@@ -177,7 +178,7 @@ class RAGService:
     def generate_answer(
         self,
         question: str,
-        limit: int = 5,
+        limit: int | None = None,
         company: str | None = None,
         roles: list[str] | None = None,
         retrieval_method: str = "translated_hybrid_rerank",
@@ -188,6 +189,8 @@ class RAGService:
         decompose: bool = False,
         verify_claims: bool = False,
     ) -> RAGResult:
+        if limit is None:
+            limit = int(os.getenv("KNOWLEDGE_TOP_K", "5"))
         if decompose:
             questions = self._search_questions(question)
             groups = []

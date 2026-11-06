@@ -1,9 +1,10 @@
 import json
+import os
 from functools import lru_cache
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 from core.llm.llm_interface import LLMInterface
-from core.prompts.translation import AUTO_TRANSLATION_PROMPT, TRANSLATION_PROMPT
+from core.prompts.translation import AUTO_TRANSLATION_NORMALIZE_PROMPT, AUTO_TRANSLATION_PROMPT, TRANSLATION_PROMPT
 
 class Translation(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -12,7 +13,12 @@ class Translation(BaseModel):
 
 class DetectedTranslation(Translation):
     source_lang: Literal["en", "vn"]
-    
+
+
+class NormalizedTranslation(DetectedTranslation):
+    normalized: str = Field(min_length=1, max_length=4000)
+
+
 class QueryTranslator:
     def __init__(self, llm: LLMInterface):
         self.llm = llm
@@ -22,15 +28,17 @@ class QueryTranslator:
         if not isinstance(question, str) or not question.strip() or len(question) > 4000:
             raise ValueError("Question must contain 1–4000 characters of text")
         if source_lang == "auto":
-            raw = self.llm.generate(
-                AUTO_TRANSLATION_PROMPT.format(question=json.dumps(question, ensure_ascii=False))
-            )
-            result = DetectedTranslation.model_validate_json(raw)
+            normalize = os.getenv("QUERY_NORMALIZATION_ENABLED", "0") == "1"
+            prompt = AUTO_TRANSLATION_NORMALIZE_PROMPT if normalize else AUTO_TRANSLATION_PROMPT
+            raw = self.llm.generate(prompt.format(question=json.dumps(question, ensure_ascii=False)))
+            result = (NormalizedTranslation if normalize else DetectedTranslation).model_validate_json(raw)
             translated = result.translation.strip()
             if not translated:
                 raise ValueError("Translation failed")
             target = "vn" if result.source_lang == "en" else "en"
-            return {result.source_lang: question, target: translated}
+            # The normalized form only replaces a Vietnamese original; an English question stays verbatim.
+            original = (result.normalized.strip() or question) if normalize and result.source_lang == "vn" else question
+            return {result.source_lang: original, target: translated}
         if source_lang not in {"en", "vn"}:
             raise ValueError("Unsupported query language")
         

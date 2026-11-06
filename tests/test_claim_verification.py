@@ -11,7 +11,7 @@ from core.latency import latency_events, snapshot
 from core.models.agents import AgentRequest, VerifiedIdentity
 from core.prompts.Knowledge import INSUFFICIENT_ANSWER
 from core.rag.claim_verification import (
-    AnswerReview, VERIFICATION_UNAVAILABLE_ANSWER, claim_blocks, evidence_units, validate_review, verify_answer,
+    AUDIT_MAX_OUTPUT_TOKENS, AnswerReview, VERIFICATION_UNAVAILABLE_ANSWER, claim_blocks, evidence_units, validate_review, verify_answer,
 )
 from core.rag.rag_service import RAGService
 
@@ -79,7 +79,7 @@ class ClaimVerificationTest(unittest.TestCase):
         llm = Mock()
         llm.generate.return_value = json.dumps(review())
         self.assertEqual(verify_answer(llm, "Q", ANSWER, [SOURCE]).status, "supported")
-        self.assertEqual(llm.generate.call_args.kwargs["max_output_tokens"], 768)
+        self.assertEqual(llm.generate.call_args.kwargs["max_output_tokens"], AUDIT_MAX_OUTPUT_TOKENS)
         payload = json.loads(llm.generate.call_args.args[0].split("Payload (JSON):\n", 1)[1])
         self.assertNotIn("content", payload["sources"][0])
         self.assertEqual(payload["sources"][0]["units"], [

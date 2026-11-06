@@ -259,6 +259,7 @@ class DocumentChunkRepository:
                 continue
             contexts[key] = {
                 "text": "\n".join(content for _, content in siblings),
+                "texts": [content for _, content in siblings],
                 "chunk_indices": [index for index, _ in siblings],
                 "parent_chunk_count": len(siblings),
                 "parent_context_type": "section_window" if chunk.metadata.get("section_title") else "page_window",

@@ -377,7 +377,26 @@ The final configuration therefore keeps the unrelated uploads deactivated and th
 
 **1.9 Locked test set**
 
-The final configuration was run once on the locked 30-question test set [pending: results, three judges and majority vote].
+The final configuration (Tuned RAG, unrelated uploads deactivated, Vietnamese policy active) was run once on the locked 30-question test set. The run used main at commit b616744, whose knowledge and router code is identical to the fixed version. To strengthen the final measurement, a third judge (Judge C, a Claude subagent) graded the answers alongside Judges A and B, and the majority verdict of the three is reported (Table 6.8).
+
+**Table 6.8.** Tuned RAG on the locked test set (28 judged questions; the follow-up question was skipped and the access-control question is scored by rule).
+
+| Measure | Result |
+|---|---|
+| Correct: judge A / B / C | 68% / 61% / 68% |
+| Correct, majority of three judges | 68% (19/28; 95% CI 49–82%) |
+| Correct or partial, majority | 79% |
+| Correct when answered (majority) | 79% (15/19) |
+| Confidently wrong (share of answerable) | 1/24 |
+| Recall@5 / MRR / citation precision | 0.79 / 0.81 / 92% |
+| Out-of-scope and injection questions declined | 4/4 |
+| Agreement among the three judges | Fleiss' κ = 0.90 (unanimous on 26/28) |
+
+The test-set results match the development set under the same configuration (61% correct, Recall@5 0.81). The system therefore did not overfit the development set, and the conclusions drawn on it carry over to unseen questions. With 28 questions, the confidence interval is wide, so the test set confirms the level of performance rather than measuring it precisely.
+
+One test question checked access control: it was asked under a role that may not read the policy. No VietStyle passage was returned. The system still answered, because another company's documents that this role may read contain the same dataset dates. This reflects a weakness in the choice of that question, not a failure of access control, and the question was not changed after the run.
+
+Results for Knowledge mode and Auto mode on the test set are [pending].
 
 — end of block —
 
@@ -465,7 +484,7 @@ For Knowledge AI, the results support seven recommendations:
 
 **Answer quality.** On a locked 76-question evaluation set, the tuned Knowledge pipeline answered 58–59% of questions correctly, against 34–37% for naive dense retrieval and 11–24% without documents. When it answered, 76–79% of its answers were correct, and only about one answerable question in twenty received a confidently wrong answer. Most failures were refusals caused by retrieval misses. The system declined every out-of-scope and injection question and leaked nothing to unauthorised roles.
 
-**Verifier and Auto mode.** The claim verifier did not change accuracy. Auto mode was 17–21 points less accurate than the pipeline called directly, because of its synthesis and task-rewriting steps. Corrective fixes removed the server error and most mechanical blocks without changing accuracy in either the direct pipeline or the two service modes. Auto mode remained about 12 points below Knowledge mode, because its synthesis guard still rejects shorthand amounts and equalities with units between operands. Results for the locked test set are [pending].
+**Verifier and Auto mode.** The claim verifier did not change accuracy. Auto mode was 17–21 points less accurate than the pipeline called directly, because of its synthesis and task-rewriting steps. On the locked test set, the final configuration answered 68% of questions correctly by majority of three judges (79% of the questions it answered), confirming the development-set level on unseen questions. Corrective fixes removed the server error and most mechanical blocks without changing accuracy in either the direct pipeline or the two service modes. Auto mode remained about 12 points below Knowledge mode, because its synthesis guard still rejects shorthand amounts and equalities with units between operands. Results for the locked test set are [pending].
 
 **Other components.** A parsed-document chunking worker is in place. Access control has a working foundation with known policy gaps.
 

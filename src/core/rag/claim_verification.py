@@ -1,6 +1,7 @@
 """Experimental semantic audit; evidence-ID/coverage checks do not prove entailment."""
 
 import json
+import os
 import re
 import time
 from typing import Annotated, Literal
@@ -15,7 +16,7 @@ from core.prompts.knowledge_verification import CLAIM_VERIFICATION_PROMPT
 
 # Groq reserves the full output cap against per-minute output quota. Short audits use ~40-70 tokens,
 # but a 12-16 claim answer with evidence ids can pass 768 and come back truncated (ValidationError).
-AUDIT_MAX_OUTPUT_TOKENS = 1536
+AUDIT_MAX_OUTPUT_TOKENS = int(os.getenv("KNOWLEDGE_AUDIT_MAX_OUTPUT_TOKENS", "768"))
 VERIFICATION_UNAVAILABLE_ANSWER = (
     "Chưa thể kiểm chứng đầy đủ câu trả lời với các nguồn được trích dẫn. "
     "Vui lòng thử lại hoặc hỏi rõ hơn."

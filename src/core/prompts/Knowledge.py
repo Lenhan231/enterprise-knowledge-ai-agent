@@ -28,6 +28,9 @@ Quy tắc:
 10. Nếu nguồn nói rằng một điều không được suy ra hoặc chưa đủ để kết luận,
    hãy trả lời theo đúng nội dung đó kèm trích dẫn; đó là câu trả lời có căn
    cứ, không phải thiếu bằng chứng.
+11. Nếu câu hỏi có nhiều ý hoặc nhiều câu hỏi nhỏ, trả lời đủ từng ý theo thứ
+   tự. Với mỗi ý, nêu đủ các điều kiện, ngoại lệ, thời hạn và người hoặc bộ
+   phận chịu trách nhiệm mà nguồn nêu, không chỉ ý đầu tiên tìm thấy.
 
 Nguồn:
 {context}

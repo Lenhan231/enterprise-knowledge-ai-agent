@@ -13,8 +13,9 @@ from core.rag.arithmetic import check_equalities
 from core.latency import measure
 from core.prompts.knowledge_verification import CLAIM_VERIFICATION_PROMPT
 
-# Groq reserves the full output cap against per-minute output quota; audits use ~40-70 tokens.
-AUDIT_MAX_OUTPUT_TOKENS = 768
+# Groq reserves the full output cap against per-minute output quota. Short audits use ~40-70 tokens,
+# but a 12-16 claim answer with evidence ids can pass 768 and come back truncated (ValidationError).
+AUDIT_MAX_OUTPUT_TOKENS = 1536
 VERIFICATION_UNAVAILABLE_ANSWER = (
     "Chưa thể kiểm chứng đầy đủ câu trả lời với các nguồn được trích dẫn. "
     "Vui lòng thử lại hoặc hỏi rõ hơn."

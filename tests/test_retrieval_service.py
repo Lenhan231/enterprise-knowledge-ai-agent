@@ -38,7 +38,8 @@ class FakeRepository:
         self.search_args = (embedding, limit, company, roles, query, method, fusion)
         return self.results
 
-    def expand_parent_contexts(self, chunks, company=None, roles=None):
+    def expand_parent_contexts(self, chunks, company=None, roles=None, radius=2):
+        self.expand_args = (company, roles, radius)
         return self.parent_contexts
 
     def close(self):
@@ -186,6 +187,51 @@ class RetrievalServiceTest(unittest.TestCase):
             RetrievalRequest(query="policy", top_k=1), roles=["employee"], method="parent",
         )
         self.assertEqual(result.results, [])
+
+
+class NeighbourExpansionTest(unittest.TestCase):
+    def chunk(self, index):
+        return RetrievedChunk(document_name="policy.pdf", chunk_index=index, content=f"c{index}",
+                              metadata={"document_id": "DOC", "page_number": 3}, retrieval_score=1.0 / (index + 1))
+
+    def window(self, indices):
+        return {"text": "\n".join(f"c{i}" for i in indices), "texts": [f"c{i}" for i in indices],
+                "chunk_indices": indices, "parent_chunk_count": len(indices), "parent_context_type": "page_window"}
+
+    def retrieve(self, radius, chunks):
+        repository = FakeRepository()
+        repository.results = chunks
+        repository.parent_contexts = {("DOC", 5): self.window([4, 5, 6]), ("DOC", 6): self.window([5, 6, 7]),
+                                      ("DOC", 9): self.window([8, 9, 10])}
+        reranker = MagicMock()
+        reranker.rerank.side_effect = lambda query, items, k: (items[:k], {"reranker_model": "fake"})
+        translator = MagicMock()
+        translator.translate.return_value = {"vn": "mua khẩn", "en": "emergency purchase"}
+        service = RetrievalService(FakeEmbeddingService(), repository, translator, reranker)
+        with patch.dict("os.environ", {"KNOWLEDGE_CONTEXT_RADIUS": radius}):
+            result = service.retrieve(RetrievalRequest(query="mua khan", top_k=3), roles=["employee"])
+        return result, repository, reranker
+
+    def test_off_by_default_and_reranks_with_normalized_query(self):
+        result, repository, reranker = self.retrieve("0", [self.chunk(5), self.chunk(6), self.chunk(9)])
+        self.assertEqual([r.text for r in result.results], ["c5", "c6", "c9"])
+        self.assertEqual(reranker.rerank.call_args.args[0], "mua khẩn")
+        self.assertFalse(hasattr(repository, "expand_args"))
+
+    def test_windows_are_acl_scoped_and_never_repeat_a_chunk(self):
+        result, repository, _ = self.retrieve("1", [self.chunk(5), self.chunk(6), self.chunk(9), self.chunk(4)])
+        self.assertEqual(repository.expand_args, (None, ["employee"], 1))
+        # 6 sits inside 5's window, so it is dropped; 9 keeps its own window (4 is cut by top_k).
+        self.assertEqual([r.location.chunk_index for r in result.results], [5, 9])
+        self.assertEqual([r.text for r in result.results], ["c4\nc5\nc6", "c8\nc9\nc10"])
+        self.assertEqual(result.results[1].metadata["parent_chunk_indices"], [8, 9, 10])
+        self.assertEqual(result.retrieval_details["context_radius"], 1)
+
+    def test_overlapping_window_keeps_only_new_neighbours(self):
+        repository_chunks = [self.chunk(5), self.chunk(7)]
+        result, _, _ = self.retrieve("1", repository_chunks)
+        # 7 has no window of its own in the fake, so it stays as is.
+        self.assertEqual([r.text for r in result.results], ["c4\nc5\nc6", "c7"])
 
 
 if __name__ == "__main__":

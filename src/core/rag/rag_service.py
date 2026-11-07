@@ -22,7 +22,9 @@ from core.retrieval.retrieval import RetrievalRequest
 from core.retrieval.retrieval_service import RetrievalService
 
 
-MAX_CONTEXT_CHARS = 24_000
+# Groq's on-demand tier rejects one request over 7,000 input tokens (~25k Vietnamese chars incl. the prompt);
+# with top-k 8 plus neighbour passages set KNOWLEDGE_CONTEXT_MAX_CHARS=20000.
+MAX_CONTEXT_CHARS = int(os.getenv("KNOWLEDGE_CONTEXT_MAX_CHARS", "24000"))
 _log = logging.getLogger(__name__)
 
 

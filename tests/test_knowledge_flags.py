@@ -47,5 +47,13 @@ class KnowledgeFlagTest(unittest.TestCase):
         self.assertEqual(top_k, 8)
 
 
+    def test_context_budget_is_configurable(self):
+        import importlib
+        from core.rag import rag_service
+        with patch.dict(os.environ, {"KNOWLEDGE_CONTEXT_MAX_CHARS": "20000"}):
+            self.assertEqual(importlib.reload(rag_service).MAX_CONTEXT_CHARS, 20000)
+        self.assertEqual(importlib.reload(rag_service).MAX_CONTEXT_CHARS, 24000)
+
+
 if __name__ == "__main__":
     unittest.main()

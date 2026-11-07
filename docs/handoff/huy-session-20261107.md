@@ -31,6 +31,22 @@ For a new Claude/Codex session: read this first, then `docs/report/huy-gdoc-past
 - Latency in these runs is not usable (benchmark shares the CPU reranker); measure separately on an idle server, flags on vs off, with `scripts/operations/measure_pipeline_latency.py`.
 - VPS `.env` currently has the 5 flags ON.
 
+## Progress on 8 Nov — results complete
+- Groq's on-demand tier rejects one request over 7,000 input tokens; with the flags on, test v1 Q12 hit 413. Fix on main `4b725d0`: `KNOWLEDGE_CONTEXT_MAX_CHARS` (default 24000); VPS `.env` now has `KNOWLEDGE_CONTEXT_MAX_CHARS=20000` plus the 5 flags. Only test v1 B2 Q12 was rerun under the 20000 budget.
+- Test v1 after runs scored by 3 judges (local: `artifacts/local/vietstyle-runs/testv1/`; B/C isolated verdicts copied there).
+- **Final results (majority of 3 judges, correct):**
+  | | Before | After |
+  |---|---|---|
+  | Test v1 B2 | 19/28 (68%) | 21/28 (75%) |
+  | Test v1 Knowledge | no complete run | 22/29 (76%) |
+  | Test v2 B2 | 20/36 (56%) | 25/36 (69%) |
+  | Test v2 Knowledge | 22/38 (58%) | 27/38 (71%) |
+  - **Pooled B2, 64 paired questions:** 9 gained / 2 lost, McNemar p = .065, difference +10.9 points (95% bootstrap CI +1.6 to +20.3).
+  - Test v1 B2 MRR 0.81 → 0.85, key points 66 → 74%, citation precision 92% unchanged.
+  - Report wording: consistent ~11-point improvement, borderline significant.
+- Caveats for the report: v1 "before" = production config of 6 Nov (b616744); Judges B and C agree very closely (treat as two strong judges plus A as check).
+- Next: draft report section VI.1.10 + before/after table, fill [pending] lines, slide 21, Notion; decide keeping flags on in production (recommended, with 20000 budget); optional idle-server latency on vs off.
+
 ## Next steps
 1. Check the overnight run: `tail -5 /opt/enterprise-knowledge-ai-agent/testv2-before.log`. If it stopped on rate limits, resume per arm with the same command plus `--resume --retry-errors`. The runner is not on main: `git show origin/Huy:scripts/agents/run_vietstyle_arm.py > /tmp/run_vietstyle_arm.py`.
 2. scp the two `*-before.json` files to the laptop (`artifacts/local/vietstyle-runs/`).

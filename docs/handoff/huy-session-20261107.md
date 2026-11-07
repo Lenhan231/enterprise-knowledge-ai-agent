@@ -23,6 +23,14 @@ For a new Claude/Codex session: read this first, then `docs/report/huy-gdoc-past
 4. **Flags removed again on VPS**; the **test v2 "before" run** was started overnight (B2 then E2E-K) → `artifacts/local/knowledge-latency/vietstyle-test-v2/runs/{B2,E2E-K}-before.json`, log `testv2-before.log` on the VPS.
 5. Notion "Issues" page updated by Codex (16 entries). Slides: https://claude.ai/artifact/GWyieuFzmd1NLZhDsfk5Vv (24 + 2 backup, FA26AI48 branding; private until shared).
 
+## Progress on 7 Nov (afternoon)
+- Test v2 **before** (flags off) and **after** (5 flags on) runs done for B2 and E2E-K; all 40 rows clean. Local copies: `artifacts/local/vietstyle-runs/testv2/` (raw runs, Judge A `*.scored.json`, Judge B `judge-verdicts-codex-testv2-{before,after}-iso.jsonl`, Judge C `judge-verdicts-claude-testv2-{before,after}.jsonl`). Judges B and C ran in isolated scratch folders (only the prompts) after the first Codex before-run matched Claude 74/74; the isolated rerun matched too, so the agreement is genuine. The first non-isolated Codex file (`judge-verdicts-codex-testv2-before.jsonl`) is not used.
+- **Result (majority of 3 judges, correct):** B2 20/36 (56%) → 25/36 (69%), 7 gained / 2 lost, McNemar p = 0.18. E2E-K 22/38 (58%) → 27/38 (71%), 5 gained / 0 lost, p = 0.06. B2 Recall@5 0.81 → 0.87, MRR 0.75 → 0.79, key points 61 → 64%, citation precision 87 → 82%, false abstention 22 → 25%.
+- Gains: Q35 unaccented (accent restoration), Q09/Q15/Q19/Q36 partial → correct (completeness + context), Q24 (audit budget, was ValueError), Q26 (top-k/context). Losses (B2): Q14 withheld `uncited_or_oversized_draft` (longer answers trip the verifier), Q10 verifier `insufficient`. All remaining wrong answers are declines, none confidently wrong → the verifier is now the main limit.
+- Test v1 **after** runs done on the VPS (`/benchmarks/vietstyle-test-v1/runs/{B2,E2E-K}-after.json`). B2 **Q12 fails twice with APIStatusError** (looks deterministic) — print the row's `error` text: if 400 (context length / generation failure) it is a real bug from the larger context; if 429/503 just retry. E2E-K had no "before" on test v1, so report it unpaired.
+- Latency in these runs is not usable (benchmark shares the CPU reranker); measure separately on an idle server, flags on vs off, with `scripts/operations/measure_pipeline_latency.py`.
+- VPS `.env` currently has the 5 flags ON.
+
 ## Next steps
 1. Check the overnight run: `tail -5 /opt/enterprise-knowledge-ai-agent/testv2-before.log`. If it stopped on rate limits, resume per arm with the same command plus `--resume --retry-errors`. The runner is not on main: `git show origin/Huy:scripts/agents/run_vietstyle_arm.py > /tmp/run_vietstyle_arm.py`.
 2. scp the two `*-before.json` files to the laptop (`artifacts/local/vietstyle-runs/`).
